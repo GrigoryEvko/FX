@@ -603,6 +603,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.twoChildComponents
 #assert_no_axioms FX1Poly.Typed.productTypeZeroFlatPremise
 #assert_no_axioms FX1Poly.Typed.productChildrenFlatButNotCumulative
-#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.renameRespectingTelescope
 
 end FX1PolyAudit

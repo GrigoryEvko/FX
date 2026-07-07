@@ -1,4 +1,3 @@
-import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescope
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 

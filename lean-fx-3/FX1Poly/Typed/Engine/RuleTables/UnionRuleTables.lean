@@ -1,8 +1,6 @@
 import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Typed.Cell.CellShorthands
-import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescope
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescSubstitution
+import FX1Poly.Typed.Engine.RuleTables.TypingRuleSpec
 
 /-! # FX1Poly/Typed/UnionRuleTables — NATIVE-36: the native twin rule tables for the
     data-eliminator, n-ary/recursive data-intro, and listElim families (PRE-UNION, imported by the
@@ -1064,65 +1062,5 @@ theorem flatFormationRuleIsUniverseFormer {generator : Generator} {rule : Typing
     flatTypingRuleDescOf_outputIsUniverseFormer isFlatFormation
   cases rule
   rw [← outputIsFormer]
-
-/-- **Flat telescope renaming.**  Re-types the flat premise spine along a context-respecting renaming.
-Structural `match`-recursion reusing `HasTypeDesc.renameRespectingContext` on each head child; the flat
-`cons` keeps every sibling at the SAME base context, so the renaming stays at the base `rawRenaming`. -/
-theorem FlatDescTelescope.renameRespectingTelescope {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
-    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
-    (telescope : FlatDescTelescope profile context flag levels children) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming scope targetScope),
-      (∀ index : Fin scope,
-        RawTerm.rename rawRenaming (context.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      FlatDescTelescope profile targetContext flag levels
-        (RawTermChildren.rename rawRenaming children) :=
-  match telescope with
-  | .nil => fun targetContext _rawRenaming _contextCondition => FlatDescTelescope.nil
-  | .cons head headLevel restLevels rest headTyped restTyped =>
-      fun targetContext rawRenaming contextCondition => by
-        have renamedHeadTyped :
-            HasTypeDesc profile targetContext
-              (RawTerm.rename rawRenaming head)
-              (universeCodeCell headLevel flag) := by
-          have headRenamed :=
-            HasTypeDesc.renameRespectingContext headTyped targetContext rawRenaming contextCondition
-          rwa [rename_universeCodeCell] at headRenamed
-        exact FlatDescTelescope.cons (RawTerm.rename rawRenaming head) headLevel restLevels
-          (RawTermChildren.rename rawRenaming rest) renamedHeadTyped
-          (FlatDescTelescope.renameRespectingTelescope restTyped targetContext rawRenaming
-            contextCondition)
-
-/-- **Flat telescope substitution.**  Re-types the flat premise spine along a substitution whose
-substituents are target-typed.  Structural `match`-recursion reusing `HasTypeDesc.substRespectingContext`
-on each head child; the flat `cons` keeps every sibling at the SAME base context. -/
-theorem FlatDescTelescope.substRespectingTelescope {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
-    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
-    (telescope : FlatDescTelescope profile context flag levels children) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (substitution : FX1Poly.Core.RawTermSubst scope targetScope),
-      (∀ index : Fin scope,
-        HasTypeDesc profile targetContext (substitution index)
-          (RawTerm.subst substitution (context.lookup index))) →
-      FlatDescTelescope profile targetContext flag levels
-        (RawTermChildren.subst substitution children) :=
-  match telescope with
-  | .nil => fun targetContext _substitution _substitutionTyped => FlatDescTelescope.nil
-  | .cons head headLevel restLevels rest headTyped restTyped =>
-      fun targetContext substitution substitutionTyped => by
-        have substHeadTyped :
-            HasTypeDesc profile targetContext
-              (RawTerm.subst substitution head)
-              (universeCodeCell headLevel flag) := by
-          have headSubst :=
-            HasTypeDesc.substRespectingContext headTyped targetContext substitution substitutionTyped
-          rwa [subst_universeCodeCell] at headSubst
-        exact FlatDescTelescope.cons (RawTerm.subst substitution head) headLevel restLevels
-          (RawTermChildren.subst substitution rest) substHeadTyped
-          (FlatDescTelescope.substRespectingTelescope restTyped targetContext substitution
-            substitutionTyped)
 
 end FX1Poly.Typed

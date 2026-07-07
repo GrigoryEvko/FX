@@ -5,25 +5,16 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_optionCode
-#assert_no_axioms FX1Poly.Typed.TypingRuleDesc
-#assert_no_axioms FX1Poly.Typed.typingRuleDescOf
-#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_piTyCode
-#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_sigmaTyCode
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_outputIsUniverseFormer
-#assert_no_axioms FX1Poly.Typed.formationRuleImpliesNotVariable
 #assert_no_axioms FX1Poly.Typed.formationRuleIsUniverseFormer
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigmaOrListOrOptionCode
-#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_listCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_sigmaFormation_viaGenArm
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_output_isUniverseCode
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_output_eq_outputData
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_formerEnumeration
-#assert_no_axioms FX1Poly.Typed.universeFormerOutput
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_binderShiftsNonEmpty
-#assert_no_axioms FX1Poly.Typed.nullaryFormerOutput
 #assert_no_axioms FX1Poly.Typed.formationOutputData
 
 end FX1PolyAudit

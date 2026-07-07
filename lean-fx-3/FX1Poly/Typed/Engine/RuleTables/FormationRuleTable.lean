@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
-import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescopePi
+import FX1Poly.Typed.Engine.RuleTables.TypingRuleSpec
 import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 

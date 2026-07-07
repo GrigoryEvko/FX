@@ -560,7 +560,6 @@ Every audited symbol must be free of `propext`, `Quot.sound`, `Classical.choice`
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.substRespectingTelescope
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.ofTelescopeReducible
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible
