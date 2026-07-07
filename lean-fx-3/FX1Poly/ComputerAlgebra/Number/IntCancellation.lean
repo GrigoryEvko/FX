@@ -219,4 +219,71 @@ theorem intMulLeMulOfMagnitudeLe {leftValue leftBound rightValue rightBound : In
               isFlippedBelow)
             isRightBoundNonNegative))
 
+/-! ## Strict square monotonicity — NODE 1 (constructive sqrt substrate, #1961)
+
+The strict siblings of the monotone-scaling kit: a positive scale factor turns a
+STRICT bound into a strict bound, and the resulting square-reflection law
+(`0 ≤ B → A*A ≤ B*B → A ≤ B`) is the Int-level kernel the rational √-back step
+consumes.  Both `<` legs ride the `a < b ≡ a + 1 ≤ b` defeq pin exactly as
+`intMulPos`/`intLessThanOfLessThanOfLessEqual` do. -/
+
+/-- **Right multiplication by a positive factor is strictly monotone** —
+`a < b` and `0 < c` give `a*c < b*c`.  The scaled unit-step `(a+1)*c = a*c + c`
+lifts the weak bound `(a+1)*c ≤ b*c` above the strict floor `a*c < a*c + c`
+(the added `c` is positive). -/
+theorem intMulLtMulRightOfPos {leftValue rightValue scaleFactor : Int}
+    (isLessThan : leftValue < rightValue) (isScalePositive : (0 : Int) < scaleFactor) :
+    leftValue * scaleFactor < rightValue * scaleFactor :=
+  let distribEq :
+      (leftValue + 1) * scaleFactor = leftValue * scaleFactor + scaleFactor :=
+    (intRightDistrib leftValue 1 scaleFactor).trans
+      (congrArg (leftValue * scaleFactor + ·) (intOneMul scaleFactor))
+  let scaledStep :
+      (leftValue + 1) * scaleFactor ≤ rightValue * scaleFactor :=
+    intMulLeMulRightOfNonNeg (show leftValue + 1 ≤ rightValue from isLessThan)
+      (intLessEqualOfLessThan isScalePositive)
+  let acPlusCLeBc :
+      leftValue * scaleFactor + scaleFactor ≤ rightValue * scaleFactor :=
+    intLessEqualOfEqLeft distribEq.symm scaledStep
+  let acLtAcPlusC :
+      leftValue * scaleFactor < leftValue * scaleFactor + scaleFactor :=
+    intLessThanOfEqLeft (intAddZero (leftValue * scaleFactor)).symm
+      (intAddLessThanAddLeft isScalePositive (leftValue * scaleFactor))
+  intLessThanOfLessThanOfLessEqual acLtAcPlusC acPlusCLeBc
+
+/-- **Left multiplication by a positive factor is strictly monotone** — the
+commutativity mirror of `intMulLtMulRightOfPos`. -/
+theorem intMulLtMulLeftOfPos {leftValue rightValue scaleFactor : Int}
+    (isLessThan : leftValue < rightValue) (isScalePositive : (0 : Int) < scaleFactor) :
+    scaleFactor * leftValue < scaleFactor * rightValue :=
+  intLessThanOfEqLeft (intMulComm scaleFactor leftValue)
+    (intLessThanOfEqRight (intMulLtMulRightOfPos isLessThan isScalePositive)
+      (intMulComm rightValue scaleFactor))
+
+/-- **Square reflection** — from `0 ≤ B` and `A*A ≤ B*B`, conclude `A ≤ B`.
+By totality: if `A ≤ B` already holds we are done; otherwise `B < A`, whence
+`A` is positive, `B*B ≤ A*B < A*A` strictly, contradicting `A*A ≤ B*B`.  The
+`0 ≤ A` hypothesis of the naive statement is unnecessary and omitted. -/
+theorem intLeOfSqLeSqNonNeg {valueA valueB : Int}
+    (isBNonNeg : (0 : Int) ≤ valueB)
+    (areSquaresOrdered : valueA * valueA ≤ valueB * valueB) :
+    valueA ≤ valueB :=
+  match intLessEqualTotal valueA valueB with
+  | .inl isOrdered => isOrdered
+  | .inr isReversed =>
+      match intLtOrEqOfLe isReversed with
+      | .inr isEqual =>
+          intLessEqualOfEqRight (intLessEqualRefl valueA) isEqual.symm
+      | .inl isReversedStrict =>
+          let isAPos : (0 : Int) < valueA :=
+            intLessThanOfLessEqualOfLessThan isBNonNeg isReversedStrict
+          let squareBLeAB : valueB * valueB ≤ valueA * valueB :=
+            intMulLeMulRightOfNonNeg (intLessEqualOfLessThan isReversedStrict) isBNonNeg
+          let abLtSquareA : valueA * valueB < valueA * valueA :=
+            intMulLtMulLeftOfPos isReversedStrict isAPos
+          let squareBLtSquareA : valueB * valueB < valueA * valueA :=
+            intLessThanOfLessEqualOfLessThan squareBLeAB abLtSquareA
+          absurd (intLessThanOfLessEqualOfLessThan areSquaresOrdered squareBLtSquareA)
+            (intLessThanIrrefl (valueA * valueA))
+
 end FX1Poly.ComputerAlgebra
