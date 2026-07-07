@@ -284,4 +284,268 @@ theorem mulComplexOneRight (value : ComplexReal) :
         (mulRealOneRight value.imaginaryPart))
       (addRealZeroLeft value.imaginaryPart)⟩
 
+/-- **Left distributivity** `z·(w + u) ~ z·w + z·u` — componentwise: the real
+part distributes each `mulReal` over the addend sums (`mulRealLeftDistrib`)
+then cross-pairs the two differences (`subRealCrossPairsDenotesSame`); the
+imaginary part distributes then medial-swaps the four products. -/
+theorem mulComplexLeftDistrib (leftValue middleValue rightValue : ComplexReal) :
+    DenotesSameComplex
+      (mulComplex leftValue (addComplex middleValue rightValue))
+      (addComplex (mulComplex leftValue middleValue)
+        (mulComplex leftValue rightValue)) :=
+  ⟨denotesSameRealTrans
+      (subRealRespectsDenotesSame
+        (mulRealLeftDistrib leftValue.realPart middleValue.realPart
+          rightValue.realPart)
+        (mulRealLeftDistrib leftValue.imaginaryPart middleValue.imaginaryPart
+          rightValue.imaginaryPart))
+      (subRealCrossPairsDenotesSame
+        (mulReal leftValue.realPart middleValue.realPart)
+        (mulReal leftValue.realPart rightValue.realPart)
+        (mulReal leftValue.imaginaryPart middleValue.imaginaryPart)
+        (mulReal leftValue.imaginaryPart rightValue.imaginaryPart)),
+    denotesSameRealTrans
+      (addRealRespectsDenotesSame
+        (mulRealLeftDistrib leftValue.realPart middleValue.imaginaryPart
+          rightValue.imaginaryPart)
+        (mulRealLeftDistrib leftValue.imaginaryPart middleValue.realPart
+          rightValue.realPart))
+      (addRealMedial
+        (mulReal leftValue.realPart middleValue.imaginaryPart)
+        (mulReal leftValue.realPart rightValue.imaginaryPart)
+        (mulReal leftValue.imaginaryPart middleValue.realPart)
+        (mulReal leftValue.imaginaryPart rightValue.realPart))⟩
+
+/-- **Multiplication is associative** `(z·w)·u ~ z·(w·u)` — each component is
+an eight-term Gauss cross-expansion.  Both sides expand (via `·` over
+subtraction/addition and `mulRealAssoc`) into the same four signed triple
+products; a purely additive reorder (medial + commutativity) reconciles the
+two groupings. -/
+theorem mulComplexAssoc (firstValue middleValue lastValue : ComplexReal) :
+    DenotesSameComplex
+      (mulComplex (mulComplex firstValue middleValue) lastValue)
+      (mulComplex firstValue (mulComplex middleValue lastValue)) :=
+  let firstReal := firstValue.realPart
+  let firstImag := firstValue.imaginaryPart
+  let middleReal := middleValue.realPart
+  let middleImag := middleValue.imaginaryPart
+  let lastReal := lastValue.realPart
+  let lastImag := lastValue.imaginaryPart
+  let realRealReal := mulReal firstReal (mulReal middleReal lastReal)
+  let realRealImag := mulReal firstReal (mulReal middleReal lastImag)
+  let realImagReal := mulReal firstReal (mulReal middleImag lastReal)
+  let realImagImag := mulReal firstReal (mulReal middleImag lastImag)
+  let imagRealReal := mulReal firstImag (mulReal middleReal lastReal)
+  let imagRealImag := mulReal firstImag (mulReal middleReal lastImag)
+  let imagImagReal := mulReal firstImag (mulReal middleImag lastReal)
+  let imagImagImag := mulReal firstImag (mulReal middleImag lastImag)
+  have realReorder :
+      DenotesSameReal
+        (subReal (subReal realRealReal imagImagReal)
+          (addReal realImagImag imagRealImag))
+        (subReal (subReal realRealReal realImagImag)
+          (addReal imagRealImag imagImagReal)) :=
+    denotesSameRealTrans
+      (addRealRespectsDenotesSame
+        (denotesSameRealRefl (subReal realRealReal imagImagReal))
+        (negRealAddRealDenotesSame realImagImag imagRealImag))
+      (denotesSameRealTrans
+        (addRealMedial realRealReal (negReal imagImagReal)
+          (negReal realImagImag) (negReal imagRealImag))
+        (addRealRespectsDenotesSame
+          (denotesSameRealRefl (addReal realRealReal (negReal realImagImag)))
+          (denotesSameRealTrans
+            (addRealComm (negReal imagImagReal) (negReal imagRealImag))
+            (denotesSameRealSymm
+              (negRealAddRealDenotesSame imagRealImag imagImagReal)))))
+  have imagReorder :
+      DenotesSameReal
+        (addReal (subReal realRealImag imagImagImag)
+          (addReal realImagReal imagRealReal))
+        (addReal (addReal realRealImag realImagReal)
+          (subReal imagRealReal imagImagImag)) :=
+    denotesSameRealTrans
+      (addRealMedial realRealImag (negReal imagImagImag) realImagReal
+        imagRealReal)
+      (addRealRespectsDenotesSame
+        (denotesSameRealRefl (addReal realRealImag realImagReal))
+        (addRealComm (negReal imagImagImag) imagRealReal))
+  ⟨denotesSameRealTrans
+      (subRealRespectsDenotesSame
+        (denotesSameRealTrans
+          (mulRealSubRealRightDenotesSame (mulReal firstReal middleReal)
+            (mulReal firstImag middleImag) lastReal)
+          (subRealRespectsDenotesSame
+            (mulRealAssoc firstReal middleReal lastReal)
+            (mulRealAssoc firstImag middleImag lastReal)))
+        (denotesSameRealTrans
+          (mulRealRightDistrib (mulReal firstReal middleImag)
+            (mulReal firstImag middleReal) lastImag)
+          (addRealRespectsDenotesSame
+            (mulRealAssoc firstReal middleImag lastImag)
+            (mulRealAssoc firstImag middleReal lastImag))))
+      (denotesSameRealTrans realReorder
+        (denotesSameRealSymm
+          (subRealRespectsDenotesSame
+            (mulRealSubRealDenotesSame firstReal
+              (mulReal middleReal lastReal) (mulReal middleImag lastImag))
+            (mulRealLeftDistrib firstImag (mulReal middleReal lastImag)
+              (mulReal middleImag lastReal))))),
+    denotesSameRealTrans
+      (addRealRespectsDenotesSame
+        (denotesSameRealTrans
+          (mulRealSubRealRightDenotesSame (mulReal firstReal middleReal)
+            (mulReal firstImag middleImag) lastImag)
+          (subRealRespectsDenotesSame
+            (mulRealAssoc firstReal middleReal lastImag)
+            (mulRealAssoc firstImag middleImag lastImag)))
+        (denotesSameRealTrans
+          (mulRealRightDistrib (mulReal firstReal middleImag)
+            (mulReal firstImag middleReal) lastReal)
+          (addRealRespectsDenotesSame
+            (mulRealAssoc firstReal middleImag lastReal)
+            (mulRealAssoc firstImag middleReal lastReal))))
+      (denotesSameRealTrans imagReorder
+        (denotesSameRealSymm
+          (addRealRespectsDenotesSame
+            (mulRealLeftDistrib firstReal (mulReal middleReal lastImag)
+              (mulReal middleImag lastReal))
+            (mulRealSubRealDenotesSame firstImag
+              (mulReal middleReal lastReal) (mulReal middleImag lastImag)))))⟩
+
+/-! ## The commutative-ring certificate
+
+The categorical packaging: one setoid-relative `CommutativeRingWitness`
+structure, instantiated on both ℝ and ℂ.  Each field doubles as a
+completeness checklist for the ring corpus; both instances become inhabited
+now that the multiplicative slack-closure bricks land. -/
+
+/-- **A setoid-relative commutative ring** — carrier, sameness relation, the
+zero/one/add/mul/neg operations, the setoid trio, the three operation
+congruences, the eight ring laws, and nontriviality (`0` is apart from `1`).
+Leaner than the ℚ Heyting-field witness: no order, no decidability, no
+inverse — ℂ is neither ordered nor decidable and not yet a field. -/
+structure CommutativeRingWitness (carrier : Type) where
+  denotesSame : carrier → carrier → Prop
+  zero : carrier
+  one : carrier
+  add : carrier → carrier → carrier
+  mul : carrier → carrier → carrier
+  neg : carrier → carrier
+  denotesSameIsReflexive : ∀ value : carrier, denotesSame value value
+  denotesSameIsSymmetric :
+    ∀ leftValue rightValue : carrier,
+      denotesSame leftValue rightValue → denotesSame rightValue leftValue
+  denotesSameIsTransitive :
+    ∀ firstValue middleValue lastValue : carrier,
+      denotesSame firstValue middleValue → denotesSame middleValue lastValue →
+        denotesSame firstValue lastValue
+  addRespectsDenotesSame :
+    ∀ leftValue newLeftValue rightValue newRightValue : carrier,
+      denotesSame leftValue newLeftValue → denotesSame rightValue newRightValue →
+        denotesSame (add leftValue rightValue) (add newLeftValue newRightValue)
+  mulRespectsDenotesSame :
+    ∀ leftValue newLeftValue rightValue newRightValue : carrier,
+      denotesSame leftValue newLeftValue → denotesSame rightValue newRightValue →
+        denotesSame (mul leftValue rightValue) (mul newLeftValue newRightValue)
+  negRespectsDenotesSame :
+    ∀ leftValue rightValue : carrier,
+      denotesSame leftValue rightValue → denotesSame (neg leftValue) (neg rightValue)
+  addIsCommutative :
+    ∀ leftSummand rightSummand : carrier,
+      denotesSame (add leftSummand rightSummand) (add rightSummand leftSummand)
+  addIsAssociative :
+    ∀ firstSummand secondSummand thirdSummand : carrier,
+      denotesSame (add (add firstSummand secondSummand) thirdSummand)
+        (add firstSummand (add secondSummand thirdSummand))
+  zeroIsRightAdditiveIdentity :
+    ∀ value : carrier, denotesSame (add value zero) value
+  negIsRightAdditiveInverse :
+    ∀ value : carrier, denotesSame (add value (neg value)) zero
+  mulIsCommutative :
+    ∀ leftFactor rightFactor : carrier,
+      denotesSame (mul leftFactor rightFactor) (mul rightFactor leftFactor)
+  mulIsAssociative :
+    ∀ leftFactor middleFactor rightFactor : carrier,
+      denotesSame (mul (mul leftFactor middleFactor) rightFactor)
+        (mul leftFactor (mul middleFactor rightFactor))
+  oneIsRightMultiplicativeIdentity :
+    ∀ value : carrier, denotesSame (mul value one) value
+  mulDistributesOverAdd :
+    ∀ factor leftSummand rightSummand : carrier,
+      denotesSame (mul factor (add leftSummand rightSummand))
+        (add (mul factor leftSummand) (mul factor rightSummand))
+  zeroIsApartFromOne : Not (denotesSame zero one)
+
+/-- Nontriviality of ℝ — the constant reals `0` and `1` reflect to the ℚ
+constants, whose cross-products disagree as `ofNat` payloads. -/
+theorem regularRealZeroIsApartFromOne :
+    Not (DenotesSameReal (constantReal zeroRational) (constantReal oneRational)) :=
+  fun sameReal =>
+    Nat.noConfusion (Int.ofNat.inj (denotesSameAsOfConstantRealDenotesSame sameReal))
+
+/-- **The ℝ certificate**: `RegularReal` with its shipped corpus is a
+commutative ring up to the Bishop setoid. -/
+def regularRealCommutativeRingWitness : CommutativeRingWitness RegularReal where
+  denotesSame := DenotesSameReal
+  zero := constantReal zeroRational
+  one := constantReal oneRational
+  add := addReal
+  mul := mulReal
+  neg := negReal
+  denotesSameIsReflexive := denotesSameRealRefl
+  denotesSameIsSymmetric := fun _ _ areSame => denotesSameRealSymm areSame
+  denotesSameIsTransitive := fun _ _ _ firstAgrees lastAgrees =>
+    denotesSameRealTrans firstAgrees lastAgrees
+  addRespectsDenotesSame := fun _ _ _ _ leftAgrees rightAgrees =>
+    addRealRespectsDenotesSame leftAgrees rightAgrees
+  mulRespectsDenotesSame := fun _ _ _ _ leftAgrees rightAgrees =>
+    mulRealRespectsDenotesSame leftAgrees rightAgrees
+  negRespectsDenotesSame := fun _ _ areSame => negRealRespectsDenotesSame areSame
+  addIsCommutative := addRealComm
+  addIsAssociative := addRealAssoc
+  zeroIsRightAdditiveIdentity := addRealZeroRight
+  negIsRightAdditiveInverse := addRealNegRight
+  mulIsCommutative := mulRealComm
+  mulIsAssociative := mulRealAssoc
+  oneIsRightMultiplicativeIdentity := mulRealOneRight
+  mulDistributesOverAdd := mulRealLeftDistrib
+  zeroIsApartFromOne := regularRealZeroIsApartFromOne
+
+/-- Nontriviality of ℂ — the real components of `0 + 0i` and `1 + 0i` are the
+apart ℝ constants. -/
+theorem complexRealZeroIsApartFromOne :
+    Not (DenotesSameComplex zeroComplex oneComplex) :=
+  fun sameComplex => regularRealZeroIsApartFromOne sameComplex.left
+
+/-- **The ℂ certificate**: `ComplexReal` is a commutative ring up to the
+product setoid — every field lifts a `RegularReal` ring law componentwise
+through the Gauss product. -/
+def complexCommutativeRingWitness : CommutativeRingWitness ComplexReal where
+  denotesSame := DenotesSameComplex
+  zero := zeroComplex
+  one := oneComplex
+  add := addComplex
+  mul := mulComplex
+  neg := negComplex
+  denotesSameIsReflexive := denotesSameComplexRefl
+  denotesSameIsSymmetric := fun _ _ areSame => denotesSameComplexSymm areSame
+  denotesSameIsTransitive := fun _ _ _ firstAgrees lastAgrees =>
+    denotesSameComplexTrans firstAgrees lastAgrees
+  addRespectsDenotesSame := fun _ _ _ _ leftAgrees rightAgrees =>
+    addComplexRespectsDenotesSame leftAgrees rightAgrees
+  mulRespectsDenotesSame := fun _ _ _ _ leftAgrees rightAgrees =>
+    mulComplexRespectsDenotesSame leftAgrees rightAgrees
+  negRespectsDenotesSame := fun _ _ areSame =>
+    negComplexRespectsDenotesSame areSame
+  addIsCommutative := addComplexComm
+  addIsAssociative := addComplexAssoc
+  zeroIsRightAdditiveIdentity := addComplexZeroRight
+  negIsRightAdditiveInverse := addComplexNegRight
+  mulIsCommutative := mulComplexComm
+  mulIsAssociative := mulComplexAssoc
+  oneIsRightMultiplicativeIdentity := mulComplexOneRight
+  mulDistributesOverAdd := mulComplexLeftDistrib
+  zeroIsApartFromOne := complexRealZeroIsApartFromOne
+
 end FX1Poly.ComputerAlgebra

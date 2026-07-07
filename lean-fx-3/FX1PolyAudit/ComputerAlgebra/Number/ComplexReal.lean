@@ -43,5 +43,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.addComplexNegRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulComplexComm
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulComplexOneRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulComplexLeftDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulComplexAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.regularRealZeroIsApartFromOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.regularRealCommutativeRingWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.complexRealZeroIsApartFromOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.complexCommutativeRingWitness
 
 end FX1PolyAudit

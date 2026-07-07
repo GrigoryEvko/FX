@@ -35,5 +35,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealAssoc
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealLeftDistrib
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealRightDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.addRealMedial
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealSubRealDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealSubRealRightDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.subRealCrossPairsDenotesSame
 
 end FX1PolyAudit

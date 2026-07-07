@@ -853,4 +853,67 @@ theorem mulRealRightDistrib (leftSummand rightSummand factor : RegularReal) :
       (addRealRespectsDenotesSame (mulRealComm factor leftSummand)
         (mulRealComm factor rightSummand)))
 
+/-! ## Distributive corollaries the ℂ lift consumes
+
+The four regrouping identities that let the Gaussian product's cross terms be
+reshuffled purely through the ℝ ring laws: the additive four-term medial, `·`
+over subtraction on each side, and the subtraction cross-pair. -/
+
+/-- **The additive medial** — swap the two inner summands of a four-term sum:
+`(a + b) + (c + d) ~ (a + c) + (b + d)`.  Associativity out, commute the
+middle pair, associativity back. -/
+theorem addRealMedial (firstValue secondValue thirdValue fourthValue : RegularReal) :
+    DenotesSameReal
+      (addReal (addReal firstValue secondValue) (addReal thirdValue fourthValue))
+      (addReal (addReal firstValue thirdValue) (addReal secondValue fourthValue)) :=
+  denotesSameRealTrans
+    (addRealAssoc firstValue secondValue (addReal thirdValue fourthValue))
+    (denotesSameRealTrans
+      (addRealRespectsDenotesSame (denotesSameRealRefl firstValue)
+        (denotesSameRealTrans
+          (denotesSameRealSymm
+            (addRealAssoc secondValue thirdValue fourthValue))
+          (denotesSameRealTrans
+            (addRealRespectsDenotesSame (addRealComm secondValue thirdValue)
+              (denotesSameRealRefl fourthValue))
+            (addRealAssoc thirdValue secondValue fourthValue))))
+      (denotesSameRealSymm
+        (addRealAssoc firstValue thirdValue (addReal secondValue fourthValue))))
+
+/-- **`·` distributes over subtraction, factor on the left** — left
+distributivity with the negation folded through the right factor. -/
+theorem mulRealSubRealDenotesSame (factor leftValue rightValue : RegularReal) :
+    DenotesSameReal (mulReal factor (subReal leftValue rightValue))
+      (subReal (mulReal factor leftValue) (mulReal factor rightValue)) :=
+  denotesSameRealTrans
+    (mulRealLeftDistrib factor leftValue (negReal rightValue))
+    (addRealRespectsDenotesSame
+      (denotesSameRealRefl (mulReal factor leftValue))
+      (mulRealNegRightDenotesSame factor rightValue))
+
+/-- **`·` distributes over subtraction, factor on the right** — right
+distributivity with the negation folded through the left factor. -/
+theorem mulRealSubRealRightDenotesSame (leftValue rightValue factor : RegularReal) :
+    DenotesSameReal (mulReal (subReal leftValue rightValue) factor)
+      (subReal (mulReal leftValue factor) (mulReal rightValue factor)) :=
+  denotesSameRealTrans
+    (mulRealRightDistrib leftValue (negReal rightValue) factor)
+    (addRealRespectsDenotesSame
+      (denotesSameRealRefl (mulReal leftValue factor))
+      (mulRealNegLeftDenotesSame rightValue factor))
+
+/-- **The subtraction cross-pair** — `(a + b) - (c + d) ~ (a - c) + (b - d)`:
+push the negation over the subtrahend sum, then the additive medial. -/
+theorem subRealCrossPairsDenotesSame
+    (firstValue secondValue thirdValue fourthValue : RegularReal) :
+    DenotesSameReal
+      (subReal (addReal firstValue secondValue) (addReal thirdValue fourthValue))
+      (addReal (subReal firstValue thirdValue) (subReal secondValue fourthValue)) :=
+  denotesSameRealTrans
+    (addRealRespectsDenotesSame
+      (denotesSameRealRefl (addReal firstValue secondValue))
+      (negRealAddRealDenotesSame thirdValue fourthValue))
+    (addRealMedial firstValue secondValue (negReal thirdValue)
+      (negReal fourthValue))
+
 end FX1Poly.ComputerAlgebra
