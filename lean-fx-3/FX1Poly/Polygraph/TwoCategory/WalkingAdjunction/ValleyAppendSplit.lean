@@ -2,6 +2,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyMatchingSpineTraceE
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcMatchViewFold
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingVcompLeftCongruence
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingFoldCongruence
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SpineArityDiscipline
 
 /-! # ValleyAppendSplit — Piece I of the fib-3 gate: the valley-append `matchingOf` split
 
@@ -82,5 +83,88 @@ theorem matchingOf_loops_split
   exact processSpine_loops_ofAllCupArity cupBlock cupPure
     (processSpine { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
       capBlock)
+
+/-! ## The arity bridges (pure-cap / pure-cup imply the generic cup/cap discipline)
+
+`arcDiagram_eq_matching` (the `.diagram` = `matchingOf` bridge) wants the GENERIC cup/cap arity discipline
+`SpineHasCupCapAtoms` (a `List.Mem` predicate).  A pure-cap or pure-cup block carries the STRUCTURAL
+`AllCapArity` / `AllCupArity`; these bridges route between them so the block `matchingOf` equalities can be
+converted to the `.diagram` shape Piece II consumes. -/
+
+/-- A pure-cap block satisfies the generic cup/cap arity discipline (every atom is a cap, the right disjunct). -/
+theorem spineHasCupCapAtoms_ofAllCapArity
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCap : AllCapArity atoms) : SpineHasCupCapAtoms atoms := by
+  induction pureCap with
+  | nil => intro probeAtom probeMem; nomatch probeMem
+  | cons hasCapDomArity hasCapCodArity _restAllCap restHas =>
+      exact spineHasCupCapAtoms_cons (Or.inr ⟨hasCapDomArity, hasCapCodArity⟩) restHas
+
+/-- A pure-cup block satisfies the generic cup/cap arity discipline (every atom is a cup, the left disjunct). -/
+theorem spineHasCupCapAtoms_ofAllCupArity
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCup : AllCupArity atoms) : SpineHasCupCapAtoms atoms := by
+  induction pureCup with
+  | nil => intro probeAtom probeMem; nomatch probeMem
+  | cons hasCupDomArity hasCupCodArity _restAllCup restHas =>
+      exact spineHasCupCapAtoms_cons (Or.inl ⟨hasCupDomArity, hasCupCodArity⟩) restHas
+
+/-! ## ★ Piece II in `matchingOf` terms — the unconditional interface Piece I feeds
+
+The shipped Piece II (`sameMatchingValleys_spineTraceEquiv`) wants per-block `.diagram` agreement.  Piece I's
+natural output is per-block `matchingOf` agreement.  This wrapper bridges the two: `arcDiagram_eq_matching`
+converts each block `matchingOf` equality to the `.diagram` shape, and Piece II closes.  UNCONDITIONAL — no
+residual — so the whole-valley split reduces EXACTLY to producing the two per-block `matchingOf` equalities from a
+whole-valley `matchingOf` equality (the standing valley-descent residual, #2185). -/
+
+/-- ★ **Piece II, restated on block `matchingOf` equalities (unconditional).**  Two valleys `capBlock ++ cupBlock`
+whose CAP blocks have equal `matchingOf` at `capBottomCount` and whose CUP blocks have equal `matchingOf` at
+`cupBottomCount` (the mid-width), with the per-block pure arities, boundary chaining, positivity, and length
+agreement, are `SpineTraceEquiv`.  Each block `matchingOf` equality converts to the `.diagram` agreement Piece II
+consumes via `arcDiagram_eq_matching`, then the shipped assembly closes.  This is the clean Piece-I → Piece-II
+handoff interface: the ONLY thing between a whole-valley `matchingOf` equality and `SpineTraceEquiv` is deriving
+the two per-block `matchingOf` equalities (the valley-append split). -/
+theorem valleysWithBlockMatchingEq_spineTraceEquiv
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (capBottomCount cupBottomCount : Nat)
+    (capBlockFirst capBlockSecond cupBlockFirst cupBlockSecond :
+      List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (capPureFirst : AllCapArity capBlockFirst) (capPureSecond : AllCapArity capBlockSecond)
+    (cupPureFirst : AllCupArity cupBlockFirst) (cupPureSecond : AllCupArity cupBlockSecond)
+    (capChainedFirst : SpineBoundaryChained capBottomCount capBlockFirst)
+    (capChainedSecond : SpineBoundaryChained capBottomCount capBlockSecond)
+    (cupChainedFirst : SpineBoundaryChained cupBottomCount cupBlockFirst)
+    (cupChainedSecond : SpineBoundaryChained cupBottomCount cupBlockSecond)
+    (capBottomPositive : 0 < capBottomCount)
+    (cupBottomPositive : 0 < cupBottomCount)
+    (capLengthEq : capBlockFirst.length = capBlockSecond.length)
+    (cupLengthEq : cupBlockFirst.length = cupBlockSecond.length)
+    (capMatchEq : matchingOfSpineList capBottomCount capBlockFirst
+      = matchingOfSpineList capBottomCount capBlockSecond)
+    (cupMatchEq : matchingOfSpineList cupBottomCount cupBlockFirst
+      = matchingOfSpineList cupBottomCount cupBlockSecond) :
+    SpineTraceEquiv adjunctionModeSignature
+      (capBlockFirst ++ cupBlockFirst) (capBlockSecond ++ cupBlockSecond) := by
+  have capDiagramAgree : (arcStructureOfSpineList capBottomCount capBlockFirst).diagram
+      = (arcStructureOfSpineList capBottomCount capBlockSecond).diagram := by
+    rw [arcDiagram_eq_matching capBottomCount capBlockFirst
+        (spineHasCupCapAtoms_ofAllCapArity capBlockFirst capPureFirst) capChainedFirst capBottomPositive,
+      arcDiagram_eq_matching capBottomCount capBlockSecond
+        (spineHasCupCapAtoms_ofAllCapArity capBlockSecond capPureSecond) capChainedSecond capBottomPositive,
+      capMatchEq]
+  have cupDiagramAgree : (arcStructureOfSpineList cupBottomCount cupBlockFirst).diagram
+      = (arcStructureOfSpineList cupBottomCount cupBlockSecond).diagram := by
+    rw [arcDiagram_eq_matching cupBottomCount cupBlockFirst
+        (spineHasCupCapAtoms_ofAllCupArity cupBlockFirst cupPureFirst) cupChainedFirst cupBottomPositive,
+      arcDiagram_eq_matching cupBottomCount cupBlockSecond
+        (spineHasCupCapAtoms_ofAllCupArity cupBlockSecond cupPureSecond) cupChainedSecond cupBottomPositive,
+      cupMatchEq]
+  exact sameMatchingValleys_spineTraceEquiv capBottomCount cupBottomCount
+    capBlockFirst capBlockSecond cupBlockFirst cupBlockSecond
+    capPureFirst capPureSecond cupPureFirst cupPureSecond
+    capChainedFirst capChainedSecond cupChainedFirst cupChainedSecond
+    cupBottomPositive capLengthEq cupLengthEq capDiagramAgree cupDiagramAgree
 
 end FX1Poly.Polygraph
