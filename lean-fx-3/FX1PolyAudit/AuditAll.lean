@@ -118,6 +118,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.DisjointWindowSwap
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPeelFoundations
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPureCupSpine
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPureCupTransfer
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPureCapSpine
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcWindowCommutation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshBlockTransposition
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshSelfSimulation
