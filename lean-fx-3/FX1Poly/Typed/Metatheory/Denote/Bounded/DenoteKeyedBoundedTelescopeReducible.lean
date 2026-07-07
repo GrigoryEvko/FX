@@ -1,6 +1,5 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibleEnv
 import FX1Poly.Typed.Metatheory.Reducibility.Telescope.TelescopeReducible
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedTelescopeReducible
     — the bound-carrying telescope-reducibility relation (motive_2 shape for the grown-FT recursor dispatch)

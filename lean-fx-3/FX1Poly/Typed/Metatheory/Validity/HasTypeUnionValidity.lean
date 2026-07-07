@@ -2,7 +2,6 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionFormationHeadInversion
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
 import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointStep

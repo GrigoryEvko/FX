@@ -1,7 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionAppInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionPathAppInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionRecursiveInversion
-import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
 import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointStep
 

@@ -1,5 +1,4 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedNatCanonicity
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
 /-! # FX1Poly/Typed/NatElimComputingCanonicity
