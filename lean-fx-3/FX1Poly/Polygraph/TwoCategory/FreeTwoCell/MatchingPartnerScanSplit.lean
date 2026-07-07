@@ -174,12 +174,47 @@ theorem findPartnerScan_mapCongr (compositeLinks freshLinks : List (Nat × Nat))
             (fun laterCandidate laterMem =>
               testCorr laterCandidate (List.Mem.tail candidate laterMem))
 
+/-! ## Two-run agreement over a shared candidate list -/
+
+/-- ★ **Two partner scans with pointwise-agreeing whole tests agree.**  Two processing runs (possibly
+different links / boundary-node lists / scanned roots, but the SAME exclude sentinel) whose exclude-and-root
+whole test agrees at every candidate in the list return the same partner index — first hits coincide position
+by position.  This is the scan-level core of the BOTTOM-PREFIX AGREEMENT between a cap block run alone and the
+same cap block run as the bottom half of a whole valley: over the shared bottom-port candidates
+`List.range bottomCount` the two runs' component tests agree (the cup block preserves bottom-bottom
+connectivity), so the two runs' partner scans over the bottom prefix agree. -/
+theorem findPartnerScan_congr_ofTestAgree
+    (linksFirst linksSecond : List (Nat × Nat)) (boundaryFirst boundarySecond : List Nat)
+    (rootFirst rootSecond excludeIndex : Nat) :
+    (candidates : List Nat) →
+    (∀ candidate, candidate ∈ candidates →
+      (candidate != excludeIndex
+          && unionFindRootOf linksFirst (natListGetAt boundaryFirst candidate) == rootFirst)
+        = (candidate != excludeIndex
+            && unionFindRootOf linksSecond (natListGetAt boundarySecond candidate) == rootSecond)) →
+    findPartnerScan linksFirst boundaryFirst rootFirst excludeIndex candidates
+      = findPartnerScan linksSecond boundarySecond rootSecond excludeIndex candidates
+  | [], _ => rfl
+  | candidate :: rest, testAgree => by
+      rw [findPartnerScan_cons linksFirst boundaryFirst rootFirst excludeIndex candidate rest,
+        findPartnerScan_cons linksSecond boundarySecond rootSecond excludeIndex candidate rest,
+        testAgree candidate (List.Mem.head rest)]
+      cases secondTest : (candidate != excludeIndex
+          && unionFindRootOf linksSecond (natListGetAt boundarySecond candidate) == rootSecond) with
+      | true => rfl
+      | false =>
+          exact findPartnerScan_congr_ofTestAgree linksFirst linksSecond boundaryFirst boundarySecond
+            rootFirst rootSecond excludeIndex rest
+            (fun laterCandidate laterMem => testAgree laterCandidate (List.Mem.tail candidate laterMem))
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the partner-scan structure kit (peel campaign H, rung E-3,
 part 2a).**  Skipping a failing head candidate, splitting an appended scan at the segment
-boundary by whether the front finds a partner, and the mapped-scan pointwise congruence
-(first hits correspond under a whole-test correspondence).  What this marker does NOT
+boundary by whether the front finds a partner, the mapped-scan pointwise congruence
+(first hits correspond under a whole-test correspondence), and the two-run agreement over a
+shared candidate list (pointwise-agreeing tests give agreeing scans — the bottom-prefix
+agreement's scan-level core).  What this marker does NOT
 claim: the range-segment interleaving decomposition at the cap head (composite candidates
 = below-window shift-images, the two always-failing window candidates, then at-or-past
 shift-images), the per-candidate test correspondence at the folded states, and the

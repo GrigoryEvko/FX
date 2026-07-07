@@ -16,5 +16,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.findPartnerScan_append_ofFrontFails
 #assert_no_axioms FX1Poly.Polygraph.findPartnerScan_append_ofFoundInFront
 #assert_no_axioms FX1Poly.Polygraph.findPartnerScan_mapCongr
+#assert_no_axioms FX1Poly.Polygraph.findPartnerScan_congr_ofTestAgree
 
 end FX1PolyAudit
