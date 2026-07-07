@@ -76,20 +76,55 @@ theorem findPartnerScan_range_cupWindowSplit
   exact findPartnerScan_mapCongr compositeLinks freshLinks compositeBoundary freshBoundary
     compositeRoot freshRoot freshExclude indexShift (List.range (windowPosition + tailCount)) testCorr
 
+/-! ## Survivor localization — the partner sits in the top segment -/
+
+/-- ★ **A partner scan whose whole bottom-front segment misses drops to the top segment.**  When
+every bottom candidate `0 … bottomCount-1` FAILS the exclude-and-root test (`frontFails` — for a
+through-strand survivor: it shares its component with no other bottom port, the connectivity content
+`processSpine_isSameComponent_bottom_ofAllCupArity` supplies), the partner scan over the whole
+boundary range `List.range (bottomCount + topCount)` equals the scan restricted to the TOP segment
+`(List.range topCount).map (bottomCount + ·)`.  The bottom ports are the fixed `List.range bottomCount`
+prefix of `boundaryNodes` (`rangeSplit` peels it off); the first-hit discipline sails through the
+all-failing front (`findPartnerScan_eqExclude_ofAllFail` + `findPartnerScan_append_ofFrontFails`).
+This is the survivor-partner localization: a survivor's partner is a TOP port, so the cap-side
+restriction only ever re-ranks survivors within the top segment. -/
+theorem findPartnerScan_range_frontSegmentMisses (links : List (Nat × Nat))
+    (boundaryNodes : List Nat) (rootHere excludeIndex : Nat) (bottomCount topCount : Nat)
+    (frontFails : ∀ candidate, candidate ∈ List.range bottomCount →
+      (candidate != excludeIndex
+          && unionFindRootOf links (natListGetAt boundaryNodes candidate) == rootHere) = false) :
+    findPartnerScan links boundaryNodes rootHere excludeIndex (List.range (bottomCount + topCount))
+      = findPartnerScan links boundaryNodes rootHere excludeIndex
+        ((List.range topCount).map (fun offset => bottomCount + offset)) := by
+  rw [rangeSplit bottomCount topCount]
+  exact findPartnerScan_append_ofFrontFails links boundaryNodes rootHere excludeIndex
+    (List.range bottomCount) ((List.range topCount).map (fun offset => bottomCount + offset))
+    (findPartnerScan_eqExclude_ofAllFail links boundaryNodes rootHere excludeIndex
+      (List.range bottomCount) frontFails)
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the single-cup partner-scan window split is ASSEMBLED (scan level).**
-`findPartnerScan_range_cupWindowSplit` threads the four generic interleave pieces
-(`rangeInterleaveAtWindow`, `findPartnerScan_dropMiddle_ofAllFail`, `rangeShiftImageAtWindow`,
-`findPartnerScan_mapCongr`) into one equation: the composite (whole-valley) partner scan is the index
-shift of the fresh (mid-state) partner scan.  This discharges the "assembled … partner leg" the
-`MatchingRangeInterleave` and `MatchingPartnerScanSplit` markers flag as unclaimed — for the CUP case,
-at the scan level.  What this marker does NOT claim: the two remaining hypotheses discharged at the
-FOLDED cup state — `windowPairFails` (the two fresh legs actually miss the survivor's component
-through the whole cup fold) and `testCorr` (the composite/fresh root correspondence at every folded
-state).  Those are the standing "mid-state rigidity / index-shift bijection" residual (the
-valley-descent beam #2185); nor the multi-cup block fold (composing the per-cup shifts and threading
-the two provisos through each cup).  No gate flag is flipped.  `= true`. -/
+/-- **Honesty marker — the single-cup partner-scan window split + survivor localization, ASSEMBLED
+(scan level).**  Landed here, both zero-axiom:
+
+  * `findPartnerScan_range_cupWindowSplit` threads the four generic interleave pieces
+    (`rangeInterleaveAtWindow`, `findPartnerScan_dropMiddle_ofAllFail`, `rangeShiftImageAtWindow`,
+    `findPartnerScan_mapCongr`) into one equation: the composite (whole-valley) partner scan is the
+    index shift of the fresh (mid-state) partner scan — the CUP mirror of the cap-window interleave,
+    at the scan level.
+
+  * `findPartnerScan_range_frontSegmentMisses` localizes a survivor's partner to the TOP segment: when
+    the whole bottom-front fails, the scan over the whole boundary range drops to the top-index
+    segment (`rangeSplit` + `findPartnerScan_append_ofFrontFails`).
+
+Together they discharge the "assembled … partner leg" the `MatchingRangeInterleave` and
+`MatchingPartnerScanSplit` markers flag as unclaimed — for the CUP case, at the scan level.  What this
+marker does NOT claim: the semantic hypotheses discharged at the FOLDED cup state — `windowPairFails`
+(the two fresh legs actually miss the survivor's component through the whole cup fold), `testCorr` (the
+composite/fresh root correspondence at every folded state), and `frontFails` (a survivor shares its
+component with no other bottom port).  Those are the standing "mid-state rigidity / index-shift
+bijection" residual (the valley-descent beam #2185); nor the multi-cup block fold (composing the
+per-cup shifts and threading the provisos through each cup).  No gate flag is flipped.  `= true`. -/
 def fxMode_hasCupWindowScanSplit : Bool := true
 
 end FX1Poly.Polygraph

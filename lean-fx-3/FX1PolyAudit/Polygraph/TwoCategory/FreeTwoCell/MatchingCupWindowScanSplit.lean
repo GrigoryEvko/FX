@@ -12,5 +12,6 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.findPartnerScan_range_cupWindowSplit
+#assert_no_axioms FX1Poly.Polygraph.findPartnerScan_range_frontSegmentMisses
 
 end FX1PolyAudit
