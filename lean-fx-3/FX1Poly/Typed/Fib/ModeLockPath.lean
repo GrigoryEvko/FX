@@ -212,4 +212,67 @@ theorem isAccessibleAtModality_eq_pathEq {profile : PolyProfile} {scope : Nat}
   | fibrant => exact isFibrantlyAccessibleAt_eq_identityPathEq context index
   | dimensional => exact isDimensionallyAccessibleAt_eq_generatorPathEq context index
 
+/-! ## A1-RETIRE: the retraction — the bespoke enum is RECOVERED from its mode-axis 1-cell
+
+The embedding `obligationModalityToPath` is injective (`obligationModalityToPath_injective`), i.e. a
+MONOMORPHISM.  This section upgrades that to a genuine RETRACT: a computable inverse `pathToObligationModality`
+on the image, with `pathToObligationModality ∘ obligationModalityToPath = id`.  A split monomorphism loses NO
+information in EITHER direction on the staged image, which is the precise sense in which the 2-element enum is
+RETIRED onto the free-modality 1-cells: the discipline can be carried entirely on the mode axis (a `ModalityPath`)
+and the enum re-derived on demand.  The retraction reads a path's HEAD — the identity path is `fibrant`, any
+generator-headed path is `dimensional` (over the affine graph every non-identity 1-cell is one lock application,
+so length ≥ 1 is exactly `dimensional`). -/
+
+/-- ★ **The retraction (A1-RETIRE).**  Recover the bespoke `ObligationModality` from a mode-axis 1-cell over the
+affine dimension graph: the IDENTITY path (`nil`, no lock) is `fibrant`; any generator-headed path (`cons`, a
+lock application) is `dimensional`.  Total structural match on `ModalityPath` — propext-free. -/
+def pathToObligationModality :
+    ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode → ObligationModality
+  | .nil _ => .fibrant
+  | .cons _ _ => .dimensional
+
+/-- ★ **The embedding is a SPLIT MONO (faithful retract).**  `pathToObligationModality` is a left inverse of
+`obligationModalityToPath`: recovering the enum from its staged path returns the original modality.  Together
+with `obligationModalityToPath_injective` this makes the enum-to-path translation a genuine retract — the enum
+carries no information beyond its image among the affine 1-cells, so it may be RETIRED onto the mode axis. -/
+theorem pathToObligationModality_obligationModalityToPath (modality : ObligationModality) :
+    pathToObligationModality (obligationModalityToPath modality) = modality := by
+  cases modality <;> rfl
+
+/-- The staged image is length-bounded: every `obligationModalityToPath` value is a 1-cell of length at most one
+(the identity path or a single lock application).  So the bespoke enum populates exactly the affine graph's
+1-cells of word length `≤ 1` — the retirement's image characterization. -/
+theorem obligationModalityToPath_length_le_one (modality : ObligationModality) :
+    (obligationModalityToPath modality).length ≤ 1 := by
+  cases modality with
+  | fibrant => exact Nat.zero_le 1
+  | dimensional => exact Nat.le_refl 1
+
+/-! ## A1-RETIRE: the RETIRED accessibility function — the discipline carried on the mode axis
+
+`isAccessibleViaModeAxis` is the mode-axis-native replacement for the engine's bespoke
+`TypingContext.isAccessibleAtModality`: it decides use-site accessibility purely by comparing 1-cells over the
+affine dimension graph — the USE-modality path (`obligationModalityToPath modality`) against the BINDING-modality
+path (`bindingModalityPath context index`), decided by `affineModalityPathDecidableEq`.  The A1-MODE-SEAL
+(`isAccessibleAtModality_eq_pathEq`) proves the enum-based engine check EQUALS this mode-axis function ON THE
+NOSE, so consumers may be routed through `isAccessibleViaModeAxis` and the enum retired to a mere finite index
+into the two staged 1-cells.  This is the Route-B retirement: no consumer proof changes (the two functions are
+provably equal), yet the discipline now lives on the real free-modality axis. -/
+
+/-- ★ **The RETIRED accessibility check.**  Decide whether the variable `index` is usable at `modality` purely on
+the mode axis: the use-modality 1-cell equals the binding-modality 1-cell over the affine dimension graph.
+The mode-axis-native replacement for the bespoke `TypingContext.isAccessibleAtModality`. -/
+def isAccessibleViaModeAxis {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality) : Bool :=
+  decide (obligationModalityToPath modality = bindingModalityPath context index)
+
+/-- ★ **The engine check IS the retired mode-axis check.**  `TypingContext.isAccessibleAtModality` equals
+`isAccessibleViaModeAxis` on the nose (the A1-MODE-SEAL, repackaged as a function equation).  So every consumer
+of the bespoke enum-based accessibility can be routed through the mode-axis 1-cell comparison with NO change to
+its proof — the enum is retired to an index into the affine graph's length-`≤ 1` 1-cells. -/
+theorem isAccessibleAtModality_eq_isAccessibleViaModeAxis {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality) :
+    context.isAccessibleAtModality index modality = isAccessibleViaModeAxis context index modality :=
+  isAccessibleAtModality_eq_pathEq context index modality
+
 end FX1Poly.Core.Fib

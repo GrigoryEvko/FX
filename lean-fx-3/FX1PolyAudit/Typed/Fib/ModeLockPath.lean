@@ -25,5 +25,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Fib.isFibrantlyAccessibleAt_eq_identityPathEq
 #assert_no_axioms FX1Poly.Core.Fib.isDimensionallyAccessibleAt_eq_generatorPathEq
 #assert_no_axioms FX1Poly.Core.Fib.isAccessibleAtModality_eq_pathEq
+#assert_no_axioms FX1Poly.Core.Fib.pathToObligationModality
+#assert_no_axioms FX1Poly.Core.Fib.pathToObligationModality_obligationModalityToPath
+#assert_no_axioms FX1Poly.Core.Fib.obligationModalityToPath_length_le_one
+#assert_no_axioms FX1Poly.Core.Fib.isAccessibleViaModeAxis
+#assert_no_axioms FX1Poly.Core.Fib.isAccessibleAtModality_eq_isAccessibleViaModeAxis
 
 end FX1PolyAudit

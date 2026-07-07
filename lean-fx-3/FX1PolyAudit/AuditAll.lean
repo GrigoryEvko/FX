@@ -91,6 +91,7 @@ import FX1PolyAudit.Tier0.Context.Instances.ThinScope.FxThinScopeRMC
 import FX1PolyAudit.Tier0.Context.InternalSconing
 import FX1PolyAudit.Tier0.Context.IsomorphismCategorical
 import FX1PolyAudit.Tier0.Context.ModalLock
+import FX1PolyAudit.Tier0.Context.WeakeningModeAxis
 import FX1PolyAudit.Tier0.Context.MultimodalNormalization
 import FX1PolyAudit.Tier0.Context.PresheafModel
 import FX1PolyAudit.Tier0.Context.PushoutContexts
@@ -652,6 +653,8 @@ import FX1PolyAudit.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
 import FX1PolyAudit.Core.Substrate.Cell.EraseToRoseRenameInvariant
 import FX1PolyAudit.Typed.Corpus.Smoke.RawIotaEtaOperationalSN
 import FX1PolyAudit.Typed.Metatheory.Canonicity.Core.ConvergentCanonicityBoundary
+import FX1PolyAudit.Typed.Fib.ModeLockPath
+import FX1PolyAudit.Typed.Fib.ModedLockContext
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
