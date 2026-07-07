@@ -1,6 +1,8 @@
 import FX1PolyAudit.Corpus.MetatheoryFuzz
 import FX1Poly.Typed.Corpus.Progress.GrownClosedProgressByClassifier
 import FX1Poly.Typed.Metatheory.Normalizer.TypedNormalizer
+import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
+import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Typed/LambdaValueFuzzFamily — a §27.3-L2 fuzz family that evaluates to a FUNCTION value
@@ -158,7 +160,8 @@ theorem metatheoryFuzzLambdaFamily_progress {profile : PolyProfile} (n : Nat) :
 redex-bearing argument. -/
 theorem metatheoryFuzzLambdaFamily_stronglyNormalizing {profile : PolyProfile} (n : Nat) :
     StepStar.IsStronglyNormalizing (metatheoryFuzzLambdaFamily n) :=
-  HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed
-    (metatheoryFuzzLambdaFamily_typed (profile := profile) n)
+  HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+    ((metatheoryFuzzLambdaFamily_typed (profile := profile) n).ofGrownReflected
+      isLockFreeContext_empty)
 
 end FX1Poly.Typed

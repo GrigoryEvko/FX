@@ -1,5 +1,7 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Core.GrownRigidityCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.ConsistencyTargetSignature
+import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
+import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
 
 /-! # FX1Poly/Typed/MilestoneASpineValueLayer
     — the Milestone-A VALUE-LAYER spine: SN + consistency + value-layer canonicity bundled, zero-axiom
@@ -82,7 +84,8 @@ the joint-decidability apex the named remaining frontier (see the file docstring
 theorem milestoneAValueLayerSpineHolds {profile : PolyProfile} :
     MilestoneAValueLayerSpine profile where
   stronglyNormalizing typed :=
-    HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed
+    HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+      (typed.ofGrownReflected isLockFreeContext_empty)
   consistency typed := emptyConsistencyViaCandidateBridge _ typed
   boolCanonicity typed := boolCanonicityViaGrownRigidity typed
 

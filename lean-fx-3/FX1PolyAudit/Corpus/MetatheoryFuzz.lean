@@ -1,6 +1,8 @@
 import FX1Poly.Typed.Corpus.Smoke.GrownBetaRedexInAction
 import FX1Poly.Typed.Corpus.Progress.GrownTypeSafety
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalFormsNonVacuity
+import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
+import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Typed/MetatheoryFuzz
@@ -118,8 +120,9 @@ reducible members are SN; SN-for-well-typed factors as well-typed ⟹ reducible 
 theorem metatheoryFuzzFamily_stronglyNormalizing {profile : PolyProfile} : ∀ n,
     StepStar.IsStronglyNormalizing (metatheoryFuzzFamily n) :=
   fun n =>
-    HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed
-      (metatheoryFuzzFamily_typed (profile := profile) n)
+    HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+      ((metatheoryFuzzFamily_typed (profile := profile) n).ofGrownReflected
+        isLockFreeContext_empty)
 
 /-! ## Concrete evaluation results -/
 
@@ -258,8 +261,9 @@ theorem metatheoryFuzzConstantFamily_progress {profile : PolyProfile} : ∀ n,
 theorem metatheoryFuzzConstantFamily_stronglyNormalizing {profile : PolyProfile} : ∀ n,
     StepStar.IsStronglyNormalizing (metatheoryFuzzConstantFamily n) :=
   fun n =>
-    HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed
-      (metatheoryFuzzConstantFamily_typed (profile := profile) n)
+    HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+      ((metatheoryFuzzConstantFamily_typed (profile := profile) n).ofGrownReflected
+        isLockFreeContext_empty)
 
 /-- **The whole constant family evaluates to `Type@0`.**  Each successor reaches `Type@0` in a SINGLE β-step
 (`metatheoryFuzzConstantFamily_betaStep`), the base reflexively — the constant tower's one-step evaluation,

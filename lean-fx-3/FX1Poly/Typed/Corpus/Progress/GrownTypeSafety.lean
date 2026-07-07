@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
-import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
+import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
+import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Core.Rewriting.Normalize.NormalFormUnique
 
@@ -108,7 +109,8 @@ theorem HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar {profile : PolyProf
     ∃ value : RawTerm 0,
       StepStar subject value ∧ RawTerm.isStepNormalForm value ∧ RawTerm.IsGrownCanonicalHead value := by
   have terminates : IsStronglyNormalizing subject :=
-    HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed
+    HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+      (typed.ofGrownReflected isLockFreeContext_empty)
   obtain ⟨value, reaches, valueNormal⟩ := exists_normalForm_of_isStronglyNormalizing terminates
   refine ⟨value, reaches, valueNormal, ?canonicalHead⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
@@ -126,7 +128,8 @@ theorem HasTypeDescPi.closedHasUniqueNormalForm {profile : PolyProfile} {subject
       ∀ otherForm : RawTerm 0,
         StepStar subject otherForm → RawTerm.isStepNormalForm otherForm → otherForm = value :=
   exists_unique_normalForm_of_isStronglyNormalizing
-    (HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed)
+    (HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+      (typed.ofGrownReflected isLockFreeContext_empty))
 
 /-- **Type safety + determinism (conditional on SR-along-`↝*`).**  The unique normal form of a closed grown-typed
 term is moreover a canonical VALUE: the subject reaches a UNIQUE normal form (determinism, by confluence + SN)
@@ -146,7 +149,8 @@ theorem HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar {profile : Po
         StepStar subject otherForm → RawTerm.isStepNormalForm otherForm → otherForm = value := by
   obtain ⟨value, ⟨reaches, valueNormal⟩, valueUnique⟩ :=
     exists_unique_normalForm_of_isStronglyNormalizing
-      (HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed)
+      (HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+      (typed.ofGrownReflected isLockFreeContext_empty))
   refine ⟨value, ⟨reaches, valueNormal, ?canonicalHead⟩, valueUnique⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
     valueNormal (fun emptyIndex => emptyIndex.elim0)

@@ -2,6 +2,8 @@ import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ConvergentCanonicityBoundary
 import FX1Poly.Typed.Metatheory.Normalizer.CertifiedWordReductionTermination
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
+import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
+import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeShape
 
@@ -83,15 +85,16 @@ structure ThirdWayConsistencyBoundary (profile : PolyProfile) : Prop where
     (∀ reduct, ¬ IotaEtaStep closedTerm reduct) ∧ Step closedTerm value
 
 /-- **The boundary holds** — each field is the shipped named theorem:
-`noClosedNormalTermAtEmptyType` / `exists_normalForm_of_isStronglyNormalizing` over
-`stronglyNormalizingOfWfContextDesc` / `convergentNormalFormNeedNotBeCanonical`. -/
+`noClosedNormalTermAtEmptyType` / `exists_normalForm_of_isStronglyNormalizing` over the native
+`stronglyNormalizingOfWfContextUnion` (via `ofGrownReflected`) / `convergentNormalFormNeedNotBeCanonical`. -/
 theorem thirdWayConsistencyBoundaryHolds {profile : PolyProfile} :
     ThirdWayConsistencyBoundary profile where
   taitFreeNormalFormConsistency typed normal :=
     HasTypeDescPi.noClosedNormalTermAtEmptyType typed normal
   taitImportedNormalization typed :=
     exists_normalForm_of_isStronglyNormalizing
-      (HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed)
+      (HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
+        (typed.ofGrownReflected isLockFreeContext_empty))
   betaNormalityGap := convergentNormalFormNeedNotBeCanonical
 
 /-- **Third-way consistency, assembled THROUGH the boundary** — normalize via the Tait-imported
