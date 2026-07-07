@@ -631,6 +631,7 @@ import FX1PolyAudit.AuditFX0Poly
 import FX1PolyAudit.Typed.CellRuleFibration
 import FX1PolyAudit.CapstoneSignoff
 import FX1PolyAudit.Polygraph.Steiner.AugmentedDirectedComplex
+import FX1PolyAudit.Polygraph.Steiner.CellCoordinates
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
