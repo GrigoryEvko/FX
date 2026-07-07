@@ -23,6 +23,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulExactRespectsIsWithinBoundConstantLeft
 #assert_no_axioms FX1Poly.ComputerAlgebra.natRationalZeroDenotesZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.natScaleRationalDenotesScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.scalarMulRealExactBoundOfNonNegative
 #assert_no_axioms FX1Poly.ComputerAlgebra.meshWidth
 #assert_no_axioms FX1Poly.ComputerAlgebra.samplePoint
 #assert_no_axioms FX1Poly.ComputerAlgebra.cellCountMeshWidthDenotesSame

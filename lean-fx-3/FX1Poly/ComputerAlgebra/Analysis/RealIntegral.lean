@@ -1,5 +1,6 @@
 import FX1Poly.ComputerAlgebra.Analysis.RealFiniteSum
 import FX1Poly.ComputerAlgebra.Analysis.RealContinuity
+import FX1Poly.ComputerAlgebra.Analysis.RealDerivative
 
 /-! # The constructive integral — Riemann sums of a uniformly continuous map
     (ANALYSIS-INTEGRAL-1)
@@ -232,6 +233,167 @@ theorem natScaleRationalDenotesScale (count : Nat) (bound : RationalPair) :
               (mulExactRightDistrib bound (natRational count) oneRational)
               (addExactCongrRight (mulExact (natRational count) bound)
                 (mulExactOneLeft bound)))))
+
+/-! ## The exact nonnegative-constant real-scale bridge (B1)
+
+Multiplying a real-level distance by a NONNEGATIVE rational constant scales the
+bound EXACTLY — `IsWithinRealBound x y q` lifts to `IsWithinRealBound (c·x)(c·y)
+(c·q)`.  The shipped `mulRealRespectsIsWithinRealBound` scales by an INTEGER
+magnitude ceiling, which blows up the mesh/count cancellation; this bridge keeps
+the exact `c·q` by feeding the ℚ product-difference law the constant as its own
+magnitude (§`mulExactRespectsIsWithinBoundConstantLeft`).
+
+Both products share the SAME left factor `constantReal c` but sample the right
+factor at factor-dependent scaled indices, so the proof is one slack closure:
+per shared index, chain both products to the deep slack index by their own
+regularity; there the right factors bridge their sampling mismatch by regularity
+onto the fixed `bound` plus a vanishing `4/(slack+1)`; the exact ℚ scaling lands
+`c·(bound + 4/slack)`; the constant slack piece `c·4/slack` relaxes to the
+integer-ceiling `(M·4)/slack` (harmless — it VANISHES), and the chain reshapes
+onto `c·bound + 2/(shared+1)` plus that vanishing slack. -/
+
+/-- **Exact nonnegative-constant real-scale** — a real-level within-bound pair,
+scaled by a nonnegative rational constant, lands within the EXACTLY scaled
+bound `c · bound`. -/
+theorem scalarMulRealExactBoundOfNonNegative {constant : RationalPair}
+    (isConstantNonNegative : IsNonNegative constant)
+    {leftValue rightValue : RegularReal} {bound : RationalPair}
+    (isWithin : IsWithinRealBound leftValue rightValue bound)
+    (isBoundNonNegative : IsNonNegative bound) :
+    IsWithinRealBound (mulReal (constantReal constant) leftValue)
+      (mulReal (constantReal constant) rightValue)
+      (mulExact constant bound) :=
+  let constantFactor := constantReal constant
+  let magnitudeNumerator := canonicalBoundNumerator constantFactor
+  have constantMagnitude :
+      IsMagnitudeWithin constant (ratioOfNatSucc magnitudeNumerator 0) :=
+    approximationIsWithinCanonicalBound constantFactor 0
+  fun sharedIndex =>
+    isWithinBoundOfForallSlack
+      (slackNumerator := 2 + magnitudeNumerator * 4)
+      (fun slackIndex =>
+        let oldSampling := productSamplingIndex constantFactor leftValue slackIndex
+        let newSampling := productSamplingIndex constantFactor rightValue slackIndex
+        let slackTerm := ratioOfNatSucc (magnitudeNumerator * 4) slackIndex
+        let middleBound := mulExact constant (addExact bound (ratioOfNatSucc 4 slackIndex))
+        have tailBoundToFourSlack :
+            LessEqualAs
+              (addExact
+                (addExact (reciprocalOfSucc oldSampling)
+                  (reciprocalOfSucc newSampling))
+                (ratioOfNatSucc 2 newSampling))
+              (ratioOfNatSucc 4 slackIndex) :=
+          lessEqualAsCongrRight
+            (denotesSameAsTrans
+              (addExactRespectsDenotesSameAs
+                (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+                (denotesSameAsRefl (ratioOfNatSucc 2 slackIndex)))
+              (ratioOfNatSuccSumDenotesSame 2 2 slackIndex))
+            (addExactMonotone
+              (addExactMonotone
+                (ratioOfNatSuccAntitoneDenominator 1
+                  (natSelfLeBoundScaledIndex
+                    (sharedBoundNumeratorPredecessor constantFactor leftValue)
+                    slackIndex))
+                (ratioOfNatSuccAntitoneDenominator 1
+                  (natSelfLeBoundScaledIndex
+                    (sharedBoundNumeratorPredecessor constantFactor rightValue)
+                    slackIndex)))
+              (ratioOfNatSuccAntitoneDenominator 2
+                (natSelfLeBoundScaledIndex
+                  (sharedBoundNumeratorPredecessor constantFactor rightValue)
+                  slackIndex)))
+        have factorsDiffer :
+            IsWithinBound (leftValue.approximation oldSampling)
+              (rightValue.approximation newSampling)
+              (addExact bound (ratioOfNatSucc 4 slackIndex)) :=
+          isWithinBoundOfBoundLessEqual
+            (lessEqualAsCongrLeft
+              (denotesSameAsSymm
+                (addExactSwapOuterIntoInner
+                  (addExact (reciprocalOfSucc oldSampling)
+                    (reciprocalOfSucc newSampling))
+                  bound (ratioOfNatSucc 2 newSampling)))
+              (addExactMonotone (lessEqualAsRefl bound) tailBoundToFourSlack))
+            (isWithinBoundTriangle
+              (leftValue.isRegular oldSampling newSampling)
+              (isWithin newSampling))
+        have productsDifferAtSlack :
+            IsWithinBound
+              ((mulReal constantFactor leftValue).approximation slackIndex)
+              ((mulReal constantFactor rightValue).approximation slackIndex)
+              middleBound :=
+          mulExactRespectsIsWithinBoundConstantLeft isConstantNonNegative
+            factorsDiffer
+            (addExactIsNonNegative isBoundNonNegative
+              (ratioOfNatSuccIsNonNegative 4 slackIndex))
+        have middleRelaxes :
+            LessEqualAs middleBound
+              (addExact (mulExact constant bound) slackTerm) :=
+          lessEqualAsCongrLeft
+            (denotesSameAsSymm
+              (mulExactLeftDistrib constant bound (ratioOfNatSucc 4 slackIndex)))
+            (addExactMonotone (lessEqualAsRefl (mulExact constant bound))
+              (lessEqualAsCongrRight
+                (mulExactRatioRatioDenotesSame magnitudeNumerator 4 slackIndex)
+                (mulExactMonotoneOfNonNegative constantMagnitude.left
+                  (lessEqualAsRefl (ratioOfNatSucc 4 slackIndex))
+                  (ratioOfNatSuccIsNonNegative 4 slackIndex)
+                  (ratioOfNatSuccIsNonNegative magnitudeNumerator 0))))
+        have reshapeToGathered :
+            DenotesSameAs
+              (addExact
+                (addExact (addExact (reciprocalOfSucc sharedIndex)
+                  (reciprocalOfSucc slackIndex)) middleBound)
+                (addExact (reciprocalOfSucc slackIndex)
+                  (reciprocalOfSucc sharedIndex)))
+              (addExact (ratioOfNatSucc 2 sharedIndex)
+                (addExact (ratioOfNatSucc 2 slackIndex) middleBound)) :=
+          denotesSameAsTrans
+            (chainedSlackBoundReshapesDenotesSame (reciprocalOfSucc sharedIndex)
+              (reciprocalOfSucc slackIndex) middleBound)
+            (addExactRespectsDenotesSameAs
+              (ratioOfNatSuccSumDenotesSame 1 1 sharedIndex)
+              (addExactRespectsDenotesSameAs
+                (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+                (denotesSameAsRefl middleBound)))
+        have gatheredToTarget :
+            DenotesSameAs
+              (addExact (ratioOfNatSucc 2 sharedIndex)
+                (addExact (ratioOfNatSucc 2 slackIndex)
+                  (addExact (mulExact constant bound) slackTerm)))
+              (addExact (addExact (mulExact constant bound)
+                (ratioOfNatSucc 2 sharedIndex))
+                (ratioOfNatSucc (2 + magnitudeNumerator * 4) slackIndex)) :=
+          denotesSameAsTrans
+            (addExactGatherDenotesSame (ratioOfNatSucc 2 sharedIndex)
+              (ratioOfNatSucc 2 slackIndex) (mulExact constant bound) slackTerm)
+            (addExactRespectsDenotesSameAs
+              (denotesSameAsRefl
+                (addExact (mulExact constant bound) (ratioOfNatSucc 2 sharedIndex)))
+              (ratioOfNatSuccSumDenotesSame 2 (magnitudeNumerator * 4) slackIndex))
+        have boundLessEqual :
+            LessEqualAs
+              (addExact
+                (addExact (addExact (reciprocalOfSucc sharedIndex)
+                  (reciprocalOfSucc slackIndex)) middleBound)
+                (addExact (reciprocalOfSucc slackIndex)
+                  (reciprocalOfSucc sharedIndex)))
+              (addExact (addExact (mulExact constant bound)
+                (ratioOfNatSucc 2 sharedIndex))
+                (ratioOfNatSucc (2 + magnitudeNumerator * 4) slackIndex)) :=
+          lessEqualAsCongrLeft (denotesSameAsSymm reshapeToGathered)
+            (lessEqualAsCongrRight gatheredToTarget
+              (addExactMonotone
+                (lessEqualAsRefl (ratioOfNatSucc 2 sharedIndex))
+                (addExactMonotone
+                  (lessEqualAsRefl (ratioOfNatSucc 2 slackIndex)) middleRelaxes)))
+        isWithinBoundOfBoundLessEqual boundLessEqual
+          (isWithinBoundTriangle
+            (isWithinBoundTriangle
+              ((mulReal constantFactor leftValue).isRegular sharedIndex slackIndex)
+              productsDifferAtSlack)
+            ((mulReal constantFactor rightValue).isRegular slackIndex sharedIndex)))
 
 /-! ## The Riemann sum functional -/
 
