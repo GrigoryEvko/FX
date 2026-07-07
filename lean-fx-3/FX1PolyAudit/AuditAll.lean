@@ -16,6 +16,8 @@ import FX1PolyAudit.ComputerAlgebra.Number.IntCancellation
 import FX1PolyAudit.ComputerAlgebra.Number.IntToNatCycle
 import FX1PolyAudit.ComputerAlgebra.Number.IntGapArithmetic
 import FX1PolyAudit.ComputerAlgebra.Number.IntExactDivision
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealRing
+import FX1PolyAudit.ComputerAlgebra.Number.ComplexReal
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 import FX1PolyAudit.TypeAxisLedger
 import FX1PolyAudit.Tier0.Context.AxisObligation

@@ -39,8 +39,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.recipSampleDenotesGridSquare
 #assert_no_axioms FX1Poly.ComputerAlgebra.reciprocalDenotesGridSum
 #assert_no_axioms FX1Poly.ComputerAlgebra.IsNonNegativeReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtApproxPairDifferenceBounded
 #assert_no_axioms FX1Poly.ComputerAlgebra.sqrtRealApproximationDifferenceBounded
 #assert_no_axioms FX1Poly.ComputerAlgebra.sqrtRealApproximationIsRegular
 #assert_no_axioms FX1Poly.ComputerAlgebra.sqrtReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.isWithinBoundOfBetweenSpan
+#assert_no_axioms FX1Poly.ComputerAlgebra.negExactNonPositiveOfNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtApproxSquareWithinRadicand
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtRealSquareDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtRealRespectsDenotesSame
 
 end FX1PolyAudit

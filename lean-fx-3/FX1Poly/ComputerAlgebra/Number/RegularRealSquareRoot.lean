@@ -481,22 +481,28 @@ nonnegative.  The argument-side hypothesis the square brackets consume. -/
 def IsNonNegativeReal (value : RegularReal) : Prop :=
   ∀ index : Nat, IsNonNegative (value.approximation index)
 
-/-- **The one-sided √-regularity** (route B): `s_i − s_j ≤ 1/(i+1) + 1/(j+1)`.
-Chain `s_i² ≤ q_i ≤ q_j + drift ≤ (s_j + gridStep)² + gridSum² ≤ (s_j + budget)²`
-then reflect and shunt; the two-sided `IsWithinBound` is this with `i, j`
-swapped. -/
-theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
-    (isNonNegativeReal : IsNonNegativeReal value) (firstIndex secondIndex : Nat) :
+/-- **The one-sided √-regularity, sample-parametric** (route B): the difference
+bound depends on `value` through ONLY the two nonnegative samples and their
+input regularity, so lifting those three references to parameters recovers BOTH
+the intra-real regularity (same real, two indices) AND the cross-real congruence
+half (two reals, one shared index).  Chain
+`s_i² ≤ q_i ≤ q_j + drift ≤ (s_j + gridStep)² + gridSum² ≤ (s_j + budget)²`
+then reflect and shunt. -/
+theorem sqrtApproxPairDifferenceBounded {sampleFirst sampleSecond : RationalPair}
+    (isSampleFirstNonNeg : IsNonNegative sampleFirst)
+    (isSampleSecondNonNeg : IsNonNegative sampleSecond)
+    (firstIndex secondIndex : Nat)
+    (inputRegular : IsWithinBound sampleFirst sampleSecond
+      (addExact (reciprocalOfSucc (sqrtSampleIndex firstIndex))
+        (reciprocalOfSucc (sqrtSampleIndex secondIndex)))) :
     LessEqualAs
-      (subExact (sqrtRealApproximation value firstIndex)
-        (sqrtRealApproximation value secondIndex))
+      (subExact (rationalSqrtApprox sampleFirst (sqrtGridIndex firstIndex))
+        (rationalSqrtApprox sampleSecond (sqrtGridIndex secondIndex)))
       (addExact (reciprocalOfSucc firstIndex) (reciprocalOfSucc secondIndex)) :=
   let gridStepFirst := reciprocalOfSucc (sqrtGridIndex firstIndex)
   let gridStepSecond := reciprocalOfSucc (sqrtGridIndex secondIndex)
-  let rootFirst := sqrtRealApproximation value firstIndex
-  let rootSecond := sqrtRealApproximation value secondIndex
-  let sampleFirst := value.approximation (sqrtSampleIndex firstIndex)
-  let sampleSecond := value.approximation (sqrtSampleIndex secondIndex)
+  let rootFirst := rationalSqrtApprox sampleFirst (sqrtGridIndex firstIndex)
+  let rootSecond := rationalSqrtApprox sampleSecond (sqrtGridIndex secondIndex)
   let inputBound := addExact (reciprocalOfSucc (sqrtSampleIndex firstIndex))
     (reciprocalOfSucc (sqrtSampleIndex secondIndex))
   let successorRoot := addExact rootSecond gridStepSecond
@@ -504,10 +510,6 @@ theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
     addExact (addExact gridStepFirst gridStepFirst) gridStepSecond
   let budgetHalf := addExact (addExact gridStepFirst gridStepFirst)
     (addExact gridStepSecond gridStepSecond)
-  let isSampleFirstNonNeg : IsNonNegative sampleFirst :=
-    isNonNegativeReal (sqrtSampleIndex firstIndex)
-  let isSampleSecondNonNeg : IsNonNegative sampleSecond :=
-    isNonNegativeReal (sqrtSampleIndex secondIndex)
   let isRootSecondNonNeg : IsNonNegative rootSecond :=
     rationalSqrtApproxIsNonNegative sampleSecond (sqrtGridIndex secondIndex)
   let isGridFirstNonNeg : IsNonNegative gridStepFirst :=
@@ -543,8 +545,6 @@ theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
       (mulExactRespectsDenotesSameAs successorToRoot successorToRoot)
       (rationalSqrtApproxSuccSqGe (sqrtGridIndex secondIndex)
         isSampleSecondNonNeg)
-  let inputRegular : IsWithinBound sampleFirst sampleSecond inputBound :=
-    value.isRegular (sqrtSampleIndex firstIndex) (sqrtSampleIndex secondIndex)
   let sampleFirstShifted :
       LessEqualAs sampleFirst (addExact sampleSecond inputBound) :=
     lessEqualAsAddOfSubLessEqual inputRegular.left
@@ -615,6 +615,20 @@ theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
         (reciprocalDenotesGridSum secondIndex)))
     differenceBelowBudgetHalf
 
+/-- **The one-sided √-regularity** (route B), same real at two indices — the
+sample-parametric lemma fed `value`'s two samples and their input regularity. -/
+theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
+    (isNonNegativeReal : IsNonNegativeReal value) (firstIndex secondIndex : Nat) :
+    LessEqualAs
+      (subExact (sqrtRealApproximation value firstIndex)
+        (sqrtRealApproximation value secondIndex))
+      (addExact (reciprocalOfSucc firstIndex) (reciprocalOfSucc secondIndex)) :=
+  sqrtApproxPairDifferenceBounded
+    (isNonNegativeReal (sqrtSampleIndex firstIndex))
+    (isNonNegativeReal (sqrtSampleIndex secondIndex))
+    firstIndex secondIndex
+    (value.isRegular (sqrtSampleIndex firstIndex) (sqrtSampleIndex secondIndex))
+
 /-- **The √-approximation sequence is regular** — the two-sided bound from the
 one-sided route-B lemma and its index swap. -/
 theorem sqrtRealApproximationIsRegular {value : RegularReal}
@@ -635,5 +649,292 @@ def sqrtReal (value : RegularReal) (isNonNegativeReal : IsNonNegativeReal value)
     RegularReal :=
   { approximation := sqrtRealApproximation value
     isRegular := sqrtRealApproximationIsRegular isNonNegativeReal }
+
+/-! ## The square law (NUM-R-SQRT brick 7)
+
+`(√a)² = a` on the real setoid.  There is no residual analytic wall: the whole
+argument re-uses the two shipped square brackets and the shipped product-difference
+laws.  The one genuinely new brick is the LOCAL SQUARING TOLERANCE — at each index
+the squared approximant sits within a reciprocal-scaled tolerance of the radicand
+because the interval `[s², (s+grid)²]` that traps the radicand has width bounded by
+`2·magnitude·grid` through the mixed product `s·(s+grid)`.  The assembly is the
+`mulRealRespectsDenotesSame` slack-closure skeleton: the product samples at its own
+scaled index and `√a` re-samples at the quadratic depth, but BOTH sampling
+mismatches are absorbed by the two regularity bridges, never needing any index to
+coincide. -/
+
+/-- A value trapped between `low` and `high` sits within any bound that spans the
+whole `[low, high]` interval — the low endpoint underruns it nonpositively and the
+high endpoint caps the overrun. -/
+theorem isWithinBoundOfBetweenSpan {lowValue midValue highValue bound : RationalPair}
+    (isLowBelowMid : LessEqualAs lowValue midValue)
+    (isMidBelowHigh : LessEqualAs midValue highValue)
+    (spanWithin : IsWithinBound highValue lowValue bound)
+    (isBoundNonNegative : IsNonNegative bound) :
+    IsWithinBound lowValue midValue bound :=
+  ⟨lessEqualAsTrans
+      (lessEqualAsCongrRight (addExactNegRight midValue)
+        (addExactMonotoneLeft (negExact midValue) isLowBelowMid))
+      isBoundNonNegative,
+    lessEqualAsTrans
+      (addExactMonotoneLeft (negExact lowValue) isMidBelowHigh)
+      spanWithin.left⟩
+
+/-- A nonnegative value's negation is nonpositive — add `−value` across
+`0 ≤ value` and read off `−value ≤ 0`. -/
+theorem negExactNonPositiveOfNonNegative {value : RationalPair}
+    (isNonNegative : IsNonNegative value) :
+    LessEqualAs (negExact value) zeroRational :=
+  let numeratorNonPositive : -value.numerator ≤ 0 :=
+    intLessEqualOfEqLeft (intZeroAdd (-value.numerator)).symm
+      (intLessEqualOfEqRight
+        (intAddLeAddRight (numeratorNonNegativeOfIsNonNegative isNonNegative)
+          (-value.numerator))
+        (intAddRightNeg value.numerator))
+  intLessEqualOfEqLeft (intMulOne (-value.numerator))
+    (intLessEqualOfEqRight numeratorNonPositive
+      (intZeroMul (denominatorInt (negExact value))).symm)
+
+/-- **The local squaring tolerance** — the squared √-approximant sits within
+`2·magnitudeBound·gridStep` of its radicand.  The radicand is trapped in the
+interval `[s², (s+grid)²]` by the two shipped brackets; the interval's width is
+bounded by two product-difference legs through the mixed product `s·(s+grid)` (each
+leg is `magnitudeBound·gridStep`); the span lemma then reads back the tolerance on
+`s²` versus the radicand.  `magnitudeBound` must cover BOTH the root and its
+successor — the caller supplies a fixed index-independent bound. -/
+theorem sqrtApproxSquareWithinRadicand {sample : RationalPair}
+    (isSampleNonNegative : IsNonNegative sample) (gridPredecessor : Nat)
+    {magnitudeBound : RationalPair}
+    (isMagnitudeBoundNonNegative : IsNonNegative magnitudeBound)
+    (isRootWithin :
+      IsMagnitudeWithin (rationalSqrtApprox sample gridPredecessor) magnitudeBound)
+    (isSuccessorWithin :
+      IsMagnitudeWithin
+        (addExact (rationalSqrtApprox sample gridPredecessor)
+          (reciprocalOfSucc gridPredecessor))
+        magnitudeBound) :
+    IsWithinBound
+      (mulExact (rationalSqrtApprox sample gridPredecessor)
+        (rationalSqrtApprox sample gridPredecessor))
+      sample
+      (addExact (mulExact magnitudeBound (reciprocalOfSucc gridPredecessor))
+        (mulExact magnitudeBound (reciprocalOfSucc gridPredecessor))) :=
+  let gridStep := reciprocalOfSucc gridPredecessor
+  let rootValue := rationalSqrtApprox sample gridPredecessor
+  let successorRoot := addExact rootValue gridStep
+  let toleranceBound := addExact (mulExact magnitudeBound gridStep)
+    (mulExact magnitudeBound gridStep)
+  let isGridStepNonNeg : IsNonNegative gridStep :=
+    ratioOfNatSuccIsNonNegative 1 gridPredecessor
+  let isToleranceNonNeg : IsNonNegative toleranceBound :=
+    addExactIsNonNegative
+      (mulExactIsNonNegative isMagnitudeBoundNonNegative isGridStepNonNeg)
+      (mulExactIsNonNegative isMagnitudeBoundNonNegative isGridStepNonNeg)
+  let subSuccessorRootDenotesGrid :
+      DenotesSameAs (subExact successorRoot rootValue) gridStep :=
+    denotesSameAsTrans
+      (addExactRespectsDenotesSameAs (addExactComm rootValue gridStep)
+        (denotesSameAsRefl (negExact rootValue)))
+      (denotesSameAsTrans (addExactAssoc gridStep rootValue (negExact rootValue))
+        (denotesSameAsTrans
+          (addExactRespectsDenotesSameAs (denotesSameAsRefl gridStep)
+            (addExactNegRight rootValue))
+          (addExactZeroRight gridStep)))
+  let isSuccessorAboveRoot : LessEqualAs rootValue successorRoot :=
+    lessEqualAsSelfAddNonNegRight rootValue isGridStepNonNeg
+  let successorWithinRoot : IsWithinBound successorRoot rootValue gridStep :=
+    ⟨lessEqualAsOfDenotesSame subSuccessorRootDenotesGrid,
+      lessEqualAsTrans
+        (lessEqualAsCongrRight (addExactNegRight successorRoot)
+          (addExactMonotoneLeft (negExact successorRoot) isSuccessorAboveRoot))
+        isGridStepNonNeg⟩
+  let rightLeg :
+      IsWithinBound (mulExact successorRoot successorRoot)
+        (mulExact rootValue successorRoot) (mulExact magnitudeBound gridStep) :=
+    mulExactRespectsIsWithinBoundRight isSuccessorWithin successorWithinRoot
+      isGridStepNonNeg
+  let leftLeg :
+      IsWithinBound (mulExact rootValue successorRoot)
+        (mulExact rootValue rootValue) (mulExact magnitudeBound gridStep) :=
+    mulExactRespectsIsWithinBoundLeft isRootWithin successorWithinRoot
+      isGridStepNonNeg
+  let widthBound :
+      IsWithinBound (mulExact successorRoot successorRoot)
+        (mulExact rootValue rootValue) toleranceBound :=
+    isWithinBoundTriangle rightLeg leftLeg
+  let lowerBracket : LessEqualAs (mulExact rootValue rootValue) sample :=
+    rationalSqrtApproxSqLe gridPredecessor isSampleNonNegative
+  let successorToRoot :
+      DenotesSameAs
+        (ratioOfNatSucc
+          (natSqrt (rationalSqrtRadicand sample gridPredecessor) + 1)
+          gridPredecessor)
+        successorRoot :=
+    denotesSameAsSymm
+      (ratioOfNatSuccSumDenotesSame
+        (natSqrt (rationalSqrtRadicand sample gridPredecessor)) 1 gridPredecessor)
+  let upperBracket : LessEqualAs sample (mulExact successorRoot successorRoot) :=
+    lessEqualAsCongrRight
+      (mulExactRespectsDenotesSameAs successorToRoot successorToRoot)
+      (rationalSqrtApproxSuccSqGe gridPredecessor isSampleNonNegative)
+  isWithinBoundOfBetweenSpan lowerBracket upperBracket widthBound isToleranceNonNeg
+
+/-- **The square law**: `(√a)²` denotes `a` on the real setoid.  Slack closure at
+each shared index — the product regularity chains to the deep slack index, the
+squared approximant compares to the radicand there via the local squaring tolerance
+(with the fixed magnitude `canonicalBound (√a) + 1` covering root and successor), and
+`a`'s own regularity bridges the radicand's deep sample back to the shared index; the
+whole tolerance rides on the vanishing slack because the product samples at a depth
+past the slack index. -/
+theorem sqrtRealSquareDenotesSame {value : RegularReal}
+    (isNonNegativeReal : IsNonNegativeReal value) :
+    DenotesSameReal
+      (mulReal (sqrtReal value isNonNegativeReal)
+        (sqrtReal value isNonNegativeReal))
+      value :=
+  let rootReal := sqrtReal value isNonNegativeReal
+  let magnitudeNumerator := canonicalBoundNumerator rootReal + 1
+  let magnitudeBound := ratioOfNatSucc magnitudeNumerator 0
+  let isMagnitudeBoundNonNegative : IsNonNegative magnitudeBound :=
+    ratioOfNatSuccIsNonNegative magnitudeNumerator 0
+  let toleranceNumerator := magnitudeNumerator * 1 + magnitudeNumerator * 1
+  fun sharedIndex =>
+    isWithinBoundOfForallSlack
+      (fun slackIndex =>
+        let productIndex := productSamplingIndex rootReal rootReal slackIndex
+        let deepIndex := sqrtSampleIndex productIndex
+        let gridPredecessor := sqrtGridIndex productIndex
+        let sampleDeep := value.approximation deepIndex
+        let rootApprox := rationalSqrtApprox sampleDeep gridPredecessor
+        let gridStep := reciprocalOfSucc gridPredecessor
+        let isSampleDeepNonNeg : IsNonNegative sampleDeep :=
+          isNonNegativeReal deepIndex
+        let isGridStepNonNeg : IsNonNegative gridStep :=
+          ratioOfNatSuccIsNonNegative 1 gridPredecessor
+        let rootCanonical :
+            IsMagnitudeWithin (rootReal.approximation productIndex)
+              (canonicalBound rootReal) :=
+          approximationIsWithinCanonicalBound rootReal productIndex
+        let isRootWithin : IsMagnitudeWithin rootApprox magnitudeBound :=
+          isMagnitudeWithinOfBoundLessEqual
+            (ratioOfNatSuccMonotoneNumerator
+              (Nat.le_succ (canonicalBoundNumerator rootReal)) 0)
+            rootCanonical
+        let gridBelowUnit : LessEqualAs gridStep (reciprocalOfSucc 0) :=
+          ratioOfNatSuccAntitoneDenominator 1 (Nat.zero_le gridPredecessor)
+        let successorBelowMagnitude :
+            LessEqualAs (addExact rootApprox gridStep) magnitudeBound :=
+          lessEqualAsCongrRight
+            (ratioOfNatSuccSumDenotesSame (canonicalBoundNumerator rootReal) 1 0)
+            (addExactMonotone rootCanonical.left gridBelowUnit)
+        let isSuccessorNonNeg : IsNonNegative (addExact rootApprox gridStep) :=
+          addExactIsNonNegative
+            (rationalSqrtApproxIsNonNegative sampleDeep gridPredecessor)
+            isGridStepNonNeg
+        let isSuccessorWithin :
+            IsMagnitudeWithin (addExact rootApprox gridStep) magnitudeBound :=
+          ⟨successorBelowMagnitude,
+            lessEqualAsTrans
+              (negExactNonPositiveOfNonNegative isSuccessorNonNeg)
+              isMagnitudeBoundNonNegative⟩
+        let toleranceRaw :
+            IsWithinBound (mulExact rootApprox rootApprox) sampleDeep
+              (addExact (mulExact magnitudeBound gridStep)
+                (mulExact magnitudeBound gridStep)) :=
+          sqrtApproxSquareWithinRadicand isSampleDeepNonNeg gridPredecessor
+            isMagnitudeBoundNonNegative isRootWithin isSuccessorWithin
+        let toleranceCollapses :
+            DenotesSameAs
+              (addExact (mulExact magnitudeBound gridStep)
+                (mulExact magnitudeBound gridStep))
+              (ratioOfNatSucc toleranceNumerator gridPredecessor) :=
+          denotesSameAsTrans
+            (addExactRespectsDenotesSameAs
+              (mulExactRatioRatioDenotesSame magnitudeNumerator 1
+                (2 * productIndex + 1))
+              (mulExactRatioRatioDenotesSame magnitudeNumerator 1
+                (2 * productIndex + 1)))
+            (ratioOfNatSuccSumDenotesSame (magnitudeNumerator * 1)
+              (magnitudeNumerator * 1) (2 * productIndex + 1))
+        let indexBelowGrid : slackIndex ≤ gridPredecessor :=
+          natLeTrans
+            (natSelfLeBoundScaledIndex
+              (sharedBoundNumeratorPredecessor rootReal rootReal) slackIndex)
+            (natSelfLeDoubleSelfSucc productIndex)
+        let toleranceRelaxes :
+            LessEqualAs (ratioOfNatSucc toleranceNumerator gridPredecessor)
+              (ratioOfNatSucc toleranceNumerator slackIndex) :=
+          ratioOfNatSuccAntitoneDenominator toleranceNumerator indexBelowGrid
+        let toleranceLeg :
+            IsWithinBound (mulExact rootApprox rootApprox) sampleDeep
+              (ratioOfNatSucc toleranceNumerator slackIndex) :=
+          isWithinBoundOfBoundLessEqual
+            (lessEqualAsCongrLeft (denotesSameAsSymm toleranceCollapses)
+              toleranceRelaxes)
+            toleranceRaw
+        let deepBelowShared : LessEqualAs (reciprocalOfSucc deepIndex)
+            (reciprocalOfSucc slackIndex) :=
+          ratioOfNatSuccAntitoneDenominator 1
+            (natLeTrans
+              (natSelfLeBoundScaledIndex
+                (sharedBoundNumeratorPredecessor rootReal rootReal) slackIndex)
+              (natSelfLeSqrtSampleIndex productIndex))
+        let radicandBridgeRelaxes :
+            LessEqualAs
+              (addExact (reciprocalOfSucc deepIndex) (reciprocalOfSucc sharedIndex))
+              (addExact (reciprocalOfSucc slackIndex) (reciprocalOfSucc sharedIndex)) :=
+          addExactMonotoneLeft (reciprocalOfSucc sharedIndex) deepBelowShared
+        let radicandBridge :
+            IsWithinBound sampleDeep (value.approximation sharedIndex)
+              (addExact (reciprocalOfSucc slackIndex) (reciprocalOfSucc sharedIndex)) :=
+          isWithinBoundOfBoundLessEqual radicandBridgeRelaxes
+            (value.isRegular deepIndex sharedIndex)
+        isWithinBoundCongrBound
+          (denotesSameAsTrans
+            (chainedSlackBoundReshapesDenotesSame
+              (reciprocalOfSucc sharedIndex) (reciprocalOfSucc slackIndex)
+              (ratioOfNatSucc toleranceNumerator slackIndex))
+            (addExactRespectsDenotesSameAs
+              (ratioOfNatSuccSumDenotesSame 1 1 sharedIndex)
+              (denotesSameAsTrans
+                (addExactRespectsDenotesSameAs
+                  (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+                  (denotesSameAsRefl
+                    (ratioOfNatSucc toleranceNumerator slackIndex)))
+                (ratioOfNatSuccSumDenotesSame 2 toleranceNumerator slackIndex))))
+          (isWithinBoundTriangle
+            (isWithinBoundTriangle
+              ((mulReal rootReal rootReal).isRegular sharedIndex slackIndex)
+              toleranceLeg)
+            radicandBridge))
+
+/-- **The square root respects the real setoid** — same-real arguments give
+same-real roots.  At a shared index the two roots draw from the SAME grid but from
+setoid-equal deep samples, so the sample-parametric √-regularity, fed the setoid
+hypothesis reshaped onto the two half-reciprocals, lands the bound EXACTLY at
+`2/(n+1)` — no slack closure needed. -/
+theorem sqrtRealRespectsDenotesSame {value newValue : RegularReal}
+    (isNonNegativeReal : IsNonNegativeReal value)
+    (isNonNegativeNewReal : IsNonNegativeReal newValue)
+    (areSame : DenotesSameReal value newValue) :
+    DenotesSameReal (sqrtReal value isNonNegativeReal)
+      (sqrtReal newValue isNonNegativeNewReal) :=
+  fun sharedIndex =>
+    let deepIndex := sqrtSampleIndex sharedIndex
+    let inputRegular :
+        IsWithinBound (value.approximation deepIndex)
+          (newValue.approximation deepIndex)
+          (addExact (reciprocalOfSucc deepIndex) (reciprocalOfSucc deepIndex)) :=
+      isWithinBoundCongrBound
+        (denotesSameAsSymm (ratioOfNatSuccSumDenotesSame 1 1 deepIndex))
+        (areSame deepIndex)
+    ⟨lessEqualAsCongrRight (ratioOfNatSuccSumDenotesSame 1 1 sharedIndex)
+        (sqrtApproxPairDifferenceBounded
+          (isNonNegativeReal deepIndex) (isNonNegativeNewReal deepIndex)
+          sharedIndex sharedIndex inputRegular),
+      lessEqualAsCongrRight (ratioOfNatSuccSumDenotesSame 1 1 sharedIndex)
+        (sqrtApproxPairDifferenceBounded
+          (isNonNegativeNewReal deepIndex) (isNonNegativeReal deepIndex)
+          sharedIndex sharedIndex (isWithinBoundSymm inputRegular))⟩
 
 end FX1Poly.ComputerAlgebra
