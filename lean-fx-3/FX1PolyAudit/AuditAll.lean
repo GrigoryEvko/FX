@@ -27,6 +27,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.NatModularReduction
 import FX1PolyAudit.ComputerAlgebra.Bits.BitVec
 import FX1PolyAudit.ComputerAlgebra.Bits.BitVecRing
 import FX1PolyAudit.ComputerAlgebra.Register.FieldLayout
+import FX1PolyAudit.ComputerAlgebra.Register.VirtualField
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealLimit
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealContinuity
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeLimit
