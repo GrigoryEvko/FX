@@ -361,7 +361,6 @@ import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVarInversi
 import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVariableInversion
 import FX1PolyAudit.Typed.Engine.IsTypeDesc.IsTypeDesc
 import FX1PolyAudit.Typed.Engine.IsTypeDesc.IsTypeDescDecidable
-import FX1PolyAudit.Typed.Engine.RuleTables.FlatDescTelescopePi
 import FX1PolyAudit.Typed.Engine.RuleTables.TypingRuleSpec
 import FX1PolyAudit.Typed.Engine.WfContext.WfContextDesc
 import FX1PolyAudit.Typed.Engine.WfContext.WfContextDescPi
