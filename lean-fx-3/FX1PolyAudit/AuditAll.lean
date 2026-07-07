@@ -255,6 +255,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupTailsCancelCou
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupTailsCancelInterface
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupSiblingSwap
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupSortComplete
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapSortComplete
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
