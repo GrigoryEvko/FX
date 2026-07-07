@@ -21,5 +21,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Steiner.loopFreeOrderIsWellFounded
 #assert_no_axioms FX1Poly.Polygraph.Steiner.SameDimensionOrder
 #assert_no_axioms FX1Poly.Polygraph.Steiner.IsLoopFreeBasis
+#assert_no_axioms FX1Poly.Polygraph.Steiner.emptyIntraOrder
+#assert_no_axioms FX1Poly.Polygraph.Steiner.emptyIntraOrderIsLoopFree
+#assert_no_axioms FX1Poly.Polygraph.Steiner.accessibleWithinRankBound
+#assert_no_axioms FX1Poly.Polygraph.Steiner.loopFreeOfRank
 
 end FX1PolyAudit

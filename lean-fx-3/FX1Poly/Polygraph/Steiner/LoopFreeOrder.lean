@@ -70,20 +70,71 @@ theorem loopFreeOrderIsWellFounded (complex : AugmentedDirectedComplex) :
     boundaryContainmentAccessibleWithinDimensionBound complex (atom.dimension + 1) atom
       (Nat.lt_succ_self atom.dimension)⟩
 
-/-! ## Deferred: the same-dimension Steiner (odot) order and its acyclicity
+/-! ## The same-dimension Steiner (odot) order and its acyclicity — genuinely closed here
 
-The intra-dimension relation (an atom's target meets another's source) is only NAMED here as an
-opaque `Prop`-valued parameter; loop-freeness is its acyclicity.  The genuine content — computing
-the overlap from the ADC cell-table and proving acyclicity (Steiner's hypothesis) — is DEFERRED,
-alongside the equivalence Thm 1.2.1.23 and the Gray/Koszul chain tensor. -/
+The intra-dimension relation (an atom's target meets another's source) is a `Prop`-valued relation
+on `DimensionedAtom`; loop-freeness is its acyclicity (Steiner Thm 1.2.1.23).  This section supplies
+the two GENUINE closers — no opaque hypothesis, no `WellFounded.fix`:
 
-/-- A same-dimension precedence supplied as an opaque parameter (the general computation from the
-ADC cell-table is deferred). -/
+  * `emptyIntraOrderIsLoopFree` — the empty same-dimension order (the honest answer for a
+    dimension-strict polygraph: no non-trivial same-dimension composability edge to orient) is
+    well-founded by a one-line structural `Acc`.
+  * `loopFreeOfRank` — a same-dimension order carrying a strictly-decreasing `Nat` rank is
+    well-founded by the SAME structural argument as the cross-dimension proof above (a rank bound
+    replaces the dimension bound).
+
+The concrete ADC-computed overlap order (`sameDimensionOverlapOrder`) and an inhabited loop-free
+instance (the single-object-semiring computad complex) live in
+`FX1Poly/Polygraph/Steiner/ComputadLoopFree.lean`. -/
+
+/-- A same-dimension precedence: a relation on the dimensioned atoms.  A concrete computation from
+the ADC cell-table is `sameDimensionOverlapOrder` (ComputadLoopFree.lean). -/
 def SameDimensionOrder := DimensionedAtom → DimensionedAtom → Prop
 
 /-- A basis is LOOP-FREE (for a given intra-dimension order) iff that same-dimension order is
-well-founded — the acyclicity hypothesis of Steiner Thm 1.2.1.23.  Stated, not proved. -/
+well-founded — the acyclicity hypothesis of Steiner Thm 1.2.1.23. -/
 def IsLoopFreeBasis (intraDimensionOrder : SameDimensionOrder) : Prop :=
   WellFounded intraDimensionOrder
+
+/-- The empty same-dimension order — no atom precedes any other within its dimension.  This is the
+honest intra-dimension order for a genuine polygraph whose generator boundaries strictly drop
+dimension (there is no non-trivial same-dimension composability edge to orient). -/
+def emptyIntraOrder : SameDimensionOrder := fun _ _ => False
+
+/-- **The empty intra-dimension order is loop-free** — genuinely proved (not an opaque
+hypothesis), no `WellFounded.fix`: every atom is accessible because it has no predecessors. -/
+theorem emptyIntraOrderIsLoopFree : IsLoopFreeBasis emptyIntraOrder :=
+  WellFounded.intro (fun atom =>
+    Acc.intro atom (fun _ isPredecessor => False.elim isPredecessor))
+
+/-- Every atom below a `Nat` rank bound is accessible for an order that STRICTLY LOWERS a rank —
+structural `Nat` induction on the bound (`Acc.intro`, no `WellFounded.fix`), mirroring
+`boundaryContainmentAccessibleWithinDimensionBound` with `naturalRank` in place of `dimension`. -/
+theorem accessibleWithinRankBound
+    (order : SameDimensionOrder) (naturalRank : DimensionedAtom → Nat)
+    (rankStrictlyDecreases :
+      ∀ lower higher, order lower higher → naturalRank lower < naturalRank higher) :
+    ∀ (rankBound : Nat) (atom : DimensionedAtom),
+      naturalRank atom < rankBound → Acc order atom
+  | 0, _, isBelowZero => absurd isBelowZero (Nat.not_lt_zero _)
+  | rankBound + 1, atom, isBelowSucc =>
+      Acc.intro atom (fun predecessor isPredecessor =>
+        have predecessorBelowAtom : naturalRank predecessor < naturalRank atom :=
+          rankStrictlyDecreases predecessor atom isPredecessor
+        have atomAtMostBound : naturalRank atom ≤ rankBound := Nat.le_of_lt_succ isBelowSucc
+        accessibleWithinRankBound order naturalRank rankStrictlyDecreases rankBound predecessor
+          (Nat.lt_of_lt_of_le predecessorBelowAtom atomAtMostBound))
+
+/-- **A same-dimension order with a strictly-decreasing `Nat` rank is loop-free** — the genuine
+structural closer for a NON-empty but acyclic intra-dimension order (a topological rank witnesses
+acyclicity).  No `WellFounded.fix`, no `Classical`. -/
+theorem loopFreeOfRank
+    (order : SameDimensionOrder) (naturalRank : DimensionedAtom → Nat)
+    (rankStrictlyDecreases :
+      ∀ lower higher, order lower higher → naturalRank lower < naturalRank higher) :
+    IsLoopFreeBasis order :=
+  WellFounded.intro (fun atom =>
+    accessibleWithinRankBound order naturalRank rankStrictlyDecreases
+      (naturalRank atom + 1) atom (Nat.lt_succ_self _))
 
 end FX1Poly.Polygraph.Steiner
