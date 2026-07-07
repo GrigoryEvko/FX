@@ -38,6 +38,7 @@ import FX1PolyAudit.ComputerAlgebra.Analysis.RealContinuity
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeLimit
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeContinuity
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealSquareRootContinuity
+import FX1PolyAudit.ComputerAlgebra.Analysis.RealDerivative
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 import FX1PolyAudit.ComputerAlgebra.ISA.ArchState
 import FX1PolyAudit.ComputerAlgebra.ISA.StepRefinement
