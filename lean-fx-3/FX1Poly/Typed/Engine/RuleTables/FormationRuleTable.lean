@@ -42,20 +42,6 @@ inductive FormationRule where
   `universeFormerOutput` output shape as `.flat`). -/
   | cumulative (rule : TypingRuleDesc)
 
-/-- **The premise the unified formation arm demands**, dispatched by the rule's family.  Base types
-demand nothing (`True`); flat formers demand the flat telescope; term-indexed formers demand the
-carrier-plus-endpoints telescope.  Every premise is GROWN (no union recursion), so storing the premise
-shape as data costs no positivity. -/
-def FormationRule.premiseHolds (rule : FormationRule) (profile : PolyProfile) {scope : Nat}
-    (context : TypingContext profile scope) {binderShifts : List Nat}
-    (children : RawTermChildren binderShifts scope) (levels : List LevelExpr)
-    (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag) : Prop :=
-  match rule with
-  | .baseType _ => True
-  | .flat _ => FlatDescTelescopePi profile context flag levels children
-  | .termIndexed _ => TermIndexedFormerTelescope profile context children carrier level flag
-  | .cumulative _ => DescTelescopePi profile (currentDepth := 0) context levels flag children
-
 /-- **The unified formation arm's output classifier**, dispatched by the rule's family: the base
 type's pinned universe, the flat former's level-max universe, or the term-indexed former's
 carrier-level universe. -/

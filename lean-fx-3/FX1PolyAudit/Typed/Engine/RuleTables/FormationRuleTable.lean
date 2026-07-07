@@ -10,7 +10,6 @@ lemmas the soundness cascade will dispatch on.  Each pin must be free of `propex
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.FormationRule
-#assert_no_axioms FX1Poly.Typed.FormationRule.premiseHolds
 #assert_no_axioms FX1Poly.Typed.FormationRule.outputType
 #assert_no_axioms FX1Poly.Typed.formationRuleOf
 #assert_no_axioms FX1Poly.Typed.formationRuleOf_boolCode
