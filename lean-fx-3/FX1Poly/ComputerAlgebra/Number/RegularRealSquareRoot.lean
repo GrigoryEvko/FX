@@ -247,4 +247,39 @@ theorem rationalSqrtApproxSuccSqGe {value : RationalPair} (gridPredecessor : Nat
     (congrArg (· * (Int.ofNat gridSuccessor * Int.ofNat gridSuccessor)) numeratorEquation)
     (intOfNatLeOfNat natChain)
 
+/-! ## sqrtReal — the sampling scaffolding (NUM-R-SQRT, real layer)
+
+The real square root samples its argument at a QUADRATICALLY deeper index and rounds to
+a fixed output grid.  `sqrtSampleIndex n + 1 = (2n+2)² = 4(n+1)²` pre-shrinks the input
+drift to `(½·1/(n+1))²` so that the (implicit) root lands at `½·1/(n+1)`; the remaining
+half of the regularity budget is spent on the two grid-rounding errors, whose grid step
+is `1/(2(n+1)) = reciprocalOfSucc (2n+1)`.
+
+The pointwise approximation sequence `sqrtRealApproximation` is defined here and TOTAL
+(the clamp in `rationalSqrtApprox` keeps it defined on every real, nonnegative or not).
+Packaging it into a `RegularReal` requires the Hölder-½ regularity bound — the genuine
+analytic node (see the module report). -/
+
+/-- The quadratic-depth input sample index: `sqrtSampleIndex n + 1 = (2n+2)²`. -/
+def sqrtSampleIndex (index : Nat) : Nat :=
+  squaredSuccessorPredecessor (2 * index + 1)
+
+/-- The output grid predecessor: grid step `1/(2(n+1)) = reciprocalOfSucc (2n+1)`. -/
+def sqrtGridIndex (index : Nat) : Nat := 2 * index + 1
+
+/-- The deep sample index is DEFINITIONALLY the perfect square `(2n+2)²`. -/
+theorem sqrtSampleIndexSuccessor (index : Nat) :
+    sqrtSampleIndex index + 1 = (2 * index + 2) * (2 * index + 2) := rfl
+
+/-- The comparison index sits below its own deep sample index — the depth-domination
+fact the Hölder regularity threads through `a`'s regularity. -/
+theorem natSelfLeSqrtSampleIndex (index : Nat) : index ≤ sqrtSampleIndex index :=
+  natLeTrans (natSelfLeDoubleSelfSucc index)
+    (Nat.le_add_left (2 * index + 1) ((2 * index + 1 + 1) * (2 * index + 1)))
+
+/-- The pointwise rational √-approximation of a regular real: sample deep, round to the
+grid.  TOTAL on every real. -/
+def sqrtRealApproximation (value : RegularReal) (index : Nat) : RationalPair :=
+  rationalSqrtApprox (value.approximation (sqrtSampleIndex index)) (sqrtGridIndex index)
+
 end FX1Poly.ComputerAlgebra

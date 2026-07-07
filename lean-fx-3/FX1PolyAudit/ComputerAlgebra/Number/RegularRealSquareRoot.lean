@@ -24,5 +24,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApprox
 #assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApproxSqLe
 #assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApproxSuccSqGe
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtSampleIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtGridIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtSampleIndexSuccessor
+#assert_no_axioms FX1Poly.ComputerAlgebra.natSelfLeSqrtSampleIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.sqrtRealApproximation
 
 end FX1PolyAudit
