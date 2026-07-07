@@ -611,6 +611,18 @@ theorem samplePointGapWithinMesh (lowerBound upperBound : RationalPair)
             gap)))
       (isMagnitudeWithinNegExact gapMagnitude))
 
+/-- **The ℚ→ℝ constant re-read** — a ℚ-level distance between two rationals IS a
+real-level distance between their constant embeddings (the constant approximants
+never move, so the setoid modulus is pure headroom). -/
+theorem constantRealIsWithinRealBoundOfIsWithinBound {leftValue rightValue bound :
+    RationalPair} (isWithin : IsWithinBound leftValue rightValue bound) :
+    IsWithinRealBound (constantReal leftValue) (constantReal rightValue) bound :=
+  fun index =>
+    isWithinBoundOfBoundLessEqual
+      (lessEqualAsCongrLeft (addExactZeroRight bound)
+        (addExactMonotoneRight bound (ratioOfNatSuccIsNonNegative 2 index)))
+      isWithin
+
 /-! ## The Riemann sum functional -/
 
 /-- **The left-endpoint Riemann sum** — `meshWidth` times the sum of the
@@ -736,5 +748,193 @@ theorem riemannSumConstant (constantValue : RegularReal)
                 (cellCountMeshWidthDenotesSame lowerBound upperBound
                   cellCountPredecessor)))))
         (denotesSameRealRefl constantValue)))
+
+/-! ## The common-refinement Cauchy estimate -/
+
+/-- **The refinement estimate** — the analytic core.  For a uniformly continuous
+integrand and a coarse partition whose mesh is finer than the UC tolerance
+`1/(modulus outputPrecision + 1)`, the coarse Riemann sum and its
+`blockSize`-refinement sit within `(upperBound - lowerBound)/(outputPrecision+1)`
+in the real-level distance.
+
+Decomposition: the fine sum regroups into `cellCount` outer blocks of `blockSize`
+inner subcells (`sumRealRegroupProduct`), and the coarse sum re-expresses as the
+same double sum with the inner term held at the coarse left endpoint (each coarse
+term replicated `blockSize`-fold, mesh rescaled by R1).  Oscillation: per subcell
+the two sample points sit within the coarse mesh (R3), hence within the UC
+tolerance (mesh condition), so the integrand values sit within `1/(k+1)` (UC).
+Assembly: the per-subcell bounds sum to `(cellCount·blockSize)·(1/(k+1))`; scaling
+by the shared fine mesh (B1) and telescoping the cell count against the mesh
+(`cellCountMeshWidthDenotesSame`) collapses to the interval width over `k+1`. -/
+theorem refinementEstimate {function : RegularReal → RegularReal}
+    {modulus : Nat → Nat}
+    (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound))
+    (blockSizePredecessor cellCountPredecessor outputPrecision : Nat)
+    (meshCondition :
+      LessEqualAs (meshWidth lowerBound upperBound cellCountPredecessor)
+        (reciprocalOfSucc (modulus outputPrecision))) :
+    IsWithinRealBound
+      (riemannSum function lowerBound upperBound cellCountPredecessor)
+      (riemannSum function lowerBound upperBound
+        (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor))
+      (mulExact (subExact upperBound lowerBound)
+        (reciprocalOfSucc outputPrecision)) :=
+  let blockCount := cellCountPredecessor + 1
+  let blockSize := blockSizePredecessor + 1
+  let refinedPredecessor :=
+    refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor
+  let refinedMesh := meshWidth lowerBound upperBound refinedPredecessor
+  let coarseTerm : Nat → RegularReal :=
+    fun blockIndex =>
+      function (constantReal
+        (samplePoint lowerBound upperBound cellCountPredecessor blockIndex))
+  let fineTerm : Nat → RegularReal :=
+    fun position =>
+      function (constantReal
+        (samplePoint lowerBound upperBound refinedPredecessor position))
+  let doubleCoarse : RegularReal :=
+    sumReal blockCount
+      (fun blockIndex => sumReal blockSize (fun _ => coarseTerm blockIndex))
+  let doubleFine : RegularReal :=
+    sumReal blockCount
+      (fun blockIndex =>
+        sumReal blockSize
+          (fun innerIndex => fineTerm (blockSize * blockIndex + innerIndex)))
+  let outputReciprocal := reciprocalOfSucc outputPrecision
+  let doubleBoundValue :=
+    natScaleRational blockCount (natScaleRational blockSize outputReciprocal)
+  have isRefinedMeshNonNegative : IsNonNegative refinedMesh :=
+    mulExactIsNonNegative isIntervalNonNegative
+      (ratioOfNatSuccIsNonNegative 1 refinedPredecessor)
+  -- The fine Riemann sum regroups into the block double sum.
+  have riemannFineRewrite :
+      DenotesSameReal
+        (riemannSum function lowerBound upperBound refinedPredecessor)
+        (mulReal (constantReal refinedMesh) doubleFine) :=
+    mulRealRespectsDenotesSame (denotesSameRealRefl (constantReal refinedMesh))
+      (sumRealRegroupProduct blockSize blockCount fineTerm)
+  -- The coarse Riemann sum re-expresses over the SAME fine mesh and double sum.
+  have riemannCoarseRewrite :
+      DenotesSameReal
+        (riemannSum function lowerBound upperBound cellCountPredecessor)
+        (mulReal (constantReal refinedMesh) doubleCoarse) :=
+    denotesSameRealSymm
+      (denotesSameRealTrans
+        (mulRealRespectsDenotesSame (denotesSameRealRefl (constantReal refinedMesh))
+          (sumRealRespectsDenotesSame
+            (fun blockIndex => replicateRealEqScale (coarseTerm blockIndex) blockSize)
+            blockCount))
+        (denotesSameRealTrans
+          (mulRealRespectsDenotesSame (denotesSameRealRefl (constantReal refinedMesh))
+            (sumRealScalarMulReal (constantReal (natRational blockSize))
+              coarseTerm blockCount))
+          (denotesSameRealTrans
+            (denotesSameRealSymm
+              (mulRealAssoc (constantReal refinedMesh)
+                (constantReal (natRational blockSize))
+                (sumReal blockCount coarseTerm)))
+            (mulRealRespectsDenotesSame
+              (denotesSameRealTrans
+                (denotesSameRealSymm
+                  (constantRealMulExact refinedMesh (natRational blockSize)))
+                (constantRealRespectsDenotesSame
+                  (denotesSameAsTrans
+                    (mulExactComm refinedMesh (natRational blockSize))
+                    (denotesSameAsSymm
+                      (meshWidthRefinesByBlock lowerBound upperBound
+                        blockSizePredecessor cellCountPredecessor)))))
+              (denotesSameRealRefl (sumReal blockCount coarseTerm))))))
+  -- Per subcell: uniform continuity forces the integrand values within 1/(k+1).
+  have perTermBound :
+      ∀ blockIndex innerIndex, innerIndex < blockSize →
+        IsWithinRealBound (coarseTerm blockIndex)
+          (fineTerm (blockSize * blockIndex + innerIndex)) outputReciprocal :=
+    fun blockIndex innerIndex isInnerBelowBlock =>
+      isUniformlyContinuousFunction
+        (constantReal
+          (samplePoint lowerBound upperBound cellCountPredecessor blockIndex))
+        (constantReal
+          (samplePoint lowerBound upperBound refinedPredecessor
+            (blockSize * blockIndex + innerIndex)))
+        outputPrecision
+        (constantRealIsWithinRealBoundOfIsWithinBound
+          (isWithinBoundCongrLeft
+            (denotesSameAsSymm
+              (samplePointBaseRefines lowerBound upperBound blockSizePredecessor
+                cellCountPredecessor blockIndex))
+            (isWithinBoundOfBoundLessEqual meshCondition
+              (samplePointGapWithinMesh lowerBound upperBound blockSizePredecessor
+                cellCountPredecessor blockIndex innerIndex
+                (Nat.le_of_lt isInnerBelowBlock) isIntervalNonNegative))))
+  -- Sum the oscillation bounds over the double index.
+  have doubleBound :
+      IsWithinRealBound doubleCoarse doubleFine doubleBoundValue :=
+    sumRealRespectsIsWithinRealBound
+      (fun blockIndex =>
+        sumRealRespectsIsWithinRealBoundOnRange blockSize
+          (fun innerIndex isInnerBelowBlock =>
+            perTermBound blockIndex innerIndex isInnerBelowBlock))
+      blockCount
+  -- Collapse the nested count scale into a product of naturals.
+  have doubleBoundReshape :
+      DenotesSameAs doubleBoundValue
+        (mulExact (natRational blockCount)
+          (mulExact (natRational blockSize) outputReciprocal)) :=
+    denotesSameAsTrans
+      (natScaleRationalDenotesScale blockCount
+        (natScaleRational blockSize outputReciprocal))
+      (mulExactCongrRight (natRational blockCount)
+        (natScaleRationalDenotesScale blockSize outputReciprocal))
+  have isDoubleBoundNonNegative : IsNonNegative doubleBoundValue :=
+    lessEqualAsCongrRight (denotesSameAsSymm doubleBoundReshape)
+      (mulExactIsNonNegative (ratioOfNatSuccIsNonNegative blockCount 0)
+        (mulExactIsNonNegative (ratioOfNatSuccIsNonNegative blockSize 0)
+          (ratioOfNatSuccIsNonNegative 1 outputPrecision)))
+  -- Scale the double-sum bound by the shared fine mesh (B1).
+  have scaledBound :
+      IsWithinRealBound (mulReal (constantReal refinedMesh) doubleCoarse)
+        (mulReal (constantReal refinedMesh) doubleFine)
+        (mulExact refinedMesh doubleBoundValue) :=
+    scalarMulRealExactBoundOfNonNegative isRefinedMeshNonNegative doubleBound
+      isDoubleBoundNonNegative
+  -- Telescope the mesh against the cell count.
+  have refinedCountEq :
+      blockCount * blockSize = refinedPredecessor + 1 :=
+    Nat.mul_comm (cellCountPredecessor + 1) (blockSizePredecessor + 1)
+  have natRationalRefinedEq :
+      DenotesSameAs (natRational (blockCount * blockSize))
+        (natRational (refinedPredecessor + 1)) :=
+    congrArg (fun scaledCount => Int.ofNat scaledCount * Int.ofNat 1)
+      refinedCountEq
+  have boundReshape :
+      DenotesSameAs (mulExact refinedMesh doubleBoundValue)
+        (mulExact (subExact upperBound lowerBound) outputReciprocal) :=
+    denotesSameAsTrans
+      (mulExactCongrRight refinedMesh doubleBoundReshape)
+      (denotesSameAsTrans
+        (mulExactCongrRight refinedMesh
+          (denotesSameAsSymm
+            (mulExactAssoc (natRational blockCount) (natRational blockSize)
+              outputReciprocal)))
+        (denotesSameAsTrans
+          (mulExactCongrRight refinedMesh
+            (mulExactCongrLeft outputReciprocal
+              (natRationalMul blockCount blockSize)))
+          (denotesSameAsTrans
+            (denotesSameAsSymm
+              (mulExactAssoc refinedMesh (natRational (blockCount * blockSize))
+                outputReciprocal))
+            (mulExactCongrLeft outputReciprocal
+              (denotesSameAsTrans
+                (mulExactComm refinedMesh (natRational (blockCount * blockSize)))
+                (denotesSameAsTrans
+                  (mulExactCongrLeft refinedMesh natRationalRefinedEq)
+                  (cellCountMeshWidthDenotesSame lowerBound upperBound
+                    refinedPredecessor)))))))
+  isWithinRealBoundCongrLeftDenotesSameReal riemannCoarseRewrite
+    (isWithinRealBoundCongrRightDenotesSameReal riemannFineRewrite
+      (isWithinRealBoundCongrBound boundReshape scaledBound))
 
 end FX1Poly.ComputerAlgebra

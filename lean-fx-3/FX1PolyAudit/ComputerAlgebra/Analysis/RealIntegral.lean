@@ -34,6 +34,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.subExactSelfAddRightDenotesSame
 #assert_no_axioms FX1Poly.ComputerAlgebra.samplePointOffsetShift
 #assert_no_axioms FX1Poly.ComputerAlgebra.samplePointGapWithinMesh
+#assert_no_axioms FX1Poly.ComputerAlgebra.constantRealIsWithinRealBoundOfIsWithinBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.refinementEstimate
 #assert_no_axioms FX1Poly.ComputerAlgebra.meshWidth
 #assert_no_axioms FX1Poly.ComputerAlgebra.samplePoint
 #assert_no_axioms FX1Poly.ComputerAlgebra.cellCountMeshWidthDenotesSame
