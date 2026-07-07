@@ -143,6 +143,80 @@ theorem staircaseZigZagStraightensInContext (leftBlocks rightBlocks : Nat)
       (RawTwoCellExpr.vcomp pre post) :=
   zigzagStraightensInVcompContext _ (staircaseSnakeWhiskeredCollapses leftBlocks rightBlocks) pre post
 
+/-! ## The HORIZONTAL context: a collapsing zig-zag whiskered on both sides still collapses -/
+
+/-- ★★ **A collapsing zig-zag whiskered on BOTH sides still collapses to the identity.**  For any left whisker
+`wl` and right whisker `wr`, if `snake : pathG ⟹ pathG` collapses to `id_{pathG}` then `wl ◁ (wr ▷ snake)` collapses
+to `id_{wl · pathG · wr}`.  Proof: the collapse fires under both whisker congruences (`whiskerLeftCongr` /
+`whiskerRightCongr`), then the two whiskered identities are stripped by the free `whiskerRightId` / `whiskerLeftId`
+laws.  This is the HORIZONTAL-context straightening — the partner pair sitting on a sub-band of a wider word still
+re-routes.  Composed with `zigzagStraightensInVcompContext` (which accepts ANY collapsing cell), it gives
+straightening in an ARBITRARY spine context (horizontal band × vertical position). -/
+theorem whiskeredZigZagCollapses {modeLeft modeA modeB modeRight : AdjunctionMode}
+    (wl : ModalityPath adjunctionGraph modeLeft modeA)
+    (wr : ModalityPath adjunctionGraph modeB modeRight)
+    {pathG : ModalityPath adjunctionGraph modeA modeB}
+    (snake : RawTwoCellExpr adjunctionModeSignature pathG pathG)
+    (collapses : SaturatedTwoCellConv snake
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature) pathG)) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) wl
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) wr snake))
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath wl (composePath pathG wr))) := by
+  have collapseUnderWhiskers :
+      SaturatedTwoCellConv
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) wl
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) wr snake))
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) wl
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) wr
+            (RawTwoCellExpr.id (signature := adjunctionModeSignature) pathG))) :=
+    SaturatedTwoCellConv.whiskerLeftCongr wl (SaturatedTwoCellConv.whiskerRightCongr wr collapses)
+  have stripRight :
+      SaturatedTwoCellConv
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) wl
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) wr
+            (RawTwoCellExpr.id (signature := adjunctionModeSignature) pathG)))
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) wl
+          (RawTwoCellExpr.id (signature := adjunctionModeSignature) (composePath pathG wr))) :=
+    SaturatedTwoCellConv.whiskerLeftCongr wl
+      (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep (TwoCellStep.whiskerRightId (signature := adjunctionModeSignature) pathG wr)))
+  have stripLeft :
+      SaturatedTwoCellConv
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) wl
+          (RawTwoCellExpr.id (signature := adjunctionModeSignature) (composePath pathG wr)))
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (composePath wl (composePath pathG wr))) :=
+    SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) wl (composePath pathG wr)))
+  exact SaturatedTwoCellConv.trans collapseUnderWhiskers
+    (SaturatedTwoCellConv.trans stripRight stripLeft)
+
+/-- ★★ **The SEED zig-zag straightens in an ARBITRARY spine context — horizontal band AND vertical position.**
+For any left/right whisker words `wl`, `wr` and any surrounding `pre`, `post`, the seed left snake sitting on the
+sub-band `wl · L · wr` at vertical position between `pre` and `post` straightens away:
+`pre ⊟ ((wl ◁ (wr ▷ leftSnake)) ⊟ post) ≈ pre ⊟ post`.  This is the FULLY GENERAL partial-overlap straightening —
+the whiskered collapse (`whiskeredZigZagCollapses` fed the left triangle) supplied as the collapsing cell to the
+vertical master.  The decisive, most-general refutation of the "partial-overlap wall": the saturated triangle
+re-routes the partner pair no matter where it sits in the spine. -/
+theorem seedLeftSnakeStraightensInFullContext {modeLeft modeRight : AdjunctionMode}
+    (wl : ModalityPath adjunctionGraph modeLeft AdjunctionMode.base)
+    (wr : ModalityPath adjunctionGraph AdjunctionMode.tip modeRight)
+    {pathF pathH : ModalityPath adjunctionGraph modeLeft modeRight}
+    (pre : RawTwoCellExpr adjunctionModeSignature pathF
+      (composePath wl (composePath (singletonModalityPath AdjunctionModality.left) wr)))
+    (post : RawTwoCellExpr adjunctionModeSignature
+      (composePath wl (composePath (singletonModalityPath AdjunctionModality.left) wr)) pathH) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp pre
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) wl
+            (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) wr adjunctionSeedLeftSnake))
+          post))
+      (RawTwoCellExpr.vcomp pre post) :=
+  zigzagStraightensInVcompContext _
+    (whiskeredZigZagCollapses wl wr adjunctionSeedLeftSnake SaturatedTwoCellConv.triangleLeft) pre post
+
 /-! ## Honesty marker -/
 
 /-- **★ ESTABLISHED — the partial-overlap partner pair straightens in ARBITRARY VERTICAL CONTEXT (the "wall" was a
