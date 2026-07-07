@@ -395,6 +395,115 @@ theorem scalarMulRealExactBoundOfNonNegative {constant : RationalPair}
               productsDifferAtSlack)
             ((mulReal constantFactor rightValue).isRegular slackIndex sharedIndex)))
 
+/-! ## Bounded-range sum bound -/
+
+/-- **The sum respects a per-term bound that holds only on the summed range** —
+the range-restricted sibling of `sumRealRespectsIsWithinRealBound`.  Needed
+because the refinement's per-subcell oscillation bound holds only for inner
+indices BELOW the block size. -/
+theorem sumRealRespectsIsWithinRealBoundOnRange {leftTerm rightTerm : Nat → RegularReal}
+    {bound : RationalPair} (count : Nat)
+    (termsWithin : ∀ position, position < count →
+      IsWithinRealBound (leftTerm position) (rightTerm position) bound) :
+    IsWithinRealBound (sumReal count leftTerm) (sumReal count rightTerm)
+      (natScaleRational count bound) :=
+  match count with
+  | 0 =>
+      isWithinRealBoundOfDenotesSameReal
+        (denotesSameRealRefl (constantReal zeroRational))
+        (lessEqualAsRefl zeroRational)
+  | count + 1 =>
+      addRealRespectsIsWithinRealBound
+        (sumRealRespectsIsWithinRealBoundOnRange count
+          (fun position isBelow =>
+            termsWithin position (Nat.lt_succ_of_lt isBelow)))
+        (termsWithin count (Nat.lt_succ_self count))
+
+/-! ## The block-refinement mesh and sample identities (R1, R2, R3) -/
+
+/-- The refined cell-count predecessor — `(blockSizePred+1)·cellCountPredecessor
++ blockSizePred`, spelled so `refinedCellCountPredecessor + 1` reduces
+DEFINITIONALLY to `(blockSizePred+1)·(cellCountPredecessor+1)`. -/
+def refinedCellCountPredecessor (blockSizePredecessor cellCountPredecessor : Nat) :
+    Nat :=
+  (blockSizePredecessor + 1) * cellCountPredecessor + blockSizePredecessor
+
+/-- **The natural rationals are multiplicative** — `a/1 · b/1 ~ (a·b)/1`. -/
+theorem natRationalMul (leftCount rightCount : Nat) :
+    DenotesSameAs (mulExact (natRational leftCount) (natRational rightCount))
+      (natRational (leftCount * rightCount)) :=
+  mulExactRatioRatioDenotesSame leftCount rightCount 0
+
+/-- **The block reciprocal cancels** — `(blockSize)/1 · 1/(refined+1) ~ 1/(coarse
++1)`, since `refined+1` is definitionally `blockSize·(coarse+1)`. -/
+theorem reciprocalBlockCancels (blockSizePredecessor cellCountPredecessor : Nat) :
+    DenotesSameAs
+      (mulExact (natRational (blockSizePredecessor + 1))
+        (reciprocalOfSucc
+          (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor)))
+      (reciprocalOfSucc cellCountPredecessor) :=
+  denotesSameAsTrans
+    (mulExactRatioRatioDenotesSame (blockSizePredecessor + 1) 1
+      (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor))
+    (congrArg Int.ofNat
+      ((congrArg (· * (cellCountPredecessor + 1))
+          (Nat.mul_one (blockSizePredecessor + 1))).trans
+        (Nat.one_mul
+          (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor
+            + 1)).symm))
+
+/-- **The coarse mesh is the block-scaled fine mesh** (R1) — refining each cell
+into `blockSize` subcells scales the mesh down by `blockSize`. -/
+theorem meshWidthRefinesByBlock (lowerBound upperBound : RationalPair)
+    (blockSizePredecessor cellCountPredecessor : Nat) :
+    DenotesSameAs (meshWidth lowerBound upperBound cellCountPredecessor)
+      (mulExact (natRational (blockSizePredecessor + 1))
+        (meshWidth lowerBound upperBound
+          (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor))) :=
+  let intervalWidth := subExact upperBound lowerBound
+  let refinedPredecessor :=
+    refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor
+  denotesSameAsSymm
+    (denotesSameAsTrans
+      (denotesSameAsSymm
+        (mulExactAssoc (natRational (blockSizePredecessor + 1)) intervalWidth
+          (reciprocalOfSucc refinedPredecessor)))
+      (denotesSameAsTrans
+        (mulExactCongrLeft (reciprocalOfSucc refinedPredecessor)
+          (mulExactComm (natRational (blockSizePredecessor + 1)) intervalWidth))
+        (denotesSameAsTrans
+          (mulExactAssoc intervalWidth (natRational (blockSizePredecessor + 1))
+            (reciprocalOfSucc refinedPredecessor))
+          (mulExactCongrRight intervalWidth
+            (reciprocalBlockCancels blockSizePredecessor cellCountPredecessor)))))
+
+/-- **The coarse left endpoint IS the refined block-base endpoint** (R2) — the
+`blockIndex`-th coarse sample equals the `(blockSize·blockIndex)`-th fine sample. -/
+theorem samplePointBaseRefines (lowerBound upperBound : RationalPair)
+    (blockSizePredecessor cellCountPredecessor blockIndex : Nat) :
+    DenotesSameAs (samplePoint lowerBound upperBound cellCountPredecessor blockIndex)
+      (samplePoint lowerBound upperBound
+        (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor)
+        ((blockSizePredecessor + 1) * blockIndex)) :=
+  let refinedPredecessor :=
+    refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor
+  let refinedMesh := meshWidth lowerBound upperBound refinedPredecessor
+  addExactCongrRight lowerBound
+    (denotesSameAsTrans
+      (mulExactCongrRight (natRational blockIndex)
+        (meshWidthRefinesByBlock lowerBound upperBound blockSizePredecessor
+          cellCountPredecessor))
+      (denotesSameAsTrans
+        (denotesSameAsSymm
+          (mulExactAssoc (natRational blockIndex)
+            (natRational (blockSizePredecessor + 1)) refinedMesh))
+        (denotesSameAsTrans
+          (mulExactCongrLeft refinedMesh
+            (mulExactComm (natRational blockIndex)
+              (natRational (blockSizePredecessor + 1))))
+          (mulExactCongrLeft refinedMesh
+            (natRationalMul (blockSizePredecessor + 1) blockIndex)))))
+
 /-! ## The Riemann sum functional -/
 
 /-- **The left-endpoint Riemann sum** — `meshWidth` times the sum of the

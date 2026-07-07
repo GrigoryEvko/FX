@@ -24,6 +24,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natRationalZeroDenotesZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.natScaleRationalDenotesScale
 #assert_no_axioms FX1Poly.ComputerAlgebra.scalarMulRealExactBoundOfNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sumRealRespectsIsWithinRealBoundOnRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.refinedCellCountPredecessor
+#assert_no_axioms FX1Poly.ComputerAlgebra.natRationalMul
+#assert_no_axioms FX1Poly.ComputerAlgebra.reciprocalBlockCancels
+#assert_no_axioms FX1Poly.ComputerAlgebra.meshWidthRefinesByBlock
+#assert_no_axioms FX1Poly.ComputerAlgebra.samplePointBaseRefines
 #assert_no_axioms FX1Poly.ComputerAlgebra.meshWidth
 #assert_no_axioms FX1Poly.ComputerAlgebra.samplePoint
 #assert_no_axioms FX1Poly.ComputerAlgebra.cellCountMeshWidthDenotesSame
