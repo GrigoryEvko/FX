@@ -23,6 +23,9 @@ import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealField
 import FX1PolyAudit.ComputerAlgebra.Algebra.SetoidRingHom
 import FX1PolyAudit.ComputerAlgebra.Algebra.SetoidRingTower
 import FX1PolyAudit.ComputerAlgebra.Algebra.InverseCongruence
+import FX1PolyAudit.ComputerAlgebra.Number.NatModularReduction
+import FX1PolyAudit.ComputerAlgebra.Bits.BitVec
+import FX1PolyAudit.ComputerAlgebra.Bits.BitVecRing
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealLimit
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealContinuity
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeLimit
