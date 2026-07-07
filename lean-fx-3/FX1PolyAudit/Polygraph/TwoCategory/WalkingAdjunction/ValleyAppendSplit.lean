@@ -11,6 +11,11 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 
 namespace FX1PolyAudit
 
+#assert_no_axioms FX1Poly.Polygraph.atomsFreshTotal_ofAllCapArity
+#assert_no_axioms FX1Poly.Polygraph.processSpine_nextFresh_ofAllCapArity
+#assert_no_axioms FX1Poly.Polygraph.processSpine_nextFresh_ofAllCapArity_seed
+#assert_no_axioms FX1Poly.Polygraph.processSpine_links_below_ofAllCapArity_seed
+#assert_no_axioms FX1Poly.Polygraph.processSpine_openWires_below_ofAllCapArity_seed
 #assert_no_axioms FX1Poly.Polygraph.processSpine_loops_ofAllCupArity
 #assert_no_axioms FX1Poly.Polygraph.matchingOf_loops_split
 #assert_no_axioms FX1Poly.Polygraph.stepCup_isSameComponent_bottom

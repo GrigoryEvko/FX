@@ -41,6 +41,92 @@ set_option autoImplicit false
 
 namespace FX1Poly.Polygraph
 
+/-! ## The pure-cap fresh-id invariant — the seed for the survivor re-ranking
+
+A pure-cap block allocates NO fresh ids: every atom carries cap arity `(2, 0)`, so its `generatorCod.length` is
+`0` and `stepAtom_nextFresh` copies `nextFresh` verbatim.  Folded over the whole cap block, the counter is
+untouched, so a cap block run from the canonical seed `⟨range bc, [], bc, 0⟩` ends with `nextFresh = bc`.  Combined
+with the shipped `WireStateFresh` fold-invariant (edges and open wires stay `< nextFresh`), this pins EVERY node
+touched by a pure-cap block to the bottom range `< bc`: no fresh id ever enters the union-find, so the whole
+matching lives among the fixed bottom ports.  This is the structural seed of the through-strand re-ranking — the
+survivors are exactly the un-consumed bottom nodes, and there are no other nodes to confuse them with. -/
+
+/-- A pure-cap block's total fresh count is zero — every cap has empty codomain (`hasCapCodArity`), so each
+`atomsFreshTotal` summand vanishes.  By induction on the `AllCapArity` witness. -/
+theorem atomsFreshTotal_ofAllCapArity
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCap : AllCapArity atoms) : atomsFreshTotal atoms = 0 := by
+  induction pureCap with
+  | nil => rfl
+  | cons _hasCapDomArity hasCapCodArity _restAllCap restFreshZero =>
+      rename_i headAtom rest
+      show headAtom.generatorCod.length + atomsFreshTotal rest = 0
+      rw [hasCapCodArity, restFreshZero]
+
+/-- ★ **A pure-cap block leaves `nextFresh` untouched.**  Its total fresh count is zero
+(`atomsFreshTotal_ofAllCapArity`), and the fold raises `nextFresh` by exactly that count (`processSpine_nextFresh`).
+So caps never allocate — every node the block touches was already present.  This is the fresh-id seed of the
+survivor re-ranking (no fresh id can masquerade as a survivor). -/
+theorem processSpine_nextFresh_ofAllCapArity
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCap : AllCapArity atoms) (state : WireState) :
+    (processSpine state atoms).nextFresh = state.nextFresh := by
+  rw [processSpine_nextFresh atoms state, atomsFreshTotal_ofAllCapArity atoms pureCap, Nat.add_zero]
+
+/-- ★ **From the canonical seed, a pure-cap block's final `nextFresh` is the bottom count.**  The seed's
+`nextFresh` is `bottomCount` and the cap block leaves it fixed (`processSpine_nextFresh_ofAllCapArity`).  So the
+whole pure-cap matching lives in the bottom range: with the shipped `WireStateFresh` invariant this bounds every
+link endpoint and every surviving open wire below `bottomCount`. -/
+theorem processSpine_nextFresh_ofAllCapArity_seed
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCap : AllCapArity atoms) :
+    (processSpine { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
+        atoms).nextFresh = bottomCount :=
+  processSpine_nextFresh_ofAllCapArity atoms pureCap
+    { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
+
+/-- ★ **Every link endpoint of a pure-cap matching sits in the bottom range.**  From the canonical seed the
+shipped conditions fold (`matchingSwapStateConditions_processSpine` off `matchingSwapStateConditions_initial`)
+keeps `WireStateFresh` — every edge endpoint `< nextFresh` — and the cap block pins `nextFresh = bottomCount`
+(`processSpine_nextFresh_ofAllCapArity_seed`).  So the whole union-find lives among the fixed bottom ports: no cap
+ever joins a fresh id, only bottom nodes.  This is the connectivity seed of the survivor re-ranking. -/
+theorem processSpine_links_below_ofAllCapArity_seed
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (bottomPositive : 0 < bottomCount)
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCap : AllCapArity atoms) :
+    ∀ edge ∈ (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ atoms).links,
+      edge.1 < bottomCount ∧ edge.2 < bottomCount := by
+  intro edge edgeInLinks
+  have conditions := matchingSwapStateConditions_processSpine bottomCount atoms
+    { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
+    (matchingSwapStateConditions_initial bottomCount bottomPositive)
+  have freshEdges := conditions.fresh.2 edge edgeInLinks
+  rw [processSpine_nextFresh_ofAllCapArity_seed bottomCount atoms pureCap] at freshEdges
+  exact freshEdges
+
+/-- ★ **Every surviving open wire of a pure-cap matching is a bottom node.**  Same `WireStateFresh` +
+`nextFresh = bottomCount` argument as the link bound: the un-consumed open wires are all `< bottomCount`, i.e. the
+survivors are exactly a sub-collection of the original bottom ports (caps only ever DROP wires, never allocate).
+The open-wire half of the survivor seed. -/
+theorem processSpine_openWires_below_ofAllCapArity_seed
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (bottomPositive : 0 < bottomCount)
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCap : AllCapArity atoms) :
+    ∀ wire ∈ (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ atoms).openWires,
+      wire < bottomCount := by
+  intro wire wireInOpen
+  have conditions := matchingSwapStateConditions_processSpine bottomCount atoms
+    { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
+    (matchingSwapStateConditions_initial bottomCount bottomPositive)
+  have freshWire := conditions.fresh.1 wire wireInOpen
+  rw [processSpine_nextFresh_ofAllCapArity_seed bottomCount atoms pureCap] at freshWire
+  exact freshWire
+
 /-! ## The cup block preserves the loop count -/
 
 /-- ★ **A pure-cup block preserves the loop count of any processing state.**  Every atom is a cup
