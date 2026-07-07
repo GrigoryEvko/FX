@@ -13,6 +13,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.processSpine_loops_ofAllCupArity
 #assert_no_axioms FX1Poly.Polygraph.matchingOf_loops_split
+#assert_no_axioms FX1Poly.Polygraph.stepCup_isSameComponent_bottom
+#assert_no_axioms FX1Poly.Polygraph.processSpine_isSameComponent_bottom_ofAllCupArity
 #assert_no_axioms FX1Poly.Polygraph.spineHasCupCapAtoms_ofAllCapArity
 #assert_no_axioms FX1Poly.Polygraph.spineHasCupCapAtoms_ofAllCupArity
 #assert_no_axioms FX1Poly.Polygraph.valleysWithBlockMatchingEq_spineTraceEquiv

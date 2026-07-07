@@ -3,6 +3,8 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcMatchViewFold
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingVcompLeftCongruence
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingFoldCongruence
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SpineArityDiscipline
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingViewStability
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingRightPadSeed
 
 /-! # ValleyAppendSplit — Piece I of the fib-3 gate: the valley-append `matchingOf` split
 
@@ -83,6 +85,60 @@ theorem matchingOf_loops_split
   exact processSpine_loops_ofAllCupArity cupBlock cupPure
     (processSpine { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
       capBlock)
+
+/-! ## The bottom-bottom component frame — cups preserve connectivity among the fixed bottom nodes
+
+The bottom boundary ports `0 … bc-1` sit in the FIXED `List.range bc` prefix of `matchingBoundaryNodes`, never
+touched by a cup (which only splices fresh legs into the open-wire suffix).  So a cup's join of its two fresh
+legs cannot change the same-component relation between any two bottom nodes — the self before/after invariant
+`stepCup_isSameComponent_boundaryReads` at bottom indices, where the boundary read IS the index
+(`matchingBoundaryNodes_getAt_bottom`).  Folded over a pure-cup block, this gives the BOTTOM-BOTTOM component
+frame: run from any conditioned mid-state, a cup block preserves same-component among the bottom nodes.  This is
+the connectivity half of the cap-side restriction's boundary-neutrality (the recon's flagged before/after cup
+invariant), reducing the cap restriction's remaining content to the through-strand re-ranking alone. -/
+
+/-- A single cup preserves the same-component relation between two bottom nodes: the cup joins its two FRESH legs
+(`stepCup_links`), which the self before/after invariant `stepCup_isSameComponent_boundaryReads` shows is
+separated from every boundary read; at bottom indices the boundary read is the index itself
+(`matchingBoundaryNodes_getAt_bottom`). -/
+theorem stepCup_isSameComponent_bottom (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state)
+    (position indexA indexB : Nat) (aBelow : indexA < bottomCount) (bBelow : indexB < bottomCount) :
+    isSameComponent (stepCup state position).links indexA indexB
+      = isSameComponent state.links indexA indexB := by
+  rw [stepCup_links]
+  have key := stepCup_isSameComponent_boundaryReads bottomCount state conditions indexA indexB
+  rw [matchingBoundaryNodes_getAt_bottom bottomCount state indexA aBelow,
+    matchingBoundaryNodes_getAt_bottom bottomCount state indexB bBelow] at key
+  exact key
+
+/-- ★ **The bottom-bottom component frame.**  Run from any conditioned mid-state, a pure-cup block preserves the
+same-component relation between any two bottom nodes `< bottomCount`.  By induction on the `AllCupArity` witness:
+each cup step is a `stepCup` (`stepAtom_ofCupArity`) that leaves bottom-node connectivity fixed
+(`stepCup_isSameComponent_bottom`), and the conditions package is preserved along the fold
+(`matchingSwapStateConditions_stepAtom`).  This is the connectivity half of the cap-side restriction lemma: the
+cup block, appended after the cap block, leaves the cap block's bottom-bottom arcs invariant. -/
+theorem processSpine_isSameComponent_bottom_ofAllCupArity
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCup : AllCupArity atoms) :
+    (state : WireState) → MatchingSwapStateConditions bottomCount state →
+    ∀ indexA indexB, indexA < bottomCount → indexB < bottomCount →
+      isSameComponent (processSpine state atoms).links indexA indexB
+        = isSameComponent state.links indexA indexB := by
+  induction pureCup with
+  | nil => intro _ _ _ _ _ _; rfl
+  | cons hasCupDomArity hasCupCodArity _restAllCup restFrame =>
+      rename_i headAtom rest
+      intro state conditions indexA indexB aBelow bBelow
+      show isSameComponent (processSpine (stepAtom state headAtom) rest).links indexA indexB
+        = isSameComponent state.links indexA indexB
+      rw [restFrame (stepAtom state headAtom)
+          (matchingSwapStateConditions_stepAtom bottomCount state headAtom conditions)
+          indexA indexB aBelow bBelow,
+        stepAtom_ofCupArity state headAtom hasCupDomArity hasCupCodArity,
+        stepCup_isSameComponent_bottom bottomCount state conditions
+          headAtom.leftContext.length indexA indexB aBelow bBelow]
 
 /-! ## The arity bridges (pure-cap / pure-cup imply the generic cup/cap discipline)
 
