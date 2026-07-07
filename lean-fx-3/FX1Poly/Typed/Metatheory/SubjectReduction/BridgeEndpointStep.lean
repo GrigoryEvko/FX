@@ -152,7 +152,8 @@ that genuinely USES its dimension binder (affine count exactly 1, discharged by
 is the weakened interval code; its endpoint substitutions compute definitionally to the bare
 endpoints, so the bridge code reads `Bridge(Interval, 0, 1)`. -/
 theorem identityPathGradedTyped {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) :
+    (context : TypingContext profile scope)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeDescGradedIntro profile context
       (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩))
       (bridgeTypeCell intervalTypeCell intervalZeroCell intervalOneCell) :=
@@ -160,6 +161,7 @@ theorem identityPathGradedTyped {profile : PolyProfile} {scope : Nat}
     (HasTypeDescPi.ofFormation
       (HasTypeDesc.var (context.cons intervalTypeCell) ⟨0, Nat.succ_pos scope⟩))
     (Nat.le_of_eq (RawTerm.occurrenceCountAt_var_self ⟨0, Nat.succ_pos scope⟩))
+    contextLockFree
 
 /-- **★ Every typed term embeds as the reflexivity bridge, typed natively.**  `t : T  ⟹
 pathLam(weaken t) : Bridge(T, t, t)` — the reflexivity bridge (the derivable `refl` of internal
@@ -171,7 +173,8 @@ parametricity), with the affine usage premise PROVED at grade `0`
 `HasTypeUnion.endpointRedexNativelyTypedWhole`). -/
 theorem constantBridgeGradedOfTyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {constantBody typeCode : RawTerm scope}
-    (bodyTyped : HasTypeDescPi profile context constantBody typeCode) :
+    (bodyTyped : HasTypeDescPi profile context constantBody typeCode)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeDescGradedIntro profile context (pathLamCell (RawTerm.weaken constantBody))
       (bridgeTypeCell typeCode constantBody constantBody) := by
   have intro := gradedIntroEngine_typesPathLam (carrierCode := typeCode)
@@ -179,6 +182,7 @@ theorem constantBridgeGradedOfTyped {profile : PolyProfile} {scope : Nat}
     (bodyTyped.weakenUnderBinding intervalTypeCell)
     (by rw [RawTerm.occurrenceCountAt_weaken_zeroPosition]
         exact Nat.zero_le 1)
+    contextLockFree
   rw [RawTerm.subst0_weaken, RawTerm.subst0_weaken] at intro
   exact intro
 

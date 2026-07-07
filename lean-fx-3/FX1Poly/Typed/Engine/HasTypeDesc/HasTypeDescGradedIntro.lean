@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleDescGradedBinder
 import FX1Poly.Typed.Engine.RuleTables.GradedIntroRule
+import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
 
 /-! # FX1Poly/Typed/HasTypeDescGradedIntro — NATIVE-23: pathLam as a native graded intro row (the KEYSTONE)
 
@@ -81,13 +82,13 @@ inductive HasTypeDescGradedIntro (profile : PolyProfile) :
       (isIntro : gradedIntroRuleOf generator = some rule)
       (binderGraded : gradedBinderChecks rule.binderUsage body)
       (domainFormed : rule.demandsDomainFormation = true →
-        HasTypeDescPi profile context (rule.domainCell scope typeParamA)
+        HasTypeUnion profile context (rule.domainCell scope typeParamA)
           (universeCodeCell domainLevel flag))
       (classifierFormed : rule.demandsClassifierFormation = true →
-        HasTypeDescPi profile (context.cons (rule.domainCell scope typeParamA))
+        HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
           (rule.bodyClassifier scope typeParamA typeParamB)
           (universeCodeCell codomainLevel flag))
-      (bodyTyped : HasTypeDescPi profile (context.cons (rule.domainCell scope typeParamA))
+      (bodyTyped : HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
         body (rule.bodyClassifier scope typeParamA typeParamB)) :
       HasTypeDescGradedIntro profile context
         (rule.memberCell scope typeParamA body)
@@ -101,6 +102,7 @@ theorem gradedIntroEngine_typesLam {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+    (contextLockFree : context.isLockFreeContext = true)
     (domainTyped :
       HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
     (codomainTyped :
@@ -112,7 +114,11 @@ theorem gradedIntroEngine_typesLam {profile : PolyProfile} {scope : Nat}
       (piTyCodeCell domainCode codomainCode) :=
   HasTypeDescGradedIntro.genIntro context .gen_lam lamGradedIntroRule
     domainCode codomainCode body domainLevel codomainLevel flag rfl trivial
-    (fun _ => domainTyped) (fun _ => codomainTyped) bodyTyped
+    (fun _ => domainTyped.ofGrownReflected contextLockFree)
+    (fun _ => codomainTyped.ofGrownReflected
+      ((isLockFreeContext_cons context domainCode).trans contextLockFree))
+    (bodyTyped.ofGrownReflected
+      ((isLockFreeContext_cons context domainCode).trans contextLockFree))
 
 /-- **The affine path-intro premises drive the generic arm at the affine pathLam row.**  Subject
 `pathLamCell`, body-dependent classifier (the bridge code at the endpoint substitutions) — the affine path
@@ -124,7 +130,8 @@ theorem gradedIntroEngine_typesPathLam {profile : PolyProfile} {scope : Nat}
     (bodyTyped : HasTypeDescPi profile (context.cons intervalTypeCell) body
       (RawTerm.weaken carrierCode))
     (dimensionAffine :
-      RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1) :
+      RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeDescGradedIntro profile context (pathLamCell body)
       (bridgeTypeCell carrierCode
         (RawTerm.subst0 body intervalZeroCell)
@@ -133,7 +140,9 @@ theorem gradedIntroEngine_typesPathLam {profile : PolyProfile} {scope : Nat}
     carrierCode (RawTerm.weaken carrierCode) body
     LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl dimensionAffine
     (fun gateHolds => Bool.noConfusion gateHolds)
-    (fun gateHolds => Bool.noConfusion gateHolds) bodyTyped
+    (fun gateHolds => Bool.noConfusion gateHolds)
+    (bodyTyped.ofGrownReflected
+      ((isLockFreeContext_cons context intervalTypeCell).trans contextLockFree))
 
 /-! ## ★ Soundness: every generic typing is a bespoke derivation -/
 
@@ -152,8 +161,7 @@ theorem HasTypeDescGradedIntro.soundness {profile : PolyProfile} {scope : Nat}
     (∃ (domainCode : RawTerm scope) (body codomainCode : RawTerm (scope + 1)),
       subject = lamCell domainCode body ∧
       classifier = piTyCodeCell domainCode codomainCode ∧
-      HasTypeDescPi profile context (lamCell domainCode body)
-        (piTyCodeCell domainCode codomainCode))
+      HasTypeUnion profile (context.cons domainCode) body codomainCode)
     ∨ (∃ (carrierCode : RawTerm scope) (body : RawTerm (scope + 1)),
       subject = pathLamCell body ∧
       classifier = bridgeTypeCell carrierCode
@@ -168,9 +176,7 @@ theorem HasTypeDescGradedIntro.soundness {profile : PolyProfile} {scope : Nat}
       have hRule : rule = lamGradedIntroRule :=
         Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
       subst hRule
-      exact Or.inl ⟨typeParamA, body, typeParamB, rfl, rfl,
-        HasTypeDescPi.piIntro domainLevel codomainLevel flag
-          (domainFormed rfl) (classifierFormed rfl) bodyTyped⟩
+      exact Or.inl ⟨typeParamA, body, typeParamB, rfl, rfl, bodyTyped⟩
     · by_cases hPath : generator = .gen_pathLam
       · subst hPath
         have hRule : rule = pathLamGradedIntroRule :=
@@ -193,6 +199,7 @@ theorem closedConstantLambdaGradedEngineTyped {profile : PolyProfile} (flag : Un
         (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)) :=
   gradedIntroEngine_typesLam
     (LevelExpr.lsucc LevelExpr.lzero) (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag
+    isLockFreeContext_empty
     (HasTypeDescPi.ofFormation
       (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
     (HasTypeDescPi.ofFormation
@@ -220,6 +227,7 @@ theorem constantBridgeGradedEngineTyped {profile : PolyProfile} (flag : Universe
         (TypingContext.cons TypingContext.empty intervalTypeCell)
         LevelExpr.lzero flag))
     (Nat.zero_le 1)
+    isLockFreeContext_empty
 
 /-! ## ★ The grade is load-bearing: double dimension use is REJECTED
 
