@@ -29,5 +29,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.sqrtSampleIndexSuccessor
 #assert_no_axioms FX1Poly.ComputerAlgebra.natSelfLeSqrtSampleIndex
 #assert_no_axioms FX1Poly.ComputerAlgebra.sqrtRealApproximation
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSqLtSqOfNonNegOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApproxIsNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulExactLtSquareOfNonNegOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualAsOfMulExactSquareLeNonNeg
 
 end FX1PolyAudit

@@ -282,4 +282,88 @@ grid.  TOTAL on every real. -/
 def sqrtRealApproximation (value : RegularReal) (index : Nat) : RationalPair :=
   rationalSqrtApprox (value.approximation (sqrtSampleIndex index)) (sqrtGridIndex index)
 
+/-! ## The square-reflection bridge (NUM-R-SQRT brick 4)
+
+The Hölder-½ regularity threads the two square brackets `s² ≤ q ≤ (s+grid)²` through
+`a`'s own regularity and then must take a SQUARE ROOT of the resulting square bound to
+recover a bound on `s` itself.  That √-back step is the rational reflection
+`0 ≤ t → s² ≤ t² → s ≤ t`, whose engine is the Int-level strict square monotonicity
+of NODE 1.  This section builds the reflection on `RationalPair` (the shape the
+regularity consumes) plus the output-nonnegativity fact the whole chain rides on
+(`natSqrt m / (g+1)` has an `ofNat` numerator). -/
+
+/-- **Int strict square monotonicity** — `0 ≤ a < b` scales to `a*a < b*b`: below by
+the nonnegative left factor (`a*a ≤ a*b`), strictly by the positive right factor
+(`a*b < b*b`).  The strict companion of the reflection `intLeOfSqLeSqNonNeg`. -/
+theorem intSqLtSqOfNonNegOfLt {lowValue highValue : Int}
+    (isLowNonNeg : (0 : Int) ≤ lowValue) (isLessThan : lowValue < highValue) :
+    lowValue * lowValue < highValue * highValue :=
+  let isHighPositive : (0 : Int) < highValue :=
+    intLessThanOfLessEqualOfLessThan isLowNonNeg isLessThan
+  let lowSquareBelowMixed : lowValue * lowValue ≤ lowValue * highValue :=
+    intMulLeMulLeftOfNonNeg (intLessEqualOfLessThan isLessThan) isLowNonNeg
+  let mixedBelowHighSquare : lowValue * highValue < highValue * highValue :=
+    intMulLtMulRightOfPos isLessThan isHighPositive
+  intLessThanOfLessEqualOfLessThan lowSquareBelowMixed mixedBelowHighSquare
+
+/-- The √-approximation is nonnegative — its numerator is the `ofNat` root `natSqrt m`. -/
+theorem rationalSqrtApproxIsNonNegative (value : RationalPair) (gridPredecessor : Nat) :
+    IsNonNegative (rationalSqrtApprox value gridPredecessor) :=
+  ratioOfNatSuccIsNonNegative
+    (natSqrt (rationalSqrtRadicand value gridPredecessor)) gridPredecessor
+
+/-- **Rational strict square monotonicity** — `0 ≤ s < t` gives `s² < t²` on
+`RationalPair`.  Cross-multiplication turns the mulExact square into the Int square
+`(s.num·den t)² < (t.num·den s)²` after `intMulSwapMiddle` regroups the four factors;
+`intSqLtSqOfNonNegOfLt` then discharges it (the cross product `s.num·den t` is
+nonnegative because both factors are). -/
+theorem mulExactLtSquareOfNonNegOfLt {lowValue highValue : RationalPair}
+    (isLowNonNeg : IsNonNegative lowValue)
+    (isLessThan : LessThanAs lowValue highValue) :
+    LessThanAs (mulExact lowValue lowValue) (mulExact highValue highValue) :=
+  let crossLow : Int := lowValue.numerator * denominatorInt highValue
+  let crossHigh : Int := highValue.numerator * denominatorInt lowValue
+  let isCrossLowNonNeg : (0 : Int) ≤ crossLow :=
+    intLessEqualOfEqLeft (intZeroMul (denominatorInt highValue)).symm
+      (intMulLeMulRightOfNonNeg (numeratorNonNegativeOfIsNonNegative isLowNonNeg)
+        (intLessEqualOfLessThan (denominatorIntIsPositive highValue)))
+  let squaresOrdered : crossLow * crossLow < crossHigh * crossHigh :=
+    intSqLtSqOfNonNegOfLt isCrossLowNonNeg isLessThan
+  let regroupLow :
+      lowValue.numerator * lowValue.numerator *
+          (denominatorInt highValue * denominatorInt highValue) =
+        crossLow * crossLow :=
+    intMulSwapMiddle lowValue.numerator lowValue.numerator
+      (denominatorInt highValue) (denominatorInt highValue)
+  let regroupHigh :
+      highValue.numerator * highValue.numerator *
+          (denominatorInt lowValue * denominatorInt lowValue) =
+        crossHigh * crossHigh :=
+    intMulSwapMiddle highValue.numerator highValue.numerator
+      (denominatorInt lowValue) (denominatorInt lowValue)
+  intLessThanOfEqLeft regroupLow
+    (intLessThanOfEqRight squaresOrdered regroupHigh.symm)
+
+/-- **The rational square reflection** (√-back) — `0 ≤ t` and `s² ≤ t²` give `s ≤ t`.
+By trichotomy: `s < t` or `s = t` land directly; the reversed `t < s` would force
+`t² < s²` (strict monotonicity above), contradicting `s² ≤ t²` by irreflexivity.
+This is THE consumer of NODE 1 the Hölder regularity takes its square root with. -/
+theorem lessEqualAsOfMulExactSquareLeNonNeg {lowValue highValue : RationalPair}
+    (isHighNonNeg : IsNonNegative highValue)
+    (areSquaresOrdered :
+      LessEqualAs (mulExact lowValue lowValue) (mulExact highValue highValue)) :
+    LessEqualAs lowValue highValue :=
+  match lessThanAsTrichotomy lowValue highValue with
+  | .inl isLess => lessEqualAsOfLessThan isLess
+  | .inr (.inl isSame) => lessEqualAsOfDenotesSame isSame
+  | .inr (.inr isReversed) =>
+      let squaresStrict :
+          LessThanAs (mulExact highValue highValue) (mulExact lowValue lowValue) :=
+        mulExactLtSquareOfNonNegOfLt isHighNonNeg isReversed
+      absurd
+        (intLessThanOfLessThanOfLessEqual squaresStrict areSquaresOrdered)
+        (intLessThanIrrefl
+          ((mulExact highValue highValue).numerator *
+            denominatorInt (mulExact lowValue lowValue)))
+
 end FX1Poly.ComputerAlgebra
