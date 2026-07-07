@@ -19,6 +19,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.staircaseZigZagStraightensInContext
 #assert_no_axioms FX1Poly.Polygraph.whiskeredZigZagCollapses
 #assert_no_axioms FX1Poly.Polygraph.seedLeftSnakeStraightensInFullContext
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightZigZagCollapses
+#assert_no_axioms FX1Poly.Polygraph.snakeCommutesPastDisjointThenStraightens
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasZigZagStraightensInContext
 
 end FX1PolyAudit

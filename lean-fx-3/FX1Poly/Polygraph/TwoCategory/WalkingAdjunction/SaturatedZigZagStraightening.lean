@@ -26,6 +26,11 @@ context, which re-routes to a through-strand.
   * `staircaseZigZagStraightensInContext` — the CANONICAL-STAIRCASE zig-zag at ANY block position and ANY width
     straightens in arbitrary vertical context, fed the shipped `staircaseSnakeWhiskeredCollapses`.  So the
     straightening is uniform across the whole staircase alphabet, in context.
+  * `whiskeredZigZagCollapses` / `seedLeftSnakeStraightensInFullContext` — the HORIZONTAL band context (whisker
+    on both sides) composed with the vertical context: FULLY GENERAL spine-context straightening.
+  * `snakeCommutesPastDisjointThenStraightens` — the GODEMENT step: a partner-pair band commutes PAST a disjoint
+    intervening cell (`saturatedGodementExchange`) to where it straightens away, so intervening disjoint atoms do
+    not block reaching an innermost partner pair.
 
 Raw Lean 4 + Init; every proof is saturated congruence + `triangleLeft`/`triangleRight` + the free `vcompId`
 laws — no cast, no classical, no `sorry`.  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
@@ -216,6 +221,51 @@ theorem seedLeftSnakeStraightensInFullContext {modeLeft modeRight : AdjunctionMo
       (RawTwoCellExpr.vcomp pre post) :=
   zigzagStraightensInVcompContext _
     (whiskeredZigZagCollapses wl wr adjunctionSeedLeftSnake SaturatedTwoCellConv.triangleLeft) pre post
+
+/-! ## The Godement step: a partner-pair band commutes PAST a disjoint intervening cell, then straightens -/
+
+/-- A collapsing zig-zag whiskered on the RIGHT only still collapses to the identity — the one-sided helper. -/
+theorem whiskerRightZigZagCollapses {modeA modeB modeRight : AdjunctionMode}
+    (wr : ModalityPath adjunctionGraph modeB modeRight)
+    {pathG : ModalityPath adjunctionGraph modeA modeB}
+    (snake : RawTwoCellExpr adjunctionModeSignature pathG pathG)
+    (collapses : SaturatedTwoCellConv snake
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature) pathG)) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) wr snake)
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature) (composePath pathG wr)) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerRightCongr wr collapses)
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerRightId (signature := adjunctionModeSignature) pathG wr)))
+
+/-- ★★ **A partner-pair band COMMUTES past a disjoint intervening cell (Godement), then STRAIGHTENS away.**
+Take a collapsing zig-zag `snake : fPath ⟹ fPath` sitting on the left band and a horizontally-DISJOINT cell
+`cellB : gPath ⟹ g'Path` on the right band.  The upper Godement path `(snake ▷ gPath) ⊟ (fPath ◁ cellB)` — the
+snake fires, THEN the disjoint cell — is `SaturatedTwoCellConv` to just `fPath ◁ cellB`: commute the snake past
+`cellB` by `saturatedGodementExchange` (bringing the snake to the far side), then straighten it away by the suffix
+move (`whiskerRightZigZagCollapses` + `zigzagStraightensSuffix`).  So an intervening DISJOINT atom does NOT block
+removing a partner pair — the Godement exchange brings the pair to where it collapses.  This is exactly the
+`saturatedGodementExchange`-to-adjacency mechanism a valley-normalization driver needs to reach an innermost
+partner pair through disjoint intervening atoms. -/
+theorem snakeCommutesPastDisjointThenStraightens {modeA modeB modeC : AdjunctionMode}
+    {fPath : ModalityPath adjunctionGraph modeA modeB}
+    {gPath g'Path : ModalityPath adjunctionGraph modeB modeC}
+    (snake : RawTwoCellExpr adjunctionModeSignature fPath fPath)
+    (collapses : SaturatedTwoCellConv snake
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature) fPath))
+    (cellB : RawTwoCellExpr adjunctionModeSignature gPath g'Path) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) gPath snake)
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) fPath cellB))
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) fPath cellB) :=
+  SaturatedTwoCellConv.trans
+    (saturatedGodementExchange snake cellB)
+    (zigzagStraightensSuffix
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) g'Path snake)
+      (whiskerRightZigZagCollapses g'Path snake collapses)
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) fPath cellB))
 
 /-! ## Honesty marker -/
 
