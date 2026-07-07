@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingCupWindowScanSplit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshComponentInvisibility
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentGodement
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyAppendSplit
 
 /-! # MatchingCupWindowProvisos — discharging the single-cup partner-scan window provisos
 
@@ -118,5 +119,56 @@ theorem stepCup_windowPairFails_atFreshLegs (state : WireState) (position : Nat)
       (natListGetAt boundaryNodes leg) survivorNode (legReads leg legInWindow) survivorBelow
     exact offSurvivor
   rw [rootTestFalse, Bool.and_false]
+
+/-! ## Proviso (2) — the survivor's partner is not a bottom port (the front-segment miss frame)
+
+`findPartnerScan_range_frontSegmentMisses` takes `frontFails`: no bottom candidate (other than the survivor
+itself) shares the survivor's component in the COMPOSITE (whole-valley) links.  A cup block, run after the cap
+block, only splices FRESH top arcs and NEVER touches the fixed bottom prefix `0 … bottomCount-1`
+(`processSpine_isSameComponent_bottom_ofAllCupArity`), so the composite bottom-bottom same-component relation
+equals the cap-block mid-state's.  This frame turns "survivor isolated among bottoms at the mid-state" (the
+through-strand content the cap block supplies — the standing valley-descent residual #2185) into the exact
+`frontFails` boolean at the composite state, ready to feed `findPartnerScan_range_frontSegmentMisses`. -/
+
+/-- ★ **The `frontFails` frame at a cup-block composite state.**  Given the survivor bottom port is isolated
+among the bottom ports at the cap-block mid-state (`midIsolated` — no other bottom shares its component), a pure
+cup block preserves that (`processSpine_isSameComponent_bottom_ofAllCupArity`), so at the composite
+(post-cup-block) state every bottom candidate's exclude-and-root conjunct is `false`: the diagonal by the `!=`
+conjunct, every off-diagonal bottom by the preserved isolation (the root conjunct).  This is precisely the
+`frontFails` hypothesis of `findPartnerScan_range_frontSegmentMisses`. -/
+theorem cupBlock_frontFails_ofMidIsolated
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (cupBlock : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (cupPure : AllCupArity cupBlock) (midState : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount midState)
+    (survivorIndex : Nat) (survivorBelow : survivorIndex < bottomCount)
+    (midIsolated : ∀ candidate, candidate < bottomCount → candidate ≠ survivorIndex →
+      isSameComponent midState.links candidate survivorIndex = false) :
+    ∀ candidate, candidate ∈ List.range bottomCount →
+      (candidate != survivorIndex
+          && unionFindRootOf (processSpine midState cupBlock).links
+              (natListGetAt (matchingBoundaryNodes bottomCount (processSpine midState cupBlock)) candidate)
+            == unionFindRootOf (processSpine midState cupBlock).links
+              (natListGetAt (matchingBoundaryNodes bottomCount (processSpine midState cupBlock)) survivorIndex))
+        = false := by
+  intro candidate candidateInRange
+  have candidateBelow : candidate < bottomCount := mem_range_imp_lt candidateInRange
+  rw [matchingBoundaryNodes_getAt_bottom bottomCount (processSpine midState cupBlock) candidate candidateBelow,
+    matchingBoundaryNodes_getAt_bottom bottomCount (processSpine midState cupBlock) survivorIndex survivorBelow]
+  match Nat.decEq candidate survivorIndex with
+  | isTrue candidateEqSurvivor =>
+      rw [candidateEqSurvivor]
+      have selfBeq : (survivorIndex == survivorIndex) = true := by apply decide_eq_true; rfl
+      have diagFalse : (survivorIndex != survivorIndex) = false := congrArg Bool.not selfBeq
+      rw [diagFalse]; rfl
+  | isFalse candidateNeSurvivor =>
+      have rootTestFalse :
+          (unionFindRootOf (processSpine midState cupBlock).links candidate
+            == unionFindRootOf (processSpine midState cupBlock).links survivorIndex) = false := by
+        show isSameComponent (processSpine midState cupBlock).links candidate survivorIndex = false
+        rw [processSpine_isSameComponent_bottom_ofAllCupArity bottomCount cupBlock cupPure midState
+          conditions candidate survivorIndex candidateBelow survivorBelow]
+        exact midIsolated candidate candidateBelow candidateNeSurvivor
+      rw [rootTestFalse, Bool.and_false]
 
 end FX1Poly.Polygraph
