@@ -356,6 +356,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MatchingPartnerInvol
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ValleyTopCountTotal
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ValleyCapConsumedFront
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ValleyCapTopPartner
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ValleyCupRestrict
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingRouteUnification
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineTraceAppendCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
@@ -643,6 +644,7 @@ import FX1PolyAudit.Polygraph.Steiner.AugmentedDirectedComplex
 import FX1PolyAudit.Polygraph.Steiner.CellCoordinates
 import FX1PolyAudit.Polygraph.Steiner.DecidableCellEq
 import FX1PolyAudit.Polygraph.Steiner.LoopFreeOrder
+import FX1PolyAudit.Polygraph.Steiner.ComputadLoopFree
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
