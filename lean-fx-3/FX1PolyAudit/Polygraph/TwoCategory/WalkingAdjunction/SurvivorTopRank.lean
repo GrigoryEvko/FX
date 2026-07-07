@@ -28,6 +28,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.countBelow_ltSelf_eq_threshold
 #assert_no_axioms FX1Poly.Polygraph.strictMono_decideLt_agree
 #assert_no_axioms FX1Poly.Polygraph.strictMono_countBelow_image_eq_rank
+#assert_no_axioms FX1Poly.Polygraph.countBelow_add_eq
+#assert_no_axioms FX1Poly.Polygraph.countBelow_eq_zero_of_allFalse
+#assert_no_axioms FX1Poly.Polygraph.countBelow_atStrictMonoImage_eq_rank
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasSurvivorTopClassification
 
 end FX1PolyAudit

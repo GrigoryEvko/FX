@@ -190,6 +190,102 @@ theorem strictMono_countBelow_image_eq_rank {phi : Nat → Nat}
       (fun index _ => strictMono_decideLt_agree strictMono rankCap index)]
   exact countBelow_ltSelf_eq_threshold rankCap midWidth (Nat.le_of_lt rankLtWidth)
 
+/-! ## The image-count reindex — count of survivor images below a top port equals the source rank
+
+The abstract engine `strictMono_countBelow_image_eq_rank` counts on the SOURCE domain.  The counting bridge
+needs the TOP-side count: over the boundary offsets `[0, phi rankCap)`, the number of positions holding a
+survivor value (equivalently, positions in the image of the strictly-monotone `phi`) is exactly `rankCap`.
+This is proven directly by structural induction on `rankCap`, sliding a false-window past the cup-leg holes
+between consecutive images. -/
+
+/-- Additive split of a count over a shifted bound — pure, always true, by induction on the added width. -/
+theorem countBelow_add_eq (predicate : Nat → Bool) (base : Nat) :
+    (width : Nat) →
+    countBelow predicate (base + width)
+      = countBelow predicate base + countBelow (fun offset => predicate (base + offset)) width
+  | 0 => (Nat.add_zero (countBelow predicate base)).symm
+  | width + 1 => by
+      show countBelow predicate (base + width) + cond (predicate (base + width)) 1 0
+        = countBelow predicate base
+          + (countBelow (fun offset => predicate (base + offset)) width
+              + cond (predicate (base + width)) 1 0)
+      rw [countBelow_add_eq predicate base width, Nat.add_assoc]
+
+/-- A count over an all-false range is zero. -/
+theorem countBelow_eq_zero_of_allFalse (predicate : Nat → Bool) :
+    (bound : Nat) → (∀ index, index < bound → predicate index = false) →
+    countBelow predicate bound = 0
+  | 0, _ => rfl
+  | bound + 1, allFalse => by
+      show countBelow predicate bound + cond (predicate bound) 1 0 = 0
+      rw [countBelow_eq_zero_of_allFalse predicate bound
+          (fun index indexLt => allFalse index (Nat.lt_succ_of_lt indexLt)),
+        allFalse bound (Nat.lt_succ_self bound), cond_false_one]
+
+/-- From strict monotonicity, `phi` is monotone. -/
+private theorem phiMono_ofStrictMono {phi : Nat → Nat}
+    (strictMono : ∀ firstIndex secondIndex, firstIndex < secondIndex → phi firstIndex < phi secondIndex)
+    {lowerIndex upperIndex : Nat} (leHyp : lowerIndex ≤ upperIndex) : phi lowerIndex ≤ phi upperIndex := by
+  rcases Nat.eq_or_lt_of_le leHyp with eqHyp | ltHyp
+  · exact Nat.le_of_eq (congrArg phi eqHyp)
+  · exact Nat.le_of_lt (strictMono lowerIndex upperIndex ltHyp)
+
+/-- A strictly-monotone `phi` reflects `<`: `phi a < phi b` forces `a < b`. -/
+private theorem phiReflectLt_ofStrictMono {phi : Nat → Nat}
+    (strictMono : ∀ firstIndex secondIndex, firstIndex < secondIndex → phi firstIndex < phi secondIndex)
+    {lowerIndex upperIndex : Nat} (imageLt : phi lowerIndex < phi upperIndex) : lowerIndex < upperIndex := by
+  rcases Nat.lt_or_ge lowerIndex upperIndex with ltCase | geCase
+  · exact ltCase
+  · exact absurd imageLt (Nat.not_lt.mpr (phiMono_ofStrictMono strictMono geCase))
+
+/-- ★ **The image-count reindex.**  For a strictly-monotone `phi` and a Bool predicate `valBelow` that marks
+EXACTLY the image positions of `phi` (every source image `phi sourcePos` is marked, every in-range unmarked
+position is a non-image), the count of marked positions strictly below `phi rankCap` is exactly `rankCap`.
+Proven by structural induction on `rankCap`: the base counts an all-false window `[0, phi 0)` (nothing below
+the first image); the step slides a false window across the cup-leg holes `(phi rankCap, phi (rankCap+1))` —
+all non-image by the strict-monotone squeeze — then picks up the single marked image at `phi rankCap`.  This
+is the top-side ↔ source-side counting bridge the `SurvivorTopRank` marker named as residual #2185's value
+half, closed as a pure `countBelow` identity over a strictly-monotone map. -/
+theorem countBelow_atStrictMonoImage_eq_rank {phi : Nat → Nat} {valBelow : Nat → Bool}
+    {sourceLength finalLength : Nat}
+    (strictMono : ∀ firstIndex secondIndex, firstIndex < secondIndex → phi firstIndex < phi secondIndex)
+    (imageTrue : ∀ sourcePos, sourcePos < sourceLength → valBelow (phi sourcePos) = true)
+    (rangeInv : ∀ sourcePos, sourcePos < sourceLength → phi sourcePos < finalLength)
+    (nonImageFalse : ∀ offset, offset < finalLength →
+        (∀ sourcePos, sourcePos < sourceLength → phi sourcePos ≠ offset) → valBelow offset = false) :
+    (rankCap : Nat) → rankCap < sourceLength → countBelow valBelow (phi rankCap) = rankCap
+  | 0, zeroLt => by
+      apply countBelow_eq_zero_of_allFalse
+      intro offset offsetLt
+      apply nonImageFalse offset (Nat.lt_trans offsetLt (rangeInv 0 zeroLt))
+      intro sourcePos _ phiEq
+      have floorLe : phi 0 ≤ offset := phiEq ▸ phiMono_ofStrictMono strictMono (Nat.zero_le sourcePos)
+      exact Nat.lt_irrefl (phi 0) (Nat.lt_of_le_of_lt floorLe offsetLt)
+  | rankCap + 1, succLt => by
+      have rankLt : rankCap < sourceLength := Nat.lt_of_succ_lt succLt
+      have consecLt : phi rankCap < phi (rankCap + 1) :=
+        strictMono rankCap (rankCap + 1) (Nat.lt_succ_self rankCap)
+      obtain ⟨width, widthEq⟩ := Nat.le.dest consecLt
+      -- widthEq : phi rankCap + 1 + width = phi (rankCap + 1)
+      have windowZero : countBelow (fun offset => valBelow (phi rankCap + 1 + offset)) width = 0 := by
+        apply countBelow_eq_zero_of_allFalse
+        intro offset offsetLt
+        have posLt : phi rankCap + 1 + offset < phi (rankCap + 1) := by
+          rw [← widthEq]; exact Nat.add_lt_add_left offsetLt (phi rankCap + 1)
+        apply nonImageFalse _ (Nat.lt_trans posLt (rangeInv (rankCap + 1) succLt))
+        intro sourcePos _ phiEq
+        have loLt : phi rankCap < phi sourcePos :=
+          phiEq ▸ Nat.lt_of_lt_of_le (Nat.lt_succ_self (phi rankCap))
+            (Nat.le_add_right (phi rankCap + 1) offset)
+        have hiLt : phi sourcePos < phi (rankCap + 1) := phiEq ▸ posLt
+        exact Nat.lt_irrefl rankCap
+          (Nat.lt_of_lt_of_le (phiReflectLt_ofStrictMono strictMono loLt)
+            (Nat.le_of_lt_succ (phiReflectLt_ofStrictMono strictMono hiLt)))
+      rw [← widthEq, countBelow_add_eq valBelow (phi rankCap + 1) width, windowZero, Nat.add_zero]
+      show countBelow valBelow (phi rankCap) + cond (valBelow (phi rankCap)) 1 0 = rankCap + 1
+      rw [imageTrue rankCap rankLt, cond_true_one,
+        countBelow_atStrictMonoImage_eq_rank strictMono imageTrue rangeInv nonImageFalse rankCap rankLt]
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the backward re-ranking's CLASSIFICATION + ORDER ENGINE are CLOSED; the value half

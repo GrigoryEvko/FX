@@ -13,6 +13,8 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.survivorTop_iff_cupImage
+#assert_no_axioms FX1Poly.Polygraph.survivorTop_rankReadoff_ofStrictMono
+#assert_no_axioms FX1Poly.Polygraph.survivorTop_matchingValley_iff_cupImage
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasSurvivorTopCupImageBridge
 
 end FX1PolyAudit
