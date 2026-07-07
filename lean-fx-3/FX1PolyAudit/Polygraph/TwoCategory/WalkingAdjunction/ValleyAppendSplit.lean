@@ -18,5 +18,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.spineHasCupCapAtoms_ofAllCapArity
 #assert_no_axioms FX1Poly.Polygraph.spineHasCupCapAtoms_ofAllCupArity
 #assert_no_axioms FX1Poly.Polygraph.valleysWithBlockMatchingEq_spineTraceEquiv
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasValleyAppendSplitLoopAndFrame
 
 end FX1PolyAudit

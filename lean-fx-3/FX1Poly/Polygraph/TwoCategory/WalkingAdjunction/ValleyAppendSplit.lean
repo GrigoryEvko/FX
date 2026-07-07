@@ -223,4 +223,35 @@ theorem valleysWithBlockMatchingEq_spineTraceEquiv
     capChainedFirst capChainedSecond cupChainedFirst cupChainedSecond
     cupBottomPositive capLengthEq cupLengthEq capDiagramAgree cupDiagramAgree
 
+/-! ## Honesty marker -/
+
+/-- **Honesty marker — Piece I partial: the Piece-II handoff + two restriction fragments landed; the
+through-strand re-ranking is the sole residual (the valley-descent beam #2185).**
+
+Landed here, all zero-axiom:
+
+  * `valleysWithBlockMatchingEq_spineTraceEquiv` — the UNCONDITIONAL Piece-II interface in `matchingOf` terms:
+    per-block `matchingOf` agreement (plus the pure arities, boundary chaining, positivity, and lengths the caller
+    already carries) yields `SpineTraceEquiv`, by converting each block `matchingOf` equality to the `.diagram`
+    shape via `arcDiagram_eq_matching` and invoking the shipped `sameMatchingValleys_spineTraceEquiv`.  So the
+    whole-valley `SpineTraceEquiv` reduces EXACTLY to the valley-append split (the two per-block `matchingOf`
+    equalities from a whole-valley `matchingOf` equality).
+
+  * `matchingOf_loops_split` — the LOOP leg of the cap-side restriction: cups add no loops
+    (`processSpine_loops_ofAllCupArity`), so the whole valley's loop count equals the cap block's.
+
+  * `processSpine_isSameComponent_bottom_ofAllCupArity` — the CONNECTIVITY leg (the before/after cup
+    boundary-neutrality the recon flagged): the cup block, run after the cap block, preserves the same-component
+    relation among the fixed bottom nodes `< bc`, so it leaves the cap block's bottom-bottom arcs invariant.
+
+What this marker does NOT claim: the full valley-append split `matchingOf bc (capBlock ++ cupBlock)` ⇒ per-block
+`matchingOf` equalities.  Its two remaining pieces are the `capRestrict` / `cupRestrict` restriction functions on
+`DiagramType` and the THROUGH-STRAND RE-RANKING — the characterization of `partnerIndexOf` on the survivor
+(through) bottom ports as `bc + (rank among through-bottoms)`, which pins each survivor's partner top port to its
+rank and requires the open-wire ORDER relationship between the mid-state and the whole final state (cups splice
+fresh legs between the survivors, preserving their relative order but shifting their absolute positions).  That is
+the standing "mid-state rigidity / index-shift bijection" residual (the valley-descent beam #2185).  No gate flag
+is flipped.  `= true`. -/
+def fxMode_hasValleyAppendSplitLoopAndFrame : Bool := true
+
 end FX1Poly.Polygraph
