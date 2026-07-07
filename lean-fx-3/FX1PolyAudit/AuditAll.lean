@@ -320,6 +320,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingSta
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedSpineTraceLift
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedZigZagStraightening
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyProgress
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyDescent
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingRouteUnification
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 import FX1PolyAudit.Polygraph.Computad.Signature
