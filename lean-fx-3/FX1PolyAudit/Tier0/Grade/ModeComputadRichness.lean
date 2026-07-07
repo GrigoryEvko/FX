@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Mode.ModeComputadRichness
+import FX1Poly.Tier0.Grade.ModeComputadRichness
 
 /-! # FX1PolyAudit/Tier0/Mode/ModeComputadRichness — zero-axiom gate
 

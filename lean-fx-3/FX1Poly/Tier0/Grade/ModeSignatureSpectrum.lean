@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Mode.GradedSpectrum
+import FX1Poly.Tier0.Grade.GradedSpectrum
 import FX1Poly.Tier0.Mode.AdjointModeSignature
 
 /-! # ModeSignatureSpectrum — wiring the Polygraph mode carrier INTO the grade↔mode spectrum

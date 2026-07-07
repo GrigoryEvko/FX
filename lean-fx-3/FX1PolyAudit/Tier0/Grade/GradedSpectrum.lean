@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Mode.GradedSpectrum
+import FX1Poly.Tier0.Grade.GradedSpectrum
 
 /-! # FX1PolyAudit/Tier0/Mode/GradedSpectrum — zero-axiom gate
 

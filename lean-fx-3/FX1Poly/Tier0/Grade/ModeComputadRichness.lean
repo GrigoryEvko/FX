@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.Computad.ModeComputad
-import FX1Poly.Tier0.Mode.ModeSignatureSpectrum
+import FX1Poly.Tier0.Grade.ModeSignatureSpectrum
 
 /-! # Tier0/Mode/ModeComputadRichness — carrier-computed richness from a finite `ModeComputad`
 
