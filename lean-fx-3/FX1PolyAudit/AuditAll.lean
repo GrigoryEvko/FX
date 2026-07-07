@@ -23,6 +23,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealField
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealLimit
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealContinuity
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeLimit
+import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeContinuity
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 import FX1PolyAudit.TypeAxisLedger
 import FX1PolyAudit.Tier0.Context.AxisObligation
