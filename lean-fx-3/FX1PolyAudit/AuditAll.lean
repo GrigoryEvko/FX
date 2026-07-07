@@ -101,6 +101,7 @@ import FX1PolyAudit.Tier0.Mode.CombineAmalgamation
 import FX1PolyAudit.Polygraph.Computad.WordProblem
 import FX1PolyAudit.Tier0.Mode.CubicalModal
 import FX1PolyAudit.Tier0.Mode.FibrancyMode
+import FX1PolyAudit.Tier0.Mode.AdjointModeSignature
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.Model
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
