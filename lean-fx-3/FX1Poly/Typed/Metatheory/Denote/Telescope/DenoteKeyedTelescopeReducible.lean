@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.Metatheory.Reducibility.Telescope.TelescopeReducible
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/DenoteKeyedTelescopeReducible
     — the denote-keyed telescope-reducibility relation (first brick of the genFormationPi arm, SN-D5d toward SN-043)

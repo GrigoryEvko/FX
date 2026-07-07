@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.KripkeCandidateRenameClosure
 import FX1Poly.Core.Substrate.Neutral.NeutralTerm
 

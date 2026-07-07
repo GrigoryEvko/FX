@@ -1,6 +1,6 @@
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeWellFormed
 import FX1Poly.Typed.Cell.CellSubstitution
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/AbstractionNonDependentUnderSubstLevelFree
     — the simply-typed lam arm of the LEVEL-FREE term fundamental theorem

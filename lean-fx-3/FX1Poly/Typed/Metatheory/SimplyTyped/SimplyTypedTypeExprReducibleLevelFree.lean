@@ -4,7 +4,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConst
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRenameForwardGeneral
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
 import FX1Poly.Typed.Cell.CellSubstitution
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/SimplyTypedTypeExprReducibleLevelFree
     — the domain supplier for the LEVEL-FREE simply-typed term fundamental theorem

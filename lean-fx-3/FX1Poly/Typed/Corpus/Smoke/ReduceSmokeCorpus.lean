@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.ReduceOnce
 import FX1Poly.Core.Rewriting.Reduction.Step.ReduceOnceComplete
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/ReduceSmokeCorpus

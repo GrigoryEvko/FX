@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseFormationMember
 
 /-! # FX1Poly/Typed/DenoteKeyedGenFormationSigmaArm

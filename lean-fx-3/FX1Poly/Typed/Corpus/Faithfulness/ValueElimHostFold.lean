@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Cell.CellConstructors
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicalFormsCandidate
 import FX1Poly.Core.Rewriting.Reduction.Step.StepStar
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep

@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.Cell.CellSubstitution
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/DenoteKeyedCodomainMemberWiring
     — the SN-040-FREE codomain-member wiring for the genFormationPi arms (SN-D5d; toward SN-043/#750)

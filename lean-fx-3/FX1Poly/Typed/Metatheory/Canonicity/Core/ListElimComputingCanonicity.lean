@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedNatCanonicity
 import FX1Poly.Core.Metatheory.Canonicity.ListCanonicalFormsCandidate
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 

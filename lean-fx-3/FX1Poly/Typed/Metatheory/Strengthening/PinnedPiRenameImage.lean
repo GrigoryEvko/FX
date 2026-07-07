@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedPiImageComponents
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/PinnedPiRenameImage — the pinning analysis over an ARBITRARY renaming
      (route-H reflection brick 2)

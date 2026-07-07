@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryParametricity
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 
 /-! # FX1Poly/Typed/KernelBinaryPiElim

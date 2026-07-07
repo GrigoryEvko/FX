@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedBoundedFundamentalMotive
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedPiElimArm
     — the bounded fundamental theorem's Π-ELIMINATION (application) member arm + FT arm (#753 toward SN-043)

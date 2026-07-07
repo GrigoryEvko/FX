@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibility
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFormation
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationReflection
 
 /-! # FX1Poly/Typed/DenoteKeyedSigmaFromChildMembers

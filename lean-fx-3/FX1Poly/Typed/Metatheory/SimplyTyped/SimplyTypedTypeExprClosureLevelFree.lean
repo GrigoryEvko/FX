@@ -1,6 +1,5 @@
 import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTypeExprReducibleLevelFree
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/SimplyTypedTypeExprClosureLevelFree
     — reducible type expressions are closed under renaming and substitution.
