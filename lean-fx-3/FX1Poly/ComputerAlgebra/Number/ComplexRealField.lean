@@ -54,6 +54,84 @@ def isApartFromZeroComplexRespectsDenotesSame {leftValue rightValue : ComplexRea
     (apart : IsApartFromZeroComplex leftValue) : IsApartFromZeroComplex rightValue :=
   realPositivityWitnessCongr (modulusSquaredRespectsDenotesSame areSame) apart
 
+/-! ## Smart constructors — apartness from a component apart from zero
+
+The canonical apartness IS positivity of `|z|^2`; these BUILD it from the more
+familiar "the real OR the imaginary part is apart from zero".  The one
+estimate-bearing brick is `realPositivityWitnessAddNonNegRight` (positive +
+nonnegative stays positive), a direct clone of the shipped
+`realPositivityWitnessMulReal` tail pattern. -/
+
+/-- **Positive + nonnegative stays positive** — the sole new estimate.  At the
+doubled tail index `2*(2w+1)+1` the half margin of `leftValue` survives
+(`tailStaysAboveHalfMargin`), and the nonnegative `rightValue` addend only grows
+the sum, so the margin re-reads EXACTLY as the doubled margin there
+(`reciprocalHalvesDenotesSame`). -/
+def realPositivityWitnessAddNonNegRight {leftValue rightValue : RegularReal}
+    (witness : RealPositivityWitness leftValue)
+    (isRightNonNegative : IsNonNegativeReal rightValue) :
+    RealPositivityWitness (addReal leftValue rightValue) :=
+  let tailIndex := 2 * witness.marginIndex + 1
+  let newMarginIndex := 2 * tailIndex + 1
+  { marginIndex := newMarginIndex
+    hasDoubledMargin :=
+      have isDeep : tailIndex ≤ 2 * newMarginIndex + 1 :=
+        natLeTrans (natSelfLeDoubleSelfSucc tailIndex)
+          (natSelfLeDoubleSelfSucc newMarginIndex)
+      have tail : LessEqualAs (reciprocalOfSucc tailIndex)
+          (leftValue.approximation (2 * newMarginIndex + 1)) :=
+        tailStaysAboveHalfMargin witness.hasDoubledMargin isDeep
+      have grows : LessEqualAs (leftValue.approximation (2 * newMarginIndex + 1))
+          (addExact (leftValue.approximation (2 * newMarginIndex + 1))
+            (rightValue.approximation (2 * newMarginIndex + 1))) :=
+        lessEqualAsSelfAddNonNegRight
+          (leftValue.approximation (2 * newMarginIndex + 1))
+          (isRightNonNegative (2 * newMarginIndex + 1))
+      lessEqualAsCongrLeft (reciprocalHalvesDenotesSame tailIndex)
+        (lessEqualAsTrans tail grows) }
+
+/-- **A component apart from zero squares to a positive** — dispatch on the
+apartness side; both feed `realPositivityWitnessMulReal`, the below-zero arm
+folding the double negation `(-v)(-v) ~ v*v`. -/
+def realPositivityWitnessOfSquareApart {value : RegularReal}
+    (apart : RealApartnessWitness value (constantReal zeroRational)) :
+    RealPositivityWitness (mulReal value value) :=
+  match apart with
+  | .inr isAboveZero =>
+      realPositivityWitnessMulReal
+        (realPositivityWitnessOfAboveZero isAboveZero)
+        (realPositivityWitnessOfAboveZero isAboveZero)
+  | .inl isBelowZero =>
+      realPositivityWitnessCongr
+        (denotesSameRealTrans
+          (mulRealNegLeftDenotesSame value (negReal value))
+          (denotesSameRealTrans
+            (negRealRespectsDenotesSame (mulRealNegRightDenotesSame value value))
+            (negRealNegRealDenotesSame (mulReal value value))))
+        (realPositivityWitnessMulReal
+          (negRealPositivityWitnessOfBelowZero isBelowZero)
+          (negRealPositivityWitnessOfBelowZero isBelowZero))
+
+/-- **`z` apart from zero from its real part apart** — `a^2 > 0` and `b^2 >= 0`. -/
+def isApartFromZeroComplexOfRealPartApart {value : ComplexReal}
+    (realApart : RealApartnessWitness value.realPart (constantReal zeroRational)) :
+    IsApartFromZeroComplex value :=
+  realPositivityWitnessAddNonNegRight
+    (realPositivityWitnessOfSquareApart realApart)
+    (mulRealSelfIsNonNegativeReal value.imaginaryPart)
+
+/-- **`z` apart from zero from its imaginary part apart** — `b^2 > 0` and
+`a^2 >= 0`, transported across `addRealComm` to reuse the right-summand brick. -/
+def isApartFromZeroComplexOfImagPartApart {value : ComplexReal}
+    (imagApart : RealApartnessWitness value.imaginaryPart (constantReal zeroRational)) :
+    IsApartFromZeroComplex value :=
+  realPositivityWitnessCongr
+    (addRealComm (mulReal value.imaginaryPart value.imaginaryPart)
+      (mulReal value.realPart value.realPart))
+    (realPositivityWitnessAddNonNegRight
+      (realPositivityWitnessOfSquareApart imagApart)
+      (mulRealSelfIsNonNegativeReal value.realPart))
+
 /-! ## The inverse -/
 
 /-- **The complex inverse** `z^{-1} = conj z / |z|^2` — the conjugate scaled
