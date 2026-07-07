@@ -223,6 +223,7 @@ import FX1PolyAudit.Typed.Metatheory.Reducibility.StrongNormalization
 import FX1PolyAudit.Typed.Metatheory.Reducibility.StrongNormalizationMore
 import FX1PolyAudit.Typed.Metatheory.Reducibility.StrongNormalizationMore2
 import FX1PolyAudit.Typed.Metatheory.Reducibility.StrongNormalizationMore3
+import FX1PolyAudit.Typed.Metatheory.Reducibility.NativeUnionOpenStronglyNormalization
 import FX1PolyAudit.Typed.Shards.SubjectReductionEta.Part01
 import FX1PolyAudit.Typed.Shards.SubjectReductionEta.Part02
 import FX1PolyAudit.Core.Metatheory.Canonicity.IntervalCanonicalFormsCandidate
