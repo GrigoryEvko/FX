@@ -129,8 +129,8 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
   /-- ★ **The unified FORMATION arm (TYTAB-1 arm collapse): base-type + flat + term-indexed in ONE.**
   All three formation families have the SAME `.mkGen generator payload children` subject and a universe /
   type-code output; they differ ONLY in their grown premise (none / `FlatDescTelescopePi` / a
-  `TermIndexedFormerTelescope`), which the `FormationRule` carries as data (`premiseHolds` dispatches on
-  the family).  Fixed-slot existentials — `levels` (flat), `carrier`+`level` (term-indexed), `flag` (both)
+  `TermIndexedFormerTelescope`), which the `FormationRule` carries as data (`FormationRule.obligations`
+  dispatches on the family).  Fixed-slot existentials — `levels` (flat), `carrier`+`level` (term-indexed), `flag` (both)
   — are phantom where a family doesn't use them.  A new type-former whose typing is a table row + grown
   telescope is now a `formationRule` spec row, not a typing arm. -/
   | formationRule {scope : Nat} (context : TypingContext profile scope)

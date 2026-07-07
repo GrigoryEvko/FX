@@ -55,15 +55,15 @@ def FormationRule.outputType (rule : FormationRule) (scope : Nat) (levels : List
 
 /-! ## The union-obligation form of the formation premise (TYTAB-2)
 
-`FormationRule.obligations` is the pure-data, `List (ElimObligation profile)`, twin of
-`premiseHolds` — the analogue of `ElimRule.obligations` / `IntroRule.obligations`.  Each obligation
+`FormationRule.obligations` is the pure-data, `List (ElimObligation profile)` formation premise —
+the analogue of `ElimRule.obligations` / `IntroRule.obligations`.  Each obligation
 packs its own `{scope, context, subject, classifier}`; the arm-swap consumer states the formation
 premise as a single `∀ obligation ∈ rule.obligations …, HasTypeUnionOver … obligation.context
 obligation.subject obligation.classifier`, exactly the elim/intro form.
 
 The three families encode as:
 
-  * `.baseType` -> `[]` (no children, `premiseHolds = True`).
+  * `.baseType` -> `[]` (no children, no obligations).
   * `.flat` -> one obligation per flat child: `head_i : universeCodeCell level_i flag`, the children
     zipped positionally with `levels` (flat rows have all-zero shifts, so every head sits at
     `scope + 0 = scope`).  When `levels` is SHORTER than the children, the surplus children are FORCED to
@@ -186,11 +186,11 @@ def cumulativeFormationObligations (profile : PolyProfile) {scope : Nat}
     | _ + 1, _ => []
 
 /-- **The union-obligation form of the formation premise**, dispatched by the rule's family — the
-pure-data twin of `premiseHolds`.  Base types demand nothing; flat formers demand each child at its
+pure-data formation premise.  Base types demand nothing; flat formers demand each child at its
 universe code; term-indexed formers demand the carrier at a universe code then each endpoint at the
 carrier; cumulative formers demand the domain / element at its universe code and (for Π/Σ) the
-binder-crossing codomain at the domain-extended context.  The signature mirrors `premiseHolds` exactly so
-the unified arm can carry the same data. -/
+binder-crossing codomain at the domain-extended context.  The unified formation arm carries this
+obligation list as data. -/
 def FormationRule.obligations (rule : FormationRule) (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) {binderShifts : List Nat}
     (children : RawTermChildren binderShifts scope) (levels : List LevelExpr)
