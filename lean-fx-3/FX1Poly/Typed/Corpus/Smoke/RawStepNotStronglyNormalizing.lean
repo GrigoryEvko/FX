@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Cell.CellShorthands
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Rewriting.Normalize.RawTermNF

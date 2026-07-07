@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Metatheory.Canonicity.DataCanonicityViaSconing
 
 /-! # FX1Poly/Typed/CanonicityTargetSignature
@@ -38,7 +38,7 @@ predicate `isValue` and any closed type cell `dataTypeCode`, if every closed ter
 `dataTypeCode` is a member of the data reducibility candidate `CanonicalFormsPredicate isValue`
 (`candidateBridge` — the typed reducibility fundamental theorem AT that data type), then every closed term
 engine-typed at `dataTypeCode` reduces to a value satisfying `isValue`.  Specializes `dataCanonicityViaSconing`
-(#695) to `isWellTyped := fun t => HasTypeDescPi profile .empty t dataTypeCode`.  Instantiating
+(#695) to `isWellTyped := fun t => HasTypeUnion profile .empty t dataTypeCode`.  Instantiating
 `isValue := boolIsValue` / `IsNatValue` / `IsListValue` / … gives the per-type canonicity (SN-047/048/049),
 each a one-liner once the data type's code + candidate bridge land (the deferred engine data-representation,
 #483/#485-487).  The candidate twin of `consistencyFromEmptyCandidateBridge` (which is this at the empty value
@@ -46,11 +46,11 @@ predicate, where "reduces to a value" degenerates to absurdity). -/
 theorem dataCanonicityFromCandidateBridge {profile : PolyProfile}
     {isValue : RawTerm 0 → Prop} {dataTypeCode : RawTerm 0}
     (candidateBridge : ∀ closedTerm : RawTerm 0,
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) closedTerm dataTypeCode →
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) closedTerm dataTypeCode →
         CanonicalFormsPredicate isValue closedTerm)
     (closedTerm : RawTerm 0)
     (typed :
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) closedTerm dataTypeCode) :
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) closedTerm dataTypeCode) :
     ∃ value : RawTerm 0, StepStar closedTerm value ∧ isValue value :=
   dataCanonicityViaSconing candidateBridge closedTerm typed
 

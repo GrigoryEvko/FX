@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
 
 /-! # FX1Poly/Typed/PiElimClassifierConvResidual
@@ -70,10 +70,10 @@ grown context-conversion piElim arm (GrownCtxConv-5, #842) is the context conver
 (`TypedTypeValidityBoxed`, #1110) with validity DERIVED — never by this context-free SN escape. -/
 def IsTypeDescPiRespectsConvOnStronglyNormalizing (profile : PolyProfile) : Prop :=
   ∀ {scope : Nat} {context : TypingContext profile scope} {typeLeft typeRight : RawTerm scope},
-    IsTypeDescPi profile context typeLeft →
+    (∃ levelExpr flag, HasTypeUnion profile context typeLeft (universeCodeCell levelExpr flag)) →
     Conv typeLeft typeRight →
     IsStronglyNormalizing typeRight →
-    IsTypeDescPi profile context typeRight
+    (∃ levelExpr flag, HasTypeUnion profile context typeRight (universeCodeCell levelExpr flag))
 
 /-- **The only unconditionally-true instance of the over-approximation: the reflexive case.**  When
 `typeRight = typeLeft` (`Conv.refl`) the conclusion IS the input validity.  This is the sole case that holds;
@@ -81,9 +81,9 @@ the general statement is false (file header).  Confirms the `Prop` is not accide
 it as a residual. -/
 theorem smoke_residualRefl {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {typeCode : RawTerm scope}
-    (validity : IsTypeDescPi profile context typeCode)
+    (validity : ∃ levelExpr flag, HasTypeUnion profile context typeCode (universeCodeCell levelExpr flag))
     (_normalizing : IsStronglyNormalizing typeCode) :
-    IsTypeDescPi profile context typeCode :=
+    ∃ levelExpr flag, HasTypeUnion profile context typeCode (universeCodeCell levelExpr flag) :=
   validity
 
 end FX1Poly.Typed
