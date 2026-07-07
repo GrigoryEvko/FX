@@ -164,6 +164,75 @@ theorem cellCountMeshWidthDenotesSame (lowerBound upperBound : RationalPair)
           (mulExactCongrRight (subExact upperBound lowerBound) reciprocalCancels)
           (mulExactOneRight (subExact upperBound lowerBound)))))
 
+/-! ## Exact nonnegative-constant scaling (the refinement estimate's ℚ core)
+
+The refinement estimate multiplies a per-term oscillation bound by the mesh
+width — a NONNEGATIVE rational constant.  The shipped product-difference law
+`mulExactRespectsIsWithinBoundLeft` scales a distance by a MAGNITUDE bound on
+the multiplier; feeding it the constant AS ITS OWN magnitude bound
+(`IsMagnitudeWithin c c`, which holds exactly when `c ≥ 0`) yields the EXACT
+scaled bound `c · q` with no integer-ceiling blow-up.  This is the load-bearing
+ℚ-level piece the mesh/count cancellation needs. -/
+
+/-- **A nonnegative rational bounds its own magnitude** — `|c| ≤ c` when
+`0 ≤ c`, since `-c ≤ 0 ≤ c`.  This turns the shipped product-difference law
+into an EXACT constant scaling. -/
+theorem isMagnitudeWithinSelfOfNonNegative {value : RationalPair}
+    (isNonNegative : IsNonNegative value) : IsMagnitudeWithin value value :=
+  have negativeNumeratorBelowZero : -value.numerator ≤ (0 : Int) :=
+    intLessEqualOfEqRight
+      (intNegLeNegOfLe (numeratorNonNegativeOfIsNonNegative isNonNegative))
+      intNegZero
+  have negValueBelowZero : LessEqualAs (negExact value) zeroRational :=
+    intLessEqualOfEqRight
+      (intMulLeMulRightOfNonNeg negativeNumeratorBelowZero
+        (intLessEqualOfLessThan (denominatorIntIsPositive zeroRational)))
+      ((intZeroMul (denominatorInt zeroRational)).trans
+        (intZeroMul (denominatorInt (negExact value))).symm)
+  ⟨lessEqualAsRefl value, lessEqualAsTrans negValueBelowZero isNonNegative⟩
+
+/-- **The exact nonnegative-constant distance scaling**, at ℚ — a within-bound
+pair scaled by a nonnegative constant lands within the EXACTLY scaled bound. -/
+theorem mulExactRespectsIsWithinBoundConstantLeft {constant leftValue rightValue
+    diffBound : RationalPair} (isConstantNonNegative : IsNonNegative constant)
+    (isWithin : IsWithinBound leftValue rightValue diffBound)
+    (isDiffBoundNonNegative : IsNonNegative diffBound) :
+    IsWithinBound (mulExact constant leftValue) (mulExact constant rightValue)
+      (mulExact constant diffBound) :=
+  mulExactRespectsIsWithinBoundLeft
+    (isMagnitudeWithinSelfOfNonNegative isConstantNonNegative) isWithin
+    isDiffBoundNonNegative
+
+/-! ## The count-scale telescoping (ℚ) -/
+
+/-- The zeroth natural rational denotes zero — `0/1 ~ 0/1`. -/
+theorem natRationalZeroDenotesZero :
+    DenotesSameAs (natRational 0) zeroRational := rfl
+
+/-- **The count-scale IS the scalar product** — `count` copies of `bound` added
+denote `natRational count · bound`.  Induction on `count`: the base collapses
+`0 · bound`, the step adds one `bound` by right-distribution and the one-identity
+(the ℚ sibling of the shipped real-level `replicateRealEqScale`). -/
+theorem natScaleRationalDenotesScale (count : Nat) (bound : RationalPair) :
+    DenotesSameAs (natScaleRational count bound)
+      (mulExact (natRational count) bound) :=
+  match count with
+  | 0 =>
+      denotesSameAsSymm
+        (denotesSameAsTrans
+          (mulExactCongrLeft bound natRationalZeroDenotesZero)
+          (mulExactZeroLeftDenotesSame bound))
+  | count + 1 =>
+      denotesSameAsTrans
+        (addExactCongrLeft bound (natScaleRationalDenotesScale count bound))
+        (denotesSameAsSymm
+          (denotesSameAsTrans
+            (mulExactCongrLeft bound (natRationalSuccDenotesSame count))
+            (denotesSameAsTrans
+              (mulExactRightDistrib bound (natRational count) oneRational)
+              (addExactCongrRight (mulExact (natRational count) bound)
+                (mulExactOneLeft bound)))))
+
 /-! ## The Riemann sum functional -/
 
 /-- **The left-endpoint Riemann sum** — `meshWidth` times the sum of the
