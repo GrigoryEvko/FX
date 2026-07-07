@@ -31,5 +31,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealComm
 #assert_no_axioms FX1Poly.ComputerAlgebra.addRealAssocCompareBoundCollapses
 #assert_no_axioms FX1Poly.ComputerAlgebra.addRealAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.sumReciprocalBelowDoubleShallow
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealLeftDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealRightDistrib
 
 end FX1PolyAudit

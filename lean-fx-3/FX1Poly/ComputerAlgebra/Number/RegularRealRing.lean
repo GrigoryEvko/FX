@@ -365,4 +365,492 @@ theorem addRealAssoc (firstValue middleValue lastValue : RegularReal) :
           ((addReal firstValue (addReal middleValue lastValue)).isRegular
             slackIndex sharedIndex)))
 
+/-! ## Multiplicative associativity and distributivity (slack closure)
+
+`(x·y)·z` and `x·(y·z)` sample their three atoms at genuinely distinct
+bound-scaled depths on the two sides — `x` at the left-inner vs the
+right-outer index, `y` at the left-inner vs the right-inner, `z` at the
+left-outer vs the right-inner — so the law is not pointwise.  At each shared
+index it goes through slack closure: chain both products to a slack index by
+their own regularity; there, reassociate the ℚ triple (`mulExactAssoc`) and
+telescope through three product-difference legs (each one factor moving, the
+other two held as magnitude-bounded multipliers) bridging the sampling
+mismatch by regularity; every mismatch reciprocal relaxes to `2/(s+1)` and
+each leg's constant magnitude collapses the accumulated bound onto a single
+`K/(s+1)`, which reshapes onto `2/(n+1)` plus vanishing slack. -/
+
+/-- Two deep samples sit within the doubled shallow modulus: the reciprocal
+sum of any two indices dominating `shallowIndex` is below `2/(shallow+1)`. -/
+theorem sumReciprocalBelowDoubleShallow {shallowIndex firstIndex secondIndex : Nat}
+    (firstIsDeep : shallowIndex ≤ firstIndex)
+    (secondIsDeep : shallowIndex ≤ secondIndex) :
+    LessEqualAs
+      (addExact (reciprocalOfSucc firstIndex) (reciprocalOfSucc secondIndex))
+      (ratioOfNatSucc 2 shallowIndex) :=
+  lessEqualAsCongrRight (ratioOfNatSuccSumDenotesSame 1 1 shallowIndex)
+    (addExactMonotone
+      (ratioOfNatSuccAntitoneDenominator 1 firstIsDeep)
+      (ratioOfNatSuccAntitoneDenominator 1 secondIsDeep))
+
+/-- **Multiplication is associative** up to the real setoid. -/
+theorem mulRealAssoc (firstFactor secondFactor thirdFactor : RegularReal) :
+    DenotesSameReal
+      (mulReal (mulReal firstFactor secondFactor) thirdFactor)
+      (mulReal firstFactor (mulReal secondFactor thirdFactor)) :=
+  fun sharedIndex =>
+    isWithinBoundOfForallSlack (fun slackIndex =>
+      let leftOuterIndex :=
+        productSamplingIndex (mulReal firstFactor secondFactor) thirdFactor
+          slackIndex
+      let leftInnerIndex :=
+        productSamplingIndex firstFactor secondFactor leftOuterIndex
+      let rightOuterIndex :=
+        productSamplingIndex firstFactor (mulReal secondFactor thirdFactor)
+          slackIndex
+      let rightInnerIndex :=
+        productSamplingIndex secondFactor thirdFactor rightOuterIndex
+      let firstShiftNumerator :=
+        canonicalBoundNumerator secondFactor * canonicalBoundNumerator thirdFactor
+          * 2
+      let secondShiftNumerator :=
+        canonicalBoundNumerator firstFactor *
+          (canonicalBoundNumerator thirdFactor * 2)
+      let thirdShiftNumerator :=
+        canonicalBoundNumerator firstFactor *
+          (canonicalBoundNumerator secondFactor * 2)
+      let middleNumerator :=
+        firstShiftNumerator + secondShiftNumerator + thirdShiftNumerator
+      have leftOuterIsDeep : slackIndex ≤ leftOuterIndex :=
+        natSelfLeBoundScaledIndex
+          (sharedBoundNumeratorPredecessor (mulReal firstFactor secondFactor)
+            thirdFactor)
+          slackIndex
+      have leftInnerIsDeep : slackIndex ≤ leftInnerIndex :=
+        natLeTrans leftOuterIsDeep
+          (natSelfLeBoundScaledIndex
+            (sharedBoundNumeratorPredecessor firstFactor secondFactor)
+            leftOuterIndex)
+      have rightOuterIsDeep : slackIndex ≤ rightOuterIndex :=
+        natSelfLeBoundScaledIndex
+          (sharedBoundNumeratorPredecessor firstFactor
+            (mulReal secondFactor thirdFactor))
+          slackIndex
+      have rightInnerIsDeep : slackIndex ≤ rightInnerIndex :=
+        natLeTrans rightOuterIsDeep
+          (natSelfLeBoundScaledIndex
+            (sharedBoundNumeratorPredecessor secondFactor thirdFactor)
+            rightOuterIndex)
+      have relaxedFirstDiff :
+          IsWithinBound (firstFactor.approximation leftInnerIndex)
+            (firstFactor.approximation rightOuterIndex)
+            (ratioOfNatSucc 2 slackIndex) :=
+        isWithinBoundOfBoundLessEqual
+          (sumReciprocalBelowDoubleShallow leftInnerIsDeep rightOuterIsDeep)
+          (firstFactor.isRegular leftInnerIndex rightOuterIndex)
+      have relaxedSecondDiff :
+          IsWithinBound (secondFactor.approximation leftInnerIndex)
+            (secondFactor.approximation rightInnerIndex)
+            (ratioOfNatSucc 2 slackIndex) :=
+        isWithinBoundOfBoundLessEqual
+          (sumReciprocalBelowDoubleShallow leftInnerIsDeep rightInnerIsDeep)
+          (secondFactor.isRegular leftInnerIndex rightInnerIndex)
+      have relaxedThirdDiff :
+          IsWithinBound (thirdFactor.approximation leftOuterIndex)
+            (thirdFactor.approximation rightInnerIndex)
+            (ratioOfNatSucc 2 slackIndex) :=
+        isWithinBoundOfBoundLessEqual
+          (sumReciprocalBelowDoubleShallow leftOuterIsDeep rightInnerIsDeep)
+          (thirdFactor.isRegular leftOuterIndex rightInnerIndex)
+      have firstShiftLeg :
+          IsWithinBound
+            (mulExact (firstFactor.approximation leftInnerIndex)
+              (mulExact (secondFactor.approximation leftInnerIndex)
+                (thirdFactor.approximation leftOuterIndex)))
+            (mulExact (firstFactor.approximation rightOuterIndex)
+              (mulExact (secondFactor.approximation leftInnerIndex)
+                (thirdFactor.approximation leftOuterIndex)))
+            (mulExact
+              (mulExact (canonicalBound secondFactor) (canonicalBound thirdFactor))
+              (ratioOfNatSucc 2 slackIndex)) :=
+        mulExactRespectsIsWithinBoundRight
+          (isMagnitudeWithinMulExact
+            (approximationIsWithinCanonicalBound secondFactor leftInnerIndex)
+            (approximationIsWithinCanonicalBound thirdFactor leftOuterIndex)
+            (canonicalBoundIsNonNegative thirdFactor))
+          relaxedFirstDiff
+          (ratioOfNatSuccIsNonNegative 2 slackIndex)
+      have secondShiftLeg :
+          IsWithinBound
+            (mulExact (firstFactor.approximation rightOuterIndex)
+              (mulExact (secondFactor.approximation leftInnerIndex)
+                (thirdFactor.approximation leftOuterIndex)))
+            (mulExact (firstFactor.approximation rightOuterIndex)
+              (mulExact (secondFactor.approximation rightInnerIndex)
+                (thirdFactor.approximation leftOuterIndex)))
+            (mulExact (canonicalBound firstFactor)
+              (mulExact (canonicalBound thirdFactor)
+                (ratioOfNatSucc 2 slackIndex))) :=
+        mulExactRespectsIsWithinBoundLeft
+          (approximationIsWithinCanonicalBound firstFactor rightOuterIndex)
+          (mulExactRespectsIsWithinBoundRight
+            (approximationIsWithinCanonicalBound thirdFactor leftOuterIndex)
+            relaxedSecondDiff
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+          (mulExactIsNonNegative (canonicalBoundIsNonNegative thirdFactor)
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+      have thirdShiftLeg :
+          IsWithinBound
+            (mulExact (firstFactor.approximation rightOuterIndex)
+              (mulExact (secondFactor.approximation rightInnerIndex)
+                (thirdFactor.approximation leftOuterIndex)))
+            (mulExact (firstFactor.approximation rightOuterIndex)
+              (mulExact (secondFactor.approximation rightInnerIndex)
+                (thirdFactor.approximation rightInnerIndex)))
+            (mulExact (canonicalBound firstFactor)
+              (mulExact (canonicalBound secondFactor)
+                (ratioOfNatSucc 2 slackIndex))) :=
+        mulExactRespectsIsWithinBoundLeft
+          (approximationIsWithinCanonicalBound firstFactor rightOuterIndex)
+          (mulExactRespectsIsWithinBoundLeft
+            (approximationIsWithinCanonicalBound secondFactor rightInnerIndex)
+            relaxedThirdDiff
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+          (mulExactIsNonNegative (canonicalBoundIsNonNegative secondFactor)
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+      have middleBoundCollapses :
+          DenotesSameAs
+            (addExact
+              (addExact
+                (mulExact
+                  (mulExact (canonicalBound secondFactor)
+                    (canonicalBound thirdFactor))
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (canonicalBound firstFactor)
+                  (mulExact (canonicalBound thirdFactor)
+                    (ratioOfNatSucc 2 slackIndex))))
+              (mulExact (canonicalBound firstFactor)
+                (mulExact (canonicalBound secondFactor)
+                  (ratioOfNatSucc 2 slackIndex))))
+            (ratioOfNatSucc middleNumerator slackIndex) :=
+        denotesSameAsTrans
+          (addExactRespectsDenotesSameAs
+            (addExactRespectsDenotesSameAs
+              (denotesSameAsTrans
+                (mulExactRespectsDenotesSameAs
+                  (mulExactRatioRatioDenotesSame
+                    (canonicalBoundNumerator secondFactor)
+                    (canonicalBoundNumerator thirdFactor) 0)
+                  (denotesSameAsRefl (ratioOfNatSucc 2 slackIndex)))
+                (mulExactRatioRatioDenotesSame
+                  (canonicalBoundNumerator secondFactor *
+                    canonicalBoundNumerator thirdFactor)
+                  2 slackIndex))
+              (denotesSameAsTrans
+                (mulExactRespectsDenotesSameAs
+                  (denotesSameAsRefl (canonicalBound firstFactor))
+                  (mulExactRatioRatioDenotesSame
+                    (canonicalBoundNumerator thirdFactor) 2 slackIndex))
+                (mulExactRatioRatioDenotesSame
+                  (canonicalBoundNumerator firstFactor)
+                  (canonicalBoundNumerator thirdFactor * 2) slackIndex)))
+            (denotesSameAsTrans
+              (mulExactRespectsDenotesSameAs
+                (denotesSameAsRefl (canonicalBound firstFactor))
+                (mulExactRatioRatioDenotesSame
+                  (canonicalBoundNumerator secondFactor) 2 slackIndex))
+              (mulExactRatioRatioDenotesSame
+                (canonicalBoundNumerator firstFactor)
+                (canonicalBoundNumerator secondFactor * 2) slackIndex)))
+          (denotesSameAsTrans
+            (addExactRespectsDenotesSameAs
+              (ratioOfNatSuccSumDenotesSame firstShiftNumerator
+                secondShiftNumerator slackIndex)
+              (denotesSameAsRefl (ratioOfNatSucc thirdShiftNumerator slackIndex)))
+            (ratioOfNatSuccSumDenotesSame
+              (firstShiftNumerator + secondShiftNumerator) thirdShiftNumerator
+              slackIndex))
+      have compareAtSlack :
+          IsWithinBound
+            ((mulReal (mulReal firstFactor secondFactor) thirdFactor).approximation
+              slackIndex)
+            ((mulReal firstFactor (mulReal secondFactor thirdFactor)).approximation
+              slackIndex)
+            (addExact
+              (addExact
+                (mulExact
+                  (mulExact (canonicalBound secondFactor)
+                    (canonicalBound thirdFactor))
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (canonicalBound firstFactor)
+                  (mulExact (canonicalBound thirdFactor)
+                    (ratioOfNatSucc 2 slackIndex))))
+              (mulExact (canonicalBound firstFactor)
+                (mulExact (canonicalBound secondFactor)
+                  (ratioOfNatSucc 2 slackIndex)))) :=
+        isWithinBoundCongrLeft
+          (denotesSameAsSymm
+            (mulExactAssoc (firstFactor.approximation leftInnerIndex)
+              (secondFactor.approximation leftInnerIndex)
+              (thirdFactor.approximation leftOuterIndex)))
+          (isWithinBoundTriangle
+            (isWithinBoundTriangle firstShiftLeg secondShiftLeg)
+            thirdShiftLeg)
+      isWithinBoundCongrBound
+        (denotesSameAsTrans
+          (chainedSlackBoundReshapesDenotesSame (reciprocalOfSucc sharedIndex)
+            (reciprocalOfSucc slackIndex)
+            (addExact
+              (addExact
+                (mulExact
+                  (mulExact (canonicalBound secondFactor)
+                    (canonicalBound thirdFactor))
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (canonicalBound firstFactor)
+                  (mulExact (canonicalBound thirdFactor)
+                    (ratioOfNatSucc 2 slackIndex))))
+              (mulExact (canonicalBound firstFactor)
+                (mulExact (canonicalBound secondFactor)
+                  (ratioOfNatSucc 2 slackIndex)))))
+          (addExactRespectsDenotesSameAs
+            (ratioOfNatSuccSumDenotesSame 1 1 sharedIndex)
+            (denotesSameAsTrans
+              (addExactRespectsDenotesSameAs
+                (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+                middleBoundCollapses)
+              (ratioOfNatSuccSumDenotesSame 2 middleNumerator slackIndex))))
+        (isWithinBoundTriangle
+          (isWithinBoundTriangle
+            ((mulReal (mulReal firstFactor secondFactor) thirdFactor).isRegular
+              sharedIndex slackIndex)
+            compareAtSlack)
+          ((mulReal firstFactor (mulReal secondFactor thirdFactor)).isRegular
+            slackIndex sharedIndex)))
+
+/-! ## Left distributivity (slack closure)
+
+`x·(y + z)` and `x·y + x·z` sample `x` at the product index vs the two
+per-summand product indices, and `y`, `z` at the ADD's doubled index vs their
+product indices — distinct depths, so slack closure again.  At the slack
+index the ℚ layer distributes once at the anchor (`mulExactLeftDistrib`, all
+atoms at their left-hand samples); each of the two resulting products then
+telescopes to its right-hand form through a mixed-middle product-difference
+pair (both factors moving), the shared bound carrying the constant magnitude
+and every sampling mismatch relaxed to `2/(s+1)`. -/
+
+/-- **Left distributivity** of `·` over `+` up to the real setoid. -/
+theorem mulRealLeftDistrib (factor leftSummand rightSummand : RegularReal) :
+    DenotesSameReal
+      (mulReal factor (addReal leftSummand rightSummand))
+      (addReal (mulReal factor leftSummand) (mulReal factor rightSummand)) :=
+  fun sharedIndex =>
+    isWithinBoundOfForallSlack (fun slackIndex =>
+      let factorSamplingIndex :=
+        productSamplingIndex factor (addReal leftSummand rightSummand) slackIndex
+      let doubledFactorIndex := 2 * factorSamplingIndex + 1
+      let leftProductIndex :=
+        productSamplingIndex factor leftSummand (2 * slackIndex + 1)
+      let rightProductIndex :=
+        productSamplingIndex factor rightSummand (2 * slackIndex + 1)
+      let leftShiftNumerator :=
+        (sharedBoundNumeratorPredecessor factor leftSummand + 1) * 2
+      let rightShiftNumerator :=
+        (sharedBoundNumeratorPredecessor factor rightSummand + 1) * 2
+      let middleNumerator :=
+        (leftShiftNumerator + leftShiftNumerator) +
+          (rightShiftNumerator + rightShiftNumerator)
+      have factorIsDeep : slackIndex ≤ factorSamplingIndex :=
+        natSelfLeBoundScaledIndex
+          (sharedBoundNumeratorPredecessor factor
+            (addReal leftSummand rightSummand))
+          slackIndex
+      have doubledFactorIsDeep : slackIndex ≤ doubledFactorIndex :=
+        natLeTrans factorIsDeep (natSelfLeDoubleSelfSucc factorSamplingIndex)
+      have leftProductIsDeep : slackIndex ≤ leftProductIndex :=
+        natLeTrans (natSelfLeDoubleSelfSucc slackIndex)
+          (natSelfLeBoundScaledIndex
+            (sharedBoundNumeratorPredecessor factor leftSummand)
+            (2 * slackIndex + 1))
+      have rightProductIsDeep : slackIndex ≤ rightProductIndex :=
+        natLeTrans (natSelfLeDoubleSelfSucc slackIndex)
+          (natSelfLeBoundScaledIndex
+            (sharedBoundNumeratorPredecessor factor rightSummand)
+            (2 * slackIndex + 1))
+      have relaxedLeftSummandDiff :
+          IsWithinBound (leftSummand.approximation doubledFactorIndex)
+            (leftSummand.approximation leftProductIndex)
+            (ratioOfNatSucc 2 slackIndex) :=
+        isWithinBoundOfBoundLessEqual
+          (sumReciprocalBelowDoubleShallow doubledFactorIsDeep leftProductIsDeep)
+          (leftSummand.isRegular doubledFactorIndex leftProductIndex)
+      have relaxedLeftFactorDiff :
+          IsWithinBound (factor.approximation factorSamplingIndex)
+            (factor.approximation leftProductIndex)
+            (ratioOfNatSucc 2 slackIndex) :=
+        isWithinBoundOfBoundLessEqual
+          (sumReciprocalBelowDoubleShallow factorIsDeep leftProductIsDeep)
+          (factor.isRegular factorSamplingIndex leftProductIndex)
+      have relaxedRightSummandDiff :
+          IsWithinBound (rightSummand.approximation doubledFactorIndex)
+            (rightSummand.approximation rightProductIndex)
+            (ratioOfNatSucc 2 slackIndex) :=
+        isWithinBoundOfBoundLessEqual
+          (sumReciprocalBelowDoubleShallow doubledFactorIsDeep rightProductIsDeep)
+          (rightSummand.isRegular doubledFactorIndex rightProductIndex)
+      have relaxedRightFactorDiff :
+          IsWithinBound (factor.approximation factorSamplingIndex)
+            (factor.approximation rightProductIndex)
+            (ratioOfNatSucc 2 slackIndex) :=
+        isWithinBoundOfBoundLessEqual
+          (sumReciprocalBelowDoubleShallow factorIsDeep rightProductIsDeep)
+          (factor.isRegular factorSamplingIndex rightProductIndex)
+      have leftDistribLeg :
+          IsWithinBound
+            (mulExact (factor.approximation factorSamplingIndex)
+              (leftSummand.approximation doubledFactorIndex))
+            (mulExact (factor.approximation leftProductIndex)
+              (leftSummand.approximation leftProductIndex))
+            (addExact
+              (mulExact (sharedBound factor leftSummand)
+                (ratioOfNatSucc 2 slackIndex))
+              (mulExact (sharedBound factor leftSummand)
+                (ratioOfNatSucc 2 slackIndex))) :=
+        isWithinBoundTriangle
+          (mulExactRespectsIsWithinBoundLeft
+            (leftApproximationIsWithinSharedBound factor leftSummand
+              factorSamplingIndex)
+            relaxedLeftSummandDiff
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+          (mulExactRespectsIsWithinBoundRight
+            (rightApproximationIsWithinSharedBound factor leftSummand
+              leftProductIndex)
+            relaxedLeftFactorDiff
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+      have rightDistribLeg :
+          IsWithinBound
+            (mulExact (factor.approximation factorSamplingIndex)
+              (rightSummand.approximation doubledFactorIndex))
+            (mulExact (factor.approximation rightProductIndex)
+              (rightSummand.approximation rightProductIndex))
+            (addExact
+              (mulExact (sharedBound factor rightSummand)
+                (ratioOfNatSucc 2 slackIndex))
+              (mulExact (sharedBound factor rightSummand)
+                (ratioOfNatSucc 2 slackIndex))) :=
+        isWithinBoundTriangle
+          (mulExactRespectsIsWithinBoundLeft
+            (leftApproximationIsWithinSharedBound factor rightSummand
+              factorSamplingIndex)
+            relaxedRightSummandDiff
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+          (mulExactRespectsIsWithinBoundRight
+            (rightApproximationIsWithinSharedBound factor rightSummand
+              rightProductIndex)
+            relaxedRightFactorDiff
+            (ratioOfNatSuccIsNonNegative 2 slackIndex))
+      have middleBoundCollapses :
+          DenotesSameAs
+            (addExact
+              (addExact
+                (mulExact (sharedBound factor leftSummand)
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (sharedBound factor leftSummand)
+                  (ratioOfNatSucc 2 slackIndex)))
+              (addExact
+                (mulExact (sharedBound factor rightSummand)
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (sharedBound factor rightSummand)
+                  (ratioOfNatSucc 2 slackIndex))))
+            (ratioOfNatSucc middleNumerator slackIndex) :=
+        denotesSameAsTrans
+          (addExactRespectsDenotesSameAs
+            (addExactRespectsDenotesSameAs
+              (mulExactRatioRatioDenotesSame
+                (sharedBoundNumeratorPredecessor factor leftSummand + 1) 2
+                slackIndex)
+              (mulExactRatioRatioDenotesSame
+                (sharedBoundNumeratorPredecessor factor leftSummand + 1) 2
+                slackIndex))
+            (addExactRespectsDenotesSameAs
+              (mulExactRatioRatioDenotesSame
+                (sharedBoundNumeratorPredecessor factor rightSummand + 1) 2
+                slackIndex)
+              (mulExactRatioRatioDenotesSame
+                (sharedBoundNumeratorPredecessor factor rightSummand + 1) 2
+                slackIndex)))
+          (denotesSameAsTrans
+            (addExactRespectsDenotesSameAs
+              (ratioOfNatSuccSumDenotesSame leftShiftNumerator leftShiftNumerator
+                slackIndex)
+              (ratioOfNatSuccSumDenotesSame rightShiftNumerator
+                rightShiftNumerator slackIndex))
+            (ratioOfNatSuccSumDenotesSame
+              (leftShiftNumerator + leftShiftNumerator)
+              (rightShiftNumerator + rightShiftNumerator) slackIndex))
+      have compareAtSlack :
+          IsWithinBound
+            ((mulReal factor (addReal leftSummand rightSummand)).approximation
+              slackIndex)
+            ((addReal (mulReal factor leftSummand)
+                (mulReal factor rightSummand)).approximation slackIndex)
+            (addExact
+              (addExact
+                (mulExact (sharedBound factor leftSummand)
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (sharedBound factor leftSummand)
+                  (ratioOfNatSucc 2 slackIndex)))
+              (addExact
+                (mulExact (sharedBound factor rightSummand)
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (sharedBound factor rightSummand)
+                  (ratioOfNatSucc 2 slackIndex)))) :=
+        isWithinBoundCongrLeft
+          (denotesSameAsSymm
+            (mulExactLeftDistrib (factor.approximation factorSamplingIndex)
+              (leftSummand.approximation doubledFactorIndex)
+              (rightSummand.approximation doubledFactorIndex)))
+          (addExactRespectsIsWithinBound leftDistribLeg rightDistribLeg)
+      isWithinBoundCongrBound
+        (denotesSameAsTrans
+          (chainedSlackBoundReshapesDenotesSame (reciprocalOfSucc sharedIndex)
+            (reciprocalOfSucc slackIndex)
+            (addExact
+              (addExact
+                (mulExact (sharedBound factor leftSummand)
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (sharedBound factor leftSummand)
+                  (ratioOfNatSucc 2 slackIndex)))
+              (addExact
+                (mulExact (sharedBound factor rightSummand)
+                  (ratioOfNatSucc 2 slackIndex))
+                (mulExact (sharedBound factor rightSummand)
+                  (ratioOfNatSucc 2 slackIndex)))))
+          (addExactRespectsDenotesSameAs
+            (ratioOfNatSuccSumDenotesSame 1 1 sharedIndex)
+            (denotesSameAsTrans
+              (addExactRespectsDenotesSameAs
+                (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+                middleBoundCollapses)
+              (ratioOfNatSuccSumDenotesSame 2 middleNumerator slackIndex))))
+        (isWithinBoundTriangle
+          (isWithinBoundTriangle
+            ((mulReal factor (addReal leftSummand rightSummand)).isRegular
+              sharedIndex slackIndex)
+            compareAtSlack)
+          ((addReal (mulReal factor leftSummand)
+              (mulReal factor rightSummand)).isRegular slackIndex sharedIndex)))
+
+/-- **Right distributivity** of `·` over `+` — from left distributivity and
+commutativity: commute the outer product, distribute on the left, then
+commute each summand product back. -/
+theorem mulRealRightDistrib (leftSummand rightSummand factor : RegularReal) :
+    DenotesSameReal
+      (mulReal (addReal leftSummand rightSummand) factor)
+      (addReal (mulReal leftSummand factor) (mulReal rightSummand factor)) :=
+  denotesSameRealTrans
+    (mulRealComm (addReal leftSummand rightSummand) factor)
+    (denotesSameRealTrans
+      (mulRealLeftDistrib factor leftSummand rightSummand)
+      (addRealRespectsDenotesSame (mulRealComm factor leftSummand)
+        (mulRealComm factor rightSummand)))
+
 end FX1Poly.ComputerAlgebra
