@@ -30,6 +30,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.reciprocalBlockCancels
 #assert_no_axioms FX1Poly.ComputerAlgebra.meshWidthRefinesByBlock
 #assert_no_axioms FX1Poly.ComputerAlgebra.samplePointBaseRefines
+#assert_no_axioms FX1Poly.ComputerAlgebra.natRationalAddDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.subExactSelfAddRightDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.samplePointOffsetShift
+#assert_no_axioms FX1Poly.ComputerAlgebra.samplePointGapWithinMesh
 #assert_no_axioms FX1Poly.ComputerAlgebra.meshWidth
 #assert_no_axioms FX1Poly.ComputerAlgebra.samplePoint
 #assert_no_axioms FX1Poly.ComputerAlgebra.cellCountMeshWidthDenotesSame

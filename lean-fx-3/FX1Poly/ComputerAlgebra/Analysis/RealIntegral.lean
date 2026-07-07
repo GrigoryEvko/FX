@@ -504,6 +504,113 @@ theorem samplePointBaseRefines (lowerBound upperBound : RationalPair)
           (mulExactCongrLeft refinedMesh
             (natRationalMul (blockSizePredecessor + 1) blockIndex)))))
 
+/-- **The natural rationals are additive** — `(a+b)/1 ~ a/1 + b/1`. -/
+theorem natRationalAddDenotesSame (leftCount rightCount : Nat) :
+    DenotesSameAs (natRational (leftCount + rightCount))
+      (addExact (natRational leftCount) (natRational rightCount)) :=
+  denotesSameAsSymm (ratioOfNatSuccSumDenotesSame leftCount rightCount 0)
+
+/-- `base + (value − base)` on the RIGHT collapses — `base − (base+value)`
+denotes `−value`. -/
+theorem subExactSelfAddRightDenotesSame (base value : RationalPair) :
+    DenotesSameAs (subExact base (addExact base value)) (negExact value) :=
+  denotesSameAsTrans
+    (addExactCongrRight base (negExactAddExactDenotesSame base value))
+    (denotesSameAsTrans
+      (denotesSameAsSymm (addExactAssoc base (negExact base) (negExact value)))
+      (denotesSameAsTrans
+        (addExactCongrLeft (negExact value) (addExactNegRight base))
+        (addExactZeroLeft (negExact value))))
+
+/-- **The fine offset sample shifts the block base by `inner · fineMesh`** — the
+`(blockSize·blockIndex + innerIndex)`-th fine sample is the block-base sample
+plus `innerIndex` fine mesh steps. -/
+theorem samplePointOffsetShift (lowerBound upperBound : RationalPair)
+    (blockSizePredecessor cellCountPredecessor blockIndex innerIndex : Nat) :
+    DenotesSameAs
+      (samplePoint lowerBound upperBound
+        (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor)
+        ((blockSizePredecessor + 1) * blockIndex + innerIndex))
+      (addExact
+        (samplePoint lowerBound upperBound
+          (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor)
+          ((blockSizePredecessor + 1) * blockIndex))
+        (mulExact (natRational innerIndex)
+          (meshWidth lowerBound upperBound
+            (refinedCellCountPredecessor blockSizePredecessor
+              cellCountPredecessor)))) :=
+  let refinedPredecessor :=
+    refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor
+  let refinedMesh := meshWidth lowerBound upperBound refinedPredecessor
+  let blockBase := (blockSizePredecessor + 1) * blockIndex
+  denotesSameAsTrans
+    (addExactCongrRight lowerBound
+      (denotesSameAsTrans
+        (mulExactCongrLeft refinedMesh
+          (natRationalAddDenotesSame blockBase innerIndex))
+        (mulExactRightDistrib refinedMesh (natRational blockBase)
+          (natRational innerIndex))))
+    (denotesSameAsSymm
+      (addExactAssoc lowerBound (mulExact (natRational blockBase) refinedMesh)
+        (mulExact (natRational innerIndex) refinedMesh)))
+
+/-- **The per-subcell sample gap is within the coarse mesh** (R3) — inside one
+coarse cell, the fine sample `blockSize·blockIndex + innerIndex` sits within one
+coarse mesh width of the block base, provided `innerIndex ≤ blockSize` and the
+interval is nondegenerate.  This is the input hypothesis the uniform-continuity
+modulus consumes. -/
+theorem samplePointGapWithinMesh (lowerBound upperBound : RationalPair)
+    (blockSizePredecessor cellCountPredecessor blockIndex innerIndex : Nat)
+    (isInnerWithinBlock : innerIndex ≤ blockSizePredecessor + 1)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    IsWithinBound
+      (samplePoint lowerBound upperBound
+        (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor)
+        ((blockSizePredecessor + 1) * blockIndex))
+      (samplePoint lowerBound upperBound
+        (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor)
+        ((blockSizePredecessor + 1) * blockIndex + innerIndex))
+      (meshWidth lowerBound upperBound cellCountPredecessor) :=
+  let refinedPredecessor :=
+    refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor
+  let refinedMesh := meshWidth lowerBound upperBound refinedPredecessor
+  let gap := mulExact (natRational innerIndex) refinedMesh
+  let blockBase := (blockSizePredecessor + 1) * blockIndex
+  have isRefinedMeshNonNegative : IsNonNegative refinedMesh :=
+    mulExactIsNonNegative isIntervalNonNegative
+      (ratioOfNatSuccIsNonNegative 1 refinedPredecessor)
+  have isGapNonNegative : IsNonNegative gap :=
+    mulExactIsNonNegative
+      (ratioOfNatSuccIsNonNegative innerIndex 0) isRefinedMeshNonNegative
+  have gapWithinMesh :
+      LessEqualAs gap (meshWidth lowerBound upperBound cellCountPredecessor) :=
+    lessEqualAsCongrRight
+      (denotesSameAsSymm
+        (meshWidthRefinesByBlock lowerBound upperBound blockSizePredecessor
+          cellCountPredecessor))
+      (mulExactMonotoneOfNonNegative
+        (ratioOfNatSuccMonotoneNumerator isInnerWithinBlock 0)
+        (lessEqualAsRefl refinedMesh) isRefinedMeshNonNegative
+        (ratioOfNatSuccIsNonNegative (blockSizePredecessor + 1) 0))
+  have gapMagnitude :
+      IsMagnitudeWithin gap
+        (meshWidth lowerBound upperBound cellCountPredecessor) :=
+    isMagnitudeWithinOfBoundLessEqual gapWithinMesh
+      (isMagnitudeWithinSelfOfNonNegative isGapNonNegative)
+  isWithinBoundOfIsMagnitudeWithinSubExact
+    (isMagnitudeWithinCongrValue
+      (denotesSameAsSymm
+        (denotesSameAsTrans
+          (subExactRespectsDenotesSameAs
+            (denotesSameAsRefl
+              (samplePoint lowerBound upperBound refinedPredecessor blockBase))
+            (samplePointOffsetShift lowerBound upperBound blockSizePredecessor
+              cellCountPredecessor blockIndex innerIndex))
+          (subExactSelfAddRightDenotesSame
+            (samplePoint lowerBound upperBound refinedPredecessor blockBase)
+            gap)))
+      (isMagnitudeWithinNegExact gapMagnitude))
+
 /-! ## The Riemann sum functional -/
 
 /-- **The left-endpoint Riemann sum** — `meshWidth` times the sum of the
