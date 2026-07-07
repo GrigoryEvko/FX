@@ -2,6 +2,7 @@ import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingCupWindowScanSplit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshComponentInvisibility
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentGodement
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyAppendSplit
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleySurvivorOrder
 
 /-! # MatchingCupWindowProvisos — discharging the single-cup partner-scan window provisos
 
@@ -170,5 +171,99 @@ theorem cupBlock_frontFails_ofMidIsolated
           conditions candidate survivorIndex candidateBelow survivorBelow]
         exact midIsolated candidate candidateBelow candidateNeSurvivor
       rw [rootTestFalse, Bool.and_false]
+
+/-! ## Proviso (3) — the composite/fresh root correspondence (`testCorr`)
+
+`findPartnerScan_range_cupWindowSplit` takes `testCorr`: at every fresh (mid-state) candidate, the composite
+exclude-and-root test at the SHIFTED boundary index equals the fresh exclude-and-root test.  This is the crux the
+recon flagged as a two-run view-simulation.  Its BOUNDED CORE is the fact that a cup is component-transparent to
+OLD nodes — it joins only its two fresh legs, so the root of every below-`nextFresh` node is untouched
+(`stepCup_unionFindRootOf_oldNode`).  Given that, plus the boundary-read shift correspondence
+(`natListGetAt_shiftPastPosition`, shipped in `ValleySurvivorOrder`) and the injectivity of the two-zone splice
+map, the per-candidate correspondence assembles WITHOUT any renaming — `testCorr_ofCorrespondences` packages the
+reduction so the abstract `testCorr` follows from three concrete-instance readouts (all bounded). -/
+
+/-- ★ **A cup preserves the root of every OLD node.**  A cup joins only its two fresh legs `nextFresh`,
+`nextFresh + 1` (`stepCup_links`); both are parentless in the pre-cup forest, so the join's redirect guard
+`rootOf nextFresh == rootOf oldNode` is `false` for any below-`nextFresh` node (whose root also sits below
+`nextFresh`).  Hence the old node's post-cup root is exactly its pre-cup root — the component-transparency that
+makes the single-cup `testCorr` a bounded fact rather than a renaming simulation. -/
+theorem stepCup_unionFindRootOf_oldNode (state : WireState) (position : Nat)
+    (fresh : WireStateFresh state) (forest : isUnionFindForest state.links)
+    (node : Nat) (nodeBelow : node < state.nextFresh) :
+    unionFindRootOf (stepCup state position).links node = unionFindRootOf state.links node := by
+  have childBelow : ∀ edge ∈ state.links, edge.1 < state.nextFresh :=
+    fun edge edgeInLinks => (fresh.2 edge edgeInLinks).1
+  have parentBelow : ∀ edge ∈ state.links, edge.2 < state.nextFresh :=
+    fun edge edgeInLinks => (fresh.2 edge edgeInLinks).2
+  have rootNf : unionFindRootOf state.links state.nextFresh = state.nextFresh :=
+    unionFindRootOf_of_parentless _ _
+      (unionFindParent_none_of_lt state.nextFresh state.links childBelow state.nextFresh (Nat.le_refl _))
+  have rootNode : unionFindRootOf state.links node < state.nextFresh :=
+    unionFindRootOf_lt_of_fresh state.links state.nextFresh parentBelow node nodeBelow
+  rw [stepCup_links, unionFindRootOf_unionFindJoin state.links state.nextFresh (state.nextFresh + 1)
+    node forest]
+  have guardFalse : (unionFindRootOf state.links state.nextFresh == unionFindRootOf state.links node) = false := by
+    rw [rootNf]
+    apply decide_eq_false
+    intro nfEqRoot
+    exact Nat.lt_irrefl (unionFindRootOf state.links node) (nfEqRoot ▸ rootNode)
+  rw [guardFalse, if_neg (fun trueEqTrue => Bool.noConfusion trueEqTrue)]
+
+/-- ★ **`testCorr` from three concrete-instance correspondences (no renaming).**  The abstract composite/fresh
+exclude-and-root correspondence follows from: (i) the SHIFT reads the SAME node at every fresh candidate
+(`readsAgree` — the boundary-read shift, `natListGetAt_shiftPastPosition`); (ii) the composite links root that
+shared node exactly as the fresh links do (`rootsAgree` — cup component-transparency,
+`stepCup_unionFindRootOf_oldNode`); and (iii) the survivor's composite root equals its fresh root
+(`survivorRootAgree`), together with the two-zone map's injectivity (`shiftInjective`).  The right conjuncts of
+the two `&&`s coincide by (i)+(ii)+(iii); the `!=` conjuncts coincide by injectivity.  This discharges the
+`testCorr` hypothesis of `findPartnerScan_range_cupWindowSplit` at the single-cup instantiation with NO
+order-dependent renaming — the two-run correspondence is a bounded readout, not a simulation. -/
+theorem testCorr_ofCorrespondences
+    (compositeLinks freshLinks : List (Nat × Nat))
+    (compositeBoundary freshBoundary : List Nat)
+    (compositeRoot freshRoot freshExclude : Nat) (indexShift : Nat → Nat)
+    (candidateRange : List Nat)
+    (shiftInjective : ∀ firstIndex secondIndex, indexShift firstIndex = indexShift secondIndex →
+      firstIndex = secondIndex)
+    (survivorRootAgree : compositeRoot = freshRoot)
+    (readsAgree : ∀ candidate, candidate ∈ candidateRange →
+      natListGetAt compositeBoundary (indexShift candidate) = natListGetAt freshBoundary candidate)
+    (rootsAgree : ∀ candidate, candidate ∈ candidateRange →
+      unionFindRootOf compositeLinks (natListGetAt freshBoundary candidate)
+        = unionFindRootOf freshLinks (natListGetAt freshBoundary candidate)) :
+    ∀ candidate, candidate ∈ candidateRange →
+      (indexShift candidate != indexShift freshExclude
+          && unionFindRootOf compositeLinks
+              (natListGetAt compositeBoundary (indexShift candidate)) == compositeRoot)
+        = (candidate != freshExclude
+            && unionFindRootOf freshLinks (natListGetAt freshBoundary candidate) == freshRoot) := by
+  intro candidate candidateInRange
+  -- The right conjuncts coincide: same node, same root, same target.
+  have rightConjunctAgree :
+      (unionFindRootOf compositeLinks (natListGetAt compositeBoundary (indexShift candidate)) == compositeRoot)
+        = (unionFindRootOf freshLinks (natListGetAt freshBoundary candidate) == freshRoot) := by
+    rw [readsAgree candidate candidateInRange, rootsAgree candidate candidateInRange, survivorRootAgree]
+  -- The exclude conjuncts coincide by injectivity of the shift.
+  have excludeConjunctAgree :
+      (indexShift candidate != indexShift freshExclude) = (candidate != freshExclude) := by
+    have beqAgree : (indexShift candidate == indexShift freshExclude) = (candidate == freshExclude) := by
+      cases candidateEqExclude : candidate == freshExclude with
+      | true =>
+          have candidateIsExclude : candidate = freshExclude := of_decide_eq_true candidateEqExclude
+          rw [candidateIsExclude]
+          apply decide_eq_true; rfl
+      | false =>
+          apply decide_eq_false
+          intro shiftEqual
+          have candidateIsExclude : candidate = freshExclude :=
+            shiftInjective candidate freshExclude shiftEqual
+          rw [candidateIsExclude] at candidateEqExclude
+          have selfBeq : (freshExclude == freshExclude) = true := by apply decide_eq_true; rfl
+          rw [selfBeq] at candidateEqExclude
+          exact Bool.noConfusion candidateEqExclude
+    show (!(indexShift candidate == indexShift freshExclude)) = (!(candidate == freshExclude))
+    rw [beqAgree]
+  rw [excludeConjunctAgree, rightConjunctAgree]
 
 end FX1Poly.Polygraph

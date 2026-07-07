@@ -14,5 +14,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stepCup_freshLeg_offSurvivor
 #assert_no_axioms FX1Poly.Polygraph.stepCup_windowPairFails_atFreshLegs
 #assert_no_axioms FX1Poly.Polygraph.cupBlock_frontFails_ofMidIsolated
+#assert_no_axioms FX1Poly.Polygraph.stepCup_unionFindRootOf_oldNode
+#assert_no_axioms FX1Poly.Polygraph.testCorr_ofCorrespondences
 
 end FX1PolyAudit
