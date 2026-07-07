@@ -2,6 +2,7 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleDesc
 import FX1Poly.Typed.Engine.RuleTables.GeneralElimRule
 import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointGeneralArgumentSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
 
 /-! # FX1Poly/Typed/HasTypeDescGeneralElim — NATIVE-24: pathApp as a native elim row + endpoint-ι typed
 
@@ -68,9 +69,9 @@ inductive HasTypeDescGeneralElim (profile : PolyProfile) :
       (typeParamC typeParamD : RawTerm scope)
       (eliminated argument : RawTerm scope)
       (isElim : generalElimRuleOf generator = some rule)
-      (eliminatedTyped : HasTypeDescPi profile context eliminated
+      (eliminatedTyped : HasTypeUnion profile context eliminated
         (rule.eliminatedType scope typeParamA typeParamB typeParamC typeParamD))
-      (argumentTyped : HasTypeDescPi profile context argument
+      (argumentTyped : HasTypeUnion profile context argument
         (rule.argumentType scope typeParamA)) :
       HasTypeDescGeneralElim profile context
         (rule.memberCell scope eliminated argument)
@@ -85,12 +86,14 @@ theorem generalElimEngine_typesApp {profile : PolyProfile} {scope : Nat}
     {functionTerm argument domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (functionTyped :
       HasTypeDescPi profile context functionTerm (piTyCodeCell domainCode codomainCode))
-    (argumentTyped : HasTypeDescPi profile context argument domainCode) :
+    (argumentTyped : HasTypeDescPi profile context argument domainCode)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeDescGeneralElim profile context (appCell functionTerm argument)
       (RawTerm.subst0 codomainCode argument) :=
   HasTypeDescGeneralElim.genElim context .gen_app appGeneralElimRule
     domainCode codomainCode domainCode domainCode functionTerm argument rfl
-    functionTyped argumentTyped
+    (functionTyped.ofGrownReflected contextLockFree)
+    (argumentTyped.ofGrownReflected contextLockFree)
 
 /-- **A Pi-typed (neutral) path drives the generic arm at the pathApp row.**  A path typed at a bridge
 code in the HOST judgment (the variable / neutral regime — e.g. a context-bound path variable) applied
@@ -101,11 +104,13 @@ theorem generalElimEngine_typesPathApp {profile : PolyProfile} {scope : Nat}
     {path argument carrierCode leftEndpoint rightEndpoint : RawTerm scope}
     (pathTyped : HasTypeDescPi profile context path
       (bridgeTypeCell carrierCode leftEndpoint rightEndpoint))
-    (argumentTyped : HasTypeDescPi profile context argument intervalTypeCell) :
+    (argumentTyped : HasTypeDescPi profile context argument intervalTypeCell)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeDescGeneralElim profile context (pathAppCell path argument) carrierCode :=
   HasTypeDescGeneralElim.genElim context .gen_pathApp pathAppGeneralElimRule
     carrierCode (RawTerm.weaken carrierCode) leftEndpoint rightEndpoint path argument rfl
-    pathTyped argumentTyped
+    (pathTyped.ofGrownReflected contextLockFree)
+    (argumentTyped.ofGrownReflected contextLockFree)
 
 /-! ## ★ Soundness: every generic typing surfaces its bespoke content -/
 
@@ -118,17 +123,17 @@ FREE indices + table enumeration. -/
 theorem HasTypeDescGeneralElim.soundness {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescGeneralElim profile context subject classifier) :
-    (∃ (functionTerm argument : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
+    (∃ (functionTerm argument domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
       subject = appCell functionTerm argument ∧
       classifier = RawTerm.subst0 codomainCode argument ∧
-      HasTypeDescPi profile context (appCell functionTerm argument)
-        (RawTerm.subst0 codomainCode argument))
+      HasTypeUnion profile context functionTerm (piTyCodeCell domainCode codomainCode) ∧
+      HasTypeUnion profile context argument domainCode)
     ∨ (∃ (path argument carrierCode leftEndpoint rightEndpoint : RawTerm scope),
       subject = pathAppCell path argument ∧
       classifier = carrierCode ∧
-      HasTypeDescPi profile context path
+      HasTypeUnion profile context path
         (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) ∧
-      HasTypeDescPi profile context argument intervalTypeCell) := by
+      HasTypeUnion profile context argument intervalTypeCell) := by
   cases derivation with
   | genElim generator rule typeParamA typeParamB typeParamC typeParamD
       eliminated argument isElim eliminatedTyped argumentTyped =>
@@ -137,8 +142,8 @@ theorem HasTypeDescGeneralElim.soundness {profile : PolyProfile} {scope : Nat}
       have hRule : rule = appGeneralElimRule :=
         Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
       subst hRule
-      exact Or.inl ⟨eliminated, argument, typeParamB, rfl, rfl,
-        HasTypeDescPi.piElim eliminatedTyped argumentTyped⟩
+      exact Or.inl ⟨eliminated, argument, typeParamA, typeParamB, rfl, rfl,
+        eliminatedTyped, argumentTyped⟩
     · by_cases hPath : generator = .gen_pathApp
       · subst hPath
         have hRule : rule = pathAppGeneralElimRule :=
@@ -167,7 +172,7 @@ theorem HasTypeDescGradedIntro.invertGeneric {profile : PolyProfile} {scope : Na
       subject = rule.memberCell scope typeParamA body ∧
       classifier = rule.outputType scope typeParamA typeParamB body ∧
       gradedBinderChecks rule.binderUsage body ∧
-      HasTypeDescPi profile (context.cons (rule.domainCell scope typeParamA)) body
+      HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA)) body
         (rule.bodyClassifier scope typeParamA typeParamB) := by
   cases derivation with
   | genIntro generator rule typeParamA typeParamB body
@@ -189,13 +194,14 @@ theorem gradedIntroEndpointIotaComputesTyped {profile : PolyProfile} {scope : Na
     {context : TypingContext profile scope}
     {body : RawTerm (scope + 1)} {classifier argument : RawTerm scope}
     (pathTyped : HasTypeDescGradedIntro profile context (pathLamCell body) classifier)
-    (argumentTyped : HasTypeDescPi profile context argument intervalTypeCell) :
+    (argumentTyped : HasTypeDescPi profile context argument intervalTypeCell)
+    (contextLockFree : context.isLockFreeContext = true) :
     ∃ carrierCode : RawTerm scope,
       classifier = bridgeTypeCell carrierCode
         (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
       StepTable (pathAppCell (pathLamCell body) argument)
         (RawTerm.subst0 body argument) ∧
-      HasTypeDescPi profile context (RawTerm.subst0 body argument) carrierCode := by
+      HasTypeUnion profile context (RawTerm.subst0 body argument) carrierCode := by
   obtain ⟨generator, rule, typeParamA, typeParamB, armBody, isIntro, subjectEq,
     classifierEq, _, bodyTyped⟩ := pathTyped.invertGeneric
   rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
@@ -211,9 +217,19 @@ theorem gradedIntroEndpointIotaComputesTyped {profile : PolyProfile} {scope : Na
     subst hRule
     have bodiesEqual : body = armBody := by injections
     subst bodiesEqual
-    obtain ⟨stepFires, reductTyped⟩ :=
-      endpointBetaGeneralArgumentGrownReduct bodyTyped argumentTyped
-    exact ⟨typeParamA, classifierEq, stepFires, reductTyped⟩
+    -- The surfaced body premise is NATIVE (`context.cons intervalTypeCell ⊢ body : weaken carrier`); the
+    -- grown argument reflects to the native kernel judgment, then the plain-`cons` native single
+    -- substitution (`subst0WithUnionImage`, fibrant-usable over the lock-free context) types the reduct at
+    -- `subst0 (weaken carrier) argument`, which `subst0_weaken` collapses to the carrier.
+    have argumentNative : HasTypeUnion profile context argument intervalTypeCell :=
+      argumentTyped.ofGrownReflected contextLockFree
+    have argumentUsable : context.isSubjectUsableAtModality argument .fibrant = true :=
+      context.lockFreeImpliesSubjectFibrantlyUsable contextLockFree argument
+    have reductTyped :=
+      HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentNative argumentUsable
+    dsimp only [pathLamGradedIntroRule] at reductTyped
+    rw [RawTerm.subst0_weaken] at reductTyped
+    exact ⟨typeParamA, classifierEq, StepTable.pathBetaFires body argument, reductTyped⟩
 
 /-! ## Smokes: both rows + the ι non-vacuously exercised -/
 
@@ -244,6 +260,7 @@ theorem closedApplicationGeneralElimTyped {profile : PolyProfile} (flag : Univer
           LevelExpr.lzero flag)))
     (HasTypeDescPi.ofFormation
       (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
+    isLockFreeContext_empty
 
 /-- **★ A NEUTRAL path elimination through the engine's pathApp row.**  In a context binding a bridge
 variable and a dimension variable, `pathApp(var 1, var 0) : Type@1` — the path is the context-bound
@@ -274,6 +291,7 @@ theorem neutralPathApplicationGeneralElimTyped {profile : PolyProfile} (flag : U
             (universeCodeCell LevelExpr.lzero flag)
             (universeCodeCell LevelExpr.lzero flag))).cons intervalTypeCell)
         ⟨0, Nat.succ_pos 1⟩))
+    rfl
 
 /-- **★ The typed endpoint-ι exercised on the constant bridge.**  The keystone-typed
 `pathLam(Type@0)` (at the dimension-variable context) applied to the dimension variable: the ι
@@ -286,7 +304,7 @@ theorem constantBridgeEndpointIotaSmoke {profile : PolyProfile} (flag : Universe
           (variableCell ⟨0, Nat.succ_pos 0⟩))
         (RawTerm.subst0 (universeCodeCell LevelExpr.lzero flag)
           (variableCell ⟨0, Nat.succ_pos 0⟩)) ∧
-      HasTypeDescPi profile
+      HasTypeUnion profile
         (TypingContext.empty.cons intervalTypeCell : TypingContext profile 1)
         (RawTerm.subst0 (universeCodeCell LevelExpr.lzero flag)
           (variableCell ⟨0, Nat.succ_pos 0⟩)) carrierCode := by
@@ -298,13 +316,15 @@ theorem constantBridgeEndpointIotaSmoke {profile : PolyProfile} (flag : Universe
           (HasTypeDesc.universeFormation
             ((TypingContext.empty.cons intervalTypeCell).cons intervalTypeCell)
             LevelExpr.lzero flag))
-        (Nat.zero_le 1))
+        (Nat.zero_le 1)
+        rfl)
       (show HasTypeDescPi profile
           (TypingContext.empty.cons intervalTypeCell : TypingContext profile 1)
           (variableCell ⟨0, Nat.succ_pos 0⟩) intervalTypeCell from
         HasTypeDescPi.ofFormation
           (HasTypeDesc.var (TypingContext.empty.cons intervalTypeCell)
             ⟨0, Nat.succ_pos 0⟩))
+      rfl
   exact ⟨carrierCode, stepFires, reductTyped⟩
 
 /-! ## The coverage gate -/
@@ -342,7 +362,7 @@ structure GeneralElimEngineCoverage (profile : PolyProfile) (flag : UniverseFlag
         (variableCell ⟨0, Nat.succ_pos 0⟩))
       (RawTerm.subst0 (universeCodeCell LevelExpr.lzero flag)
         (variableCell ⟨0, Nat.succ_pos 0⟩)) ∧
-    HasTypeDescPi profile
+    HasTypeUnion profile
       (TypingContext.empty.cons intervalTypeCell : TypingContext profile 1)
       (RawTerm.subst0 (universeCodeCell LevelExpr.lzero flag)
         (variableCell ⟨0, Nat.succ_pos 0⟩)) carrierCode
