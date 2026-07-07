@@ -25,6 +25,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.ModeComputad.toModeGraph
 #assert_no_axioms FX1Poly.Polygraph.ModeComputad.toModeSignatureSkeleton
 
+-- The TOTAL word-to-ModalityPath interpreter (task 2A-i)
+#assert_no_axioms FX1Poly.Polygraph.ModeComputad.interpretWordFrom
+#assert_no_axioms FX1Poly.Polygraph.ModeComputad.ReconstructedTwoCell
+#assert_no_axioms FX1Poly.Polygraph.ModeComputad.toModeSignature
+#assert_no_axioms FX1Poly.Polygraph.ModeComputad.toModeSignature_graph
+
+-- Dimension-2 faithfulness: reconstructed unit / counit 2-cells
+#assert_no_axioms FX1Poly.Polygraph.adjunctionComputadReconstructedLeftThenRight
+#assert_no_axioms FX1Poly.Polygraph.adjunctionComputadReconstructedRightThenLeft
+#assert_no_axioms FX1Poly.Polygraph.adjunctionComputad_reconstructsUnit
+#assert_no_axioms FX1Poly.Polygraph.adjunctionComputad_reconstructsCounit
+
 -- The two concrete computads
 #assert_no_axioms FX1Poly.Polygraph.singleObjectSemiringComputad
 #assert_no_axioms FX1Poly.Polygraph.adjunctionComputadModalityGenerators
@@ -49,7 +61,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.adjunctionComputadModalityEquiv
 #assert_no_axioms FX1Poly.Polygraph.adjunctionComputadGraphEquiv
 
--- Honesty marker
+-- Honesty markers
 #assert_no_axioms FX1Poly.Polygraph.polygraph_hasModeComputad
+#assert_no_axioms FX1Poly.Polygraph.polygraph_hasTotalModeSignatureInterpreter
 
 end FX1PolyAudit

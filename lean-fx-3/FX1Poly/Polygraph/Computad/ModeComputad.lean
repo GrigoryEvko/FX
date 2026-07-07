@@ -96,6 +96,76 @@ def ModeComputad.toModeSignatureSkeleton (computad : ModeComputad) : ModeSignatu
   graph := computad.toModeGraph
   twoCell := fun _ _ => Empty
 
+/-! ## The TOTAL word-to-`ModalityPath` interpreter and the reconstructed 2-cell family
+
+The stub `twoCell := fun _ _ => Empty` above discards the finite 2-generators.  Below is the genuine total
+reconstruction (task 2A-i): a finite generator-word `List (Fin modalityGenerators.length)` is folded
+head-first into a typed `ModalityPath` over `toModeGraph`, threading each generator's recorded endpoint
+witness through the `cons`.  A word may fail to chain (a generator's recorded source disagrees with the
+running mode), so the fold is `Option`-valued and TOTAL — no partiality escapes into the reconstructed
+signature.  This produces the 2-cell DATA only; DECIDING 2-cell equality modulo the 3-polygraph relations is
+the separate `fxMode_hasDecidableTwoCellEquality` research half (2A-ii) and is NOT touched here. -/
+
+/-- `interpretWordFrom` — the total word-to-`ModalityPath` fold.  From a seed mode `src`, consume a word of
+1-generator indices head-first: each index resolves to a generator with recorded endpoints `(a, b)`; it is
+legal to prepend only when `a = src` (decided by the FREE `DecidableEq (Fin modeCount)`), after which the
+running source becomes `b` and the tail is folded from there.  Returns the DISCOVERED target mode paired with
+the built `ModalityPath` (`Sigma`), or `none` when the word does not chain.  Structural on the word; the
+endpoint witness transports `get index = (a, b)` to `get index = (src, b)` via `congrArg` (propext-free,
+proof-irrelevant subtype). -/
+def ModeComputad.interpretWordFrom (computad : ModeComputad)
+    (src : Fin computad.modeCount)
+    (word : List (Fin computad.modalityGenerators.length)) :
+    Option (Sigma (fun targetMode : Fin computad.modeCount =>
+      ModalityPath computad.toModeGraph src targetMode)) :=
+  match word with
+  | [] => some ⟨src, ModalityPath.nil (graph := computad.toModeGraph) src⟩
+  | index :: rest =>
+      if headEndpointMatchesSrc : (computad.modalityGenerators.get index).1 = src then
+        match computad.interpretWordFrom (computad.modalityGenerators.get index).2 rest with
+        | none => none
+        | some restInterpreted =>
+            some ⟨restInterpreted.fst,
+              ModalityPath.cons
+                (⟨index,
+                    congrArg
+                      (fun endpointSource =>
+                        (endpointSource, (computad.modalityGenerators.get index).2))
+                      headEndpointMatchesSrc⟩ :
+                  computad.Modality src (computad.modalityGenerators.get index).2)
+                restInterpreted.snd⟩
+      else
+        none
+
+/-- The **reconstructed 2-cell family** — mirroring `Modality` one dimension up.  A generating 2-cell between
+the parallel paths `sourcePath`, `targetPath` (both `src -> tgt`) is a 2-generator INDEX whose two words
+interpret, from `src`, to EXACTLY `sourcePath` and `targetPath`.  A subtype of `Fin` — TOTAL (every parallel
+boundary gets a possibly-empty Type), self-correcting on the stored endpoints (a generator authored for a
+different boundary either folds to `none` or lands a different path, failing its conjunct).  This is 2-cell
+DATA; no 2-cell-equality decision is made. -/
+@[reducible] def ModeComputad.ReconstructedTwoCell (computad : ModeComputad)
+    {src tgt : Fin computad.modeCount}
+    (sourcePath targetPath : ModalityPath computad.toModeGraph src tgt) : Type :=
+  { index : Fin computad.twoCellGenerators.length //
+      computad.interpretWordFrom src (computad.twoCellGenerators.get index).lhs
+          = some ⟨tgt, sourcePath⟩
+        ∧ computad.interpretWordFrom src (computad.twoCellGenerators.get index).rhs
+          = some ⟨tgt, targetPath⟩ }
+
+/-- ★ `toModeSignature` — the TOTAL interpreter: the reconstructed 2-polygraph with the real generating
+2-cells (`ReconstructedTwoCell`) in place of the skeleton's `twoCell := Empty`.  A genuine total function
+`ModeComputad -> ModeSignature`, zero-axiom, superseding `toModeSignatureSkeleton`.  Every downstream
+consumer that reads only `.graph` or the carrier-computed richness is unaffected; the `richnessEvidence`
+`hasGeneratingTwoCell` bit is now WITNESSED by an actually-inhabited family (see the adjunction unit/counit
+reconstruction below) rather than asserted. -/
+def ModeComputad.toModeSignature (computad : ModeComputad) : ModeSignature where
+  graph := computad.toModeGraph
+  twoCell := fun sourcePath targetPath => computad.ReconstructedTwoCell sourcePath targetPath
+
+/-- The total interpreter keeps the skeleton's 0/1-graph on the nose — it only fills in the 2-cells. -/
+theorem ModeComputad.toModeSignature_graph (computad : ModeComputad) :
+    computad.toModeSignature.graph = computad.toModeSignatureSkeleton.graph := rfl
+
 /-! ## Instance 1 — the single-object semiring computad (modeCount 1) -/
 
 /-- The **single-object semiring computad** — one object, one endo-1-generator (the multiplication
@@ -297,6 +367,52 @@ def adjunctionComputadGraphEquiv : ModeGraphEquiv adjunctionComputad.toModeGraph
   modeEquiv := adjunctionComputadModeEquiv
   modalityEquiv := adjunctionComputadModalityEquiv
 
+/-! ## Dimension-2 faithfulness: the interpreter reconstructs the unit / counit 2-cells
+
+The `Fin`-coordinate analogues of `adjunctionLeftThenRight` / `adjunctionRightThenLeft` — exactly the paths
+the interpreter builds from the unit's `rhs = [0,1]` and the counit's `lhs = [1,0]`.  Their reconstructed
+2-cells are inhabited by the corresponding generator index, both interpreter conjuncts closing by `rfl`
+(definitional reduction of the fold + proof-irrelevant `Modality` witnesses).  This is the dimension-2
+analogue of the shipped 0/1-skeleton iso `adjunctionComputadGraphEquiv`. -/
+
+/-- The reconstructed unit codomain `id_base ⟹ (left then right)` in `Fin` coordinates — the interpreter's
+image of the unit's word `[0, 1]`. -/
+def adjunctionComputadReconstructedLeftThenRight :
+    ModalityPath adjunctionComputad.toModeGraph (⟨0, by decide⟩ : Fin 2) (⟨0, by decide⟩ : Fin 2) :=
+  ModalityPath.cons
+    (⟨⟨0, by decide⟩, rfl⟩ : adjunctionComputad.Modality ⟨0, by decide⟩ ⟨1, by decide⟩)
+    (ModalityPath.cons
+      (⟨⟨1, by decide⟩, rfl⟩ : adjunctionComputad.Modality ⟨1, by decide⟩ ⟨0, by decide⟩)
+      (ModalityPath.nil (graph := adjunctionComputad.toModeGraph) ⟨0, by decide⟩))
+
+/-- The reconstructed counit domain `(right then left) ⟹ id_tip` in `Fin` coordinates — the interpreter's
+image of the counit's word `[1, 0]`. -/
+def adjunctionComputadReconstructedRightThenLeft :
+    ModalityPath adjunctionComputad.toModeGraph (⟨1, by decide⟩ : Fin 2) (⟨1, by decide⟩ : Fin 2) :=
+  ModalityPath.cons
+    (⟨⟨1, by decide⟩, rfl⟩ : adjunctionComputad.Modality ⟨1, by decide⟩ ⟨0, by decide⟩)
+    (ModalityPath.cons
+      (⟨⟨0, by decide⟩, rfl⟩ : adjunctionComputad.Modality ⟨0, by decide⟩ ⟨1, by decide⟩)
+      (ModalityPath.nil (graph := adjunctionComputad.toModeGraph) ⟨1, by decide⟩))
+
+/-- ★ **Reconstructed unit** — the 2-generator index `0` inhabits `ReconstructedTwoCell` at the boundary
+`(id_base, left-then-right)`: the interpreter sends `lhs = []` to `id_base` and `rhs = [0,1]` to
+`adjunctionComputadReconstructedLeftThenRight`, both by `rfl`. -/
+def adjunctionComputad_reconstructsUnit :
+    adjunctionComputad.ReconstructedTwoCell
+      (ModalityPath.nil (graph := adjunctionComputad.toModeGraph) (⟨0, by decide⟩ : Fin 2))
+      adjunctionComputadReconstructedLeftThenRight :=
+  ⟨⟨0, by decide⟩, ⟨rfl, rfl⟩⟩
+
+/-- ★ **Reconstructed counit** — the 2-generator index `1` inhabits `ReconstructedTwoCell` at the boundary
+`(right-then-left, id_tip)`: the interpreter sends `lhs = [1,0]` to
+`adjunctionComputadReconstructedRightThenLeft` and `rhs = []` to `id_tip`, both by `rfl`. -/
+def adjunctionComputad_reconstructsCounit :
+    adjunctionComputad.ReconstructedTwoCell
+      adjunctionComputadReconstructedRightThenLeft
+      (ModalityPath.nil (graph := adjunctionComputad.toModeGraph) (⟨1, by decide⟩ : Fin 2)) :=
+  ⟨⟨1, by decide⟩, ⟨rfl, rfl⟩⟩
+
 /-! ## Honesty marker -/
 
 /-- ★ **Honesty marker — the finite `ModeComputad` carrier ships, reconstructing the semantic carrier and
@@ -308,5 +424,13 @@ and the genuine 0/1-skeleton iso `adjunctionComputadGraphEquiv : ModeGraphEquiv 
 adjunctionGraph`.  The `twoCell`-inclusive `toModeSignature` (needing the word-to-`ModalityPath` interpreter)
 is the documented multi-brick.  `= true`. -/
 def polygraph_hasModeComputad : Bool := true
+
+/-- ★ **Honesty marker — the TOTAL `toModeSignature` interpreter ships (task 2A-i).**  The word-to-`ModalityPath`
+fold `interpretWordFrom`, the reconstructed 2-cell family `ReconstructedTwoCell`, the total function
+`toModeSignature` (superseding the skeleton's `twoCell := Empty`), and the dimension-2 unit/counit
+reconstruction (`adjunctionComputad_reconstructsUnit` / `_reconstructsCounit`).  This produces the 2-cell
+DATA only; DECIDING 2-cell equality modulo the 3-polygraph relations stays behind
+`fxMode_hasDecidableTwoCellEquality = false` (task 2A-ii, the fib-3-coupled research half).  `= true`. -/
+def polygraph_hasTotalModeSignatureInterpreter : Bool := true
 
 end FX1Poly.Polygraph
