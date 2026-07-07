@@ -4,6 +4,8 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupSortComplete
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCapSortComplete
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcTailsCancelAssembly
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineTraceAppendCongruence
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupInternalCountsPointwise
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCapInternalCountsPointwise
 
 /-! # ValleyMatchingSpineTraceEquiv — Piece II of the fib-3 gate, assembled modulo the two 2a residuals
 
@@ -209,15 +211,17 @@ theorem pureCapTailsCancel_ofDiagramAndInternalCap
 
 /-! ## ★ Piece II — the valley trace equivalence, assembled modulo the two 2a residuals -/
 
-/-- ★ **Piece II (valley matching ⇒ trace equivalence), assembled.**  Two valleys `capBlock ++ cupBlock` with
-per-block boundary `diagram` agreement and per-block length agreement — both consequences of block `matchingOf`
-equality (`arcDiagram_eq_matching`) — are `SpineTraceEquiv`, GIVEN the two per-port internal-count agreements:
-the cup block's `internalCupCounts` and the cap block's `internalCapCounts`.  Each of those two is the standing
-"2a" characterization (on a pure block the internal count of the block's own turnback kind is a function of the
-`diagram`).  Everything else is discharged: the cap block's cup-count free leg
-(`pureCapSpines_internalCupCountsAgree_ofDiagram`), the cup/cap tails-cancels reconstructing the full block arc
-equality, the two pure-block completeness sorts (`pureCupSpine_sort` / `pureCapSpine_sort`), and the two-sided
-append congruence (`spineTraceEquiv_appendCongr`). -/
+/-- ★ **Piece II (valley matching ⇒ trace equivalence), assembled — UNCONDITIONAL in the internal counts.**
+Two valleys `capBlock ++ cupBlock` with per-block boundary `diagram` agreement and per-block length agreement —
+both consequences of block `matchingOf` equality (`arcDiagram_eq_matching`) — are `SpineTraceEquiv`.  The two
+per-port internal-count agreements (the cup block's `internalCupCounts`, the cap block's `internalCapCounts`) are
+NO LONGER hypotheses: each is now discharged internally from the block `diagram` agreement plus the pure-block
+arity and boundary chaining the caller already carries, via the shipped 2a pointwise characterizations
+(`pureCapSpines_internalCapCountsAgree_ofDiagram` / `pureCupSpines_internalCupCountsAgree_ofDiagram`).  So Piece II
+reduces to per-block `diagram` + length agreement ALONE.  Everything else is discharged: the cap block's cup-count
+free leg, the cup/cap tails-cancels reconstructing the full block arc equality, the two pure-block completeness
+sorts (`pureCupSpine_sort` / `pureCapSpine_sort`), and the two-sided append congruence
+(`spineTraceEquiv_appendCongr`). -/
 theorem sameMatchingValleys_spineTraceEquiv
     {overallSource overallTarget : adjunctionGraph.Mode}
     (capBottomCount cupBottomCount : Nat)
@@ -235,15 +239,19 @@ theorem sameMatchingValleys_spineTraceEquiv
     (capDiagramAgree : (arcStructureOfSpineList capBottomCount capBlockFirst).diagram
       = (arcStructureOfSpineList capBottomCount capBlockSecond).diagram)
     (cupDiagramAgree : (arcStructureOfSpineList cupBottomCount cupBlockFirst).diagram
-      = (arcStructureOfSpineList cupBottomCount cupBlockSecond).diagram)
-    (capInternalCapCountsAgree :
-      (arcStructureOfSpineList capBottomCount capBlockFirst).internalCapCounts
-        = (arcStructureOfSpineList capBottomCount capBlockSecond).internalCapCounts)
-    (cupInternalCupCountsAgree :
-      (arcStructureOfSpineList cupBottomCount cupBlockFirst).internalCupCounts
-        = (arcStructureOfSpineList cupBottomCount cupBlockSecond).internalCupCounts) :
+      = (arcStructureOfSpineList cupBottomCount cupBlockSecond).diagram) :
     SpineTraceEquiv adjunctionModeSignature
       (capBlockFirst ++ cupBlockFirst) (capBlockSecond ++ cupBlockSecond) := by
+  have capInternalCapCountsAgree :
+      (arcStructureOfSpineList capBottomCount capBlockFirst).internalCapCounts
+        = (arcStructureOfSpineList capBottomCount capBlockSecond).internalCapCounts :=
+    pureCapSpines_internalCapCountsAgree_ofDiagram capBottomCount capBlockFirst capBlockSecond
+      capPureFirst capPureSecond capChainedFirst capChainedSecond capDiagramAgree
+  have cupInternalCupCountsAgree :
+      (arcStructureOfSpineList cupBottomCount cupBlockFirst).internalCupCounts
+        = (arcStructureOfSpineList cupBottomCount cupBlockSecond).internalCupCounts :=
+    pureCupSpines_internalCupCountsAgree_ofDiagram cupBottomCount cupBlockFirst cupBlockSecond
+      cupPureFirst cupPureSecond cupChainedFirst cupChainedSecond cupDiagramAgree
   have capArcEqual : arcStructureOfSpineList capBottomCount capBlockFirst
       = arcStructureOfSpineList capBottomCount capBlockSecond :=
     pureCapTailsCancel_ofDiagramAndInternalCap capBottomCount capBlockFirst capBlockSecond
@@ -262,18 +270,20 @@ theorem sameMatchingValleys_spineTraceEquiv
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — Piece II is ASSEMBLED modulo exactly the two 2a residuals.**
+/-- **Honesty marker — Piece II is ASSEMBLED and UNCONDITIONAL in the internal counts.**
 `sameMatchingValleys_spineTraceEquiv` proves that two valleys `capBlock ++ cupBlock` with block-level `diagram`
-and length agreement are `SpineTraceEquiv`, GIVEN two residual inputs: the cup block's `internalCupCounts`
-agreement and the cap block's `internalCapCounts` agreement.  Each is the standing "2a" per-port
-characterization — on a pure block the internal count of the block's OWN turnback kind is a function of the
-boundary `diagram` (`partner`).  The OPPOSITE internal count vanishes on a pure block and is discharged here
-(cup side shipped in `ArcPureCupTransfer`, cap side `pureCapSpines_internalCupCountsAgree_ofDiagram`); the full
+and length agreement are `SpineTraceEquiv`.  The two former residuals — the cup block's `internalCupCounts`
+agreement and the cap block's `internalCapCounts` agreement — are NO LONGER hypotheses: each is the standing "2a"
+per-port characterization (on a pure block the internal count of the block's OWN turnback kind is a function of
+the boundary `diagram`), now SHIPPED (`pureCupSpines_internalCupCountsAgree_ofDiagram` in
+`ArcCupInternalCountsPointwise`, `pureCapSpines_internalCapCountsAgree_ofDiagram` in
+`ArcCapInternalCountsPointwise`) and discharged internally from the caller's `AllCupArity`/`AllCapArity` +
+`SpineBoundaryChained` + block `diagram` agreement.  The OPPOSITE internal count vanishes on a pure block (cup
+side shipped in `ArcPureCupTransfer`, cap side `pureCapSpines_internalCupCountsAgree_ofDiagram` here); the full
 block arc equality is reconstructed by the tails-cancels; the pure-block completeness sorts and the append
-congruence close the assembly.  What this marker does NOT claim: the two 2a characterizations themselves
-(recovering `internalCupCounts` / `internalCapCounts` from `partner` on a pure block), nor the valley-append
-`matchingOf`-split that would derive the per-block `diagram`/length agreements from a whole-valley `matchingOf`
-equality.  No gate flag is flipped — Piece I (valley descent) remains open.  `= true`. -/
+congruence close the assembly.  What this marker does NOT claim: the valley-append `matchingOf`-split that would
+derive the per-block `diagram`/length agreements from a whole-valley `matchingOf` equality.  No gate flag is
+flipped — Piece I (valley descent) remains open.  `= true`. -/
 def fxMode_hasValleyMatchingSpineTraceEquivAssembly : Bool := true
 
 end FX1Poly.Polygraph
