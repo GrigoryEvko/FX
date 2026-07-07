@@ -33,5 +33,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApproxIsNonNegative
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulExactLtSquareOfNonNegOfLt
 #assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualAsOfMulExactSquareLeNonNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualAsSelfAddNonNegRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.sumSquaresLeSquareSumNonNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualAsSubOfLessEqualAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.recipSampleDenotesGridSquare
+#assert_no_axioms FX1Poly.ComputerAlgebra.reciprocalDenotesGridSum
 
 end FX1PolyAudit

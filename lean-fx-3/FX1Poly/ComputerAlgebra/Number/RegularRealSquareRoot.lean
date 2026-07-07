@@ -366,4 +366,97 @@ theorem lessEqualAsOfMulExactSquareLeNonNeg {lowValue highValue : RationalPair}
           ((mulExact highValue highValue).numerator *
             denominatorInt (mulExact lowValue lowValue)))
 
+/-! ## Route-B regularity infrastructure (NUM-R-SQRT brick 5)
+
+The honest √-regularity does NOT prove the literal `(u−v)² ≤ |a−b|` (false for
+the APPROXIMATE roots — the brackets carry a grid unit of slack each).  It
+instead bounds each root by the other plus the full modulus, ONE-SIDEDLY, via
+the shipped square reflection: from `s_i² ≤ (s_j + budget)²` and nonnegativity
+of `s_j + budget`, reflect to `s_i ≤ s_j + budget`, then shunt to the two-sided
+`IsWithinBound`.  This section ships the four magnitude-free arithmetic bricks
+that thread the budget: the "value sits below itself plus a nonnegative", the
+`a² + b² ≤ (a + b)²` cross-term drop, the reverse shunt
+`s ≤ l + b → s − l ≤ b`, and the two DEFINITIONAL modulus identities linking the
+quadratic sample depth and the output grid step to the reciprocal budget. -/
+
+/-- A value sits below itself plus any nonnegative addend — `v ≤ v + d` from
+`0 ≤ d`.  The zero-addend self-distance relaxed by right monotonicity. -/
+theorem lessEqualAsSelfAddNonNegRight (baseValue : RationalPair)
+    {addend : RationalPair} (isAddendNonNegative : IsNonNegative addend) :
+    LessEqualAs baseValue (addExact baseValue addend) :=
+  lessEqualAsCongrLeft (addExactZeroRight baseValue)
+    (addExactMonotoneRight baseValue isAddendNonNegative)
+
+/-- **The cross-term drop** `a² + b² ≤ (a + b)²` for nonnegative `a, b`:
+`a² ≤ (a+b)·a` and `b² ≤ (a+b)·b` (product monotonicity on nonnegatives), add,
+and refold the right side by left distribution.  The whole polynomial
+domination of the √-regularity is two instances of this. -/
+theorem sumSquaresLeSquareSumNonNeg {leftValue rightValue : RationalPair}
+    (isLeftNonNegative : IsNonNegative leftValue)
+    (isRightNonNegative : IsNonNegative rightValue) :
+    LessEqualAs
+      (addExact (mulExact leftValue leftValue) (mulExact rightValue rightValue))
+      (mulExact (addExact leftValue rightValue) (addExact leftValue rightValue)) :=
+  let sumValue := addExact leftValue rightValue
+  let isSumNonNegative : IsNonNegative sumValue :=
+    addExactIsNonNegative isLeftNonNegative isRightNonNegative
+  let isLeftBelowSum : LessEqualAs leftValue sumValue :=
+    lessEqualAsSelfAddNonNegRight leftValue isRightNonNegative
+  let isRightBelowSum : LessEqualAs rightValue sumValue :=
+    lessEqualAsCongrRight (addExactComm rightValue leftValue)
+      (lessEqualAsSelfAddNonNegRight rightValue isLeftNonNegative)
+  let leftSquareBelow :
+      LessEqualAs (mulExact leftValue leftValue) (mulExact sumValue leftValue) :=
+    mulExactMonotoneOfNonNegative isLeftBelowSum (lessEqualAsRefl leftValue)
+      isLeftNonNegative isSumNonNegative
+  let rightSquareBelow :
+      LessEqualAs (mulExact rightValue rightValue) (mulExact sumValue rightValue) :=
+    mulExactMonotoneOfNonNegative isRightBelowSum (lessEqualAsRefl rightValue)
+      isRightNonNegative isSumNonNegative
+  lessEqualAsCongrRight
+    (denotesSameAsSymm (mulExactLeftDistrib sumValue leftValue rightValue))
+    (addExactMonotone leftSquareBelow rightSquareBelow)
+
+/-- **The reverse shunt** `s ≤ l + b → s − l ≤ b` — the converse of the shipped
+`lessEqualAsAddOfSubLessEqual`.  Add `−l` to both sides; the right side's
+`(l + b) + (−l)` collapses to `b` through the additive group laws. -/
+theorem lessEqualAsSubOfLessEqualAdd {highValue lowValue bound : RationalPair}
+    (isBelowShifted : LessEqualAs highValue (addExact lowValue bound)) :
+    LessEqualAs (subExact highValue lowValue) bound :=
+  let cancels :
+      DenotesSameAs (addExact (addExact lowValue bound) (negExact lowValue))
+        bound :=
+    denotesSameAsTrans
+      (addExactRespectsDenotesSameAs (addExactComm lowValue bound)
+        (denotesSameAsRefl (negExact lowValue)))
+      (denotesSameAsTrans
+        (addExactAssoc bound lowValue (negExact lowValue))
+        (denotesSameAsTrans
+          (addExactRespectsDenotesSameAs (denotesSameAsRefl bound)
+            (addExactNegRight lowValue))
+          (addExactZeroRight bound)))
+  lessEqualAsCongrRight cancels
+    (addExactMonotoneLeft (negExact lowValue) isBelowShifted)
+
+/-- **The quadratic-depth modulus identity** — the input drift budget
+`1/(sqrtSampleIndex i + 1)` IS the square of the output grid step
+`1/(sqrtGridIndex i + 1)`.  DEFINITIONAL: `sqrtSampleIndex i + 1 = (2i+2)²` and
+`mulExact`'s denominator IS the product of denominators, so both cross-products
+are `1 · (2i+2)²`. -/
+theorem recipSampleDenotesGridSquare (index : Nat) :
+    DenotesSameAs (reciprocalOfSucc (sqrtSampleIndex index))
+      (mulExact (reciprocalOfSucc (sqrtGridIndex index))
+        (reciprocalOfSucc (sqrtGridIndex index))) :=
+  rfl
+
+/-- **The output-grid halving identity** — the reciprocal budget `1/(i+1)` at
+the comparison index denotes twice the output grid step: `1/(i+1) = 2/(2i+2)`,
+and the two halves re-split as the SUM of two grid steps. -/
+theorem reciprocalDenotesGridSum (index : Nat) :
+    DenotesSameAs (reciprocalOfSucc index)
+      (addExact (reciprocalOfSucc (sqrtGridIndex index))
+        (reciprocalOfSucc (sqrtGridIndex index))) :=
+  denotesSameAsTrans (reciprocalHalvesDenotesSame index)
+    (denotesSameAsSymm (ratioOfNatSuccSumDenotesSame 1 1 (2 * index + 1)))
+
 end FX1Poly.ComputerAlgebra
