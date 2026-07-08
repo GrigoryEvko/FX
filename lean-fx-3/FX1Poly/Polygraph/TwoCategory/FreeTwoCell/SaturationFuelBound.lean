@@ -24,11 +24,12 @@ finite enumeration of the seed's ~-class, via a potential-function argument:
     required) yields `Decidable (AtomicTraceEquiv seed target)` outright with the
     computable fuel `classSaturationFuel`.
 
-HONESTY: no marker flips here.  The remaining FREE-7 gap is exactly the hypothesis —
-CONSTRUCTING a complete class enumeration, which is what the occurrence-tagged
-determination rungs (`TaggedSwap.lean` onward) are building: determination bounds the
-class by the tag-order permutations.  Once that lands, this file turns it into the
-unconditional decision.
+HONESTY: this file discharges the fuel CONDITIONALLY on a complete class list.  The
+remaining hypothesis — CONSTRUCTING a complete class enumeration — has since LANDED via
+the bounded-atom-universe route (`TotalWordProblemDecision.chainedSeedClassList_isComplete`,
+all words of the seed's length over its finite atom universe), which this file's
+`decideAtomicTraceEquivOfCompleteClassList` turns into the unconditional total decision
+`decideTwoCellConvFull`, flipping `fxMode_hasUngatedFreeTwoCellDecision = true`.
 
 Also ships the hand-rolled zero-axiom length kit (`listLengthAppend`, `listLengthMap`,
 `listLengthFilterLe`, `listLengthFilterMono`, `listLengthFilterStrictMono`,

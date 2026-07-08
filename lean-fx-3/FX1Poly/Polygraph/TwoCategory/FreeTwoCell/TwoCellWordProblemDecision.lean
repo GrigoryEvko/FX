@@ -18,10 +18,13 @@ the decision up the chain:
     trace (the cell-level normal form).
 
 HONESTY: this is the FREE case — `TwoCellConvFull` is the congruence closure of the
-Godement/whisker laws with NO presentation relations, and the decision is fuel-gated.
-The general `fxMode_hasDecidableTwoCellEquality` marker (the mode theory WITH its
-adjunction relations, ungated) stays `false`; that needs the saturated walking-
-adjunction decision plus the class-size fuel bound.
+Godement/whisker laws with NO presentation relations.  This file's front door is
+fuel-gated (the honest `Option` that stays silent when the frontier check runs short);
+the fuel gate is DISCHARGED downstream in `TotalWordProblemDecision` (`decideTwoCellConvFull`,
+total, via the complete bounded-atom-universe class list — `fxMode_hasUngatedFreeTwoCellDecision`).
+The general `fxMode_hasDecidableTwoCellEquality` marker (the mode theory WITH its adjunction
+relations, cross-signature) stays `false`; that needs the saturated walking-adjunction
+decision, not more free fuel.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 

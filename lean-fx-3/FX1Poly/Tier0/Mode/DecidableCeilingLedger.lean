@@ -1,5 +1,6 @@
 import FX1Poly.Tier0.Mode.Mode
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.TwoCellWordProblemDecision
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.TotalWordProblemDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCongruenceProved
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCanonicalization
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcReconstruction
@@ -13,13 +14,20 @@ machine-checked statement of exactly where each rung stands.  Every field of the
 value is PINNED to the source honesty marker of the file that shipped (or refuted) it —
 a marker drift breaks a `rfl` here, so the ledger cannot silently rot.
 
-**Rung 1 — FREE, decided GENERICALLY.**  Over ANY mode signature, `TwoCellConvFull`
-(the relation-free Godement/whisker congruence) is characterized by atomic trace
-equivalence of spines and decided by the class-saturation search
-(`decideTwoCellConvFull?`, `FreeTwoCell/TwoCellWordProblemDecision`).  The decision is
-FUEL-GATED: the honest front door returns `none` when the frontier-exhaustion check
-fails, and the computed sufficient fuel (the class-size pigeonhole) is still owed.
-This is the free-2-category instance of the Mazurkiewicz trace word problem.
+**Rung 1 — FREE, decided GENERICALLY and UN-GATED.**  Over ANY mode signature,
+`TwoCellConvFull` (the relation-free Godement/whisker congruence) is characterized by
+atomic trace equivalence of spines and decided by the class-saturation search.  The
+class-size fuel is now DISCHARGED (`FreeTwoCell/TotalWordProblemDecision`,
+`fxMode_hasUngatedFreeTwoCellDecision = true`): a boundary-chained seed's whole
+`AtomicTraceEquiv` class lives inside the computable list `chainedSeedClassList`
+(`chainedSeedClassList_isComplete`), and a complete class list forces the saturation
+frontier to exhaust within the computed fuel `classSaturationFuel` — the stabilization
+theorem `didExhaustFrontier_ofCompleteClassList`, itself the strict-potential-descent
+argument `saturationPotentialStep` (Kleene/Knaster–Tarski least-fixpoint on the finite
+trace class; Mazurkiewicz trace theory, Diekert–Rozenberg *Book of Traces* 1995).  So
+`decideTwoCellConvFull` is total — no fuel hypothesis, no `Option`, no exhaustion gate.
+This is the free-2-category instance of the Mazurkiewicz trace word problem, decided
+outright.
 
 **Rung 2 — SATURATED (presentation relations), decided PER-PRESENTATION.**  Adding
 relations (the walking adjunction's triangle identities) breaks every generic invariant:
@@ -77,8 +85,9 @@ pinned to its source marker by a `rfl` theorem below. -/
 structure DecidableCeilingLedger where
   /-- Rung 1: the FREE word problem is decided generically over any signature. -/
   hasGenericFreeDecision : Bool
-  /-- Rung 1 honesty: the generic free decision is fuel-gated (the computed
-  sufficient fuel from the class-size pigeonhole is still owed). -/
+  /-- Rung 1 honesty: is the generic free decision still fuel-gated?  Now `false` — the
+  sufficient fuel is DISCHARGED (`decideTwoCellConvFull`, total over any signature; backed
+  by `chainedSeedClassList_isComplete` + `didExhaustFrontier_ofCompleteClassList`). -/
   isFreeDecisionFuelGated : Bool
   /-- Rung 2: saturated soundness at the walking adjunction (the matching invariant
   respects the triangle relations), unconditional. -/
@@ -101,7 +110,7 @@ assembled decision), all zero-axiom via the matching carrier; rung 1 stays fuel-
 stays walled. -/
 def fxDecidableCeiling : DecidableCeilingLedger where
   hasGenericFreeDecision := true
-  isFreeDecisionFuelGated := true
+  isFreeDecisionFuelGated := false
   hasSaturatedSoundness := true
   hasSaturatedCompleteness := true
   wasGenericSaturatedCompletenessRefuted := true
@@ -114,6 +123,16 @@ def fxDecidableCeiling : DecidableCeilingLedger where
 theorem fxDecidableCeiling_freeRung_matchesMarker :
     fxDecidableCeiling.hasGenericFreeDecision
       = FX1Poly.Tier0.fxMode_hasDecidableFreeTwoCellEquality := rfl
+
+/-- Rung 1 pin: the fuel-gate honesty field is the NEGATION of the ungated-decision
+marker.  `isFreeDecisionFuelGated = false` holds ONLY because
+`fxMode_hasUngatedFreeTwoCellDecision = true` (backed by `decideTwoCellConvFull` on the
+complete class list `chainedSeedClassList_isComplete` with the stabilization theorem
+`didExhaustFrontier_ofCompleteClassList`) — flip the marker back and this `rfl` breaks, so
+the ledger cannot claim ungated without the backing term. -/
+theorem fxDecidableCeiling_freeDecisionUngated_matchesMarker :
+    fxDecidableCeiling.isFreeDecisionFuelGated
+      = not fxMode_hasUngatedFreeTwoCellDecision := rfl
 
 /-- Rung 2 pin: saturated soundness matches the matching-congruence marker. -/
 theorem fxDecidableCeiling_saturatedSoundness_matchesMarker :
@@ -145,12 +164,13 @@ theorem fxDecidableCeiling_undecidabilityWall_matchesMarker :
       = fxMode_hasArbitraryTwoCellUndecidabilityReduction := rfl
 
 /-- The ceiling itself: the GENERAL mode-3 marker (relations + ungated) sits ABOVE
-every shipped rung and correctly stays `false`.  The saturated-decision conjunct is now
-DISCHARGED (rung 2 complete at the walking adjunction, `hasSaturatedDecision = true`), but
-the marker STILL stays `false`: it also demands the ungated free fuel bound (rung 1's
-`isFreeDecisionFuelGated` is still `true`) AND it is the GENERAL cross-signature claim, which
-can never be generic past rung 2 (rung 3 is the undecidability wall).  The walking-adjunction
-saturated decision is a necessary ingredient, not the general marker. -/
+every shipped rung and correctly stays `false`.  Both lower ingredients are now
+DISCHARGED — rung 2 saturated decision (`hasSaturatedDecision = true`) and rung 1's free
+fuel bound (`isFreeDecisionFuelGated = false`, `fxMode_hasUngatedFreeTwoCellDecision`) —
+yet the marker STILL stays `false`: it is the GENERAL cross-signature claim WITH
+presentation relations, which can never be generic past rung 2 (rung 3 is the
+undecidability wall, FLAG A).  The walking-adjunction saturated decision and the ungated
+free decision are necessary ingredients, not the general marker. -/
 theorem fxDecidableCeiling_generalMarkerSitsAboveLedger :
     FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false := rfl
 
@@ -187,7 +207,9 @@ SATURATED (per-presentation, below both flags) — TRUE+backed, zero-axiom:
     (`ModeRelativeMetatheory`) — SCOPED to the adjunction WITH triangle identities; does
     NOT flip FLAG B (finer free relation) nor FLAG A (general undecidability).
   * `fxMode_hasDecidableFreeTwoCellEquality = true` (`Mode.lean`) — the FREE fragment
-    (`TwoCellConvFull`) decided generically, fuel-gated (rung 1).
+    (`TwoCellConvFull`) decided generically (rung 1), now UN-GATED:
+    `fxMode_hasUngatedFreeTwoCellDecision = true` (`TotalWordProblemDecision`), term
+    `decideTwoCellConvFull`, so `isFreeDecisionFuelGated = false`.
 
 RETIRED-FOR-DECISION (monotone route, #1975/#1999) — KEPT, NOT deleted; terminal markers
   all `false`: `fxMode_hasSaturatedTwoCellMonotoneMapDecision`,
@@ -200,8 +222,8 @@ RETIRED-FOR-DECISION (monotone route, #1975/#1999) — KEPT, NOT deleted; termin
   carrier file.  Re-aimable at the walking MONAD.  See the quarantine note atop
   `WalkingAdjunction/MonotoneMap.lean`.
 
-CEIL-1 TIERING (this ledger): rung 1 free-generic (fuel-gated) < rung 2 saturated
-  per-presentation (COMPLETE at the walking adjunction) < rung 3 arbitrary undecidable
-  (FLAG A's wall).  Every `fxDecidableCeiling` field is `rfl`-pinned to its source marker
+CEIL-1 TIERING (this ledger): rung 1 free-generic (UN-GATED, total decider) < rung 2
+  saturated per-presentation (COMPLETE at the walking adjunction) < rung 3 arbitrary
+  undecidable (FLAG A's wall).  Every `fxDecidableCeiling` field is `rfl`-pinned to its source marker
   above, so this status map cannot drift from the mechanized values. -/
 end FX1Poly.Polygraph

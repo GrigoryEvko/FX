@@ -17,5 +17,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.decideAtomicTraceEquivOfChainedSeed
 #assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.spine_isBoundaryChained
 #assert_no_axioms FX1Poly.Polygraph.decideTwoCellConvFull
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasUngatedFreeTwoCellDecision
 
 end FX1PolyAudit

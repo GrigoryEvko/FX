@@ -125,13 +125,15 @@ is `mode-3`, deferred.  `= false`.  (The FREE fragment IS decided — see
 presentation relations, ungated.) -/
 def fxMode_hasDecidableTwoCellEquality : Bool := false
 
-/-- **ESTABLISHED (FREE-7).**  The FREE 2-cell word problem is decided GENERICALLY over any mode
-signature: `TwoCellConvFull` (the relation-free Godement/whisker congruence) is characterized by
-atomic trace equivalence of spines and decided by the class-saturation search, fuel-gated on the
-computable frontier-exhaustion check
-(`Polygraph/TwoCategory/FreeTwoCell/TwoCellWordProblemDecision`).  `= true`.  (The GENERAL marker
-above — presentation relations, ungated — stays `false`: that is the saturated walking-adjunction
-arc plus the class-size fuel bound.) -/
+/-- **ESTABLISHED (FREE-7 capstone).**  The FREE 2-cell word problem is decided GENERICALLY and
+UN-GATED over any mode signature: `TwoCellConvFull` (the relation-free Godement/whisker congruence)
+is characterized by atomic trace equivalence of spines and decided by the class-saturation search;
+the class-size fuel is DISCHARGED via the complete bounded-atom-universe class list, so
+`decideTwoCellConvFull` is total — no fuel hypothesis, no exhaustion gate
+(`Polygraph/TwoCategory/FreeTwoCell/TotalWordProblemDecision`,
+`fxMode_hasUngatedFreeTwoCellDecision`).  `= true`.  (The GENERAL marker above — presentation
+relations, cross-signature — stays `false`: that is the saturated walking-adjunction arc and the
+rung-3 undecidability wall, not the free fuel.) -/
 def fxMode_hasDecidableFreeTwoCellEquality : Bool := true
 
 /-- **Honesty marker.**  The higher (dimension > 2) generators + the Gray / semistrict / WEAK ω-category

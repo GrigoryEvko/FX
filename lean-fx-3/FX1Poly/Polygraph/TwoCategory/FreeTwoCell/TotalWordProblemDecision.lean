@@ -129,4 +129,22 @@ def decideTwoCellConvFull {signature : ModeSignature}
         atomicRefuted
           ((twoCellConvFull_iff_atomicTraceEquiv cellFirst cellSecond).mp cellsConv))
 
+/-! ## Honesty marker — the fuel gate falls -/
+
+/-- **★ ESTABLISHED (FREE-7 capstone) — the FREE 2-cell decision is UN-GATED.**  The
+class-size fuel the ledger docstring once owed is DISCHARGED, not by the hypothesized
+`length!` permutation pigeonhole, but by the equivalent-and-total bounded-atom-universe
+route: a chained seed's whole `AtomicTraceEquiv` class lives inside the computable list
+`chainedSeedClassList` (`chainedSeedClassList_isComplete`), and a complete class list
+makes the saturation frontier provably exhaust within the computed fuel
+`classSaturationFuel` (the stabilization theorem `didExhaustFrontier_ofCompleteClassList`,
+itself the strict-potential-descent argument `saturationPotentialStep`).  Assembled, this
+un-gates the decider: `decideTwoCellConvFull` is total `Decidable (TwoCellConvFull …)`
+over ANY mode signature with decidable-equality data — no fuel hypothesis, no `Option`,
+no exhaustion gate.  Backs the ledger's now-`false` `isFreeDecisionFuelGated`.  `= true`.
+(The GENERAL `fxMode_hasDecidableTwoCellEquality` — presentation relations, cross-signature
+— stays `false`: that is the saturated walking-adjunction arc and the rung-3 wall, not the
+free fuel.) -/
+def fxMode_hasUngatedFreeTwoCellDecision : Bool := true
+
 end FX1Poly.Polygraph

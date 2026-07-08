@@ -32,7 +32,9 @@ itself with its safety half:
     `listMemDecidable`) IS `AtomicTraceEquiv`; the `Option`-valued front door runs the
     computable gate itself and stays honestly silent when the fuel runs short.
 
-The fuel stays the honest intermediate until the class-size bound discharges it.
+The fuel is the honest intermediate here; the class-size bound that discharges it has
+LANDED (`SaturationFuelBound.didExhaustFrontier_ofCompleteClassList` +
+`TotalWordProblemDecision.decideTwoCellConvFull`), un-gating the free decision.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
