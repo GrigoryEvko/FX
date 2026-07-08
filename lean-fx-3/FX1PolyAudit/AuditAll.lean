@@ -330,6 +330,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.TraceReducer
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedConvergence
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MatchingDecision
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDesc
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
