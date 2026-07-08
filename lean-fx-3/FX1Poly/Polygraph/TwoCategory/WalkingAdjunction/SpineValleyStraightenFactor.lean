@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyClassifier
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCommuteProducer
 
 /-! # mode-3 keystone — Piece I STRAIGHTEN 2a: the shared-leg factorization is LOCALLY FORCED
 
@@ -213,6 +214,62 @@ theorem sharedLegFactorHandednessB
     (composePath (singletonModalityPath (graph := adjunctionGraph) AdjunctionModality.right) rcCup) rightLength
   exact ⟨leftEq, rightEq⟩
 
+/-! ## The deletion reconnects the chain (endpoint identification) -/
+
+/-- A genuine cap atom has target arity `0` — the counit `R·L ⟹ id_tip` produces nothing.  Read off the cap tag
+by casing the generator: `counit` gives the empty codomain; `unit` (source width `0`) contradicts the cap tag. -/
+theorem capAtom_generatorCod_length_zero
+    {overallSource overallTarget : AdjunctionMode}
+    (atom : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (isCap : atom.isCupAtom = false) : atom.generatorCod.length = 0 := by
+  obtain ⟨leftMidMode, rightMidMode, leftContext, generatorDom, generatorCod, generator, rightContext⟩ := atom
+  cases generator with
+  | unit => nomatch isCap
+  | counit => rfl
+
+/-- ★ **A `zigZagSharedLeg` deletion reconnects the chain.**  For a cup·cap pair with matching inter-atom boundary
+`atomFrameTarget cupAtom = atomFrameSource capAtom`, the cup's frame SOURCE equals the cap's frame TARGET —
+`atomFrameSource cupAtom = atomFrameTarget capAtom` — so deleting the collapsing pair splices the chain back
+together (the atoms before the cup meet the atoms after the cap at a common 1-cell).  A pure LENGTH identity: the
+cup's empty generator source and the cap's empty generator codomain strip the width-2 windows off both sides of
+the boundary coherence, leaving `lcCup · rcCup = lcCap · rcCap`, then seed rigidity closes it.  General (any
+matching cup·cap), local, no arc read.  This is the endpoint identification the STRAIGHTEN delete-chain-surgery
+consumes to build the post-deletion cell. -/
+theorem cupCapDeletionReconnects
+    {overallSource overallTarget : AdjunctionMode}
+    (cupAtom capAtom : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (isCup : cupAtom.isCupAtom = true) (isCap : capAtom.isCupAtom = false)
+    (coherence : atomFrameTarget cupAtom = atomFrameSource capAtom) :
+    atomFrameSource cupAtom = atomFrameTarget capAtom := by
+  have wordLength := congrArg ModalityPath.length coherence
+  dsimp only [atomFrameTarget, atomFrameSource] at wordLength
+  rw [ModalityPath.length_composePath, ModalityPath.length_composePath,
+      ModalityPath.length_composePath, ModalityPath.length_composePath,
+      cupAtom_generatorCod_length_two cupAtom isCup,
+      capAtom_generatorDom_length_two capAtom isCap] at wordLength
+  -- wordLength : lcCup + (2 + rcCup) = lcCap + (2 + rcCap)
+  have goalLength : (atomFrameSource cupAtom).length = (atomFrameTarget capAtom).length := by
+    dsimp only [atomFrameSource, atomFrameTarget]
+    rw [ModalityPath.length_composePath, ModalityPath.length_composePath,
+        ModalityPath.length_composePath, ModalityPath.length_composePath,
+        cupAtom_generatorDom_length_zero cupAtom isCup, Nat.zero_add,
+        capAtom_generatorCod_length_zero capAtom isCap, Nat.zero_add]
+    -- goal : lcCup + rcCup = lcCap + rcCap
+    have shifted : (cupAtom.leftContext.length + cupAtom.rightContext.length) + 2
+        = (capAtom.leftContext.length + capAtom.rightContext.length) + 2 := by
+      rw [Nat.add_assoc cupAtom.leftContext.length cupAtom.rightContext.length 2,
+          Nat.add_comm cupAtom.rightContext.length 2,
+          Nat.add_assoc capAtom.leftContext.length capAtom.rightContext.length 2,
+          Nat.add_comm capAtom.rightContext.length 2]
+      exact wordLength
+    have commuted : 2 + (cupAtom.leftContext.length + cupAtom.rightContext.length)
+        = 2 + (capAtom.leftContext.length + capAtom.rightContext.length) := by
+      rw [Nat.add_comm 2 (cupAtom.leftContext.length + cupAtom.rightContext.length),
+          Nat.add_comm 2 (capAtom.leftContext.length + capAtom.rightContext.length)]
+      exact shifted
+    exact natAddLeftCancelFactor 2 commuted
+  exact adjunctionPath_eq_of_length_eq (atomFrameSource cupAtom) (atomFrameTarget capAtom) goalLength
+
 /-! ## Honesty marker -/
 
 /-- **★ ESTABLISHED — the STRAIGHTEN 2a "partner witness" is LOCAL, not a global `matchingOf` read.**  A
@@ -223,6 +280,10 @@ either handedness the inter-atom boundary coherence FORCES the shared-leg factor
 `generalContextFrameLegsCollapse` (LEFT) / `rightSnakeDoubleWhiskerCollapses` (RIGHT) collapse to the identity.
 So there is NO "non-partner crossing" at window-distance 1 — the boundary coherence excludes it — and the descent
 step never consults `matchingOf`: partner-hood is READ OFF the local geometry, matching the RV/FM verdict.
+
+  The deletion RECONNECTS the chain (`cupCapDeletionReconnects`: `atomFrameSource cupAtom = atomFrameTarget
+  capAtom`) — the endpoint identification the delete-chain-surgery consumes, likewise local (a pure length
+  identity from the cup/cap arities + boundary coherence, seed rigidity).
 
   What this marker does NOT close (gates stay `false`): the merged-`atomFrame` → iterated-leg cast bridge (the
   `composePath`-associativity boundary transport turning these path equalities into `atomFrame cupAtom ⊟

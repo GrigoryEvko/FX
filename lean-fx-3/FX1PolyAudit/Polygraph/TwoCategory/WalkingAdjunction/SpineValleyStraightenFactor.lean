@@ -15,6 +15,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.zigZagSharedLeg_widthDichotomy
 #assert_no_axioms FX1Poly.Polygraph.sharedLegFactorHandednessA
 #assert_no_axioms FX1Poly.Polygraph.sharedLegFactorHandednessB
+#assert_no_axioms FX1Poly.Polygraph.capAtom_generatorCod_length_zero
+#assert_no_axioms FX1Poly.Polygraph.cupCapDeletionReconnects
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasSpineValleyStraightenFactor
 
 end FX1PolyAudit
