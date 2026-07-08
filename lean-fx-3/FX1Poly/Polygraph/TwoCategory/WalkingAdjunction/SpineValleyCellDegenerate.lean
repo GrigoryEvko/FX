@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCellBridge
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCellDriver
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.MatchingWidthZeroSort
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyMidZeroReassembly
 
 /-! # SpineValleyCellDegenerate — the Tier-D degenerate dispatch + the FULL `CellValleyTraceEquiv` lift
 (Track B, Brick 4 close-out)
@@ -61,6 +62,25 @@ Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 set_option autoImplicit false
 
 namespace FX1Poly.Polygraph
+
+/-! ## Propext-free `List.range` length (local; the core `List.length_range` leaks propext) -/
+
+/-- The `List.range` accumulator length, structural and propext-free. -/
+private theorem rangeLoopLengthDegen : (count : Nat) → (accumulated : List Nat) →
+    (List.range.loop count accumulated).length = count + accumulated.length
+  | 0, accumulated => (Nat.zero_add accumulated.length).symm
+  | count + 1, accumulated => by
+      have inner := rangeLoopLengthDegen count (count :: accumulated)
+      show (List.range.loop count (count :: accumulated)).length = count + 1 + accumulated.length
+      rw [inner]
+      show count + (accumulated.length + 1) = count + 1 + accumulated.length
+      rw [← Nat.add_assoc count accumulated.length 1, Nat.add_right_comm count accumulated.length 1]
+
+/-- `(List.range count).length = count`, propext-free. -/
+private theorem rangeLengthDegen (count : Nat) : (List.range count).length = count := by
+  show (List.range.loop count []).length = count
+  rw [rangeLoopLengthDegen count []]
+  exact Nat.add_zero count
 
 /-! ## The width-0 pure-cup determinacy — the crux Tier-D residual, at the `matchingOf` level -/
 
@@ -158,6 +178,63 @@ def MidZeroValleyTraceEquiv : Prop :=
     survivorTopTotal (matchingOf valleyA) = 0 →
     SpineTraceEquiv adjunctionModeSignature valleyA.spine valleyB.spine
 
+/-- ★ **`MidZeroValleyTraceEquiv` is DISCHARGED down to the single mid-`0` cup reconstruction brick.**  The
+mid-width-`0` block reassembly is landed (`SpineValleyMidZeroReassembly`): given the mid-`0` cup-block
+reconstruction `MidZeroCupBlockReconstruct`, the case-(b) valley determinacy holds.  Block-splits both valleys,
+restricts the whole chain to the cup suffix, reads the whole matching at the spine level, and invokes the gated
+`midZeroValleysWithEqualMatching_spineTraceEquiv` — the cap-side sort (positive cap width), the width-`0` cup
+determinacy, the cap length telescope, and the two-block append glue are ALL discharged there; only the mid-`0`
+cup reconstruction remains as the single hypothesis. -/
+theorem midZeroValleyTraceEquiv_ofCupReconstruct
+    (cupReconstruct : MidZeroCupBlockReconstruct) : MidZeroValleyTraceEquiv := by
+  intro sourceMode targetMode sourcePath targetPath valleyA valleyB isValleyA isValleyB matchingEq
+    sourcePos midZeroA
+  -- Block-split both valley spines into cap-prefix ++ cup-suffix.
+  obtain ⟨capA, cupA, splitA, capPureA, cupPureA⟩ := spineValley_blockSplit valleyA.spine isValleyA
+  obtain ⟨capB, cupB, splitB, capPureB, cupPureB⟩ := spineValley_blockSplit valleyB.spine isValleyB
+  -- The two whole valleys are boundary-chained at the source width.
+  have wholeChainedA : SpineBoundaryChained sourcePath.length (capA ++ cupA) := by
+    rw [← splitA]; exact valleyA.spineBoundaryChained_spine
+  have wholeChainedB : SpineBoundaryChained sourcePath.length (capB ++ cupB) := by
+    rw [← splitB]; exact valleyB.spineBoundaryChained_spine
+  -- The cup suffixes are boundary-chained at the mid-width (restrict the whole chain over the cap prefix).
+  have seedWholeA : SpineBoundaryChained
+      (⟨List.range sourcePath.length, [], sourcePath.length, 0⟩ : WireState).openWires.length (capA ++ cupA) := by
+    show SpineBoundaryChained (List.range sourcePath.length).length (capA ++ cupA)
+    rw [rangeLengthDegen]; exact wholeChainedA
+  have seedWholeB : SpineBoundaryChained
+      (⟨List.range sourcePath.length, [], sourcePath.length, 0⟩ : WireState).openWires.length (capB ++ cupB) := by
+    show SpineBoundaryChained (List.range sourcePath.length).length (capB ++ cupB)
+    rw [rangeLengthDegen]; exact wholeChainedB
+  have cupChainedA : SpineBoundaryChained
+      (processSpine ⟨List.range sourcePath.length, [], sourcePath.length, 0⟩ capA).openWires.length cupA :=
+    spineBoundaryChained_cupSuffix_ofCapPrefix capA capPureA cupA
+      ⟨List.range sourcePath.length, [], sourcePath.length, 0⟩ seedWholeA
+  have cupChainedB : SpineBoundaryChained
+      (processSpine ⟨List.range sourcePath.length, [], sourcePath.length, 0⟩ capB).openWires.length cupB :=
+    spineBoundaryChained_cupSuffix_ofCapPrefix capB capPureB cupB
+      ⟨List.range sourcePath.length, [], sourcePath.length, 0⟩ seedWholeB
+  -- Re-read the matching hypothesis at the spine level.
+  have wholeEqA : matchingOf valleyA = matchingOfSpineList sourcePath.length (capA ++ cupA) := by
+    show matchingOfSpineList sourcePath.length valleyA.spine
+      = matchingOfSpineList sourcePath.length (capA ++ cupA)
+    rw [splitA]
+  have wholeEqB : matchingOf valleyB = matchingOfSpineList sourcePath.length (capB ++ cupB) := by
+    show matchingOfSpineList sourcePath.length valleyB.spine
+      = matchingOfSpineList sourcePath.length (capB ++ cupB)
+    rw [splitB]
+  have wholeEq : matchingOfSpineList sourcePath.length (capA ++ cupA)
+      = matchingOfSpineList sourcePath.length (capB ++ cupB) :=
+    wholeEqA.symm.trans (matchingEq.trans wholeEqB)
+  -- The mid-`0` witness at the spine level.
+  have midZeroFirst : survivorTopTotal (matchingOfSpineList sourcePath.length (capA ++ cupA)) = 0 := by
+    rw [← wholeEqA]; exact midZeroA
+  -- Close via the gated mid-`0` whole-valley reassembly, then transport back through the block splits.
+  rw [splitA, splitB]
+  exact midZeroValleysWithEqualMatching_spineTraceEquiv sourcePath.length sourcePos
+    capA capB cupA cupB capPureA capPureB cupPureA cupPureB
+    cupChainedA cupChainedB wholeChainedA wholeChainedB midZeroFirst wholeEq cupReconstruct
+
 /-! ## The FULL `CellValleyTraceEquiv` lift -/
 
 /-- ★ **The FULL cell-level Piece-II lift.**  The three-way case split closes `CellValleyTraceEquiv` for ALL valleys:
@@ -179,28 +256,56 @@ theorem cellValleyTraceEquiv_of_widthZero_of_midZero
       | inr midPos =>
           exact cellValleyTraceEquiv_ofPositive valleyA valleyB isValleyA isValleyB matchingEq sourcePos midPos
 
+/-- ★ **The FULL `CellValleyTraceEquiv`, reduced to the SINGLE mid-`0` cup reconstruction brick.**  Inlines the
+two former residuals of `cellValleyTraceEquiv_of_widthZero_of_midZero`: the width-`0` pure-cup determinacy is
+DISCHARGED (`widthZeroPureCupDeterminacy_holds`), and the case-(b) mid-width-`0` valley determinacy is reduced to
+the single `MidZeroCupBlockReconstruct` brick (`midZeroValleyTraceEquiv_ofCupReconstruct`).  So the FULL
+`CellValleyTraceEquiv` — dropping BOTH positivity hypotheses of the positive branch — holds given ONLY the mid-`0`
+cup reconstruction: the width-`0` cup determinacy, the cap-side sort, the cap length telescope, and the two-block
+append glue are all landed. -/
+theorem cellValleyTraceEquiv_ofCupReconstruct
+    (cupReconstruct : MidZeroCupBlockReconstruct) : CellValleyTraceEquiv :=
+  cellValleyTraceEquiv_of_widthZero_of_midZero widthZeroPureCupDeterminacy_holds
+    (midZeroValleyTraceEquiv_ofCupReconstruct cupReconstruct)
+
 /-! ## Honesty marker -/
 
-/-- **★ ESTABLISHED — the FULL `CellValleyTraceEquiv` lift is rigorous and its residual is ISOLATED to exactly two
-`ArcSwap*`/assembly-local bricks.**  `cellValleyTraceEquiv_of_widthZero_of_midZero` case-splits ALL valleys into the
-doubly-positive branch (shipped `cellValleyTraceEquiv_ofPositive`) and the two Tier-D degenerate branches;
-`degenerateEmptySource_of_widthZero` FULLY discharges case (a) (`sourcePath.length = 0`) from the width-0 pure-cup
-determinacy, using the shipped `capBlockEmpty_ofSourceZero` to force both cap blocks empty and re-reading the
-matching at width `0` on the cup suffixes.
+/-- **★ ESTABLISHED — the FULL `CellValleyTraceEquiv` lift is rigorous and its residual is now ISOLATED to a SINGLE
+brick: the mid-width-`0` cup-block reconstruction.**  `cellValleyTraceEquiv_of_widthZero_of_midZero` case-splits ALL
+valleys into the doubly-positive branch (shipped `cellValleyTraceEquiv_ofPositive`) and the two Tier-D degenerate
+branches; `degenerateEmptySource_of_widthZero` FULLY discharges case (a) (`sourcePath.length = 0`) from the
+DISCHARGED width-0 pure-cup determinacy.  Two former residuals are now closed:
 
-  What this marker does NOT claim — the two isolated residuals (gates stay `false`):
-  * `WidthZeroPureCupDeterminacy` — the width-0 pure-cup determinacy brick (`pureCupSpine_sort` +
-    `arcDiagram_eq_matching` + the `matchingOf → FullArcStructure` pure-cup determination, all at `bottomCount = 0`).
-    Its arc-swap transposition atoms need a positive fresh seed (`ArcSwapCorePackage.sigmaFixesZero`,
-    `MatchingSwapStateConditions.nfPos`), genuinely FALSE at the width-0 seed where identifier `0` is a real cup leg
-    colliding with the extract's `0` fallback sentinel — a genuine separate brick, not a wiring rung.
-  * `MidZeroValleyTraceEquiv` — the case-(b) mid-width-`0` block reassembly (cap-side `pureCapSpine_sort` under the
-    cap arc-from-matching bridge + the width-0 cup brick + `spineTraceEquiv_appendCongr` glue), the ingredient the
-    positive `valleysWithEqualMatching_spineTraceEquiv` cannot supply.
+  * `WidthZeroPureCupDeterminacy` is DISCHARGED — `widthZeroPureCupDeterminacy_holds` (the ported width-0 LOCATE
+    stack, `MatchingWidthZeroSort`), GENERAL and POSITIVITY-FREE.  The former arc-swap-seed obstruction is gone.
+
+  * `MidZeroValleyTraceEquiv` is REDUCED to the single `MidZeroCupBlockReconstruct` brick
+    (`midZeroValleyTraceEquiv_ofCupReconstruct`, `SpineValleyMidZeroReassembly`).  The case-(b) mid-width-`0` block
+    reassembly is landed: the CAP-side sort (positive cap width, `pureCapSpine_sort` over the reconstructed cap arc
+    equality), the WIDTH-`0` cup determinacy (`widthZeroPureCupDeterminacy_proof`, pure matching carrier), the cap
+    length telescope (`capLength_eq_of_midWidth_eq`), the cap-block matching split
+    (`sameWholeMatching_capBlockMatchingEq`), the cup-block matching split
+    (`sameWholeMatching_cupBlockMatchingEq`), and the two-block append glue (`spineTraceEquiv_appendCongr`) are ALL
+    discharged in `midZeroValleysWithEqualMatching_spineTraceEquiv`.
+
+  So `cellValleyTraceEquiv_ofCupReconstruct` yields the FULL `CellValleyTraceEquiv` given ONLY
+  `MidZeroCupBlockReconstruct`.
+
+  What this marker does NOT claim — the SINGLE isolated residual (gates stay `false`):
+  * `MidZeroCupBlockReconstruct` — the mid-width-`0` mirror of the shipped `cupRestrict_reconstructs`
+    (`ValleyCupReconstruct`): at mid-width `0` the three non-partner `cupRestrict` fields and the cup-bottom /
+    survivor-top partner cases are trivial/vacuous, and the SOLE content is the top-top cup-arc partner at floor `0`
+    (the mid-`0` mirror of `cupTopTopPartner`).  With `survivorTopTotal = 0` the survivor scatter is empty, so this
+    is the PURE fresh-leg shift `bc + k ↔ 0 + k` (links-irrelevance at `0` open wires) — but the shipped
+    `cupTopTopPartner` proof rides the ARC-carrier two-run offset fold (`ValleyCupTopTopSeed` /
+    `ValleyCupCapStatePromotion`) whose seed reconciliation (`pureCapTopPartnerBelow`) and both-run
+    `arcDiagram_eq_matching` bridges require a POSITIVE floor, so it does not specialize to floor `0`.  A
+    floor-`0` reconstruction must run on the MATCHING carrier (the arc↔matching bridge is unavailable at width `0`)
+    — a genuine separate brick, not a wiring rung, and NOT attempted here (no arc-carrier route, no seed sim).
 
   So the FULL `CellValleyTraceEquiv` (the second residual of `SpineValleyCellDriver`'s reduction of
-  `MatchingReductsShareSpineTrace`) reduces to (width-0 pure-cup determinacy) AND (mid-width-0 reassembly), not to
-  Piece II alone.  `convOfMapEq` and the fib-3 gate flags stay `false`.  `= true`. -/
+  `MatchingReductsShareSpineTrace`) now reduces to the SINGLE `MidZeroCupBlockReconstruct` brick, not to two.
+  `convOfMapEq` and the fib-3 gate flags stay `false`.  `= true`. -/
 def fxMode_hasSpineValleyCellDegenerate : Bool := true
 
 end FX1Poly.Polygraph
