@@ -339,6 +339,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGodement
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescComponentSim
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescJoinEvents
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBlockRotate
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescWindowLocality
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
