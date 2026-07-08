@@ -353,6 +353,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescOpenMap
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescReachable
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescConv
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescConnectivityMono
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescConnectivityOffConfined
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
