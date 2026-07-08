@@ -496,6 +496,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCanonicalWord
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCountsRoundTrip
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCell
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCases
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordMultiplicativity
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSim
