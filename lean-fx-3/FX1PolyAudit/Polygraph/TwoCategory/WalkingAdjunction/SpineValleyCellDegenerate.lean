@@ -13,6 +13,7 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.WidthZeroPureCupDeterminacy
+#assert_no_axioms FX1Poly.Polygraph.widthZeroPureCupDeterminacy_holds
 #assert_no_axioms FX1Poly.Polygraph.degenerateEmptySource_of_widthZero
 #assert_no_axioms FX1Poly.Polygraph.MidZeroValleyTraceEquiv
 #assert_no_axioms FX1Poly.Polygraph.cellValleyTraceEquiv_of_widthZero_of_midZero

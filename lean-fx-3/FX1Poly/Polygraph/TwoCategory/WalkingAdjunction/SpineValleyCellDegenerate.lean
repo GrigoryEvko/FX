@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCellBridge
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCellDriver
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.MatchingWidthZeroSort
 
 /-! # SpineValleyCellDegenerate — the Tier-D degenerate dispatch + the FULL `CellValleyTraceEquiv` lift
 (Track B, Brick 4 close-out)
@@ -77,6 +78,17 @@ def WidthZeroPureCupDeterminacy : Prop :=
     SpineBoundaryChained 0 cupFirst → SpineBoundaryChained 0 cupSecond →
     matchingOfSpineList 0 cupFirst = matchingOfSpineList 0 cupSecond →
     SpineTraceEquiv adjunctionModeSignature cupFirst cupSecond
+
+/-- ★ **`WidthZeroPureCupDeterminacy` is DISCHARGED — GENERAL and POSITIVITY-FREE.**  The standing hard node
+is closed by the ported width-0 LOCATE stack (`widthZeroPureCupDeterminacy_proof`, `MatchingWidthZeroSort`):
+the location induction `matchingLocateAux` (riding the width-0 partner involution
+`matchingOfSpineListZero_partner_isInvolution` through the snake exclusion + the chord-shift descents +
+piece (a)'s positivity-free swap fold) and the direct-Catalan sort assembly (brick 1 / brick 3), with NO
+arc census, NO `arcDiagram_eq_matching`, and NO `0 < bottomCount`.  The residual is no longer standing. -/
+theorem widthZeroPureCupDeterminacy_holds : WidthZeroPureCupDeterminacy :=
+  fun cupFirst cupSecond pureFirst pureSecond chainedFirst chainedSecond matchEqual =>
+    widthZeroPureCupDeterminacy_proof cupFirst cupSecond pureFirst pureSecond chainedFirst chainedSecond
+      matchEqual
 
 /-! ## Case (a) — an empty source boundary reduces to the width-0 cup brick -/
 
