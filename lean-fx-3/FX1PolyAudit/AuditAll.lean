@@ -496,6 +496,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingMapCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingBlockSwapAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEvents
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventExchange
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventOffConfined
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRenameSupport
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingTraceAssembly
