@@ -250,13 +250,17 @@ boundary `0` to different top ports.  This mirrors `not_arcGodementSamePartition
 residual must carry a freshness precondition.  `= true`. -/
 def fxBrauer_hasDisjointWindowUnconditionalRefuted : Bool := true
 
-/-- **Honesty marker — the FRESHNESS-conditioned disjoint-window residual is the standing obligation.**
-`WiringDescDisjointWindowFresh` re-states the commutation under `WiringDescStateFresh state` (every mentioned id
-`< nextFresh`, anchored by `wiringDescStateFresh_seed`) and `bottomCount ≤ nextFresh` — the reachable-state
-invariant the fold maintains.  Under it the disjoint-block extract commutation is TRUE (computationally confirmed
-by every smoke here).  Its general zero-axiom proof — a `blockRotate` renaming simulation between the two orders'
-disjoint fresh id ranges over the union-find — is the one remaining obligation, the SAME lemma that
-`fxBrauer_hasBrauerSoundness` and the arc gate ride; NOT discharged.  `= false`. -/
+/-- **Honesty marker — the LITERAL freshness-conditioned residual is REFUTED (`windowB` is load-bearing).**
+`WiringDescDisjointWindowFresh` re-states the commutation under `WiringDescStateFresh state` and
+`bottomCount ≤ nextFresh` but OMITS the window-in-range premise `windowB`.  KEYSTONE6 brick (A) proves the literal
+statement is FALSE — `wiringDescDisjointWindowFresh_false` (`Brauer/WiringDescReachable.lean`) exhibits a FRESH
+counterexample where an OUT-OF-RANGE firing captures the default boundary node `0` order-dependently (the two
+orders reach diagrams of different `topCount`).  The TRUE statement is the IN-RANGE / reachable interchange —
+`WiringDescDisjointWindowFreshInRange` (CLOSED, `wiringDescDisjointWindowFreshInRange_proof`) plus the reachable-
+state invariant fold `brauerStateConditions_processBrauer` / `brauer_reachable_interchange` (brick A), which
+discharges `windowB` at every reachable diagram state.  So this literal flag stays `false` not as an unproven
+obligation but as a REFUTED over-statement; the arc gate `fxMode_hasMatchingComponentCoreSwapWitness` inherits the
+same wall.  `= false`. -/
 def fxBrauer_hasWiringDescDisjointWindowFreshProof : Bool := false
 
 end FX1Poly.Polygraph
