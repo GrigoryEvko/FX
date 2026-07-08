@@ -723,6 +723,7 @@ import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify05
 import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify06
 import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify07
 import FX1PolyAudit.Tier0.Type.Level.LevelNormalizationTableExclusion
+import FX1PolyAudit.Tier0.Type.Level.LevelDecision
 import FX1PolyAudit.Tier0.Type.TypeAxis
 import FX1PolyAudit.Tier0.Type.Universe.UniverseFlag
 import FX1PolyAudit.Tier0.Type.Universe.UniverseFlagSerialize
