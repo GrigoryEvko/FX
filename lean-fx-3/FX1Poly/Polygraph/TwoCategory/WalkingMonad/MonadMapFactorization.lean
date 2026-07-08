@@ -336,7 +336,10 @@ cap escaped), the map length is fold-invariant (`monadRunMonoCell_map_length`), 
 (`monadMonotoneMapOf_vcomp`), discharging the TWO vcomp-congruence cases of `mapEqOfConv`
 (`monadMonotoneMapOf_vcompCongrLeft` / `…Right`).  This is the "whisker-shift FACTORIZATION" the
 `fxMonad_hasFullMapEqOfConvAndCompleteness` honesty marker named as `mapEqOfConv`'s first ingredient, now
-delivered zero-axiom.  `= true`. -/
+delivered zero-axiom.  The remaining `mapEqOfConv` ingredient (a-i) — the two WHISKER-congruence cases — is now
+ALSO shipped in `WalkingMonad/MonadWhiskerEmbedding` (`monadMonotoneMapOf_whiskerLeftCongr` / `_whiskerRightCongr`,
+via the ordinal-sum embedding crux `monadRunMonoCell_localEmbed`), so `mapEqOfConv` now needs only the `ofFull`
+(Godement) case (a-ii).  `= true`. -/
 def fxMonad_hasMapFactorizationAndVcompCongruence : Bool := true
 
 end FX1Poly.Polygraph
