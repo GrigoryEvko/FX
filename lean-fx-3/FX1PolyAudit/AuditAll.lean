@@ -453,6 +453,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 import FX1PolyAudit.Polygraph.Computad.Signature
 import FX1PolyAudit.Polygraph.Computad.PathFactorization
 import FX1PolyAudit.Polygraph.Computad.AdjunctionSeed
+import FX1PolyAudit.Polygraph.Computad.MonadSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedConv
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadDeltaModel
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSim
