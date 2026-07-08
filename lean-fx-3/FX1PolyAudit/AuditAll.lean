@@ -325,6 +325,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.StrongNormalization
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.TraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.WhiskerFunctoriality
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.WhiskerReconstruction
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvFullTraceRoute
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.TraceReducer
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedConvergence
