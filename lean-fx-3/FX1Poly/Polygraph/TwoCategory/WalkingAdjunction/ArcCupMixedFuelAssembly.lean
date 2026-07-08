@@ -56,10 +56,18 @@ locate-and-bubble of the head's cup across a mixed prefix, with two sub-cruxes:
      `generalStateCupInternalCupCount_atLeftLeg`/`_atRightLeg`) to the front across a mixed cup/cap prefix,
      driven by the shipped cross-swap arc simulations (`ArcCupCupSwapSimulation` /
      `ArcCupCapSwapSimulation` / `ArcCapCupSwapSimulation`);
-  2. the interacting gap-0/1 zigzag — a cap touching the located cup's legs cancels via the snake
-     (FM Lemma 4.2.1 `N`/`N̄`, the two triangle identities), a DIFFERENT mechanism from the census read-off,
-     with the FM Prop 4.2.4 offset case-split: gap `>= 2` interchange, gap `= 1` snake-cancel, gap `= 0`
-     impossible by the `f * g != g * f` parity obstruction.
+  2. `windowPin` — that the fronted cup IS the head cup.  This is genuine trace-orbit content, NOT an
+     arc-field read-off: `headCupWindowReadoff_isFalse` exhibits two boundary-chained cup-headed spines whose
+     head cups sit at DIFFERENT windows yet share the WHOLE `FullArcStructure` (diagram, totals, AND
+     `internalCupCounts`).  The interacting cup/cap case is NOT a length-changing snake — R8
+     `equalArcSpine_length_eq` forces equal length and `AtomicTraceEquiv` is length-preserving, so the
+     re-selection is a FIXED-LENGTH interchange (Delpeuch–Vicary, arXiv:1804.07832, Theorem 3: exchanges swap
+     heights only; a cup and a cap sharing a wire simply do not exchange past each other, and the fixed
+     diagram forces a Godement-reachable permutation of the INDEPENDENT generators — no snake, no
+     cancellation).  Round 9 BUILDS the fronting from the shipped census front modulo `windowPin`
+     (`cupHeadFronting_ofCensusFrontWindowPin`, `ArcCupCensusFrontWindowPin.lean`); the surviving wall is
+     `windowPin` itself, and the live discharge is the peel-LAST short chord
+     (`mixedSpine_lastCup_isShortChord`, where the last cup's window IS arc-readable), NOT the head fronting.
 
 `fxMode_hasArcStructureReconstruction` stays `false` until that witness discharges.
 
@@ -150,9 +158,16 @@ discharged head-first, so the cap side needs nothing.
 
 What this marker does NOT claim: the general (mixed cup/cap) `ArcCupOrbitWitness` for an arbitrary second
 spine (`arcCupReselection_exists`) — the sole open leaf.  Its front-head instance is shipped
-(`arcCupOrbitWitness_ofFrontHead`); round 4 owns the general-vs-front gap: the mixed `locateAux`
-(bubble the census-located cup to front across a mixed prefix via the shipped cross-swap simulations) and
-the interacting gap-0/1 zigzag (FM Lemma 4.2.1 snake / Prop 4.2.4 offset case-split).  No gate flip;
+(`arcCupOrbitWitness_ofFrontHead`); round 4+ owns the general-vs-front gap: the mixed `locateAux`
+(bubble the census-located cup to front across a mixed prefix via the shipped cross-swap simulations).  The
+interacting cup/cap case is a FIXED-LENGTH interchange, NOT a length-changing snake: R8
+`equalArcSpine_length_eq` + `adjunctionCupPastAtomWindowDichotomy` (the cap's empty codomain abuts the swap
+windows with no interior gap) exclude the snake (FM Lemma 4.2.1 `N`/`N̄`) from every re-selection instance,
+matching Delpeuch–Vicary Theorem 3 (exchanges are length- and graph-preserving).  Round 9 BUILDS the fronting
+from the shipped census front modulo the sole surviving datum `windowPin`
+(`cupHeadFronting_ofCensusFrontWindowPin`); `windowPin` is genuine trace-orbit content the census CANNOT read
+(`headCupWindowReadoff_isFalse`), so the live discharge is the peel-LAST short chord
+(`mixedSpine_lastCup_isShortChord`), NOT the head fronting.  No gate flip;
 `fxMode_hasArcStructureReconstruction` stays as is.  `= true`. -/
 def fxMode_hasArcCupMixedFuelAssembly : Bool := true
 
