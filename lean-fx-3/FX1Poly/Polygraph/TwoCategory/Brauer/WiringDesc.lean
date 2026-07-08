@@ -403,11 +403,15 @@ low-depth ones by `rfl`, R3 by the staged single-step chain `yangBaxter_diagram_
 `brauerPresentation_allSound` conjoins the whole set.  `= true`. -/
 def fxBrauer_hasBrauerPresentation : Bool := true
 
-/-- **Honesty marker — GENERAL Brauer soundness rides the standing Godement residual.**  Per-relation soundness is
-shipped as witnesses, but "every convertible pair has equal matching" for the whole presentation is exactly the
-state-parametric union-find (Godement / interchange) independence — the SAME open lemma as the adjunction route
-(`fxMode_hasMatchingGodementIndependenceProof`), now also over the crossing steps.  No new obstruction, no
-discount.  `= false`. -/
+/-- **Honesty marker — GENERAL Brauer soundness rides ONE uniform residual (collapsed 5→1) over the shipped whisker
+move.**  Per-relation soundness is shipped at the seed; the contextual interchange (Godement) and the contextual
+`whisker` (congruence) moves are shipped in `BrauerConv` (`Brauer/WiringDescConv.lean`), so "every convertible pair
+has equal matching" now reduces — via `whisker` + `extractDiagram_eq_of_connectivityView` — to ONE uniform obligation:
+for each of the five relations, its per-relation BOUNDARY same-component preservation (`relationAgrees`, the union-find
+window-locality of firing the relation word in an in-range window).  The interchange discharges it via `blockRotate`;
+concrete states discharge it via `decide`; the uniform (all reachable states / offsets) proof — the crossing-inclusive
+analog of the arc route's boundary-discipline subsystem — is the standing brick.  No new obstruction, no discount.
+`= false`. -/
 def fxBrauer_hasBrauerSoundness : Bool := false
 
 /-- **Honesty marker — COMPLETENESS (equal matching ⇒ convertible) is the classical straightening NF, not yet

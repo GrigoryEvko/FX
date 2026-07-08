@@ -22,9 +22,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.brauerDiagram_crossing_ne_identity
 #assert_no_axioms FX1Poly.Polygraph.brauerConv_crossing_not_identity
 
+-- the contextual whisker (congruence) move: NON-VACUOUS witness (transitively covers the private
+-- `relationAgrees` helper) + the distinctness of the whiskered words
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_whisker_crossingInvolution_inContext
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_whisker_inContext_distinct
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerConvSoundness
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerConvContextualInterchange
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerWhiskerMove
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerSoundnessResidualNamed
 
 end FX1PolyAudit
