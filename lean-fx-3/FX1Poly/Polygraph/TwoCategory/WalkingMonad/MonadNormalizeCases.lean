@@ -109,6 +109,207 @@ theorem monadNormalize_genMu :
     (MonadSaturatedTwoCellConv.vcompCongrLeft monadMulTwoCell hInner) ?_
   exact MonadSaturatedTwoCellConv.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdLeft monadMulTwoCell))
 
+/-! ## The `id`-cell case: the canonical word of an identity is the all-ones word, which collapses to `id`
+
+`monadMonotoneMapOf (id path) = idMap path.length`, so `canon (id path)` is the boundary-transported per-target
+word of the ALL-ONES multiplicity list (each target hit exactly once — no merge, no insertion).  That word is a
+horizontal composite of `count` copies of the trivial gadget `monadGadget 1 = id_t`, and it collapses to the
+identity 2-cell by the free-strict-2-category laws (`whiskerRightId` / `vcompIdLeft` / `whiskerLeftId`) — no monad
+law.  The only genuine friction is the BOUNDARY TRANSPORT: the word lives at `(countsDomainPath ones, t^(ones.length))`
+which is only PROVABLY-not-definitionally the cell's own `(path, path)`; the collapse is threaded through
+`castBoundary` (proof-irrelevant, so the specific transport proofs never matter). -/
+
+/-- The all-ones multiplicity list of length `count` — the Eilenberg–Zilber data of the identity map (each of the
+`count` targets is hit exactly once).  Cons-only via the shipped propext-free `consReplicate` (never `List.replicate`,
+which pulls `propext`). -/
+def monadOnes (count : Nat) : List Nat := consReplicate 1 count []
+
+/-- The ones list has length `count`. -/
+theorem length_monadOnes (count : Nat) : (monadOnes count).length = count := by
+  show (consReplicate 1 count []).length = count
+  rw [consReplicate_length]
+  exact Nat.zero_add count
+
+/-- ★ The domain 1-cell of the ones word is the `t`-power `t^count` — each `1` gadget (`= id_t`) contributes one
+`t`.  Structural induction on `count`; the head `1` prepends `monadTPower 1 = monadT` DEFINITIONALLY, so each step
+is a `composePath monadT` congruence. -/
+theorem countsDomainPath_monadOnes : ∀ (count : Nat),
+    countsDomainPath (monadOnes count) = monadTPower count
+  | 0 => rfl
+  | count + 1 => by
+      show composePath monadT (countsDomainPath (monadOnes count)) = composePath monadT (monadTPower count)
+      exact congrArg (composePath monadT) (countsDomainPath_monadOnes count)
+
+/-! ## The `countsOf (idMap) = ones` computation (run-peeling the strictly-ascending identity map) -/
+
+/-- Past its first entry an ascending block never repeats the earlier base: the run of `base` in
+`ascendingFrom (base + 1) n` is empty. -/
+theorem runLengthAt_ascendingFrom_succ (base n : Nat) :
+    runLengthAt base (ascendingFrom (base + 1) n) = 0 := by
+  cases n with
+  | zero => rfl
+  | succ predN =>
+      show runLengthAt base ((base + 1) :: ascendingFrom (base + 1 + 1) predN) = 0
+      exact runLengthAt_cons_neg (Nat.succ_ne_self base)
+
+/-- Dropping the (empty) `base`-run from `ascendingFrom (base + 1) n` leaves it unchanged. -/
+theorem dropRunAt_ascendingFrom_succ (base n : Nat) :
+    dropRunAt base (ascendingFrom (base + 1) n) = ascendingFrom (base + 1) n := by
+  cases n with
+  | zero => rfl
+  | succ predN =>
+      show dropRunAt base ((base + 1) :: ascendingFrom (base + 1 + 1) predN)
+        = (base + 1) :: ascendingFrom (base + 1 + 1) predN
+      exact dropRunAt_cons_neg (Nat.succ_ne_self base)
+
+/-- ★ Reading the per-target multiplicity list off the strictly-ascending block `[base, base+1, …, base+n-1]`
+gives the all-ones list: each target is hit exactly once.  Structural recursion on `n` (peel the singleton `base`
+run, recurse at `base + 1`). -/
+theorem countsOf_ascendingFrom_ones : ∀ (n base : Nat),
+    countsOf n base (ascendingFrom base n) = monadOnes n
+  | 0, _ => rfl
+  | n + 1, base => by
+      show runLengthAt base (base :: ascendingFrom (base + 1) n)
+          :: countsOf n (base + 1) (dropRunAt base (base :: ascendingFrom (base + 1) n))
+        = monadOnes (n + 1)
+      rw [runLengthAt_cons_pos (rfl : base = base), runLengthAt_ascendingFrom_succ base n,
+          dropRunAt_cons_pos (rfl : base = base), dropRunAt_ascendingFrom_succ base n,
+          countsOf_ascendingFrom_ones n (base + 1)]
+      rfl
+
+/-! ## Boundary-cast helpers on the saturated relation (monad-specific, propext-free `cases` on the equalities) -/
+
+/-- The saturated relation transports along a boundary cast on BOTH sides (the monad analog of
+`TwoCellConvFull.castBoundaryCongr`). -/
+theorem MonadSaturatedTwoCellConv.castBoundaryCongr
+    {sourcePath sourcePath' targetPath targetPath' : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (hsource : sourcePath = sourcePath') (htarget : targetPath = targetPath')
+    {cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath}
+    (conv : MonadSaturatedTwoCellConv cellAlpha cellBeta) :
+    MonadSaturatedTwoCellConv (RawTwoCellExpr.castBoundary hsource htarget cellAlpha)
+      (RawTwoCellExpr.castBoundary hsource htarget cellBeta) := by
+  cases hsource; cases htarget; exact conv
+
+/-- LEFT whiskering by `t` commutes with a boundary cast (the monad instance of the shipped generic
+`whiskerLeft_castBoundary`; re-proved locally to keep the walking-monad lane self-contained). -/
+theorem monadWhiskerLeft_castBoundary
+    {sourcePath sourcePath' targetPath targetPath' : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (hsource : sourcePath = sourcePath') (htarget : targetPath = targetPath')
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT
+        (RawTwoCellExpr.castBoundary hsource htarget cell)
+      = RawTwoCellExpr.castBoundary (congrArg (composePath monadT) hsource)
+          (congrArg (composePath monadT) htarget)
+          (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT cell) := by
+  cases hsource; cases htarget; rfl
+
+/-- Two successive boundary casts FUSE into one along the composite equalities (the monad instance of the shipped
+generic `castBoundary_castBoundary`; re-proved locally to keep the lane self-contained). -/
+theorem monadCastBoundary_castBoundary
+    {pathOne pathTwo pathThree targetOne targetTwo targetThree :
+      ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (hsourceFirst : pathOne = pathTwo) (htargetFirst : targetOne = targetTwo)
+    (hsourceSecond : pathTwo = pathThree) (htargetSecond : targetTwo = targetThree)
+    (cell : RawTwoCellExpr monadModeSignature pathOne targetOne) :
+    RawTwoCellExpr.castBoundary hsourceSecond htargetSecond
+        (RawTwoCellExpr.castBoundary hsourceFirst htargetFirst cell)
+      = RawTwoCellExpr.castBoundary (hsourceFirst.trans hsourceSecond)
+          (htargetFirst.trans htargetSecond) cell := by
+  cases hsourceFirst; cases htargetFirst; cases hsourceSecond; cases htargetSecond; rfl
+
+/-- Casting an identity 2-cell along a boundary equality yields the identity at the new boundary (two proofs of the
+same equality by proof irrelevance). -/
+theorem monadCastBoundary_id {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (hsource htarget : sourcePath = targetPath) :
+    RawTwoCellExpr.castBoundary (signature := monadModeSignature) hsource htarget
+        (RawTwoCellExpr.id (signature := monadModeSignature) sourcePath)
+      = RawTwoCellExpr.id (signature := monadModeSignature) targetPath := by
+  subst hsource; rfl
+
+/-! ## The ones-word collapse -/
+
+/-- The `count + 1` ones word peels its leading `id_t` gadget: `wordFromCounts (ones (count+1))` — a horizontal
+composite `hcomp id_t (wordFromCounts (ones count))` — reduces to `t ◁ wordFromCounts (ones count)` by dropping the
+right-whisker identity (`whiskerRightId`) and the left identity factor (`vcompIdLeft`).  Pure free-2-category, no
+monad law. -/
+theorem wordFromCounts_monadOnes_succ_conv (count : Nat) :
+    MonadSaturatedTwoCellConv (wordFromCounts (monadOnes (count + 1)))
+      (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT (wordFromCounts (monadOnes count))) := by
+  show MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp
+        (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) (countsDomainPath (monadOnes count))
+          (RawTwoCellExpr.id (signature := monadModeSignature) monadT))
+        (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT (wordFromCounts (monadOnes count))))
+      (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT (wordFromCounts (monadOnes count)))
+  refine MonadSaturatedTwoCellConv.trans
+    (MonadSaturatedTwoCellConv.vcompCongrLeft _
+      (MonadSaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.whiskerRightId (signature := monadModeSignature) monadT (countsDomainPath (monadOnes count)))))) ?_
+  exact MonadSaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+    (TwoCellStep.vcompIdLeft (signature := monadModeSignature) _))
+
+/-- ★ **The ones word collapses to the identity 2-cell** (transported to the word's native boundary).  Induction on
+`count`: the base is the empty identity; the step peels the leading `id_t` gadget (`wordFromCounts_monadOnes_succ_conv`),
+applies the induction hypothesis under a left whisker (`whiskerLeftCongr`), pulls the cast out of the whisker
+(`monadWhiskerLeft_castBoundary`), and collapses `t ◁ id` to `id` (`whiskerLeftId`).  Uses ONLY free-2-category
+laws — no monad law. -/
+theorem wordFromCounts_monadOnes_conv : ∀ (count : Nat),
+    MonadSaturatedTwoCellConv (wordFromCounts (monadOnes count))
+      (RawTwoCellExpr.castBoundary (countsDomainPath_monadOnes count).symm
+        (congrArg monadTPower (length_monadOnes count).symm)
+        (RawTwoCellExpr.id (signature := monadModeSignature) (monadTPower count)))
+  | 0 => MonadSaturatedTwoCellConv.refl _
+  | count + 1 => by
+      refine MonadSaturatedTwoCellConv.trans (wordFromCounts_monadOnes_succ_conv count) ?_
+      refine MonadSaturatedTwoCellConv.trans
+        (MonadSaturatedTwoCellConv.whiskerLeftCongr monadT (wordFromCounts_monadOnes_conv count)) ?_
+      -- Pull the boundary cast out of the left whisker (a genuine propositional equality — `▸`, not `rw`, to dodge
+      -- the dependent-index motive), then collapse `t ◁ id` to `id` under the same cast.
+      have hpull := monadWhiskerLeft_castBoundary (countsDomainPath_monadOnes count).symm
+        (congrArg monadTPower (length_monadOnes count).symm)
+        (RawTwoCellExpr.id (signature := monadModeSignature) (monadTPower count))
+      have hconv := MonadSaturatedTwoCellConv.castBoundaryCongr
+        (congrArg (composePath monadT) (countsDomainPath_monadOnes count).symm)
+        (congrArg (composePath monadT) (congrArg monadTPower (length_monadOnes count).symm))
+        (MonadSaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+          (TwoCellStep.whiskerLeftId (signature := monadModeSignature) monadT (monadTPower count))))
+      exact hpull.symm ▸ hconv
+
+/-! ## The `id`-cell normalization case -/
+
+/-- ★ **Case `id path` of `normalize`.**  Every identity 2-cell is saturated-convertible to the canonical word of
+its own fold: `id path ≈ canon (id path)`.  `canonCounts (id path) = countsOf path.length 0 (idMap path.length) =
+monadOnes path.length` (`countsOf_ascendingFrom_ones`), so `canon (id path)` is the boundary-transported ones word;
+that word collapses to the identity (`wordFromCounts_monadOnes_conv`), and the nested boundary casts fuse
+(`castBoundary_castBoundary`) and cancel on the identity (`monadCastBoundary_id`).  Purely free-2-category — no monad
+law. -/
+theorem monadNormalize_id (path : ModalityPath monadGraph MonadMode.point MonadMode.point) :
+    MonadSaturatedTwoCellConv (RawTwoCellExpr.id (signature := monadModeSignature) path)
+      (canon (RawTwoCellExpr.id (signature := monadModeSignature) path)) := by
+  have hcountsEq : canonCounts (RawTwoCellExpr.id (signature := monadModeSignature) path)
+      = monadOnes path.length := by
+    show countsOf path.length 0 (ascendingFrom 0 path.length) = monadOnes path.length
+    exact countsOf_ascendingFrom_ones path.length 0
+  have hdomRight : countsDomainPath (monadOnes path.length) = path :=
+    (countsDomainPath_monadOnes path.length).trans (monadPath_normalForm path).symm
+  have hcodRight : monadTPower (monadOnes path.length).length = path :=
+    (congrArg monadTPower (length_monadOnes path.length)).trans (monadPath_normalForm path).symm
+  have hcanon : canon (RawTwoCellExpr.id (signature := monadModeSignature) path)
+      = RawTwoCellExpr.castBoundary hdomRight hcodRight (wordFromCounts (monadOnes path.length)) :=
+    RawTwoCellExpr.castBoundary_wordCongr
+      (canonDomain_eq (RawTwoCellExpr.id (signature := monadModeSignature) path))
+      (canonCodomain_eq (RawTwoCellExpr.id (signature := monadModeSignature) path))
+      hdomRight hcodRight hcountsEq
+  have collapse : MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.castBoundary hdomRight hcodRight (wordFromCounts (monadOnes path.length)))
+      (RawTwoCellExpr.id (signature := monadModeSignature) path) := by
+    have hstep := MonadSaturatedTwoCellConv.castBoundaryCongr hdomRight hcodRight
+      (wordFromCounts_monadOnes_conv path.length)
+    rw [monadCastBoundary_castBoundary, monadCastBoundary_id] at hstep
+    exact hstep
+  rw [hcanon]
+  exact MonadSaturatedTwoCellConv.symm collapse
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED — the two GENERATOR base cases of `normalize` are CLOSED, zero-axiom.**  Both walking-monad
@@ -119,16 +320,23 @@ using ONLY the completed free-strict-2-category laws (`whiskerLeftId`, `whiskerR
 constructor.  `= true`. -/
 def fxMonad_hasNormalizeGeneratorBaseCases : Bool := true
 
-/-- **Honesty marker — the remaining `normalize` cases (`id` / `whiskerLeft` / `whiskerRight` / `vcomp`) are NOT
-landed.**  `normalize : MonadNormalizesToCanon` inducts on the cell's five constructors; the two `gen` leaves are
-CLOSED here.  What remains:
+/-- **ESTABLISHED — the `id`-cell case of `normalize` is CLOSED, zero-axiom.**  Every identity 2-cell is
+`MonadSaturatedTwoCellConv`-convertible to the canonical word of its own fold: `id path ≈ canon (id path)`
+(`monadNormalize_id`).  The fold of `id path` is `idMap path.length`, whose Eilenberg–Zilber data is the all-ones
+list (`countsOf_ascendingFrom_ones : countsOf n 0 (idMap n) = monadOnes n`); the ones word is a horizontal
+composite of trivial gadgets `monadGadget 1 = id_t` that collapses to the identity 2-cell
+(`wordFromCounts_monadOnes_conv`) by ONLY the free-strict-2-category laws (`whiskerRightId` / `vcompIdLeft` /
+`whiskerLeftId`) — no monad law; the boundary transport (`countsDomainPath (ones) = t^count`,
+`monadPath_normalForm`) is threaded through proof-irrelevant `castBoundary` (`monadCastBoundary_castBoundary` +
+`monadCastBoundary_id`).  This is the third of the five `normalizeCell` cases (after the two `gen` leaves).
+`= true`. -/
+def fxMonad_hasNormalizeIdCase : Bool := true
 
-  * **`id path`** — needs `countsOf n 0 (idMap n) = <n ones>` and `wordFromCounts <n ones> ≈ id (t^n)` (the
-    identity word collapses under `whiskerLeftId` / `whiskerRightId` — structural, no monad law), THEN a boundary
-    TRANSPORT: `id path`'s boundary `path ⇒ path` is only PROVABLY (not definitionally) the `t`-power boundary the
-    canonical word lives at (`path = monadTPower path.length`, `monadPath_normalForm`), and `wordFromCounts cs`'s
-    two ends (`countsDomainPath cs`, `monadTPower cs.length`) are provably-but-not-defeq equal — a genuine
-    `castBoundary`-congruence transport, not a `show`.
+/-- **Honesty marker — the two WHISKER cases and the `vcomp` case of `normalize` are NOT landed.**  `normalize :
+MonadNormalizesToCanon` inducts on the cell's five constructors; the two `gen` leaves
+(`fxMonad_hasNormalizeGeneratorBaseCases`) AND the `id` case (`fxMonad_hasNormalizeIdCase`, `monadNormalize_id`)
+are now CLOSED zero-axiom.  What remains (the compound-cell cases):
+
   * **`whiskerLeft W body` / `whiskerRight W body`** — the congruence `whiskerLeftCongr` / `whiskerRightCongr`
     (shipped constructors) + IH reduces each to `whiskerLeft (t^k) (canon body) ≈ canon (whiskerLeft W body)`,
     i.e. the HORIZONTAL word multiplicativity `wordMul_hcomp` (canonical words compose horizontally by counts-list
