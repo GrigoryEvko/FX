@@ -63,5 +63,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.isUniformlyContinuousConstantReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCConstant
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCAddReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCScalarMul
 
 end FX1PolyAudit

@@ -1295,4 +1295,37 @@ theorem integralOfUCAddReal
           (riemannSumScheduleSequence isRightUC lowerBound upperBound
             isIntervalNonNegative))))
 
+/-- **Integral homogeneity** — at a SHARED modulus, `integralOfUC (c * f) ~
+c * integralOfUC f`.  The shared modulus forces the SAME schedule for both, so
+`riemannSumScalarMulReal` aligns the scaled Riemann sums pointwise with the scaled
+originals; the shipped scalar-limit law `convergesToScalarMulReal` sends the
+original Riemann sequence's limit to `c` times it, and diagonal-limit uniqueness
+closes it.  Like additivity, the scaled certificate `isScalarUC` is demanded at
+the shared modulus — `integralOfUC` has no schedule-independence lemma, so the
+honest Lipschitz modulus of `c * f` (which differs) cannot feed it directly. -/
+theorem integralOfUCScalarMul
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (factor : RegularReal)
+    (isFunctionUC : IsUniformlyContinuous function modulus)
+    (isScalarUC : IsUniformlyContinuous
+      (fun value => mulReal factor (function value)) modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    DenotesSameReal
+      (integralOfUC isScalarUC lowerBound upperBound isIntervalNonNegative)
+      (mulReal factor
+        (integralOfUC isFunctionUC lowerBound upperBound isIntervalNonNegative)) :=
+  denotesSameRealOfConvergesToBoth
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isScalarUC lowerBound upperBound
+        isIntervalNonNegative))
+    (convergesToOfPointwiseDenotesSameReal
+      (fun index =>
+        riemannSumScalarMulReal factor function lowerBound upperBound
+          (integralSchedulePredecessor lowerBound upperBound modulus index))
+      (convergesToScalarMulReal
+        (convergesToLimitReal
+          (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
+            isIntervalNonNegative))))
+
 end FX1Poly.ComputerAlgebra
