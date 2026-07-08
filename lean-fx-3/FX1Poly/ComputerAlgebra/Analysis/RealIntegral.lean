@@ -937,4 +937,362 @@ theorem refinementEstimate {function : RegularReal → RegularReal}
     (isWithinRealBoundCongrRightDenotesSameReal riemannFineRewrite
       (isWithinRealBoundCongrBound boundReshape scaledBound))
 
+/-! ## The Archimedean mesh bound (the ℚ core of the schedule)
+
+The mesh condition `refinementEstimate` consumes reduces to a single `Int`
+inequality: for a nonnegative interval width `W`, the mesh
+`W · 1/(largeCount)` sits below `1/(smallCount)` as soon as the fine cell
+count dominates the Archimedean bound `N = |W.numerator| + 1` scaled by the
+coarse count — `N · smallCount ≤ largeCount`.  The chain mirrors
+`lessThanArchimedeanBound`: `W.numerator ≤ N`, scale by the coarse count,
+push through the cell-count bound, and pad by the positive denominator. -/
+
+/-- **The Archimedean mesh bound** — with `intervalWidth` nonnegative, the mesh
+`intervalWidth · 1/(largePredecessor+1)` lands below `1/(smallPredecessor+1)`
+whenever the fine cell count dominates the Archimedean bound times the coarse
+count.  Pure `Int` monotonicity over the cross-multiplication order. -/
+theorem meshLessEqualReciprocalOfCellBound (intervalWidth : RationalPair)
+    (smallPredecessor largePredecessor : Nat)
+    (cellBound :
+      archimedeanBound intervalWidth * (smallPredecessor + 1) ≤ largePredecessor + 1) :
+    LessEqualAs (mulExact intervalWidth (reciprocalOfSucc largePredecessor))
+      (reciprocalOfSucc smallPredecessor) :=
+  have numeratorBelowBound :
+      intervalWidth.numerator ≤ Int.ofNat (archimedeanBound intervalWidth) :=
+    intLessEqualTrans (intSelfLessEqualOfNatNatAbs intervalWidth.numerator)
+      (intOfNatLeOfNat (Nat.le_succ intervalWidth.numerator.natAbs))
+  have leftScaled :
+      intervalWidth.numerator * Int.ofNat (smallPredecessor + 1) ≤
+        Int.ofNat (archimedeanBound intervalWidth) * Int.ofNat (smallPredecessor + 1) :=
+    intMulLeMulRightOfNonNeg numeratorBelowBound (intZeroLeOfNat (smallPredecessor + 1))
+  have midStep :
+      Int.ofNat (archimedeanBound intervalWidth) * Int.ofNat (smallPredecessor + 1) ≤
+        Int.ofNat (largePredecessor + 1) :=
+    intOfNatLeOfNat cellBound
+  have rightScaled :
+      Int.ofNat (largePredecessor + 1) ≤
+        denominatorInt intervalWidth * Int.ofNat (largePredecessor + 1) :=
+    intLessEqualOfEqLeft (intOneMul (Int.ofNat (largePredecessor + 1))).symm
+      (intMulLeMulRightOfNonNeg
+        (show (1 : Int) ≤ denominatorInt intervalWidth from
+          denominatorIntIsPositive intervalWidth)
+        (intZeroLeOfNat (largePredecessor + 1)))
+  have coreChain :
+      intervalWidth.numerator * Int.ofNat (smallPredecessor + 1) ≤
+        denominatorInt intervalWidth * Int.ofNat (largePredecessor + 1) :=
+    intLessEqualTrans (intLessEqualTrans leftScaled midStep) rightScaled
+  intLessEqualOfEqLeft
+    (congrArg (· * Int.ofNat (smallPredecessor + 1)) (intMulOne intervalWidth.numerator))
+    (intLessEqualOfEqRight coreChain
+      (intOneMul (denominatorInt intervalWidth * Int.ofNat (largePredecessor + 1))).symm)
+
+/-! ## The Archimedean cell-count schedule
+
+A modulus-driven running product.  Member `index` refines every earlier member
+(the product structure gives nested block refinement), and its cell count is
+large enough that the mesh at that member beats the uniform-continuity tolerance
+for output precision `N·(index+1)` — exactly what the leg estimate needs to drive
+the produced bound `(U-L)/(outputPrecision+1)` down to `1/(index+1)`.  The whole
+schedule is spelled predecessor-form over the shipped `refinedCellCountPredecessor`,
+whose `+1` reduces DEFINITIONALLY to the product, so the block/product identities
+are all `rfl`. -/
+
+/-- Composition of refinements is a refinement — the block predecessors multiply,
+by the definitional `+1` product identity plus one clean `natMulAssoc`. -/
+theorem refinedCellCountPredecessorAssoc
+    (outerPredecessor middlePredecessor innerPredecessor : Nat) :
+    refinedCellCountPredecessor outerPredecessor
+        (refinedCellCountPredecessor middlePredecessor innerPredecessor) =
+      refinedCellCountPredecessor
+        (refinedCellCountPredecessor outerPredecessor middlePredecessor) innerPredecessor :=
+  Nat.succ.inj
+    (show (outerPredecessor + 1) * ((middlePredecessor + 1) * (innerPredecessor + 1)) =
+        (outerPredecessor + 1) * (middlePredecessor + 1) * (innerPredecessor + 1) from
+      (natMulAssoc (outerPredecessor + 1) (middlePredecessor + 1)
+        (innerPredecessor + 1)).symm)
+
+/-- Setoid sameness of reals from raw equality — reflexivity transported. -/
+theorem denotesSameRealOfEq {leftValue rightValue : RegularReal}
+    (areEqual : leftValue = rightValue) : DenotesSameReal leftValue rightValue :=
+  areEqual ▸ denotesSameRealRefl leftValue
+
+/-- The per-step block predecessor — its `+1` is `N·(modulus(N·(index+1))+1)`, the
+cell count that makes the mesh at member `index` beat the UC tolerance for output
+precision `N·(index+1)`. -/
+def scheduleBlockPredecessor (boundPredecessor : Nat) (modulus : Nat → Nat)
+    (index : Nat) : Nat :=
+  refinedCellCountPredecessor boundPredecessor
+    (modulus (refinedCellCountPredecessor boundPredecessor index))
+
+/-- The running-product schedule, predecessor form — each member folds the next
+block factor onto the previous cell count. -/
+def scheduleCellCountPredecessor (boundPredecessor : Nat) (modulus : Nat → Nat) :
+    Nat → Nat
+  | 0 => scheduleBlockPredecessor boundPredecessor modulus 0
+  | (index + 1) =>
+      refinedCellCountPredecessor
+        (scheduleBlockPredecessor boundPredecessor modulus (index + 1))
+        (scheduleCellCountPredecessor boundPredecessor modulus index)
+
+/-- The interval-specialized schedule — the bound predecessor is the interval
+width's numerator magnitude, so `boundPredecessor + 1 = archimedeanBound (U-L)`. -/
+def integralSchedulePredecessor (lowerBound upperBound : RationalPair)
+    (modulus : Nat → Nat) (index : Nat) : Nat :=
+  scheduleCellCountPredecessor (subExact upperBound lowerBound).numerator.natAbs
+    modulus index
+
+/-- The output precision predecessor at member `index` — `+1 = archimedeanBound
+(U-L) · (index+1)`, chosen so the produced bound `(U-L)/(this+1) ≤ 1/(index+1)`. -/
+def integralOutputPrecisionPredecessor (lowerBound upperBound : RationalPair)
+    (index : Nat) : Nat :=
+  refinedCellCountPredecessor (subExact upperBound lowerBound).numerator.natAbs index
+
+/-- **The schedule cell count dominates its own block factor** — the running
+product is at least its last factor, since the earlier product is positive. -/
+theorem scheduleCellCountSelfGeStepFactor (boundPredecessor : Nat)
+    (modulus : Nat → Nat) (index : Nat) :
+    scheduleBlockPredecessor boundPredecessor modulus index + 1 ≤
+      scheduleCellCountPredecessor boundPredecessor modulus index + 1 :=
+  match index with
+  | 0 => Nat.le_refl _
+  | (predecessorIndex + 1) =>
+      Nat.le_add_left
+        (scheduleBlockPredecessor boundPredecessor modulus (predecessorIndex + 1) + 1)
+        ((scheduleBlockPredecessor boundPredecessor modulus (predecessorIndex + 1) + 1) *
+          scheduleCellCountPredecessor boundPredecessor modulus predecessorIndex)
+
+/-- **The mesh condition at each schedule member** — the schedule cell count is
+built to make the mesh beat the UC tolerance at output precision
+`integralOutputPrecisionPredecessor`.  Its cell-count bound IS
+`scheduleCellCountSelfGeStepFactor` up to the definitional block/product identity. -/
+theorem integralScheduleMeshCondition (lowerBound upperBound : RationalPair)
+    (modulus : Nat → Nat) (index : Nat) :
+    LessEqualAs
+      (meshWidth lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus index))
+      (reciprocalOfSucc
+        (modulus (integralOutputPrecisionPredecessor lowerBound upperBound index))) :=
+  meshLessEqualReciprocalOfCellBound (subExact upperBound lowerBound)
+    (modulus (integralOutputPrecisionPredecessor lowerBound upperBound index))
+    (integralSchedulePredecessor lowerBound upperBound modulus index)
+    (scheduleCellCountSelfGeStepFactor
+      (subExact upperBound lowerBound).numerator.natAbs modulus index)
+
+/-- **The schedule refines by an integer block over a fixed gap** — member
+`baseIndex + gap` is a `refinedCellCountPredecessor` of member `baseIndex`.
+Induction on the gap: the base is the trivial refinement, the step folds the new
+block factor and re-associates the composition (`refinedCellCountPredecessorAssoc`). -/
+theorem scheduleRefinementFromGap (boundPredecessor : Nat) (modulus : Nat → Nat)
+    (baseIndex gap : Nat) :
+    ∃ blockPredecessor : Nat,
+      scheduleCellCountPredecessor boundPredecessor modulus (baseIndex + gap) =
+        refinedCellCountPredecessor blockPredecessor
+          (scheduleCellCountPredecessor boundPredecessor modulus baseIndex) :=
+  match gap with
+  | 0 =>
+      ⟨0,
+        (Nat.one_mul
+          (scheduleCellCountPredecessor boundPredecessor modulus baseIndex)).symm⟩
+  | (predecessorGap + 1) =>
+      match scheduleRefinementFromGap boundPredecessor modulus baseIndex predecessorGap with
+      | ⟨blockPredecessorInductive, refinementInductive⟩ =>
+          ⟨refinedCellCountPredecessor
+              (scheduleBlockPredecessor boundPredecessor modulus
+                (baseIndex + predecessorGap + 1))
+              blockPredecessorInductive,
+            Eq.trans
+              (congrArg
+                (refinedCellCountPredecessor
+                  (scheduleBlockPredecessor boundPredecessor modulus
+                    (baseIndex + predecessorGap + 1)))
+                refinementInductive)
+              (refinedCellCountPredecessorAssoc
+                (scheduleBlockPredecessor boundPredecessor modulus
+                  (baseIndex + predecessorGap + 1))
+                blockPredecessorInductive
+                (scheduleCellCountPredecessor boundPredecessor modulus baseIndex))⟩
+
+/-- **The schedule refines by an integer block between ordered members** — the
+gap form re-expressed through `Nat.le.dest`. -/
+theorem scheduleRefinementBetween (boundPredecessor : Nat) (modulus : Nat → Nat)
+    {firstIndex secondIndex : Nat} (isBelow : firstIndex ≤ secondIndex) :
+    ∃ blockPredecessor : Nat,
+      scheduleCellCountPredecessor boundPredecessor modulus secondIndex =
+        refinedCellCountPredecessor blockPredecessor
+          (scheduleCellCountPredecessor boundPredecessor modulus firstIndex) :=
+  match Nat.le.dest isBelow with
+  | ⟨gap, gapEquation⟩ =>
+      gapEquation ▸ scheduleRefinementFromGap boundPredecessor modulus firstIndex gap
+
+/-- **The forward schedule leg** — for `firstIndex ≤ secondIndex`, the coarser
+Riemann sum sits within `1/(firstIndex+1)` of the finer one.  The finer member is
+a block refinement of the coarser (transport), so `refinementEstimate` applies at
+output precision `integralOutputPrecisionPredecessor firstIndex`; its produced
+bound `(U-L)/(that+1)` relaxes to `1/(firstIndex+1)` by the Archimedean mesh
+bound with an equality cell count. -/
+theorem scheduleRiemannLegBelow
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound))
+    {firstIndex secondIndex : Nat} (isBelow : firstIndex ≤ secondIndex) :
+    IsWithinRealBound
+      (riemannSum function lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus firstIndex))
+      (riemannSum function lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus secondIndex))
+      (reciprocalOfSucc firstIndex) :=
+  match scheduleRefinementBetween (subExact upperBound lowerBound).numerator.natAbs
+      modulus isBelow with
+  | ⟨blockPredecessor, transportEquation⟩ =>
+      isWithinRealBoundOfBoundLessEqual
+        (meshLessEqualReciprocalOfCellBound (subExact upperBound lowerBound) firstIndex
+          (integralOutputPrecisionPredecessor lowerBound upperBound firstIndex)
+          (Nat.le_refl _))
+        (isWithinRealBoundCongrRightDenotesSameReal
+          (denotesSameRealOfEq
+            (congrArg (riemannSum function lowerBound upperBound) transportEquation))
+          (refinementEstimate isUniformlyContinuousFunction lowerBound upperBound
+            isIntervalNonNegative blockPredecessor
+            (integralSchedulePredecessor lowerBound upperBound modulus firstIndex)
+            (integralOutputPrecisionPredecessor lowerBound upperBound firstIndex)
+            (integralScheduleMeshCondition lowerBound upperBound modulus firstIndex)))
+
+/-- A reciprocal sits below its sum with another — the left summand witness. -/
+theorem reciprocalLeAddReciprocalLeft (leftIndex rightIndex : Nat) :
+    LessEqualAs (reciprocalOfSucc leftIndex)
+      (addExact (reciprocalOfSucc leftIndex) (reciprocalOfSucc rightIndex)) :=
+  lessEqualAsCongrLeft (addExactZeroRight (reciprocalOfSucc leftIndex))
+    (addExactMonotoneRight (reciprocalOfSucc leftIndex)
+      (ratioOfNatSuccIsNonNegative 1 rightIndex))
+
+/-- A reciprocal sits below its sum with another — the right summand witness. -/
+theorem reciprocalLeAddReciprocalRight (leftIndex rightIndex : Nat) :
+    LessEqualAs (reciprocalOfSucc rightIndex)
+      (addExact (reciprocalOfSucc leftIndex) (reciprocalOfSucc rightIndex)) :=
+  lessEqualAsCongrLeft (addExactZeroLeft (reciprocalOfSucc rightIndex))
+    (addExactMonotoneLeft (reciprocalOfSucc rightIndex)
+      (ratioOfNatSuccIsNonNegative 1 leftIndex))
+
+/-- **The schedule Riemann sequence is Cauchy** — the load-bearing brick.  For any
+two members, the forward leg (ordered by `Nat.le_total`) gives a bound
+`1/(min+1)`, relaxed to the regular Cauchy shape `1/(i+1) + 1/(j+1)`; the reversed
+case rides `isWithinRealBoundSymm`. -/
+theorem scheduleRiemannSumIsCauchy
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound))
+    (firstIndex secondIndex : Nat) :
+    IsWithinRealBound
+      (riemannSum function lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus firstIndex))
+      (riemannSum function lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus secondIndex))
+      (addExact (reciprocalOfSucc firstIndex) (reciprocalOfSucc secondIndex)) :=
+  match Nat.le_total firstIndex secondIndex with
+  | .inl isBelow =>
+      isWithinRealBoundOfBoundLessEqual
+        (reciprocalLeAddReciprocalLeft firstIndex secondIndex)
+        (scheduleRiemannLegBelow isUniformlyContinuousFunction lowerBound upperBound
+          isIntervalNonNegative isBelow)
+  | .inr isAbove =>
+      isWithinRealBoundOfBoundLessEqual
+        (reciprocalLeAddReciprocalRight firstIndex secondIndex)
+        (isWithinRealBoundSymm
+          (scheduleRiemannLegBelow isUniformlyContinuousFunction lowerBound upperBound
+            isIntervalNonNegative isAbove))
+
+/-- **The schedule Riemann sequence** — the regular Cauchy sequence of Riemann
+sums whose diagonal limit is the integral. -/
+def riemannSumScheduleSequence
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    RegularRealSequence :=
+  { values := fun index =>
+      riemannSum function lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus index)
+    isCauchy := scheduleRiemannSumIsCauchy isUniformlyContinuousFunction
+      lowerBound upperBound isIntervalNonNegative }
+
+/-- **The constructive integral of a uniformly continuous integrand** — the
+diagonal limit of the Archimedean-schedule Riemann sums.  This OPENS the integral
+layer: the analytic Cauchy witness is discharged, so the integral EXISTS as a
+`RegularReal`, zero axioms. -/
+def integralOfUC
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    RegularReal :=
+  limitReal (riemannSumScheduleSequence isUniformlyContinuousFunction
+    lowerBound upperBound isIntervalNonNegative)
+
+/-! ## Integral laws — constant and additivity -/
+
+/-- A constant map is uniformly continuous at the zero modulus — self-distance
+meets every reciprocal tolerance. -/
+theorem isUniformlyContinuousConstantReal (value : RegularReal) :
+    IsUniformlyContinuous (fun _ => value) (fun _ => 0) :=
+  fun _ _ outputPrecision _ =>
+    isWithinRealBoundOfDenotesSameReal (denotesSameRealRefl value)
+      (ratioOfNatSuccIsNonNegative 1 outputPrecision)
+
+/-- **The exact constant integral** — `integralOfUC (fun _ => c) ~ (U-L)·c`.
+Independent of the partition: `riemannSumConstant` makes every schedule member
+setoid-equal to `(U-L)·c`, so the sequence converges to it, and the diagonal limit
+is unique. -/
+theorem integralOfUCConstant (value : RegularReal)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    DenotesSameReal
+      (integralOfUC (isUniformlyContinuousConstantReal value) lowerBound upperBound
+        isIntervalNonNegative)
+      (mulReal (constantReal (subExact upperBound lowerBound)) value) :=
+  denotesSameRealOfConvergesToBoth
+    (convergesToLimitReal
+      (riemannSumScheduleSequence (isUniformlyContinuousConstantReal value)
+        lowerBound upperBound isIntervalNonNegative))
+    (convergesToOfPointwiseDenotesSameReal
+      (fun index =>
+        riemannSumConstant value lowerBound upperBound
+          (integralSchedulePredecessor lowerBound upperBound (fun _ => 0) index))
+      (convergesToConstant
+        (mulReal (constantReal (subExact upperBound lowerBound)) value)))
+
+/-- **Integral additivity** — at a SHARED modulus, `integralOfUC (f + g) ~
+integralOfUC f + integralOfUC g`.  The shared modulus forces the SAME schedule for
+all three, so `riemannSumAddReal` aligns pointwise; the shipped sum-limit law sends
+the pointwise Riemann sums to the sum of limits, and diagonal-limit uniqueness
+closes it. -/
+theorem integralOfUCAddReal
+    {leftFunction rightFunction : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isLeftUC : IsUniformlyContinuous leftFunction modulus)
+    (isRightUC : IsUniformlyContinuous rightFunction modulus)
+    (isSumUC : IsUniformlyContinuous
+      (fun value => addReal (leftFunction value) (rightFunction value)) modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    DenotesSameReal
+      (integralOfUC isSumUC lowerBound upperBound isIntervalNonNegative)
+      (addReal
+        (integralOfUC isLeftUC lowerBound upperBound isIntervalNonNegative)
+        (integralOfUC isRightUC lowerBound upperBound isIntervalNonNegative)) :=
+  denotesSameRealOfConvergesToBoth
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isSumUC lowerBound upperBound isIntervalNonNegative))
+    (convergesToOfPointwiseDenotesSameReal
+      (fun index =>
+        riemannSumAddReal leftFunction rightFunction lowerBound upperBound
+          (integralSchedulePredecessor lowerBound upperBound modulus index))
+      (convergesToAddReal
+        (convergesToLimitReal
+          (riemannSumScheduleSequence isLeftUC lowerBound upperBound
+            isIntervalNonNegative))
+        (convergesToLimitReal
+          (riemannSumScheduleSequence isRightUC lowerBound upperBound
+            isIntervalNonNegative))))
+
 end FX1Poly.ComputerAlgebra
