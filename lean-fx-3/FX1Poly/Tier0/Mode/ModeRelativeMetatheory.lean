@@ -282,7 +282,13 @@ SATURATED per-presentation variant at the walking adjunction IS decided
 (`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction = true`, backed by
 `adjunctionSaturatedModeRelativeConvDecision`), but that does NOT flip this flag: this parameter is the FINER
 free relation (the snakes provably do NOT collapse) and its scope is any computad, not the saturated adjunction.
-The free route remains owed `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`.  `= false`. -/
+The free route remains owed `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`, and the shipped
+FREE terms do NOT compose into either slot: `reconstruct` demands `SpineTraceEquiv → TwoCellConv` at the BARE
+`TwoCellConv`, but FREE-4 (`RawTwoCellExpr.twoCellConvFull_ofSpineTraceEquiv`) only lands in `TwoCellConvFull` —
+the bare form is provably FALSE (identity-path-whisker, the FREE-2 finding), sharpened to the still-open
+`AdjunctionNfTraceReconstruction`; and `traceDecision` demands an UNCONDITIONAL `Decidable (SpineTraceEquiv …)`,
+whereas the shipped `decidableSpineTraceEquiv_of` is gated on `fxMode_hasArcGodementIndependenceProof` /
+`fxMode_hasArcStructureReconstruction` (both `false`).  Genuine residual, not a no-math composition.  `= false`. -/
 def fxMode_hasModeRelativeConvDecision : Bool := false
 
 end FX1Poly.Tier0
