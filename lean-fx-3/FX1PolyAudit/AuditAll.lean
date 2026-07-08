@@ -5,6 +5,7 @@ import FX1PolyAudit.ComputerAlgebra.IntMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntFractionFree
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
 import FX1PolyAudit.ComputerAlgebra.Number.IntAddAssociativity
