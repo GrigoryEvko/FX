@@ -613,6 +613,117 @@ theorem internalCupCounts_stepCupArc (seedBoundary : Nat) (state : ArcWireState)
         exact Bool.noConfusion
           ((decide_eq_true (rfl : state.nextFresh + 1 = state.nextFresh + 1)).symm.trans hc)
 
+/-! ## The GENERAL-STATE cup census locator — round 2 (moved leg strand)
+
+The two `case left` / `case right` read-offs inside `internalCupCounts_stepCupArc` and the old-port transport
+`internalCupEventCountAt_stepCupArc_oldPort` are exactly the general-state census locator: in an ARBITRARY
+preceding open-wire `state` (whose leg strand has been shifted by an earlier block of events), a top-of-stack
+cup still reads `1` at each of its two fresh legs and contributes `0` DELTA at every old port.  We name them as
+standalone bricks generalizing the r1 empty-state base (`singleCupInternalCupCount_atLeftLeg` / `_belowWindow`,
+on `freshArcSeed`) and the r1 two-atom inert corner (`twoAtomCupInternalCupCount_atLeftLeg` / `_belowWindow`, on
+`[cupHead, capTail]`) off those special states to any `ArcStateFresh` state — the FM Prop 4.2.4 minimal-`i0`
+read-off through a MOVED leg strand. -/
+
+/-- ★ **General-state locator, LEFT leg — reads `1`.**  In any `ArcStateFresh` state, the fresh cup's
+`internalCupCount` census reads `1` at its left leg (boundary index `seedBoundary + windowPosition`): the left leg
+is read there (`legLeftRead`), roots on the cup's fresh component `nextFresh + 1`
+(`stepCupArc_freshComponentRoot`), where the cup's OWN fresh event `nextFresh + 2` sits (contributing `1`) and
+every OLD cup event is absent (`countEventsInRoot_stepCupArc_freshRoot_eq_zero`).  So the cup stays LOCATABLE by
+its left-leg census even after earlier events have shifted its leg strand. -/
+theorem generalStateCupInternalCupCount_atLeftLeg (seedBoundary : Nat) (state : ArcWireState)
+    (windowPosition : Nat) (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links)
+    (windowFits : windowPosition ≤ state.openWires.length) :
+    internalEventCountAt (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (stepCupArc state windowPosition).cupEventNodes
+        (seedBoundary + windowPosition)
+      = 1 := by
+  show internalEventCountAt (stepCupArc state windowPosition).links
+      (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+      ((state.nextFresh + 2) :: state.cupEventNodes) (seedBoundary + windowPosition) = 1
+  show countEventsInRoot (stepCupArc state windowPosition).links
+      (unionFindRootOf (stepCupArc state windowPosition).links
+        (natListGetAt (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+          (seedBoundary + windowPosition)))
+      ((state.nextFresh + 2) :: state.cupEventNodes) = 1
+  rw [legLeftRead seedBoundary state windowPosition windowFits,
+    (stepCupArc_freshComponentRoot state windowPosition fresh forest).1]
+  show (if unionFindRootOf (stepCupArc state windowPosition).links (state.nextFresh + 2)
+        == state.nextFresh + 1 then 1 else 0)
+      + countEventsInRoot (stepCupArc state windowPosition).links (state.nextFresh + 1)
+          state.cupEventNodes = 1
+  rw [(stepCupArc_freshComponentRoot state windowPosition fresh forest).2.2,
+    countEventsInRoot_stepCupArc_freshRoot_eq_zero state windowPosition fresh forest
+      state.cupEventNodes fresh.2.2.1]
+  show (if (state.nextFresh + 1 == state.nextFresh + 1) then 1 else 0) + 0 = 1
+  rw [Nat.add_zero]
+  cases hc : (state.nextFresh + 1 == state.nextFresh + 1) with
+  | true => rfl
+  | false =>
+      exact Bool.noConfusion
+        ((decide_eq_true (rfl : state.nextFresh + 1 = state.nextFresh + 1)).symm.trans hc)
+
+/-- ★ **General-state locator, RIGHT leg — reads `1`.**  Dual of `_atLeftLeg` at the right fresh leg (boundary
+index `seedBoundary + windowPosition + 1`, `legRightRead`): the two legs share the fresh component `nextFresh + 1`,
+so both carry the cup's own event and read `1`.  Together the two window legs read `[1, 1]`. -/
+theorem generalStateCupInternalCupCount_atRightLeg (seedBoundary : Nat) (state : ArcWireState)
+    (windowPosition : Nat) (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links)
+    (windowFits : windowPosition ≤ state.openWires.length) :
+    internalEventCountAt (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (stepCupArc state windowPosition).cupEventNodes
+        (seedBoundary + windowPosition + 1)
+      = 1 := by
+  show internalEventCountAt (stepCupArc state windowPosition).links
+      (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+      ((state.nextFresh + 2) :: state.cupEventNodes) (seedBoundary + windowPosition + 1) = 1
+  show countEventsInRoot (stepCupArc state windowPosition).links
+      (unionFindRootOf (stepCupArc state windowPosition).links
+        (natListGetAt (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+          (seedBoundary + windowPosition + 1)))
+      ((state.nextFresh + 2) :: state.cupEventNodes) = 1
+  rw [legRightRead seedBoundary state windowPosition windowFits,
+    (stepCupArc_freshComponentRoot state windowPosition fresh forest).2.1]
+  show (if unionFindRootOf (stepCupArc state windowPosition).links (state.nextFresh + 2)
+        == state.nextFresh + 1 then 1 else 0)
+      + countEventsInRoot (stepCupArc state windowPosition).links (state.nextFresh + 1)
+          state.cupEventNodes = 1
+  rw [(stepCupArc_freshComponentRoot state windowPosition fresh forest).2.2,
+    countEventsInRoot_stepCupArc_freshRoot_eq_zero state windowPosition fresh forest
+      state.cupEventNodes fresh.2.2.1]
+  show (if (state.nextFresh + 1 == state.nextFresh + 1) then 1 else 0) + 0 = 1
+  rw [Nat.add_zero]
+  cases hc : (state.nextFresh + 1 == state.nextFresh + 1) with
+  | true => rfl
+  | false =>
+      exact Bool.noConfusion
+        ((decide_eq_true (rfl : state.nextFresh + 1 = state.nextFresh + 1)).symm.trans hc)
+
+/-- ★ **General-state locator, BELOW the fresh leg — HONESTY-CORRECTED (`= base`, not `= 0`).**  The r1
+empty/inert-corner phrasing "reads `0` below the window" (`singleCupInternalCupCount_belowWindow`,
+`twoAtomCupInternalCupCount_belowWindow`) holds ONLY because `freshArcSeed` / the inert corner carry no OLD cup
+events below the window.  In the true general (moved-strand) state the below/past-window ports are OLD nodes
+carrying whatever cup events the PRECEDING block deposited, so the TOTAL census there is generally nonzero — the
+`= 0` claim is REFUTED at that generality.  What IS true, and is what actually locates the cup, is that the fresh
+cup contributes ZERO DELTA at every old port: the stepped census over `nextFresh + 2 :: cupEventNodes` at the
+shifted old port equals the BASE census over `cupEventNodes` (the fresh event `nextFresh + 2` roots at
+`nextFresh + 1`, distinct from any old port's root below `nextFresh`, so its indicator vanishes —
+`internalCupEventCountAt_stepCupArc_oldPort`).  Combined with `_atLeftLeg` / `_atRightLeg`, the fresh cup shows up
+ONLY at its two window legs, so `internalCupCounts` splices exactly `[1, 1]` at the window
+(`internalCupCounts_stepCupArc`) — the cup is UNIQUELY located by the census delta. -/
+theorem generalStateCupInternalCupCount_belowFreshLegIsBase (seedBoundary : Nat) (state : ArcWireState)
+    (windowPosition : Nat) (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links)
+    (seedBelowFresh : seedBoundary ≤ state.nextFresh) (windowFits : windowPosition ≤ state.openWires.length)
+    (portIndex : Nat) (portInRange : portIndex < seedBoundary + state.openWires.length) :
+    internalEventCountAt (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (stepCupArc state windowPosition).cupEventNodes
+        (freshShiftAbove (seedBoundary + windowPosition) 2 portIndex)
+      = internalEventCountAt state.links (List.range seedBoundary ++ state.openWires) state.cupEventNodes
+          portIndex :=
+  internalCupEventCountAt_stepCupArc_oldPort seedBoundary state windowPosition fresh forest
+    seedBelowFresh windowFits portIndex portInRange
+
 /-! ## LEG 3 — the boundary partner list -/
 
 /-- A map whose every entry factors through a shifted base read IS the double map (structural — no `funext`). -/
@@ -1195,5 +1306,31 @@ theorem dropLastCup_arc_injective {overallSource overallTarget : adjunctionGraph
       (extractArc bottomCount
         (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).internalCapCounts
   rw [eBottom, eTop, ePart, eLoops, eCup, eCap, eICup, eICap]
+
+/-! ## Honesty marker -/
+
+/-- **Honesty marker — the GENERAL-STATE cup census locator is PROVED (round 2, moved leg strand).**
+`generalStateCupInternalCupCount_atLeftLeg` / `_atRightLeg`: in an ARBITRARY `ArcStateFresh` preceding
+open-wire state — whose leg strand has been shifted by an earlier block of events — a top-of-stack cup's
+`internalCupCount` census still reads `1` at each of its two fresh legs.  `_belowFreshLegIsBase`: at every OLD
+port the fresh cup contributes ZERO DELTA (the stepped census equals the base census).  Together these splice
+exactly `[1, 1]` at the window (`internalCupCounts_stepCupArc`, injective), so the cup is UNIQUELY LOCATABLE by
+census in the general state — the FM Prop 4.2.4 minimal-`i0` read-off through a moved leg strand.  This
+generalizes the r1 empty-state base (`singleCupInternalCupCount_atLeftLeg` / `_belowWindow`, on `freshArcSeed`)
+and the r1 two-atom inert corner (`twoAtomCupInternalCupCount_atLeftLeg` / `_belowWindow`, on `[cupHead,
+capTail]`) off those special states.
+
+HONESTY CORRECTION vs the r1 phrasing: the r1 "reads `0` below the window" is REFUTED at true generality — in the
+moved-strand state the below-window ports are OLD nodes carrying the preceding block's cup events, so the TOTAL
+below-window census is generally nonzero.  The correct general-state invariant is the ZERO-DELTA transport
+`_belowFreshLegIsBase` (stepped = base), NOT `= 0`.
+
+What this marker does NOT claim: (1) residual #1 — the INTERACTING gap-0/1 zigzag (cap touching the cup legs,
+cancelling via the snake S1/S2, a DIFFERENT mechanism from the census read-off, FM Lemma 4.2.1); (2) residual
+#3 — the fuel peel-and-recurse `mixedTailArcComplete_fueled` assembling this locator + the two pure bases into
+`MixedTailArcCompleteness` (still needs a `dropLastCap_arc_injective` sibling + the mixed `locateAux` over the
+cup/cap cross-swap simulations + the FM `N = (N1, N2^eta, N2^eps)` lexicographic descent).  No gate flip;
+`fxMode_hasArcStructureReconstruction` stays as is.  `= true`. -/
+def fxMode_hasArcCupGeneralStateCensusLocator : Bool := true
 
 end FX1Poly.Polygraph
