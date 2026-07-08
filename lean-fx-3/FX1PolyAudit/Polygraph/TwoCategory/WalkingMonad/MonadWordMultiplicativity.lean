@@ -16,6 +16,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.monadTPower_length_consReplicate_one
 #assert_no_axioms FX1Poly.Polygraph.wordMul_whiskerLeft
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasWordMulWhiskerLeft
+-- The RIGHT-whisker APPEND skeleton (consAppend + its length / domain-path / boundary identities).
+#assert_no_axioms FX1Poly.Polygraph.consAppend
+#assert_no_axioms FX1Poly.Polygraph.consAppend_length
+#assert_no_axioms FX1Poly.Polygraph.countsDomainPath_consAppend
+#assert_no_axioms FX1Poly.Polygraph.countsDomainPath_consAppend_ones
+#assert_no_axioms FX1Poly.Polygraph.monadTPower_length_consAppend_ones
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasWordMulWhiskerRightAndVcomp
 
 end FX1PolyAudit

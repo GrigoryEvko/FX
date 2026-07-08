@@ -121,6 +121,49 @@ theorem wordMul_whiskerLeft : ∀ (k : Nat) (counts : List Nat),
       rw [monadCastBoundary_castBoundary]
       exact MonadSaturatedTwoCellConv.refl _
 
+/-! ## The RIGHT-whisker word multiplicativity: append a ones run
+
+The RIGHT dual appends the identity strands at the TOP of the counts vector.  The induction is on `counts`: the
+`whiskerRight (t^k)` passes THROUGH the head gadget's `hcomp = vcomp (whiskerRight _) (whiskerLeft _)` structure via
+`whiskerRightVcomp` (distribute over the vcomp), `whiskerRightComp` (merge the two right whiskers on the gadget), and
+`whiskerExchange` (swap the right whisker past the left whisker on the recursive word) — no `hcomp`-associativity, no
+monad law. -/
+
+/-- Cons-only append (no `List.append`, propext-safe): `consAppend a b` puts `b` after `a`. -/
+def consAppend : List Nat → List Nat → List Nat
+  | [], ys => ys
+  | x :: xs, ys => x :: consAppend xs ys
+
+/-- `consAppend` length is additive. -/
+theorem consAppend_length : ∀ (a b : List Nat), (consAppend a b).length = a.length + b.length
+  | [], b => by show b.length = 0 + b.length; rw [Nat.zero_add]
+  | x :: xs, b => by
+      show (consAppend xs b).length + 1 = xs.length + 1 + b.length
+      rw [consAppend_length xs b, Nat.succ_add]
+
+/-- The domain 1-cell of an appended word is the `composePath` of the two domains.  Structural recursion on `a`
+(`composePath` associativity threads the cons step). -/
+theorem countsDomainPath_consAppend : ∀ (a b : List Nat),
+    countsDomainPath (consAppend a b) = composePath (countsDomainPath a) (countsDomainPath b)
+  | [], _ => rfl
+  | x :: xs, b => by
+      show composePath (monadTPower x) (countsDomainPath (consAppend xs b))
+        = composePath (composePath (monadTPower x) (countsDomainPath xs)) (countsDomainPath b)
+      rw [countsDomainPath_consAppend xs b]
+      exact (composePath_assoc (monadTPower x) (countsDomainPath xs) (countsDomainPath b)).symm
+
+/-- The domain 1-cell of a `k`-ones-APPENDED word is `(cdp counts) · t^k`. -/
+theorem countsDomainPath_consAppend_ones (counts : List Nat) (k : Nat) :
+    countsDomainPath (consAppend counts (monadOnes k))
+      = composePath (countsDomainPath counts) (monadTPower k) := by
+  rw [countsDomainPath_consAppend, countsDomainPath_monadOnes]
+
+/-- The codomain 1-cell of a `k`-ones-APPENDED word is `t^(counts.length) · t^k`. -/
+theorem monadTPower_length_consAppend_ones (counts : List Nat) (k : Nat) :
+    monadTPower (consAppend counts (monadOnes k)).length
+      = composePath (monadTPower counts.length) (monadTPower k) := by
+  rw [consAppend_length, length_monadOnes, monadTPower_add]
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED — the LEFT-whisker WORD MULTIPLICATIVITY is CLOSED, zero-axiom.**  Whiskering the canonical
@@ -132,14 +175,22 @@ using ONLY the completed free-strict-2-category laws (`whiskerLeftUnit`, `whiske
 vector.  `= true`. -/
 def fxMonad_hasWordMulWhiskerLeft : Bool := true
 
-/-- **Honesty marker — the RIGHT-whisker word multiplicativity, the counts-alignment, and the two whisker
-`normalizeCell` cases are NOT yet assembled; the `vcomp` case is untouched.**  `wordMul_whiskerLeft` closes the
-LEFT-whisker WORD-level multiplicativity.  What is NOT landed:
+/-- **Honesty marker — the RIGHT-whisker APPEND SKELETON is shipped; its multiplicativity, the counts-alignment,
+and the whisker/`vcomp` `normalizeCell` cases are the named residuals.**  `wordMul_whiskerLeft` closes the
+LEFT-whisker WORD-level multiplicativity, and the RIGHT-whisker path skeleton is SHIPPED zero-axiom: `consAppend`,
+its length (`consAppend_length`), its domain-path homomorphism (`countsDomainPath_consAppend`), and the two
+ones-appended boundary identities (`countsDomainPath_consAppend_ones : cdp (counts ++ 1^k) = cdp counts · t^k`,
+`monadTPower_length_consAppend_ones`).  What is NOT landed:
 
-  * **`wordMul_whiskerRight`** — the RIGHT dual `t^k ▷ word counts ≈ word (counts ++ 1^k)` (append a ones run),
-    provable by the same STRUCTURAL induction on `counts` via `whiskerRightVcomp` + `whiskerRightComp` +
-    `whiskerExchange` + the counts-domain-path append identity (`countsDomainPath (consAppend a b) = cdp a · cdp b`)
-    — no monad law, but the three whisker laws each carry a `composePath`-associativity boundary cast.
+  * **`wordMul_whiskerRight`** — the RIGHT dual `t^k ▷ word counts ≈ word (counts ++ 1^k)`, by STRUCTURAL induction
+    on `counts`.  The head-gadget step passes `whiskerRight (t^k)` THROUGH `hcomp (gadget count) (word rest) =
+    vcomp (whiskerRight _ (gadget count)) (whiskerLeft t (word rest))` via `whiskerRightVcomp` (distribute over the
+    vcomp), `whiskerRightComp` (merge the two right whiskers on the gadget factor), and `whiskerExchange` (swap the
+    right whisker past the left whisker on the recursive-word factor, then thread the IH under a `t`-whisker) — no
+    monad law, but the SOLE remaining difficulty (beyond the whiskerLeft-style cast bookkeeping) is the VCOMP
+    REASSEMBLY: the two per-factor `composePath`-associativity casts must extrude to the whole vertical composite
+    (`RawTwoCellExpr.vcomp_castBoundaryLeft` + a right-factor analog) and reconcile with the head-gadget's stored
+    right-context (the `countsDomainPath_consAppend_ones` left-factor path rewrite) — the exact exchange that blocks.
   * **`countsOf_embedLocalMap_left` / `_right`** — the counts-level identities lining the multiplicativity word up
     with `canon`: `countsOf (a+c) 0 (embedLocalMap a c 0 v) = 1^a ++ countsOf c 0 v` (and the right analog).  These
     plus `monadMonotoneMapOf_whiskerLeft` / `_whiskerRight` + the `oneCell = t^(oneCell.length)` boundary transport
