@@ -22,5 +22,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.blockSwap_injective
 #assert_no_axioms FX1Poly.Polygraph.unionFindRoot_map_of_parentComm
 #assert_no_axioms FX1Poly.Polygraph.blockSwap_rootComm
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_two_two_eq_blockSwap
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_two_two_rootComm
 
 end FX1PolyAudit

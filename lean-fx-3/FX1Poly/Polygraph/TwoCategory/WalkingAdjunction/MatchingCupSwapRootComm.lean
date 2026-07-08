@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 
 /-! # Track B FINAL CRUX — the cup-restricted `rootComm` (block-transposition union-find automorphism)
 
@@ -273,5 +274,66 @@ theorem blockSwap_rootComm (nf : Nat) (orig : List (Nat × Nat))
                   if_neg (natBeqNeTrue (fun h => neNf h.symm)),
                   if_neg (natBeqNeTrue (fun h => neNf2 h.symm))]
               rw [hrootEq, swapFix]
+
+/-! ## Bridge to the general `blockRotate` keystone permutation
+
+The matching keystone infrastructure (`MatchingSigmaBundle`, `MatchingBlockSwapAssembly`) states every
+order-blind field (openMap, nfEq, loopsEq, forests, and the WEAKENED component-level correspondence) with the
+general block-rotation permutation `blockRotate lo w1 w2` for arbitrary block widths `w1`, `w2`.  For TWO cups each
+allocating exactly `2` fresh legs (`w1 = w2 = 2`), that rotation IS `blockSwap`, so the general legs compose with
+the ROOT-level `blockSwap_rootComm` — the field the general keystone could not supply (refuted for caps). -/
+
+/-- ★ **`blockRotate lo 2 2 = blockSwap lo`** (pointwise).  Two width-`2` blocks: the first block `[lo, lo+2)`
+shifts up by `2` (`lo ↦ lo+2`, `lo+1 ↦ lo+3`), the second block `[lo+2, lo+4)` shifts down by `2`
+(`lo+2 ↦ lo`, `lo+3 ↦ lo+1`) — the 4-id transposition.  Case on where `x` sits among the four window ids. -/
+theorem blockRotate_two_two_eq_blockSwap (lo x : Nat) : blockRotate lo 2 2 x = blockSwap lo x := by
+  cases hb0 : x == lo with
+  | true =>
+      rw [of_decide_eq_true hb0, blockSwap_nf,
+        blockRotate_firstBlock lo 2 2 lo (Nat.le_refl _) (Nat.lt_add_of_pos_right (by decide))]
+  | false =>
+    cases hb1 : x == lo + 1 with
+    | true =>
+        rw [of_decide_eq_true hb1, blockSwap_nf1,
+          blockRotate_firstBlock lo 2 2 (lo + 1) (Nat.le_add_right _ _) (Nat.lt_succ_self (lo + 1))]
+    | false =>
+      cases hb2 : x == lo + 2 with
+      | true =>
+          rw [of_decide_eq_true hb2, blockSwap_nf2,
+            blockRotate_secondBlock lo 2 2 (lo + 2) (Nat.le_refl _)
+              (Nat.lt_add_of_pos_right (by decide))]
+          exact addSubCancelRight lo 2
+      | false =>
+        cases hb3 : x == lo + 3 with
+        | true =>
+            rw [of_decide_eq_true hb3, blockSwap_nf3,
+              blockRotate_secondBlock lo 2 2 (lo + 3) (Nat.le_succ (lo + 2)) (Nat.lt_succ_self (lo + 3))]
+            exact addSubCancelRight (lo + 1) 2
+        | false =>
+          have swapFix : blockSwap lo x = x := by
+            show (if x == lo then lo + 2 else if x == lo + 1 then lo + 3
+                  else if x == lo + 2 then lo else if x == lo + 3 then lo + 1 else x) = x
+            rw [if_neg (natBeqNeTrue (neOfBeqFalse hb0)), if_neg (natBeqNeTrue (neOfBeqFalse hb1)),
+              if_neg (natBeqNeTrue (neOfBeqFalse hb2)), if_neg (natBeqNeTrue (neOfBeqFalse hb3))]
+          cases Nat.lt_or_ge x lo with
+          | inl hlt => rw [blockRotate_below lo 2 2 x hlt, swapFix]
+          | inr hge =>
+              have ge1 : lo + 1 ≤ x := Nat.lt_of_le_of_ne hge ((neOfBeqFalse hb0).symm)
+              have ge2 : lo + 2 ≤ x := Nat.lt_of_le_of_ne ge1 ((neOfBeqFalse hb1).symm)
+              have ge3 : lo + 3 ≤ x := Nat.lt_of_le_of_ne ge2 ((neOfBeqFalse hb2).symm)
+              have ge4 : lo + 2 + 2 ≤ x := Nat.lt_of_le_of_ne ge3 ((neOfBeqFalse hb3).symm)
+              rw [blockRotate_above lo 2 2 x ge4, swapFix]
+
+/-- ★ **The cup-restricted `rootComm` in the general `blockRotate` form** — the exact field the matching keystone
+bundle (`matchingCoreSwap_componentSim_blockRotate`) supplies only at the WEAKENED component level.  For two cups
+(`w1 = w2 = 2`) the block rotation `blockRotate nf 2 2` is a union-find automorphism of the two-fresh-join graph. -/
+theorem blockRotate_two_two_rootComm (nf : Nat) (orig : List (Nat × Nat))
+    (origBelow : ∀ edge ∈ orig, edge.1 < nf ∧ edge.2 < nf)
+    (origForest : isUnionFindForest orig) :
+    ∀ x, unionFindRootOf ((nf + 2, nf + 3) :: (nf, nf + 1) :: orig) (blockRotate nf 2 2 x)
+       = blockRotate nf 2 2 (unionFindRootOf ((nf + 2, nf + 3) :: (nf, nf + 1) :: orig) x) := by
+  intro x
+  rw [blockRotate_two_two_eq_blockSwap, blockRotate_two_two_eq_blockSwap]
+  exact blockSwap_rootComm nf orig origBelow origForest x
 
 end FX1Poly.Polygraph
