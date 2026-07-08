@@ -42,6 +42,9 @@ import FX1PolyAudit.ComputerAlgebra.Analysis.RealDerivative
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealFiniteSum
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealIntegral
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RadixScaledInteger
+import FX1PolyAudit.ComputerAlgebra.Float.FloatFormat
+import FX1PolyAudit.ComputerAlgebra.Float.Arithmetic
+import FX1PolyAudit.ComputerAlgebra.Float.BitEncoding
 import FX1PolyAudit.ComputerAlgebra.ISA.ArchState
 import FX1PolyAudit.ComputerAlgebra.ISA.StepRefinement
 import FX1PolyAudit.ComputerAlgebra.ISA.StepSemantics
