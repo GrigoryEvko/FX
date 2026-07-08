@@ -483,6 +483,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadMapFactorization
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerEmbedding
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadDeltaDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCanonicalWord
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCountsRoundTrip
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSim
