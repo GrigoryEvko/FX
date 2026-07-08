@@ -189,13 +189,22 @@ FLAG A — `FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false` (`Mode.lea
   `fxMode_hasArbitraryTwoCellUndecidabilityReduction = false` (wall CITED, not mechanized).
 
 FLAG B — `FX1Poly.Tier0.fxMode_hasModeRelativeConvDecision = false`
-  (`ModeRelativeMetatheory.lean`).  WALL: the FREE-relation residual, NOT undecidability.
-  Its parameter is the FINER free `TwoCellConv` over ANY computad (the snakes provably do
-  NOT collapse, `leftSnakeSaturatedButNotFree`), owed `(traceDecision, reconstruct)` of
-  `AdjunctionTwoCellWordProblem`.  Gated on `fxMode_hasArcStructureReconstruction = false`
-  (`FreeTwoCell/SpineTraceDecision`) and `fxMode_hasArcGodementIndependenceProof = false`.
-  This is the KEPT-LIVE residual — the arc route (#1996 / `ArcReconstruction`) is its
-  scaffolding; genuine open content, re-openable, NOT walled by undecidability.
+  (`ModeRelativeMetatheory.lean`).  WALL: a RELATION MISMATCH, NOT undecidability and NOT an
+  owed decision.  Its parameter is the FINER free BARE `TwoCellConv` over ANY computad (the
+  snakes provably do NOT collapse, `leftSnakeSaturatedButNotFree`), owed
+  `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`.  Of the two slots, the
+  `traceDecision` is now DISCHARGED ungated (`adjunctionSpineTraceDecision`, via
+  `decideAtomicTraceEquivOfChainedSeed` + FREE-5); the `reconstruct` into BARE `TwoCellConv`
+  is provably FALSE (FREE-2, the identity-path-whisker).  The categorically-FAITHFUL
+  `TwoCellConvFull` decision IS unconditional (`adjunctionDecideTwoCellConvFull`,
+  `fxMode_hasFaithfulTwoCellDecisionModuloTrace = true`), and the SATURATED modulo-triangles
+  relation the MTT fibration consumes is decided too
+  (`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction`) — so fib-3 is NOT blocked on
+  FLAG B.  The arc route (`ArcReconstruction`, `fxMode_hasArcStructureReconstruction` /
+  `fxMode_hasArcGodementIndependenceProof`, both `false`) is now a NON-BLOCKING geometry-native
+  alternative for the faithful decision, not this flag's gate.  Bare `TwoCellConv` is kept
+  honestly live as an over-fine relation; genuine open content, re-openable, NOT walled by
+  undecidability.
 
 SATURATED (per-presentation, below both flags) — TRUE+backed, zero-axiom:
   * `fxMode_hasSaturatedMatchingCanonicalizationCarrier = true` — carrier `matchingOf`.

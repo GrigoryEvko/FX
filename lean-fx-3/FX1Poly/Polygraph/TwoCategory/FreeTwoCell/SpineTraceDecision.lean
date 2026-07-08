@@ -703,16 +703,24 @@ INDEPENDENCE of two horizontally-disjoint blocks, now over the richer (event-tra
 state-renaming simulation; the fresh-id allocation differs, the extracted `FullArcStructure` does not) and
 computationally confirmed on every obstruction witness (whose unconditional count components are
 `parallelUnits_cupCount_eq` / `parallelCounits_capCount_eq`); its general zero-axiom proof is the single
-outstanding soundness
-obligation.  `= false`. -/
+outstanding soundness obligation.  RE-SCOPE: this is now a NON-BLOCKING refinement — the faithful decision it
+once gated (`Decidable (TwoCellConvFull …)`) is shipped UNGATED by the disjoint class-saturation route
+(`decideTwoCellConvFull`; `adjunctionDecideTwoCellConvFull` at the seed), so the union-find Godement independence
+is only owed for the SECOND, geometry-native arc proof of the same decision, not for the decision itself.
+`= false`. -/
 def fxMode_hasArcGodementIndependenceProof : Bool := false
 
-/-- **Honesty marker — the RECONSTRUCTION (Joyal-Street completeness) is the named residual.**  The YES-direction
-`arcStructureOf a = arcStructureOf b -> SpineTraceEquiv a b` (same planar-arc type implies planar-isotopic implies
-trace-equivalent — Joyal-Street) is the list-level Mazurkiewicz reconstruction over the realizable cup/cap arc
-structures, and it composes with the spine->cell reconstruction (`fxMode_hasSpineTraceReconstruction`) to a
-cell-level reconstruction.  `decidableSpineTraceEquiv_of` / `decidableTwoCellConvFull_of` land
-`Decidable (...)` GATED on exactly this plus the Godement independence above.  `= false`. -/
+/-- **Honesty marker — the RECONSTRUCTION (Joyal-Street completeness) is a NON-BLOCKING geometry-native
+refinement.**  The YES-direction `arcStructureOf a = arcStructureOf b -> SpineTraceEquiv a b` (same planar-arc
+type implies planar-isotopic implies trace-equivalent — Joyal-Street) is the list-level Mazurkiewicz
+reconstruction over the realizable cup/cap arc structures, and it composes with the spine->cell reconstruction
+(`fxMode_hasSpineTraceReconstruction`) to a cell-level reconstruction.  `decidableSpineTraceEquiv_of` /
+`decidableTwoCellConvFull_of` land `Decidable (...)` GATED on exactly this plus the Godement independence above.
+RE-SCOPE: that target `Decidable (TwoCellConvFull …)` is now shipped UNGATED by the disjoint bounded-atom-universe
+class-saturation route (`decideTwoCellConvFull`, `TotalWordProblemDecision`; and at the walking adjunction
+`adjunctionSpineTraceDecision` / `adjunctionDecideTwoCellConvFull`).  So this arc route is a SECOND,
+geometry-native proof of the SAME decision — a non-blocking refinement, no longer a wall for the faithful
+decision; the outstanding arc-geometry piece is `MixedTailArcCompleteness`, an open refinement leaf.  `= false`. -/
 def fxMode_hasArcStructureReconstruction : Bool := false
 
 /-- **Honesty marker — the assembled FREE-system decision.**  `decidableTwoCellConvFull_of` is the complete

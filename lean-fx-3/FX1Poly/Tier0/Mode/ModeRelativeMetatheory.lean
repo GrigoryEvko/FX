@@ -275,20 +275,32 @@ interchange critical pairs (confluence) `mode-3` identified.  The dimension-1 ba
 (`trivialComputad_oneCell_length_zero`, `decidableOneCellEq`) IS shipped.  `= false`. -/
 def fxMode_hasMultimodalCanonicity : Bool := false
 
-/-- **Honesty marker.**  The full, GENERAL mode-relative conversion DECISION over the FREE `TwoCellConv` (object
-conversion ⟺ mode 2-cell equality, the `fib-3` keystone) needs the dimension-2 FREE 2-cell decision, blocked as
-above; the dimension-1 reduction (`decidableOneCellEq`, reusing the ωcE word `DecidableEq`) IS shipped.  The
-SATURATED per-presentation variant at the walking adjunction IS decided
-(`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction = true`, backed by
-`adjunctionSaturatedModeRelativeConvDecision`), but that does NOT flip this flag: this parameter is the FINER
-free relation (the snakes provably do NOT collapse) and its scope is any computad, not the saturated adjunction.
-The free route remains owed `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`, and the shipped
-FREE terms do NOT compose into either slot: `reconstruct` demands `SpineTraceEquiv → TwoCellConv` at the BARE
-`TwoCellConv`, but FREE-4 (`RawTwoCellExpr.twoCellConvFull_ofSpineTraceEquiv`) only lands in `TwoCellConvFull` —
-the bare form is provably FALSE (identity-path-whisker, the FREE-2 finding), sharpened to the still-open
-`AdjunctionNfTraceReconstruction`; and `traceDecision` demands an UNCONDITIONAL `Decidable (SpineTraceEquiv …)`,
-whereas the shipped `decidableSpineTraceEquiv_of` is gated on `fxMode_hasArcGodementIndependenceProof` /
-`fxMode_hasArcStructureReconstruction` (both `false`).  Genuine residual, not a no-math composition.  `= false`. -/
+/-- **Honesty marker — the SOLE residual is a RELATION MISMATCH, not a missing decision.**  The full, GENERAL
+mode-relative conversion DECISION over the FREE `TwoCellConv` (object conversion ⟺ mode 2-cell equality, the
+`fib-3` keystone) is owed `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem` at the BARE
+`TwoCellConv` parameter; the dimension-1 reduction (`decidableOneCellEq`, reusing the ωcE word `DecidableEq`) IS
+shipped.  Of the two slots, only ONE now genuinely fails — and it fails because the flag's parameter is a FINER
+relation than any decision reaches:
+
+  * `traceDecision` (an UNCONDITIONAL `Decidable (SpineTraceEquiv …)`) is now DISCHARGED ungated —
+    `adjunctionSpineTraceDecision` (via `decideAtomicTraceEquivOfChainedSeed` + FREE-5
+    `spineTraceEquiv_iff_atomicTraceEquiv`), with NO arc gate.  (The arc-gated `decidableSpineTraceEquiv_of` is now
+    a non-blocking alternative, not this leg's wall.)
+  * `reconstruct` demands `SpineTraceEquiv → TwoCellConv` at the BARE `TwoCellConv`, and THIS is provably FALSE
+    (FREE-2, the identity-path-whisker: `atomFrame adjunctionUnitSpineAtom` shares the unit's spine yet no
+    `TwoCellStep` strips its identity-1-cell whisker).  The shipped FREE-4
+    (`RawTwoCellExpr.twoCellConvFull_ofSpineTraceEquiv`) lands in the categorically-FAITHFUL `TwoCellConvFull`, so
+    the FAITHFUL decision IS unconditional (`adjunctionDecideTwoCellConvFull`,
+    `fxMode_hasFaithfulTwoCellDecisionModuloTrace = true`) — but bare `TwoCellConv` is strictly finer (the snakes
+    provably do NOT collapse, `leftSnakeSaturatedButNotFree`), so the bare `reconstruct` cannot be inhabited.
+
+fib-3 is NOT blocked on this flag: its keystone is discharged at the granularity the MTT fibration consumes — the
+SATURATED modulo-triangles relation `SaturatedTwoCellConv`
+(`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction = true`,
+`adjunctionSaturatedModeRelativeConvDecision`) — and the faithful free relation is decided too; bare `TwoCellConv`
+sits strictly below both and is kept honestly live as an over-fine relation, per Gratzer Cor. 8.10 (conversion is
+decided when 2-cell EQUALITY is, which the faithful/saturated decisions supply).  Genuine residual, not a no-math
+composition.  `= false`. -/
 def fxMode_hasModeRelativeConvDecision : Bool := false
 
 end FX1Poly.Tier0

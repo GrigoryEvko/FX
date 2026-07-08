@@ -174,13 +174,20 @@ relation) with the signature-generic atom re-framing pair (`whiskerLeft_atomFram
 `whiskerRight_atomFrame_convFull` in `FreeTwoCellWhiskerReframing`) converting outer whiskers of a
 frame into frames of context-extended atoms.
 
-STILL OPEN (not this marker's claim): the residual `AdjunctionNfTraceReconstructionFull` — realizing a
-`SpineTraceEquiv` of two NORMAL forms' spines as a `TwoCellConvFull` — needs the CHAIN-level whisker
-transforms over the boundary-coherent chain and the `chainToCell`-trace lift (the realized-chain bridge
-`fxMode_hasRealizedChainCellBridge` and the arc reconstruction `fxMode_hasArcCellReconstruction`, both
-still `false`).  The spine SOUNDNESS (NO-direction) is shipped in `FreeTwoCellWhiskerFunctoriality`;
-the convergent-3-polygraph route stays blocked (interchange non-confluence is real).  Hence
-`fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= true`. -/
+SUPERSEDED (this reduction's NF-restricted residual is no longer the route): the general
+`AdjunctionSpineTraceReconstructionFull` — hence a fortiori its NF restriction
+`AdjunctionNfTraceReconstructionFull` — is now DISCHARGED DIRECTLY by the shipped free FREE-4
+`RawTwoCellExpr.twoCellConvFull_ofSpineTraceEquiv` (`adjunctionSpineTraceReconstructionFull`,
+`AdjunctionTwoCellConvFullTraceRoute`), so the boundary-coherent chain-whisker transforms + `chainToCell`-trace
+lift (the realized-chain bridge `fxMode_hasRealizedChainCellBridge` / arc reconstruction
+`fxMode_hasArcCellReconstruction`, both `false`) are a superseded alternative, not a blocker.  With the
+`traceDecision` also discharged ungated (`adjunctionSpineTraceDecision`), the FAITHFUL `TwoCellConvFull` decision
+at the seed is UNCONDITIONAL (`adjunctionDecideTwoCellConvFull`,
+`fxMode_hasFaithfulTwoCellDecisionModuloTrace = true`).  The spine SOUNDNESS (NO-direction) is shipped in
+`FreeTwoCellWhiskerFunctoriality`; the convergent-3-polygraph route stays blocked (interchange non-confluence is
+real).  `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false` for an
+INDEPENDENT reason — the BARE `TwoCellConv` relation mismatch (its `reconstruct` provably FALSE, FREE-2), NOT
+this NF residual.  `= true`. -/
 def fxMode_hasWhiskerFunctorialityReconstruction : Bool := true
 
 end FX1Poly.Polygraph

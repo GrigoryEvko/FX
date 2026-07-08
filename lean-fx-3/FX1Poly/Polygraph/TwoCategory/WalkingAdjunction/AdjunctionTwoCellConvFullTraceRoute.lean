@@ -1,6 +1,8 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.WhiskerReconstruction
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellWordProblem
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.MatchingDecision
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SpineTraceReconstruction
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.TotalWordProblemDecision
 
 /-! # mode-3 floor — the seed's FAITHFUL 2-cell decision reduced to the SINGLE trace residual
 
@@ -35,25 +37,35 @@ SINGLE remaining residual — the list-level trace decision.
   ★ `adjunctionParallelUnits_convFull` — smoke: the Eckmann–Hilton witness (two parallel units in the two orders)
     is `TwoCellConvFull` via the discharged reconstruction on its shipped trace equivalence.
 
-## What is DEFERRED — the single genuine residual (flag stays `false`)
+## What is DISCHARGED — the faithful decision is now UNCONDITIONAL (the trace residual falls)
 
-The FAITHFUL decision is now owed ONLY `traceDecision` : an UNCONDITIONAL `Decidable (SpineTraceEquiv …)` — the
-Mazurkiewicz / partially-commutative-monoid word problem on the whiskered-atom spine.  The shipped
-`decidableSpineTraceEquiv_of` supplies it GATED on `fxMode_hasArcGodementIndependenceProof` (the union-find
-Godement independence) and `fxMode_hasArcStructureReconstruction` (the Joyal–Street planar-arc completeness) —
-both still `false`, the genuine cup-merge arc geometry (route (a)).  That is the SOLE remaining wall for the
-faithful relation; the `reconstruct` leg is no longer part of the residual.
+The `traceDecision` residual is DISCHARGED ungated.  An UNCONDITIONAL `Decidable (SpineTraceEquiv …)` on the
+whiskered-atom spine is now shipped WITHOUT the arc geometry: every free cell's spine is boundary-chained at its
+source 1-cell (`RawTwoCellExpr.spine_isBoundaryChained`), so the bounded-atom-universe route
+(`decideAtomicTraceEquivOfChainedSeed`, `TotalWordProblemDecision`) decides `AtomicTraceEquiv` of the two spines
+outright, and FREE-5 (`spineTraceEquiv_iff_atomicTraceEquiv`) transports that decision to `SpineTraceEquiv`.  This
+inhabits `AdjunctionSpineTraceDecision` outright (`adjunctionSpineTraceDecision`), so the FAITHFUL decision is now
+UNCONDITIONAL: `adjunctionDecideTwoCellConvFull` feeds it into the discharged reconstruction to decide EVERY
+parallel pair against `TwoCellConvFull` with NO hypothesis (`fxMode_hasFaithfulTwoCellDecisionModuloTrace = true`).
 
-Two honesty points, kept sharp:
+  * The older arc route (`decidableSpineTraceEquiv_of`, GATED on `fxMode_hasArcGodementIndependenceProof` /
+    `fxMode_hasArcStructureReconstruction`, both `false`) is now a NON-BLOCKING alternative: its target
+    `Decidable (TwoCellConvFull …)` is already shipped ungated by the disjoint class-saturation route
+    (`decideTwoCellConvFull`).  The Joyal–Street planar-arc / union-find Godement-independence development
+    (`MixedTailArcCompleteness`) stays an open refinement leaf — a second, geometry-native proof of the same
+    decision, not a wall.
 
-  * The general/free `fxMode_hasModeRelativeConvDecision` names the **bare** `TwoCellConv` parameter, whose
-    `reconstruct` leg is provably FALSE (FREE-2).  This file does NOT flip it: it reduces the residual of the
-    FAITHFUL relation, which is the categorically-correct target, but the bare flag's parameter is a strictly
-    finer relation that the trace route cannot decide (equal-spine cells that are not bare-`TwoCellConv` exist).
-    So the bare flag stays `false` for a genuine reason — a relation mismatch, not a missing lemma.
-  * No fuel gate is introduced here: `traceDecision` is taken as an abstract `Decidable (SpineTraceEquiv …)`
-    parameter, so this reduction is exact (the shipped `decideTwoCellConvFull?` gates on a computable
-    frontier-exhaustion check; this states the clean abstract reduction the arc route must inhabit).
+## What is DEFERRED — the SINGLE genuine residual is the BARE relation (`fxMode_hasModeRelativeConvDecision` stays `false`)
+
+The general/free `fxMode_hasModeRelativeConvDecision` names the **bare** `TwoCellConv` parameter (NOT the faithful
+`TwoCellConvFull`), whose `reconstruct` leg (`AdjunctionSpineTraceReconstruction`, landing in bare `TwoCellConv`)
+is provably FALSE (FREE-2, the identity-path-whisker): `atomFrame adjunctionUnitSpineAtom` has the SAME spine as
+the bare unit yet no `TwoCellStep` strips its identity-1-cell whisker, so equal-spine cells that are NOT
+bare-`TwoCellConv` exist and the trace route cannot decide the bare relation.  This is a RELATION MISMATCH, not a
+missing lemma: bare `TwoCellConv` is strictly finer than both the faithful `TwoCellConvFull` (decided here) and
+the saturated modulo-triangles relation (`SaturatedTwoCellConv`, decided by
+`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction`, the granularity the MTT fibration consumes).  The
+bare flag stays `false` for that genuine reason; this file does NOT flip it and does NOT weaken its parameter.
 
 Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free
 (the reconstruction is the shipped free term; the decision is a `match` on the supplied `Decidable`, the
@@ -119,18 +131,68 @@ theorem adjunctionParallelUnits_convFull :
     adjunctionParallelUnitsRedex adjunctionParallelUnitsReduct
     adjunctionParallelUnits_spineTraceEquiv
 
+/-! ## The trace residual discharged — the UNCONDITIONAL faithful decision -/
+
+/-- ★ **The seed's list-level trace decision, DISCHARGED ungated.**  Inhabits `AdjunctionSpineTraceDecision`
+outright — an UNCONDITIONAL `Decidable (SpineTraceEquiv … cellFirst.spine cellSecond.spine)` — with NO arc gate:
+every free cell's spine is boundary-chained at its source 1-cell (`RawTwoCellExpr.spine_isBoundaryChained`), so
+the bounded-atom-universe route (`decideAtomicTraceEquivOfChainedSeed`) decides `AtomicTraceEquiv` of the spines,
+and FREE-5 (`spineTraceEquiv_iff_atomicTraceEquiv`) transports the decision to `SpineTraceEquiv`.  This is the
+`traceDecision` slot the trace route owed — supplied WITHOUT the Joyal–Street arc geometry. -/
+@[reducible] def adjunctionSpineTraceDecision : AdjunctionSpineTraceDecision :=
+  fun cellFirst cellSecond =>
+    match decideAtomicTraceEquivOfChainedSeed adjunctionModeDecEq adjunctionModalityDecEq
+        adjunctionTwoCellDecEq cellFirst.spine cellSecond.spine cellFirst.spine_isBoundaryChained with
+    | isTrue atomicEquiv => isTrue (spineTraceEquiv_iff_atomicTraceEquiv.mpr atomicEquiv)
+    | isFalse atomicRefuted =>
+        isFalse (fun tracesEquiv => atomicRefuted (spineTraceEquiv_iff_atomicTraceEquiv.mp tracesEquiv))
+
+/-- ★★ **The seed's FAITHFUL 2-cell decision, UNCONDITIONAL.**  Feeds the discharged trace decision
+`adjunctionSpineTraceDecision` into the trace-route family form: the whole `TwoCellConvFull` word problem at the
+walking-adjunction seed is decided with NO hypothesis — the `reconstruct` leg is
+`adjunctionSpineTraceReconstructionFull` (discharged), the `traceDecision` leg is now discharged too, and the
+NO-direction is the shipped soundness.  Equivalent to `decideTwoCellConvFull` at the seed via the disjoint
+class-saturation route; this exhibits it through the trace-route composition. -/
+def adjunctionDecideTwoCellConvFull
+    {sourceMode targetMode : adjunctionModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath adjunctionModeSignature.graph sourceMode targetMode}
+    (cellFirst cellSecond : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
+    Decidable (TwoCellConvFull adjunctionModeSignature cellFirst cellSecond) :=
+  adjunctionTwoCellConvFullDecisionModuloTrace adjunctionSpineTraceDecision cellFirst cellSecond
+
+/-! ## Smokes: the faithful decision genuinely separates -/
+
+/-- Smoke (ACCEPT): the faithful decision cannot REJECT the convertible Eckmann–Hilton witness — no proof makes
+it `isFalse`, since `adjunctionParallelUnits_convFull` witnesses the conversion.  Rules out a degenerate
+reject-everything decision. -/
+theorem adjunctionDecideTwoCellConvFull_accepts_parallelUnits :
+    ∀ notConv, adjunctionDecideTwoCellConvFull adjunctionParallelUnitsRedex adjunctionParallelUnitsReduct
+      ≠ Decidable.isFalse notConv :=
+  fun notConv _ => notConv adjunctionParallelUnits_convFull
+
+/-- Smoke (REJECT): the faithful decision cannot ACCEPT the non-convertible snake/identity pair — no proof makes
+it `isTrue`, since `snake_not_convFull_identity` refutes the conversion (the snake and the identity differ in
+generator count `2 ≠ 0`, a `TwoCellConvFull` invariant).  Rules out a degenerate accept-everything decision. -/
+theorem adjunctionDecideTwoCellConvFull_rejects_snake :
+    ∀ conv, adjunctionDecideTwoCellConvFull snakeOnLeft identityOnLeft ≠ Decidable.isTrue conv :=
+  fun conv _ => snake_not_convFull_identity conv
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the faithful decision is reduced to the SINGLE trace residual; the bare flag stays
-walled.**  Over the categorically-faithful `TwoCellConvFull`, the seed's 2-cell decision is now owed ONLY the
-list-level `traceDecision` (`Decidable (SpineTraceEquiv …)`): the `reconstruct` leg is DISCHARGED here
-(`adjunctionSpineTraceReconstructionFull`, from the shipped free `twoCellConvFull_ofSpineTraceEquiv`), and the
-NO-direction is the shipped soundness (`twoCellConvFull_spineTraceEquiv`).  `traceDecision` remains the genuine
-cup-merge arc geometry — `decidableSpineTraceEquiv_of` gated on `fxMode_hasArcGodementIndependenceProof` /
-`fxMode_hasArcStructureReconstruction`, both `false`.  This does NOT flip `fxMode_hasModeRelativeConvDecision`:
-that flag names the BARE `TwoCellConv` parameter, whose `reconstruct` leg is provably FALSE (FREE-2, the
-identity-path-whisker); the trace route cannot decide the bare relation (equal-spine non-bare-convertible cells
-exist), a relation mismatch rather than a missing lemma.  `= false`. -/
-def fxMode_hasFaithfulTwoCellDecisionModuloTrace : Bool := false
+/-- **★ ESTABLISHED — the faithful `TwoCellConvFull` decision at the walking-adjunction seed is UNCONDITIONAL.**
+Over the categorically-faithful `TwoCellConvFull` (bare `TwoCellConv` + whisker functoriality + congruence
+closure), the seed's 2-cell decision is now DISCHARGED with no hypothesis (`adjunctionDecideTwoCellConvFull`):
+the `reconstruct` leg is the shipped free `twoCellConvFull_ofSpineTraceEquiv`
+(`adjunctionSpineTraceReconstructionFull`); the `traceDecision` leg is DISCHARGED ungated by
+`adjunctionSpineTraceDecision` (via `decideAtomicTraceEquivOfChainedSeed` + FREE-5 — NOT the arc-gated
+`decidableSpineTraceEquiv_of`); and the NO-direction is the shipped soundness (`twoCellConvFull_spineTraceEquiv`).
+The decision genuinely SEPARATES: it accepts the Eckmann–Hilton witness
+(`adjunctionDecideTwoCellConvFull_accepts_parallelUnits`) and rejects the snake/identity pair
+(`adjunctionDecideTwoCellConvFull_rejects_snake`).  The older arc route (Joyal–Street planar-arc completeness +
+union-find Godement independence, gates both `false`) is a NON-BLOCKING alternative — its target is already
+shipped here — with `MixedTailArcCompleteness` an open refinement leaf.  This does NOT flip
+`fxMode_hasModeRelativeConvDecision`: that flag names the strictly-finer BARE `TwoCellConv`, whose `reconstruct`
+leg is provably FALSE (FREE-2, the identity-path-whisker) — a relation mismatch, kept honestly live.  `= true`. -/
+def fxMode_hasFaithfulTwoCellDecisionModuloTrace : Bool := true
 
 end FX1Poly.Polygraph
