@@ -507,4 +507,89 @@ theorem dropLastCup_matching_injective {overallSource overallTarget : adjunction
       (extractDiagram 0 (processSpine ⟨List.range 0, [], 0, 0⟩ secondPrefix)).loops
   rw [eBottom, eTop, ePart, eLoops]
 
+/-! ## LEG 4 — the FORWARD matching congruence (the drop's inverse direction)
+
+`dropLastCup_matching_injective` cancels a shared last cup DOWNWARD (appended-equal ⇒ prefix-equal).  The
+matching-carrier `locateAux` also needs the UPWARD direction: two prefixes that already agree on
+`matchingOfSpineList 0` stay agreeing after a shared last cup is appended.  This is immediate from the fact that a
+top-of-stack cup rewrites every `DiagramType` field as a FIXED function of the prefix's field
+(`diagramPartner_stepCup` for the partner splice, `topCount_stepCup` for the +2, `bottomCount`/`loops`
+positionally), so equal prefix diagrams give equal appended diagrams.  Positivity-free — it never inspects the
+open-wire ids, only the extracted `DiagramType`. -/
+
+/-- A top-of-stack cup congruence at the `extractDiagram` level: two fresh, forest-rooted states with EQUAL
+`extractDiagram seedBoundary` (over a seed boundary below both `nextFresh`) stay equal after the SAME window's
+top-of-stack cup, because each of the four fields is a fixed function of the base field
+(`topCount` +2, `partner` shifted-and-spliced by `diagramPartner_stepCup`, `bottomCount`/`loops` unchanged).  The
+window-fit for the second state is read off the shared `topCount`. -/
+private theorem extractDiagram_stepCup_congr (seedBoundary : Nat)
+    (stateFirst stateSecond : WireState) (windowPosition : Nat)
+    (freshFirst : WireStateFresh stateFirst) (forestFirst : isUnionFindForest stateFirst.links)
+    (freshSecond : WireStateFresh stateSecond) (forestSecond : isUnionFindForest stateSecond.links)
+    (seedBelowFirst : seedBoundary ≤ stateFirst.nextFresh)
+    (seedBelowSecond : seedBoundary ≤ stateSecond.nextFresh)
+    (windowFitsFirst : windowPosition ≤ stateFirst.openWires.length)
+    (baseEq : extractDiagram seedBoundary stateFirst = extractDiagram seedBoundary stateSecond) :
+    extractDiagram seedBoundary (stepCup stateFirst windowPosition)
+      = extractDiagram seedBoundary (stepCup stateSecond windowPosition) := by
+  -- The open-wire lengths agree (the `topCount` field), so the second window fits too.
+  have owEq : stateFirst.openWires.length = stateSecond.openWires.length :=
+    congrArg DiagramType.topCount baseEq
+  have windowFitsSecond : windowPosition ≤ stateSecond.openWires.length := owEq ▸ windowFitsFirst
+  -- Per-field inversions.
+  have eBottom : (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).bottomCount
+      = (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).bottomCount := rfl
+  have eTop : (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).topCount
+      = (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).topCount := by
+    rw [topCount_stepCup, topCount_stepCup]
+    exact congrArg (fun baseTop => baseTop + 2) (congrArg DiagramType.topCount baseEq)
+  have eLoops : (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).loops
+      = (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).loops := by
+    show stateFirst.loops = stateSecond.loops
+    exact congrArg DiagramType.loops baseEq
+  have ePart : (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).partner
+      = (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).partner := by
+    rw [diagramPartner_stepCup seedBoundary stateFirst windowPosition freshFirst forestFirst
+        seedBelowFirst windowFitsFirst,
+      diagramPartner_stepCup seedBoundary stateSecond windowPosition freshSecond forestSecond
+        seedBelowSecond windowFitsSecond,
+      congrArg DiagramType.partner baseEq]
+  show DiagramType.mk
+      (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).bottomCount
+      (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).topCount
+      (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).partner
+      (extractDiagram seedBoundary (stepCup stateFirst windowPosition)).loops
+    = DiagramType.mk
+      (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).bottomCount
+      (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).topCount
+      (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).partner
+      (extractDiagram seedBoundary (stepCup stateSecond windowPosition)).loops
+  rw [eBottom, eTop, ePart, eLoops]
+
+/-- ★ **The forward matching congruence at width `0` (the drop's inverse, plain carrier).**  Two pure-cup
+boundary-chained spines over the width-`0` bottom boundary sharing a last cup whose PREFIXES have equal
+`matchingOfSpineList 0` also have equal appended `matchingOfSpineList 0`.  Each side reduces (via `dropStepReduce`)
+to the shared last cup fired as a top-of-stack cup onto the processed prefix, and `extractDiagram_stepCup_congr`
+propagates the prefix equality through that fixed cup step.  The UPWARD companion of
+`dropLastCup_matching_injective`, the back-append ingredient the matching-carrier `locateAux` needs. -/
+theorem backAppend_matching_congr {overallSource overallTarget : adjunctionGraph.Mode}
+    (firstPrefix secondPrefix : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (lastCup : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (chainedFirst : SpineBoundaryChained 0 (firstPrefix ++ [lastCup]))
+    (chainedSecond : SpineBoundaryChained 0 (secondPrefix ++ [lastCup]))
+    (pureCupFirst : AllCupArity (firstPrefix ++ [lastCup]))
+    (pureCupSecond : AllCupArity (secondPrefix ++ [lastCup]))
+    (prefixEqual : matchingOfSpineList 0 firstPrefix = matchingOfSpineList 0 secondPrefix) :
+    matchingOfSpineList 0 (firstPrefix ++ [lastCup])
+      = matchingOfSpineList 0 (secondPrefix ++ [lastCup]) := by
+  obtain ⟨structEqFirst, freshFirst, forestFirst, windowFitsFirst⟩ :=
+    dropStepReduce firstPrefix lastCup chainedFirst pureCupFirst
+  obtain ⟨structEqSecond, freshSecond, forestSecond, windowFitsSecond⟩ :=
+    dropStepReduce secondPrefix lastCup chainedSecond pureCupSecond
+  rw [structEqFirst, structEqSecond]
+  exact extractDiagram_stepCup_congr 0 (processSpine ⟨List.range 0, [], 0, 0⟩ firstPrefix)
+    (processSpine ⟨List.range 0, [], 0, 0⟩ secondPrefix) lastCup.leftContext.length
+    freshFirst forestFirst freshSecond forestSecond (Nat.zero_le _) (Nat.zero_le _)
+    windowFitsFirst prefixEqual
+
 end FX1Poly.Polygraph

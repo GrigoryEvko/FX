@@ -15,5 +15,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.diagramPartner_stepCup
 #assert_no_axioms FX1Poly.Polygraph.dropLastCup_matching_injective
+#assert_no_axioms FX1Poly.Polygraph.backAppend_matching_congr
 
 end FX1PolyAudit
