@@ -413,6 +413,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ValleyCupAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingRouteUnification
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineTraceAppendCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.Squiggle
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SquiggleOfMatching
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 import FX1PolyAudit.Polygraph.Computad.Signature
 import FX1PolyAudit.Polygraph.Computad.PathFactorization
