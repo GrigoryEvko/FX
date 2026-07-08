@@ -241,12 +241,16 @@ def fxMonad_hasMonotoneMapFoldSoundOnLaws : Bool := true
 
 /-- **Honesty marker.**  The full saturated DECISION is shipped MODULO the Schanuel–Street monotone-map
 canonicalization (`MonadSaturatedCanonicalization`): the decision assembly
-(`monadDecideSaturatedConvViaMonotoneMap`) is complete and zero-axiom, and the structural leg plus the three
-monad-law soundness legs are shipped, but the FULL residual — `mapEqOfConv` under an ARBITRARY whisker context
-(threading the shipped simplicial / commutation identities through the fold's block algebra at every position and
-width) together with the Godement / disjoint-whisker EXCHANGE invariance, and the COMPLETENESS `convOfMapEq`
-(every cell reconstructs to its map's EZ epi-then-mono staircase) — is the genuine remaining "walking monad is
-Δ₊" content, the same block-scale bookkeeping the adjunction's matching route required.  `= false`. -/
+(`monadDecideSaturatedConvViaMonotoneMap`) is complete and zero-axiom.  The SOUNDNESS field `mapEqOfConv` is now
+COMPLETE (`monadMonotoneMapOf_mapEqOfConv`, `WalkingMonad/MonadDeltaDecision`): the structural leg, the three
+monad-law legs, the vcomp/whisker congruences, AND the Godement / `ofFull` interchange invariance
+(`monadMonotoneMapOf_interchange` — the disjoint-window two-block commute, cap-free on Δ) are all discharged.  The
+SOLE remaining field is the COMPLETENESS `convOfMapEq` — the EZ reconstruction: every cell is convertible under the
+three monad laws to the canonical degeneracies-then-faces word of its monotone map's EZ epi-then-mono factorization.
+Existence of the factorization is shipped (`composeMap_rankList_imageList`); the eta/mu word builder and the
+normalization `cell ≈ canonWord (map cell)` are the named residual (faithfulness-weight, the adjunction lane's
+flag-B analog).  Until it lands, `MonadSaturatedCanonicalization` is NOT inhabited and the decision is not real.
+`= false`. -/
 def fxMonad_hasMonotoneMapDecisionAssembled : Bool := false
 
 end FX1Poly.Polygraph

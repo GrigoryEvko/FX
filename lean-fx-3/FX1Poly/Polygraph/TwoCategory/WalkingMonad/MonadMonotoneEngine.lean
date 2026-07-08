@@ -394,22 +394,22 @@ block/offset threading the arbitrary-context soundness leg needs, made concrete 
 adjunction's variance flip forbids.  `= true`. -/
 def fxMonad_hasMonotoneMapEngineAndLawsAtContext : Bool := true
 
-/-- **Honesty marker — the RESIDUALS toward inhabiting `MonadSaturatedCanonicalization`, SHARPENED.**  The engine,
-the laws-at-context, AND the whisker-shift FACTORIZATION are now shipped: `WalkingMonad/MonadMapFactorization`
-delivers the fold's Δ₊-valued invariant (`monadRunMonoCell_mapsInto` — every `mu` an INTERNAL degeneracy, junk-free,
-the fragment the adjunction's boundary cap escaped), the incoming-map post-composition (`monadRunMonoCell_mapFactor`),
-and — as its consequence — the VERTICAL-COMPOSITION HOMOMORPHISM `monadMonotoneMapOf_vcomp`, which discharges the
-TWO vcomp-congruence cases of `mapEqOfConv` (`monadMonotoneMapOf_vcompCongrLeft` / `…Right`), zero-axiom.  So the
-FULL `mapEqOfConv` now needs exactly: (a-i) the two WHISKER-congruence cases (`whiskerLeftCongr` / `whiskerRightCongr`
-— the block-SHIFT lemma: the map of a `whiskerLeft W` cell is the cell's map read at the shifted position
-`W.length`, the run at a nonempty `leftAcc`); (a-ii) the Godement / `ofFull` interchange invariance (TRUE here — no
-cap, no counit, so the boundary-degeneracy / width-underflow obstructions that MACHINE-REFUTED the adjunction's
-`MonoGodementMapCommute` are absent — the residual is the DISJOINT-WINDOW two-block commute of the f-region and
-g-region local maps from the shipped σσ / σδ / δδ relations, still to wire).  The COMPLETENESS `convOfMapEq` (every
-cell reconstructs to its map's EZ epi-then-mono staircase — the Δ₊ normal form) remains the genuinely open frontier:
-existence is shipped (`composeMap_rankList_imageList`), the letter decomposition / word building / EZ-uniqueness sort
-under the three laws are not.  So `MonadSaturatedCanonicalization` is NOT yet inhabited and
-`fxMonad_hasMonotoneMapDecisionAssembled` stays `false`.  `= false`. -/
+/-- **Honesty marker — `mapEqOfConv` is now COMPLETE; the SOLE residual is completeness `convOfMapEq`.**  The engine,
+the laws-at-context, the whisker-shift FACTORIZATION (`monadMonotoneMapOf_vcomp` + the two vcomp-congruence cases),
+and the whisker embedding (`MonadWhiskerEmbedding`, the two whisker-congruence cases) were shipped; the LAST owed
+case of `mapEqOfConv` — the Godement / `ofFull` interchange invariance — is now DISCHARGED in
+`WalkingMonad/MonadDeltaDecision` (`monadMonotoneMapOf_interchange`, via the DISJOINT-WINDOW two-block commute
+`embedLocalMap_disjointCommute`: cap-free on Δ, the f-region and g-region blocks commute with the width-delta shift
+absorbed by the region split).  Hence the full soundness leg `monadMonotoneMapOf_mapEqOfConv` is COMPLETE and
+zero-axiom.  What remains toward inhabiting `MonadSaturatedCanonicalization` is EXACTLY the COMPLETENESS `convOfMapEq`
+— the EZ reconstruction: every cell is convertible (under the three monad laws) to the canonical
+degeneracies-then-faces word of its monotone map's EZ epi-then-mono factorization.  Existence of the factorization is
+shipped (`composeMap_rankList_imageList`); the eta/mu WORD builder realizing `rankList`/`imageList` and the
+normalization `cell ≈ canonWord (map cell)` are NOT — the same faithfulness-weight normalization the adjunction lane's
+flag-B carries.  So `MonadSaturatedCanonicalization` is NOT yet inhabited and
+`fxMonad_hasMonotoneMapDecisionAssembled` stays `false`.  This flag (mapEqOfConv AND completeness) stays `false`
+because completeness is still owed; the mapEqOfConv half is marked complete by
+`fxMonad_hasMapEqOfConvComplete = true`.  `= false`. -/
 def fxMonad_hasFullMapEqOfConvAndCompleteness : Bool := false
 
 end FX1Poly.Polygraph
