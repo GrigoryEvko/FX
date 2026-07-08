@@ -20,5 +20,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealIsWithinRealBoundOnBounded
 #assert_no_axioms FX1Poly.ComputerAlgebra.scalarMulRealIsWithinRealBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.scalarMulRealIsUniformlyContinuous
+#assert_no_axioms FX1Poly.ComputerAlgebra.scalarMulRealExactBoundOfReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealByFixedRealIsUniformlyContinuous
+#assert_no_axioms FX1Poly.ComputerAlgebra.isUniformlyContinuousScalarMulFunction
 
 end FX1PolyAudit

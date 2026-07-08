@@ -152,4 +152,77 @@ theorem scalarMulRealIsUniformlyContinuous {factor : RegularReal}
     scalarMulRealIsWithinRealBound factorBoundPredecessor factorBounded
       outputPrecision isClose
 
+/-! ## General-sign real-factor magnitude bound-scaling and nullary wrappers -/
+
+/-- **Fixed general-sign real factor scales the real-level bound by the
+magnitude ceiling** — `factor * leftValue` and `factor * rightValue` sit within
+`|factor| * bound` whenever the inputs sit within `bound`, for ANY real factor of
+EITHER sign.  The sign-blindness is free: `canonicalBound factor` is the two-sided
+magnitude ceiling `(|x_0|+2)/1`, and `approximationIsWithinCanonicalBound` witnesses
+BOTH `v ≤ ceiling` and `-v ≤ ceiling` at the source.  Delegates the slack closure
+to `mulRealRespectsIsWithinRealBound` with the factor in both left slots (its
+`leftEps = 0`), so the vanishing `|rightValue| * 0` leg drops EXACTLY — no fresh
+closure, unlike the exact-rational `scalarMulRealExactBoundOfNonNegative`. -/
+theorem scalarMulRealExactBoundOfReal {factor leftValue rightValue : RegularReal}
+    {bound : RationalPair}
+    (isWithin : IsWithinRealBound leftValue rightValue bound)
+    (isBoundNonNegative : IsNonNegative bound) :
+    IsWithinRealBound (mulReal factor leftValue) (mulReal factor rightValue)
+      (mulExact (canonicalBound factor) bound) :=
+  isWithinRealBoundCongrBound
+    (denotesSameAsTrans
+      (addExactRespectsDenotesSameAs
+        (denotesSameAsRefl (mulExact (canonicalBound factor) bound))
+        (mulExactZeroRightDenotesSame (canonicalBound rightValue)))
+      (addExactZeroRight (mulExact (canonicalBound factor) bound)))
+    (mulRealRespectsIsWithinRealBound
+      (canonicalBoundNumerator factor) (canonicalBoundNumerator rightValue)
+      (fun index => approximationIsWithinCanonicalBound factor index)
+      (fun index => approximationIsWithinCanonicalBound rightValue index)
+      (isWithinRealBoundOfDenotesSameReal (denotesSameRealRefl factor)
+        (lessEqualAsRefl zeroRational))
+      isWithin
+      (lessEqualAsRefl zeroRational)
+      isBoundNonNegative)
+
+/-- **Fixed real multiplication is uniformly continuous — nullary hypothesis**:
+`value |-> factor * value` is globally uniformly continuous for EVERY real factor,
+the bound witness discharged from the factor's own canonical magnitude ceiling.
+The wrapper picks `factorBoundPredecessor = |x_0| + 1`, so `factorBoundPredecessor + 1`
+is DEFINITIONALLY `canonicalBoundNumerator factor = |x_0| + 2`, and
+`approximationIsWithinCanonicalBound` unifies against the required magnitude shape. -/
+theorem mulRealByFixedRealIsUniformlyContinuous (factor : RegularReal) :
+    IsUniformlyContinuous (fun value => mulReal factor value)
+      (fun outputPrecision =>
+        factorScaledIndex ((factor.approximation 0).numerator.natAbs + 1)
+          outputPrecision) :=
+  scalarMulRealIsUniformlyContinuous ((factor.approximation 0).numerator.natAbs + 1)
+    (fun index => approximationIsWithinCanonicalBound factor index)
+
+/-- **The scaled integrand is uniformly continuous** — general modulus
+composition.  If `function` is uniformly continuous at `modulus`, then
+`value |-> factor * function value` is uniformly continuous at the factor-scaled
+pre-composition `outputPrecision |-> modulus (factorScaledIndex (|x_0|+1)
+outputPrecision)` — the honest Lipschitz modulus of the composite (NOT `modulus`).
+The inner UC shrinks the input enough for the factor-collapse to land the product
+on `1/(outputPrecision+1)`. -/
+theorem isUniformlyContinuousScalarMulFunction
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (factor : RegularReal)
+    (isFunctionUC : IsUniformlyContinuous function modulus) :
+    IsUniformlyContinuous (fun value => mulReal factor (function value))
+      (fun outputPrecision =>
+        modulus
+          (factorScaledIndex ((factor.approximation 0).numerator.natAbs + 1)
+            outputPrecision)) :=
+  fun leftValue rightValue outputPrecision isClose =>
+    scalarMulRealIsWithinRealBound
+      ((factor.approximation 0).numerator.natAbs + 1)
+      (fun index => approximationIsWithinCanonicalBound factor index)
+      outputPrecision
+      (isFunctionUC leftValue rightValue
+        (factorScaledIndex ((factor.approximation 0).numerator.natAbs + 1)
+          outputPrecision)
+        isClose)
+
 end FX1Poly.ComputerAlgebra
