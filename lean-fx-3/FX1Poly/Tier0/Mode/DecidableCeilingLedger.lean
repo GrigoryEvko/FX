@@ -4,6 +4,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCongruen
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCanonicalization
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcReconstruction
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
 
 /-! # DecidableCeilingLedger — the honest boundary of the 2-cell word problem (CEIL rung map)
 
@@ -74,7 +75,8 @@ structure DecidableCeilingLedger where
   respects the triangle relations), unconditional. -/
   hasSaturatedSoundness : Bool
   /-- Rung 2: saturated completeness (equal matchings reconstruct a saturated
-  convertibility) — the monotone-map reconstruction, in flight. -/
+  convertibility) — LANDED via the matching-route spine-trace JOIN
+  (`saturatedMatchingCanonicalization_holds`); the retired monotone-map route is dead. -/
   hasSaturatedCompleteness : Bool
   /-- Rung 2 honesty: GENERIC saturated completeness is refuted — reconstruction from
   the matching fails at general signatures, forcing the per-presentation discipline. -/
@@ -84,14 +86,17 @@ structure DecidableCeilingLedger where
   /-- Rung 3: the undecidability reduction, mechanized (the wall is cited either way). -/
   hasUndecidabilityReductionMechanized : Bool
 
-/-- ★ The current ledger value — the honest boundary as of the free-decision landing. -/
+/-- ★ The current ledger value — the honest boundary as of the SATURATED matching-decision
+landing.  Rung 2 is now COMPLETE at the walking adjunction (soundness, completeness, and the
+assembled decision), all zero-axiom via the matching carrier; rung 1 stays fuel-gated and rung 3
+stays walled. -/
 def fxDecidableCeiling : DecidableCeilingLedger where
   hasGenericFreeDecision := true
   isFreeDecisionFuelGated := true
   hasSaturatedSoundness := true
-  hasSaturatedCompleteness := false
+  hasSaturatedCompleteness := true
   wasGenericSaturatedCompletenessRefuted := true
-  hasSaturatedDecision := false
+  hasSaturatedDecision := true
   hasUndecidabilityReductionMechanized := false
 
 /-! ## The pins — ledger fields match the source markers definitionally -/
@@ -116,10 +121,14 @@ theorem fxDecidableCeiling_genericSaturatedRefutation_matchesMarker :
     fxDecidableCeiling.wasGenericSaturatedCompletenessRefuted
       = fxMode_hasArcCellReconstructionRefutedAtGeneralSignature := rfl
 
-/-- Rung 2 pin: the saturated decision matches the monotone-map decision marker. -/
+/-- Rung 2 pin: the saturated decision matches the assembled MATCHING-route decision marker.
+The monotone-map route (`fxMode_hasSaturatedTwoCellMonotoneMapDecision`) is RETIRED — its
+`monotoneMapOf` carrier is refuted by `covariantMonotoneMapOf_notSound` — so the pin binds to
+the live matching route `fxMode_hasSaturatedMatchingDecisionAssembled`, backed by
+`decideSaturatedTwoCellConv_ofSeed` on the inhabited `saturatedMatchingCanonicalization_holds`. -/
 theorem fxDecidableCeiling_saturatedDecision_matchesMarker :
     fxDecidableCeiling.hasSaturatedDecision
-      = fxMode_hasSaturatedTwoCellMonotoneMapDecision := rfl
+      = fxMode_hasSaturatedMatchingDecisionAssembled := rfl
 
 /-- Rung 3 pin: the mechanization status matches the wall marker above. -/
 theorem fxDecidableCeiling_undecidabilityWall_matchesMarker :
@@ -127,9 +136,12 @@ theorem fxDecidableCeiling_undecidabilityWall_matchesMarker :
       = fxMode_hasArbitraryTwoCellUndecidabilityReduction := rfl
 
 /-- The ceiling itself: the GENERAL mode-3 marker (relations + ungated) sits ABOVE
-every shipped rung and correctly stays `false` — flipping it requires the saturated
-decision (rung 2 completed at the walking adjunction) plus the ungated free fuel
-bound, and can never be generic past rung 2 (rung 3 is the wall). -/
+every shipped rung and correctly stays `false`.  The saturated-decision conjunct is now
+DISCHARGED (rung 2 complete at the walking adjunction, `hasSaturatedDecision = true`), but
+the marker STILL stays `false`: it also demands the ungated free fuel bound (rung 1's
+`isFreeDecisionFuelGated` is still `true`) AND it is the GENERAL cross-signature claim, which
+can never be generic past rung 2 (rung 3 is the undecidability wall).  The walking-adjunction
+saturated decision is a necessary ingredient, not the general marker. -/
 theorem fxDecidableCeiling_generalMarkerSitsAboveLedger :
     FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false := rfl
 

@@ -352,8 +352,19 @@ reduce to the SAME named residuals as the arc route, now with the two hardest so
 could never assemble from the monotone route.  With `matchingOf` as the carrier the SOUNDNESS field IS dischargeable
 on the triangle and on the Godement obstruction (both shown here, `rfl`); the residual is no longer a covariance
 contradiction but the same union-find INDEPENDENCE + RECONSTRUCTION content the arc route already isolates.
-`fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay for the parent to set once those
-discharge.  `= false`. -/
-def fxMode_hasSaturatedMatchingCanonicalization : Bool := false
+the residual is no longer a covariance
+contradiction but the same union-find INDEPENDENCE + RECONSTRUCTION content the arc route already isolates.
+
+★ **NOW DISCHARGED — the keystone is INHABITED unconditionally.**  Both named residuals are closed downstream:
+SOUNDNESS through the shipped boundary-disciplined route (`saturatedMatchingCanonicalization_ofBoundaryDiscipline`
+on `matchingSaturatedCongruence_proved`), and COMPLETENESS through the unconditional Track-B spine-trace JOIN
+(`matchingReductsShareSpineTrace_holds`).  The constructed term is
+`saturatedMatchingCanonicalization_holds : SaturatedMatchingCanonicalization` in
+`SaturatedMatchingDecisionAssembly` (downstream of this file — cited textually to avoid the import cycle),
+audited zero-axiom.  The GENERAL multi-mode `fxMode_hasDecidableTwoCellEquality` /
+`fxMode_hasModeRelativeConvDecision` stay `false` (they demand the general, cross-signature decision that the
+rung-3 undecidability wall bounds — this seed-specific saturated decision is a necessary ingredient, not the
+general claim).  `= true`. -/
+def fxMode_hasSaturatedMatchingCanonicalization : Bool := true
 
 end FX1Poly.Polygraph
