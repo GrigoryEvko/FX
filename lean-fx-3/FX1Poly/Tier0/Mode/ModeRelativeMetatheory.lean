@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.Computad.WordProblem
 import FX1Poly.Polygraph.OmegacE.Word
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
 import FX1Poly.Tier0.Mode.Mode
 
 /-! # mode-9 — Gratzer canonicity + the mode-relative metatheory + the computad→ωcE word bridge
@@ -223,7 +224,50 @@ metatheory (`fib-3`) consumes. -/
 abbrev _root_.FX1Poly.Polygraph.Computad.modeRelativeParameter (computad : Computad) : Type :=
   DecidableTwoCellConvFor computad
 
+/-! ## The SATURATED mode-relative decision at the walking adjunction (scoped, per-presentation)
+
+The general parameter above asks for decidability of the FREE `TwoCellConv` over ANY computad — that stays
+undecided (`fxMode_hasModeRelativeConvDecision = false`, bound to the deferred free trace route
+`(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`).  But for the walking adjunction WITH its
+triangle identities, the categorically-correct notion of "mode 2-cell equality" is the SATURATED convertibility
+`SaturatedTwoCellConv` (the free convertibility augmented with the two snake equations as generating relations,
+where the snakes provably collapse — `leftSnakeSaturatedButNotFree` shows they do NOT collapse freely).  That
+per-presentation relation IS decided, unconditionally and zero-axiom, by the shipped fib-3 matching decision.
+This section reconciles that shipped decision into the mode-relative route as a SCOPED marker — no new math,
+backed by a named proven term — WITHOUT overclaiming the general/free flag. -/
+
+/-- The **saturated mode-relative parameter at the walking adjunction** — the per-presentation instance of the
+Gratzer mode-relative parameter for the adjunction mode theory `μ_affine ⊣ μ_affine†` WITH its triangle
+identities.  Where the general `Computad.modeRelativeParameter` demands decidability of the FREE `TwoCellConv`,
+this demands decidability of the SATURATED `SaturatedTwoCellConv` — the coarser, categorically-correct relation
+for a genuine adjunction (the snakes are identities).  Its type is `mode-3`'s saturated interface
+`DecidableSaturatedTwoCellConvFor`. -/
+abbrev adjunctionSaturatedModeRelativeParameter : Type :=
+  DecidableSaturatedTwoCellConvFor
+
+/-- ★ **The saturated mode-relative conversion decision at the walking adjunction, DISCHARGED.**  The shipped
+unconditional `decideSaturatedTwoCellConv_ofSeed` (the fib-3 saturated matching decision, zero-axiom via the
+boundary `matchingOf` `DecidableEq`) inhabits the saturated mode-relative parameter: every parallel pair of free
+2-cells at the seed is decided against the saturated (triangle-augmented) relation.  This is the honest, backed
+reconciliation of the shipped saturated decision into the mode-relative route — scoped to the walking adjunction
+and to the saturated relation.  It does NOT inhabit the general/free `Computad.modeRelativeParameter` (that is
+the finer `TwoCellConv`, general over any computad), so it correctly does NOT flip
+`fxMode_hasModeRelativeConvDecision`. -/
+@[reducible] def adjunctionSaturatedModeRelativeConvDecision : adjunctionSaturatedModeRelativeParameter :=
+  decideSaturatedTwoCellConv_ofSeed
+
 /-! ## Honesty markers -/
+
+/-- **★ ESTABLISHED — the SATURATED mode-relative conversion decision at the walking adjunction.**  The
+per-presentation, saturated instance of the mode-relative conv decision is DECIDED unconditionally and
+zero-axiom by `adjunctionSaturatedModeRelativeConvDecision` (= the shipped `decideSaturatedTwoCellConv_ofSeed`):
+the adjunction mode theory WITH its triangle identities has decidable mode 2-cell equality.  This is the honest
+SCOPED true statement.  It does NOT flip the general/free `fxMode_hasModeRelativeConvDecision` below — that
+flag's parameter is the FREE `TwoCellConv` (finer: the snakes provably do NOT collapse,
+`leftSnakeSaturatedButNotFree`) over ANY computad, bound to the deferred free trace route
+`(traceDecision, reconstruct)`.  Nor does it flip the general `fxMode_hasDecidableTwoCellEquality`, which is
+walled by the rung-3 undecidability of arbitrary finite presentations (Markov 1947 / Post 1947).  `= true`. -/
+def fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction : Bool := true
 
 /-- **Honesty marker.**  Full multimodal CANONICITY at dimension 2 (canonical forms for the free 2-cells modulo
 the 3-polygraph) needs the 2-cell convergence, blocked by the whisker-split ambiguity (`DecidableEq`) and the
@@ -231,9 +275,14 @@ interchange critical pairs (confluence) `mode-3` identified.  The dimension-1 ba
 (`trivialComputad_oneCell_length_zero`, `decidableOneCellEq`) IS shipped.  `= false`. -/
 def fxMode_hasMultimodalCanonicity : Bool := false
 
-/-- **Honesty marker.**  The full mode-relative conversion DECISION (object conversion ⟺ mode 2-cell equality,
-the `fib-3` keystone) needs the dimension-2 2-cell decision, blocked as above; the dimension-1 reduction
-(`decidableOneCellEq`, reusing the ωcE word `DecidableEq`) IS shipped.  `= false`. -/
+/-- **Honesty marker.**  The full, GENERAL mode-relative conversion DECISION over the FREE `TwoCellConv` (object
+conversion ⟺ mode 2-cell equality, the `fib-3` keystone) needs the dimension-2 FREE 2-cell decision, blocked as
+above; the dimension-1 reduction (`decidableOneCellEq`, reusing the ωcE word `DecidableEq`) IS shipped.  The
+SATURATED per-presentation variant at the walking adjunction IS decided
+(`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction = true`, backed by
+`adjunctionSaturatedModeRelativeConvDecision`), but that does NOT flip this flag: this parameter is the FINER
+free relation (the snakes provably do NOT collapse) and its scope is any computad, not the saturated adjunction.
+The free route remains owed `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`.  `= false`. -/
 def fxMode_hasModeRelativeConvDecision : Bool := false
 
 end FX1Poly.Tier0

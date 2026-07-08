@@ -37,8 +37,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.trivialFaithfulComputadTagging
 #assert_no_axioms FX1Poly.Polygraph.Computad.modeRelativeParameter
 
+-- The SATURATED mode-relative decision at the walking adjunction (scoped, backed by the shipped decision)
+#assert_no_axioms FX1Poly.Tier0.adjunctionSaturatedModeRelativeConvDecision
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultimodalCanonicity
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeRelativeConvDecision
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction
 
 end FX1PolyAudit
