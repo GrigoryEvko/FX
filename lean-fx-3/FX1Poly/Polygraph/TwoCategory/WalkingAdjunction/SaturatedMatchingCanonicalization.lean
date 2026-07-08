@@ -328,8 +328,10 @@ no-go that forces a GLOBAL carrier — that a base-block cup and the embedded ti
 discharged unconditionally (`matchingOf_whiskerExchange`).  `= true`. -/
 def fxMode_hasSaturatedMatchingCanonicalizationCarrier : Bool := true
 
-/-- **Honesty marker — the full `SaturatedMatchingCanonicalization` is NOT yet a constructed term; its two fields
-reduce to the SAME named residuals as the arc route, now with the two hardest soundness inputs DISCHARGED.**
+/-- **Honesty marker — the full `SaturatedMatchingCanonicalization` IS a constructed term
+(`saturatedMatchingCanonicalization_holds`, downstream in `SaturatedMatchingDecisionAssembly`, audited zero-axiom);
+its two fields discharge to the SAME named residuals as the arc route, both now closed.**  This paragraph records
+HOW each field is met (the analysis below the two bullets); the terminal status is in the "NOW DISCHARGED" note.
 
   * **`mapEqOfConv`** (SOUNDNESS, `SaturatedTwoCellConv a b → matchingOf a = matchingOf b`).  PROVEN as
     `saturatedConv_matchingOf_eq` (full induction on the derivation) MODULO exactly two named inputs: the TRIANGLE
@@ -351,8 +353,6 @@ reduce to the SAME named residuals as the arc route, now with the two hardest so
 `monotoneMapOf` (refuted by `covariantMonotoneMapOf_notSound` on `embeddedTipCapConv`) and concluded the keystone
 could never assemble from the monotone route.  With `matchingOf` as the carrier the SOUNDNESS field IS dischargeable
 on the triangle and on the Godement obstruction (both shown here, `rfl`); the residual is no longer a covariance
-contradiction but the same union-find INDEPENDENCE + RECONSTRUCTION content the arc route already isolates.
-the residual is no longer a covariance
 contradiction but the same union-find INDEPENDENCE + RECONSTRUCTION content the arc route already isolates.
 
 ★ **NOW DISCHARGED — the keystone is INHABITED unconditionally.**  Both named residuals are closed downstream:

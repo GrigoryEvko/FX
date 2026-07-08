@@ -24,6 +24,26 @@ in the monotone-map model.
 The harder downstream content — the structural fold `monotoneMapOf`, the soundness `mapEqOfConv`, and the
 faithfulness `convOfMapEq` — builds on this self-contained algebra.
 
+★ **QUARANTINE (honestly-dead-for-decision, #1975/#1999 — NOT deleted, KEPT in the live build).**  The
+`monotoneMapOf` FOLD is NOT the canonicalization carrier of the shipped saturated walking-adjunction decision.
+The covariant fold is REFUTED as a soundness map by `covariantMonotoneMapOf_notSound` (and
+`covariantFold_notACanonicalizationMap`) on `embeddedTipCapConv`, and the op fold by
+`monotoneMapOpOf_distinguishes_embeddedTipCap` — the variance flips by mode, so no single fixed fold is the
+canonicalization map (the terminal decision markers on this route stay `false`:
+`fxMode_hasSaturatedTwoCellMonotoneMapDecision`, `fxMode_hasSaturatedMonotoneMapGodementSoundness`,
+`fxMode_hasSaturatedMonotoneMapFaithfulness`, `fxMode_hasMonotoneRouteFaithfulnessReconstructed`).  The LIVE
+decision uses the variance-correct boundary matching `matchingOf` carrier instead
+(`saturatedMatchingCanonicalization_holds` / `decideSaturatedTwoCellConv_ofSeed`), and the ledger pin binds to
+`fxMode_hasSaturatedMatchingDecisionAssembled`, NOT to any monotone marker (`DecidableCeilingLedger` L124-128).
+This file is DELIBERATELY kept: it HOSTS the refutation theorems (`covariantMonotoneMapOf_notSound`,
+`covariantFold_notACanonicalizationMap`, `monoGodementMapCommuteInRange_refuted`, `counitMonotoneMap_notMapsInto`)
+that the live ledger and the live carrier file cite, and the live carrier `SaturatedMatchingCanonicalization`
+imports this module for exactly those citations.  The `=true` sub-result markers here
+(`fxMode_hasSaturatedMonotoneMapStaircaseStep` etc.) are honest partial-progress ON THE RETIRED-FOR-DECISION
+route, not decision claims.  The monotone-fold construction is RE-AIMABLE at the walking MONAD (where variance
+does not flip and the fold could be the canonicalization carrier); it is dead only for the walking-ADJUNCTION
+2-cell decision.  Do not delete; do not remove any refutation.
+
 Raw Lean 4 + Init; every declaration here is `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-
 free (the model is plain `List Nat`; the lemmas are structural `Nat`/`List` inductions with hand arithmetic).
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/

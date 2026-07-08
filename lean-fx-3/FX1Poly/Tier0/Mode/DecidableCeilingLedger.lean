@@ -27,11 +27,20 @@ generator count is not preserved (`saturatedConv_doesNotPreserveGeneratorCount`)
 cell reconstruction from the matching invariant is REFUTED at general signatures
 (`fxMode_hasArcCellReconstructionRefutedAtGeneralSignature`, the parallel-pair
 counterexample) — so each presentation needs its own model.  For the walking adjunction
-the model is the arc matching: soundness is unconditional
-(`fxMode_hasMatchingSaturatedCongruence`); completeness (the Schanuel–Street
-monotone-map reconstruction) and hence the decision are in flight.  This mirrors the
-`mode-8` framing (the free 2-category word problem routed through an engine) made
-honest: the engine is per-presentation, not universal.
+the model is the boundary ARC MATCHING `matchingOf` (Joyal–Street `DiagramType`), the
+variance-correct carrier: soundness is unconditional
+(`fxMode_hasMatchingSaturatedCongruence`), completeness is discharged through the
+matching reconstruction + Track-B spine-trace join
+(`fxMode_hasSaturatedMatchingCanonicalization`, term
+`saturatedMatchingCanonicalization_holds`), and the assembled decision has LANDED
+(`fxMode_hasSaturatedMatchingDecisionAssembled`, term `decideSaturatedTwoCellConv_ofSeed`)
+— rung 2 is COMPLETE at the walking adjunction, all zero-axiom.  Note: the earlier
+Schanuel–Street MONOTONE-MAP reconstruction route is RETIRED for this decision — its
+`monotoneMapOf` fold is refuted as a canonicalization map by
+`covariantMonotoneMapOf_notSound` (variance flips by mode); its files are kept only for
+the refutation theorems cited here.  This mirrors the `mode-8` framing (the free
+2-category word problem routed through an engine) made honest: the engine is
+per-presentation, not universal.
 
 **Rung 3 — ARBITRARY finite presentations, UNDECIDABLE.**  No generic procedure exists
 above rung 2: already 1-cell convertibility under the 2-cells of a ONE-OBJECT
@@ -145,4 +154,54 @@ saturated decision is a necessary ingredient, not the general marker. -/
 theorem fxDecidableCeiling_generalMarkerSitsAboveLedger :
     FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false := rfl
 
+/-! ## fib-3 honest status ledger (marker + tracker reconciliation, CEIL-1 close point)
+
+A single reconciliation of every fib-3 / mode-3 decidability marker against its live value
+and the tracker.  No theorem here — a status map so the honest boundary reads in one place.
+The mode-3 decision splits into TWO general flags, each with a DIFFERENT wall; the
+per-presentation saturated instance sits BELOW both and is TRUE+backed.
+
+FLAG A — `FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false` (`Mode.lean`).
+  WALL: rung-3 undecidability of ARBITRARY finite presentations.  A one-object f.p.
+  2-polygraph encodes a f.p. monoid; its 1-cell convertibility is the monoid word problem,
+  undecidable (Markov 1947 / Post 1947; Burroni polygraphic framing).  PERMANENT — no
+  procedure can be generic past rung 2.  Mechanization status of the reduction:
+  `fxMode_hasArbitraryTwoCellUndecidabilityReduction = false` (wall CITED, not mechanized).
+
+FLAG B — `FX1Poly.Tier0.fxMode_hasModeRelativeConvDecision = false`
+  (`ModeRelativeMetatheory.lean`).  WALL: the FREE-relation residual, NOT undecidability.
+  Its parameter is the FINER free `TwoCellConv` over ANY computad (the snakes provably do
+  NOT collapse, `leftSnakeSaturatedButNotFree`), owed `(traceDecision, reconstruct)` of
+  `AdjunctionTwoCellWordProblem`.  Gated on `fxMode_hasArcStructureReconstruction = false`
+  (`FreeTwoCell/SpineTraceDecision`) and `fxMode_hasArcGodementIndependenceProof = false`.
+  This is the KEPT-LIVE residual — the arc route (#1996 / `ArcReconstruction`) is its
+  scaffolding; genuine open content, re-openable, NOT walled by undecidability.
+
+SATURATED (per-presentation, below both flags) — TRUE+backed, zero-axiom:
+  * `fxMode_hasSaturatedMatchingCanonicalizationCarrier = true` — carrier `matchingOf`.
+  * `fxMode_hasSaturatedMatchingCanonicalization = true` — term
+    `saturatedMatchingCanonicalization_holds` (`SaturatedMatchingDecisionAssembly`).
+  * `fxMode_hasSaturatedMatchingDecisionAssembled = true` — term
+    `decideSaturatedTwoCellConv_ofSeed`.
+  * `fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction = true`
+    (`ModeRelativeMetatheory`) — SCOPED to the adjunction WITH triangle identities; does
+    NOT flip FLAG B (finer free relation) nor FLAG A (general undecidability).
+  * `fxMode_hasDecidableFreeTwoCellEquality = true` (`Mode.lean`) — the FREE fragment
+    (`TwoCellConvFull`) decided generically, fuel-gated (rung 1).
+
+RETIRED-FOR-DECISION (monotone route, #1975/#1999) — KEPT, NOT deleted; terminal markers
+  all `false`: `fxMode_hasSaturatedTwoCellMonotoneMapDecision`,
+  `…MonotoneMapGodementSoundness`, `…MonotoneMapFaithfulness`,
+  `fxMode_hasMonotoneRouteFaithfulnessReconstructed`.  The `monotoneMapOf` fold is refuted
+  as a canonicalization map by `covariantMonotoneMapOf_notSound` /
+  `covariantFold_notACanonicalizationMap` (variance flips by mode).  `MonotoneMap` /
+  `MonotoneFaithful` are kept because they HOST those refutation theorems, cited by this
+  ledger (`fxDecidableCeiling_saturatedDecision_matchesMarker` pin) and imported by the live
+  carrier file.  Re-aimable at the walking MONAD.  See the quarantine note atop
+  `WalkingAdjunction/MonotoneMap.lean`.
+
+CEIL-1 TIERING (this ledger): rung 1 free-generic (fuel-gated) < rung 2 saturated
+  per-presentation (COMPLETE at the walking adjunction) < rung 3 arbitrary undecidable
+  (FLAG A's wall).  Every `fxDecidableCeiling` field is `rfl`-pinned to its source marker
+  above, so this status map cannot drift from the mechanized values. -/
 end FX1Poly.Polygraph
