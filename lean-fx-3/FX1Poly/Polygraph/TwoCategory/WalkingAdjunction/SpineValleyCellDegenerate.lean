@@ -2,6 +2,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCellBridge
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCellDriver
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.MatchingWidthZeroSort
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyMidZeroReassembly
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyMidZeroCupReconstruct
 
 /-! # SpineValleyCellDegenerate — the Tier-D degenerate dispatch + the FULL `CellValleyTraceEquiv` lift
 (Track B, Brick 4 close-out)
@@ -267,6 +268,24 @@ theorem cellValleyTraceEquiv_ofCupReconstruct
     (cupReconstruct : MidZeroCupBlockReconstruct) : CellValleyTraceEquiv :=
   cellValleyTraceEquiv_of_widthZero_of_midZero widthZeroPureCupDeterminacy_holds
     (midZeroValleyTraceEquiv_ofCupReconstruct cupReconstruct)
+
+/-! ## The mid-`0` cup reconstruction is DISCHARGED — both residuals close UNCONDITIONALLY -/
+
+/-- ★ **The case-(b) mid-width-`0` valley determinacy holds UNCONDITIONALLY.**  The last Track B brick
+`MidZeroCupBlockReconstruct` is DISCHARGED (`midZeroCupBlockReconstruct_holds`, `SpineValleyMidZeroCupReconstruct`
+— the floor-`0` top-top cup-arc partner shift on the matching carrier, positivity-free), so
+`midZeroValleyTraceEquiv_ofCupReconstruct` yields `MidZeroValleyTraceEquiv` with no open hypothesis. -/
+theorem midZeroValleyTraceEquiv_holds : MidZeroValleyTraceEquiv :=
+  midZeroValleyTraceEquiv_ofCupReconstruct midZeroCupBlockReconstruct_holds
+
+/-- ★ **The FULL `CellValleyTraceEquiv` holds UNCONDITIONALLY.**  Both Tier-D residuals are now closed: the
+width-`0` pure-cup determinacy (`widthZeroPureCupDeterminacy_holds`) and the mid-width-`0` cup reconstruction
+(`midZeroCupBlockReconstruct_holds`).  So `cellValleyTraceEquiv_ofCupReconstruct` — dropping BOTH positivity
+hypotheses of the positive branch — is discharged with no open hypothesis: two whole valley cells with equal
+boundary `matchingOf` are `SpineTraceEquiv`, for ALL valleys.  Track B is COMPLETE (ready for the Piece-I JOIN in
+`SpineValleyCellDriver`; not wired here). -/
+theorem cellValleyTraceEquiv_holds : CellValleyTraceEquiv :=
+  cellValleyTraceEquiv_ofCupReconstruct midZeroCupBlockReconstruct_holds
 
 /-! ## Honesty marker -/
 

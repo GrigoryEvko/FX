@@ -19,6 +19,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.midZeroValleyTraceEquiv_ofCupReconstruct
 #assert_no_axioms FX1Poly.Polygraph.cellValleyTraceEquiv_of_widthZero_of_midZero
 #assert_no_axioms FX1Poly.Polygraph.cellValleyTraceEquiv_ofCupReconstruct
+#assert_no_axioms FX1Poly.Polygraph.midZeroValleyTraceEquiv_holds
+#assert_no_axioms FX1Poly.Polygraph.cellValleyTraceEquiv_holds
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasSpineValleyCellDegenerate
 
 end FX1PolyAudit
