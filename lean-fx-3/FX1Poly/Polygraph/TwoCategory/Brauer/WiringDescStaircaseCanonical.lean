@@ -758,4 +758,285 @@ theorem perm_extend_fixedTop (bound : Nat) (word : List Nat) (hBelow : mentionsO
   exact foldlSwap_fixes_last word (List.range (bound + 1)) (bound + 1) bound hBelow
     (rangeLengthStaircase (bound + 1)).symm
 
+/-! ## R2.B — canonicity: equal permutations reach equal recursive-comb staircases
+
+The strand pin + the injectivity infrastructure combine into `combCanonicity`: two in-range words with the same
+through-strand permutation have the SAME recursive-comb staircase (Regev–Roichman canonical section).  Structural
+induction on the generator count — each level reads the top run length off the permutation
+(`perm_topIndex_ofPrefixRun` + `natSubInjStaircase`), and `foldlSwap`/snoc injectivity strips the top strand,
+feeding the level-`generatorCount` induction hypothesis. -/
+
+/-- `Nat.beq n n = true` — structural, `propext`-free. -/
+private theorem natBeqSelfStaircase : (n : Nat) → Nat.beq n n = true
+  | 0 => rfl
+  | n + 1 => natBeqSelfStaircase n
+
+/-- `(n == n) = true` — Nat's `==` is `decide`-based, so `decide_eq_true rfl` closes it (`propext`-free). -/
+private theorem beqSelfStaircase (n : Nat) : (n == n) = true := decide_eq_true rfl
+
+/-- Bridge `Nat.beq a b = false` (the `memBool` spelling) to `(a == b) = false` (the `natIndexOfValue` spelling). -/
+private theorem beqFalseOfNatBeqFalseStaircase (a b : Nat) (h : Nat.beq a b = false) : (a == b) = false :=
+  decide_eq_false (fun hEq => Bool.noConfusion
+    (h.symm.trans ((congrArg (Nat.beq a) hEq).symm.trans (natBeqSelfStaircase a))))
+
+/-- `a || b = false ⟹ a = false`. -/
+private theorem boolOrFalseLeftStaircase : (leftFlag rightFlag : Bool) → (leftFlag || rightFlag) = false → leftFlag = false
+  | false, _, _ => rfl
+  | true, _, hFalse => Bool.noConfusion hFalse
+
+/-- `a || b = false ⟹ b = false`. -/
+private theorem boolOrFalseRightStaircase : (leftFlag rightFlag : Bool) → (leftFlag || rightFlag) = false → rightFlag = false
+  | false, _, hFalse => hFalse
+  | true, _, hFalse => Bool.noConfusion hFalse
+
+/-- Subtraction from a fixed `bound` is injective on the `≤ bound` interval — structural on `(bound, left, right)`,
+`propext`-free (avoids the `propext`-leaking `Nat.sub_sub_self`). -/
+private theorem natSubInjStaircase : (bound left right : Nat) →
+    bound - left = bound - right → left ≤ bound → right ≤ bound → left = right
+  | 0, 0, 0, _, _, _ => rfl
+  | 0, left + 1, _, _, hLeft, _ => absurd hLeft (Nat.not_succ_le_zero left)
+  | 0, 0, right + 1, _, _, hRight => absurd hRight (Nat.not_succ_le_zero right)
+  | _ + 1, 0, 0, _, _, _ => rfl
+  | bound + 1, left + 1, 0, hEq, _, _ => by
+      have hbad : bound - left = bound + 1 := (Nat.succ_sub_succ bound left).symm.trans hEq
+      have hle : bound - left ≤ bound := Nat.sub_le bound left
+      rw [hbad] at hle
+      exact absurd hle (Nat.not_succ_le_self bound)
+  | bound + 1, 0, right + 1, hEq, _, _ => by
+      have hbad : bound + 1 = bound - right := hEq.trans (Nat.succ_sub_succ bound right)
+      have hle : bound - right ≤ bound := Nat.sub_le bound right
+      rw [← hbad] at hle
+      exact absurd hle (Nat.not_succ_le_self bound)
+  | bound + 1, left + 1, right + 1, hEq, hLeft, hRight =>
+      congrArg Nat.succ (natSubInjStaircase bound left right
+        ((Nat.succ_sub_succ bound left).symm.trans (hEq.trans (Nat.succ_sub_succ bound right)))
+        (Nat.le_of_succ_le_succ hLeft) (Nat.le_of_succ_le_succ hRight))
+
+/-- The fold of adjacent swaps is injective — each swap is an involution (`applyAdjacentSwap_involutive`). -/
+private theorem foldlSwap_injective : (word : List Nat) → (left right : List Nat) →
+    word.foldl applyAdjacentSwap left = word.foldl applyAdjacentSwap right → left = right
+  | [], _, _, hEq => hEq
+  | position :: rest, left, right, hEq => by
+      have step : applyAdjacentSwap left position = applyAdjacentSwap right position :=
+        foldlSwap_injective rest _ _ hEq
+      have lifted : applyAdjacentSwap (applyAdjacentSwap left position) position
+                  = applyAdjacentSwap (applyAdjacentSwap right position) position :=
+        congrArg (applyAdjacentSwap · position) step
+      rw [applyAdjacentSwap_involutive left position, applyAdjacentSwap_involutive right position] at lifted
+      exact lifted
+
+/-- A snoc is never nil. -/
+private theorem appendSnocNeNilStaircase : (front : List Nat) → (value : Nat) → front ++ [value] ≠ []
+  | [], _ => fun hNil => nomatch hNil
+  | _ :: _, _ => fun hNil => nomatch hNil
+
+/-- A snoc of the SAME last element is left-cancellable — structural on both lists, `propext`-free. -/
+private theorem snocInjectiveStaircase : (left right : List Nat) → (value : Nat) →
+    left ++ [value] = right ++ [value] → left = right
+  | [], [], _, _ => rfl
+  | [], _ :: rightTail, value, hEq => by
+      injection hEq with _ hTail
+      exact absurd hTail.symm (appendSnocNeNilStaircase rightTail value)
+  | _ :: leftTail, [], value, hEq => by
+      injection hEq with _ hTail
+      exact absurd hTail (appendSnocNeNilStaircase leftTail value)
+  | leftHead :: leftTail, rightHead :: rightTail, value, hEq => by
+      injection hEq with hHead hTail
+      exact hHead ▸ congrArg (leftHead :: ·) (snocInjectiveStaircase leftTail rightTail value hTail)
+
+/-- Membership is invariant under a fold of adjacent swaps (`memBool_applyAdjacentSwap` at each step). -/
+private theorem memBool_foldlSwapStaircase : (word : List Nat) → (init : List Nat) → (value : Nat) →
+    memBool value (word.foldl applyAdjacentSwap init) = memBool value init
+  | [], _, _ => rfl
+  | position :: rest, init, value => by
+      show memBool value (rest.foldl applyAdjacentSwap (applyAdjacentSwap init position)) = memBool value init
+      rw [memBool_foldlSwapStaircase rest (applyAdjacentSwap init position) value,
+          memBool_applyAdjacentSwap value init position]
+
+/-- The `range.loop` counter never contains a value at or above itself — the prepended block is `[count-1, …, 0]`. -/
+private theorem memBool_rangeLoopGeStaircase : (count : Nat) → (accumulated : List Nat) → (value : Nat) →
+    count ≤ value → memBool value accumulated = false →
+    memBool value (List.range.loop count accumulated) = false
+  | 0, _, _, _, hAcc => hAcc
+  | count + 1, accumulated, value, hLe, hAcc => by
+      have countLt : count < value := hLe
+      have hHead : memBool value (count :: accumulated) = false := by
+        show (Nat.beq count value || memBool value accumulated) = false
+        rw [natBeqFalseOfLt count value countLt]
+        exact hAcc
+      exact memBool_rangeLoopGeStaircase count (count :: accumulated) value (Nat.le_of_lt countLt) hHead
+
+/-- `List.range bound` contains no value `≥ bound`. -/
+private theorem memBool_rangeGeStaircase (bound value : Nat) (hLe : bound ≤ value) :
+    memBool value (List.range bound) = false :=
+  memBool_rangeLoopGeStaircase bound [] value hLe rfl
+
+/-- `natIndexOfValue` of a value freshly snoc'd onto a list not already containing it is the front length. -/
+private theorem natIndexOfValue_snocFresh : (front : List Nat) → (value : Nat) →
+    memBool value front = false → natIndexOfValue (front ++ [value]) value = front.length
+  | [], value, _ => by
+      show (match value == value with | true => 0 | false => natIndexOfValue [] value + 1) = 0
+      rw [beqSelfStaircase value]
+  | head :: tail, value, hMem => by
+      have parts : (Nat.beq head value || memBool value tail) = false := hMem
+      have headFalse : (head == value) = false :=
+        beqFalseOfNatBeqFalseStaircase head value (boolOrFalseLeftStaircase _ _ parts)
+      have tailFalse : memBool value tail = false := boolOrFalseRightStaircase _ _ parts
+      show natIndexOfValue (head :: (tail ++ [value])) value = tail.length + 1
+      rw [natIndexOfValue_cons, headFalse, natIndexOfValue_snocFresh tail value tailFalse]
+
+/-- ★ **The top-strand pin.**  With `statePrefix` mentioning only positions `< generatorCount` and
+`runLen ≤ generatorCount + 1`, the top strand `generatorCount + 1` lands at index `(generatorCount + 1) - runLen` in
+the permutation of `statePrefix ++ descendingPositions generatorCount runLen`: the prefix fixes strand
+`generatorCount + 1` (`perm_extend_fixedTop`) and the descending run bubbles it down (`run_bubblesFromIndex`). -/
+private theorem perm_topIndex_ofPrefixRun (generatorCount runLen : Nat) (statePrefix : List Nat)
+    (hBelow : mentionsOnlyBelow generatorCount statePrefix = true) (hRun : runLen ≤ generatorCount + 1) :
+    natIndexOfValue
+        (permuteOfCrossingWord (generatorCount + 2) (statePrefix ++ descendingPositions generatorCount runLen))
+        (generatorCount + 1)
+      = (generatorCount + 1) - runLen := by
+  have notMem : memBool (generatorCount + 1)
+      (permuteOfCrossingWord (generatorCount + 1) statePrefix) = false := by
+    show memBool (generatorCount + 1)
+      (statePrefix.foldl applyAdjacentSwap (List.range (generatorCount + 1))) = false
+    rw [memBool_foldlSwapStaircase statePrefix (List.range (generatorCount + 1)) (generatorCount + 1)]
+    exact memBool_rangeGeStaircase (generatorCount + 1) (generatorCount + 1) (Nat.le_refl _)
+  have topAt : natIndexOfValue
+      (permuteOfCrossingWord (generatorCount + 2) statePrefix) (generatorCount + 1) = generatorCount + 1 := by
+    rw [perm_extend_fixedTop generatorCount statePrefix hBelow,
+        natIndexOfValue_snocFresh (permuteOfCrossingWord (generatorCount + 1) statePrefix)
+          (generatorCount + 1) notMem,
+        permuteOfCrossingWord_length (generatorCount + 1) statePrefix]
+  have lenBound : generatorCount + 1 < (permuteOfCrossingWord (generatorCount + 2) statePrefix).length := by
+    rw [permuteOfCrossingWord_length (generatorCount + 2) statePrefix]
+    exact Nat.lt_succ_self (generatorCount + 1)
+  have bubbled := run_bubblesFromIndex (generatorCount + 1) runLen
+    (permuteOfCrossingWord (generatorCount + 2) statePrefix) (generatorCount + 1) topAt lenBound hRun
+  rw [perm_append_split (generatorCount + 2) statePrefix (descendingPositions generatorCount runLen)]
+  exact bubbled
+
+/-- ★★ **Canonicity: equal permutations ⟹ equal recursive-comb staircases.**  Structural on `generatorCount`.  Each
+level reads the top run length off the permutation (`perm_topIndex_ofPrefixRun` + `natSubInjStaircase`), then
+`foldlSwap`/snoc injectivity strips the top strand to feed the `generatorCount`-level induction hypothesis.  This is
+the section property of the Regev–Roichman canonical presentation: the recursive-comb staircase is determined by the
+permutation. -/
+theorem combCanonicity : (generatorCount : Nat) → (word1 word2 : List Nat) →
+    mentionsOnlyBelow generatorCount word1 = true → mentionsOnlyBelow generatorCount word2 = true →
+    permuteOfCrossingWord (generatorCount + 1) word1 = permuteOfCrossingWord (generatorCount + 1) word2 →
+    recComb generatorCount word1 = recComb generatorCount word2
+  | 0, _, _, _, _, _ => rfl
+  | generatorCount + 1, word1, word2, hRange1, hRange2, permEq => by
+      have below1 := combFoldState_below (generatorCount + 1) word1 hRange1
+      have below2 := combFoldState_below (generatorCount + 1) word2 hRange2
+      have runLe1 := combFoldState_runLe (generatorCount + 1) word1 hRange1
+      have runLe2 := combFoldState_runLe (generatorCount + 1) word2 hRange2
+      have top1 := perm_topIndex_ofPrefixRun generatorCount
+        (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).2
+        (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).1 below1 runLe1
+      have top2 := perm_topIndex_ofPrefixRun generatorCount
+        (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).2
+        (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).1 below2 runLe2
+      have sound1 : permuteOfCrossingWord (generatorCount + 2)
+          ((word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).1
+            ++ descendingPositions generatorCount (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).2)
+          = permuteOfCrossingWord (generatorCount + 2) word1 :=
+        combNormalizeForm_preservesPerm (generatorCount + 1)
+          (Nat.succ_le_succ (Nat.zero_le generatorCount)) word1 hRange1
+      have sound2 : permuteOfCrossingWord (generatorCount + 2)
+          ((word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).1
+            ++ descendingPositions generatorCount (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).2)
+          = permuteOfCrossingWord (generatorCount + 2) word2 :=
+        combNormalizeForm_preservesPerm (generatorCount + 1)
+          (Nat.succ_le_succ (Nat.zero_le generatorCount)) word2 hRange2
+      rw [sound1] at top1
+      rw [sound2] at top2
+      have idxEq : (generatorCount + 1) - (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).2
+          = (generatorCount + 1) - (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).2 := by
+        rw [← top1, ← top2, permEq]
+      have runEq : (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).2
+          = (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).2 :=
+        natSubInjStaircase (generatorCount + 1) _ _ idxEq runLe1 runLe2
+      have prefixPermEq : permuteOfCrossingWord (generatorCount + 2)
+            (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).1
+          = permuteOfCrossingWord (generatorCount + 2)
+            (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).1 := by
+        apply foldlSwap_injective (descendingPositions generatorCount
+          (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).2)
+        rw [← perm_append_split, ← perm_append_split, sound1, permEq, runEq, ← sound2]
+      have prefixPermEqSmall : permuteOfCrossingWord (generatorCount + 1)
+            (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).1
+          = permuteOfCrossingWord (generatorCount + 1)
+            (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).1 := by
+        apply snocInjectiveStaircase _ _ (generatorCount + 1)
+        rw [← perm_extend_fixedTop generatorCount _ below1, ← perm_extend_fixedTop generatorCount _ below2]
+        exact prefixPermEq
+      have ih := combCanonicity generatorCount
+        (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).1
+        (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).1 below1 below2 prefixPermEqSmall
+      show recComb generatorCount (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).1
+            ++ descendingPositions generatorCount (word1.foldl (combInsertData (generatorCount + 1)) ([], 0)).2
+          = recComb generatorCount (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).1
+            ++ descendingPositions generatorCount (word2.foldl (combInsertData (generatorCount + 1)) ([], 0)).2
+      rw [ih, runEq]
+
+/-! ## R4 — THE BREACH: equal-permutation crossing words are convertible (Matsumoto for `S_n`)
+
+The whole-staircase convertibility (`recCombConv`) + canonicity (`combCanonicity`) compose into the
+crossing-only STRAIGHTENING: any two crossing words with the SAME through-strand permutation are
+`BrauerConvFree7`-convertible.  This is Matsumoto's theorem for the symmetric group `S_n` (indeed stronger — it
+covers non-reduced words too, via the `s² = 1` relation), assembled inside the seven-relation over-approximation
+congruence where `whiskerRight` is a free constructor (the exact suffix congruence the insertion route lacked).
+This is the comb-fold BYPASS of the standing `BraidAscentInsertionStep` jam. -/
+
+/-- ★★★ **THE BREACH — crossing-only straightening (Matsumoto for `S_n`).**  Two crossing words `word1`, `word2`
+over generators `< generatorCount` realizing the SAME through-strand permutation on `generatorCount + 1` strands are
+`BrauerConvFree7`-convertible: each straightens to its unique recursive-comb staircase (`recCombConv`), and equal
+permutations reach the SAME staircase (`combCanonicity`). -/
+theorem crossingWords_equalPerm_conv (generatorCount : Nat) (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow generatorCount word1 = true)
+    (hRange2 : mentionsOnlyBelow generatorCount word2 = true)
+    (permEq : permuteOfCrossingWord (generatorCount + 1) word1
+      = permuteOfCrossingWord (generatorCount + 1) word2) :
+    BrauerConvFree7 (crossingWord word1) (crossingWord word2) := by
+  have canon : recComb generatorCount word1 = recComb generatorCount word2 :=
+    combCanonicity generatorCount word1 word2 hRange1 hRange2 permEq
+  have conv2 : BrauerConvFree7 (crossingWord (recComb generatorCount word1)) (crossingWord word2) := by
+    rw [canon]
+    exact (recCombConv generatorCount word2 hRange2).symm
+  exact (recCombConv generatorCount word1 hRange1).trans conv2
+
+/-! ## R5 — non-vacuity: two equal-perm pairs convert, one unequal-perm pair is separated -/
+
+/-- Non-vacuity — the r9 jam pair `[2, 0, 1, 2]` / `[0, 1, 2, 1]` (both realizing `[1, 3, 2, 0]` on four strands)
+is convertible: the exact standing jam the insertion route could not close, breached by the comb fold. -/
+theorem crossingWords_equalPerm_conv_r9 :
+    BrauerConvFree7 (crossingWord [2, 0, 1, 2]) (crossingWord [0, 1, 2, 1]) :=
+  crossingWords_equalPerm_conv 3 [2, 0, 1, 2] [0, 1, 2, 1] (by decide) (by decide) rfl
+
+/-- Non-vacuity — the r11 residual pair `[1, 2, 0, 1, 2]` / `[0, 1, 2, 0, 1]` (both realizing `[2, 3, 1, 0, 4]` on
+five strands) is convertible. -/
+theorem crossingWords_equalPerm_conv_r11 :
+    BrauerConvFree7 (crossingWord [1, 2, 0, 1, 2]) (crossingWord [0, 1, 2, 0, 1]) :=
+  crossingWords_equalPerm_conv 4 [1, 2, 0, 1, 2] [0, 1, 2, 0, 1] (by decide) (by decide) rfl
+
+/-- Separation — an UNEQUAL-permutation pair is NOT forced convertible by the straightening: `[0, 1]` and `[1, 0]`
+realize different permutations on three strands (`[1, 2, 0]` vs `[2, 0, 1]`), so the perm-invariant hypothesis of
+`crossingWords_equalPerm_conv` genuinely fails — the theorem is not vacuous. -/
+theorem crossingWords_unequalPerm_separated :
+    permuteOfCrossingWord 3 [0, 1] ≠ permuteOfCrossingWord 3 [1, 0] := by decide
+
+/-! ## Honesty marker (R4) -/
+
+/-- ★★★ **Honesty marker — the crossing-only STRAIGHTENING (Matsumoto for `S_n`) is SHIPPED via the comb fold
+(BREACH r2).**  `crossingWords_equalPerm_conv` proves any two crossing words with the same through-strand
+permutation are `BrauerConvFree7`-convertible — the recursive-comb staircase (`recComb`) is the canonical section,
+`recCombConv` straightens every word to it, and `combCanonicity` (zero-axiom) proves equal permutations reach the
+same staircase.  This BYPASSES the standing `BraidAscentInsertionStep` insertion jam (which stays walled on the
+insertion route).  Congruence: `BrauerConvFree7` (seven-relation over-approximation, `whiskerRight` free — the
+suffix congruence the bare-`BrauerConv` insertion route lacked; the bare-`BrauerConv` connectivity-view suffix
+congruence remains a separate open item).  Non-vacuous: `crossingWords_equalPerm_conv_{r9, r11}` fire on the exact
+r9/r11 jam residuals; `crossingWords_unequalPerm_separated` exhibits an unequal-perm pair the perm invariant rejects.
+Backs the master flip `fxBrauer_hasCrossingOnlyStraightening := true`.  `= true`. -/
+def fxBrauer_hasStaircaseStraightening : Bool := true
+
 end FX1Poly.Polygraph

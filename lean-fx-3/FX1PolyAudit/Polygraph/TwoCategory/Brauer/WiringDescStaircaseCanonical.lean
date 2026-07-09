@@ -43,4 +43,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.run_bubblesFromIndex
 #assert_no_axioms FX1Poly.Polygraph.perm_extend_fixedTop
 
+-- R2.B: canonicity — equal permutations reach equal recursive-comb staircases (private helpers covered transitively)
+#assert_no_axioms FX1Poly.Polygraph.combCanonicity
+
+-- R4/R5: THE BREACH — crossing-only straightening (Matsumoto for S_n) + non-vacuity witnesses
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_equalPerm_conv
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_equalPerm_conv_r9
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_equalPerm_conv_r11
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_unequalPerm_separated
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasStaircaseStraightening
+
 end FX1PolyAudit
