@@ -550,6 +550,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesion.CohesionSaturatedConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesion.CohesionModalityFragment
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesion.CohesionPointsToPieces
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesion.CohesionDecision
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesion.CohesionNonThinness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadOrderModel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadDecision
