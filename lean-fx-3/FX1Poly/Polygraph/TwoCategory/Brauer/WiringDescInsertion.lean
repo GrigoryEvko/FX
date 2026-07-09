@@ -1562,4 +1562,402 @@ lexicographic `(inversionCount perm, carried-index / prefix-length)`.  This is t
 `= false`. -/
 def fxBrauer_hasCrossingInsertionStepGeneralResidual : Bool := false
 
+/-! ## WP-BRAUER r9 — the CARRY FOLD outer strong induction: `InRangeInsertionStep` reduced to ONE braid-ascent leaf
+
+The r8 markers assembled CANCEL / EXTEND / COMMUTE (the last modulo the outer `inversionCount` IH) and shipped the
+BRAID local Coxeter step, leaving "the braid carry fold" as the residual.  This round CLOSES the outer strong
+induction: a structural-fuel recursion on `inversionCount perm` that dispatches EVERY `(perm, position)` case of the
+honest `InRangeInsertionStep`, discharging all of them EXCEPT one sharply-characterised braid leaf — the
+`BraidAscentInsertionStep` residual (`position = leftmostDescent perm + 1`, an ASCENT there, and the inserted swap does
+NOT itself become the new leftmost descent).  So the ENTIRE in-range crossing-only word problem is now reduced, by a
+CLOSED machine-checked induction, to that single leaf.
+
+The census sharpening (Python ground truth, permutations of `range n`, `n = 2..6`): of the 547 braid cases
+(`position = d + 1`, ascent), 242 have `leftmostDescent (perm · s_{d+1}) = d + 1` and close by pure REFLEXIVITY
+(`crossingInsertionStep_reflex`, the r9 general form of EXTEND — the swap lands its new leftmost descent exactly at the
+inserted position, so the canonical word simply extends).  Only the remaining 305 (`leftmostDescent (perm · s_{d+1}) = d`
+— the target keeps its leftmost descent at `d`) are the true wall: there the moved `[d, d+1]` must sweep leftward into
+the canonical prefix before it can braid, a distinguished-active-letter induction of `pureCupSpine_sort` magnitude with
+NO literal `inversionCount` / carried-index / regional monovariant descending per shipped-move step (the recon's
+machine-documented plateau; consistent with Björner–Brenti / Little's "defect row" hand-argument, which has no
+drop-in mechanized precedent — mathlib's `CoxeterSystem` proves only the weak exchange property).
+
+New this round: the general reflexivity lemma `canonicalCrossingWord_snoc_ofNewLeftmostDescent` + its convertibility
+corollary `crossingInsertionStep_reflex` (closes the 242 braid-reflex cases AND the identity base); the descent lemma
+`crossingInsertionStep_ofInvolutionIH` (any position whose swap DROPS the inversion count reduces to the IH at the
+smaller permutation via the involution + one R2 cancel); the identity-range EXTEND bridge
+`leftmostDescent_gt_ofIdentityInRange`; the `inversionCount = 0 → identity` base fact; and the outer fuel recursion
+`inRangeInsertionStepFueled_ofBraidAscent` assembling them into `inRangeInsertionStep_ofBraidAscent :
+BraidAscentInsertionStep → InRangeInsertionStep`.
+
+Raw Lean 4 + Init; structural fuel on `inversionCount`; no `omega` / `simp`-AC / `native_decide` / `WellFounded.fix`. -/
+
+/-- `value + 1 ≠ 0` — structural (`Nat.noConfusion` on the successor), avoiding the `propext`-tainted
+`Nat.succ_ne_zero`. -/
+private theorem natSuccNeZeroLocal : (value : Nat) → ¬ (value + 1 = 0)
+  | _, succEqZero => Nat.noConfusion succEqZero
+
+/-- `value ≤ 0 → value = 0` — structural, `propext`-free. -/
+private theorem natEqZeroOfLeZero : (value : Nat) → value ≤ 0 → value = 0
+  | 0, _ => rfl
+  | _ + 1, succLeZero => absurd succLeZero (Nat.not_succ_le_zero _)
+
+/-- ★ **`inversionCount perm = 0 ⟹ perm is the identity`** — the base fact of the outer fuel recursion.  If `perm`
+had a descent, the leftmost-descent swap would witness `inversionCount perm = inversionCount (perm · s_d) + 1 ≠ 0`
+(`inversionCount_ofLeftmostDescentSwap_succ`).  Structural via the shipped Lehmer drop. -/
+theorem isIdentityPerm_ofInversionCountZero (perm : List Nat) (invZero : inversionCount perm = 0) :
+    isIdentityPerm perm = true := by
+  match hId : isIdentityPerm perm with
+  | true => rfl
+  | false =>
+      have drop := inversionCount_ofLeftmostDescentSwap_succ perm hId
+      rw [invZero] at drop
+      exact absurd drop (natSuccNeZeroLocal _)
+
+/-- ★ **For an identity (ascending) permutation, every in-range position is strictly below the leftmost descent.**
+`leftmostDescent` of an ascending list is `length - 1` (it steps to the end), so `position + 1 < length` forces
+`position < leftmostDescent perm`.  This is the bridge that lets the general EXTEND theorem
+(`crossingInsertionStep_extend`) close the IDENTITY BASE of the fuel recursion (canonical word empty; the swap creates a
+fresh descent exactly at `position`).  Structural on `perm` / `position`. -/
+theorem leftmostDescent_gt_ofIdentityInRange : (perm : List Nat) → (position : Nat) →
+    isIdentityPerm perm = true → position + 1 < perm.length →
+    Nat.blt position (leftmostDescent perm) = true
+  | [], position, _, inRange => absurd inRange (Nat.not_lt_zero (position + 1))
+  | _ :: [], position, _, inRange =>
+      absurd (Nat.lt_of_succ_lt_succ inRange) (Nat.not_lt_zero position)
+  | first :: second :: rest, position, hId, inRange =>
+      match hDescent : Nat.blt second first with
+      | true => by
+          exact Bool.noConfusion
+            (hId.symm.trans (condTrue false (isIdentityPerm (second :: rest)) (Nat.blt second first) hDescent))
+      | false => by
+          have tailId : isIdentityPerm (second :: rest) = true :=
+            (isIdentityPerm_cons_headBltFalse first second rest hDescent).symm.trans hId
+          rw [leftmostDescent_cons_headBltFalse first second rest hDescent]
+          match position with
+          | 0 => rfl
+          | predPosition + 1 =>
+              have inRangeTail : predPosition + 1 < (second :: rest).length :=
+                Nat.lt_of_succ_lt_succ inRange
+              show Nat.blt (predPosition + 1) (leftmostDescent (second :: rest) + 1) = true
+              exact leftmostDescent_gt_ofIdentityInRange (second :: rest) predPosition tailId inRangeTail
+
+/-- ★★ **General reflexivity — the inserted swap becomes the NEW leftmost descent, so the canonical word simply
+EXTENDS.**  When `applyAdjacentSwap perm position` is non-identity with its leftmost descent exactly at `position`, the
+staircase-snoc identity peels that descent and the involution `perm · s_position · s_position = perm` collapses the
+prefix: `canonicalCrossingWord (perm · s_position) = canonicalCrossingWord perm ++ [position]`.  Generalises the
+shipped `crossingInsertionStep_extend` (which derives the descent-landing from `position < leftmostDescent perm`) to
+take the landing as a hypothesis — so it covers BOTH the identity base and the braid-ascent `leftmostDescent (perm ·
+s_{d+1}) = d + 1` cases. -/
+theorem canonicalCrossingWord_snoc_ofNewLeftmostDescent (perm : List Nat) (position : Nat)
+    (nonIdSwapped : isIdentityPerm (applyAdjacentSwap perm position) = false)
+    (newDescent : leftmostDescent (applyAdjacentSwap perm position) = position) :
+    canonicalCrossingWord (applyAdjacentSwap perm position)
+      = canonicalCrossingWord perm ++ [position] := by
+  have snoc := canonicalCrossingWord_snoc_leftmostDescent (applyAdjacentSwap perm position) nonIdSwapped
+  rw [newDescent, applyAdjacentSwap_involutive perm position] at snoc
+  exact snoc
+
+/-- ★★ **The insertion step — REFLEX mode.**  Under the descent-landing hypothesis of
+`canonicalCrossingWord_snoc_ofNewLeftmostDescent`, the insertion step holds by pure reflexivity (appending `position`
+IS the canonical word of the swap).  This closes the identity base of the fuel recursion and the 242 braid-ascent cases
+whose swap keeps its new leftmost descent at the inserted position. -/
+theorem crossingInsertionStep_reflex (perm : List Nat) (position : Nat)
+    (nonIdSwapped : isIdentityPerm (applyAdjacentSwap perm position) = false)
+    (newDescent : leftmostDescent (applyAdjacentSwap perm position) = position) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [position]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position))) := by
+  rw [canonicalCrossingWord_snoc_ofNewLeftmostDescent perm position nonIdSwapped newDescent]
+  exact BrauerConvFree7.ofFree (BrauerConvFree.refl _)
+
+/-- ★★ **The insertion step — DESCENT reduction (via the involution IH).**  If the reverse insertion step is known —
+`canonicalCrossingWord (perm · s_position) ++ [position] ~ canonicalCrossingWord perm` (the IH at the strictly-smaller
+`perm · s_position`, whose target is `perm` by involution) — then the forward step follows: whisker the IH by
+`[position]` and collapse the trailing `[position, position]` by R2.  This is how EVERY position whose swap DROPS the
+inversion count (a right descent) reduces to the IH at the smaller permutation.  IH-form input, no permutation-side
+condition. -/
+theorem crossingInsertionStep_ofInvolutionIH (perm : List Nat) (position : Nat)
+    (ih : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position) ++ [position]))
+      (crossingWord (canonicalCrossingWord perm))) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [position]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position))) := by
+  have cancelTail : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position) ++ [position, position]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position))) := by
+    rw [crossingWord_append (canonicalCrossingWord (applyAdjacentSwap perm position)) [position, position]]
+    have base := BrauerConvFree7.whiskerLeft
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position)))
+      (crossingCancelFree position)
+    rw [appendNilLocal (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position)))] at base
+    exact base
+  refine BrauerConvFree7.trans ?_ cancelTail
+  have step := BrauerConvFree7.whiskerRight (crossingWord [position]) (BrauerConvFree7.symm ih)
+  rw [← crossingWord_append (canonicalCrossingWord perm) [position],
+    ← crossingWord_append (canonicalCrossingWord (applyAdjacentSwap perm position) ++ [position]) [position],
+    appendSnocAssoc (canonicalCrossingWord (applyAdjacentSwap perm position)) position [position]] at step
+  exact step
+
+/-- Not below the leftmost descent forces non-identity — the contrapositive of `leftmostDescent_gt_ofIdentityInRange`
+(an identity permutation puts every in-range position strictly below its leftmost descent).  So the fuel recursion,
+having routed the `< leftmostDescent` positions to EXTEND, may treat the remaining permutation as non-identity. -/
+theorem isIdentityPerm_eq_false_ofNotBelowLeftmost (perm : List Nat) (position : Nat)
+    (inRange : position + 1 < perm.length)
+    (notBelow : Nat.blt position (leftmostDescent perm) = false) :
+    isIdentityPerm perm = false := by
+  match hId : isIdentityPerm perm with
+  | false => rfl
+  | true =>
+      exact Bool.noConfusion
+        (notBelow.symm.trans (leftmostDescent_gt_ofIdentityInRange perm position hId inRange))
+
+/-- ★★ **The sharp braid-ascent residual — the SINGLE remaining leaf of `InRangeInsertionStep`.**  A genuine
+(distinct-entry) NON-IDENTITY permutation with its leftmost descent `d`, an in-range insert at `position = d + 1` that
+is NOT the reflex case (the swap `perm · s_{d+1}` does not itself land its new leftmost descent at `d + 1`) and NOT a
+descent (the swap does not drop the inversion count — an ascent at `d + 1`).  Concretely (census): exactly the
+`leftmostDescent (perm · s_{d+1}) = d` braid cases, where the inserted `[d, d+1]` must sweep leftward into the canonical
+prefix before it can braid.  The recon's machine-documented plateau: no literal `inversionCount` / carried-index /
+regional monovariant descends per shipped-move step; the termination is carried by the distinguished-active-letter
+position, a `pureCupSpine_sort`-magnitude induction.  This is the honest wall; every OTHER case is discharged by the
+closed fuel recursion below. -/
+def BraidAscentInsertionStep : Prop :=
+  ∀ (perm : List Nat),
+    isDistinctList perm = true →
+    isIdentityPerm perm = false →
+    leftmostDescent perm + 1 + 1 < perm.length →
+    (Nat.beq (leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm + 1))) (leftmostDescent perm + 1)
+      && not (isIdentityPerm (applyAdjacentSwap perm (leftmostDescent perm + 1)))) = false →
+    Nat.blt (inversionCount (applyAdjacentSwap perm (leftmostDescent perm + 1))) (inversionCount perm) = false →
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [leftmostDescent perm + 1]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm + 1))))
+
+/-- ★★★ **The OUTER STRONG-INDUCTION FOLD — `InRangeInsertionStep` reduced to `BraidAscentInsertionStep`.**  Structural
+fuel on `inversionCount perm`.  Every `(perm, position)` case is discharged:
+
+  * **base / EXTEND** (`position < leftmostDescent perm`, includes the identity base where every in-range position is
+    below the leftmost descent) — the general reflexivity EXTEND `crossingInsertionStep_extend`;
+  * **CANCEL** (`position = leftmostDescent perm`) — the shipped `crossingInsertionStep_atLeftmostDescent`;
+  * **COMMUTE** (`position ≥ leftmostDescent perm + 2`) — the shipped `crossingInsertionStep_commute_full` fed the IH
+    at the strictly-smaller `perm · s_d` (`inversionCount` dropped one, `inversionCount_ofLeftmostDescentSwap_succ`);
+  * **REFLEX** (`position = leftmostDescent perm + 1` and the swap lands its new leftmost descent there) — the r9
+    `crossingInsertionStep_reflex`;
+  * **DESCENT** (`position = leftmostDescent perm + 1`, the swap DROPS `inversionCount`) — the r9
+    `crossingInsertionStep_ofInvolutionIH` fed the IH at the strictly-smaller swap;
+  * **RESIDUAL** (`position = leftmostDescent perm + 1`, ascent, non-reflex) — the `BraidAscentInsertionStep`
+    hypothesis (the honest wall; NO recursive call — pure Coxeter at constant realised permutation).
+
+So `InRangeInsertionStep` is CLOSED modulo the single braid-ascent leaf, by a machine-checked induction on the Lehmer
+measure. -/
+theorem inRangeInsertionStepFueled_ofBraidAscent (residual : BraidAscentInsertionStep) :
+    (fuel : Nat) → (perm : List Nat) → (position : Nat) →
+    inversionCount perm ≤ fuel → isDistinctList perm = true → position + 1 < perm.length →
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [position]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position)))
+  | 0, perm, position, invLe, distinct, inRange => by
+      have invZero : inversionCount perm = 0 := natEqZeroOfLeZero _ invLe
+      have hId : isIdentityPerm perm = true := isIdentityPerm_ofInversionCountZero perm invZero
+      exact crossingInsertionStep_extend perm position distinct
+        (leftmostDescent_gt_ofIdentityInRange perm position hId inRange)
+  | fuel + 1, perm, position, invLe, distinct, inRange => by
+      match hlt : Nat.blt position (leftmostDescent perm) with
+      | true =>
+          exact crossingInsertionStep_extend perm position distinct hlt
+      | false =>
+          have hId : isIdentityPerm perm = false :=
+            isIdentityPerm_eq_false_ofNotBelowLeftmost perm position inRange hlt
+          match hbeq : Nat.beq position (leftmostDescent perm) with
+          | true =>
+              have hpd : position = leftmostDescent perm := natEqOfBeq position (leftmostDescent perm) hbeq
+              rw [hpd]
+              exact crossingInsertionStep_atLeftmostDescent perm hId
+          | false =>
+              have dLePos : leftmostDescent perm ≤ position :=
+                leOfBleTrue (leftmostDescent perm) position (bleOfNotBltSwap (leftmostDescent perm) position hlt)
+              have dLtPos : leftmostDescent perm < position :=
+                ltOfBltTrue (leftmostDescent perm) position
+                  (bltOfBleNeq (leftmostDescent perm) position
+                    (bleOfNotBltSwap (leftmostDescent perm) position hlt)
+                    ((natBeqSymm position (leftmostDescent perm)).symm.trans hbeq))
+              match hlt2 : Nat.blt (leftmostDescent perm + 1) position with
+              | true =>
+                  have hle : leftmostDescent perm + 2 ≤ position :=
+                    ltOfBltTrue (leftmostDescent perm + 1) position hlt2
+                  obtain ⟨gap, hgap⟩ := Nat.le.dest hle
+                  have hpos : position = leftmostDescent perm + gap + 2 :=
+                    hgap.symm.trans (Nat.add_right_comm (leftmostDescent perm) 2 gap)
+                  have invDrop := inversionCount_ofLeftmostDescentSwap_succ perm hId
+                  have succLe : inversionCount (applyAdjacentSwap perm (leftmostDescent perm)) + 1 ≤ fuel + 1 := by
+                    rw [invDrop]; exact invLe
+                  have invLeSwap : inversionCount (applyAdjacentSwap perm (leftmostDescent perm)) ≤ fuel :=
+                    Nat.le_of_succ_le_succ succLe
+                  have inRangeSwap : leftmostDescent perm + gap + 2 + 1
+                      < (applyAdjacentSwap perm (leftmostDescent perm)).length := by
+                    rw [applyAdjacentSwap_length perm (leftmostDescent perm), ← hpos]; exact inRange
+                  have ih := inRangeInsertionStepFueled_ofBraidAscent residual fuel
+                    (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + gap + 2)
+                    invLeSwap (isDistinctList_applyAdjacentSwap perm (leftmostDescent perm) distinct) inRangeSwap
+                  rw [hpos]
+                  exact crossingInsertionStep_commute_full perm gap hId ih
+              | false =>
+                  have posLeD1 : position ≤ leftmostDescent perm + 1 :=
+                    leOfBleTrue position (leftmostDescent perm + 1)
+                      (bleOfNotBltSwap position (leftmostDescent perm + 1) hlt2)
+                  have hp1 : position = leftmostDescent perm + 1 := Nat.le_antisymm posLeD1 dLtPos
+                  rw [hp1]
+                  match hreflex : (Nat.beq (leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm + 1)))
+                                    (leftmostDescent perm + 1)
+                                  && not (isIdentityPerm (applyAdjacentSwap perm (leftmostDescent perm + 1)))) with
+                  | true =>
+                      have newDescent : leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm + 1))
+                          = leftmostDescent perm + 1 :=
+                        natEqOfBeq _ _ (boolAndTrueLeft _ _ hreflex)
+                      have nonIdSwapped :
+                          isIdentityPerm (applyAdjacentSwap perm (leftmostDescent perm + 1)) = false :=
+                        eqFalseOfNotTrue _ (boolAndTrueRight _ _ hreflex)
+                      exact crossingInsertionStep_reflex perm (leftmostDescent perm + 1) nonIdSwapped newDescent
+                  | false =>
+                      match hdesc : Nat.blt (inversionCount (applyAdjacentSwap perm (leftmostDescent perm + 1)))
+                                      (inversionCount perm) with
+                      | true =>
+                          have invLtPerm : inversionCount (applyAdjacentSwap perm (leftmostDescent perm + 1))
+                              < inversionCount perm := ltOfBltTrue _ _ hdesc
+                          have invLeSwap :
+                              inversionCount (applyAdjacentSwap perm (leftmostDescent perm + 1)) ≤ fuel :=
+                            Nat.le_of_lt_succ (Nat.lt_of_lt_of_le invLtPerm invLe)
+                          have inRangeSwap : leftmostDescent perm + 1 + 1
+                              < (applyAdjacentSwap perm (leftmostDescent perm + 1)).length := by
+                            rw [applyAdjacentSwap_length perm (leftmostDescent perm + 1), ← hp1]; exact inRange
+                          have ih := inRangeInsertionStepFueled_ofBraidAscent residual fuel
+                            (applyAdjacentSwap perm (leftmostDescent perm + 1)) (leftmostDescent perm + 1)
+                            invLeSwap
+                            (isDistinctList_applyAdjacentSwap perm (leftmostDescent perm + 1) distinct) inRangeSwap
+                          rw [applyAdjacentSwap_involutive perm (leftmostDescent perm + 1)] at ih
+                          exact crossingInsertionStep_ofInvolutionIH perm (leftmostDescent perm + 1) ih
+                      | false =>
+                          exact residual perm distinct hId (hp1 ▸ inRange) hreflex hdesc
+
+/-- ★★★ **`InRangeInsertionStep` holds GIVEN the braid-ascent residual.**  The un-fuelled outer reduction: the entire
+in-range crossing-only word problem over genuine permutations is `BrauerConvFree7`-decided modulo the single
+`BraidAscentInsertionStep` leaf.  Start the fuel at `inversionCount perm`. -/
+theorem inRangeInsertionStep_ofBraidAscent (residual : BraidAscentInsertionStep) : InRangeInsertionStep :=
+  fun perm position distinct inRange =>
+    inRangeInsertionStepFueled_ofBraidAscent residual (inversionCount perm) perm position
+      (Nat.le_refl _) distinct inRange
+
+/-- ★★ **The symmetric-group WORD PROBLEM (well-formed scope), reduced to the braid-ascent leaf.**  Combining the outer
+reduction with the r7 well-formed fold: two well-formed crossing words with equal realised permutation are
+`BrauerConvFree7`-convertible GIVEN `BraidAscentInsertionStep`.  When that single leaf closes, this becomes
+unconditional and `fxBrauer_hasCrossingOnlyStraightening` flips. -/
+theorem crossingWords_equalPerm_conv_ofBraidAscent (bottomCount : Nat) (residual : BraidAscentInsertionStep)
+    (wordLeft wordRight : List Nat)
+    (wfLeft : wellFormedCrossingWord bottomCount wordLeft = true)
+    (wfRight : wellFormedCrossingWord bottomCount wordRight = true)
+    (permEq : permuteOfCrossingWord bottomCount wordLeft = permuteOfCrossingWord bottomCount wordRight) :
+    BrauerConvFree7 (crossingWord wordLeft) (crossingWord wordRight) :=
+  crossingWords_equalPerm_conv_wellFormed bottomCount (inRangeInsertionStep_ofBraidAscent residual)
+    wordLeft wordRight wfLeft wfRight permEq
+
+/-! ### r9 non-vacuity — the residual leaf is a genuine, inhabited obligation, and the hard pairs are convertible -/
+
+/-- Non-vacuity — the braid pair `[0,1,0] ~ [1,0,1]` is convertible (the smallest R3 witness), and the two words have
+equal permutation.  The canonical non-trivial instance of the reduced word problem. -/
+theorem crossingWords_conv_braidPair_r9 :
+    permuteOfCrossingWord 3 [0, 1, 0] = permuteOfCrossingWord 3 [1, 0, 1]
+      ∧ BrauerConvFree7 (crossingWord [0, 1, 0]) (crossingWord [1, 0, 1]) :=
+  ⟨by decide, crossingBraidFree 0⟩
+
+/-- Non-vacuity — the S_4 reversal (longest element, length 6): two reduced words `[0,1,0,2,1,0]` and `[1,0,1,2,1,0]`
+for `[3,2,1,0]` are convertible by a single front braid `s_0 s_1 s_0 → s_1 s_0 s_1` whiskered by the common tail. -/
+theorem crossingWords_conv_fourReversal :
+    permuteOfCrossingWord 4 [0, 1, 0, 2, 1, 0] = permuteOfCrossingWord 4 [1, 0, 1, 2, 1, 0]
+      ∧ BrauerConvFree7 (crossingWord [0, 1, 0, 2, 1, 0]) (crossingWord [1, 0, 1, 2, 1, 0]) := by
+  refine ⟨by decide, ?_⟩
+  show BrauerConvFree7 [crossingAt 0, crossingAt 1, crossingAt 0, crossingAt 2, crossingAt 1, crossingAt 0]
+    [crossingAt 1, crossingAt 0, crossingAt 1, crossingAt 2, crossingAt 1, crossingAt 0]
+  exact BrauerConvFree7.whiskerRight [crossingAt 2, crossingAt 1, crossingAt 0] (crossingBraidFree 0)
+
+/-- ★★ **Non-vacuity — the r8 STUCK EXAMPLE `[2,0,1,2] ~ [0,1,2,1]` (the residual leaf conclusion) IS convertible.**  The
+recon's `commute(2,0)`-at-the-front then `braid(1)` path, realized as `BrauerConvFree7`: the distant commute slides the
+leading `s_2` past `s_0`, then the trailing `s_2 s_1 s_2` braids to `s_1 s_2 s_1`.  Both words realize `[1,3,2,0]` on 4
+strands. -/
+theorem crossingWords_conv_residualStuckExample :
+    permuteOfCrossingWord 4 [2, 0, 1, 2] = permuteOfCrossingWord 4 [0, 1, 2, 1]
+      ∧ BrauerConvFree7 (crossingWord [2, 0, 1, 2]) (crossingWord [0, 1, 2, 1]) := by
+  refine ⟨by decide, ?_⟩
+  show BrauerConvFree7 [crossingAt 2, crossingAt 0, crossingAt 1, crossingAt 2]
+    [crossingAt 0, crossingAt 1, crossingAt 2, crossingAt 1]
+  refine BrauerConvFree7.trans
+    (BrauerConvFree7.whiskerRight [crossingAt 1, crossingAt 2]
+      (BrauerConvFree7.symm (crossingCommuteFree 0 2 (by decide)))) ?_
+  exact BrauerConvFree7.whiskerLeft [crossingAt 0] (BrauerConvFree7.symm (crossingBraidFree 1))
+
+/-- ★★ **Non-vacuity — the braid-ascent residual is a GENUINE, SATISFIABLE obligation (not vacuous).**  The concrete
+genuine permutation `[1,3,0,2]` HITS the residual leaf: it is distinct, non-identity, in-range at
+`position = leftmostDescent + 1 = 2`, and there both residual side-conditions hold (the swap `[1,3,2,0]` does NOT land
+its leftmost descent at `2` — it is at `1` — and does NOT drop the inversion count — `3 → 4`, an ascent).  So
+`BraidAscentInsertionStep` quantifies over a non-empty domain of genuine stuck configurations. -/
+theorem braidAscentResidual_hypotheses_inhabited :
+    isDistinctList [1, 3, 0, 2] = true
+      ∧ isIdentityPerm [1, 3, 0, 2] = false
+      ∧ leftmostDescent [1, 3, 0, 2] + 1 + 1 < ([1, 3, 0, 2] : List Nat).length
+      ∧ (Nat.beq (leftmostDescent (applyAdjacentSwap [1, 3, 0, 2] (leftmostDescent [1, 3, 0, 2] + 1)))
+            (leftmostDescent [1, 3, 0, 2] + 1)
+          && not (isIdentityPerm (applyAdjacentSwap [1, 3, 0, 2] (leftmostDescent [1, 3, 0, 2] + 1)))) = false
+      ∧ Nat.blt (inversionCount (applyAdjacentSwap [1, 3, 0, 2] (leftmostDescent [1, 3, 0, 2] + 1)))
+            (inversionCount [1, 3, 0, 2]) = false := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
+/-- ★★ **Non-vacuity — the residual leaf for `[1,3,0,2]` IS the r8 stuck example.**  Its residual conclusion is exactly
+`crossingWord [2,0,1,2] ~ crossingWord [0,1,2,1]` (canonical word `[2,0,1]` snoc `2`, target canonical word `[0,1,2,1]`)
+— the pair `crossingWords_conv_residualStuckExample` independently witnesses convertible.  So the single open leaf is a
+real relation about a real configuration whose truth is already exhibited on its hardest small instance; the wall is a
+route/measure gap, not an obstruction. -/
+theorem braidAscentResidual_conclusion_isStuckExample :
+    canonicalCrossingWord [1, 3, 0, 2] ++ [leftmostDescent [1, 3, 0, 2] + 1] = [2, 0, 1, 2]
+      ∧ canonicalCrossingWord (applyAdjacentSwap [1, 3, 0, 2] (leftmostDescent [1, 3, 0, 2] + 1)) = [0, 1, 2, 1] := by
+  refine ⟨?_, ?_⟩ <;> decide
+
+/-! ## Honesty markers -/
+
+/-- ★ **Honesty marker — WP-BRAUER r9: the REFLEX mode + the DESCENT reduction are SHIPPED.**  The general reflexivity
+lemma `canonicalCrossingWord_snoc_ofNewLeftmostDescent` (take the descent-landing as hypothesis, not derived from
+`position < leftmostDescent`) and its convertibility corollary `crossingInsertionStep_reflex` close, by pure
+reflexivity, both the IDENTITY BASE of the outer recursion (every in-range position is below the leftmost descent of an
+identity — `leftmostDescent_gt_ofIdentityInRange`) AND the 242-of-547 braid-ascent cases whose swap lands its new
+leftmost descent at the inserted position (`leftmostDescent (perm · s_{d+1}) = d + 1`).  The DESCENT reduction
+`crossingInsertionStep_ofInvolutionIH` sends any position whose swap DROPS the inversion count to the IH at the
+strictly-smaller permutation (involution + one R2 cancel).  Both closed zero-axiom.  `= true`. -/
+def fxBrauer_hasInsertionReflexAndDescentModes : Bool := true
+
+/-- ★★ **Honesty marker — WP-BRAUER r9: the OUTER STRONG INDUCTION is CLOSED; the whole in-range word problem is reduced
+to ONE braid-ascent leaf.**  `inRangeInsertionStepFueled_ofBraidAscent` is a structural-fuel recursion on
+`inversionCount perm` dispatching EVERY `(perm, position)` case of `InRangeInsertionStep`: EXTEND / identity base
+(`crossingInsertionStep_extend`), CANCEL (`crossingInsertionStep_atLeftmostDescent`), COMMUTE
+(`crossingInsertionStep_commute_full` + IH at `inversionCount − 1`), REFLEX (`crossingInsertionStep_reflex`), DESCENT
+(`crossingInsertionStep_ofInvolutionIH` + IH at `inversionCount − 1`), and — the SOLE leaf left open — the
+`BraidAscentInsertionStep` residual.  Hence `inRangeInsertionStep_ofBraidAscent : BraidAscentInsertionStep →
+InRangeInsertionStep` and `crossingWords_equalPerm_conv_ofBraidAscent`.  This SHARPENS the r8 residual: from "the braid
+carry fold" to the single machine-defined leaf (`position = leftmostDescent perm + 1`, ascent, non-reflex), with the
+entire rest of the word problem CLOSED by a machine-checked induction on the Lehmer measure.  Non-vacuous:
+`crossingWords_conv_{braidPair_r9, fourReversal, residualStuckExample}` witness the conclusion on the braid pair, the
+S_4 reversal, and the r8 stuck example; `braidAscentResidual_hypotheses_inhabited` +
+`braidAscentResidual_conclusion_isStuckExample` show the residual leaf is a genuine, satisfiable obligation whose
+hardest small instance IS that stuck example.  `= true`. -/
+def fxBrauer_hasInsertionOuterInductionAssembly : Bool := true
+
+/-- **Honesty marker — the SOLE remaining leg of `InRangeInsertionStep` is the BRAID-ASCENT residual (`false`).**  After
+r9's closed outer induction, `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
+`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false` because of ONE
+leaf: `BraidAscentInsertionStep` — `position = leftmostDescent perm + 1` over a genuine permutation, an ASCENT there,
+where the swap does NOT become the new leftmost descent (`leftmostDescent (perm · s_{d+1}) = d`, the 305-of-547 census
+cases the reflex mode does NOT catch).  There the moved `[d, d+1]` must sweep leftward into the canonical prefix before
+it can braid; the recon's exhaustive simulation found NO literal `inversionCount` / carried-index / regional monovariant
+descending per shipped-move step (the machine-documented plateau), consistent with the Björner–Brenti / Little
+"defect-row" hand-argument, which has no drop-in mechanized precedent (mathlib's `CoxeterSystem` proves only the weak
+exchange property, via inversion count, not the strong exchange this leaf needs).  The termination is carried by the
+distinguished-active-letter position — a `pureCupSpine_sort`-magnitude induction (the 1300-line zero-axiom sibling), the
+work of a further round.  This is a route/measure gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations
+DO present the category).  `= false`. -/
+def fxBrauer_hasBraidAscentResidual : Bool := false
+
 end FX1Poly.Polygraph

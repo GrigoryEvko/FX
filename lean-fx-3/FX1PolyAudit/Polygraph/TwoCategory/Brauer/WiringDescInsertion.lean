@@ -112,4 +112,30 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionCommuteFullMode
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingInsertionStepGeneralResidual
 
+-- WP-BRAUER r9: the CARRY FOLD outer strong induction.  REFLEX mode + DESCENT reduction + identity-range EXTEND
+-- bridge + inv-zero base fact; the fuel recursion reducing InRangeInsertionStep to the single braid-ascent leaf.
+-- Private helpers (natSuccNeZeroLocal, natEqZeroOfLeZero) covered transitively.
+#assert_no_axioms FX1Poly.Polygraph.isIdentityPerm_ofInversionCountZero
+#assert_no_axioms FX1Poly.Polygraph.leftmostDescent_gt_ofIdentityInRange
+#assert_no_axioms FX1Poly.Polygraph.canonicalCrossingWord_snoc_ofNewLeftmostDescent
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_reflex
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_ofInvolutionIH
+#assert_no_axioms FX1Poly.Polygraph.isIdentityPerm_eq_false_ofNotBelowLeftmost
+#assert_no_axioms FX1Poly.Polygraph.BraidAscentInsertionStep
+#assert_no_axioms FX1Poly.Polygraph.inRangeInsertionStepFueled_ofBraidAscent
+#assert_no_axioms FX1Poly.Polygraph.inRangeInsertionStep_ofBraidAscent
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_equalPerm_conv_ofBraidAscent
+
+-- WP-BRAUER r9 non-vacuity: braid pair, S_4 reversal, the r8 stuck example, and the inhabited residual leaf.
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_conv_braidPair_r9
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_conv_fourReversal
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_conv_residualStuckExample
+#assert_no_axioms FX1Poly.Polygraph.braidAscentResidual_hypotheses_inhabited
+#assert_no_axioms FX1Poly.Polygraph.braidAscentResidual_conclusion_isStuckExample
+
+-- WP-BRAUER r9 honesty markers.
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionReflexAndDescentModes
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionOuterInductionAssembly
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentResidual
+
 end FX1PolyAudit
