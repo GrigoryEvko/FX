@@ -473,7 +473,14 @@ the walking-idempotent-monad walker have the SAME `PresentationData` fingerprint
 fingerprint alone would conflate the separating walking monad with the total walking idempotent monad.  Soundly
 keying a NON-thin registry requires reflecting the law ROWS as data (an untyped `RawCellData` layer, named future
 work); the Tier B matcher is confined to the THIN fragment, whose empty law relation removes the ambiguity, and
-Tier A disambiguates the non-thin walkers by NAME.  `= false`. -/
+Tier A disambiguates the non-thin walkers by NAME.  `= false`.
+
+UPDATE (MODE-ADMIT r2): the `RawCellData` layer this wall named as "future work" now SHIPS (P1 below), and the
+row-aware fingerprint DOES distinguish the monad from the idempotent monad as data
+(`monadRowAware_notMatches_idempotent`) — the CONFLATION is resolved for RECOGNITION.  This marker stays `false`
+because it names AUTOMATIC data admission, which additionally needs the reflected rows CERTIFIED faithful to the
+`Prop` law relation (see `fxModeAdmit_hasCertifiedDataAdmission`, the #2215 r3 scope): the r2 rows are
+author-supplied, so a data key alone could still be spoofed by mislabelled rows. -/
 def fxModeAdmit_hasDataFingerprintAdmission : Bool := false
 
 /-! ## P1 (MODE-ADMIT r2) — the ROW-AWARE fingerprint: reflected law rows as untyped cell data
@@ -650,5 +657,204 @@ theorem monadRowAware_notMatches_idempotent :
 /-- ★ The row-aware match also REJECTS the idempotent-against-monad direction (row lists differ the other way). -/
 theorem idempotentRowAware_notMatches_monad :
     isRowAwarePresentationMatch idempotentRowAware monadRowAware = false := rfl
+
+/-! ## P3 (MODE-ADMIT r2) — ROW-AWARE recognition inherits the SEPARATING decision
+
+The plain by-NAME registry (Tier A) already reaches the bespoke-signature monad/idempotent deciders, but only
+because the caller SUPPLIES the name.  r2's row-aware layer lets the caller recognise the walker from its DATA
+(mode count + generator renaming + reflected law rows) and be routed to the CORRECT registered family — the monad
+NOT the idempotent — which the plain data fingerprint could not do.  The recognised monad family's decider then
+exhibits BOTH verdicts (isTrue on associativity, isFalse on the two unit faces).
+
+HONEST attribution: the decider RUNS on the registered walking monad's OWN cells (over the bespoke
+`monadModeSignature`).  Transporting it to decide a renamed CANDIDATE's own cells is the decider-REUSE leg that
+stays walled (see P2 below) — structurally blocked because the separating deciders do not live over any
+`ModeComputad.toModeSignature`.  So "inheritance" here means DATA-RECOGNITION routed to the registered decider,
+not cell-level transport. -/
+
+/-- A **row-aware registered module** — a named decided walker keyed by its ROW-AWARE fingerprint (mode count +
+generators + reflected law rows), carrying its packaged `SaturatedRelationFamily`. -/
+structure RowAwareModule where
+  /-- The walker's display / lookup name. -/
+  name : String
+  /-- The row-aware fingerprint (the registry key that distinguishes law-differing walkers). -/
+  fingerprint : RowAwarePresentationData
+  /-- The packaged decided family. -/
+  family : SaturatedRelationFamily
+
+/-- ★ **The row-aware registry** — the walking monad and the walking idempotent monad, keyed by their DISTINCT
+row-aware fingerprints (`monadRowAware` / `idempotentRowAware`).  Both live over the SAME `monadComputad` (their
+plain fingerprints collide); the reflected law rows are the only key that tells them apart. -/
+def rowAwareRegistry : List RowAwareModule :=
+  [ { name := "walking monad", fingerprint := monadRowAware, family := monadRelationFamily },
+    { name := "walking idempotent monad", fingerprint := idempotentRowAware,
+      family := idempotentRelationFamily } ]
+
+/-- ★★ **Admission by ROW-AWARE data (the r2 recognition gate)** — scan the row-aware registry for a module whose
+fingerprint the candidate matches (`isRowAwarePresentationMatch`); return its packaged family.  Unlike r1's plain
+`admitByName`, this is keyed on DATA, and unlike a plain-`PresentationData` key it does NOT conflate the monad
+with the idempotent monad. -/
+def admitByRowAware (candidate : RowAwarePresentationData) : Option SaturatedRelationFamily :=
+  (rowAwareRegistry.find? (fun registered =>
+    isRowAwarePresentationMatch candidate registered.fingerprint)).map (fun registered => registered.family)
+
+/-- ★★ **Payoff — row-aware data admits the MONAD (not the idempotent).**  `admitByRowAware monadRowAware` returns
+EXACTLY `monadRelationFamily` by `rfl`: the reflected law rows route the candidate to the separating walker, not
+to the total idempotent one that shares its plain fingerprint. -/
+theorem admitByRowAware_monad_isMonadFamily :
+    admitByRowAware monadRowAware = some monadRelationFamily := rfl
+
+/-- ★★ **Payoff — row-aware data admits the IDEMPOTENT monad on its own fingerprint.**  `admitByRowAware
+idempotentRowAware` returns `idempotentRelationFamily` by `rfl` — the four-row fingerprint skips the three-row
+monad entry and lands on the idempotent one.  Together with the previous theorem this is the DATA-level
+disambiguation the r1 `fxModeAdmit_hasDataFingerprintAdmission = false` wall said was missing. -/
+theorem admitByRowAware_idempotent_isIdempotentFamily :
+    admitByRowAware idempotentRowAware = some idempotentRelationFamily := rfl
+
+/-- ★★ **The inherited separation, BOTH verdicts** — the family recognised from the monad's row-aware data
+(`monadRelationFamily`, certified above) decides the associativity foldings as `isTrue` (convertible) AND the two
+unit faces `t <| eta` vs `eta |> t` as `isFalse` (distinct monotone maps).  `true` here requires the FIRST to be
+`isTrue` and the SECOND `isFalse` — the genuine separating behaviour, inherited by data recognition.  All 2x2
+`Decidable` cases enumerated (no wildcard) to stay propext-free. -/
+def rowAwareInheritedBothVerdicts : Bool :=
+  match monadRelationFamily.decider monadAssocLeftCell monadAssocRightCell,
+        monadRelationFamily.decider
+          (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadT monadUnitTwoCell)
+          (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT monadUnitTwoCell) with
+  | isTrue _, isTrue _ => false
+  | isTrue _, isFalse _ => true
+  | isFalse _, isTrue _ => false
+  | isFalse _, isFalse _ => false
+
+/-- ★ The inherited-both-verdicts run COMPUTES to `true` by `rfl` — associativity `isTrue`, unit faces `isFalse`,
+both from the row-aware-recognised monad family. -/
+theorem rowAwareInheritedBothVerdicts_holds : rowAwareInheritedBothVerdicts = true := rfl
+
+/-! ## P2 (MODE-ADMIT r2) — the renaming-iso WITNESS interface + the FORWARD transport (backward leg walled)
+
+The recon route for reusing a REGISTERED decider on a renamed presentation is the pullback: a match witness
+carrying the renaming BOTH ways (`toRegistered` + its inverse `toCandidate`), then transport the registered
+verdict back along the round-trip.  r2 ships the WITNESS interface `RenamingIso` (the two `ComputadMorphismTwo`
+directions the recon named as "sigma + sigmaInv, rows carried both ways") and the CLEAN forward leg
+`transportConvForwardAlong` (a candidate saturated conv transports to the registered image), which is exactly the
+shipped unconditional soundness lift `mapCellAlong_preservesConvUnconditional` re-packaged at the witness — no new
+proof, no cast.
+
+The BACKWARD leg — needed for the isTrue verdicts of a transported decider — stays walled, for TWO reasons, one
+laborious and one DECISIVE:
+
+  * (laborious) the round-trip `mapCellAlong toCandidate (mapCellAlong toRegistered cell) = cell` is not
+    definitional: `mapPath` is only PROPOSITIONALLY a monoid homomorphism (`mapPath_composePath` is a `congrArg`
+    cons-induction), so BOTH the mode round-trip and the path round-trip enter the STATEMENT of any backward
+    witness through `RawTwoCellExpr.castBoundary` (a double `Eq.rec`); the isTrue leg then needs the
+    cast-reconciled round-trip conv.  This is surmountable (all `Eq.rec`, no kernel `HEq`, since after the
+    round-trip both cells live at the SAME signature) but a genuine multi-lemma file.
+
+  * (DECISIVE) the only registered walkers that SEPARATE (monad / idempotent monad) live over the BESPOKE
+    `monadModeSignature`, which is NOT of the form `someComputad.toModeSignature`.  `ComputadMorphismTwo` and
+    `mapCellAlong` relate ONLY `_.toModeSignature` signatures, so there is NO `ComputadMorphismTwo` INTO
+    `monadModeSignature` to build `toRegistered`/`toCandidate` from — a `RenamingIso candidate monadWalker` is not
+    merely hard to inhabit, it is untypable at the registered end.  The decider-REUSE transport is therefore
+    structurally blocked for exactly the walkers that separate; the sound path to them is the P3 row-aware
+    RECOGNITION (match the data, retrieve the registered family), NOT cell transport.
+
+So `fxModeAdmit_hasRenamingDeciderTransport` stays `false` (the r1 marker, unchanged): the UNCONDITIONAL reuse of
+a registered decider on a renamed presentation is not shipped.  What r2 adds is the witness INTERFACE + the
+forward leg, marked by `fxModeAdmit_hasRenamingWitnessInterface`. -/
+
+/-- ★ **The renaming-iso witness** — the extended match witness the pullback route needs: a candidate/registered
+pair carried BOTH ways as `ComputadMorphismTwo` (the `sigma` + `sigmaInv` the recon named).  This is the interface
+r1's plain `Bool` matcher lacked; a genuine renaming supplies both directions.  Inhabited for RECONSTRUCTED
+signatures (via the shipped coprojection lifts `inclusionLeftTwo` / `inclusionRightTwo` and their real-generator
+variants); UNTYPABLE at the bespoke `monadModeSignature` (see the wall above). -/
+structure RenamingIso (candidate registered : ModeComputad) where
+  /-- The forward renaming morphism (candidate into registered). -/
+  toRegistered : ComputadMorphismTwo candidate registered
+  /-- The backward renaming morphism (registered into candidate) — the inverse the pullback needs. -/
+  toCandidate : ComputadMorphismTwo registered candidate
+
+/-- ★ **The FORWARD transport along a renaming iso** — a candidate saturated convertibility transports to the
+registered image under `toRegistered`, needing only a base-row map `rowForward`.  This IS the shipped
+unconditional soundness lift `mapCellAlong_preservesConvUnconditional` re-packaged at the witness (the isFalse
+leg's ingredient of a transported decider: a candidate proof forces a registered proof, contradicting a registered
+refutation).  No new proof, no cast — the clean half of the pullback. -/
+theorem transportConvForwardAlong {candidate registered : ModeComputad}
+    (iso : RenamingIso candidate registered)
+    {candRel : CellRel candidate.toModeSignature} {regRel : CellRel registered.toModeSignature}
+    (rowForward : {sourceMode targetMode : Fin candidate.modeCount} →
+      {sourcePath targetPath : ModalityPath candidate.toModeGraph sourceMode targetMode} →
+      {cellA cellB : RawTwoCellExpr candidate.toModeSignature sourcePath targetPath} →
+      candRel cellA cellB →
+      regRel (mapCellAlong iso.toRegistered cellA) (mapCellAlong iso.toRegistered cellB))
+    {sourceMode targetMode : Fin candidate.modeCount}
+    {sourcePath targetPath : ModalityPath candidate.toModeGraph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr candidate.toModeSignature sourcePath targetPath}
+    (conv : SaturatedConvOver candidate.toModeSignature candRel cellAlpha cellBeta) :
+    SaturatedConvOver registered.toModeSignature regRel
+      (mapCellAlong iso.toRegistered cellAlpha) (mapCellAlong iso.toRegistered cellBeta) :=
+  mapCellAlong_preservesConvUnconditional iso.toRegistered rowForward conv
+
+/-! ## Observability (r2) -/
+
+-- The reflected monad law rows: expect count `3`.
+#eval monadLawRowsData.length
+-- The reflected idempotent law rows: expect count `4`.
+#eval idempotentLawRowsData.length
+-- The row-aware comparison of the two law-row lists: expect `false` (they differ).
+#eval beqLawRows monadLawRowsData idempotentLawRowsData
+-- The row-aware match recognises the monad as itself: expect `true`.
+#eval isRowAwarePresentationMatch monadRowAware monadRowAware
+-- The row-aware match SEPARATES monad from idempotent (the r1 conflation resolved): expect `false`.
+#eval isRowAwarePresentationMatch monadRowAware idempotentRowAware
+-- Row-aware admission routes the monad fingerprint to a family: expect `true`.
+#eval (admitByRowAware monadRowAware).isSome
+-- Row-aware admission routes the idempotent fingerprint to a family: expect `true`.
+#eval (admitByRowAware idempotentRowAware).isSome
+-- The inherited both-verdicts run (assoc isTrue AND faces isFalse): expect `true`.
+#eval rowAwareInheritedBothVerdicts
+
+/-! ## P6 (r2) — honesty markers -/
+
+/-- ★★ **Honesty marker — the ROW-AWARE fingerprint SEPARATES the colliding walkers + inherits the SEPARATION
+(MODE-ADMIT r2).**  The reflected law-row data (`RawCellData` + `monadLawRowsData` / `idempotentLawRowsData`)
+distinguishes the walking monad from the walking idempotent monad AS DATA (`monadLawRowsData_ne_idempotentLawRowsData`,
+`monadRowAware_notMatches_idempotent`) — the exact conflation r1's plain `PresentationData` could not resolve.
+The row-aware admission gate (`admitByRowAware`) routes each fingerprint to the CORRECT registered family
+(`admitByRowAware_monad_isMonadFamily` / `admitByRowAware_idempotent_isIdempotentFamily`, by `rfl`), and the
+recognised monad family exhibits BOTH verdicts — associativity `isTrue`, unit faces `isFalse`
+(`rowAwareInheritedBothVerdicts_holds`).  HONEST: the decider runs on the registered walker's OWN cells; this is
+DATA-RECOGNITION routed to the registered decider, not cell-level transport (that leg is walled, P2).  `= true`. -/
+def fxModeAdmit_hasInheritedSeparation : Bool := true
+
+/-- ★ **Honesty marker — the renaming-iso WITNESS interface + FORWARD transport SHIP (MODE-ADMIT r2).**  The
+extended match witness `RenamingIso` (the renaming carried BOTH ways as `ComputadMorphismTwo`, the recon's
+`sigma` + `sigmaInv`) and the clean forward leg `transportConvForwardAlong` (the shipped unconditional soundness
+lift re-packaged at the witness — no new proof, no cast).  This is the pullback route's forward half + its witness
+shape.  The BACKWARD decider-reuse leg stays walled (`fxModeAdmit_hasRenamingDeciderTransport = false`): the
+round-trip is cast-heavy (surmountable) and, decisively, the separating registered walkers live over the bespoke
+`monadModeSignature`, into which no `ComputadMorphismTwo` exists, so the witness is untypable at the registered
+end for exactly the walkers that separate.  `= true`. -/
+def fxModeAdmit_hasRenamingWitnessInterface : Bool := true
+
+/-- ★ **Honesty marker (`false`) — the #2215 r3 scope: CERTIFIED automatic data admission is NOT yet shipped.**
+r2 closed the RECOGNITION conflation (the row-aware fingerprint distinguishes monad from idempotent as data), but
+three things remain for fully-automatic, sound, data-keyed admission of an ARBITRARY presented mode theory — the
+`ENDGAME-DEMO` (#2215) scope:
+
+  1. **Reflection FAITHFULNESS.**  `monadLawRowsData` / `idempotentLawRowsData` are author-SUPPLIED mirrors of the
+     `Prop`-valued law relations (`MonadLawRel` / `IdempotentLawRel`); nothing yet CERTIFIES that the reflected
+     rows are exactly the walker's laws.  A sound data key needs a decidable `reflects lawRows baseRel` certificate
+     (an untyped-cell ↔ typed-cell bridge), so admission cannot be spoofed by mislabelled rows.
+
+  2. **The bespoke-vs-reconstructed reseat.**  The separating deciders live over `monadModeSignature`, not a
+     `ModeComputad.toModeSignature`; reaching them by transport (rather than by NAME / by recognition) needs the
+     `fxAmalg_hasReconstructionDecoderReseat` bridge (fib-3-coupled), the same wall P2's backward leg hits.
+
+  3. **Tietze-closure matching.**  r2's match is bijective RENAMING (T3); a genuinely-different-but-isomorphic
+     presentation needs bounded relator/generator Tietze moves, strictly stronger and strictly harder to decide.
+
+Until (1) ships, the honest gate admits the separating walkers by row-aware RECOGNITION + registered-family
+retrieval (P3), not by an unverified data key.  `= false`. -/
+def fxModeAdmit_hasCertifiedDataAdmission : Bool := false
 
 end FX1Poly.Polygraph.Amalgam

@@ -97,4 +97,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.monadRowAware_notMatches_idempotent
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.idempotentRowAware_notMatches_monad
 
+-- P3 (r2): row-aware recognition registry + admission + inherited both-verdicts
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.RowAwareModule
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.rowAwareRegistry
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.admitByRowAware
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.admitByRowAware_monad_isMonadFamily
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.admitByRowAware_idempotent_isIdempotentFamily
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.rowAwareInheritedBothVerdicts
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.rowAwareInheritedBothVerdicts_holds
+
+-- P2 (r2): the renaming-iso witness interface + the forward transport
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.RenamingIso
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.transportConvForwardAlong
+
+-- P6 (r2): the honesty markers
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasInheritedSeparation
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasRenamingWitnessInterface
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasCertifiedDataAdmission
+
 end FX1PolyAudit
