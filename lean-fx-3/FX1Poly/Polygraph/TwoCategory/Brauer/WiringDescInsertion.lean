@@ -600,6 +600,565 @@ theorem crossingInsertionStep_atLeftmostDescent_smoke :
       (crossingWord (canonicalCrossingWord (applyAdjacentSwap [2, 1, 0] (leftmostDescent [2, 1, 0])))) :=
   crossingInsertionStep_atLeftmostDescent [2, 1, 0] rfl
 
+/-! ## WP-BRAUER r7 — the HONEST reformulation: the IN-RANGE insertion step over genuine permutations
+
+The r5 fold `crossingOnly_straightens_ofInsertionStep` consumes the `∀ (perm) (position)` insertion hypothesis, which
+the r6 diagnosis proved FALSE for out-of-range positions (`perm = [0, 1]`, `position = 5`: `applyAdjacentSwap` is a
+no-op past the end, so the step degenerates to the underivable lone-crossing `~ []`).  This section defines the
+GENUINELY provable residual `InRangeInsertionStep` — quantified only over `isDistinctList` permutations (genuine
+one-line permutations) at IN-RANGE positions (`position + 1 < perm.length`, where the crossing acts on two real
+strands) — and revises the fold to consume it, threading a `wellFormedCrossingWord` predicate that guarantees every
+letter of the input word is in range (so the peeled last letter's position is `< bottomCount = perm.length`).
+
+The r5 conditional folds are KEPT (unchanged, additive) — they are correct as conditionals; the reformulated fold
+`crossingOnly_straightensFueled_wellFormed` is the one whose hypothesis is TRUE and unconditionally dischargeable once
+the modes close.  The permutation invariants (distinctness preserved by `applyAdjacentSwap`, true of `List.range`) are
+proven here as the discharge kit. -/
+
+/-! ### Local propext-free boolean / arithmetic helpers for the reformulation -/
+
+/-- `Nat.beq` is symmetric — structural on both `Nat`s, `propext`-free. -/
+private theorem natBeqSymm : (leftValue rightValue : Nat) → Nat.beq leftValue rightValue = Nat.beq rightValue leftValue
+  | 0, 0 => rfl
+  | 0, _ + 1 => rfl
+  | _ + 1, 0 => rfl
+  | leftValue + 1, rightValue + 1 => natBeqSymm leftValue rightValue
+
+/-- Left-commutativity of boolean `or` — full-enum on the outer two flags, `propext`-free. -/
+private theorem boolOrLeftComm : (firstFlag secondFlag thirdFlag : Bool) →
+    (firstFlag || (secondFlag || thirdFlag)) = (secondFlag || (firstFlag || thirdFlag))
+  | false, false, _ => rfl
+  | false, true, _ => rfl
+  | true, false, _ => rfl
+  | true, true, _ => rfl
+
+/-- Left projection of a false boolean disjunction. -/
+private theorem boolOrFalseLeft : (leftFlag rightFlag : Bool) → (leftFlag || rightFlag) = false →
+    leftFlag = false
+  | false, _, _ => rfl
+  | true, _, disj => Bool.noConfusion disj
+
+/-- Right projection of a false boolean disjunction. -/
+private theorem boolOrFalseRight : (leftFlag rightFlag : Bool) → (leftFlag || rightFlag) = false →
+    rightFlag = false
+  | false, _, disj => disj
+  | true, _, disj => Bool.noConfusion disj
+
+/-- Reflect `not flag = true` to `flag = false` — full-enum `Bool`, `propext`-free. -/
+private theorem eqFalseOfNotTrue : (flag : Bool) → (not flag) = true → flag = false
+  | false, _ => rfl
+  | true, notTrue => Bool.noConfusion notTrue
+
+/-- `Nat.blt smaller larger = true → Nat.beq larger smaller = false` — a strict inequality rules out equality.
+Structural on both `Nat`s, `propext`-free. -/
+private theorem natBeqFalse_ofBlt : (smaller larger : Nat) → Nat.blt smaller larger = true →
+    Nat.beq larger smaller = false
+  | 0, 0, bltTrue => Bool.noConfusion bltTrue
+  | 0, _ + 1, _ => rfl
+  | _ + 1, 0, bltTrue => Bool.noConfusion bltTrue
+  | smaller + 1, larger + 1, bltTrue => natBeqFalse_ofBlt smaller larger bltTrue
+
+/-- `Nat.ble` reflexivity — structural, `propext`-free. -/
+private theorem natBleRefl : (value : Nat) → Nat.ble value value = true
+  | 0 => rfl
+  | value + 1 => natBleRefl value
+
+/-- Weaken the upper bound of a true `Nat.ble` by one — structural, `propext`-free. -/
+private theorem natBleWeakenRight : (lower upper : Nat) → Nat.ble lower upper = true →
+    Nat.ble lower (upper + 1) = true
+  | 0, _, _ => rfl
+  | _ + 1, 0, bleTrue => Bool.noConfusion bleTrue
+  | lower + 1, upper + 1, bleTrue => natBleWeakenRight lower upper bleTrue
+
+/-- `value` is strictly below its successor. -/
+private theorem natBltSelfSucc (value : Nat) : Nat.blt value (value + 1) = true :=
+  natBleRefl (value + 1)
+
+/-! ### The reformulation predicates + the honest in-range insertion step -/
+
+/-- Boolean membership in a `Nat` list — full-enum `Nat.beq` fold, `propext`-free (unlike `List.elem` machinery). -/
+def memBool (value : Nat) : List Nat → Bool
+  | [] => false
+  | head :: rest => Nat.beq head value || memBool value rest
+
+/-- The GENUINE-permutation invariant: pairwise-distinct entries.  True of `List.range`, preserved by
+`applyAdjacentSwap`; the exact content EXTEND (strict ascent) and the fold's insertion-step discharge consume. -/
+def isDistinctList : List Nat → Bool
+  | [] => true
+  | head :: rest => (not (memBool head rest)) && isDistinctList rest
+
+/-- A crossing word is WELL-FORMED for `bottomCount` strands when every letter is an in-range adjacent position
+(`letter + 1 < bottomCount`), so each crossing acts on two real strands.  Structural, `Nat.blt`-based. -/
+def wellFormedCrossingWord (bottomCount : Nat) : List Nat → Bool
+  | [] => true
+  | position :: rest => Nat.blt (position + 1) bottomCount && wellFormedCrossingWord bottomCount rest
+
+/-- ★★ **The HONEST insertion residual** — in-range (`position + 1 < perm.length`, where the crossing acts) over
+GENUINE (distinct-entry) permutations.  Unlike the r5 `∀ (perm) (position)` hypothesis (FALSE out-of-range), this is a
+TRUE statement (Björner–Brenti Thm 3.3.1 / Tits): both sides realize `applyAdjacentSwap perm position`.  The fold below
+consumes it; proving it is the CANCEL (done) + EXTEND + COMMUTE + BRAID mode assembly. -/
+def InRangeInsertionStep : Prop :=
+  ∀ (perm : List Nat) (position : Nat),
+    isDistinctList perm = true →
+    position + 1 < perm.length →
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [position]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position)))
+
+/-! ### The genuine-permutation invariant is preserved by the fold -/
+
+/-- ★ **Membership is invariant under an adjacent swap** — the swap only reorders two entries, so the multiset (hence
+`memBool`) is unchanged.  Structural on the swap's own matcher (mirrors `countEntriesBelow_applyAdjacentSwap`). -/
+theorem memBool_applyAdjacentSwap : (value : Nat) → (perm : List Nat) → (position : Nat) →
+    memBool value (applyAdjacentSwap perm position) = memBool value perm
+  | _, [], _ => rfl
+  | _, _ :: [], _ => rfl
+  | value, first :: second :: rest, 0 =>
+      boolOrLeftComm (Nat.beq second value) (Nat.beq first value) (memBool value rest)
+  | value, first :: second :: rest, position + 1 =>
+      congrArg (Nat.beq first value || ·) (memBool_applyAdjacentSwap value (second :: rest) position)
+
+/-- ★ **An adjacent swap preserves distinctness** — a permutation of distinct entries stays distinct.  The genuine-
+permutation invariant threaded through the fold.  Structural on the swap's own matcher. -/
+theorem isDistinctList_applyAdjacentSwap : (perm : List Nat) → (position : Nat) →
+    isDistinctList perm = true → isDistinctList (applyAdjacentSwap perm position) = true
+  | [], _, _ => rfl
+  | _ :: [], _, distinct => distinct
+  | first :: second :: rest, 0, distinct => by
+      have memFirst : memBool first (second :: rest) = false :=
+        eqFalseOfNotTrue _ (boolAndTrueLeft _ _ distinct)
+      have rightDist : isDistinctList (second :: rest) = true := boolAndTrueRight _ _ distinct
+      have beqSecondFirst : Nat.beq second first = false := boolOrFalseLeft _ _ memFirst
+      have memFirstRest : memBool first rest = false := boolOrFalseRight _ _ memFirst
+      have distRest : isDistinctList rest = true := boolAndTrueRight _ _ rightDist
+      have memSecondRest : memBool second rest = false := eqFalseOfNotTrue _ (boolAndTrueLeft _ _ rightDist)
+      have beqFirstSecond : Nat.beq first second = false := (natBeqSymm first second).trans beqSecondFirst
+      show (not (Nat.beq first second || memBool second rest)
+            && (not (memBool first rest) && isDistinctList rest)) = true
+      rw [beqFirstSecond, memSecondRest, memFirstRest, distRest]; rfl
+  | first :: second :: rest, position + 1, distinct => by
+      have memFirst : memBool first (second :: rest) = false :=
+        eqFalseOfNotTrue _ (boolAndTrueLeft _ _ distinct)
+      have distTail : isDistinctList (second :: rest) = true := boolAndTrueRight _ _ distinct
+      have distSwap : isDistinctList (applyAdjacentSwap (second :: rest) position) = true :=
+        isDistinctList_applyAdjacentSwap (second :: rest) position distTail
+      have memSwap : memBool first (applyAdjacentSwap (second :: rest) position) = false := by
+        rw [memBool_applyAdjacentSwap first (second :: rest) position]; exact memFirst
+      show (not (memBool first (applyAdjacentSwap (second :: rest) position))
+            && isDistinctList (applyAdjacentSwap (second :: rest) position)) = true
+      rw [memSwap, distSwap]; rfl
+
+/-- An ascending-from-`start` list has no member strictly below `start`.  Structural on the list. -/
+private theorem memBool_ascendingFrom_below : (start : Nat) → (xs : List Nat) → (value : Nat) →
+    isAscendingFrom start xs = true → Nat.blt value start = true → memBool value xs = false
+  | _, [], _, _, _ => rfl
+  | start, head :: rest, value, ascending, valueBelow => by
+      have headEq : head = start := natEqOfBeq head start (boolAndTrueLeft _ _ ascending)
+      have restAsc : isAscendingFrom (start + 1) rest = true := boolAndTrueRight _ _ ascending
+      have valueBelowHead : Nat.blt value head = true := by rw [headEq]; exact valueBelow
+      have beqHeadValue : Nat.beq head value = false := natBeqFalse_ofBlt value head valueBelowHead
+      have valueBelowSucc : Nat.blt value (start + 1) = true := natBleWeakenRight (value + 1) start valueBelow
+      have memRest : memBool value rest = false :=
+        memBool_ascendingFrom_below (start + 1) rest value restAsc valueBelowSucc
+      show (Nat.beq head value || memBool value rest) = false
+      rw [beqHeadValue, memRest]; rfl
+
+/-- An ascending-from-`start` list is distinct (the head is below every later entry).  Structural on the list. -/
+private theorem isDistinctList_ofAscendingFrom : (start : Nat) → (xs : List Nat) →
+    isAscendingFrom start xs = true → isDistinctList xs = true
+  | _, [], _ => rfl
+  | start, head :: rest, ascending => by
+      have headEq : head = start := natEqOfBeq head start (boolAndTrueLeft _ _ ascending)
+      have restAsc : isAscendingFrom (start + 1) rest = true := boolAndTrueRight _ _ ascending
+      have notMemHead : memBool head rest = false := by
+        apply memBool_ascendingFrom_below (start + 1) rest head restAsc
+        rw [headEq]; exact natBltSelfSucc start
+      have distRest : isDistinctList rest = true := isDistinctList_ofAscendingFrom (start + 1) rest restAsc
+      show (not (memBool head rest) && isDistinctList rest) = true
+      rw [notMemHead, distRest]; rfl
+
+/-- ★ **The identity permutation `List.range count` is distinct** — the base of the fold's genuine-permutation
+invariant. -/
+theorem isDistinctList_range (count : Nat) : isDistinctList (List.range count) = true :=
+  isDistinctList_ofAscendingFrom 0 (List.range count) (isAscendingFrom_range count)
+
+/-- Folding adjacent swaps preserves distinctness (each swap does). -/
+private theorem isDistinctList_foldlSwap : (positions perm : List Nat) →
+    isDistinctList perm = true → isDistinctList (positions.foldl applyAdjacentSwap perm) = true
+  | [], _, distinct => distinct
+  | position :: rest, perm, distinct => by
+      show isDistinctList (rest.foldl applyAdjacentSwap (applyAdjacentSwap perm position)) = true
+      exact isDistinctList_foldlSwap rest (applyAdjacentSwap perm position)
+        (isDistinctList_applyAdjacentSwap perm position distinct)
+
+/-- ★ **Every realized permutation is genuine (distinct entries)** — `permuteOfCrossingWord` folds swaps over the
+distinct identity `List.range bottomCount`, so its output is distinct.  The `perm`-side hypothesis the fold's
+`InRangeInsertionStep` call needs. -/
+theorem isDistinctList_permuteOfCrossingWord (bottomCount : Nat) (positions : List Nat) :
+    isDistinctList (permuteOfCrossingWord bottomCount positions) = true := by
+  show isDistinctList (positions.foldl applyAdjacentSwap (List.range bottomCount)) = true
+  exact isDistinctList_foldlSwap positions (List.range bottomCount) (isDistinctList_range bottomCount)
+
+/-! ### Well-formedness projections + the in-range last letter -/
+
+/-- A prefix of a well-formed crossing word is well-formed.  Structural on the prefix. -/
+private theorem wellFormedCrossingWord_snoc_left : (bottomCount : Nat) → (prefixPositions : List Nat) →
+    (lastPosition : Nat) → wellFormedCrossingWord bottomCount (prefixPositions ++ [lastPosition]) = true →
+    wellFormedCrossingWord bottomCount prefixPositions = true
+  | _, [], _, _ => rfl
+  | bottomCount, position :: rest, lastPosition, wf => by
+      show (Nat.blt (position + 1) bottomCount && wellFormedCrossingWord bottomCount rest) = true
+      rw [boolAndTrueLeft _ _ wf,
+        wellFormedCrossingWord_snoc_left bottomCount rest lastPosition (boolAndTrueRight _ _ wf)]; rfl
+
+/-- The last letter of a well-formed crossing word is in range.  Structural on the prefix. -/
+private theorem wellFormedCrossingWord_snoc_right : (bottomCount : Nat) → (prefixPositions : List Nat) →
+    (lastPosition : Nat) → wellFormedCrossingWord bottomCount (prefixPositions ++ [lastPosition]) = true →
+    Nat.blt (lastPosition + 1) bottomCount = true
+  | _, [], _, wf => boolAndTrueLeft _ _ wf
+  | bottomCount, _ :: rest, lastPosition, wf =>
+      wellFormedCrossingWord_snoc_right bottomCount rest lastPosition (boolAndTrueRight _ _ wf)
+
+/-- Reflect a true `Nat.ble` to a propositional `≤` — structural on the `Nat`s. -/
+private theorem leOfBleTrue : (lower upper : Nat) → Nat.ble lower upper = true → lower ≤ upper
+  | 0, upper, _ => Nat.zero_le upper
+  | _ + 1, 0, bleTrue => Bool.noConfusion bleTrue
+  | lower + 1, upper + 1, bleTrue => Nat.succ_le_succ (leOfBleTrue lower upper bleTrue)
+
+/-- Reflect a true `Nat.blt` to a propositional `<`. -/
+private theorem ltOfBltTrue (lower upper : Nat) (bltTrue : Nat.blt lower upper = true) : lower < upper :=
+  leOfBleTrue (lower + 1) upper bltTrue
+
+/-- ★ **The peeled last letter of a well-formed word is in range** — `position + 1 < perm.length` for
+`perm = permuteOfCrossingWord bottomCount prefix` (length `bottomCount`).  The `position`-side hypothesis the fold's
+`InRangeInsertionStep` call needs. -/
+theorem lastPosition_inRange_ofWellFormed (bottomCount : Nat) (prefixPositions : List Nat) (lastPosition : Nat)
+    (wf : wellFormedCrossingWord bottomCount (prefixPositions ++ [lastPosition]) = true) :
+    lastPosition + 1 < (permuteOfCrossingWord bottomCount prefixPositions).length := by
+  rw [permuteOfCrossingWord_length bottomCount prefixPositions]
+  exact ltOfBltTrue (lastPosition + 1) bottomCount
+    (wellFormedCrossingWord_snoc_right bottomCount prefixPositions lastPosition wf)
+
+/-! ### The REVISED fold — consuming `InRangeInsertionStep` under well-formedness -/
+
+/-- The reformulated fold, fuel-indexed by word length.  Line-for-line the r5 `crossingOnly_straightensFueled`, plus
+the two discharge lemmas at the `insertionStep` call site: `isDistinctList_permuteOfCrossingWord` (the perm is genuine)
+and `lastPosition_inRange_ofWellFormed` (the peeled letter is in range).  The well-formedness of the prefix is threaded
+by `wellFormedCrossingWord_snoc_left`. -/
+theorem crossingOnly_straightensFueled_wellFormed (bottomCount : Nat)
+    (insertionStep : InRangeInsertionStep) :
+    (fuel : Nat) → (word : List Nat) → word.length = fuel →
+    wellFormedCrossingWord bottomCount word = true →
+    BrauerConvFree7 (crossingWord word)
+      (crossingWord (canonicalCrossingWord (permuteOfCrossingWord bottomCount word)))
+  | 0, [], _, _ => by
+      show BrauerConvFree7 [] (crossingWord (canonicalCrossingWord (List.range bottomCount)))
+      rw [canonicalCrossingWord_range bottomCount]
+      exact BrauerConvFree7.ofFree (BrauerConvFree.refl [])
+  | 0, _ :: _, lengthEq, _ => Nat.noConfusion lengthEq
+  | fuel + 1, word, lengthEq, wfWord => by
+      cases listNilOrSnoc word with
+      | inl wordNil => subst wordNil; exact Nat.noConfusion lengthEq
+      | inr wordSnoc =>
+          obtain ⟨prefixPositions, lastPosition, wordEq⟩ := wordSnoc
+          subst wordEq
+          rw [lengthSnoc prefixPositions lastPosition] at lengthEq
+          have prefixLengthEq : prefixPositions.length = fuel := Nat.succ.inj lengthEq
+          have wfPrefix : wellFormedCrossingWord bottomCount prefixPositions = true :=
+            wellFormedCrossingWord_snoc_left bottomCount prefixPositions lastPosition wfWord
+          have straightenedPrefix :=
+            crossingOnly_straightensFueled_wellFormed bottomCount insertionStep fuel prefixPositions
+              prefixLengthEq wfPrefix
+          rw [permuteOfCrossingWord_snoc bottomCount prefixPositions lastPosition]
+          refine BrauerConvFree7.trans ?_
+            (insertionStep (permuteOfCrossingWord bottomCount prefixPositions) lastPosition
+              (isDistinctList_permuteOfCrossingWord bottomCount prefixPositions)
+              (lastPosition_inRange_ofWellFormed bottomCount prefixPositions lastPosition wfWord))
+          rw [crossingWord_append prefixPositions [lastPosition],
+            crossingWord_append (canonicalCrossingWord (permuteOfCrossingWord bottomCount prefixPositions))
+              [lastPosition]]
+          exact BrauerConvFree7.whiskerRight [crossingAt lastPosition] straightenedPrefix
+
+/-- ★ **Every WELL-FORMED crossing word straightens to the canonical word of its permutation — CONDITIONAL on the
+in-range insertion step.**  The un-fueled reformulated fold: the HONEST version of
+`crossingOnly_straightens_ofInsertionStep`, whose hypothesis (`InRangeInsertionStep`) is TRUE (not FALSE out-of-range
+like the r5 one). -/
+theorem crossingOnly_straightens_wellFormed (bottomCount : Nat) (insertionStep : InRangeInsertionStep)
+    (word : List Nat) (wfWord : wellFormedCrossingWord bottomCount word = true) :
+    BrauerConvFree7 (crossingWord word)
+      (crossingWord (canonicalCrossingWord (permuteOfCrossingWord bottomCount word))) :=
+  crossingOnly_straightensFueled_wellFormed bottomCount insertionStep word.length word rfl wfWord
+
+/-- ★★ **The symmetric-group WORD PROBLEM (well-formed scope) — CONDITIONAL on the in-range insertion step.**  Two
+well-formed crossing words with EQUAL realized permutation are `BrauerConvFree7`-convertible: both straighten to the
+canonical word of that common permutation.  The honest reformulation of `crossingWords_equalPerm_conv_ofInsertionStep`
+— its hypothesis is the TRUE `InRangeInsertionStep`, and its scope (well-formed words over genuine permutations) is the
+honest scope where the crossing generators actually act. -/
+theorem crossingWords_equalPerm_conv_wellFormed (bottomCount : Nat) (insertionStep : InRangeInsertionStep)
+    (wordLeft wordRight : List Nat)
+    (wfLeft : wellFormedCrossingWord bottomCount wordLeft = true)
+    (wfRight : wellFormedCrossingWord bottomCount wordRight = true)
+    (permEq : permuteOfCrossingWord bottomCount wordLeft = permuteOfCrossingWord bottomCount wordRight) :
+    BrauerConvFree7 (crossingWord wordLeft) (crossingWord wordRight) := by
+  have straightenedRight :=
+    crossingOnly_straightens_wellFormed bottomCount insertionStep wordRight wfRight
+  rw [← permEq] at straightenedRight
+  exact BrauerConvFree7.trans
+    (crossingOnly_straightens_wellFormed bottomCount insertionStep wordLeft wfLeft)
+    (BrauerConvFree7.symm straightenedRight)
+
+/-! ## WP-BRAUER r7 — the EXTEND mode (general, over genuine permutations)
+
+The EXTEND mode inserts a position `position < leftmostDescent perm`.  Under distinctness the entry pair at `position`
+is a STRICT ascent, so the swap creates a fresh descent exactly there: `leftmostDescent (perm · s_position) = position`
+and `perm · s_position` is non-identity.  The staircase-snoc identity then makes the insertion REFLEXIVITY:
+`canonicalCrossingWord (perm · s_position) = canonicalCrossingWord perm ++ [position]` (using the involution
+`perm · s_position · s_position = perm`).  The distinctness hypothesis is essential — the marker's named counterexample
+`[1, 1, 0]` fails `leftmostDescent (perm · s_0) = 0`.  Björner–Brenti: this is the `¬IsRightDescent` / `ℓ(ws) = ℓ(w)+1`
+extend branch of the length dichotomy, driven by the computable test `perm[position] < perm[position+1]`. -/
+
+/-! ### Local propext-free boolean / order helpers -/
+
+/-- `Nat.blt larger smaller = false → Nat.ble smaller larger = true` — the antisymmetric complement.  Structural. -/
+private theorem bleOfNotBltSwap : (smaller larger : Nat) → Nat.blt larger smaller = false →
+    Nat.ble smaller larger = true
+  | 0, _, _ => rfl
+  | _ + 1, 0, bltFalse => Bool.noConfusion bltFalse
+  | smaller + 1, larger + 1, bltFalse => bleOfNotBltSwap smaller larger bltFalse
+
+/-- `Nat.ble a b = true → Nat.beq a b = false → Nat.blt a b = true` — a distinct `≤` pair is `<`.  Structural. -/
+private theorem bltOfBleNeq : (smaller larger : Nat) → Nat.ble smaller larger = true →
+    Nat.beq smaller larger = false → Nat.blt smaller larger = true
+  | 0, 0, _, beqFalse => Bool.noConfusion beqFalse
+  | 0, _ + 1, _, _ => rfl
+  | _ + 1, 0, bleTrue, _ => Bool.noConfusion bleTrue
+  | smaller + 1, larger + 1, bleTrue, beqFalse => bltOfBleNeq smaller larger bleTrue beqFalse
+
+/-- `Nat.ble` transitivity — structural on all three `Nat`s, `propext`-free. -/
+private theorem bleTrans : (lower mid upper : Nat) →
+    Nat.ble lower mid = true → Nat.ble mid upper = true → Nat.ble lower upper = true
+  | 0, _, _, _, _ => rfl
+  | _ + 1, 0, _, bleLowerMid, _ => Bool.noConfusion bleLowerMid
+  | _ + 1, _ + 1, 0, _, bleMidUpper => Bool.noConfusion bleMidUpper
+  | lower + 1, mid + 1, upper + 1, bleLowerMid, bleMidUpper => bleTrans lower mid upper bleLowerMid bleMidUpper
+
+/-- `Nat.ble a b = true → Nat.blt b a = false` — `a ≤ b` rules out `b < a`.  Structural. -/
+private theorem bltFalseOfBle : (smaller larger : Nat) → Nat.ble smaller larger = true →
+    Nat.blt larger smaller = false
+  | 0, _, _ => rfl
+  | _ + 1, 0, bleTrue => Bool.noConfusion bleTrue
+  | smaller + 1, larger + 1, bleTrue => bltFalseOfBle smaller larger bleTrue
+
+/-! ### Head / cons structural helpers for the leftmost-descent tracking -/
+
+/-- The head of a `Nat` list (`0` on empty). -/
+private def firstEntry : List Nat → Nat
+  | [] => 0
+  | head :: _ => head
+
+/-- The tail of a `Nat` list. -/
+private def dropFirst : List Nat → List Nat
+  | [] => []
+  | _ :: tail => tail
+
+/-- A list of successor length is its head cons its tail — the propext-free `cons` eta. -/
+private theorem consEta : (list : List Nat) → (predLength : Nat) → list.length = predLength + 1 →
+    list = firstEntry list :: dropFirst list
+  | [], _, lengthEq => Nat.noConfusion lengthEq
+  | _ :: _, _, _ => rfl
+
+/-- Swapping at a positive position leaves the head untouched — the head-eta of `applyAdjacentSwap` at `position+1`. -/
+private theorem applyAdjacentSwap_cons_succ : (headElement : Nat) → (list : List Nat) → (position : Nat) →
+    applyAdjacentSwap (headElement :: list) (position + 1) = headElement :: applyAdjacentSwap list position
+  | _, [], _ => rfl
+  | _, _ :: _, _ => rfl
+
+/-- ★ **`applyAdjacentSwap` is an involution** — applying the same adjacent swap twice restores the list (a no-op past
+the end is trivially involutive; an in-range swap undoes itself).  Structural on the swap's own matcher; the reflexivity
+witness EXTEND stands on. -/
+theorem applyAdjacentSwap_involutive : (perm : List Nat) → (position : Nat) →
+    applyAdjacentSwap (applyAdjacentSwap perm position) position = perm
+  | [], _ => rfl
+  | _ :: [], _ => rfl
+  | _ :: _ :: _, 0 => rfl
+  | first :: second :: rest, position + 1 => by
+      rw [applyAdjacentSwap_cons_succ first (second :: rest) position,
+        applyAdjacentSwap_cons_succ first (applyAdjacentSwap (second :: rest) position) position,
+        applyAdjacentSwap_involutive (second :: rest) position]
+
+/-- With no descent at the junction (`Nat.blt firstY head = false`), the leftmost descent of a cons steps by one. -/
+private theorem leftmostDescent_cons_headBltFalse (head firstY : Nat) (restY : List Nat)
+    (noJunctionDescent : Nat.blt firstY head = false) :
+    leftmostDescent (head :: firstY :: restY) = leftmostDescent (firstY :: restY) + 1 :=
+  condFalse 0 (leftmostDescent (firstY :: restY) + 1) (Nat.blt firstY head) noJunctionDescent
+
+/-- With no descent at the junction, the cons keeps the tail's identity status. -/
+private theorem isIdentityPerm_cons_headBltFalse (head firstY : Nat) (restY : List Nat)
+    (noJunctionDescent : Nat.blt firstY head = false) :
+    isIdentityPerm (head :: firstY :: restY) = isIdentityPerm (firstY :: restY) :=
+  condFalse false (isIdentityPerm (firstY :: restY)) (Nat.blt firstY head) noJunctionDescent
+
+/-- ★ **The head does not drop below a descent** — for a swap at a below-leftmost-descent position the head of the
+result is `≥` the head of the input (a `position+1` swap fixes the head; a `position = 0` swap raises it from `first`
+to `second`, an ascent since `0 < leftmostDescent`).  The junction-monotonicity leg of the EXTEND leftmost-descent
+computation. -/
+private theorem firstEntry_applyAdjacentSwap_belowDescent_ge :
+    (perm : List Nat) → (position : Nat) →
+    Nat.blt position (leftmostDescent perm) = true →
+    Nat.ble (firstEntry perm) (firstEntry (applyAdjacentSwap perm position)) = true
+  | [], _, hbelow => Bool.noConfusion hbelow
+  | _ :: [], _, hbelow => Bool.noConfusion hbelow
+  | first :: second :: rest, 0, hbelow =>
+      match hDescent : Nat.blt second first with
+      | true => by
+          have ld0 : leftmostDescent (first :: second :: rest) = 0 :=
+            condTrue 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          rw [ld0] at hbelow
+          exact Bool.noConfusion hbelow
+      | false => by
+          show Nat.ble first second = true
+          exact bleOfNotBltSwap first second hDescent
+  | first :: second :: rest, _ + 1, _ => by
+      show Nat.ble first first = true
+      exact natBleRefl first
+
+/-- ★★ **The swap at a below-leftmost-descent position lands its NEW leftmost descent exactly at that position (and is
+non-identity).**  The structural core of the EXTEND mode: for `position < leftmostDescent perm` over a genuine
+permutation, `leftmostDescent (perm · s_position) = position` and `perm · s_position` has a descent (is non-identity).
+Structural induction on `perm` / `position`; the `position+1` step threads the head-monotonicity
+(`firstEntry_applyAdjacentSwap_belowDescent_ge`) so the junction is descent-free and the leftmost descent steps in. -/
+theorem leftmostDescent_applyAdjacentSwap_belowDescent :
+    (perm : List Nat) → (position : Nat) →
+    isDistinctList perm = true → Nat.blt position (leftmostDescent perm) = true →
+    leftmostDescent (applyAdjacentSwap perm position) = position
+      ∧ isIdentityPerm (applyAdjacentSwap perm position) = false
+  | [], _, _, hbelow => Bool.noConfusion hbelow
+  | _ :: [], _, _, hbelow => Bool.noConfusion hbelow
+  | first :: second :: rest, 0, distinct, hbelow =>
+      match hDescent : Nat.blt second first with
+      | true => by
+          have ld0 : leftmostDescent (first :: second :: rest) = 0 :=
+            condTrue 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          rw [ld0] at hbelow
+          exact Bool.noConfusion hbelow
+      | false => by
+          have memFirst : memBool first (second :: rest) = false :=
+            eqFalseOfNotTrue _ (boolAndTrueLeft _ _ distinct)
+          have beqSecondFirst : Nat.beq second first = false := boolOrFalseLeft _ _ memFirst
+          have beqFirstSecond : Nat.beq first second = false := (natBeqSymm first second).trans beqSecondFirst
+          have bltFirstSecond : Nat.blt first second = true :=
+            bltOfBleNeq first second (bleOfNotBltSwap first second hDescent) beqFirstSecond
+          refine ⟨?_, ?_⟩
+          · show leftmostDescent (second :: first :: rest) = 0
+            exact condTrue 0 (leftmostDescent (first :: rest) + 1) (Nat.blt first second) bltFirstSecond
+          · show isIdentityPerm (second :: first :: rest) = false
+            exact condTrue false (isIdentityPerm (first :: rest)) (Nat.blt first second) bltFirstSecond
+  | first :: second :: rest, position + 1, distinct, hbelow =>
+      match hDescent : Nat.blt second first with
+      | true => by
+          have ld0 : leftmostDescent (first :: second :: rest) = 0 :=
+            condTrue 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          rw [ld0] at hbelow
+          exact Bool.noConfusion hbelow
+      | false => by
+          have ldSucc : leftmostDescent (first :: second :: rest) = leftmostDescent (second :: rest) + 1 :=
+            condFalse 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          rw [ldSucc] at hbelow
+          have hbelowTail : Nat.blt position (leftmostDescent (second :: rest)) = true := hbelow
+          have distTail : isDistinctList (second :: rest) = true := boolAndTrueRight _ _ distinct
+          have ih := leftmostDescent_applyAdjacentSwap_belowDescent (second :: rest) position distTail hbelowTail
+          have noJunction : Nat.blt (firstEntry (applyAdjacentSwap (second :: rest) position)) first = false :=
+            bltFalseOfBle first (firstEntry (applyAdjacentSwap (second :: rest) position))
+              (bleTrans first second (firstEntry (applyAdjacentSwap (second :: rest) position))
+                (bleOfNotBltSwap first second hDescent)
+                (firstEntry_applyAdjacentSwap_belowDescent_ge (second :: rest) position hbelowTail))
+          have ysCons : applyAdjacentSwap (second :: rest) position
+              = firstEntry (applyAdjacentSwap (second :: rest) position)
+                :: dropFirst (applyAdjacentSwap (second :: rest) position) :=
+            consEta (applyAdjacentSwap (second :: rest) position) rest.length
+              (applyAdjacentSwap_length (second :: rest) position)
+          refine ⟨?_, ?_⟩
+          · show leftmostDescent (first :: applyAdjacentSwap (second :: rest) position) = position + 1
+            rw [ysCons, leftmostDescent_cons_headBltFalse first
+              (firstEntry (applyAdjacentSwap (second :: rest) position))
+              (dropFirst (applyAdjacentSwap (second :: rest) position)) noJunction, ← ysCons, ih.1]
+          · show isIdentityPerm (first :: applyAdjacentSwap (second :: rest) position) = false
+            rw [ysCons, isIdentityPerm_cons_headBltFalse first
+              (firstEntry (applyAdjacentSwap (second :: rest) position))
+              (dropFirst (applyAdjacentSwap (second :: rest) position)) noJunction, ← ysCons, ih.2]
+
+/-- ★★ **The insertion step — EXTEND mode, GENERAL (over genuine permutations).**  For any distinct-entry `perm` and
+`position < leftmostDescent perm`, inserting `position` at the tail of the canonical word STAYS canonical — the residual
+holds by REFLEXIVITY.  PROOF: the swap `perm · s_position` has its new leftmost descent at `position` and is
+non-identity (`leftmostDescent_applyAdjacentSwap_belowDescent`), so staircase-snoc gives
+`canonicalCrossingWord (perm · s_position) = canonicalCrossingWord (perm · s_position · s_position) ++ [position]`, and
+the involution `perm · s_position · s_position = perm` (`applyAdjacentSwap_involutive`) collapses the prefix to
+`canonicalCrossingWord perm ++ [position]`.  The general form of `crossingInsertionStep_extend_smoke`; the distinctness
+hypothesis is essential (`[1, 1, 0]` is the marker's named counterexample). -/
+theorem crossingInsertionStep_extend (perm : List Nat) (position : Nat)
+    (distinct : isDistinctList perm = true)
+    (belowDescent : Nat.blt position (leftmostDescent perm) = true) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [position]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position))) := by
+  have swapFacts :=
+    leftmostDescent_applyAdjacentSwap_belowDescent perm position distinct belowDescent
+  have snoc :=
+    canonicalCrossingWord_snoc_leftmostDescent (applyAdjacentSwap perm position) swapFacts.2
+  rw [swapFacts.1, applyAdjacentSwap_involutive perm position] at snoc
+  rw [snoc]
+  exact BrauerConvFree7.ofFree (BrauerConvFree.refl _)
+
+/-- Non-vacuity — the GENERAL EXTEND mode on the 3-cycle `[1, 2, 0]` (leftmost descent `1`) inserting `0 < 1`:
+`canonicalCrossingWord [1, 2, 0] ++ [0] = [0, 1, 0]` is already the canonical word of the reversal
+`applyAdjacentSwap [1, 2, 0] 0 = [2, 1, 0]`, so the step is reflexivity. -/
+theorem crossingInsertionStep_extend_general_smoke :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord [1, 2, 0] ++ [0]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap [1, 2, 0] 0))) :=
+  crossingInsertionStep_extend [1, 2, 0] 0 (by decide) (by decide)
+
+/-! ## WP-BRAUER r7 — the COMMUTE mode, LOCAL reduction (general, IH-free)
+
+The COMMUTE mode inserts a position `position ≥ leftmostDescent perm + 2` — distant from the trailing canonical letter
+`d = leftmostDescent perm` (staircase-snoc: `canonicalCrossingWord perm = canonicalCrossingWord (perm · s_d) ++ [d]`).
+The distant pair `[d, position]` commutes freely (`crossingCommuteFree`, `d + 2 ≤ position`), so the inserted letter
+slides PAST the trailing `d`.  This lemma ships that single commute step as a GENERAL, IH-free reduction:
+`canonicalCrossingWord perm ++ [position] ~ canonicalCrossingWord (perm · s_d) ++ [position, d]`.  The residual after it
+is `canonicalCrossingWord (perm · s_d) ++ [position]` — an insertion at the strictly-smaller permutation `perm · s_d`
+(`inversionCount` dropped by one, `inversionCount_ofLeftmostDescentSwap_succ`), which the full COMMUTE mode discharges
+by the outer `inversionCount` induction (the IH that the BRAID wall still gates — see the residual marker). -/
+
+/-- ★★ **The insertion step — COMMUTE mode, LOCAL reduction (general).**  For any non-identity `perm` and a distant
+`position ≥ leftmostDescent perm + 2`, the inserted letter commutes past the trailing canonical descent `d`:
+`canonicalCrossingWord perm ++ [position]` is `BrauerConvFree7` to `canonicalCrossingWord (perm · s_d) ++ [position, d]`.
+PROOF: staircase-snoc rewrites `canonicalCrossingWord perm = canonicalCrossingWord (perm · s_d) ++ [d]`, so the tail is
+`[d, position]`, and `crossingCommuteFree d position` (whiskered left over `canonicalCrossingWord (perm · s_d)`)
+transposes it to `[position, d]`.  IH-free; it is the single Coxeter COMMUTE step of the mode (the full mode re-inserts
+`position` at `perm · s_d` via the `inversionCount` induction). -/
+theorem crossingInsertionStep_commute_localReduction (perm : List Nat) (position : Nat)
+    (nonIdentity : isIdentityPerm perm = false)
+    (disjoint : leftmostDescent perm + 2 ≤ position) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [position]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm))
+        ++ [position, leftmostDescent perm])) := by
+  rw [canonicalCrossingWord_snoc_leftmostDescent perm nonIdentity,
+    appendSnocAssoc (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)))
+      (leftmostDescent perm) [position],
+    crossingWord_append (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)))
+      [leftmostDescent perm, position],
+    crossingWord_append (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)))
+      [position, leftmostDescent perm]]
+  exact BrauerConvFree7.whiskerLeft
+    (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm))))
+    (crossingCommuteFree (leftmostDescent perm) position disjoint)
+
+/-- Non-vacuity — the GENERAL COMMUTE local move on `[1, 0, 2, 3]` (leftmost descent `0`) inserting the distant `2`:
+`canonicalCrossingWord [1, 0, 2, 3] ++ [2] = [0, 2]` commutes to `[2, 0] = canonicalCrossingWord [0, 1, 2, 3] ++ [2, 0]`
+(the canonical word of `applyAdjacentSwap [1, 0, 2, 3] 0 = [0, 1, 2, 3]` is empty). -/
+theorem crossingInsertionStep_commute_localReduction_smoke :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord [1, 0, 2, 3] ++ [2]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap [1, 0, 2, 3] (leftmostDescent [1, 0, 2, 3]))
+        ++ [2, leftmostDescent [1, 0, 2, 3]])) :=
+  crossingInsertionStep_commute_localReduction [1, 0, 2, 3] 2 (by decide) (by decide)
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the CANONICAL CROSSING-WORD layer is SHIPPED.**  `canonicalCrossingWord` (the reverse of
@@ -649,21 +1208,68 @@ So the residual shrinks to "the IN-RANGE braid mode over genuine permutations"; 
 `fxBrauer_hasCrossingOnlyStraightening` / `fxBrauer_hasCrossingStraighteningInsertionResidual` stay `false`.  `= true`. -/
 def fxBrauer_hasInsertionCancelMode : Bool := true
 
-/-- **Honesty marker — the GENERAL insertion step stays `false`; the exact residual case is named.**  The sole
-remaining leg is `crossingInsertionStep` for ALL `perm`, `position`:
-`crossingWord (canonicalCrossingWord perm ++ [position]) ~ crossingWord (canonicalCrossingWord (applyAdjacentSwap perm position))`.
-Both sides have the same permutation (`applyAdjacentSwap perm position`, since `canonicalCrossingWord perm` builds
-`perm`), so it is a TRUE special case of the word problem (Björner–Brenti Thm 3.3.1 / Tits).  Its three modes are
-each witnessed on concrete inputs — `crossingInsertionStep_cancel_smoke` (R2, `inversionCount` drops),
-`crossingInsertionStep_extend_smoke` (append stays canonical, reflexivity), `crossingInsertionStep_braid_smoke`
-(R3).  The exact standing jam is the GENERAL braid mode: the inserted letter bubbling LEFTWARD through a canonical
-prefix of ARBITRARY length via a chain of braid / commute moves while the "still canonical" invariant is threaded,
-under the lexicographic fuel `(inversionCount perm, insertion position)` — the `locateAux`-magnitude induction whose
-faithful zero-axiom mirror is the 1300-line sibling `pureCupSpine_sort`.  That single universally-quantified
-statement is the residual; `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
-`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false` because of
-it — a route/measure gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations DO present the
-category).  `= false`. -/
+/-- ★ **Honesty marker — WP-BRAUER r7: the insertion residual is REFORMULATED honestly, and the fold consumes it.**
+The r6 diagnosis proved the r5 `∀ (perm) (position)` hypothesis FALSE out-of-range.  This round defines the GENUINELY
+provable residual `InRangeInsertionStep` — quantified only over `isDistinctList` permutations at IN-RANGE positions
+(`position + 1 < perm.length`) — and REVISES the fold to consume it (chosen ADDITIVELY: the r5 conditional folds are
+KEPT unchanged as honest conditionals; the new `crossingOnly_straightensFueled_wellFormed` /
+`crossingOnly_straightens_wellFormed` / `crossingWords_equalPerm_conv_wellFormed` are the reformulated versions whose
+hypothesis is TRUE).  The discharge kit is closed zero-axiom: distinctness is preserved by `applyAdjacentSwap`
+(`isDistinctList_applyAdjacentSwap`, via `memBool_applyAdjacentSwap`) and true of the identity
+(`isDistinctList_range`), so every realized permutation is genuine (`isDistinctList_permuteOfCrossingWord`); the
+`wellFormedCrossingWord` predicate guarantees each peeled letter is in range (`lastPosition_inRange_ofWellFormed`).  So
+the entire well-formed crossing-only word problem is REDUCED to the single TRUE `InRangeInsertionStep` — no longer a
+false hypothesis.  `= true`. -/
+def fxBrauer_hasInRangeInsertionReformulation : Bool := true
+
+/-- ★ **Honesty marker — WP-BRAUER r7: the EXTEND mode is CLOSED GENERALLY over genuine permutations.**
+`crossingInsertionStep_extend` proves the insertion step for every distinct-entry `perm` and
+`position < leftmostDescent perm` by REFLEXIVITY: the swap `perm · s_position` lands its new leftmost descent exactly
+at `position` and is non-identity (`leftmostDescent_applyAdjacentSwap_belowDescent`, the structural induction threading
+head-monotonicity `firstEntry_applyAdjacentSwap_belowDescent_ge`), so staircase-snoc + the involution
+`applyAdjacentSwap_involutive` give `canonicalCrossingWord (perm · s_position) = canonicalCrossingWord perm ++
+[position]`.  This is the mechanized `¬IsRightDescent` / `ℓ(ws) = ℓ(w)+1` extend branch of the Björner–Brenti length
+dichotomy, driven by the computable ascent test.  The distinctness hypothesis is essential — the marker's named
+counterexample `[1, 1, 0]` fails.  Non-vacuous: `crossingInsertionStep_extend_general_smoke` on the 3-cycle
+`[1, 2, 0]`.  `= true`. -/
+def fxBrauer_hasInsertionExtendMode : Bool := true
+
+/-- ★ **Honesty marker — WP-BRAUER r7: the COMMUTE mode's LOCAL Coxeter step is SHIPPED (general, IH-free).**
+`crossingInsertionStep_commute_localReduction` proves, for any non-identity `perm` and a distant
+`position ≥ leftmostDescent perm + 2`, that the inserted letter commutes past the trailing canonical descent `d`:
+`canonicalCrossingWord perm ++ [position] ~ canonicalCrossingWord (perm · s_d) ++ [position, d]` (staircase-snoc +
+`crossingCommuteFree`).  This is the single `|a − b| ≥ 2` commutation move of the mode; the residual it leaves,
+`canonicalCrossingWord (perm · s_d) ++ [position]`, is an insertion at the strictly-smaller permutation `perm · s_d`
+(`inversionCount` dropped one), which the FULL COMMUTE mode discharges by the outer `inversionCount` induction — the IH
+that only closes once the BRAID mode does (see the residual marker below).  Non-vacuous:
+`crossingInsertionStep_commute_localReduction_smoke` on `[1, 0, 2, 3]`.  `= true`. -/
+def fxBrauer_hasInsertionCommuteLocalMove : Bool := true
+
+/-- **Honesty marker — the FULL insertion step stays `false`; after r7 the residual is exactly the IN-RANGE BRAID mode
+plus its `inversionCount` assembly.**  Three of the four modes of the honest `InRangeInsertionStep` (in-range, genuine
+permutations) now close as GENERAL theorems: CANCEL (`crossingInsertionStep_atLeftmostDescent`, `position = d`),
+EXTEND (`crossingInsertionStep_extend`, `position < d`, reflexivity), and the COMMUTE local Coxeter step
+(`crossingInsertionStep_commute_localReduction`, `position ≥ d + 2`).  What remains for a full proof of
+`InRangeInsertionStep` (hence the flip of `fxBrauer_hasCrossingOnlyStraightening`) is:
+
+  1. **the outer `inversionCount` induction** assembling CANCEL / EXTEND / COMMUTE, where the COMMUTE and BRAID cases
+     re-insert `position` at the strictly-smaller `perm · s_d` via the IH — this needs the distant-swap commutation
+     `applyAdjacentSwap (perm · s_d) position = applyAdjacentSwap (perm · s_position) d` and the leftmost-descent
+     invariance under a distant swap (`leftmostDescent (perm · s_position) = d` for `position ≥ d + 2`), both further
+     structural inductions; and
+  2. **the BRAID mode itself** (`position = d + 1`): the inserted `s_{d+1}` meets the trailing `s_d`, which neither
+     cancels nor commutes — it must BRAID (`crossingBraidFree`) and then the moved letter can KEEP interacting leftward
+     through the canonical prefix of arbitrary length, so the recursion is NOT on `inversionCount` (it can rise) and
+     needs the secondary lexicographic measure `(inversionCount perm, position)`.  This is the standing jam — the exact
+     jamming configuration is *the braided `s_{d+1}` becoming `d`-adjacent to the next canonical run, forcing another
+     braid up to `O(word length)` times* — the `locateAux` / `pureCupSpine_sort`-magnitude induction (the 1300-line
+     zero-axiom sibling).
+
+So the residual has shrunk from "the general insertion step" (r6) to "the IN-RANGE BRAID mode + the `inversionCount`
+assembly"; the master markers `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
+`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false` because of it
+— a route/measure gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations DO present the category).
+`= false`. -/
 def fxBrauer_hasCrossingInsertionStepGeneralResidual : Bool := false
 
 end FX1Poly.Polygraph

@@ -1,14 +1,17 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescInsertion
 
-/-! # FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescInsertion — zero-axiom gate (WP-BRAUER-4 r5)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescInsertion — zero-axiom gate (WP-BRAUER-4 r5–r7)
 
-Per-declaration zero-axiom gate for the crossing-only word-problem layer landed in round 5: the canonical reduced
-word (`canonicalCrossingWord` = reverse of the `inversionCount`-fuelled bubble word), the homomorphism helpers, the
-identity base, the peel-last outer fold CONDITIONAL on the general insertion step
-(`crossingOnly_straightens_ofInsertionStep` / `crossingWords_equalPerm_conv_ofInsertionStep`), and the non-vacuity
-witnesses (canonical-is-a-reduced-word smokes + the three insertion-step modes + the two direct word-problem pairs).
-The private propext-free arithmetic / list helpers are covered transitively.
+Per-declaration zero-axiom gate for the crossing-only word-problem layer.  Round 5: the canonical reduced word
+(`canonicalCrossingWord` = reverse of the `inversionCount`-fuelled bubble word), the homomorphism helpers, the identity
+base, the peel-last outer fold CONDITIONAL on the general insertion step (`crossingOnly_straightens_ofInsertionStep` /
+`crossingWords_equalPerm_conv_ofInsertionStep`), and the non-vacuity witnesses.  Round 6: the CANCEL mode general
+(`crossingInsertionStep_atLeftmostDescent`) + its structural kit.  Round 7: the HONEST reformulation — the in-range
+insertion residual `InRangeInsertionStep` over genuine permutations + the revised well-formed fold, the EXTEND mode
+general (`crossingInsertionStep_extend`) + its swap-involution / leftmost-descent-tracking kit, and the COMMUTE mode
+local Coxeter step (`crossingInsertionStep_commute_localReduction`).  The private propext-free arithmetic / list
+helpers are covered transitively.
 
 Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`.  Registered in
 `AuditAll`. -/
@@ -61,10 +64,38 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_atLeftmostDescent
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_atLeftmostDescent_smoke
 
+-- WP-BRAUER r7: the HONEST reformulation (in-range insertion step over genuine permutations) + the revised fold.
+-- Private propext-free bool / order / list helpers are covered transitively.
+#assert_no_axioms FX1Poly.Polygraph.memBool
+#assert_no_axioms FX1Poly.Polygraph.isDistinctList
+#assert_no_axioms FX1Poly.Polygraph.wellFormedCrossingWord
+#assert_no_axioms FX1Poly.Polygraph.InRangeInsertionStep
+#assert_no_axioms FX1Poly.Polygraph.memBool_applyAdjacentSwap
+#assert_no_axioms FX1Poly.Polygraph.isDistinctList_applyAdjacentSwap
+#assert_no_axioms FX1Poly.Polygraph.isDistinctList_range
+#assert_no_axioms FX1Poly.Polygraph.isDistinctList_permuteOfCrossingWord
+#assert_no_axioms FX1Poly.Polygraph.lastPosition_inRange_ofWellFormed
+#assert_no_axioms FX1Poly.Polygraph.crossingOnly_straightensFueled_wellFormed
+#assert_no_axioms FX1Poly.Polygraph.crossingOnly_straightens_wellFormed
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_equalPerm_conv_wellFormed
+
+-- WP-BRAUER r7: the EXTEND mode (general) + its structural kit (swap involution, leftmost-descent tracking).
+#assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_involutive
+#assert_no_axioms FX1Poly.Polygraph.leftmostDescent_applyAdjacentSwap_belowDescent
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_extend
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_extend_general_smoke
+
+-- WP-BRAUER r7: the COMMUTE mode local Coxeter step (general, IH-free).
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_commute_localReduction
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_commute_localReduction_smoke
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCanonicalCrossingWordLayer
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingWordProblemConditionalReduction
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionCancelMode
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInRangeInsertionReformulation
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionExtendMode
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionCommuteLocalMove
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingInsertionStepGeneralResidual
 
 end FX1PolyAudit
