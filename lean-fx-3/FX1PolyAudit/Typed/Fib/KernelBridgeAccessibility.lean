@@ -34,4 +34,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Fib.lockedDimensionAccessibleDimensionallyViaBridge
 #assert_no_axioms FX1Poly.Core.Fib.lockedDimensionRefutedFibrantlyViaBridge
 
+/-! ## K5 — the separation / non-degeneracy certificate + markers -/
+
+#assert_no_axioms FX1Poly.Core.Fib.fibrantNotAccessibleFromDimensional
+#assert_no_axioms FX1Poly.Core.Fib.fibrantUsePath_ne_dimensionalUsePath
+#assert_no_axioms FX1Poly.Core.Fib.fxKernelBridge_hasModeAccessibilityDecision
+#assert_no_axioms FX1Poly.Core.Fib.fxKernelBridge_hasDischargedAccessibilityPremise
+#assert_no_axioms FX1Poly.Core.Fib.fxKernelBridge_hasModeSeparationCertificate
+#assert_no_axioms FX1Poly.Core.Fib.fxKernelBridge_hasParameterizedModeDecisionService
+#assert_no_axioms FX1Poly.Core.Fib.fxKernelBridge_hasEndToEndCheckerDemo
+#assert_no_axioms FX1Poly.Core.Fib.fxKernelBridge_hasGeneralMultiModeTwoCellDecision
+
 end FX1PolyAudit
