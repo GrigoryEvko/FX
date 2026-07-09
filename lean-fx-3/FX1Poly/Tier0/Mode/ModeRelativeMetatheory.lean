@@ -308,6 +308,23 @@ readback carriers are machine-witnessed to MISS it, from opposite sides:
     `coCrossSum` `1` vs `0`, hence NOT bare — `wordCodeCollision_not_twoCellConv`), so NO additive
     `Σ_gen φ(pattern)` word-code decides bare conv either; the complete invariant is strictly the per-generator
     pattern MULTISET.
+  * the per-generator pattern MULTISET `RawTwoCellExpr.patternMultiplicity` — the SUP of that whole additive
+    scalar tower (`whiskerSum` / `rSum` / `crossSum` / `leftCount` / `coCrossSum` / `nestedCrossSum` / `wordCode`
+    each factor through it) — is now SHIPPED as a machine-checked SOUND bare-conv invariant
+    (`TwoCellConv.patternMultiplicity_eq`, preserved by every `TwoCellStep` including interchange, which PERMUTES
+    generators while preserving each pattern, so the order-forgetting multiset is the invariant residual — the
+    Eckmann–Hilton order-collapse), and it SEPARATES the r4 `wordCode` collision where every additive scalar
+    collided (`wcc_not_conv_viaMultiset`, coordinate `[L]` scoring `1` vs `0`), with its equality DECIDABLE
+    zero-axiom via the sorted canonical carrier `RawTwoCellExpr.sortedPatternMultiset` + `listListBoolDecEq`
+    (NEVER `Multiset` / `Quot`).  This is the CEILING of the scalar tower — the first non-additive bare invariant —
+    but it is NOT proven complete: per the trace-monoid settlement the complete invariant is the strictly FINER
+    ordered Cartier–Foata clique-SEQUENCE (a flat order-forgetting bag is the same species of shadow one level up),
+    and flat-multiset completeness within a full-conv class is the interchange critical-pair coherence (Gratzer),
+    NOT fabricated.  Crucially the general decision is NOT beyond structural methods — Makkai's free-strict-ω-cat
+    word-problem procedure and Delpeuch–Vicary's strongly-normalizing exchange-move rewriting (quadratic) DECIDE
+    the planar interchange word problem via that clique-sequence normal form; the only research-open frontier is
+    the dimension-3 braided / Gray lift (unknotting-hard), which the PLANAR bare 2-cell never reaches
+    (`fxMode_hasBareConvFlatPatternMultisetSoundAndSeparating = true`).
 
 fib-3 is NOT blocked on this flag: its keystone is discharged at the granularity the MTT fibration consumes — the
 SATURATED modulo-triangles relation `SaturatedTwoCellConv`
