@@ -118,7 +118,9 @@ orientation legs, the joint invariant's freshness + forest components are preser
 UNCONDITIONAL, zero-axiom.  `= true`. -/
 def fxString_hasCapFreshnessPreservation : Bool := true
 
-/-- **OPEN (honest, LOCALIZED) — the CAP orientation survivor P4 + `capPin` stay a multi-round arc.**  With the CUP
+/-- **OPEN (honest, LOCALIZED) — the CAP orientation survivor P4 + `capPin` stay a multi-round arc.**  (Marker named
+as the POSITIVE capability, matching the sibling `…Preservation := true` convention: `false` = not-yet-established.)
+With the CUP
 side CLOSED (orientation + non-crossing + freshness + forest) and the CAP freshness + forest legs shipped, the
 no-loops flip owes exactly the CAP side of the ORIENTATION discipline and `capPin`:
 
@@ -138,6 +140,6 @@ So `fxString_hasNoLoopsTheorem` (in `StringFussCatalan`) STAYS `false`, HONESTLY
 the CAP orient survivor P4 + CAP non-crossing preservation + `capPin`: everything ELSE the flip needs — the discipline,
 the chirality refutation, the seed, the forest + fuel normalization, the CUP orientation + non-crossing + freshness
 legs, and the CAP freshness + forest legs — is SHIPPED zero-axiom.  `= false`. -/
-def fxString_hasCapOrientSurvivorResidual : Bool := false
+def fxString_hasCapOrientSurvivorPreservation : Bool := false
 
 end FX1Poly.Polygraph
