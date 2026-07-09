@@ -518,6 +518,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSaturatedConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingModel
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingCongruence
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingSoundness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity

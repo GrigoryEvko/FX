@@ -300,23 +300,28 @@ new relations, not free (`stringSnakeF_saturatedButNotFree`: saturated-convertib
 unconditionally.  `= true`. -/
 def fxString_hasPerLevelTriangleMatchingSoundness : Bool := true
 
-/-- **Honesty marker — the FULL two-level soundness is ASSEMBLED modulo exactly ONE cross-level residual (plus the
-shared congruence bundle).**  `stringSaturatedConv_matchingOf_eq` proves `matchingOf` invariant under the COMPLETE
-`StringSaturatedTwoCellConv` GIVEN: (1) the union-find Godement INDEPENDENCE `godementInvariant` at
-`adjointTripleModeSignature` (the `ofFull` input, via the polymorphic `matchingOf_sound_of_godementInvariant`),
-and (2) the compositionality bundle `StringMatchingSaturatedCongruence` (the four congruences).  Every SAME-COLOUR
-obligation is a verbatim walking-adjunction instance (colour 1 restricted = the `F ⊣ G` diagram, colour 2 = the
-`G ⊣ H` diagram); the four triangle cases are `rfl`.
+/-- **★ ESTABLISHED — the FULL two-level soundness is UNCONDITIONAL; the cross-colour Godement is DISCHARGED.**
+`stringSaturatedConv_matchingOf_eq` (this file) proves `matchingOf` invariant under the COMPLETE
+`StringSaturatedTwoCellConv` GIVEN two premises: (1) the union-find Godement INDEPENDENCE `godementInvariant` (the
+`ofFull` input) and (2) the compositionality bundle `StringMatchingSaturatedCongruence`.  Round 2 DISCHARGES
+both, in `WalkingString/StringMatchingCongruence` and `WalkingString/StringMatchingSoundness`:
 
-★ **The exact CROSS-LEVEL residual the single-adjunction machinery does NOT cover** lives inside
-`godementInvariant`: the Godement transposition of a colour-1 cup/cap horizontally ADJACENT to a colour-2 cup/cap
-on the SHARED `G`-wire — equivalently the confluence of the `triangleGlo` (colour 1) / `triangleGhi` (colour 2)
-overlap on the central strand.  The single walking adjunction's Godement only ever transposed `η` past `η` or `ε`
-past `ε` (one colour); the adjoint triple additionally transposes `η` past `η'`, `ε` past `ε'`, etc. across the
-shared `G`.  The union-find is colour-BLIND (it never inspects labels), so the disjoint-support commutation is the
-SAME proof SHAPE — but it is a NEW statement (cross-colour adjacent atoms), not a free instance of the adjunction
-residual.  Landing it (or refuting it with a genuine cross-level critical pair) is round 2's decision content;
-this round names it and ships the reduction, so the FULL soundness flag stays honest.  `= false`. -/
-def fxString_hasAdjointTripleSoundness : Bool := false
+  * the congruence bundle is PROVED (`stringMatchingSaturatedCongruence_proved`) — the whisker/vcomp `matchingOf`
+    cores are signature-POLYMORPHIC and colour-BLIND, so the walking-adjunction machinery ports to the
+    three-generator seed by swapping the discipline witness (`cellHasCupCapGenerators_ofStringSignature`);
+  * the cross-colour `ofFull` Godement is DISCHARGED (`stringSaturatedConv_matchingOf_eq_ofBoundaryDiscipline`,
+    `godementInvariant` premise GONE) by the shipped cup/cap capstone `matchingOf_sound_ofCupCapCells_allBoundaries`.
+
+★ **The cross-level residual is NOT a coupling obstruction.**  The Godement transposition of a colour-1 cup/cap
+adjacent to a colour-2 cup/cap on the SHARED `G`-wire (the `triangleGlo` / `triangleGhi` overlap) is, at the
+colour-BLIND union-find, exactly the disjoint-window cup/cap fragment the single-colour Godement already
+commuted — the shared `G` couples the colours only at the LABEL level (`pathLabels`), invisible to the
+connectivity model, so no cross-colour critical pair exists
+(`fxString_hasCrossColourGodementObstruction = false`).  The assembled unconditional soundness is
+`stringSaturatedConv_matchingOf_eq_final` (base) / `stringSaturatedConv_colouredMatchingOf_eq_final` (two-level).
+Non-vacuous: the two distinct `G`-snakes are identified (`stringSnakeGlo_colouredMatchingOf_eq_stringSnakeGhi`)
+while the cross-level cell `G·F ⇒ G·H` stays distinguished from `id_G`
+(`stringCrossLevel_colouredMatchingOf_ne_identityG`).  `= true`. -/
+def fxString_hasAdjointTripleSoundness : Bool := true
 
 end FX1Poly.Polygraph
