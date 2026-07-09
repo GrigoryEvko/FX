@@ -275,32 +275,42 @@ interchange critical pairs (confluence) `mode-3` identified.  The dimension-1 ba
 (`trivialComputad_oneCell_length_zero`, `decidableOneCellEq`) IS shipped.  `= false`. -/
 def fxMode_hasMultimodalCanonicity : Bool := false
 
-/-- **Honesty marker — the SOLE residual is a RELATION MISMATCH, not a missing decision.**  The full, GENERAL
+/-- **Honesty marker — PERMANENT-AS-STATED disposition; a RELATION MISMATCH now MECHANIZED from BOTH sides
+(fib-3 Wave-1(b) TERMINAL).**  The full, GENERAL
 mode-relative conversion DECISION over the FREE `TwoCellConv` (object conversion ⟺ mode 2-cell equality, the
 `fib-3` keystone) is owed `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem` at the BARE
 `TwoCellConv` parameter; the dimension-1 reduction (`decidableOneCellEq`, reusing the ωcE word `DecidableEq`) IS
-shipped.  Of the two slots, only ONE now genuinely fails — and it fails because the flag's parameter is a FINER
-relation than any decision reaches:
+shipped.  The BARE parameter is an OVER-FINE congruence — the free strict-2-category 2-cell congruence MINUS
+whisker-by-1-cell functoriality (`fxMode_hasInterchangeAndWhiskerFunctoriality = false`) — and BOTH natural
+readback carriers are machine-witnessed to MISS it, from opposite sides:
 
   * `traceDecision` (an UNCONDITIONAL `Decidable (SpineTraceEquiv …)`) is now DISCHARGED ungated —
     `adjunctionSpineTraceDecision` (via `decideAtomicTraceEquivOfChainedSeed` + FREE-5
     `spineTraceEquiv_iff_atomicTraceEquiv`), with NO arc gate.  (The arc-gated `decidableSpineTraceEquiv_of` is now
     a non-blocking alternative, not this leg's wall.)
-  * `reconstruct` demands `SpineTraceEquiv → TwoCellConv` at the BARE `TwoCellConv`, and THIS is provably FALSE
-    (FREE-2, the identity-path-whisker: `atomFrame adjunctionUnitSpineAtom` shares the unit's spine yet no
-    `TwoCellStep` strips its identity-1-cell whisker).  The shipped FREE-4
-    (`RawTwoCellExpr.twoCellConvFull_ofSpineTraceEquiv`) lands in the categorically-FAITHFUL `TwoCellConvFull`, so
-    the FAITHFUL decision IS unconditional (`adjunctionDecideTwoCellConvFull`,
-    `fxMode_hasFaithfulTwoCellDecisionModuloTrace = true`) — but bare `TwoCellConv` is strictly finer (the snakes
-    provably do NOT collapse, `leftSnakeSaturatedButNotFree`), so the bare `reconstruct` cannot be inhabited.
+  * the SPINE carrier is strictly COARSER than the cell: the `reconstruct` leg `SpineTraceEquiv → TwoCellConv` at
+    BARE `TwoCellConv` is provably FALSE — now MECHANIZED as `adjunctionSpineTraceReconstruction_refuted` (FREE-2):
+    `atomFrame adjunctionUnitSpineAtom` shares the unit's spine yet is NOT `TwoCellConv` to the bare `gen unit`,
+    proven via the bare-conv invariant `RawTwoCellExpr.whiskerSum` (`TwoCellConv.whiskerSum_eq`, preserved by every
+    `TwoCellStep` including interchange — it scores the two `2` vs `0`), the `¬` earlier passes only argued.
+  * the interchange-free NORMAL FORM `nfCell` carrier is strictly FINER than bare conv: the Eckmann–Hilton
+    parallel-units pair is `TwoCellConv` yet has DISTINCT normal forms — machine-checked
+    `interchangeFreeNormalForm_notCompleteInvariantForBareConv` (= `adjunctionInterchangeIsNonDegenerate`), so a
+    "normalize both, compare" decision returns FALSE NEGATIVES.  (The shipped FREE-4
+    `RawTwoCellExpr.twoCellConvFull_ofSpineTraceEquiv` lands in the categorically-FAITHFUL `TwoCellConvFull`, where
+    the FAITHFUL decision IS unconditional — `adjunctionDecideTwoCellConvFull`,
+    `fxMode_hasFaithfulTwoCellDecisionModuloTrace = true` — but bare `TwoCellConv` is strictly finer, the snakes
+    provably not collapsing, `leftSnakeSaturatedButNotFree`.)
 
 fib-3 is NOT blocked on this flag: its keystone is discharged at the granularity the MTT fibration consumes — the
 SATURATED modulo-triangles relation `SaturatedTwoCellConv`
 (`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction = true`,
 `adjunctionSaturatedModeRelativeConvDecision`) — and the faithful free relation is decided too; bare `TwoCellConv`
 sits strictly below both and is kept honestly live as an over-fine relation, per Gratzer Cor. 8.10 (conversion is
-decided when 2-cell EQUALITY is, which the faithful/saturated decisions supply).  Genuine residual, not a no-math
-composition.  `= false`. -/
+decided when 2-cell EQUALITY is, which the faithful/saturated decisions supply).  Bare `TwoCellConv`'s decidability
+is GENUINELY OPEN (the interchange critical-pair convergence, Gratzer's coherence hurdle) — re-openable, NOT
+undecidability-walled (that is FLAG A, rung-3 Markov/Post over ARBITRARY presentations).  The owed statement is
+UNCHANGED (no weakening); the flag stays `false` as a permanent-as-stated terminal disposition.  `= false`. -/
 def fxMode_hasModeRelativeConvDecision : Bool := false
 
 end FX1Poly.Tier0

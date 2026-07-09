@@ -249,6 +249,149 @@ theorem adjunctionUnitFrame_normalForm_ne_unit :
       (nfCell (atomFrame adjunctionUnitSpineAtom)) (nfCell adjunctionUnitTwoCell))
     rfl
 
+/-! ## The bare-conv invariant separating the identity-1-cell whisker (FREE-2 mechanized) -/
+
+/-- The **whisker-incidence sum** of a free 2-cell: each generator counted once per enclosing whisker.  A bare
+generator and an identity scores `0`; each `whiskerLeft` / `whiskerRight` node adds one incidence per generator in
+its body (`+ generatorCount` of the body); a vertical composite sums the factors.  Unlike `generatorCount`
+(whisker-BLIND, so it passes through whiskerings), this SEES identity-1-cell whiskers: `nil` whiskering around a
+generator still adds an incidence, so `nil (whiskerLeft) (nil (whiskerRight) gen)` scores `2` while the bare `gen`
+scores `0`.  Full five-case match, constant `Nat` motive — propext-free. -/
+def RawTwoCellExpr.whiskerSum {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Nat
+  | _, _, _, _, .gen _ => 0
+  | _, _, _, _, .id _ => 0
+  | _, _, _, _, .vcomp cellAlpha cellBeta => cellAlpha.whiskerSum + cellBeta.whiskerSum
+  | _, _, _, _, .whiskerLeft _ cellBeta => cellBeta.whiskerSum + cellBeta.generatorCount
+  | _, _, _, _, .whiskerRight _ cellBeta => cellBeta.whiskerSum + cellBeta.generatorCount
+
+/-- Middle-four exchange for `Nat` addition — the arithmetic shape whisker distribution takes on incidence sums.
+Propext-free (`Nat.add_assoc` / `Nat.add_left_comm`, exactly the ωcE `Word`-layer discipline). -/
+private theorem nat_add_middle_four_ws (first second third fourth : Nat) :
+    (first + second) + (third + fourth) = (first + third) + (second + fourth) := by
+  rw [Nat.add_assoc, Nat.add_assoc, Nat.add_left_comm second third fourth]
+
+/-- Eight-term shuffle for `Nat` addition — interchange rebrackets the four sub-cells' `(whiskerSum,
+generatorCount)` incidence pairs, and both sides sum the SAME eight atoms.  Six fully-instantiated middle-four
+exchanges (deterministic `rw` targets), propext-free. -/
+private theorem nat_add_shuffle_eight (a b c d e f g h : Nat) :
+    ((a + b) + (c + d)) + ((e + f) + (g + h))
+      = ((a + c) + (e + g)) + ((b + d) + (f + h)) := by
+  rw [nat_add_middle_four_ws (a + b) (c + d) (e + f) (g + h)]
+  rw [nat_add_middle_four_ws a b e f]
+  rw [nat_add_middle_four_ws c d g h]
+  rw [nat_add_middle_four_ws (a + e) (b + f) (c + g) (d + h)]
+  rw [nat_add_middle_four_ws a e c g]
+  rw [nat_add_middle_four_ws b f d h]
+
+/-- ★ **The whisker-incidence sum is invariant under one 3-cell rewrite — INCLUDING interchange.**  Identity
+removal drops a `0` factor; re-association and whisker distribution rearrange the sum (middle-four); the INTERCHANGE
+law rebrackets the four sub-cells' incidence pairs (`nat_add_shuffle_eight` — both Godement orders whisker every
+generator exactly once); the whisker congruences thread the inductive hypothesis PLUS the `generatorCount`
+invariance of the sub-step (`TwoCellStep.generatorCount_eq`).  By induction on the step, the same shape as
+`TwoCellStep.generatorCount_eq`. -/
+theorem TwoCellStep.whiskerSum_eq {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {expr reduct : RawTwoCellExpr signature sourcePath targetPath}
+    (step : TwoCellStep signature expr reduct) : expr.whiskerSum = reduct.whiskerSum := by
+  induction step with
+  | vcompIdLeft cellAlpha => exact Nat.zero_add cellAlpha.whiskerSum
+  | vcompIdRight _ => rfl
+  | vcompAssoc cellAlpha cellBeta cellGamma =>
+      exact Nat.add_assoc cellAlpha.whiskerSum cellBeta.whiskerSum cellGamma.whiskerSum
+  | whiskerLeftId _ _ => rfl
+  | whiskerRightId _ _ => rfl
+  | whiskerLeftVcomp _ cellBeta cellGamma =>
+      dsimp only [RawTwoCellExpr.whiskerSum, RawTwoCellExpr.generatorCount]
+      exact nat_add_middle_four_ws cellBeta.whiskerSum cellGamma.whiskerSum
+        cellBeta.generatorCount cellGamma.generatorCount
+  | whiskerRightVcomp _ cellAlpha cellBeta =>
+      dsimp only [RawTwoCellExpr.whiskerSum, RawTwoCellExpr.generatorCount]
+      exact nat_add_middle_four_ws cellAlpha.whiskerSum cellBeta.whiskerSum
+        cellAlpha.generatorCount cellBeta.generatorCount
+  | vcompCongrLeft _ _ inductionHypothesis =>
+      dsimp only [RawTwoCellExpr.whiskerSum]; rw [inductionHypothesis]
+  | vcompCongrRight _ _ inductionHypothesis =>
+      dsimp only [RawTwoCellExpr.whiskerSum]; rw [inductionHypothesis]
+  | whiskerLeftCongr _ subStep inductionHypothesis =>
+      dsimp only [RawTwoCellExpr.whiskerSum]
+      rw [inductionHypothesis, subStep.generatorCount_eq]
+  | whiskerRightCongr _ subStep inductionHypothesis =>
+      dsimp only [RawTwoCellExpr.whiskerSum]
+      rw [inductionHypothesis, subStep.generatorCount_eq]
+  | interchange cellAlpha cellAlphaUpper cellBeta cellBetaUpper =>
+      dsimp only [RawTwoCellExpr.hcomp, RawTwoCellExpr.whiskerSum, RawTwoCellExpr.generatorCount]
+      exact nat_add_shuffle_eight
+        cellAlpha.whiskerSum cellAlphaUpper.whiskerSum
+        cellAlpha.generatorCount cellAlphaUpper.generatorCount
+        cellBeta.whiskerSum cellBetaUpper.whiskerSum
+        cellBeta.generatorCount cellBetaUpper.generatorCount
+
+/-- **The whisker-incidence sum is invariant under 2-cell convertibility** — well-defined on the `TwoCellConv`
+class.  A single step is `whiskerSum_eq`, reflexivity is `rfl`, symmetry / transitivity chain through `Eq`.  A
+genuine BARE-conv invariant (it survives interchange), unlike the interchange-free `nfCell`. -/
+theorem TwoCellConv.whiskerSum_eq {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {expr reduct : RawTwoCellExpr signature sourcePath targetPath}
+    (conv : TwoCellConv signature expr reduct) : expr.whiskerSum = reduct.whiskerSum := by
+  induction conv with
+  | ofStep step => exact step.whiskerSum_eq
+  | refl _ => rfl
+  | symm _ inductionHypothesis => exact inductionHypothesis.symm
+  | trans _ _ firstHypothesis secondHypothesis => exact firstHypothesis.trans secondHypothesis
+
+/-- The identity-1-cell-whiskered unit frame scores `2` whisker incidences (two `nil` whiskers around one
+generator) — machine-checked by `rfl`. -/
+theorem adjunctionUnitFrame_whiskerSum :
+    (atomFrame adjunctionUnitSpineAtom).whiskerSum = 2 := rfl
+
+/-- The bare unit generator scores `0` whisker incidences — machine-checked by `rfl`. -/
+theorem adjunctionUnitTwoCell_whiskerSum : adjunctionUnitTwoCell.whiskerSum = 0 := rfl
+
+/-- ★ **The identity-1-cell whisker is NOT bare-convertible away (the FREE-2 obstruction, MECHANIZED).**  The
+per-atom readback `atomFrame adjunctionUnitSpineAtom` (= `nil (whiskerLeft) (nil (whiskerRight) gen unit)`) is NOT
+`TwoCellConv` to the bare `gen unit`: `whiskerSum` — a genuine BARE-conv invariant (`TwoCellConv.whiskerSum_eq`,
+preserved by every `TwoCellStep` including interchange) — scores them `2` versus `0`.  This is the `¬` the earlier
+passes only ARGUED (no `TwoCellStep` strips an identity-1-cell whisker — the deferred whisker-unit law); it is now
+a proven theorem, via a positional invariant that survives the interchange critical pair the spine and the
+interchange-free `nfCell` both fail on. -/
+theorem adjunctionUnitFrame_not_twoCellConv_unit :
+    ¬ TwoCellConv adjunctionModeSignature (atomFrame adjunctionUnitSpineAtom) adjunctionUnitTwoCell :=
+  fun conv => by
+    have contradiction : (2 : Nat) = 0 := conv.whiskerSum_eq
+    exact Nat.noConfusion contradiction
+
+/-- ★★ **The BARE trace reconstruction is REFUTED — a proven `¬`, not an argument.**  The `reconstruct` leg of the
+trace route at BARE `TwoCellConv` — `AdjunctionSpineTraceReconstruction`, i.e.
+`SpineTraceEquiv a.spine b.spine -> TwoCellConv a b` — is FALSE: the identity-1-cell whisker frame and the bare
+unit have EQUAL spines (`adjunctionUnitFrame_spine_eq_unit`, so `SpineTraceEquiv.refl` supplies the hypothesis)
+yet are NOT `TwoCellConv` (`adjunctionUnitFrame_not_twoCellConv_unit`).  So the spine (coarser than the cell)
+cannot reconstruct bare convertibility — the FREE-2 wall behind `fxMode_hasModeRelativeConvDecision` staying
+`false`, now machine-checked rather than merely cited. -/
+theorem adjunctionSpineTraceReconstruction_refuted :
+    ¬ AdjunctionSpineTraceReconstruction :=
+  fun reconstruct =>
+    adjunctionUnitFrame_not_twoCellConv_unit
+      (reconstruct (atomFrame adjunctionUnitSpineAtom) adjunctionUnitTwoCell
+        (SpineTraceEquiv.refl adjunctionUnitTwoCell.spine))
+
+/-- ★★ **The interchange-free normal form does NOT decide bare `TwoCellConv` (flip-via-NF refuted).**  The
+Eckmann–Hilton parallel-units pair is `TwoCellConv` (`adjunctionParallelUnitsConv`, one `interchange` step) yet has
+DISTINCT interchange-free normal forms (`adjunctionParallelUnitsNormalFormsDiffer`): `nfCell` is strictly FINER
+than bare conv, so a "normalize both, compare" decision returns a FALSE NEGATIVE on this genuinely-convertible
+pair.  Together with `adjunctionSpineTraceReconstruction_refuted` (the spine strictly COARSER, over-identifying),
+this bounds bare `TwoCellConv` from BOTH sides: the finer carrier over-separates convertible cells, the coarser
+under-separates them — so neither natural readback carrier decides the bare relation. -/
+theorem interchangeFreeNormalForm_notCompleteInvariantForBareConv :
+    TwoCellConv adjunctionModeSignature
+        adjunctionParallelUnitsRedex adjunctionParallelUnitsReduct ∧
+      nfCell adjunctionParallelUnitsRedex ≠ nfCell adjunctionParallelUnitsReduct :=
+  ⟨adjunctionParallelUnitsConv, adjunctionParallelUnitsNormalFormsDiffer⟩
+
 /-! ## Honesty marker -/
 
 /-- **ESTABLISHED (at `TwoCellConvFull`).**  The cell↔chain bridge is CLOSED one level up:

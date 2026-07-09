@@ -192,19 +192,28 @@ FLAG B — `FX1Poly.Tier0.fxMode_hasModeRelativeConvDecision = false`
   (`ModeRelativeMetatheory.lean`).  WALL: a RELATION MISMATCH, NOT undecidability and NOT an
   owed decision.  Its parameter is the FINER free BARE `TwoCellConv` over ANY computad (the
   snakes provably do NOT collapse, `leftSnakeSaturatedButNotFree`), owed
-  `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`.  Of the two slots, the
-  `traceDecision` is now DISCHARGED ungated (`adjunctionSpineTraceDecision`, via
-  `decideAtomicTraceEquivOfChainedSeed` + FREE-5); the `reconstruct` into BARE `TwoCellConv`
-  is provably FALSE (FREE-2, the identity-path-whisker).  The categorically-FAITHFUL
+  `(traceDecision, reconstruct)` of `AdjunctionTwoCellWordProblem`.  BOTH natural readback
+  carriers are machine-witnessed to MISS the over-fine bare relation, from opposite sides: the
+  `traceDecision` is DISCHARGED ungated (`adjunctionSpineTraceDecision`, via
+  `decideAtomicTraceEquivOfChainedSeed` + FREE-5), yet the SPINE-carried `reconstruct` into
+  BARE `TwoCellConv` is provably FALSE — now MECHANIZED as
+  `adjunctionSpineTraceReconstruction_refuted` (FREE-2, via the bare-conv invariant
+  `RawTwoCellExpr.whiskerSum`, scoring `2` vs `0` on the identity-1-cell whisker), the `¬`
+  earlier passes only argued; and the finer interchange-free `nfCell` carrier OVER-separates —
+  a `TwoCellConv` pair with distinct normal forms
+  (`interchangeFreeNormalForm_notCompleteInvariantForBareConv`), so "normalize + compare" gives
+  false negatives.  The categorically-FAITHFUL
   `TwoCellConvFull` decision IS unconditional (`adjunctionDecideTwoCellConvFull`,
   `fxMode_hasFaithfulTwoCellDecisionModuloTrace = true`), and the SATURATED modulo-triangles
   relation the MTT fibration consumes is decided too
   (`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction`) — so fib-3 is NOT blocked on
   FLAG B.  The arc route (`ArcReconstruction`, `fxMode_hasArcStructureReconstruction` /
   `fxMode_hasArcGodementIndependenceProof`, both `false`) is now a NON-BLOCKING geometry-native
-  alternative for the faithful decision, not this flag's gate.  Bare `TwoCellConv` is kept
-  honestly live as an over-fine relation; genuine open content, re-openable, NOT walled by
-  undecidability.
+  alternative for the faithful decision, not this flag's gate.  fib-3 Wave-1(b) TERMINAL: bare
+  `TwoCellConv` is kept honestly live as an over-fine relation whose decidability is GENUINELY
+  OPEN (the interchange critical-pair convergence) — re-openable, NOT walled by undecidability
+  (that is FLAG A).  The owed statement is unchanged; the flag stays `false` as a
+  permanent-as-stated disposition, both readback routes now mechanized-refuted.
 
 SATURATED (per-presentation, below both flags) — TRUE+backed, zero-axiom:
   * `fxMode_hasSaturatedMatchingCanonicalizationCarrier = true` — carrier `matchingOf`.

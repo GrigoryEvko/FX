@@ -32,6 +32,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_isInterchangeNormal
 #assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_spine_eq_unit
 #assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_normalForm_ne_unit
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.whiskerSum
+#assert_no_axioms FX1Poly.Polygraph.TwoCellStep.whiskerSum_eq
+#assert_no_axioms FX1Poly.Polygraph.TwoCellConv.whiskerSum_eq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_whiskerSum
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitTwoCell_whiskerSum
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_not_twoCellConv_unit
+#assert_no_axioms FX1Poly.Polygraph.adjunctionSpineTraceReconstruction_refuted
+#assert_no_axioms FX1Poly.Polygraph.interchangeFreeNormalForm_notCompleteInvariantForBareConv
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasRealizedChainCellBridge
 
 end FX1PolyAudit
