@@ -559,6 +559,27 @@ theorem wordMul_vcomp : ∀ (ccR ccL : List Nat) (hlen : ccL.length = listSum cc
       rw [RawTwoCellExpr.hcomp_castBoundaryLeft, RawTwoCellExpr.hcomp_castBoundaryRight]
       exact monadCastTripleEqCast _ _ _ _ _ _ _ _ _
 
+/-! ## Non-vacuity smokes: the vertical multiplicativity fires on genuine merging pairs -/
+
+/-- Smoke: two identity strands vertically composed with the width-2 merge gadget IS the merge —
+`vcomp (word [1,1]) (cast (word [2])) ≈ cast (word (composeCounts [1,1] [2]))`, and
+`composeCounts [1,1] [2] = [2]` (the two mid strands merge to one target).  A genuine `t^2 ⇒ t` instance. -/
+theorem wordMul_vcomp_smoke_merge :
+    MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (wordFromCounts [1, 1])
+        (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid [1, 1] [2] rfl) rfl (wordFromCounts [2])))
+      (RawTwoCellExpr.castBoundary (wordMul_vcomp_hdom [1, 1] [2] rfl)
+        (congrArg monadTPower (composeCounts_length [1, 1] [2]))
+        (wordFromCounts (composeCounts [1, 1] [2]))) :=
+  wordMul_vcomp [2] [1, 1] rfl
+
+/-- Smoke: the block-sum composition computes — `composeCounts [1,1] [2] = [2]` (both mid strands into one target). -/
+theorem wordMul_vcomp_composeCounts_merge : composeCounts [1, 1] [2] = [2] := rfl
+
+/-- Smoke: a mixed block sum — `composeCounts [1,1,1] [2,1] = [2,1]` (first two mid strands merge, the third passes),
+so `vcomp (word [1,1,1]) (word [2,1]) ≈ word [2,1]` fires as a genuine `t^3 ⇒ t^2` instance. -/
+theorem wordMul_vcomp_composeCounts_mixed : composeCounts [1, 1, 1] [2, 1] = [2, 1] := rfl
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED — the word-gadget collapse and the block-sum composition are shipped, zero-axiom.**  Toward the

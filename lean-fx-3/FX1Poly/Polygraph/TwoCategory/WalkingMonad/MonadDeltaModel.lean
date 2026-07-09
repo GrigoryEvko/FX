@@ -246,11 +246,14 @@ COMPLETE (`monadMonotoneMapOf_mapEqOfConv`, `WalkingMonad/MonadDeltaDecision`): 
 monad-law legs, the vcomp/whisker congruences, AND the Godement / `ofFull` interchange invariance
 (`monadMonotoneMapOf_interchange` — the disjoint-window two-block commute, cap-free on Δ) are all discharged.  The
 SOLE remaining field is the COMPLETENESS `convOfMapEq` — the EZ reconstruction: every cell is convertible under the
-three monad laws to the canonical degeneracies-then-faces word of its monotone map's EZ epi-then-mono factorization.
-Existence of the factorization is shipped (`composeMap_rankList_imageList`); the eta/mu word builder and the
-normalization `cell ≈ canonWord (map cell)` are the named residual (faithfulness-weight, the adjunction lane's
-flag-B analog).  Until it lands, `MonadSaturatedCanonicalization` is NOT inhabited and the decision is not real.
-`= false`. -/
+three monad laws to the canonical word of its monotone map.  The eta/mu word builder (`wordFromCounts`) + section
+are shipped, and the normalization `cell ≈ canon cell` has FOUR of five cases closed plus the `vcomp` case's 2-cell
+half — the VERTICAL word multiplicativity `wordMul_vcomp` (`WalkingMonad/MonadWordVcomp`,
+`fxMonad_hasVcompWordMultiplicativity`, zero-axiom, via the block split + free interchange + `wordGadgetCollapse`).
+The SOLE remaining residual is the DATA bridge `canonCounts (vcomp) = composeCounts (canonCounts, canonCounts)`
+(`countsOf ∘ composeMap = composeCounts ∘ countsOf`), the analog of the shipped whisker bridges, whose base-shifted
+induction is the named residual.  Until it lands, `MonadSaturatedCanonicalization` is NOT inhabited and the decision
+is not real.  `= false`. -/
 def fxMonad_hasMonotoneMapDecisionAssembled : Bool := false
 
 end FX1Poly.Polygraph

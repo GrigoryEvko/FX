@@ -343,17 +343,22 @@ the whisker word multiplicativities (`wordMul_whiskerLeft/Right`), the boundary 
 What remains (the SOLE case using the monad LAWS):
 
   * **`vcomp cellL cellR`** — the congruences + IH reduce it to `vcomp (canon cellL) (canon cellR) ≈ canon (vcomp
-    cellL cellR)`, i.e. the VERTICAL word multiplicativity `wordMul_vcomp`: fold the mu-tree amalgamation
-    `gadgetAbsorb` (the associativity crossing, now CLOSED zero-axiom in `WalkingMonad/MonadVcompMult`) over the
-    two words — `vcomp (word ccL) (word ccR) ≈ cast (word (composeCounts ccL ccR))` — via the `wordMul_hcomp` word
-    split at `take/drop ccL`, the interchange assembly, and the data-level `countsOf ∘ composeMap = composeCounts
-    ∘ countsOf` bridge (the degeneracies-then-faces re-sort; convergent by Guiraud–Malbos–Mimram Example 2.6,
-    Weibel Lemma 8.1.2).  The associativity brick `gadgetAbsorb` is now landed; the word-fold assembly is the
-    residual.
+    cellL cellR)`.  Its 2-cell half — the VERTICAL word multiplicativity `wordMul_vcomp : vcomp (word ccL)
+    (word ccR) ≈ cast (word (composeCounts ccL ccR))` — is now CLOSED zero-axiom
+    (`WalkingMonad/MonadWordVcomp`, `fxMonad_hasVcompWordMultiplicativity`), via the `wordMul_hcomp` block split at
+    `take/drop ccL`, the free interchange, the `wordGadgetCollapse` per-block merge (the three monad laws through
+    `gadgetAbsorb`), and the proof-irrelevant boundary-cast fusion.  What is NOT yet landed is the DATA half — the
+    bridge `canonCounts (vcomp cellL cellR) = composeCounts (canonCounts cellL) (canonCounts cellR)`, i.e. the pure
+    `List Nat` identity `countsOf targetLen 0 (composeMap mapL mapR) = composeCounts (countsOf midLen 0 mapL)
+    (countsOf targetLen 0 mapR)` (the degeneracies-then-faces re-sort; convergent by Guiraud–Malbos–Mimram
+    Example 2.6, Weibel Lemma 8.1.2), the analog of the shipped whisker bridges `canonCounts_whiskerLeft/Right`.
+    Its base-shifted induction (head = leading composite-run length, tail = mid-suffix shift into the next base) is
+    the named residual.
 
-Until the `vcomp` case lands, `normalize` is not inhabited, so `MonadSaturatedCanonicalization.convOfMapEq`
-(`monadConvOfMapEq_ofNormalize`) is not inhabited and `fxMonad_hasMonotoneMapDecisionAssembled` /
-`fxMonad_hasConvOfMapEqNormalization` / `fxMonad_hasFullMapEqOfConvAndCompleteness` stay `false`.  `= false`. -/
+Until the DATA bridge lands and the `vcomp` case is assembled, `normalize` is not inhabited, so
+`MonadSaturatedCanonicalization.convOfMapEq` (`monadConvOfMapEq_ofNormalize`) is not inhabited and
+`fxMonad_hasMonotoneMapDecisionAssembled` / `fxMonad_hasConvOfMapEqNormalization` /
+`fxMonad_hasFullMapEqOfConvAndCompleteness` stay `false`.  `= false`. -/
 def fxMonad_hasNormalizeIdWhiskerVcompCases : Bool := false
 
 end FX1Poly.Polygraph

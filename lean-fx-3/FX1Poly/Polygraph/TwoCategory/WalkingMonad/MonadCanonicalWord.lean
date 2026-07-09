@@ -398,17 +398,18 @@ Nat` into a `RawTwoCellExpr`" — now shipped, zero-axiom.  `= true`. -/
 def fxMonad_hasEilenbergZilberWordBuilder : Bool := true
 
 /-- **Honesty marker.**  The COMPLETENESS field `convOfMapEq` of `MonadSaturatedCanonicalization`
-(`monadMonotoneMapOf a = monadMonotoneMapOf b → MonadSaturatedTwoCellConv a b`) is NOT yet inhabited.  With the
-word-builder + section shipped here, the SOLE remaining residual is the **NORMALIZATION direction** — every cell
-is `MonadSaturatedTwoCellConv`-convertible to the canonical word of its own fold, `cell ≈ wordFromCounts
-(countsOf (monadMonotoneMapOf cell))`.  Its crux is the `vcomp` MULTIPLICATIVITY: concatenating two canonical
-words and re-normalizing to a single EZ word (degeneracies-then-faces, index-sorted) via the simplicial-identity
-seed rewrites — a bubble/insertion-sort at the CELL level, the faithfulness-weight brick (the adjunction lane's
-flag-B analog, still open).  The model-level simplicial identities are all shipped (`MonotoneMap.lean` §259–460)
-as the SOUNDNESS shadow, but each must be re-witnessed as a `MonadSaturatedTwoCellConv` and threaded by a
-terminating normalizer.  A secondary residual is the trivial map→counts inversion `reconstructFrom 0 (countsOf
-values) = values`.  Until normalization lands, `MonadSaturatedCanonicalization` is NOT inhabited and the decision
-is not real.  `= false`. -/
+(`monadMonotoneMapOf a = monadMonotoneMapOf b → MonadSaturatedTwoCellConv a b`) is NOT yet inhabited.  The
+NORMALIZATION direction — every cell is `MonadSaturatedTwoCellConv`-convertible to the canonical word of its own
+fold, `cell ≈ wordFromCounts (countsOf (monadMonotoneMapOf cell))` — has its FOUR non-vcomp cases closed (the two
+`gen` leaves, `id`, both whiskers), and its `vcomp` case's 2-cell half is now CLOSED: the VERTICAL word
+multiplicativity `wordMul_vcomp : vcomp (word ccL) (word ccR) ≈ cast (word (composeCounts ccL ccR))`
+(`WalkingMonad/MonadWordVcomp`, `fxMonad_hasVcompWordMultiplicativity`) — the block-sum re-sort via the
+`wordMul_hcomp` split, the free interchange, and the `wordGadgetCollapse` per-block merge (the three monad laws).
+The SOLE remaining residual toward `normalize` is the DATA bridge `canonCounts (vcomp cellL cellR) = composeCounts
+(canonCounts cellL) (canonCounts cellR)` — the pure `List Nat` identity `countsOf ∘ composeMap = composeCounts ∘
+countsOf`, the analog of the shipped whisker bridges `canonCounts_whiskerLeft/Right`, whose base-shifted induction
+(leading-run head, mid-suffix-shift tail) is the named residual.  Until it lands, `MonadSaturatedCanonicalization`
+is NOT inhabited and the decision is not real.  `= false`. -/
 def fxMonad_hasConvOfMapEqNormalization : Bool := false
 
 end FX1Poly.Polygraph
