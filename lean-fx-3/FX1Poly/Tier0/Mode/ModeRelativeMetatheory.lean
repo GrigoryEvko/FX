@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.Computad.WordProblem
 import FX1Poly.Polygraph.OmegacE.Word
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.BareConvDecisionReconciliation
 import FX1Poly.Tier0.Mode.Mode
 
 /-! # mode-9 — Gratzer canonicity + the mode-relative metatheory + the computad→ωcE word bridge
@@ -334,7 +335,24 @@ sits strictly below both and is kept honestly live as an over-fine relation, per
 decided when 2-cell EQUALITY is, which the faithful/saturated decisions supply).  Bare `TwoCellConv`'s decidability
 is GENUINELY OPEN (the interchange critical-pair convergence, Gratzer's coherence hurdle) — re-openable, NOT
 undecidability-walled (that is FLAG A, rung-3 Markov/Post over ARBITRARY presentations).  The owed statement is
-UNCHANGED (no weakening); the flag stays `false` as a permanent-as-stated terminal disposition.  `= false`. -/
+UNCHANGED (no weakening); the flag stays `false` as a permanent-as-stated terminal disposition.  The r7
+TERMINAL reconciliation — the master flag is NOT dischargeable by any shipped decision, because bare
+`TwoCellConv` is STRICTLY FINER than every decided notion — is consolidated and machine-backed in
+`BareConvDecisionReconciliation` (`fxMode_hasBareConvDecisionDeepWall = true`,
+`bareConvDecisionReconciliation`).  `= false`. -/
 def fxMode_hasModeRelativeConvDecision : Bool := false
+
+/-- ★ **The flag-B r7 TERMINAL link (machine-checked): the master flag is an HONEST DEEP WALL, not a discharge.**
+`fxMode_hasModeRelativeConvDecision` (the BARE `TwoCellConv` decision) STAYS `false`, and the consolidated
+reconciliation marker `fxMode_hasBareConvDecisionDeepWall` (`BareConvDecisionReconciliation`, backed by
+`bareConvDecisionReconciliation`: the faithful `TwoCellConvFull` and saturated decisions are total, the Godement
+pair witnesses bare ⊊ `TwoCellConvFull`, and the realizable readback lands at `TwoCellConvFull` not bare) is
+`true`.  Both by `rfl` — the honest terminal of the flag-B arc: the shipped faithful / saturated decisions
+decide STRICTLY COARSER (categorically-correct) relations, so they do NOT discharge the strictly-finer bare
+flag, which is re-openable but NOT undecidability-walled. -/
+theorem modeRelativeConvDecision_isDeepWall_notDischargeable :
+    fxMode_hasModeRelativeConvDecision = false
+    ∧ fxMode_hasBareConvDecisionDeepWall = true :=
+  ⟨rfl, rfl⟩
 
 end FX1Poly.Tier0

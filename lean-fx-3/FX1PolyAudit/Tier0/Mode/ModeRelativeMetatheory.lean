@@ -45,4 +45,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeRelativeConvDecision
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction
 
+-- The r7 TERMINAL link: master flag `false` ↔ deep-wall reconciliation marker `true`
+#assert_no_axioms FX1Poly.Tier0.modeRelativeConvDecision_isDeepWall_notDischargeable
+
 end FX1PolyAudit
