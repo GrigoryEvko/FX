@@ -2282,6 +2282,199 @@ theorem crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents_smoke :
   crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents [2, 0, 1, 3]
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
 
+/-! ## WP-BRAUER r12 — the braid-ascent LEAF WALLED (Regime A definitive) + carry-collapse sharpening + the
+untwist-normalization PIVOT
+
+r9 CLOSED the outer strong induction (`inRangeInsertionStepFueled_ofBraidAscent`), reducing the whole in-range
+crossing-only word problem to ONE leaf, `BraidAscentInsertionStep`.  r10 shipped the carry ALGEBRA
+(`applyAdjacentSwap_braid` + its five-fold collapse) and the Regime-B carry re-insertion.  r11 REDUCED the Regime-B
+half of the leaf to TWO decidable leftmost-descent facts (`ldP0Gt`, `ldP2Eq`), machine-validated on all 1288 Regime-B
+residual leaves `n <= 7`.  r12 SETTLES the leaf's status: it is WALLED, Regime A being the definitive obstruction to
+the shipped-move method.
+
+### The wall — Regime A is measure/route-resistant on the shipped moves
+
+The residual `BraidAscentInsertionStep` splits (exhaustively — `residualOther = 0` for all enumerated `n <= 7`) on
+`leftmostDescent (perm . s_d)`, `d = leftmostDescent perm`:
+
+  * **Regime B** (`leftmostDescent (perm . s_d) = d + 1`): the shipped local braid move fires; r11 reduced it to the
+    two leftmost-descent facts.
+  * **Regime A** (`leftmostDescent (perm . s_d) = d - 1`; the canonical `[1,3,0,2]`, `[2,3,0,1]`; the 823 other
+    residual leaves `n <= 7`): NO shipped local braid move applies — the inserted `[d, d+1]` must first COMMUTE
+    leftward into the canonical prefix by a chain of DISTANT commutes of VARIABLE length BEFORE any braid can fire,
+    hand-witnessed by `crossingWords_conv_residualStuckExample` (`commute(2,0)`-at-front, then `braid(1)`).
+
+Regime A is the wall.  Machine-checked + classical grounding: the residual filter forces an ASCENT at `d + 1`, so the
+leaf's `leafWord = canonicalCrossingWord perm ++ [d+1]` and `targetWord = canonicalCrossingWord (perm . s_{d+1})` are
+two REDUCED words of the SAME length for the SAME element (`ell (perm . s_{d+1}) = ell perm + 1`).  By Matsumoto/Tits
+(Bjorner-Brenti Thm 3.3.1) they are connected by LENGTH-PRESERVING braid + commute moves of variable count (2 at
+`n = 4`, 4 at `n = 5`; `crossingWords_conv_{residualStuckExample, secondResidualPair}`).  The shared global measure is
+the Coxeter length `ell` (= `inversionCount`), which is FROZEN across the ascent (`inv (perm . s_{d+1}) >= inv perm`,
+the leaf's own hypothesis).  Every classical termination proof descends on that ONE global scalar applied UNIFORMLY and
+supplies NO per-regime local move (the literature never needs one — its measure never sees the `d+1` / `d-1`
+distinction; even Little's bump, the only classical map conditioning on local wire data, terminates by reaching the
+global single-descent target).  So on the shipped-move set (the four packaged insertion reductions + the r8
+distant-swap kit) NO monovariant descends per step in Regime A.  FM-grade classification: the leaf is BELIEVED TRUE
+(Lehrer-Zhang Thm 2.6(2): the seven relations DO present the category; `crossingWords_conv_residualStuckExample`
+exhibits its hardest small instance convertible) but is measure/route-RESISTANT on the shipped move set — a wall, not
+an obstruction to truth.  The honest measure is a multi-level distinguished-active-letter lexicographic descent of
+`pureCupSpine_sort` magnitude, with no drop-in mechanized precedent (mathlib's `CoxeterSystem` proves only the weak
+exchange property).
+
+### The Regime-B general facts — re-scoped + validated, NOT a clean single-round landing (the honest residual)
+
+r12 sharpened the r11 Regime-B reduction with two machine-checked findings (enumeration `n <= 6`, all Regime-B
+residual leaves, zero violations):
+
+  * the residual filter's NON-REFLEX clause is REDUNDANT for `ldP0Gt` / `ldP2Eq` — on the `regimeB + ascent +
+    distinct + in-range + non-identity` domain the count already coincides with the residual count, so the general
+    proof threads only those five;
+  * `p2 = perm . s_{d+1} . s_d` EXACTLY — the four swaps `s_d s_{d+1} s_d s_{d+1}` collapse to two by the shipped braid
+    + involution (`p2_eq_swapSuccSwap`, closed below), simplifying `ldP2Eq` to
+    `leftmostDescent (perm . s_{d+1} . s_d) = d + 1`.
+
+The general proof of the two facts is a HEAD-STRIP index induction on `d` (peel the ascending prefix `d -> d - 1`,
+base `d = 0` a four-entry window order computation), validated landable in principle but NOT a clean single-round
+landing: its junction is regimeB-DEPENDENT (the `d = 1` step needs the TRANSITIVE `a_{d-1} < a_{d+1} < a_{d+2}`, not
+mere head-monotonicity as in `leftmostDescent_applyAdjacentSwap_belowDescent`), and `ldP0Gt` additionally requires an
+`inversionCount` -> adjacent-order conversion at the swept position.  That ~350-line filter-threaded window induction
+is the standing Regime-B residual — a route cost, the facts themselves being machine-true (1288 / 1288).  Since Regime
+A stays walled regardless, closing Regime B would SHARPEN the wall but NOT flip the master
+`fxBrauer_hasCrossingOnlyStraightening`; the leaf is therefore WALLED as its terminal state
+(`fxBrauer_hasBraidAscentLeafWalled`).
+
+### What r12 SHIPS (all complete, zero-axiom)
+
+  * `p2_eq_swapSuccSwap` — the carry-collapse identity `s_d s_{d+1} s_d s_{d+1} = s_{d+1} s_d` (the r10 five-fold's
+    sibling), sharpening the carry algebra.
+  * the untwist-normalization PIVOT (recon-ranked cheapest B leg): the two Lehrer-Zhang untwist rows fire as
+    length-DECREASING (2 atoms -> 1) rewrites at ANY position in ANY horizontal context (`cupUntwist_inContext` /
+    `capUntwist_inContext`, built on the position-generic `cupUntwist_at` / `capUntwist_at`).  This is the honest
+    decreasing measure the crossing straightening lacks — the untwist normal form descends on WORD LENGTH (no plateau,
+    contrast the frozen `inversionCount` of the crossing block), so `every word ~ untwist-free` is a structural
+    length recursion; the scanner + fuel assembling the full normal form is the next round.
+
+Raw Lean 4 + Init; structural, no `omega` / `simp`-AC / `native_decide` / `WellFounded.fix`. -/
+
+/-- `0 + value = value` — structural, `propext`-free (Init's `Nat.zero_add` routes through simp / `Nat.rec` motives). -/
+private theorem natZeroAdd : (value : Nat) → 0 + value = value
+  | 0 => rfl
+  | value + 1 => congrArg Nat.succ (natZeroAdd value)
+
+/-- ★★ **The braid-ascent carry-COLLAPSE identity** (`s_d s_{d+1} s_d s_{d+1} = s_{d+1} s_d`).  The four swaps of the
+r10 carry (`p2 = perm . s_d . s_{d+1} . s_d . s_{d+1}`) collapse to TWO (`perm . s_{d+1} . s_d`): the leading braid
+triple `s_d s_{d+1} s_d` rewrites to `s_{d+1} s_d s_{d+1}` (`applyAdjacentSwap_braid`), and the two adjacent `s_{d+1}`
+annihilate (`applyAdjacentSwap_involutive`).  The r10 five-fold's sibling; it identifies the carry-re-insertion target
+`p2` with the two-swap `perm . s_{d+1} . s_d`, which is what turns `ldP2Eq` into
+`leftmostDescent (perm . s_{d+1} . s_d) = d + 1`.  In-range (`position + 2 < perm.length`), zero-axiom. -/
+theorem p2_eq_swapSuccSwap (perm : List Nat) (position : Nat) (inRange : position + 2 < perm.length) :
+    applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap perm position) (position + 1)) position) (position + 1)
+      = applyAdjacentSwap (applyAdjacentSwap perm (position + 1)) position := by
+  rw [applyAdjacentSwap_braid perm position inRange]
+  exact applyAdjacentSwap_involutive
+    (applyAdjacentSwap (applyAdjacentSwap perm (position + 1)) position) (position + 1)
+
+/-- Non-vacuity — the carry collapse on the Regime-B residual `[2, 0, 1, 3]` at position `0`: the four swaps
+`s_0 s_1 s_0 s_1` realise the same permutation as `s_1 s_0` (both `[1, 2, 0, 3]`). -/
+theorem p2_eq_swapSuccSwap_smoke :
+    applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap [2, 0, 1, 3] 0) 1) 0) 1
+      = applyAdjacentSwap (applyAdjacentSwap [2, 0, 1, 3] 1) 0 :=
+  p2_eq_swapSuccSwap [2, 0, 1, 3] 0 (by decide)
+
+/-! ### The untwist-normalization PIVOT — the two untwist rows as length-decreasing rewrites in arbitrary context
+
+The recon-ranked cheapest B leg toward `fxBrauer_hasBrauerCompleteness`.  The two Lehrer-Zhang untwist rows
+(`cupUntwistRelation` = `[cup_i, cross_i] ~ [cup_i]`, `capUntwistRelation` = `[cross_i, cap_i] ~ [cap_i]`) are shipped
+as `BrauerConvFree7` constructors at horizontal offset via `shiftWord`; here they are re-exposed at a bare position
+`offset` (the `shiftWord offset ... = [..At offset, ..]` identities collapse the `0 + offset`) and fired in ARBITRARY
+prefix / suffix context.  Each rewrite strictly DROPS the word length (2 atoms -> 1), so — unlike the crossing
+straightening, whose R3 braid preserves length and whose `inversionCount` is frozen across the walled ascent —
+untwist normalisation has an HONEST structural word-length measure with no plateau. -/
+
+/-- Shifting a base-`0` cup atom by `offset` is the cup at `offset` (the `0 + offset` collapse). -/
+private theorem shiftAtom_cupAt_zero (offset : Nat) : shiftAtom offset (cupAt 0) = cupAt offset :=
+  congrArg (fun position => ({ position := position, wiring := cupWiring } : BrauerAtom)) (natZeroAdd offset)
+
+/-- Shifting a base-`0` crossing atom by `offset` is the crossing at `offset`. -/
+private theorem shiftAtom_crossingAt_zero (offset : Nat) : shiftAtom offset (crossingAt 0) = crossingAt offset :=
+  congrArg (fun position => ({ position := position, wiring := crossingWiring } : BrauerAtom)) (natZeroAdd offset)
+
+/-- Shifting a base-`0` cap atom by `offset` is the cap at `offset`. -/
+private theorem shiftAtom_capAt_zero (offset : Nat) : shiftAtom offset (capAt 0) = capAt offset :=
+  congrArg (fun position => ({ position := position, wiring := capWiring } : BrauerAtom)) (natZeroAdd offset)
+
+/-- `shiftWord offset cupUntwistRelation.lhs = [cupAt offset, crossingAt offset]`. -/
+private theorem shiftWord_cupUntwistRelation_lhs (offset : Nat) :
+    shiftWord offset cupUntwistRelation.lhs = [cupAt offset, crossingAt offset] := by
+  show [shiftAtom offset (cupAt 0), shiftAtom offset (crossingAt 0)] = [cupAt offset, crossingAt offset]
+  rw [shiftAtom_cupAt_zero, shiftAtom_crossingAt_zero]
+
+/-- `shiftWord offset cupUntwistRelation.rhs = [cupAt offset]`. -/
+private theorem shiftWord_cupUntwistRelation_rhs (offset : Nat) :
+    shiftWord offset cupUntwistRelation.rhs = [cupAt offset] := by
+  show [shiftAtom offset (cupAt 0)] = [cupAt offset]
+  rw [shiftAtom_cupAt_zero]
+
+/-- `shiftWord offset capUntwistRelation.lhs = [crossingAt offset, capAt offset]`. -/
+private theorem shiftWord_capUntwistRelation_lhs (offset : Nat) :
+    shiftWord offset capUntwistRelation.lhs = [crossingAt offset, capAt offset] := by
+  show [shiftAtom offset (crossingAt 0), shiftAtom offset (capAt 0)] = [crossingAt offset, capAt offset]
+  rw [shiftAtom_crossingAt_zero, shiftAtom_capAt_zero]
+
+/-- `shiftWord offset capUntwistRelation.rhs = [capAt offset]`. -/
+private theorem shiftWord_capUntwistRelation_rhs (offset : Nat) :
+    shiftWord offset capUntwistRelation.rhs = [capAt offset] := by
+  show [shiftAtom offset (capAt 0)] = [capAt offset]
+  rw [shiftAtom_capAt_zero]
+
+/-- ★ **The cup untwist at ANY position** (`[cupAt offset, crossingAt offset] ~ [cupAt offset]`) — the crossing after a
+cup is dropped, at a bare offset (the r3 constructor de-shifted). -/
+theorem cupUntwist_at (offset : Nat) :
+    BrauerConvFree7 [cupAt offset, crossingAt offset] [cupAt offset] := by
+  have base := BrauerConvFree7.cupUntwist offset
+  rw [shiftWord_cupUntwistRelation_lhs, shiftWord_cupUntwistRelation_rhs] at base
+  exact base
+
+/-- ★ **The cap untwist at ANY position** (`[crossingAt offset, capAt offset] ~ [capAt offset]`) — the crossing before a
+cap is dropped, at a bare offset. -/
+theorem capUntwist_at (offset : Nat) :
+    BrauerConvFree7 [crossingAt offset, capAt offset] [capAt offset] := by
+  have base := BrauerConvFree7.capUntwist offset
+  rw [shiftWord_capUntwistRelation_lhs, shiftWord_capUntwistRelation_rhs] at base
+  exact base
+
+/-- ★★ **The cup untwist fires in ARBITRARY context** — dropping the crossing after a cup, at any offset, inside any
+prefix / suffix.  A length-DECREASING (2 atoms -> 1) rewrite: the honest structural measure of untwist normalisation. -/
+theorem cupUntwist_inContext (prefixWord suffixWord : List BrauerAtom) (offset : Nat) :
+    BrauerConvFree7 (prefixWord ++ ([cupAt offset, crossingAt offset] ++ suffixWord))
+      (prefixWord ++ ([cupAt offset] ++ suffixWord)) :=
+  BrauerConvFree7.whiskerLeft prefixWord
+    (BrauerConvFree7.whiskerRight suffixWord (cupUntwist_at offset))
+
+/-- ★★ **The cap untwist fires in ARBITRARY context** — dropping the crossing before a cap, at any offset, inside any
+prefix / suffix.  A length-DECREASING (2 atoms -> 1) rewrite. -/
+theorem capUntwist_inContext (prefixWord suffixWord : List BrauerAtom) (offset : Nat) :
+    BrauerConvFree7 (prefixWord ++ ([crossingAt offset, capAt offset] ++ suffixWord))
+      (prefixWord ++ ([capAt offset] ++ suffixWord)) :=
+  BrauerConvFree7.whiskerLeft prefixWord
+    (BrauerConvFree7.whiskerRight suffixWord (capUntwist_at offset))
+
+/-- Non-vacuity — the untwist rewrite is genuinely length-DECREASING (the honest measure): the cup-untwist redex has
+length `2`, its reduct length `1`. -/
+theorem untwist_rewrite_lengthDrops :
+    [cupAt 5, crossingAt 5].length = [cupAt 5].length + 1
+      ∧ [crossingAt 3, capAt 3].length = [capAt 3].length + 1 :=
+  ⟨rfl, rfl⟩
+
+/-- Non-vacuity — the cup untwist fires deep inside a word (`crossingAt 7` prefix, `capAt 9` suffix), dropping the
+`crossingAt 2` after `cupAt 2`. -/
+theorem cupUntwist_inContext_smoke :
+    BrauerConvFree7 ([crossingAt 7] ++ ([cupAt 2, crossingAt 2] ++ [capAt 9]))
+      ([crossingAt 7] ++ ([cupAt 2] ++ [capAt 9])) :=
+  cupUntwist_inContext [crossingAt 7] [capAt 9] 2
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — WP-BRAUER r9: the REFLEX mode + the DESCENT reduction are SHIPPED.**  The general reflexivity
@@ -2386,5 +2579,49 @@ separate open leg.  `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescS
 `fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false`.  A route/measure
 gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations DO present the category).  `= true`. -/
 def fxBrauer_hasBraidAscentRegimeBReduction : Bool := true
+
+/-- ★★ **Honesty marker — WP-BRAUER r12: the braid-ascent LEAF is WALLED (Regime A is the definitive obstruction).**
+After r9's closed outer induction, r10's carry algebra, and r11's Regime-B reduction to two decidable facts, r12
+settles the leaf's status.  The residual splits (exhaustively, `residualOther = 0` for all enumerated `n ≤ 7`) on
+`leftmostDescent (perm · s_d)`: Regime B (`= d + 1`, the shipped braid move fires) and Regime A (`= d - 1`, the 823
+other residual leaves `n ≤ 7`; canonical `[1,3,0,2]`, `[2,3,0,1]`).  **Regime A is the wall**: the residual filter
+forces an ASCENT at `d + 1`, so `leafWord = canonicalCrossingWord perm ++ [d+1]` and `targetWord =
+canonicalCrossingWord (perm · s_{d+1})` are two REDUCED words of EQUAL length for the SAME element; by Matsumoto/Tits
+they are joined only by LENGTH-PRESERVING braid + commute moves of VARIABLE count, and the shared global measure —
+Coxeter length `ell = inversionCount` — is FROZEN across the ascent (`inv (perm · s_{d+1}) ≥ inv perm`, the leaf's own
+hypothesis).  No shipped local braid move applies (the inserted `[d, d+1]` must first sweep leftward into the canonical
+prefix by a variable-length commute chain, hand-witnessed by `crossingWords_conv_residualStuckExample`), and NO
+monovariant descends per step on the shipped move set.  FM-grade: the leaf is BELIEVED TRUE (Lehrer–Zhang Thm 2.6(2)
+present the category; its hardest small instance `crossingWords_conv_residualStuckExample` is exhibited convertible)
+but is measure/route-RESISTANT on the shipped moves — a wall, not an obstruction to truth; the honest measure is a
+distinguished-active-letter lexicographic descent of `pureCupSpine_sort` magnitude (mathlib's `CoxeterSystem` gives
+only the weak exchange property).  The Regime-B general facts `ldP0Gt` / `ldP2Eq` are machine-true (1288 / 1288) but
+their proof is a ~350-line regimeB-dependent head-strip window induction (junction needs the TRANSITIVE
+`a_{d-1} < a_{d+1} < a_{d+2}`, `ldP0Gt` needs an `inversionCount` → adjacent-order conversion) — a route cost that,
+since Regime A stays walled regardless, would sharpen but NOT flip the master flag.  So the leaf's terminal state is
+WALLED.  `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
+`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false`.  `= true`. -/
+def fxBrauer_hasBraidAscentLeafWalled : Bool := true
+
+/-- ★ **Honesty marker — WP-BRAUER r12: the braid-ascent carry-COLLAPSE identity is SHIPPED.**  `p2_eq_swapSuccSwap`
+closes `s_d s_{d+1} s_d s_{d+1} = s_{d+1} s_d` in range (the r10 five-fold's sibling): the four swaps of the carry
+re-insertion target `p2 = perm · s_d · s_{d+1} · s_d · s_{d+1}` collapse to the two-swap `perm · s_{d+1} · s_d` via the
+shipped braid (`applyAdjacentSwap_braid`) + involution (`applyAdjacentSwap_involutive`).  This identifies the r10
+Regime-B carry target with `perm · s_{d+1} · s_d`, which is what reduces `ldP2Eq` to
+`leftmostDescent (perm · s_{d+1} · s_d) = d + 1`.  Non-vacuous: `p2_eq_swapSuccSwap_smoke` on the Regime-B residual
+`[2, 0, 1, 3]` (both realise `[1, 2, 0, 3]`).  `= true`. -/
+def fxBrauer_hasBraidAscentCarryCollapse : Bool := true
+
+/-- ★ **Honesty marker — WP-BRAUER r12: the untwist-normalization PIVOT — the two untwist rows as length-DECREASING
+context rewrites.**  The recon-ranked cheapest B leg toward `fxBrauer_hasBrauerCompleteness`.  `cupUntwist_at` /
+`capUntwist_at` re-expose the r3 Lehrer–Zhang untwist constructors at a bare position `offset` (de-shifting via the
+`shiftWord offset ... = [..At offset, ..]` identities that collapse `0 + offset`), and `cupUntwist_inContext` /
+`capUntwist_inContext` fire them in ARBITRARY prefix / suffix context.  Each rewrite strictly DROPS the word length
+(2 atoms → 1, `untwist_rewrite_lengthDrops`), so untwist normalisation has an HONEST structural word-length measure
+with NO plateau — the exact contrast with the crossing straightening (whose R3 braid PRESERVES length and whose
+`inversionCount` is frozen across the walled ascent).  So `every word ~ untwist-free` is a structural length recursion;
+the scanner + fuel assembling the full normal form is the next round.  Non-vacuous: `cupUntwist_inContext_smoke` fires
+the cup untwist deep inside `[crossingAt 7] ++ [cupAt 2, crossingAt 2] ++ [capAt 9]`.  `= true`. -/
+def fxBrauer_hasUntwistContextRewrite : Bool := true
 
 end FX1Poly.Polygraph

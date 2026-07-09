@@ -168,4 +168,23 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents_smoke
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentRegimeBReduction
 
+-- WP-BRAUER r12: the braid-ascent carry-COLLAPSE identity (s_d s_{d+1} s_d s_{d+1} = s_{d+1} s_d) + its smoke.
+#assert_no_axioms FX1Poly.Polygraph.p2_eq_swapSuccSwap
+#assert_no_axioms FX1Poly.Polygraph.p2_eq_swapSuccSwap_smoke
+
+-- WP-BRAUER r12: the untwist-normalization PIVOT — the two untwist rows as length-decreasing context rewrites.
+-- Private helpers (natZeroAdd, shiftAtom_*_zero, shiftWord_*UntwistRelation_*) covered transitively.
+#assert_no_axioms FX1Poly.Polygraph.cupUntwist_at
+#assert_no_axioms FX1Poly.Polygraph.capUntwist_at
+#assert_no_axioms FX1Poly.Polygraph.cupUntwist_inContext
+#assert_no_axioms FX1Poly.Polygraph.capUntwist_inContext
+#assert_no_axioms FX1Poly.Polygraph.untwist_rewrite_lengthDrops
+#assert_no_axioms FX1Poly.Polygraph.cupUntwist_inContext_smoke
+
+-- WP-BRAUER r12 honesty markers: the braid-ascent leaf WALLED (Regime A definitive), the carry-collapse identity,
+-- and the untwist-normalization pivot.
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentLeafWalled
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentCarryCollapse
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasUntwistContextRewrite
+
 end FX1PolyAudit
