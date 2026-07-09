@@ -869,13 +869,152 @@ theorem stringBoundaryCensus_stepCup (seedBoundary : Nat) (state : WireState) (p
                           exact oneNeThree (oneIsRight.1.trans threeIsRight.1.symm)
                   | inr twoIsRight => exact oneNeTwo (oneIsRight.1.trans twoIsRight.1.symm)
 
-/-! ## Honesty marker -/
+/-! ## ★ The census FOLD TRANSPORT — every reachable state (from a cup/cap cell) satisfies the census -/
 
-/-- **★ ESTABLISHED — the boundary-census STATEMENT layer + the SEED leg (FC-5, P1a).**  The census over the bare
-`WireState` (`stringEndTokenNode` / `isValidStringEndToken` / `StringBoundaryCensus`, reusing the carrier-free
-`ArcEndToken`), the trivial forest bridge (`stringForest_toUnionFindForest`), and its truth at the fresh seed
-(`stringBoundaryCensus_initial`, the string port of `arcBoundaryCensus_initial`).  What this marker does NOT yet
-claim: the cup / cap step PRESERVATION and the fold transport (P1b–d below).  `= true`. -/
-def fxString_hasBoundaryCensusSeed : Bool := true
+/-- Freshness is preserved by one cup/cap atom: dispatch on the arity (`stepAtom_ofCupArity` / `_ofCapArity`) and
+apply the shipped cup / cap freshness legs.  The cap leg needs the window in range, supplied by the boundary
+tracking. -/
+theorem StringWireStateFresh_stepAtom {sourceMode targetMode : AdjointTripleMode}
+    (state : WireState) (atom : SpineAtom adjointTripleModeSignature sourceMode targetMode)
+    (arity : AtomHasCupOrCapArity atom) (fresh : StringWireStateFresh state)
+    (tracksEntry : state.openWires.length = atom.domBoundaryLength) :
+    StringWireStateFresh (stepAtom state atom) := by
+  have entryShape : state.openWires.length
+      = atom.leftContext.length + atom.generatorDom.length + atom.rightContext.length := tracksEntry
+  cases arity with
+  | inl cupArity =>
+      rw [stepAtom_ofCupArity state atom cupArity.1 cupArity.2]
+      exact StringWireStateFresh_stepCup state atom.leftContext.length fresh
+  | inr capArity =>
+      obtain ⟨hasCapDom, hasCapCod⟩ := capArity
+      have windowInRange : atom.leftContext.length + 1 < state.openWires.length := by
+        rw [entryShape, hasCapDom]
+        exact Nat.lt_of_lt_of_le (Nat.lt_succ_self (atom.leftContext.length + 1))
+          (Nat.le_add_right (atom.leftContext.length + 2) atom.rightContext.length)
+      rw [stepAtom_ofCapArity state atom hasCapDom hasCapCod]
+      exact StringWireStateFresh_stepCap state atom.leftContext.length windowInRange fresh
+
+/-- ★ **One cup/cap atom preserves the boundary census** — dispatch on the arity, computing the window range from the
+boundary tracking (`domBoundaryLength`), and apply the cup / cap step preservation. -/
+theorem stringBoundaryCensus_stepAtom {sourceMode targetMode : AdjointTripleMode}
+    (seedBoundary : Nat) (state : WireState)
+    (atom : SpineAtom adjointTripleModeSignature sourceMode targetMode)
+    (arity : AtomHasCupOrCapArity atom) (fresh : StringWireStateFresh state)
+    (forest : stringIsUnionFindForest state.links) (seedBelowFresh : seedBoundary ≤ state.nextFresh)
+    (tracksEntry : state.openWires.length = atom.domBoundaryLength)
+    (oldCensus : StringBoundaryCensus seedBoundary state) :
+    StringBoundaryCensus seedBoundary (stepAtom state atom) := by
+  have entryShape : state.openWires.length
+      = atom.leftContext.length + atom.generatorDom.length + atom.rightContext.length := tracksEntry
+  cases arity with
+  | inl cupArity =>
+      obtain ⟨hasCupDom, hasCupCod⟩ := cupArity
+      have cupInRange : atom.leftContext.length ≤ state.openWires.length := by
+        rw [entryShape, hasCupDom, Nat.add_zero]
+        exact Nat.le_add_right atom.leftContext.length atom.rightContext.length
+      rw [stepAtom_ofCupArity state atom hasCupDom hasCupCod]
+      exact stringBoundaryCensus_stepCup seedBoundary state atom.leftContext.length
+        fresh forest seedBelowFresh cupInRange oldCensus
+  | inr capArity =>
+      obtain ⟨hasCapDom, hasCapCod⟩ := capArity
+      have capInRange : atom.leftContext.length + 2 ≤ state.openWires.length := by
+        rw [entryShape, hasCapDom]
+        exact Nat.le_add_right (atom.leftContext.length + 2) atom.rightContext.length
+      rw [stepAtom_ofCapArity state atom hasCapDom hasCapCod]
+      exact stringBoundaryCensus_stepCap seedBoundary state atom.leftContext.length
+        forest capInRange oldCensus
+
+/-- ★ **A cup/cap-disciplined boundary-chained spine fold preserves the census end-to-end** — the freshness / forest /
+boundary-tracking / seed-bound / arity companions thread through the fold, and each atom's step preserves the census
+by the per-atom dispatch.  The string port of `arcBoundaryCensus_processArcSpine_ofChained`. -/
+theorem stringBoundaryCensus_processSpine_ofChained {sourceMode targetMode : AdjointTripleMode} :
+    (atoms : List (SpineAtom adjointTripleModeSignature sourceMode targetMode)) →
+    (state : WireState) → (boundaryLength seedBoundary : Nat) →
+    StringWireStateFresh state → stringIsUnionFindForest state.links →
+    state.openWires.length = boundaryLength →
+    SpineBoundaryChained boundaryLength atoms →
+    SpineHasCupCapAtoms atoms →
+    seedBoundary ≤ state.nextFresh →
+    StringBoundaryCensus seedBoundary state →
+    StringBoundaryCensus seedBoundary (processSpine state atoms)
+  | [], _, _, _, _, _, _, _, _, _, census => census
+  | headAtom :: restAtoms, state, _, seedBoundary, fresh, forest, tracks, chained, arityAll,
+      seedBelowFresh, census => by
+      obtain ⟨headFires, tailChained⟩ := spineBoundaryChained_tail chained
+      obtain ⟨headArity, tailArity⟩ := spineHasCupCapAtoms_tail arityAll
+      have tracksEntry : state.openWires.length = headAtom.domBoundaryLength :=
+        tracks.trans headFires.symm
+      show StringBoundaryCensus seedBoundary (processSpine (stepAtom state headAtom) restAtoms)
+      exact stringBoundaryCensus_processSpine_ofChained restAtoms (stepAtom state headAtom)
+        headAtom.codBoundaryLength seedBoundary
+        (StringWireStateFresh_stepAtom state headAtom headArity fresh tracksEntry)
+        (stringUnionFindForest_stepAtom state headAtom forest)
+        (stepAtom_openWires_tracksBoundary state headAtom headArity tracksEntry)
+        tailChained tailArity
+        (Nat.le_trans seedBelowFresh (stepAtom_nextFresh_le state headAtom))
+        (stringBoundaryCensus_stepAtom seedBoundary state headAtom headArity fresh forest
+          seedBelowFresh tracksEntry census)
+
+/-- ★★ **The census capstone at the canonical seed** — every cup/cap-generated adjoint-triple cell folds from the
+fresh initial state to a state whose every union-find component touches at most TWO boundary endpoints (bottom ports
+and surviving open slots).  This is the load-bearing perfect-matching structure the JOIN-branch cap non-crossing
+consumes. -/
+theorem stringBoundaryCensus_fromCell {sourceMode targetMode : AdjointTripleMode}
+    {sourcePath targetPath : ModalityPath adjointTripleGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjointTripleModeSignature sourcePath targetPath)
+    (cellCupCap : CellHasCupCapGenerators cell) :
+    StringBoundaryCensus sourcePath.length
+      (processSpine (stringInitialWireState sourcePath.length) cell.spine) :=
+  stringBoundaryCensus_processSpine_ofChained cell.spine
+    (stringInitialWireState sourcePath.length) sourcePath.length sourcePath.length
+    (stringInitialWireState_fresh sourcePath.length)
+    (stringInitialWireState_isUnionFindForest sourcePath.length)
+    (censusRangeLength sourcePath.length)
+    (RawTwoCellExpr.spineBoundaryChained_spine cell)
+    (RawTwoCellExpr.spineHasCupCapAtoms_spine cell cellCupCap)
+    (Nat.le_refl sourcePath.length)
+    (stringBoundaryCensus_initial sourcePath.length)
+
+/-! ## Honesty markers -/
+
+/-- **★ ESTABLISHED — the two-endpoint BOUNDARY CENSUS over the bare `WireState`, seed + cup + cap + FOLD (FC-5, P1).**
+The full perfect-matching census fold invariant is SHIPPED zero-axiom, the string port of the arc lane's
+`ArcBoundaryCensus` apparatus:
+
+  * the STATEMENT layer (`stringEndTokenNode` / `isValidStringEndToken` / `StringBoundaryCensus`, reusing the
+    carrier-free `ArcEndToken`) + the trivial forest bridge (`stringForest_toUnionFindForest`);
+  * the SEED (`stringBoundaryCensus_initial`);
+  * the CUP step preservation (`stringBoundaryCensus_stepCup`) — the spliced fresh strand carries exactly its two
+    window slots; the cup leg SEPARATION (`stringCupLegSeparation`) proves an old wire never shares a component with a
+    fresh leg (strictly simpler than the arc's event-node cup);
+  * the CAP step preservation (`stringBoundaryCensus_stepCap`) — the merged component loses one open end from each
+    side; the arc's event-join peel is DELETED because `stepCap`'s link update is the DIRECT `unionFindJoin`
+    (`stepCap_links_eq_unionFindJoin`);
+  * the FOLD transport (`stringBoundaryCensus_stepAtom` / `_processSpine_ofChained`) threading freshness / forest /
+    boundary-tracking / seed-bound / cup-cap arity, and the SEED capstone (`stringBoundaryCensus_fromCell`): every
+    cup/cap-generated adjoint-triple cell folds to a state whose every union-find component touches at most TWO
+    boundary endpoints.
+
+This is the load-bearing perfect-matching structure the JOIN-branch cap non-crossing (`fxString_hasCapNonCrossingJoinBranch`)
+consumes — a genuine NEW fold invariant, now available.  `= true`. -/
+def fxString_hasBoundaryCensus : Bool := true
+
+/-- **OPEN (honest, LOCALIZED) — the census UNLOCKS `preserves.orient`(cap join), NOT `capPin`.**  The census fold
+(above) is the exact perfect-matching fact the JOIN-branch cap non-crossing survivor analysis
+(`fxString_hasCapNonCrossingJoinBranch`, in `StringFussCatalanCapNonCrossing`) needs to refute the "two survivors reach
+the same window end" combos.  Consuming it — the 5-survivor + 4-census combo table, the string port of
+`ArcNonCrossingCapMain` — is the remaining CAP non-crossing residual; it feeds ONLY the cap case of the FC-1
+`preserves` obligation (`StringOrientationDiscipline` fold invariance).
+
+It does NOT unlock the FC-1 `capPin` obligation.  `capPin` (a cap window reads its `generatorDom` cap word) is NOT a
+census consequence and NOT derivable from `StringOrientationDiscipline` alone: `orient` constrains SAME-component open
+pairs, saying nothing about which labels a 2->0 atom's window reads, so a disciplined state admits a cap firing on a
+cup-word window.  Discharging `capPin` requires strengthening the fold invariant to carry label-boundary-tracking
+(`labels = pathLabels` of the intermediate 1-cell — the string port of `ArcBoundaryTracking` / a `StringJointInvariant`
+field), from which capPin is a projection (both walking-adjoint-triple cap words `(G,F)`, `(H,G)` fail
+`isCupWordOrdered`, `stringBothCapWords_notCupWord`).  So `fxString_hasNoLoopsTheorem` (in `StringFussCatalan`) stays
+`false`, HONESTLY: the census is shipped, the join-branch non-crossing + the capPin label-tracking are the two exact
+remaining residuals — and only the FIRST is a census consequence.  `= false`. -/
+def fxString_hasBoundaryCensusUnlocksBothResiduals : Bool := false
 
 end FX1Poly.Polygraph

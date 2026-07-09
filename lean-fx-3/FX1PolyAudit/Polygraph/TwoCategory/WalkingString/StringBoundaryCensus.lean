@@ -20,5 +20,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringNotSame_of_rootsNe
 #assert_no_axioms FX1Poly.Polygraph.stringCupLegSeparation
 #assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_stepCup
+#assert_no_axioms FX1Poly.Polygraph.StringWireStateFresh_stepAtom
+#assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_stepAtom
+#assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_processSpine_ofChained
+#assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_fromCell
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasBoundaryCensus
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasBoundaryCensusUnlocksBothResiduals
 
 end FX1PolyAudit
