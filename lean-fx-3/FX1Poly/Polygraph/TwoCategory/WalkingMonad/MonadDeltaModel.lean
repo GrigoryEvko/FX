@@ -245,15 +245,14 @@ canonicalization (`MonadSaturatedCanonicalization`): the decision assembly
 COMPLETE (`monadMonotoneMapOf_mapEqOfConv`, `WalkingMonad/MonadDeltaDecision`): the structural leg, the three
 monad-law legs, the vcomp/whisker congruences, AND the Godement / `ofFull` interchange invariance
 (`monadMonotoneMapOf_interchange` — the disjoint-window two-block commute, cap-free on Δ) are all discharged.  The
-SOLE remaining field is the COMPLETENESS `convOfMapEq` — the EZ reconstruction: every cell is convertible under the
-three monad laws to the canonical word of its monotone map.  The eta/mu word builder (`wordFromCounts`) + section
-are shipped, and the normalization `cell ≈ canon cell` has FOUR of five cases closed plus the `vcomp` case's 2-cell
-half — the VERTICAL word multiplicativity `wordMul_vcomp` (`WalkingMonad/MonadWordVcomp`,
-`fxMonad_hasVcompWordMultiplicativity`, zero-axiom, via the block split + free interchange + `wordGadgetCollapse`).
-The SOLE remaining residual is the DATA bridge `canonCounts (vcomp) = composeCounts (canonCounts, canonCounts)`
-(`countsOf ∘ composeMap = composeCounts ∘ countsOf`), the analog of the shipped whisker bridges, whose base-shifted
-induction is the named residual.  Until it lands, `MonadSaturatedCanonicalization` is NOT inhabited and the decision
-is not real.  `= false`. -/
-def fxMonad_hasMonotoneMapDecisionAssembled : Bool := false
+COMPLETENESS field `convOfMapEq` is now INHABITED: the EZ reconstruction `cell ≈ canon cell` is CLOSED for all five
+`normalizeCell` cases.  The `vcomp` case (`monadNormalize_vcomp`, `WalkingMonad/MonadNormalizeVcomp`) combines the
+2-cell half `wordMul_vcomp` (`fxMonad_hasVcompWordMultiplicativity`, zero-axiom) with the now-shipped DATA bridge
+`canonCounts_vcomp : canonCounts (vcomp) = composeCounts (canonCounts, canonCounts)` — the pure `List Nat`
+functoriality `countsOf ∘ composeMap = composeCounts ∘ countsOf` (`countsOf_composeMap`).  Hence
+`monadNormalize : MonadNormalizesToCanon` is inhabited, `MonadSaturatedCanonicalization` is inhabited
+(`monadSaturatedCanonicalization`), and the decision `monadSaturatedTwoCellDecision` is real and non-vacuous both
+ways (`fxMonad_hasSaturatedWordProblemClosed`).  `= true`. -/
+def fxMonad_hasMonotoneMapDecisionAssembled : Bool := true
 
 end FX1Poly.Polygraph

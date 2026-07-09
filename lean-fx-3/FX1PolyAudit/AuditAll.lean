@@ -511,6 +511,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadHcompMult
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadVcompMult
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordVcomp
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeVcomp
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity

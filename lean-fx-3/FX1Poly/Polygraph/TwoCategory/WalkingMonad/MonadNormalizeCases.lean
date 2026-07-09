@@ -332,33 +332,29 @@ composite of trivial gadgets `monadGadget 1 = id_t` that collapses to the identi
 `= true`. -/
 def fxMonad_hasNormalizeIdCase : Bool := true
 
-/-- **Honesty marker — FOUR of the five `normalize` cases are landed; the SOLE remaining case is `vcomp`.**
-`normalize : MonadNormalizesToCanon` inducts on the cell's five constructors.  CLOSED zero-axiom: the two `gen`
-leaves (`fxMonad_hasNormalizeGeneratorBaseCases`), the `id` case (`fxMonad_hasNormalizeIdCase`,
-`monadNormalize_id`), AND the two WHISKER cases (`monadNormalize_whiskerLeft` / `monadNormalize_whiskerRight`,
-`WalkingMonad/MonadWhiskerNormalizeCases`, `fxMonad_hasWhiskerNormalizeCases`) — the whisker cases assembled from
-the whisker word multiplicativities (`wordMul_whiskerLeft/Right`), the boundary transport, and the counts-alignment
-(`canonCounts_whiskerLeft/Right`), no monad law.
-
-What remains (the SOLE case using the monad LAWS):
+/-- **ESTABLISHED — ALL FIVE `normalize` cases are landed, zero-axiom.**  `monadNormalize : MonadNormalizesToCanon`
+(`WalkingMonad/MonadNormalizeVcomp`) recurses (STRUCTURAL on a `Nat` fuel bounding the cell's size — the constant
+`MonadMode.point` boundary indices block direct structural recursion on the cell) over the five constructors.
+CLOSED zero-axiom: the two `gen` leaves (`fxMonad_hasNormalizeGeneratorBaseCases`), the `id` case
+(`fxMonad_hasNormalizeIdCase`, `monadNormalize_id`), the two WHISKER cases (`monadNormalize_whiskerLeft` /
+`monadNormalize_whiskerRight`, `fxMonad_hasWhiskerNormalizeCases`) — all with no monad law — AND the `vcomp` case
+(`monadNormalize_vcomp`, the SOLE case using the monad LAWS):
 
   * **`vcomp cellL cellR`** — the congruences + IH reduce it to `vcomp (canon cellL) (canon cellR) ≈ canon (vcomp
-    cellL cellR)`.  Its 2-cell half — the VERTICAL word multiplicativity `wordMul_vcomp : vcomp (word ccL)
-    (word ccR) ≈ cast (word (composeCounts ccL ccR))` — is now CLOSED zero-axiom
-    (`WalkingMonad/MonadWordVcomp`, `fxMonad_hasVcompWordMultiplicativity`), via the `wordMul_hcomp` block split at
-    `take/drop ccL`, the free interchange, the `wordGadgetCollapse` per-block merge (the three monad laws through
-    `gadgetAbsorb`), and the proof-irrelevant boundary-cast fusion.  What is NOT yet landed is the DATA half — the
-    bridge `canonCounts (vcomp cellL cellR) = composeCounts (canonCounts cellL) (canonCounts cellR)`, i.e. the pure
-    `List Nat` identity `countsOf targetLen 0 (composeMap mapL mapR) = composeCounts (countsOf midLen 0 mapL)
-    (countsOf targetLen 0 mapR)` (the degeneracies-then-faces re-sort; convergent by Guiraud–Malbos–Mimram
-    Example 2.6, Weibel Lemma 8.1.2), the analog of the shipped whisker bridges `canonCounts_whiskerLeft/Right`.
-    Its base-shifted induction (head = leading composite-run length, tail = mid-suffix shift into the next base) is
-    the named residual.
+    cellL cellR)`.  Its 2-cell half — the VERTICAL word multiplicativity `wordMul_vcomp`
+    (`WalkingMonad/MonadWordVcomp`, `fxMonad_hasVcompWordMultiplicativity`, the `wordMul_hcomp` block split + free
+    interchange + `wordGadgetCollapse` per-block merge, the three monad laws) — is shipped, and the DATA half — the
+    bridge `canonCounts_vcomp : canonCounts (vcomp cellL cellR) = composeCounts (canonCounts cellL) (canonCounts
+    cellR)`, the pure `List Nat` functoriality `countsOf ∘ composeMap = composeCounts ∘ countsOf`
+    (`countsOf_composeMap`, base-shifted structural induction: leading-run head, mid-suffix-shift tail; Kerodon
+    0004 / nLab simplex+category / Eilenberg-Zilber factorization) — is now LANDED.  The two boundary casts extrude
+    out of the vertical composite exposing `wordMul_vcomp` under an outer cast, then `canonCounts_vcomp` reconciles
+    the result with `canon (vcomp)`.
 
-Until the DATA bridge lands and the `vcomp` case is assembled, `normalize` is not inhabited, so
-`MonadSaturatedCanonicalization.convOfMapEq` (`monadConvOfMapEq_ofNormalize`) is not inhabited and
-`fxMonad_hasMonotoneMapDecisionAssembled` / `fxMonad_hasConvOfMapEqNormalization` /
-`fxMonad_hasFullMapEqOfConvAndCompleteness` stay `false`.  `= false`. -/
-def fxMonad_hasNormalizeIdWhiskerVcompCases : Bool := false
+With all five cases assembled, `monadNormalize` is inhabited, so `MonadSaturatedCanonicalization.convOfMapEq`
+(`monadConvOfMapEq_ofNormalize`) is inhabited and `fxMonad_hasMonotoneMapDecisionAssembled` /
+`fxMonad_hasConvOfMapEqNormalization` / `fxMonad_hasFullMapEqOfConvAndCompleteness` /
+`fxMonad_hasSaturatedWordProblemClosed` are all `true`.  `= true`. -/
+def fxMonad_hasNormalizeIdWhiskerVcompCases : Bool := true
 
 end FX1Poly.Polygraph

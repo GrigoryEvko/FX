@@ -397,19 +397,18 @@ merge, insertion, full merge, separation).  This is the recon-named missing piec
 Nat` into a `RawTwoCellExpr`" — now shipped, zero-axiom.  `= true`. -/
 def fxMonad_hasEilenbergZilberWordBuilder : Bool := true
 
-/-- **Honesty marker.**  The COMPLETENESS field `convOfMapEq` of `MonadSaturatedCanonicalization`
-(`monadMonotoneMapOf a = monadMonotoneMapOf b → MonadSaturatedTwoCellConv a b`) is NOT yet inhabited.  The
-NORMALIZATION direction — every cell is `MonadSaturatedTwoCellConv`-convertible to the canonical word of its own
-fold, `cell ≈ wordFromCounts (countsOf (monadMonotoneMapOf cell))` — has its FOUR non-vcomp cases closed (the two
-`gen` leaves, `id`, both whiskers), and its `vcomp` case's 2-cell half is now CLOSED: the VERTICAL word
-multiplicativity `wordMul_vcomp : vcomp (word ccL) (word ccR) ≈ cast (word (composeCounts ccL ccR))`
-(`WalkingMonad/MonadWordVcomp`, `fxMonad_hasVcompWordMultiplicativity`) — the block-sum re-sort via the
-`wordMul_hcomp` split, the free interchange, and the `wordGadgetCollapse` per-block merge (the three monad laws).
-The SOLE remaining residual toward `normalize` is the DATA bridge `canonCounts (vcomp cellL cellR) = composeCounts
-(canonCounts cellL) (canonCounts cellR)` — the pure `List Nat` identity `countsOf ∘ composeMap = composeCounts ∘
-countsOf`, the analog of the shipped whisker bridges `canonCounts_whiskerLeft/Right`, whose base-shifted induction
-(leading-run head, mid-suffix-shift tail) is the named residual.  Until it lands, `MonadSaturatedCanonicalization`
-is NOT inhabited and the decision is not real.  `= false`. -/
-def fxMonad_hasConvOfMapEqNormalization : Bool := false
+/-- **ESTABLISHED — the COMPLETENESS field `convOfMapEq` is now INHABITED, zero-axiom.**  The NORMALIZATION
+direction — every cell is `MonadSaturatedTwoCellConv`-convertible to the canonical word of its own fold,
+`cell ≈ canon cell` — is CLOSED for all five `normalizeCell` cases: the two `gen` leaves, `id`, both whiskers, and
+the `vcomp` case.  The `vcomp` case (`monadNormalize_vcomp`, `WalkingMonad/MonadNormalizeVcomp`) combines the 2-cell
+half `wordMul_vcomp : vcomp (word ccL) (word ccR) ≈ cast (word (composeCounts ccL ccR))`
+(`fxMonad_hasVcompWordMultiplicativity`) with the now-shipped DATA bridge `canonCounts_vcomp : canonCounts (vcomp
+cellL cellR) = composeCounts (canonCounts cellL) (canonCounts cellR)` — the pure `List Nat` functoriality
+`countsOf ∘ composeMap = composeCounts ∘ countsOf` (`countsOf_composeMap`, base-shifted structural induction:
+leading-run head, mid-suffix-shift tail).  Hence `monadNormalize : MonadNormalizesToCanon` is inhabited and
+`monadConvOfMapEq_ofNormalize monadNormalize` inhabits `convOfMapEq` — the canonicalization
+(`monadSaturatedCanonicalization`) and the unconditional decision (`monadSaturatedTwoCellDecision`) are real
+(`fxMonad_hasSaturatedWordProblemClosed`).  `= true`. -/
+def fxMonad_hasConvOfMapEqNormalization : Bool := true
 
 end FX1Poly.Polygraph

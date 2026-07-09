@@ -404,15 +404,14 @@ absorbed by the region split).  Hence the full soundness leg `monadMonotoneMapOf
 zero-axiom.  What remains toward inhabiting `MonadSaturatedCanonicalization` is EXACTLY the COMPLETENESS `convOfMapEq`
 — the EZ reconstruction: every cell is convertible (under the three monad laws) to the canonical word of its monotone
 map.  The eta/mu WORD builder (`wordFromCounts`) + section are shipped, and the normalization `cell ≈ canon cell`
-has FOUR of five cases closed plus the `vcomp` case's 2-cell half — the VERTICAL word multiplicativity
-`wordMul_vcomp` (`WalkingMonad/MonadWordVcomp`, `fxMonad_hasVcompWordMultiplicativity`, zero-axiom, via the
-`wordMul_hcomp` block split + free interchange + `wordGadgetCollapse` per-block merge).  The SOLE remaining residual
-is the DATA bridge `canonCounts (vcomp) = composeCounts (canonCounts, canonCounts)` (`countsOf ∘ composeMap =
-composeCounts ∘ countsOf`), the analog of the shipped whisker bridges `canonCounts_whiskerLeft/Right`, whose
-base-shifted induction (leading-run head, mid-suffix-shift tail) is the named residual.  So
-`MonadSaturatedCanonicalization` is NOT yet inhabited and `fxMonad_hasMonotoneMapDecisionAssembled` stays `false`.
-This flag (mapEqOfConv AND completeness) stays `false` because completeness is still owed; the mapEqOfConv half is
-marked complete by `fxMonad_hasMapEqOfConvComplete = true`.  `= false`. -/
-def fxMonad_hasFullMapEqOfConvAndCompleteness : Bool := false
+is now CLOSED for all five cases: the `vcomp` case (`monadNormalize_vcomp`, `WalkingMonad/MonadNormalizeVcomp`)
+combines the 2-cell half `wordMul_vcomp` (`fxMonad_hasVcompWordMultiplicativity`, zero-axiom) with the now-shipped
+DATA bridge `canonCounts_vcomp : canonCounts (vcomp) = composeCounts (canonCounts, canonCounts)` — the pure
+`List Nat` functoriality `countsOf ∘ composeMap = composeCounts ∘ countsOf` (`countsOf_composeMap`, base-shifted
+structural induction: leading-run head, mid-suffix-shift tail).  Hence `monadNormalize : MonadNormalizesToCanon` is
+inhabited, `MonadSaturatedCanonicalization` is inhabited (`monadSaturatedCanonicalization`), and BOTH the
+mapEqOfConv half (`fxMonad_hasMapEqOfConvComplete = true`) and the completeness half are now closed —
+`fxMonad_hasMonotoneMapDecisionAssembled` / `fxMonad_hasSaturatedWordProblemClosed` are `true`.  `= true`. -/
+def fxMonad_hasFullMapEqOfConvAndCompleteness : Bool := true
 
 end FX1Poly.Polygraph
