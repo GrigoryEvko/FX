@@ -179,4 +179,97 @@ theorem crossingWords_convRows_distantCommute :
     SpiderConvRows 4 (crossingWord [0, 2]) (crossingWord [2, 0]) :=
   spiderConvRows_distantCommute
 
+/-! ## P3 — the hook CASCADE: crossing-fragment completeness decomposed into the two named bricks
+
+The hook `CrossingCompletenessHook` (r8) has two gaps for the crossing fragment: `straightens` (fed by
+`RowStaircaseConv`, whose proof rides the walled `RowSuffixCongruence`) and `readbackRespectsPartition` (fed by a
+BRIDGE from the boundary partition `extraSpiderDiagramOf` down to the through-strand permutation `permuteOfCrossingWord`
+— the multi-block `S_n`-routing gathering, the open `BRAUER-BREACH`).  The cascade below composes exactly these two
+bricks into crossing-fragment completeness, so the hook's two gaps are named as two typed antecedents and nothing more. -/
+
+/-- ★★ **Crossing-fragment completeness, CONDITIONAL on the two named bricks (the hook cascade).**  Given the
+whole-staircase convertibility brick (`staircase`) AND the partition→permutation bridge (`bridge`), two crossing words
+with the SAME boundary partition are `SpiderConvRows`-convertible.  This is the crossing-fragment instance of
+`spiderConvRows_complete_ofHook`: the bridge turns partition equality into permutation equality, and the assembly
+turns permutation equality into a row derivation.  Isolates the ENTIRE remaining crossing-fragment obstruction to
+exactly `staircase` (rides `RowSuffixCongruence`, walled) and `bridge` (the multi-block `BRAUER-BREACH`, open). -/
+theorem crossingFragment_complete_ofBridgeAndStaircase {bottomCount generatorCount : Nat}
+    (staircase : RowStaircaseConv bottomCount generatorCount)
+    (bridge : ∀ w1 w2 : List Nat,
+        mentionsOnlyBelow generatorCount w1 = true → mentionsOnlyBelow generatorCount w2 = true →
+        extraSpiderDiagramOf bottomCount (crossingWord w1) = extraSpiderDiagramOf bottomCount (crossingWord w2) →
+        permuteOfCrossingWord (generatorCount + 1) w1 = permuteOfCrossingWord (generatorCount + 1) w2)
+    (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow generatorCount word1 = true)
+    (hRange2 : mentionsOnlyBelow generatorCount word2 = true)
+    (partitionEq : extraSpiderDiagramOf bottomCount (crossingWord word1)
+      = extraSpiderDiagramOf bottomCount (crossingWord word2)) :
+    SpiderConvRows bottomCount (crossingWord word1) (crossingWord word2) :=
+  crossingWords_equalPerm_convRows_ofStaircase staircase word1 word2 hRange1 hRange2
+    (bridge word1 word2 hRange1 hRange2 partitionEq)
+
+/-- ★ **The partition→permutation bridge is inhabited at `generatorCount = 0`** (non-vacuity of the second antecedent):
+at level `0` both words are empty, so both permutations are the identity on one strand — equal by `rfl`. -/
+theorem crossingFragmentBridge_atGeneratorCountZero (bottomCount : Nat)
+    (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow 0 word1 = true) (hRange2 : mentionsOnlyBelow 0 word2 = true)
+    (_partitionEq : extraSpiderDiagramOf bottomCount (crossingWord word1)
+      = extraSpiderDiagramOf bottomCount (crossingWord word2)) :
+    permuteOfCrossingWord 1 word1 = permuteOfCrossingWord 1 word2 := by
+  cases word1 with
+  | cons head tail => exact Bool.noConfusion hRange1
+  | nil =>
+      cases word2 with
+      | cons head tail => exact Bool.noConfusion hRange2
+      | nil => rfl
+
+/-- ★ **The full crossing-fragment cascade FIRES end-to-end at `generatorCount = 0`** — both bricks discharged (the
+gc=0 staircase and the gc=0 bridge), so `crossingFragment_complete_ofBridgeAndStaircase` yields a real `SpiderConvRows`
+from a boundary-partition equality with no dangling hypothesis.  The hook-shaped conditional is non-vacuous. -/
+theorem crossingFragment_complete_atGeneratorCountZero (bottomCount : Nat)
+    (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow 0 word1 = true) (hRange2 : mentionsOnlyBelow 0 word2 = true)
+    (partitionEq : extraSpiderDiagramOf bottomCount (crossingWord word1)
+      = extraSpiderDiagramOf bottomCount (crossingWord word2)) :
+    SpiderConvRows bottomCount (crossingWord word1) (crossingWord word2) :=
+  crossingFragment_complete_ofBridgeAndStaircase (rowStaircaseConv_atGeneratorCountZero bottomCount)
+    (crossingFragmentBridge_atGeneratorCountZero bottomCount)
+    word1 word2 hRange1 hRange2 partitionEq
+
+/-! ## P3 — the two verdicts (WIRE ×2 / WALL ×2) -/
+
+/-- ★ **Verdict WIRE-1 — the carrier-independent crossing canonicity is IMPORTED for the row program.**  `recComb`
+(exposed as `frobCrossingStaircase`) and `combCanonicity` (exposed as `frobCrossingStaircase_respectsPermutation`) are
+pure `Nat` / `List` facts — no `BrauerConvFree7` — so they re-home into the Frobenius layer verbatim; the BREACH-2
+crossing straightening is re-exposed at concrete words (`frobCrossingStaircase_r9jam`,
+`frobCrossingStraightening_r9jam`).  The Regev–Roichman canonical section is now substrate for the row completeness
+program.  `= true`. -/
+def fxFrob_hasCrossingCanonicityImport : Bool := true
+
+/-- ★ **Verdict WIRE-2 — the comb rerun ASSEMBLY is SHIPPED conditional on the isolated staircase brick.**
+`crossingWords_equalPerm_convRows_ofStaircase` transports the crossing straightening into `SpiderConvRows` — equal
+permutation ⟹ row-convertible — via the imported `combCanonicity` + `trans`/`symm`, SOUND without the obstruction-A
+detour (every intermediate is the crossing staircase).  Composed with the partition→permutation bridge
+(`crossingFragment_complete_ofBridgeAndStaircase`) it is the full crossing-fragment completeness modulo exactly two
+typed antecedents; both fire end-to-end at `generatorCount = 0` (`crossingFragment_complete_atGeneratorCountZero`).  The
+comb rerun is DONE minus the walled bricks.  `= true`. -/
+def fxFrob_hasCrossingRerunAssembly : Bool := true
+
+/-- ★ **Verdict WALL-1 — the row-level suffix congruence `RowSuffixCongruence` is structurally UNAVAILABLE.**  Every
+non-equivalence generator of `SpiderConvRows` (`ofTable` / `rowBone` / `interchange`) fires its content at the word's
+TAIL, so a common suffix moves it off the tail where no generator re-absorbs it; machine-confirmed on `induction conv`
+(`symm` / `trans` close, the three tail-firing arms have no closer), and the only suffix closer
+(`rowSuffixCongruence_escapesToSpiderConv`) lands in `SpiderConv` via the `whisker` PRIMITIVE.  This is r9's residual
+sharpened from a NAME to a constructor-level impossibility: only a `SpiderConvTable` REDESIGN with suffix-parametric
+firing (`prefix ++ row ++ suffix`) would open it.  `= false`. -/
+def fxFrob_hasRowLevelSuffixCongruence : Bool := false
+
+/-- ★ **Verdict WALL-2 — the partition→permutation bridge for the crossing fragment is OPEN (multi-block routing).**
+`readbackRespectsPartition` restricted to the crossing fragment needs `extraSpiderDiagramOf`-equal crossing words to
+have equal `permuteOfCrossingWord` — sound (the boundary partition of an all-crossing diagram IS its permutation), but
+its uniform proof is the `S_n`-routing gathering comb that brings non-adjacent ports of different blocks together, i.e.
+exactly the open multi-block `BRAUER-BREACH`.  Isolated as the `bridge` antecedent of
+`crossingFragment_complete_ofBridgeAndStaircase`; inhabited only at `generatorCount = 0` so far.  `= false`. -/
+def fxFrob_hasCrossingPartitionPermutationBridge : Bool := false
+
 end FX1Poly.Polygraph
