@@ -384,6 +384,66 @@ theorem brauerPresentation_allSound :
   ⟨snake_diagram_sound, snakeMirror_diagram_sound, crossingInvolution_diagram_sound,
     yangBaxter_diagram_sound, capSlide_diagram_sound⟩
 
+/-! ## WP-BRAUER-4 r3: the two Lehrer–Zhang untwist rows (ADDITIVE — the five relations above are untouched)
+
+The r2 wall (`Brauer/WiringDescStraighteningGap.lean`) machine-refuted that the five relations UNDER-GENERATE the free
+Brauer category: the cup untwist `σ ∘ cup = cup` is an equal diagram whose crossing parity flips, so it is unreachable
+by { the five relations, interchange, whiskering }.  Lehrer–Zhang (*The Brauer category and invariant theory*,
+arXiv:1207.5889, Theorem 2.6) present the Brauer category with SEVEN relations — the five above plus the cap untwist
+`A ∘ X = A` (2.5) and its ∗-mirror cup untwist `X ∘ U = U`.  These are the two missing generators the r2 wall named; we
+add them here as DATA rows, keeping the five above and every r2 wall theorem (which reference the OLD five-relation
+closure) valid.  Each new row is diagram-sound: the crossing permutes the two endpoints of the SAME cup / cap arc, so
+`matchingOf` is unchanged (`decide`). -/
+
+/-- ★ **R6 CUP UNTWIST** `σ ∘ cup = cup` — a cup then a crossing on its two produced legs is the bare cup:
+`[cupAt 0, crossingAt 0] ~ [cupAt 0]` over `0` bottom wires.  Lehrer–Zhang (2.5)∗ (`X ∘ U = U`).  Orientation is forced:
+the cup PRODUCES, so the crossing follows it. -/
+def cupUntwistRelation : BrauerRelation :=
+  { boundaryCount := 0, lhs := [cupAt 0, crossingAt 0], rhs := [cupAt 0] }
+
+/-- ★ **R7 CAP UNTWIST** `cap ∘ σ = cap` — a crossing then a cap on its two consumed legs is the bare cap:
+`[crossingAt 0, capAt 0] ~ [capAt 0]` over `2` bottom wires.  Lehrer–Zhang (2.5) (`A ∘ X = A`).  Orientation is forced:
+the cap CONSUMES, so the crossing precedes it. -/
+def capUntwistRelation : BrauerRelation :=
+  { boundaryCount := 2, lhs := [crossingAt 0, capAt 0], rhs := [capAt 0] }
+
+/-- ★ The **seven-relation Lehrer–Zhang presentation**, as a value: the shipped `brauerPresentation` (two snakes, R2,
+R3, R1 cap-slide) EXTENDED with the two untwist rows.  `brauerPresentation` itself is untouched. -/
+def brauerPresentation7 : List BrauerRelation :=
+  brauerPresentation ++ [cupUntwistRelation, capUntwistRelation]
+
+/-- The cup untwist is diagram-sound — both sides read `{ bottomCount := 0, topCount := 2, partner := [1, 0],
+loops := 0 }`.  The crossing transposes the cup's two legs, an automorphism of the arc, so the matching is unchanged. -/
+theorem cupUntwist_diagram_sound :
+    brauerDiagramOf cupUntwistRelation.boundaryCount cupUntwistRelation.lhs
+      = brauerDiagramOf cupUntwistRelation.boundaryCount cupUntwistRelation.rhs := by decide
+
+/-- The cap untwist is diagram-sound — both sides read `{ bottomCount := 2, topCount := 0, partner := [1, 0],
+loops := 0 }`. -/
+theorem capUntwist_diagram_sound :
+    brauerDiagramOf capUntwistRelation.boundaryCount capUntwistRelation.lhs
+      = brauerDiagramOf capUntwistRelation.boundaryCount capUntwistRelation.rhs := by decide
+
+/-- ★ **Every relation of the SEVEN-relation presentation is diagram-sound** — the five shipped witnesses
+(`brauerPresentation_allSound`) together with the two untwist witnesses. -/
+theorem brauerPresentation7_allSound :
+    (brauerDiagramOf snakeRelation.boundaryCount snakeRelation.lhs
+        = brauerDiagramOf snakeRelation.boundaryCount snakeRelation.rhs)
+    ∧ (brauerDiagramOf snakeMirrorRelation.boundaryCount snakeMirrorRelation.lhs
+        = brauerDiagramOf snakeMirrorRelation.boundaryCount snakeMirrorRelation.rhs)
+    ∧ (brauerDiagramOf crossingInvolutionRelation.boundaryCount crossingInvolutionRelation.lhs
+        = brauerDiagramOf crossingInvolutionRelation.boundaryCount crossingInvolutionRelation.rhs)
+    ∧ (brauerDiagramOf yangBaxterRelation.boundaryCount yangBaxterRelation.lhs
+        = brauerDiagramOf yangBaxterRelation.boundaryCount yangBaxterRelation.rhs)
+    ∧ (brauerDiagramOf capSlideRelation.boundaryCount capSlideRelation.lhs
+        = brauerDiagramOf capSlideRelation.boundaryCount capSlideRelation.rhs)
+    ∧ (brauerDiagramOf cupUntwistRelation.boundaryCount cupUntwistRelation.lhs
+        = brauerDiagramOf cupUntwistRelation.boundaryCount cupUntwistRelation.rhs)
+    ∧ (brauerDiagramOf capUntwistRelation.boundaryCount capUntwistRelation.lhs
+        = brauerDiagramOf capUntwistRelation.boundaryCount capUntwistRelation.rhs) :=
+  ⟨snake_diagram_sound, snakeMirror_diagram_sound, crossingInvolution_diagram_sound,
+    yangBaxter_diagram_sound, capSlide_diagram_sound, cupUntwist_diagram_sound, capUntwist_diagram_sound⟩
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `WiringDesc` engine is SHIPPED and computing.**  `stepWiring` fires one union-find step
@@ -402,6 +462,14 @@ R2 involutivity, R3 Yang–Baxter, R1 cap-slide) are DATA; each relation carries
 low-depth ones by `rfl`, R3 by the staged single-step chain `yangBaxter_diagram_sound`), and
 `brauerPresentation_allSound` conjoins the whole set.  `= true`. -/
 def fxBrauer_hasBrauerPresentation : Bool := true
+
+/-- ★ **Honesty marker — the two Lehrer–Zhang untwist rows are SHIPPED (the r3 seven-relation extension).**  The r2
+wall named the missing generators; `cupUntwistRelation` (`σ ∘ cup = cup`, Lehrer–Zhang 2.5∗) and `capUntwistRelation`
+(`cap ∘ σ = cap`, Lehrer–Zhang 2.5) are added as DATA rows with diagram-soundness witnesses
+(`cupUntwist_diagram_sound` / `capUntwist_diagram_sound`, `decide`), `brauerPresentation7` the extended presentation,
+and `brauerPresentation7_allSound` conjoining all seven.  ADDITIVE: `brauerPresentation` and every r2 wall theorem
+(about the OLD five-relation closure) are untouched.  `= true`. -/
+def fxBrauer_hasBrauerUntwistRelations : Bool := true
 
 /-- ★ **Honesty marker — GENERAL Brauer soundness: the uniform `relationAgrees` residual is now CLOSED (flag flipped
 `false → true`).**  Per-relation soundness is shipped at the seed; the contextual interchange (Godement) and the

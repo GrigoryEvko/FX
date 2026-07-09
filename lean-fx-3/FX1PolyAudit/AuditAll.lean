@@ -371,6 +371,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPadCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardForm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraighteningGap
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescUntwist
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence

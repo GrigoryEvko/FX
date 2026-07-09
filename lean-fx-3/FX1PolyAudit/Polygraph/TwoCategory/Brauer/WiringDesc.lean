@@ -86,10 +86,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.yangBaxter_diagram_sound
 #assert_no_axioms FX1Poly.Polygraph.brauerPresentation_allSound
 
+-- WP-BRAUER-4 r3: the two Lehrer-Zhang untwist rows + soundness (ADDITIVE)
+#assert_no_axioms FX1Poly.Polygraph.cupUntwistRelation
+#assert_no_axioms FX1Poly.Polygraph.capUntwistRelation
+#assert_no_axioms FX1Poly.Polygraph.brauerPresentation7
+#assert_no_axioms FX1Poly.Polygraph.cupUntwist_diagram_sound
+#assert_no_axioms FX1Poly.Polygraph.capUntwist_diagram_sound
+#assert_no_axioms FX1Poly.Polygraph.brauerPresentation7_allSound
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasWiringDescEngine
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingGenerator
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerPresentation
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerUntwistRelations
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerSoundness
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerCompleteness
 
