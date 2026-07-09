@@ -43,6 +43,7 @@ namespace FX1Poly.Core.Fib
 
 open FX1Poly.Polygraph
 open FX1Poly.Typed
+open FX1Poly.Core
 
 /-! ## K3a — the decidable-equality data of the affine mode graph -/
 
@@ -131,5 +132,60 @@ theorem modeAccessible_dimensional_doubleLock_false :
 -- Distinct-length verdicts: expect `false` each.
 #eval modeAccessibleBool fibrantUsePath dimensionalUsePath
 #eval modeAccessibleBool dimensionalUsePath doubleLockPath
+
+/-! ## K4 — the FIRST discharged premise: the decider verdict WIRES the engine's accessibility check
+
+The engine's LIVE accessibility premise `TypingContext.isAccessibleAtModality index modality = true` is consumed
+in the substitution leg (`HasTypeUnionSubstUnionTyped`) and in the table-arm usability conjunct
+(`isSubjectUsableAtModality`).  K4 discharges that premise FROM the K3 decider's verdict.  This is the honest
+WIRED K4 shape (NOT a decorative wrapper): the premise IS a decidable `Bool = true`, and the A1-MODE-SEAL
+`isAccessibleAtModality_eq_pathEq` makes the engine check DEFINITIONALLY the mode theory's path-equality decision,
+so the bridge is `decide_eq_true` over that sealed equation. -/
+
+/-- ★★ **K4 — THE DISCHARGED PREMISE (WIRED).**  The mode-accessibility decider's affirmative verdict — exactly
+the `IsModeAccessible` witness `modeAccessibilityDecider` returns in its `isTrue` branch — DISCHARGES the engine's
+accessibility premise `context.isAccessibleAtModality index modality = true`, by definitional computation through
+the A1-MODE-SEAL.  The kernel bridge: a mode-theory decision becomes a typing-side premise, no re-proof. -/
+theorem accessibilityPremise_ofModeAccessible {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality)
+    (accessible :
+        IsModeAccessible (obligationModalityToPath modality) (bindingModalityPath context index)) :
+    context.isAccessibleAtModality index modality = true := by
+  rw [isAccessibleAtModality_eq_pathEq]
+  exact decide_eq_true accessible
+
+/-- ★ **K4 — the NEGATIVE bridge (the separation direction).**  When the decider REFUTES accessibility, the
+engine's premise is `false`: the use-modality cannot be admitted where the binding-modality forbids it.  This is
+the leg that KILLS a mis-modalled variable use (the SR-breaker) FROM the mode decision. -/
+theorem accessibilityRefuted_ofNotModeAccessible {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality)
+    (notAccessible :
+        ¬ IsModeAccessible (obligationModalityToPath modality) (bindingModalityPath context index)) :
+    context.isAccessibleAtModality index modality = false := by
+  rw [isAccessibleAtModality_eq_pathEq]
+  exact decide_eq_false notAccessible
+
+/-- ★ **K4 corpus instance (ACCEPT).**  The locked dimension `var 0` under `Gamma.lockCons` is accessible at the
+DIMENSIONAL modality THROUGH the decider bridge: its binding-modality path is the affine generator, which is
+`obligationModalityToPath .dimensional`, so `accessibilityPremise_ofModeAccessible` fires by `rfl`.  Reproduces
+the engine's `dimensionIsAccessibleDimensionally` (so `pathApp p (var 0)` types) — now DISCHARGED FROM the
+mode-accessibility decision, not by a bespoke computation. -/
+theorem lockedDimensionAccessibleDimensionallyViaBridge {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .dimensional = true :=
+  accessibilityPremise_ofModeAccessible (restContext.lockCons dimensionType) ⟨0, isLtZeroSucc⟩ .dimensional rfl
+
+/-- ★ **K4 corpus instance (REJECT / separation).**  The locked dimension `var 0` under `Gamma.lockCons` is NOT
+accessible at the FIBRANT modality THROUGH the decider bridge: `obligationModalityToPath .fibrant` is the identity
+path (length 0), the binding path is the affine generator (length 1), so the decider REFUTES (lengths `0 != 1`)
+and `accessibilityRefuted_ofNotModeAccessible` fires.  Reproduces `dimensionIsNotAccessibleFibrantly` — the
+canonical SR-breaker `pair (var 0) (var 0)` is killed FROM the mode-accessibility decision. -/
+theorem lockedDimensionRefutedFibrantlyViaBridge {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant = false :=
+  accessibilityRefuted_ofNotModeAccessible (restContext.lockCons dimensionType) ⟨0, isLtZeroSucc⟩ .fibrant
+    (fun pathEq => Nat.noConfusion (congrArg ModalityPath.length pathEq))
 
 end FX1Poly.Core.Fib

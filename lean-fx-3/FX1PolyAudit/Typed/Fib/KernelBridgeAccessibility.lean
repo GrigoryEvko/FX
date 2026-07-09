@@ -27,4 +27,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Fib.modeAccessible_fibrant_dimensional_false
 #assert_no_axioms FX1Poly.Core.Fib.modeAccessible_dimensional_doubleLock_false
 
+/-! ## K4 — the discharged premise bridge + corpus instances -/
+
+#assert_no_axioms FX1Poly.Core.Fib.accessibilityPremise_ofModeAccessible
+#assert_no_axioms FX1Poly.Core.Fib.accessibilityRefuted_ofNotModeAccessible
+#assert_no_axioms FX1Poly.Core.Fib.lockedDimensionAccessibleDimensionallyViaBridge
+#assert_no_axioms FX1Poly.Core.Fib.lockedDimensionRefutedFibrantlyViaBridge
+
 end FX1PolyAudit
