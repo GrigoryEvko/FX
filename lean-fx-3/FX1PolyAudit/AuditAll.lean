@@ -145,6 +145,10 @@ import FX1PolyAudit.Tier0.Grade.ModeSignatureSpectrum
 import FX1PolyAudit.Polygraph.Computad.ModeComputad
 import FX1PolyAudit.Tier0.Grade.ModeComputadRichness
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.Model
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Pushout
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.InterleavingNF
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Dispatch
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Witness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
