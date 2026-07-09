@@ -258,13 +258,14 @@ def fxKZ_hasKZEqualityDecisionClosed : Bool := true
 witness `KZOrderCompleteness`; the SOUNDNESS-backed `isFalse` branch is fully real.  `= true`. -/
 def fxKZ_hasKZOrderDecisionModuloCompleteness : Bool := true
 
-/-- **Honesty marker — the named residual.**  The FULL KZ 2-cell ORDER decision needs
-`KZOrderCompleteness.leOfMapLE` (pointwise-ordered folds reconstruct a KZ order), which is TRUE (the walking KZ
-monad is the pointwise-ordered Delta_+, Street; recognition criterion arXiv:2512.05631) but NOT yet mechanized: its
-STRICT half is the covering-move generation of the dominance order on Delta_+(m,n) via whiskered `kzGen` — genuine
-new combinatorics, the KZ analog of the walking monad's `convOfMapEq` staircase but for the ORDER.  The EQUALITY
-half is free (hence `decideKZEq` is total); only the strict-order generation remains.  So `KZOrderCompleteness` is
-NOT yet inhabited and the ORDER decision is not total.  `= false`. -/
-def fxKZ_hasWalkingKZOrderCompleteness : Bool := false
+/-- **ESTABLISHED — the FULL KZ 2-cell ORDER decision is TOTAL (the residual is closed).**  The order-completeness
+leg `KZOrderCompleteness.leOfMapLE` (pointwise-ordered folds reconstruct a KZ order) is now mechanized zero-axiom
+as `kzLE_complete` and `KZOrderCompleteness` is INHABITED (`kzOrderCompletenessWitness`, in `KZOrderCompleteness`):
+the STRICT half — the covering-move generation of the dominance order on Delta_+(m,n) via whiskered `kzGen` — is the
+head-peel majorization recursion `kzChainByLength` (prefix-sum dominance climbed by `kzFrontCoveringMulti` +
+`kzPrefixAddTotal`), the KZ analog of the walking monad's `convOfMapEq` staircase but for the directed ORDER.  So the
+KZ 2-cell ORDER decision is TOTAL (`decideKZLETotal`), strictly directional, joining the already-total EQUALITY
+decision (`decideKZEq`).  `= true`. -/
+def fxKZ_hasWalkingKZOrderCompleteness : Bool := true
 
 end FX1Poly.Polygraph

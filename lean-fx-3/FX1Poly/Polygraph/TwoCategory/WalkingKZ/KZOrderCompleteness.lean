@@ -592,6 +592,432 @@ theorem kzPrefixAdd_smoke :
     KZTwoCellLE (kzFlatWord 6 3 [3, 2, 1] rfl rfl) (kzFlatWord 6 3 [3, 1, 2] rfl rfl) :=
   kzPrefixAdd 3 3 2 rfl rfl rfl rfl rfl rfl rfl rfl kzLocalCovering_merged_smoke
 
+/-! ## ★★ The completeness CHAIN — pointwise dominance reconstructs a directed KZ 2-cell (GAP-2 closed)
+
+`kzFrontCovering` (the length-preserving covering-in-context) and `kzPrefixAdd` (the length-increasing head-strip)
+are assembled into the FULL order-completeness reconstruction `kzLE_complete : mapLE (fold a) (fold b) →
+KZTwoCellLE a b`.  The genuine new combinatorics is the DOMINANCE recursion: pointwise dominance of the Δ₊
+reconstructions is prefix-sum MAJORIZATION (`mapLE_imp_prefixDom`), and a majorizing pair is climbed by a head-peel
+recursion (`kzChainByLength`, structural on the head count) — bring the head DOWN to its target (`kzFrontCoveringMulti`,
+a bounded chain of front coverings), strip the settled head (`kzPrefixAddTotal`), recurse on the dominated tail.
+The bridge to arbitrary parallel cells routes through the canonical Eilenberg–Zilber words (`canon`).  This is the
+KZ analog of the walking monad's `convOfMapEq` staircase, but for the directed ORDER. -/
+
+/-- Left-cancellation of `≤` under addition, propext-free (`Nat.le_of_add_le_add_left` pulls `propext`). -/
+theorem natLeOfAddLeAddLeft : ∀ {n m k : Nat}, n + m ≤ n + k → m ≤ k
+  | 0, _, _, h => by rw [Nat.zero_add, Nat.zero_add] at h; exact h
+  | _ + 1, _, _, h => by
+      rw [Nat.succ_add, Nat.succ_add] at h; exact natLeOfAddLeAddLeft (Nat.le_of_succ_le_succ h)
+
+/-- Additive complement of a `≤`, propext-free (`Nat.add_sub_cancel'` pulls `propext`). -/
+theorem natAddSubCancelOfLe : ∀ {m n : Nat}, m ≤ n → m + (n - m) = n
+  | 0, _, _ => by rw [Nat.zero_add, Nat.sub_zero]
+  | m + 1, 0, hle => absurd hle (Nat.not_succ_le_zero m)
+  | m + 1, _ + 1, hle => by
+      rw [Nat.succ_sub_succ, Nat.succ_add, natAddSubCancelOfLe (Nat.le_of_succ_le_succ hle)]
+
+/-- Partial sum of the first `t` counts of a count-vector — `listSum` of the length-`t` prefix.  This form makes
+`prefixSum counts 0 = 0` and `prefixSum (c::rest) (t+1) = c + prefixSum rest t` hold definitionally. -/
+def prefixSum (counts : List Nat) (t : Nat) : Nat := listSum (consTake t counts)
+
+/-- Every reconstructed value is at least the base target. -/
+theorem reconstructFrom_get_ge_base : ∀ (base : Nat) (counts : List Nat) (position : Nat),
+    position < listSum counts → base ≤ monotoneMapGet (reconstructFrom base counts) position
+  | _, [], position, hpos => absurd hpos (Nat.not_lt_zero _)
+  | base, count :: rest, position, hpos => by
+      show base ≤ monotoneMapGet (consReplicate base count (reconstructFrom (base + 1) rest)) position
+      rcases Nat.lt_or_ge position count with hlt | hge
+      · exact Nat.le_of_eq
+          (monotoneMapGet_consReplicate_lt base count position (reconstructFrom (base + 1) rest) hlt).symm
+      · rcases Nat.le.dest hge with ⟨offset, hoffEq⟩
+        have hoff : offset < listSum rest := by
+          have hpos' : count + offset < count + listSum rest := by rw [hoffEq]; exact hpos
+          exact Nat.lt_of_add_lt_add_left hpos'
+        rw [← hoffEq, monotoneMapGet_consReplicate_ge base count offset (reconstructFrom (base + 1) rest)]
+        exact Nat.le_trans (Nat.le_succ base) (reconstructFrom_get_ge_base (base + 1) rest offset hoff)
+
+/-- If a position is at or past the start of block `t`, its reconstructed value is at least `base + t`. -/
+theorem reconstructFrom_get_ge : ∀ (base : Nat) (counts : List Nat) (t position : Nat),
+    prefixSum counts t ≤ position → position < listSum counts →
+    base + t ≤ monotoneMapGet (reconstructFrom base counts) position
+  | base, counts, 0, position, _, hpos => by
+      rw [Nat.add_zero]; exact reconstructFrom_get_ge_base base counts position hpos
+  | _, [], _ + 1, position, _, hpos => absurd hpos (Nat.not_lt_zero _)
+  | base, count :: rest, t + 1, position, hprefix, hpos => by
+      show base + (t + 1) ≤ monotoneMapGet (consReplicate base count (reconstructFrom (base + 1) rest)) position
+      have hprefix' : count + prefixSum rest t ≤ position := hprefix
+      have hge : count ≤ position := Nat.le_trans (Nat.le_add_right count _) hprefix'
+      rcases Nat.le.dest hge with ⟨offset, hoffEq⟩
+      have hprefixOff : prefixSum rest t ≤ offset := by
+        have : count + prefixSum rest t ≤ count + offset := by rw [hoffEq]; exact hprefix'
+        exact natLeOfAddLeAddLeft this
+      have hoff : offset < listSum rest := by
+        have hpos' : count + offset < count + listSum rest := by rw [hoffEq]; exact hpos
+        exact Nat.lt_of_add_lt_add_left hpos'
+      rw [← hoffEq, monotoneMapGet_consReplicate_ge base count offset (reconstructFrom (base + 1) rest)]
+      have hih : base + 1 + t ≤ monotoneMapGet (reconstructFrom (base + 1) rest) offset :=
+        reconstructFrom_get_ge (base + 1) rest t offset hprefixOff hoff
+      rw [Nat.add_right_comm base 1 t] at hih
+      exact hih
+
+/-- Converse: if the reconstructed value at a position is at least `base + t`, the position is at or past the
+start of block `t`. -/
+theorem reconstructFrom_ge_get : ∀ (base : Nat) (counts : List Nat) (t position : Nat),
+    base + t ≤ monotoneMapGet (reconstructFrom base counts) position → prefixSum counts t ≤ position
+  | _, _, 0, position, _ => Nat.zero_le position
+  | base, [], t + 1, position, hval => by
+      have hval' : base + (t + 1) ≤ 0 := hval
+      exact absurd hval' (Nat.not_succ_le_zero _)
+  | base, count :: rest, t + 1, position, hval => by
+      have hvalC : base + (t + 1)
+          ≤ monotoneMapGet (consReplicate base count (reconstructFrom (base + 1) rest)) position := hval
+      show count + prefixSum rest t ≤ position
+      rcases Nat.lt_or_ge position count with hlt | hge
+      · exfalso
+        rw [monotoneMapGet_consReplicate_lt base count position (reconstructFrom (base + 1) rest) hlt] at hvalC
+        exact Nat.not_succ_le_self base
+          (Nat.le_trans (Nat.add_le_add_left (Nat.succ_le_succ (Nat.zero_le t)) base) hvalC)
+      · rcases Nat.le.dest hge with ⟨offset, hoffEq⟩
+        rw [← hoffEq, monotoneMapGet_consReplicate_ge base count offset (reconstructFrom (base + 1) rest)] at hvalC
+        have hvalC2 : base + 1 + t ≤ monotoneMapGet (reconstructFrom (base + 1) rest) offset := by
+          rw [Nat.add_right_comm base 1 t]; exact hvalC
+        have hih := reconstructFrom_ge_get (base + 1) rest t offset hvalC2
+        rw [← hoffEq]
+        exact Nat.add_le_add_left hih count
+
+/-- The reconstruction of a count-vector has length equal to the block sum. -/
+theorem reconstructFrom_length_listSum (counts : List Nat) :
+    (reconstructFrom 0 counts).length = listSum counts := by
+  rw [reconstructFrom_length, countsDomainPath_eq_monadTPower_listSum, monadTPower_length]
+
+/-- A prefix sum never exceeds the total. -/
+theorem prefixSum_le_listSum (counts : List Nat) (t : Nat) : prefixSum counts t ≤ listSum counts := by
+  show listSum (consTake t counts) ≤ listSum counts
+  have hsplit : listSum counts = listSum (consTake t counts) + listSum (consDrop t counts) := by
+    rw [← listSum_consAppend, consAppend_consTake_consDrop]
+  rw [hsplit]
+  exact Nat.le_add_right _ _
+
+/-- **Pointwise dominance of reconstructions is prefix-sum majorization.**  If `reconstruct u ≤ reconstruct v`
+pointwise (equal totals), then every prefix sum of `v` is dominated by that of `u`.  Fix `t`: at the position
+`prefixSum u t` the value of `reconstruct u` is `≥ t` (`reconstructFrom_get_ge`), so by `mapLE` the value of
+`reconstruct v` there is `≥ t`, which forces `prefixSum v t ≤ prefixSum u t` (`reconstructFrom_ge_get`).  (When
+`prefixSum u t` reaches the total, the bound is immediate from equal totals.) -/
+theorem mapLE_imp_prefixDom (u v : List Nat) (hsum : listSum u = listSum v)
+    (hle : mapLE (reconstructFrom 0 u) (reconstructFrom 0 v)) :
+    ∀ t, prefixSum v t ≤ prefixSum u t := by
+  intro t
+  rcases Nat.lt_or_ge (prefixSum u t) (listSum u) with hlt | hge
+  · have hposU : prefixSum u t < (reconstructFrom 0 u).length := by
+      rw [reconstructFrom_length_listSum]; exact hlt
+    have hvalU : 0 + t ≤ monotoneMapGet (reconstructFrom 0 u) (prefixSum u t) :=
+      reconstructFrom_get_ge 0 u t (prefixSum u t) (Nat.le_refl _) hlt
+    have hvalV : 0 + t ≤ monotoneMapGet (reconstructFrom 0 v) (prefixSum u t) :=
+      Nat.le_trans hvalU (hle (prefixSum u t) hposU)
+    exact reconstructFrom_ge_get 0 v t (prefixSum u t) hvalV
+  · have huMax : prefixSum u t = listSum u :=
+      Nat.le_antisymm (prefixSum_le_listSum u t) hge
+    rw [huMax, hsum]
+    exact prefixSum_le_listSum v t
+
+/-- **Prefix-sum domination**: `v`'s prefix sums are all dominated by `u`'s (`u` is spread further left). -/
+def prefixSumDominates (u v : List Nat) : Prop := ∀ t, prefixSum v t ≤ prefixSum u t
+
+/-- Stripping a common head from a domination shifts the prefix-sum indices down. -/
+theorem prefixSumDominates_strip {headBlock : Nat} {u v : List Nat}
+    (hdom : prefixSumDominates (headBlock :: u) (headBlock :: v)) : prefixSumDominates u v := by
+  intro t
+  have hstep : prefixSum (headBlock :: v) (t + 1) ≤ prefixSum (headBlock :: u) (t + 1) := hdom (t + 1)
+  have hvC : prefixSum (headBlock :: v) (t + 1) = headBlock + prefixSum v t := rfl
+  have huC : prefixSum (headBlock :: u) (t + 1) = headBlock + prefixSum u t := rfl
+  rw [hvC, huC] at hstep
+  exact natLeOfAddLeAddLeft hstep
+
+/-- A covering move `(v0+kount, u1) ↦ (v0, u1+kount)` at the first two blocks preserves prefix-sum domination
+against `v`: the only prefix sum that changes (index 1: from `v0+kount` down to `v0`) stays `≥ v`'s (which is `v0`
+at index 1), and every other prefix sum is unchanged.  Case split on `t ∈ {0, 1, ≥2}`. -/
+theorem prefixSumDominates_covering (v0 kount u1 : Nat) (u_rest v' : List Nat)
+    (hdom : prefixSumDominates ((v0 + kount) :: u1 :: u_rest) (v0 :: v')) :
+    prefixSumDominates (v0 :: (u1 + kount) :: u_rest) (v0 :: v') := by
+  intro t
+  match t with
+  | 0 => exact Nat.le_refl 0
+  | 1 => exact Nat.le_refl v0
+  | k + 2 =>
+      have hstep := hdom (k + 2)
+      have heq : prefixSum ((v0 + kount) :: u1 :: u_rest) (k + 2)
+          = prefixSum (v0 :: (u1 + kount) :: u_rest) (k + 2) := by
+        show (v0 + kount) + (u1 + prefixSum u_rest k) = v0 + ((u1 + kount) + prefixSum u_rest k)
+        rw [Nat.add_assoc v0 kount (u1 + prefixSum u_rest k),
+            ← Nat.add_assoc kount u1 (prefixSum u_rest k), Nat.add_comm kount u1]
+      rw [heq] at hstep
+      exact hstep
+
+/-- The length of a two-block-prefixed vector is `2 + rest.length` (definitionally `rest.length + 2`). -/
+theorem twoConsLength (a b : Nat) (rest : List Nat) : (a :: b :: rest).length = 2 + rest.length :=
+  Nat.add_comm rest.length 2
+
+/-- The block sum of a two-block-prefixed vector. -/
+theorem listSum_twoCons (a b : Nat) (rest : List Nat) : listSum (a :: b :: rest) = a + b + listSum rest :=
+  (Nat.add_assoc a b (listSum rest)).symm
+
+/-- Moving one unit between the first two blocks preserves the block sum. -/
+theorem listSum_move (a b : Nat) (rest : List Nat) :
+    listSum ((a + 1) :: b :: rest) = listSum (a :: (b + 1) :: rest) := by
+  rw [listSum_twoCons, listSum_twoCons, (Nat.add_right_comm a 1 b).trans (Nat.add_assoc a b 1)]
+
+/-- ★★ **The MULTI covering** — move `kount` units from the first block to the second in one directed chain:
+`flat ((v0+kount)::u1::u_rest) ⇒ flat (v0::(u1+kount)::u_rest)`.  Structural induction on `kount`, each step one
+`kzFrontCovering`; the length-preserving covering-in-context iterated.  This is what brings a count vector's head
+DOWN to its target head value `v0` before the head-peel strip. -/
+theorem kzFrontCoveringMulti (widthTotal : Nat) (u_rest : List Nat) :
+    ∀ (kount v0 u1 : Nat)
+      (hsumSrc : listSum ((v0 + kount) :: u1 :: u_rest) = widthTotal)
+      (hsumTgt : listSum (v0 :: (u1 + kount) :: u_rest) = widthTotal),
+      KZTwoCellLE
+        (kzFlatWord widthTotal (2 + u_rest.length) ((v0 + kount) :: u1 :: u_rest) hsumSrc
+          (twoConsLength (v0 + kount) u1 u_rest))
+        (kzFlatWord widthTotal (2 + u_rest.length) (v0 :: (u1 + kount) :: u_rest) hsumTgt
+          (twoConsLength v0 (u1 + kount) u_rest))
+  | 0, v0, u1, hsumSrc, hsumTgt =>
+      kzLE_ofFlatMapEq widthTotal (2 + u_rest.length) hsumSrc (twoConsLength (v0 + 0) u1 u_rest)
+        hsumTgt (twoConsLength v0 (u1 + 0) u_rest) rfl
+  | kount + 1, v0, u1, hsumSrc, hsumTgt => by
+      have hentry : u1 + 1 + kount = u1 + (kount + 1) :=
+        (Nat.add_right_comm u1 1 kount).trans (Nat.add_succ u1 kount).symm
+      have hsumMid : listSum ((v0 + kount) :: (u1 + 1) :: u_rest) = widthTotal :=
+        (listSum_move (v0 + kount) u1 u_rest).symm.trans hsumSrc
+      have hsumTgtIH : listSum (v0 :: (u1 + 1 + kount) :: u_rest) = widthTotal :=
+        (congrArg (fun midVal => listSum (v0 :: midVal :: u_rest)) hentry).trans hsumTgt
+      have hmove :
+          KZTwoCellLE
+            (kzFlatWord widthTotal (2 + u_rest.length) ((v0 + (kount + 1)) :: u1 :: u_rest) hsumSrc
+              (twoConsLength (v0 + (kount + 1)) u1 u_rest))
+            (kzFlatWord widthTotal (2 + u_rest.length) ((v0 + kount) :: (u1 + 1) :: u_rest) hsumMid
+              (twoConsLength (v0 + kount) (u1 + 1) u_rest)) :=
+        kzFrontCovering (v0 + kount) u1 widthTotal u_rest hsumSrc hsumMid
+          (twoConsLength (v0 + (kount + 1)) u1 u_rest) (twoConsLength (v0 + kount) (u1 + 1) u_rest)
+      have hih := kzFrontCoveringMulti widthTotal u_rest kount v0 (u1 + 1) hsumMid hsumTgtIH
+      have hbridge :
+          KZTwoCellLE
+            (kzFlatWord widthTotal (2 + u_rest.length) (v0 :: (u1 + 1 + kount) :: u_rest) hsumTgtIH
+              (twoConsLength v0 (u1 + 1 + kount) u_rest))
+            (kzFlatWord widthTotal (2 + u_rest.length) (v0 :: (u1 + (kount + 1)) :: u_rest) hsumTgt
+              (twoConsLength v0 (u1 + (kount + 1)) u_rest)) :=
+        kzLE_ofFlatMapEq widthTotal (2 + u_rest.length) hsumTgtIH (twoConsLength v0 (u1 + 1 + kount) u_rest)
+          hsumTgt (twoConsLength v0 (u1 + (kount + 1)) u_rest)
+          (congrArg (fun midVal => reconstructFrom 0 (v0 :: midVal :: u_rest)) hentry)
+      exact KZTwoCellLE.trans hmove (KZTwoCellLE.trans hih hbridge)
+
+/-- Re-anchor a flat word from an inner total to an equal outer total (a boundary cast, proof-irrelevant). -/
+theorem kzFlatWord_totalCast (widthInner widthOuter widthCod : Nat) (counts : List Nat)
+    (hsumInner : listSum counts = widthInner) (hlen : counts.length = widthCod)
+    (hsumOuter : listSum counts = widthOuter) (hTotal : widthInner = widthOuter) :
+    RawTwoCellExpr.castBoundary (congrArg monadTPower hTotal) rfl
+        (kzFlatWord widthInner widthCod counts hsumInner hlen)
+      = kzFlatWord widthOuter widthCod counts hsumOuter hlen := by
+  dsimp only [kzFlatWord]
+  rw [RawTwoCellExpr.castBoundary_castBoundary]
+
+/-- Re-anchor a flat word's CODOMAIN from an inner width to an equal outer width (a boundary cast). -/
+theorem kzFlatWord_codCast (widthTotal codInner codOuter : Nat) (counts : List Nat)
+    (hsum : listSum counts = widthTotal) (hlenInner : counts.length = codInner)
+    (hlenOuter : counts.length = codOuter) (hCod : codInner = codOuter) :
+    RawTwoCellExpr.castBoundary rfl (congrArg monadTPower hCod)
+        (kzFlatWord widthTotal codInner counts hsum hlenInner)
+      = kzFlatWord widthTotal codOuter counts hsum hlenOuter := by
+  dsimp only [kzFlatWord]
+  rw [RawTwoCellExpr.castBoundary_castBoundary]
+
+/-- ★ **Prefix-add re-anchored to an outer total** — prepend a head block and land at a prescribed outer total: from
+`flat w_src ⇒ flat w_tgt` (inner total `widthTail`), build `flat (c::w_src) ⇒ flat (c::w_tgt)` at outer total
+`widthTotal = c + widthTail`.  `kzPrefixAdd` then the total cast `kzFlatWord_totalCast`. -/
+theorem kzPrefixAddTotal (headBlock widthTail widthTotal widthCod : Nat) {w_src w_tgt : List Nat}
+    (hsum_src : listSum w_src = widthTail) (hlen_src : w_src.length = widthCod)
+    (hsum_tgt : listSum w_tgt = widthTail) (hlen_tgt : w_tgt.length = widthCod)
+    (hsum_src' : listSum (headBlock :: w_src) = widthTotal)
+    (hlen_src' : (headBlock :: w_src).length = widthCod + 1)
+    (hsum_tgt' : listSum (headBlock :: w_tgt) = widthTotal)
+    (hlen_tgt' : (headBlock :: w_tgt).length = widthCod + 1)
+    (hTotal : headBlock + widthTail = widthTotal)
+    (le : KZTwoCellLE (kzFlatWord widthTail widthCod w_src hsum_src hlen_src)
+      (kzFlatWord widthTail widthCod w_tgt hsum_tgt hlen_tgt)) :
+    KZTwoCellLE (kzFlatWord widthTotal (widthCod + 1) (headBlock :: w_src) hsum_src' hlen_src')
+      (kzFlatWord widthTotal (widthCod + 1) (headBlock :: w_tgt) hsum_tgt' hlen_tgt') := by
+  have hsumInnerSrc : listSum (headBlock :: w_src) = headBlock + widthTail := hsum_src'.trans hTotal.symm
+  have hsumInnerTgt : listSum (headBlock :: w_tgt) = headBlock + widthTail := hsum_tgt'.trans hTotal.symm
+  have hpa := kzPrefixAdd headBlock widthTail widthCod hsum_src hlen_src hsum_tgt hlen_tgt
+    hsumInnerSrc hlen_src' hsumInnerTgt hlen_tgt' le
+  have hcast := KZTwoCellLE.castBoundaryCongr (congrArg monadTPower hTotal) rfl hpa
+  rw [kzFlatWord_totalCast (headBlock + widthTail) widthTotal (widthCod + 1) (headBlock :: w_src)
+        hsumInnerSrc hlen_src' hsum_src' hTotal,
+      kzFlatWord_totalCast (headBlock + widthTail) widthTotal (widthCod + 1) (headBlock :: w_tgt)
+        hsumInnerTgt hlen_tgt' hsum_tgt' hTotal] at hcast
+  exact hcast
+
+/-- A list of length zero is empty (propext-free). -/
+theorem list_eq_nil_of_length_zero : ∀ {xs : List Nat}, xs.length = 0 → xs = []
+  | [], _ => rfl
+  | _ :: _, h => Nat.noConfusion h
+
+/-- ★★ **The completeness CHAIN**, structural on the head count `fuel = u.length`.  Given equal-length, equal-sum
+count vectors `u`, `v` with `u` prefix-sum-dominating `v`, build the directed KZ covering chain
+`flat u ⇒ flat v`.  Head-peel recursion: bring `u`'s head DOWN to `v`'s head (`kzFrontCoveringMulti`), strip the
+now-settled head (`kzPrefixAddTotal`), recurse on the tail (domination inherited via `prefixSumDominates_covering`
++ `_strip`).  Boundary reconciliation by the total/codomain casts. -/
+theorem kzChainByLength : ∀ (fuel widthTotal : Nat) (u v : List Nat)
+    (hfuel : u.length = fuel) (hlen : u.length = v.length)
+    (hsumU : listSum u = widthTotal) (hsumV : listSum v = widthTotal)
+    (hdom : prefixSumDominates u v),
+    KZTwoCellLE (kzFlatWord widthTotal u.length u hsumU rfl)
+      (kzFlatWord widthTotal u.length v hsumV hlen.symm)
+  | 0, widthTotal, u, v, hfuel, hlen, hsumU, hsumV, _ => by
+      have huNil : u = [] := list_eq_nil_of_length_zero hfuel
+      subst huNil
+      have hvNil : v = [] := list_eq_nil_of_length_zero hlen.symm
+      subst hvNil
+      exact kzLE_ofFlatMapEq widthTotal 0 hsumU rfl hsumV rfl rfl
+  | fuel + 1, widthTotal, u, v, hfuel, hlen, hsumU, hsumV, hdom => by
+      match u, v, hfuel, hlen, hsumU, hsumV, hdom with
+      | [headU], [headV], _, _, hsumU, hsumV, _ =>
+          exact kzLE_ofFlatMapEq widthTotal 1 hsumU rfl hsumV rfl
+            (congrArg (fun value => reconstructFrom 0 [value]) (hsumU.trans hsumV.symm))
+      | u0 :: u1 :: u_rest, v0 :: v', hfuel, hlen, hsumU, hsumV, hdom =>
+          have hv0u0 : v0 ≤ u0 := hdom 1
+          have hu0 : u0 = v0 + (u0 - v0) := (natAddSubCancelOfLe hv0u0).symm
+          have hcore : (v0 + (u0 - v0)) + u1 = v0 + (u1 + (u0 - v0)) := by
+            rw [Nat.add_assoc, Nat.add_comm (u0 - v0) u1]
+          -- Sums of the two moved vectors, both `widthTotal`.
+          have hsumA : listSum ((v0 + (u0 - v0)) :: u1 :: u_rest) = widthTotal := by rw [← hu0]; exact hsumU
+          have hsumB : listSum (v0 :: (u1 + (u0 - v0)) :: u_rest) = widthTotal := by
+            rw [listSum_twoCons, ← hcore, ← listSum_twoCons]; exact hsumA
+          have hlenTail : ((u1 + (u0 - v0)) :: u_rest).length = v'.length := Nat.succ.inj hlen
+          -- STEP A: flat (u0::u1::u_rest) => flat ((v0+kount)::u1::u_rest), by equality completeness.
+          have hstepA :
+              KZTwoCellLE (kzFlatWord widthTotal (u0 :: u1 :: u_rest).length (u0 :: u1 :: u_rest) hsumU rfl)
+                (kzFlatWord widthTotal (u0 :: u1 :: u_rest).length ((v0 + (u0 - v0)) :: u1 :: u_rest) hsumA rfl) :=
+            kzLE_ofFlatMapEq widthTotal (u0 :: u1 :: u_rest).length hsumU rfl hsumA rfl
+              (congrArg (fun value => reconstructFrom 0 (value :: u1 :: u_rest)) hu0)
+          -- STEP B: multi-covering flat ((v0+kount)::u1::u_rest) => flat (v0::(u1+kount)::u_rest),
+          -- re-anchored from width `2 + rest.length` to the cons length.
+          have hmulti := kzFrontCoveringMulti widthTotal u_rest (u0 - v0) v0 u1 hsumA hsumB
+          have hcodEq : 2 + u_rest.length = (u0 :: u1 :: u_rest).length := Nat.add_comm 2 u_rest.length
+          have hcodCast := KZTwoCellLE.castBoundaryCongr (sourcePath := monadTPower widthTotal) rfl
+            (congrArg monadTPower hcodEq) hmulti
+          rw [kzFlatWord_codCast widthTotal (2 + u_rest.length) (u0 :: u1 :: u_rest).length
+                ((v0 + (u0 - v0)) :: u1 :: u_rest) hsumA (twoConsLength (v0 + (u0 - v0)) u1 u_rest) rfl hcodEq,
+              kzFlatWord_codCast widthTotal (2 + u_rest.length) (u0 :: u1 :: u_rest).length
+                (v0 :: (u1 + (u0 - v0)) :: u_rest) hsumB (twoConsLength v0 (u1 + (u0 - v0)) u_rest) rfl hcodEq]
+            at hcodCast
+          -- STEP C: recurse on the tail (dominance inherited), then prepend the settled head v0.
+          have hdomTail : prefixSumDominates ((u1 + (u0 - v0)) :: u_rest) v' :=
+            prefixSumDominates_strip
+              (prefixSumDominates_covering v0 (u0 - v0) u1 u_rest v' (hu0 ▸ hdom))
+          have hsumTailV : listSum v' = listSum ((u1 + (u0 - v0)) :: u_rest) :=
+            natAddLeftCancel v0 (listSum v') (listSum ((u1 + (u0 - v0)) :: u_rest)) (hsumV.trans hsumB.symm)
+          have hrec := kzChainByLength fuel (listSum ((u1 + (u0 - v0)) :: u_rest))
+            ((u1 + (u0 - v0)) :: u_rest) v' (Nat.succ.inj hfuel) hlenTail rfl hsumTailV hdomTail
+          have hlenTgt' : (v0 :: v').length = ((u1 + (u0 - v0)) :: u_rest).length + 1 :=
+            congrArg (fun n => n + 1) hlenTail.symm
+          have hstepC := kzPrefixAddTotal v0 (listSum ((u1 + (u0 - v0)) :: u_rest)) widthTotal
+            ((u1 + (u0 - v0)) :: u_rest).length rfl rfl hsumTailV hlenTail.symm hsumB rfl hsumV hlenTgt'
+            hsumB hrec
+          exact KZTwoCellLE.trans hstepA (KZTwoCellLE.trans hcodCast hstepC)
+      | [], _, hfuel, _, _, _, _ => exact Nat.noConfusion hfuel
+      | [_], [], _, hlen, _, _, _ => exact Nat.noConfusion hlen
+      | [_], _ :: _ :: _, _, hlen, _, _, _ => exact Nat.noConfusion (Nat.succ.inj hlen)
+      | _ :: _ :: _, [], _, hlen, _, _, _ => exact Nat.noConfusion hlen
+
+/-- The completeness chain entry point from pointwise dominance of reconstructions. -/
+theorem kzChainMapLE (u v : List Nat) (hlen : u.length = v.length) (hsum : listSum u = listSum v)
+    (hle : mapLE (reconstructFrom 0 u) (reconstructFrom 0 v)) :
+    KZTwoCellLE (kzFlatWord (listSum u) u.length u rfl rfl)
+      (kzFlatWord (listSum u) u.length v hsum.symm hlen.symm) :=
+  kzChainByLength u.length (listSum u) u v rfl hlen rfl hsum.symm (mapLE_imp_prefixDom u v hsum hle)
+
+/-- The block sum of a cell's canonical count vector is the cell's source length. -/
+theorem canonCounts_listSum {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    listSum (canonCounts cell) = sourcePath.length := by
+  have hrt : reconstructFrom 0 (canonCounts cell) = monadMonotoneMapOf cell :=
+    monadMonotoneMapOf_reconstructRoundTrip cell
+  rw [← reconstructFrom_length_listSum (canonCounts cell), hrt]
+  exact monadMonotoneMapOf_length cell
+
+/-- The canonical word of a cell IS the flat word of its counts (at any widths matching the counts), boundary-cast
+to the cell's own boundary. -/
+theorem canonAsFlatCast {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) (widthTotal widthCod : Nat)
+    (hsum : listSum (canonCounts cell) = widthTotal) (hlen : (canonCounts cell).length = widthCod)
+    (hs : monadTPower widthTotal = sourcePath) (ht : monadTPower widthCod = targetPath) :
+    RawTwoCellExpr.castBoundary hs ht (kzFlatWord widthTotal widthCod (canonCounts cell) hsum hlen)
+      = canon cell := by
+  dsimp only [canon, kzFlatWord]
+  rw [RawTwoCellExpr.castBoundary_castBoundary]
+
+/-- ★★ **The bridge — pointwise dominance reconstructs a directed KZ 2-cell.**  For parallel cells `cellA cellB`
+with `mapLE (fold cellA) (fold cellB)`, build `KZTwoCellLE cellA cellB`: normalize both to their canonical words
+(`cellA ≈ canon cellA`, `canon cellB ≈ cellB` by equality completeness), and connect `canon cellA ⇒ canon cellB`
+by the completeness chain `kzChainMapLE` on their count vectors (equal length, equal sum, dominated), transported
+from the flat boundary to `(sourcePath, targetPath)`. -/
+theorem kzLE_complete {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    {cellA cellB : RawTwoCellExpr monadModeSignature sourcePath targetPath}
+    (hle : mapLE (monadMonotoneMapOf cellA) (monadMonotoneMapOf cellB)) :
+    KZTwoCellLE cellA cellB := by
+  have hlen : (canonCounts cellA).length = (canonCounts cellB).length :=
+    (canonCounts_length cellA).trans (canonCounts_length cellB).symm
+  have hsum : listSum (canonCounts cellA) = listSum (canonCounts cellB) :=
+    (canonCounts_listSum cellA).trans (canonCounts_listSum cellB).symm
+  have hrtA : reconstructFrom 0 (canonCounts cellA) = monadMonotoneMapOf cellA :=
+    monadMonotoneMapOf_reconstructRoundTrip cellA
+  have hrtB : reconstructFrom 0 (canonCounts cellB) = monadMonotoneMapOf cellB :=
+    monadMonotoneMapOf_reconstructRoundTrip cellB
+  have hle' : mapLE (reconstructFrom 0 (canonCounts cellA)) (reconstructFrom 0 (canonCounts cellB)) := by
+    rw [hrtA, hrtB]; exact hle
+  have hchain := kzChainMapLE (canonCounts cellA) (canonCounts cellB) hlen hsum hle'
+  have hsA : monadTPower (listSum (canonCounts cellA)) = sourcePath := by
+    rw [canonCounts_listSum cellA]; exact (monadPath_normalForm sourcePath).symm
+  have htA : monadTPower (canonCounts cellA).length = targetPath := canonCodomain_eq cellA
+  have hcast := KZTwoCellLE.castBoundaryCongr hsA htA hchain
+  rw [canonAsFlatCast cellA (listSum (canonCounts cellA)) (canonCounts cellA).length rfl rfl hsA htA,
+      canonAsFlatCast cellB (listSum (canonCounts cellA)) (canonCounts cellA).length hsum.symm hlen.symm hsA htA]
+    at hcast
+  exact KZTwoCellLE.trans (kzLE_ofMapEq (monadMonotoneMapOf_canon cellA).symm)
+    (KZTwoCellLE.trans hcast (kzLE_ofMapEq (monadMonotoneMapOf_canon cellB)))
+
+/-! ## ★★ Inhabiting `KZOrderCompleteness` — the KZ 2-cell ORDER decision is now TOTAL -/
+
+/-- ★★ **`KZOrderCompleteness` is INHABITED, zero-axiom.**  The `leOfMapLE` reconstruction is `kzLE_complete`
+(`MonadMode` has the single mode `point`, so the general-mode field reduces by `cases`).  This closes the sole open
+leg of the KZ 2-cell ORDER decision. -/
+def kzOrderCompletenessWitness : KZOrderCompleteness where
+  leOfMapLE := fun {sourceMode targetMode} {_ _} {_ _} hle => by
+    cases sourceMode; cases targetMode; exact kzLE_complete hle
+
+/-- ★★ **The KZ 2-cell ORDER word problem is DECIDABLE, TOTAL, zero-axiom.**  `decideKZLE` supplied with the now-
+inhabited `kzOrderCompletenessWitness` decides `KZTwoCellLE` on EVERY parallel pair — no residual hypothesis. -/
+def decideKZLETotal {sourceMode targetMode : MonadMode}
+    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
+    (cellA cellB : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    Decidable (KZTwoCellLE cellA cellB) :=
+  decideKZLE kzOrderCompletenessWitness cellA cellB
+
+/-- The full order-decision interface, inhabited by the completeness witness. -/
+def kzOrderWordProblem : KZDecidableTwoCellLEFor :=
+  kzOrderWordProblemModuloCompleteness kzOrderCompletenessWitness
+
+/-- ★ Non-vacuity (total decision, YES via completeness): the KZ comparison `t ◁ eta <= eta ▷ t` reconstructs from
+the fold order `[0] ≤ [1]` through the inhabited completeness leg — the `isTrue` branch of the TOTAL decision is
+real. -/
+theorem kzOrderComplete_yes : KZTwoCellLE kzTEtaCell kzEtaTCell :=
+  kzOrderCompletenessWitness.leOfMapLE
+    (show mapLE (monadMonotoneMapOf kzTEtaCell) (monadMonotoneMapOf kzEtaTCell) from mapLE01)
+
+/-- ★ Non-vacuity (total decision, NO via soundness): the REVERSE `eta ▷ t <= t ◁ eta` does NOT hold (it would
+force `mapLE [1] [0]`).  Together with `kzOrderComplete_yes` the total decision is strictly directional — the
+`isFalse` branch is real and the walking KZ monad is properly laxer than idempotent. -/
+theorem kzOrderComplete_no : ¬ KZTwoCellLE kzEtaTCell kzTEtaCell := kz_strict.2
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED — the KZ covering MOVE is mechanized zero-axiom (the genuine `kzGen` order content).**  The
@@ -617,17 +1043,17 @@ Together they are exactly the length-preserving covering-in-context and the leng
 head-recursion completeness chain iterates — the covering side of the residual is now fully closed.  `= true`. -/
 def fxKZ_hasWalkingKZContextualCoveringAndStrip : Bool := true
 
-/-- **Honesty marker — the RESIDUAL toward `KZOrderCompleteness`.**  The FULL order-completeness leg
-`leOfMapLE : mapLE (fold a) (fold b) → KZTwoCellLE a b` needs, beyond the now-mechanized covering MOVE
-(`kzLocalCovering`), only the covering-CHAIN assembly: a structural-fuel recursion (fuel = the dominance measure
-`Σ_i (fold b − fold a)_i`) that at each step selects the covering position from `mapLE` (the leftmost fibre-count
-position where `a`'s partial sums exceed `b`'s, provably a valid rightward move by prefix-sum dominance), lifts
-`kzLocalCovering` to that position via `wordMul_hcomp` context splitting, and recurses on the one-step-closer count
-vector — plus the top connection of `canon a` / `canon b` (already the shipped Eilenberg–Zilber canonical words)
-to the flat carrier.  This is dominance-lattice combinatorics, NOT a mathematical wall: the covering move
-`kzLocalCovering` is CLOSED, so `kzGen`'s single direction DOES climb the whole order (no rigid coordinate, no
-covering gap).  Accordingly no covering-gap marker is flipped, and `fxKZ_hasWalkingKZOrderCompleteness`
-(`KZMonadDecision`, untouched) stays honestly `false` pending the chain-assembly round.  `= false`. -/
-def fxKZ_hasWalkingKZOrderCompletenessChain : Bool := false
+/-- **ESTABLISHED — the completeness CHAIN is mechanized zero-axiom; `KZOrderCompleteness` is INHABITED (GAP-2
+closed).**  The FULL order-completeness leg `leOfMapLE : mapLE (fold a) (fold b) → KZTwoCellLE a b` is now
+`kzLE_complete`, closed zero-axiom: pointwise dominance of the Δ₊ reconstructions is prefix-sum MAJORIZATION
+(`mapLE_imp_prefixDom`, via the block-boundary characterizations `reconstructFrom_get_ge` / `_ge_get`), and a
+majorizing pair is climbed by the head-peel recursion `kzChainByLength` (structural on the head count) — bring the
+head DOWN to its target via the bounded multi-covering `kzFrontCoveringMulti`, strip the settled head via
+`kzPrefixAddTotal`, recurse on the dominated tail (`prefixSumDominates_covering` / `_strip`), all boundary-reconciled
+by the total/codomain casts.  The bridge to arbitrary parallel cells routes through the canonical words `canon`.
+So `KZOrderCompleteness` is INHABITED (`kzOrderCompletenessWitness`), the KZ 2-cell ORDER decision is TOTAL
+(`decideKZLETotal`), strictly directional (`kzOrderComplete_yes` / `_no`).  `fxKZ_hasWalkingKZOrderCompleteness`
+(`KZMonadDecision`) is flipped to `true` accordingly.  `= true`. -/
+def fxKZ_hasWalkingKZOrderCompletenessChain : Bool := true
 
 end FX1Poly.Polygraph

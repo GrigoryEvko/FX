@@ -45,6 +45,35 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.kzPrefixAdd_smoke
 #assert_no_axioms FX1Poly.Polygraph.fxKZ_hasWalkingKZLocalCovering
 #assert_no_axioms FX1Poly.Polygraph.fxKZ_hasWalkingKZContextualCoveringAndStrip
+-- The completeness CHAIN (GAP-2) — the prefix-sum majorization bridge, the head-peel recursion, the bridge.
+#assert_no_axioms FX1Poly.Polygraph.natLeOfAddLeAddLeft
+#assert_no_axioms FX1Poly.Polygraph.natAddSubCancelOfLe
+#assert_no_axioms FX1Poly.Polygraph.reconstructFrom_get_ge_base
+#assert_no_axioms FX1Poly.Polygraph.reconstructFrom_get_ge
+#assert_no_axioms FX1Poly.Polygraph.reconstructFrom_ge_get
+#assert_no_axioms FX1Poly.Polygraph.reconstructFrom_length_listSum
+#assert_no_axioms FX1Poly.Polygraph.prefixSum_le_listSum
+#assert_no_axioms FX1Poly.Polygraph.mapLE_imp_prefixDom
+#assert_no_axioms FX1Poly.Polygraph.prefixSumDominates_strip
+#assert_no_axioms FX1Poly.Polygraph.prefixSumDominates_covering
+#assert_no_axioms FX1Poly.Polygraph.twoConsLength
+#assert_no_axioms FX1Poly.Polygraph.listSum_twoCons
+#assert_no_axioms FX1Poly.Polygraph.listSum_move
+#assert_no_axioms FX1Poly.Polygraph.kzFrontCoveringMulti
+#assert_no_axioms FX1Poly.Polygraph.kzFlatWord_totalCast
+#assert_no_axioms FX1Poly.Polygraph.kzFlatWord_codCast
+#assert_no_axioms FX1Poly.Polygraph.kzPrefixAddTotal
+#assert_no_axioms FX1Poly.Polygraph.list_eq_nil_of_length_zero
+#assert_no_axioms FX1Poly.Polygraph.kzChainByLength
+#assert_no_axioms FX1Poly.Polygraph.kzChainMapLE
+#assert_no_axioms FX1Poly.Polygraph.canonCounts_listSum
+#assert_no_axioms FX1Poly.Polygraph.canonAsFlatCast
+#assert_no_axioms FX1Poly.Polygraph.kzLE_complete
+#assert_no_axioms FX1Poly.Polygraph.kzOrderCompletenessWitness
+#assert_no_axioms FX1Poly.Polygraph.decideKZLETotal
+#assert_no_axioms FX1Poly.Polygraph.kzOrderWordProblem
+#assert_no_axioms FX1Poly.Polygraph.kzOrderComplete_yes
+#assert_no_axioms FX1Poly.Polygraph.kzOrderComplete_no
 #assert_no_axioms FX1Poly.Polygraph.fxKZ_hasWalkingKZOrderCompletenessChain
 
 end FX1PolyAudit
