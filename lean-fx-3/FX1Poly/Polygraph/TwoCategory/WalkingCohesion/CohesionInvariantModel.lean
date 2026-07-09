@@ -69,8 +69,10 @@ namespace FX1Poly.Polygraph
 
 /-- Right cancellation on `Nat`, hand-proven STRUCTURALLY on the cancelled addend (`Nat.add_right_cancel` itself
 leaks `propext` in core; this recursion uses only `Nat.succ.inj`, which is axiom-free).  The one cancellation the
-flat-balance transitivity needs. -/
-theorem natAddRightCancel : ∀ (addend leftVal rightVal : Nat),
+flat-balance transitivity needs.  `private` per the codebase convention for this re-declared helper — the
+public copy lives in `FreeTwoCell.ExprDecidableEq`, and a second public copy collides in the shared
+`FX1Poly.Polygraph` namespace when both modules are imported (the `AuditAll` umbrella). -/
+private theorem natAddRightCancel : ∀ (addend leftVal rightVal : Nat),
     leftVal + addend = rightVal + addend → leftVal = rightVal
   | 0, _, _, cancelled => cancelled
   | Nat.succ _, _, _, cancelled => natAddRightCancel _ _ _ (Nat.succ.inj cancelled)

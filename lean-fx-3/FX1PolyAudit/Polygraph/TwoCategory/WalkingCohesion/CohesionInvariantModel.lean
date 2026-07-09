@@ -14,7 +14,6 @@ distinct levels, no finite representative set), the non-vacuity verdicts (r2 pai
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.natAddRightCancel
 #assert_no_axioms FX1Poly.Polygraph.natMiddleFour
 #assert_no_axioms FX1Poly.Polygraph.genCount
 #assert_no_axioms FX1Poly.Polygraph.genCount_castBoundary
