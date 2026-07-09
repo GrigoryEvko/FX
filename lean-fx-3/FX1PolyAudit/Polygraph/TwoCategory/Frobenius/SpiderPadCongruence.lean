@@ -19,6 +19,7 @@ namespace FX1PolyAudit
 -- FROB-3: the boundary-changing non-vacuity witnesses
 #assert_no_axioms FX1Poly.Polygraph.spiderConv_special_inWiderBoundary
 #assert_no_axioms FX1Poly.Polygraph.spiderConv_frobLeft_inWiderBoundary
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_inWiderBoundary_identifies_distinct
 
 -- FROB-3: the honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderPadCongruence

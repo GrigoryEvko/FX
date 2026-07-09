@@ -93,6 +93,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasPerRelationSoundnessAtSeed
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasPartitionSoundness
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasContextualSpiderSoundness
+#assert_no_axioms FX1Poly.Polygraph.fxFrob_hasCospanClosedCountSoundness
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSymbolicSaturatedConvOver
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderCompleteness
 

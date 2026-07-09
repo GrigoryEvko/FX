@@ -215,6 +215,13 @@ theorem spiderConv_frobLeft_inWiderBoundary : SpiderConv 3 frobLeft.lhs frobLeft
     rfl
     (fun firstIndex secondIndex hfirst hsecond => frobLeftBaseView_ordered firstIndex hfirst secondIndex hsecond)
 
+/-- ★ **The in-context identification is non-vacuous.**  The special law fired in the wider boundary `3` relates
+GENUINELY DISTINCT words — the μ-after-δ bubble `[comultAt 0, multAt 0]` and the empty diagram `[]` — as the SAME
+boundary partition.  So the pad congruence makes real boundary-changing identifications, not only reflexive ones. -/
+theorem spiderConv_special_inWiderBoundary_identifies_distinct :
+    frobSpecial.lhs ≠ frobSpecial.rhs ∧ SpiderConv 3 frobSpecial.lhs frobSpecial.rhs :=
+  ⟨by decide, spiderConv_special_inWiderBoundary⟩
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the spider PARTITION pad congruence is SHIPPED.**  The whole-word right-pad simulation
