@@ -391,6 +391,215 @@ theorem crossingWords_equalPerm_conv_r2Pair :
       ∧ BrauerConvFree7 (crossingWord [0, 0]) (crossingWord []) :=
   ⟨by decide, crossingCancelFree 0⟩
 
+/-! ## The insertion step — CANCEL mode (general), the staircase-snoc identity, and the Lehmer measure drop
+
+This section closes ONE of the three insertion modes — the CANCEL mode — as a GENERAL theorem (all non-identity
+`perm`, insert at the leftmost descent), for ARBITRARY `perm : List Nat`, with the reusable structural kit it stands
+on: the staircase-snoc identity (`canonicalCrossingWord perm = canonicalCrossingWord (perm · s_d) ++ [d]` for
+`d = leftmostDescent perm`) and the Lehmer measure drop (`inversionCount (perm · s_d) + 1 = inversionCount perm`).
+
+WHY only CANCEL closes at this generality: the CANCEL mode inserts at `d = leftmostDescent perm`, which is a genuine
+adjacent descent for ANY non-identity list — so the trailing `[d, d]` cancels via R2 with NO permutation-structure
+hypothesis.  The other two modes are `perm`-structure sensitive: EXTEND (`position < d`, append stays canonical) and
+COMMUTE (`position ≥ d + 2`) both need `perm` to be a genuine permutation (DISTINCT entries) — e.g. the EXTEND
+stability `position < leftmostDescent perm → leftmostDescent (applyAdjacentSwap perm position) = position` is FALSE
+for lists with repeats (`[1, 1, 0]`).  BRAID (`position = d + 1`) is the Matsumoto inner induction on top of that.
+See the honesty marker below for the full residual diagnosis. -/
+
+/-- Collapse a two-branch `Bool` match whose scrutinee is known to be `true` — mirror of `condFalse`, structural on
+the scrutinee via `Bool.casesOn`, so no match-motive `propext` is incurred. -/
+private theorem condTrue {alpha : Type _} (thenValue elseValue : alpha) :
+    (scrutinee : Bool) → scrutinee = true →
+    (match scrutinee with | true => thenValue | false => elseValue) = thenValue
+  | true, _ => rfl
+  | false, scrutineeTrue => Bool.noConfusion scrutineeTrue
+
+/-- `Nat.blt` antisymmetry — `smaller < larger` rules out `larger < smaller`.  Structural on both `Nat`s, full-enum
+`Bool` matches, `propext`-free. -/
+private theorem natBltAsymm : (leftValue rightValue : Nat) →
+    Nat.blt rightValue leftValue = true → Nat.blt leftValue rightValue = false
+  | 0, 0, bltTrue => Bool.noConfusion bltTrue
+  | 0, _ + 1, bltTrue => Bool.noConfusion bltTrue
+  | _ + 1, 0, _ => rfl
+  | leftValue + 1, rightValue + 1, bltTrue => natBltAsymm leftValue rightValue bltTrue
+
+/-- Reduce `countEntriesBelow` on a cons whose head IS below the value — the head contributes `1`. -/
+private theorem countEntriesBelow_cons_true {value head : Nat} {rest : List Nat}
+    (headBelow : Nat.blt head value = true) :
+    countEntriesBelow value (head :: rest) = 1 + countEntriesBelow value rest := by
+  dsimp only [countEntriesBelow]; rw [headBelow]
+
+/-- Reduce `countEntriesBelow` on a cons whose head is NOT below the value — the head contributes `0`. -/
+private theorem countEntriesBelow_cons_false {value head : Nat} {rest : List Nat}
+    (headNotBelow : Nat.blt head value = false) :
+    countEntriesBelow value (head :: rest) = countEntriesBelow value rest := by
+  dsimp only [countEntriesBelow]; rw [headNotBelow]; exact Nat.zero_add _
+
+/-- ★ **`countEntriesBelow` is invariant under an adjacent swap** — an adjacent transposition only reorders two
+entries, and `countEntriesBelow value` counts a set, so it is unchanged.  The multiset-invariance leg of the
+inversion-count drop.  Structural on the swap's own matcher. -/
+theorem countEntriesBelow_applyAdjacentSwap :
+    (value : Nat) → (perm : List Nat) → (position : Nat) →
+    countEntriesBelow value (applyAdjacentSwap perm position) = countEntriesBelow value perm
+  | _, [], _ => rfl
+  | _, _ :: [], _ => rfl
+  | value, first :: second :: rest, 0 => by
+      show (match Nat.blt second value with | true => 1 | false => 0)
+            + ((match Nat.blt first value with | true => 1 | false => 0) + countEntriesBelow value rest)
+          = (match Nat.blt first value with | true => 1 | false => 0)
+            + ((match Nat.blt second value with | true => 1 | false => 0) + countEntriesBelow value rest)
+      rw [Nat.add_left_comm]
+  | value, first :: second :: rest, position + 1 => by
+      show (match Nat.blt first value with | true => 1 | false => 0)
+            + countEntriesBelow value (applyAdjacentSwap (second :: rest) position)
+          = (match Nat.blt first value with | true => 1 | false => 0)
+            + countEntriesBelow value (second :: rest)
+      rw [countEntriesBelow_applyAdjacentSwap value (second :: rest) position]
+
+/-- The commutative-monoid identity behind the descent case of the inversion drop:
+`(bB + (aA + cC)) + 1 = (1 + aA) + (bB + cC)` — both sides are `1 + aA + bB + cC`. -/
+private theorem addReassocDescent (leftCount rightCount tailCount : Nat) :
+    (rightCount + (leftCount + tailCount)) + 1 = (1 + leftCount) + (rightCount + tailCount) := by
+  rw [Nat.add_comm (rightCount + (leftCount + tailCount)) 1,
+    Nat.add_left_comm rightCount leftCount tailCount, Nat.add_assoc]
+
+/-- ★ **The Lehmer inversion count strictly drops by one at the leftmost-descent swap.**  Swapping the leftmost
+adjacent descent removes exactly one inversion (the descent pair itself; every other pair is unchanged because the
+swap only reorders two adjacent entries, and `countEntriesBelow` is multiset-invariant —
+`countEntriesBelow_applyAdjacentSwap`).  This is the strict decrease of the OUTER fuel for the insertion induction:
+`inversionCount (perm · s_d) + 1 = inversionCount perm` with `d = leftmostDescent perm`.  Structural on `perm`. -/
+theorem inversionCount_ofLeftmostDescentSwap_succ :
+    (perm : List Nat) → isIdentityPerm perm = false →
+    inversionCount (applyAdjacentSwap perm (leftmostDescent perm)) + 1 = inversionCount perm
+  | [], nonIdentity => Bool.noConfusion nonIdentity
+  | _ :: [], nonIdentity => Bool.noConfusion nonIdentity
+  | first :: second :: rest, nonIdentity =>
+      match hDescent : Nat.blt second first with
+      | true => by
+          have leftmostIsZero : leftmostDescent (first :: second :: rest) = 0 :=
+            condTrue 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          rw [leftmostIsZero]
+          show (countEntriesBelow second (first :: rest) + inversionCount (first :: rest)) + 1
+              = countEntriesBelow first (second :: rest) + inversionCount (second :: rest)
+          rw [countEntriesBelow_cons_false (natBltAsymm first second hDescent),
+            countEntriesBelow_cons_true hDescent]
+          show (countEntriesBelow second rest + (countEntriesBelow first rest + inversionCount rest)) + 1
+              = (1 + countEntriesBelow first rest) + (countEntriesBelow second rest + inversionCount rest)
+          exact addReassocDescent (countEntriesBelow first rest) (countEntriesBelow second rest)
+            (inversionCount rest)
+      | false => by
+          have leftmostIsSucc :
+              leftmostDescent (first :: second :: rest) = leftmostDescent (second :: rest) + 1 :=
+            condFalse 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          rw [leftmostIsSucc]
+          have identityReduces : isIdentityPerm (first :: second :: rest) = isIdentityPerm (second :: rest) :=
+            condFalse false (isIdentityPerm (second :: rest)) (Nat.blt second first) hDescent
+          have tailNonIdentity : isIdentityPerm (second :: rest) = false := identityReduces ▸ nonIdentity
+          have tailDrop := inversionCount_ofLeftmostDescentSwap_succ (second :: rest) tailNonIdentity
+          show (countEntriesBelow first (applyAdjacentSwap (second :: rest) (leftmostDescent (second :: rest)))
+                + inversionCount (applyAdjacentSwap (second :: rest) (leftmostDescent (second :: rest)))) + 1
+              = countEntriesBelow first (second :: rest) + inversionCount (second :: rest)
+          rw [countEntriesBelow_applyAdjacentSwap first (second :: rest) (leftmostDescent (second :: rest)),
+            ← tailDrop, Nat.add_assoc]
+
+/-! ### propext-free `reverse` cons law (Init's `List.reverse_cons` leaks `propext`) -/
+
+/-- Right-associate a snoc through a following append — `(xs ++ [mid]) ++ tail = xs ++ (mid :: tail)`.  Structural
+on `xs`, so it avoids the general `List.append_assoc` (which leaks `propext`). -/
+private theorem appendSnocAssoc {alpha : Type _} :
+    (xs : List alpha) → (mid : alpha) → (tail : List alpha) →
+    (xs ++ [mid]) ++ tail = xs ++ (mid :: tail)
+  | [], _, _ => rfl
+  | headElement :: restList, mid, tail => congrArg (headElement :: ·) (appendSnocAssoc restList mid tail)
+
+/-- `List.reverseAux list acc = List.reverse list ++ acc` — the accumulator floats out as a trailing append.
+Structural on `list`, `propext`-free (built on `appendSnocAssoc`, not `List.append_assoc`). -/
+private theorem reverseAuxAppend {alpha : Type _} :
+    (list : List alpha) → (acc : List alpha) →
+    List.reverseAux list acc = List.reverse list ++ acc
+  | [], _ => rfl
+  | headElement :: tailList, acc => by
+      show List.reverseAux tailList (headElement :: acc) = List.reverseAux tailList [headElement] ++ acc
+      rw [reverseAuxAppend tailList (headElement :: acc), reverseAuxAppend tailList [headElement]]
+      exact (appendSnocAssoc (List.reverse tailList) headElement acc).symm
+
+/-- ★ **`List.reverse (head :: tail) = List.reverse tail ++ [head]`** — the propext-free `reverse_cons` (Init's leaks
+`propext`, as does `List.reverse_reverse`), the load-bearing step of the staircase-snoc identity. -/
+private theorem reverseConsLocal {alpha : Type _} (headElement : alpha) (tailList : List alpha) :
+    List.reverse (headElement :: tailList) = List.reverse tailList ++ [headElement] := by
+  show List.reverseAux tailList [headElement] = List.reverse tailList ++ [headElement]
+  exact reverseAuxAppend tailList [headElement]
+
+/-- `list ++ [] = list` — cons-only structural copy (Init's `List.append_nil` leaks `propext`). -/
+private theorem appendNilLocal {alpha : Type _} : (list : List alpha) → list ++ [] = list
+  | [] => rfl
+  | headElement :: restList => congrArg (headElement :: ·) (appendNilLocal restList)
+
+/-- ★★ **The staircase-snoc identity.**  For a NON-IDENTITY permutation the canonical crossing word ENDS in the
+leftmost descent `d`, and its prefix is the canonical word of the once-bubbled permutation `perm · s_d`:
+`canonicalCrossingWord perm = canonicalCrossingWord (applyAdjacentSwap perm d) ++ [d]`.  This is the reverse of the
+bubble-word recursion (`bubbleWord perm = d :: bubbleWord (perm · s_d)`), which is legitimate exactly because the
+inversion count drops by one (`inversionCount_ofLeftmostDescentSwap_succ`), so the fuel matches.  This is what turns
+the peel-last outer fold into an induction on `inversionCount` and is the structural core of the CANCEL mode. -/
+theorem canonicalCrossingWord_snoc_leftmostDescent (perm : List Nat)
+    (nonIdentity : isIdentityPerm perm = false) :
+    canonicalCrossingWord perm
+      = canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)) ++ [leftmostDescent perm] := by
+  have inversionSucc : inversionCount perm
+      = inversionCount (applyAdjacentSwap perm (leftmostDescent perm)) + 1 :=
+    (inversionCount_ofLeftmostDescentSwap_succ perm nonIdentity).symm
+  have fueledStep : bubbleWordFueled
+        (inversionCount (applyAdjacentSwap perm (leftmostDescent perm)) + 1) perm
+      = leftmostDescent perm
+        :: bubbleWordFueled (inversionCount (applyAdjacentSwap perm (leftmostDescent perm)))
+            (applyAdjacentSwap perm (leftmostDescent perm)) :=
+    condFalse [] (leftmostDescent perm
+        :: bubbleWordFueled (inversionCount (applyAdjacentSwap perm (leftmostDescent perm)))
+            (applyAdjacentSwap perm (leftmostDescent perm)))
+      (isIdentityPerm perm) nonIdentity
+  have bubbleSnoc : bubbleWord perm
+      = leftmostDescent perm :: bubbleWord (applyAdjacentSwap perm (leftmostDescent perm)) := by
+    show bubbleWordFueled (inversionCount perm) perm = _
+    rw [inversionSucc]
+    exact fueledStep
+  show (bubbleWord perm).reverse
+      = (bubbleWord (applyAdjacentSwap perm (leftmostDescent perm))).reverse ++ [leftmostDescent perm]
+  rw [bubbleSnoc]
+  exact reverseConsLocal (leftmostDescent perm)
+    (bubbleWord (applyAdjacentSwap perm (leftmostDescent perm)))
+
+/-- ★★ **The insertion step — CANCEL mode, GENERAL.**  For ANY non-identity `perm`, inserting the leftmost-descent
+generator `s_d` at the tail of the canonical word (`canonicalCrossingWord perm ++ [d]`, `d = leftmostDescent perm`)
+is `BrauerConvFree7`-convertible to the canonical word of the swapped permutation `perm · s_d`.  PROOF: the
+staircase-snoc identity rewrites `canonicalCrossingWord perm = canonicalCrossingWord (perm · s_d) ++ [d]`, so the
+inserted `[d]` meets the trailing `[d]` as `[d, d]`, and R2 (`crossingCancelFree` whiskered on the left) collapses
+it — the inversion count drops `inversionCount perm → inversionCount (perm · s_d)`.  This closes the CANCEL mode of
+the general insertion step for ARBITRARY `perm : List Nat` (no genuine-permutation hypothesis needed), no inner
+induction.  It is the general form of `crossingInsertionStep_cancel_smoke`. -/
+theorem crossingInsertionStep_atLeftmostDescent (perm : List Nat)
+    (nonIdentity : isIdentityPerm perm = false) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [leftmostDescent perm]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)))) := by
+  rw [canonicalCrossingWord_snoc_leftmostDescent perm nonIdentity,
+    appendSnocAssoc (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)))
+      (leftmostDescent perm) [leftmostDescent perm],
+    crossingWord_append (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)))
+      [leftmostDescent perm, leftmostDescent perm]]
+  have base := BrauerConvFree7.whiskerLeft
+    (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm))))
+    (crossingCancelFree (leftmostDescent perm))
+  rw [appendNilLocal
+    (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm))))] at base
+  exact base
+
+/-- Non-vacuity — the GENERAL CANCEL mode on a bigger input than the smoke: inserting the leftmost descent `0` of the
+reversal `[2, 1, 0]` into its canonical word `[0, 1, 0]` yields `[0, 1, 0, 0]`, whose trailing `[0, 0]` cancels to the
+canonical word `[0, 1]` of `applyAdjacentSwap [2, 1, 0] 0 = [1, 2, 0]`. -/
+theorem crossingInsertionStep_atLeftmostDescent_smoke :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord [2, 1, 0] ++ [leftmostDescent [2, 1, 0]]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap [2, 1, 0] (leftmostDescent [2, 1, 0])))) :=
+  crossingInsertionStep_atLeftmostDescent [2, 1, 0] rfl
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the CANONICAL CROSSING-WORD layer is SHIPPED.**  `canonicalCrossingWord` (the reverse of
@@ -410,6 +619,35 @@ problem realized inside the seven-relation Brauer presentation.  The reduction i
 sole hypothesis is the general insertion step.  Non-vacuous: `crossingWords_equalPerm_conv_{braidPair,r2Pair}`
 witness the conclusion directly on the two canonical hard pairs.  `= true`. -/
 def fxBrauer_hasCrossingWordProblemConditionalReduction : Bool := true
+
+/-- ★ **Honesty marker — the CANCEL mode of the insertion step is CLOSED GENERALLY, with its structural kit.**
+`crossingInsertionStep_atLeftmostDescent` proves the insertion step for EVERY non-identity `perm` (arbitrary
+`List Nat`) at `position = leftmostDescent perm`: the `[d, d]` R2 cancellation, upgraded from the single
+`crossingInsertionStep_cancel_smoke` to a general theorem.  It stands on the reusable, zero-axiom kit landed here:
+the staircase-snoc identity `canonicalCrossingWord perm = canonicalCrossingWord (perm · s_d) ++ [d]`
+(`canonicalCrossingWord_snoc_leftmostDescent`), the Lehmer measure drop `inversionCount (perm · s_d) + 1 =
+inversionCount perm` (`inversionCount_ofLeftmostDescentSwap_succ`), the multiset-invariance leg
+`countEntriesBelow_applyAdjacentSwap`, and the propext-free `reverse_cons` (`reverseConsLocal`; Init's leaks
+`propext`).  Non-vacuous: `crossingInsertionStep_atLeftmostDescent_smoke` on the reversal `[2, 1, 0]`.
+
+**TWO honest diagnoses this closure exposes about the r5 residual `fxBrauer_hasCrossingInsertionStepGeneralResidual`:**
+
+  1. **The `∀ (perm) (position)` `insertionStep` hypothesis is NOT dischargeable as stated** — it is FALSE for
+     out-of-range `position`.  For `perm = [0, 1]`, `position = 5`: `canonicalCrossingWord [0, 1] = []` and
+     `applyAdjacentSwap [0, 1] 5 = [0, 1]` (a no-op past the end), so the step reduces to
+     `BrauerConvFree7 [crossingAt 5] []` — a lone crossing convertible to the empty word, which no relation
+     derives.  The genuinely provable residual is the IN-RANGE step (`position + 1 < perm.length`, where the crossing
+     acts); the r5 conditional folds (`crossingOnly_straightens_ofInsertionStep`, …) are correct as conditionals but
+     their hypothesis holds only for in-range words.
+  2. **Only CANCEL closes at full `List Nat` generality.**  EXTEND (`position < d`, append stays canonical) and
+     COMMUTE (`position ≥ d + 2`) additionally need `perm` to be a GENUINE permutation (distinct entries): the EXTEND
+     stability `position < leftmostDescent perm → leftmostDescent (applyAdjacentSwap perm position) = position` is
+     FALSE for lists with repeats (`[1, 1, 0]`).  BRAID (`position = d + 1`) is the Matsumoto inner induction (the
+     `pureCupSpine_sort`-magnitude wall) on top of that permutation structure.
+
+So the residual shrinks to "the IN-RANGE braid mode over genuine permutations"; the master markers
+`fxBrauer_hasCrossingOnlyStraightening` / `fxBrauer_hasCrossingStraighteningInsertionResidual` stay `false`.  `= true`. -/
+def fxBrauer_hasInsertionCancelMode : Bool := true
 
 /-- **Honesty marker — the GENERAL insertion step stays `false`; the exact residual case is named.**  The sole
 remaining leg is `crossingInsertionStep` for ALL `perm`, `position`:

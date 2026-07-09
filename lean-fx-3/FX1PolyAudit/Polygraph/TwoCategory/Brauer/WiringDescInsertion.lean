@@ -52,9 +52,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.crossingWords_equalPerm_conv_braidPair
 #assert_no_axioms FX1Poly.Polygraph.crossingWords_equalPerm_conv_r2Pair
 
+-- WP-BRAUER r6: the CANCEL mode of the insertion step, closed generally, plus its structural kit
+-- (staircase snoc, Lehmer measure drop, countEntriesBelow multiset-invariance).  The private propext-free
+-- bool / arithmetic / reverse helpers are covered transitively.
+#assert_no_axioms FX1Poly.Polygraph.countEntriesBelow_applyAdjacentSwap
+#assert_no_axioms FX1Poly.Polygraph.inversionCount_ofLeftmostDescentSwap_succ
+#assert_no_axioms FX1Poly.Polygraph.canonicalCrossingWord_snoc_leftmostDescent
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_atLeftmostDescent
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_atLeftmostDescent_smoke
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCanonicalCrossingWordLayer
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingWordProblemConditionalReduction
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionCancelMode
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingInsertionStepGeneralResidual
 
 end FX1PolyAudit
