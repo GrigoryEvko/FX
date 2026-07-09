@@ -22,6 +22,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fcDiagramOf_stringCrossLevelCell
 #assert_no_axioms FX1Poly.Polygraph.fxString_hasFcCarrier
 
+-- N2 — the no-loops content (reduction to one union-find obligation + chirality obstruction)
+#assert_no_axioms FX1Poly.Polygraph.stringStepCup_loopsPreserved
+#assert_no_axioms FX1Poly.Polygraph.stringStepCap_loopsPreserved_ofDistinctWindow
+#assert_no_axioms FX1Poly.Polygraph.stringStepCap_loopsSucc_ofSameWindow
+#assert_no_axioms FX1Poly.Polygraph.stringStepAtom_loopsPreserved_ofCapDistinct
+#assert_no_axioms FX1Poly.Polygraph.CapsDistinctAlongFold
+#assert_no_axioms FX1Poly.Polygraph.instDecidableCapsDistinctAlongFold
+#assert_no_axioms FX1Poly.Polygraph.stringProcessSpine_loopsPreserved_ofCapsDistinct
+#assert_no_axioms FX1Poly.Polygraph.stringInitialWireState
+#assert_no_axioms FX1Poly.Polygraph.stringMatchingOf_loops_zero_ofCapsDistinct
+#assert_no_axioms FX1Poly.Polygraph.stringCrossLevelCell_loops_zero_viaReduction
+#assert_no_axioms FX1Poly.Polygraph.stringCupCreatedPair_ne_capWindow
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasLoopClosureChiralityObstruction
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasNoLoopsTheorem
+
 -- N3 — the Fuss–Catalan number fingerprint
 #assert_no_axioms FX1Poly.Polygraph.fcBinomial
 #assert_no_axioms FX1Poly.Polygraph.fussCatalanNumber

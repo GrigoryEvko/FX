@@ -194,6 +194,168 @@ labels, and forgets on the nose to `colouredMatchingOf` (`fcDiagramForget_fcDiag
 adjunction.  `= true`. -/
 def fxString_hasFcCarrier : Bool := true
 
+/-! ## N2 — the NO-LOOPS content: general loop bookkeeping + the chirality obstruction
+
+The base `matchingOf` fold closes a loop only when a CAP consumes two wires already in the same union-find
+component (`stepCap` increments `loops` iff `isSameComponent`).  This section ships the general, signature-agnostic
+loop bookkeeping — a cup NEVER closes a loop, a cap keeps the count on a distinct-component window, and the whole
+fold keeps the count when NO cap fires on a same-component window — and reduces the general no-loops theorem
+`(matchingOf cell).loops = 0` to exactly ONE named union-find obligation (`CapsDistinctAlongFold`, below).  The
+CHIRALITY reason that obligation holds at the string seed is the shipped `stringCupCod_ne_capDom` (a cup's cod word
+is never a cap's dom word), so a cup-created same-component pair — whose window word is a cup word `{F·G, G·H}` — is
+never the pair a cap (window word `{G·F, H·G}`) deletes.  Discharging `CapsDistinctAlongFold` for ALL cells is the
+union-find STRAND invariant through the fold — the string port of the adjunction's `ArcOpenEndsDiscipline` /
+`ArcLoopFreedom` apparatus — a multi-node arc (see the `fxString_hasNoLoopsTheorem` marker for the honest status;
+the boundary-chain substrate `RawTwoCellExpr.spineBoundaryChained_spine` it starts from is already polymorphic). -/
+
+/-- ★ **A cup never closes a loop** — `stepCup` allocates two FRESH connected legs and keeps the loop count outright
+(the fresh legs are the two ends of a brand-new arc, nothing to close).  Signature-agnostic, `rfl`. -/
+theorem stringStepCup_loopsPreserved (state : WireState) (position : Nat) :
+    (stepCup state position).loops = state.loops := rfl
+
+/-- ★ **A cap on a DISTINCT-component window keeps the loop count** — the two consumed wires belong to different
+strands, so joining them opens no circle.  Signature-agnostic. -/
+theorem stringStepCap_loopsPreserved_ofDistinctWindow (state : WireState) (position : Nat)
+    (windowDistinct : isSameComponent state.links (natListGetAt state.openWires position)
+        (natListGetAt state.openWires (position + 1)) = false) :
+    (stepCap state position).loops = state.loops := by
+  dsimp only [stepCap]
+  split
+  · next windowSame => rw [windowDistinct] at windowSame; exact Bool.noConfusion windowSame
+  · rfl
+
+/-- **A cap on a SAME-component window closes exactly one loop** — the loop-closing case, for completeness. -/
+theorem stringStepCap_loopsSucc_ofSameWindow (state : WireState) (position : Nat)
+    (windowSame : isSameComponent state.links (natListGetAt state.openWires position)
+        (natListGetAt state.openWires (position + 1)) = true) :
+    (stepCap state position).loops = state.loops + 1 := by
+  dsimp only [stepCap]
+  split
+  · rfl
+  · next windowDistinct => exact absurd windowSame windowDistinct
+
+/-- One atom keeps the loop count when it is not a loop-closing cap: a cup keeps it (`stringStepCup_loopsPreserved`),
+a generic-arity box keeps it (it copies `state.loops`), and a cap keeps it exactly when its window is distinct
+(the `capDistinct` hypothesis).  The arity is read off the generator boundary lengths, as `stepAtom` does. -/
+theorem stringStepAtom_loopsPreserved_ofCapDistinct
+    {sourceMode targetMode : AdjointTripleMode} (state : WireState)
+    (atom : SpineAtom adjointTripleModeSignature sourceMode targetMode)
+    (capDistinct : atom.generatorDom.length = 2 → atom.generatorCod.length = 0 →
+      isSameComponent state.links (natListGetAt state.openWires atom.leftContext.length)
+        (natListGetAt state.openWires (atom.leftContext.length + 1)) = false) :
+    (stepAtom state atom).loops = state.loops := by
+  dsimp only [stepAtom]
+  split
+  · rfl
+  · next domIsTwo codIsZero =>
+      exact stringStepCap_loopsPreserved_ofDistinctWindow state atom.leftContext.length
+        (capDistinct domIsTwo codIsZero)
+  · rfl
+
+/-- ★ The **fold-level distinct-caps obligation**: threaded through the fold, every atom that is a CAP
+(`generatorDom.length = 2`, `generatorCod.length = 0`) fires on a DISTINCT-component window.  This is precisely the
+condition under which no loop closes; discharging it for every cell is the union-find strand invariant (the string
+port of the adjunction open-ends discipline). -/
+def CapsDistinctAlongFold {sourceMode targetMode : AdjointTripleMode} :
+    WireState → List (SpineAtom adjointTripleModeSignature sourceMode targetMode) → Prop
+  | _, [] => True
+  | state, atom :: rest =>
+      (atom.generatorDom.length = 2 → atom.generatorCod.length = 0 →
+        isSameComponent state.links (natListGetAt state.openWires atom.leftContext.length)
+          (natListGetAt state.openWires (atom.leftContext.length + 1)) = false)
+      ∧ CapsDistinctAlongFold (stepAtom state atom) rest
+
+/-- The distinct-caps obligation is decidable (finite conjunction of decidable window checks), so it discharges by
+`decide` on concrete cells. -/
+instance instDecidableCapsDistinctAlongFold {sourceMode targetMode : AdjointTripleMode} :
+    (atoms : List (SpineAtom adjointTripleModeSignature sourceMode targetMode)) → (state : WireState) →
+    Decidable (CapsDistinctAlongFold state atoms)
+  | [], _ => isTrue trivial
+  | atom :: rest, state => by
+      dsimp only [CapsDistinctAlongFold]
+      haveI := instDecidableCapsDistinctAlongFold rest (stepAtom state atom)
+      infer_instance
+
+/-- ★★ **The fold keeps its loop count when no cap closes a loop.**  Given the distinct-caps obligation along the
+whole fold, `processSpine` leaves `loops` at its initial value — each atom keeps the count
+(`stringStepAtom_loopsPreserved_ofCapDistinct`), threaded through the `foldl`. -/
+theorem stringProcessSpine_loopsPreserved_ofCapsDistinct {sourceMode targetMode : AdjointTripleMode} :
+    (atoms : List (SpineAtom adjointTripleModeSignature sourceMode targetMode)) → (state : WireState) →
+    CapsDistinctAlongFold state atoms →
+    (processSpine state atoms).loops = state.loops
+  | [], _, _ => rfl
+  | atom :: rest, state, capsDistinct => by
+      show (processSpine (stepAtom state atom) rest).loops = state.loops
+      rw [stringProcessSpine_loopsPreserved_ofCapsDistinct rest (stepAtom state atom) capsDistinct.2]
+      exact stringStepAtom_loopsPreserved_ofCapDistinct state atom capsDistinct.1
+
+/-- The fresh initial fold state for a bottom-boundary of the given width — `matchingOf`'s seed. -/
+def stringInitialWireState (bottomCount : Nat) : WireState :=
+  { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
+
+/-- ★★ **The general no-loops theorem, reduced to the single distinct-caps obligation.**  If the base fold over a
+string cell's spine fires every cap on a distinct-component window (`CapsDistinctAlongFold` from the fresh seed),
+then the cell's `matchingOf` is loop-free.  This is the whole no-loops theorem modulo exactly the union-find strand
+invariant — the same "assemble modulo one named residual" shape as the shipped soundness capstone. -/
+theorem stringMatchingOf_loops_zero_ofCapsDistinct {sourceMode targetMode : AdjointTripleMode}
+    {sourcePath targetPath : ModalityPath adjointTripleGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjointTripleModeSignature sourcePath targetPath)
+    (capsDistinct : CapsDistinctAlongFold (stringInitialWireState sourcePath.length) cell.spine) :
+    (matchingOf cell).loops = 0 :=
+  stringProcessSpine_loopsPreserved_ofCapsDistinct cell.spine (stringInitialWireState sourcePath.length)
+    capsDistinct
+
+/-! ## N2 non-vacuity — the obligation discharges on real cells; and the chirality reason it holds -/
+
+/-- ★ **The no-loops theorem holds for the cross-level cell via the reduction** — the distinct-caps obligation is
+`decide`-discharged, so `stringMatchingOf_loops_zero_ofCapsDistinct` gives `loops = 0` (consistent with the shipped
+`stringWitnesses_loops_zero`).  `stringCrossLevelCell : G·F ⇒ G·H` is a genuine cross-level cell (in NEITHER single
+adjunction) with a real cap (`ε`), loop-free by the general reduction rather than a bare `rfl`. -/
+theorem stringCrossLevelCell_loops_zero_viaReduction :
+    (matchingOf stringCrossLevelCell).loops = 0 :=
+  stringMatchingOf_loops_zero_ofCapsDistinct stringCrossLevelCell (by decide)
+
+/-- ★ **The chirality obstruction to loop closure, at the generator level.**  A string cup's cod word (`F·G` or
+`G·H`) is NEVER a string cap's dom word (`G·F` or `H·G`) — `stringCupCod_ne_capDom`.  So a cup-created same-component
+pair, whose window word is a cup word, can never be the pair a cap deletes: this is the label-level reason
+`CapsDistinctAlongFold` holds, re-exported here as the loop-closure obstruction the strand invariant will thread
+through the fold. -/
+theorem stringCupCreatedPair_ne_capWindow
+    {midSource midTarget : AdjointTripleMode}
+    {cupDom cupCod capDom capCod : ModalityPath adjointTripleGraph midSource midTarget}
+    (cupGen : StringTwoCell cupDom cupCod) (capGen : StringTwoCell capDom capCod)
+    (cupIsCup : cupDom.length = 0) (capIsCap : capCod.length = 0) :
+    cupCod ≠ capDom :=
+  stringCupCod_ne_capDom cupGen capGen cupIsCup capIsCap
+
+/-! ## Honesty markers -/
+
+/-- **★ ESTABLISHED — the general no-loops theorem is REDUCED to one named union-find obligation, and the chirality
+obstruction is machine-checked.**  `stringMatchingOf_loops_zero_ofCapsDistinct` proves `(matchingOf cell).loops = 0`
+for EVERY string cell GIVEN `CapsDistinctAlongFold` (every cap in the fold fires on a distinct-component window),
+assembled from the general loop bookkeeping (`stringStepCup_loopsPreserved`,
+`stringStepCap_loopsPreserved_ofDistinctWindow`, `stringStepAtom_loopsPreserved_ofCapDistinct`,
+`stringProcessSpine_loopsPreserved_ofCapsDistinct`).  The obligation DISCHARGES on real cells
+(`stringCrossLevelCell_loops_zero_viaReduction`, a genuine cross-level cell with a real cap, `decide`), and the
+CHIRALITY reason it holds is the shipped `stringCupCod_ne_capDom` (`stringCupCreatedPair_ne_capWindow`): a
+cup-created same-component pair (window word a cup word `{F·G, G·H}`) is never the pair a cap (window word a cap word
+`{G·F, H·G}`) deletes.  `= true`. -/
+def fxString_hasLoopClosureChiralityObstruction : Bool := true
+
+/-- **OPEN — the UNCONDITIONAL no-loops theorem `∀ cell, (matchingOf cell).loops = 0` stays a multi-node arc.**  The
+reduction (`stringMatchingOf_loops_zero_ofCapsDistinct`) owes exactly one residual: `CapsDistinctAlongFold` for
+EVERY cell — the union-find STRAND invariant threaded through the fold (a cap never fires on a same-component
+window).  Discharging it is the string port of the adjunction's `ArcOpenEndsDiscipline` / `ArcLoopFreedom` (which
+proves the analogous fact for the single-parity walking adjunction).  The port is NON-trivial: the string has caps
+at BOTH region parities (`counitLower` at a tip window `[G,F]`, `counitUpper` at a base window `[H,G]`), so the
+adjunction's single-parity cap-window pin does not transfer — the discipline must refute a same-component window at
+BOTH parities using the boundary LABEL to distinguish the two cap shapes, exactly the colour-refined open-ends
+discipline the FC-1 phase will build.  The boundary-chain substrate it starts from
+(`RawTwoCellExpr.spineBoundaryChained_spine`) is already polymorphically available; the union-find strand invariant
+is not.  So this stays `false`, honestly, with the reduction + chirality obstruction shipped and the exact remaining
+site named.  `= false`. -/
+def fxString_hasNoLoopsTheorem : Bool := false
+
 /-! ## N3 — the Fuss–Catalan number fingerprint
 
 The Fuss–Catalan diagram basis is the set of MONOCHROMATIC (same-FC-colour) non-crossing perfect matchings of the
