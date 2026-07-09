@@ -341,6 +341,80 @@ theorem spiderConv_relation_afterPrefix (bottomCount : Nat) (bottomPos : 0 < bot
     conditions.bottomLe canonLengthEq canonViewAgrees
   exact SpiderConv.whisker bottomCount prefixAtoms wordLeft wordRight parts.1 parts.2
 
+/-! ## The syntactic congruence — a PREFIX-INDEPENDENT presentation over the bridge
+
+`SpiderConv.whisker` gates on the CONCRETE post-prefix state; `spiderConv_relation_afterPrefix` gates on the CANONICAL
+seed of the (possibly prefix-dependent) post-prefix width.  `SpiderConvSyntactic` is the surface whose single
+non-trivial generator `relationAfterPrefix` gates on SEED-LOCAL facts at the relation's own boundary `bottomCount`
+(prefix-independent — decidable once per relation, reused across ALL boundary-preserving prefixes), with a
+`boundaryPreserved` datum recording that the prefix keeps the boundary width.  It is the hypothesis-light syntactic
+proof object the agent manipulates; all semantic content is discharged in `spiderConvSyntactic_partitionSound` via the
+bridge, so the generator itself carries no post-prefix-state obligation. -/
+
+/-- ★ **`SpiderConvSyntactic n a b`** — the PREFIX-INDEPENDENT syntactic congruence: the equivalence closure of the
+seed-local relation-after-a-boundary-preserving-prefix move.  Each `relationAfterPrefix` generator carries only facts
+at the relation's own boundary `bottomCount` (the canonical open-wire length agreement + boundary view agreement),
+plus the discipline data (both words / the prefix in range, the prefix boundary-preserving) — nothing about the
+concrete post-prefix state. -/
+inductive SpiderConvSyntactic : Nat → List BrauerAtom → List BrauerAtom → Prop
+  /-- Reflexivity. -/
+  | refl (bottomCount : Nat) (word : List BrauerAtom) : SpiderConvSyntactic bottomCount word word
+  /-- Symmetry. -/
+  | symm {bottomCount : Nat} {leftWord rightWord : List BrauerAtom} :
+      SpiderConvSyntactic bottomCount leftWord rightWord → SpiderConvSyntactic bottomCount rightWord leftWord
+  /-- Transitivity. -/
+  | trans {bottomCount : Nat} {leftWord midWord rightWord : List BrauerAtom} :
+      SpiderConvSyntactic bottomCount leftWord midWord → SpiderConvSyntactic bottomCount midWord rightWord →
+      SpiderConvSyntactic bottomCount leftWord rightWord
+  /-- ★ A relation, whiskered after a boundary-preserving prefix, from SEED-LOCAL obligations.  `seedLengthEq` /
+  `seedViewAgrees` are stated at the relation's own boundary `bottomCount` (prefix-independent); `boundaryPreserved`
+  records that the prefix keeps the boundary width `bottomCount`. -/
+  | relationAfterPrefix (bottomCount : Nat) (bottomPos : 0 < bottomCount)
+      (prefixAtoms wordLeft wordRight : List BrauerAtom)
+      (prefixInRange : BrauerWordInRange bottomCount prefixAtoms)
+      (boundaryPreserved :
+        (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length = bottomCount)
+      (inRangeLeft : BrauerWordInRange bottomCount wordLeft)
+      (inRangeRight : BrauerWordInRange bottomCount wordRight)
+      (seedLengthEq : (processBrauer (brauerSeed bottomCount) wordLeft).openWires.length
+          = (processBrauer (brauerSeed bottomCount) wordRight).openWires.length)
+      (seedViewAgrees : ∀ firstIndex secondIndex,
+          firstIndex < bottomCount + (processBrauer (brauerSeed bottomCount) wordLeft).openWires.length →
+          secondIndex < bottomCount + (processBrauer (brauerSeed bottomCount) wordLeft).openWires.length →
+          matchingSameComponent bottomCount (processBrauer (brauerSeed bottomCount) wordLeft)
+              firstIndex secondIndex
+            = matchingSameComponent bottomCount (processBrauer (brauerSeed bottomCount) wordRight)
+              firstIndex secondIndex) :
+      SpiderConvSyntactic bottomCount (prefixAtoms ++ wordLeft) (prefixAtoms ++ wordRight)
+
+/-- ★ **`SpiderConvSyntactic` embeds into `SpiderConv`.**  The seed-local `relationAfterPrefix` move is discharged by
+the prefix bridge (`spiderConv_relation_afterPrefix`): the `boundaryPreserved` datum rewrites every post-prefix-width
+occurrence to the relation's own boundary `bottomCount`, so the seed-local obligations feed the bridge directly
+(`canonicalMatchingSeed bottomCount` is definitionally `brauerSeed bottomCount`). -/
+theorem spiderConvSyntactic_toSpiderConv {bottomCount : Nat} {leftWord rightWord : List BrauerAtom}
+    (conv : SpiderConvSyntactic bottomCount leftWord rightWord) :
+    SpiderConv bottomCount leftWord rightWord := by
+  induction conv with
+  | refl word => exact SpiderConv.refl _ word
+  | symm _ ih => exact ih.symm
+  | trans _ _ ihLeft ihRight => exact ihLeft.trans ihRight
+  | relationAfterPrefix bottomPos prefixAtoms wordLeft wordRight prefixInRange
+      boundaryPreserved inRangeLeft inRangeRight seedLengthEq seedViewAgrees =>
+      apply spiderConv_relation_afterPrefix _ bottomPos prefixAtoms wordLeft wordRight prefixInRange
+      · rw [boundaryPreserved]; exact inRangeLeft
+      · rw [boundaryPreserved]; exact inRangeRight
+      · rw [boundaryPreserved]; exact seedLengthEq
+      · rw [boundaryPreserved]; exact seedViewAgrees
+
+/-- ★ **`SpiderConvSyntactic` is partition-sound.**  Convertible words induce the SAME boundary partition
+(`extraSpiderDiagramOf`, the extraspecial / corelation invariant) — by embedding into `SpiderConv` and applying
+`spiderConv_partitionSound`.  The seed-local `relationAfterPrefix` obligations route through the prefix bridge, so
+this is the FUNCTORIAL partition soundness of the whole syntactic layer. -/
+theorem spiderConvSyntactic_partitionSound {bottomCount : Nat} {leftWord rightWord : List BrauerAtom}
+    (conv : SpiderConvSyntactic bottomCount leftWord rightWord) :
+    extraSpiderDiagramOf bottomCount leftWord = extraSpiderDiagramOf bottomCount rightWord :=
+  spiderConv_partitionSound (spiderConvSyntactic_toSpiderConv conv)
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the LOOPS-FREE two-word functoriality port is SHIPPED (the FROB-3 residual).**
@@ -359,5 +433,13 @@ arbitrary prefix is a `SpiderConv` theorem without re-deciding the concrete post
 at the canonical seed of the post-prefix width — prefix-independent for a boundary-preserving prefix (the relation's
 own seed facts).  `= true`. -/
 def fxFrob_hasSpiderPrefixBridge : Bool := true
+
+/-- ★ **Honesty marker — the PREFIX-INDEPENDENT syntactic congruence is SHIPPED partition-sound.**
+`SpiderConvSyntactic` (equivalence closure of the seed-local relation-after-boundary-preserving-prefix move) embeds
+into `SpiderConv` via the bridge (`spiderConvSyntactic_toSpiderConv`) and is partition-sound
+(`spiderConvSyntactic_partitionSound`): its generator obligations live at the relation's OWN boundary `bottomCount`
+(prefix-independent, decidable once per relation), the concrete post-prefix state never appearing.  This is the
+hypothesis-light syntactic surface the FROB layer exposes for the boundary-preserving contextual slice.  `= true`. -/
+def fxFrob_hasSpiderConvSyntactic : Bool := true
 
 end FX1Poly.Polygraph

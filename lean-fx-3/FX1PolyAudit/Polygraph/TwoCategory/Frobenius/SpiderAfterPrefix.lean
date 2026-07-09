@@ -23,8 +23,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.processBrauer_forgetView_eq_ofCanonicalViewParts
 #assert_no_axioms FX1Poly.Polygraph.spiderConv_relation_afterPrefix
 
+-- FROB-4: the prefix-independent syntactic congruence + its partition soundness (via the bridge)
+#assert_no_axioms FX1Poly.Polygraph.SpiderConvSyntactic
+#assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_toSpiderConv
+#assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_partitionSound
+
 -- FROB-4: the honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderForgetViewFunctoriality
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderPrefixBridge
+#assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderConvSyntactic
 
 end FX1PolyAudit
