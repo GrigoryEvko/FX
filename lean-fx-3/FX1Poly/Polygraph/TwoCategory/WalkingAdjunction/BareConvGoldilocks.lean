@@ -269,6 +269,11 @@ theorem whiskerExchange_convFull :
 theorem whiskerExchange_whiskerSum_eq :
     whiskerExchangeLHS.whiskerSum = whiskerExchangeRHS.whiskerSum := rfl
 
+/-- The exchange pair ALSO has EQUAL `rSum` (`1 = 1`) — even the whiskerSum-plus-rSum pair cannot tell them
+apart, so `crossSum` is not redundant with either. -/
+theorem whiskerExchange_rSum_eq :
+    whiskerExchangeLHS.rSum = whiskerExchangeRHS.rSum := rfl
+
 /-- The exchange LEFT side scores `1` L-outside-R crossing (`crossSum`). -/
 theorem whiskerExchangeLHS_crossSum : whiskerExchangeLHS.crossSum = 1 := rfl
 
@@ -372,6 +377,16 @@ candidate excludes the non-bare pair the whiskerSum-only candidate wrongly accep
 theorem bareConvCandidate_excludes_whiskerExchange :
     ¬ bareConvCandidate whiskerExchangeLHS whiskerExchangeRHS :=
   fun candidate => whiskerExchange_crossSum_differs candidate.2.2.2
+
+/-- ★★ **`crossSum` is a GENUINELY INDEPENDENT third invariant.**  The whiskerExchange pair agrees on BOTH
+`whiskerSum` (`2 = 2`) AND `rSum` (`1 = 1`) yet differs on `crossSum` (`1 ≠ 0`) — so `crossSum` is NOT a function
+of `(whiskerSum, rSum)`, and the family genuinely NEEDS all three.  This is the crisp sense in which the ORDER
+moment `crossSum` is orthogonal to the two count moments. -/
+theorem whiskerExchange_crossSum_not_determined :
+    whiskerExchangeLHS.whiskerSum = whiskerExchangeRHS.whiskerSum
+      ∧ whiskerExchangeLHS.rSum = whiskerExchangeRHS.rSum
+      ∧ whiskerExchangeLHS.crossSum ≠ whiskerExchangeRHS.crossSum :=
+  ⟨whiskerExchange_whiskerSum_eq, whiskerExchange_rSum_eq, whiskerExchange_crossSum_differs⟩
 
 /-! ## Non-vacuity: the candidate genuinely accepts bare pairs and rejects non-related pairs -/
 

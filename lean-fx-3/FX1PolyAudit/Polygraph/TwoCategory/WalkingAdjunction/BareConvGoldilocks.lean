@@ -27,6 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.whiskerExchangeRHS
 #assert_no_axioms FX1Poly.Polygraph.whiskerExchange_convFull
 #assert_no_axioms FX1Poly.Polygraph.whiskerExchange_whiskerSum_eq
+#assert_no_axioms FX1Poly.Polygraph.whiskerExchange_rSum_eq
 #assert_no_axioms FX1Poly.Polygraph.whiskerExchangeLHS_crossSum
 #assert_no_axioms FX1Poly.Polygraph.whiskerExchangeRHS_crossSum
 #assert_no_axioms FX1Poly.Polygraph.whiskerExchange_crossSum_differs
@@ -38,6 +39,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.adjunctionDecideBareConvCandidate
 #assert_no_axioms FX1Poly.Polygraph.bareConvCandidateWS_not_complete
 #assert_no_axioms FX1Poly.Polygraph.bareConvCandidate_excludes_whiskerExchange
+#assert_no_axioms FX1Poly.Polygraph.whiskerExchange_crossSum_not_determined
 #assert_no_axioms FX1Poly.Polygraph.bareConvCandidate_accepts_parallelUnits
 #assert_no_axioms FX1Poly.Polygraph.bareConvCandidate_rejects_snake
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasBareConvSeparatingFamilyCharacterized
