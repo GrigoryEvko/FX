@@ -36,6 +36,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.combNormalizeForm_clean_word
 #assert_no_axioms FX1Poly.Polygraph.comb_straightens_clean_word
 
+-- B5: the FUNCTIONAL comb fold (BREACH r2 prerequisite)
+#assert_no_axioms FX1Poly.Polygraph.combInsert_step_fn
+#assert_no_axioms FX1Poly.Polygraph.comb_fold_from_fn
+#assert_no_axioms FX1Poly.Polygraph.combNormalizeForm_conv
+
 -- B5: the honesty marker
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCombFold
 

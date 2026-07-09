@@ -600,6 +600,243 @@ theorem comb_straightens_clean_word :
       BrauerConvFree7 (crossingWord [0, 1, 2]) (combWord 3 combPrefix runLength) :=
   comb_straightens 3 [0, 1, 2] (by decide)
 
+/-! ## B5 — the FUNCTIONAL comb fold (BREACH r2 prerequisite)
+
+`comb_straightens` is EXISTENTIAL — it yields SOME coset state `(u, k)` with the convertibility.  The BREACH-r2
+canonicity argument needs the SPECIFIC state the DATA fold `combInsertData` computes, so it can read off `k` from the
+permutation (the strand pin) and recurse on `u`.  `combInsert_step_fn` / `comb_fold_from_fn` re-state
+`combInsert_step` / `comb_fold_from` returning the concrete `combInsertData` fold rather than the `∃`.  The
+branch selection of `combInsertData`'s `if`-cascade matches `combInsert_step`'s trichotomy exactly (COMMUTE /
+EXTEND / CANCEL / CARRY), so each branch reduces `combInsertData` by resolving the guards and reuses the shipped
+per-branch convertibility verbatim. -/
+
+/-- ★★ **The single-letter comb insertion, FUNCTIONAL.**  Same content as `combInsert_step`, but the new comb state
+is the explicit `combInsertData generatorCount (combPrefix, runLength) letter` (data), not an existential witness. -/
+theorem combInsert_step_fn (generatorCount : Nat) (combPrefix : List Nat) (runLength : Nat)
+    (uBelow : mentionsOnlyBelow (generatorCount - 1) combPrefix = true)
+    (runLe : runLength ≤ generatorCount) (letter : Nat) (letterLt : letter < generatorCount) :
+    mentionsOnlyBelow (generatorCount - 1)
+        (combInsertData generatorCount (combPrefix, runLength) letter).1 = true
+      ∧ (combInsertData generatorCount (combPrefix, runLength) letter).2 ≤ generatorCount
+      ∧ BrauerConvFree7 (combWord generatorCount combPrefix runLength ++ [crossingAt letter])
+          (combWord generatorCount (combInsertData generatorCount (combPrefix, runLength) letter).1
+            (combInsertData generatorCount (combPrefix, runLength) letter).2) := by
+  have genPos : 1 ≤ generatorCount := Nat.lt_of_le_of_lt (Nat.zero_le letter) letterLt
+  rcases Nat.lt_trichotomy (letter + runLength) generatorCount with hLt | hEq | hGt
+  · rcases Nat.lt_or_ge (letter + runLength + 1) generatorCount with hCommute | hExtendGe
+    · -- COMMUTE
+      have condCommute : letter + runLength + 2 ≤ generatorCount := hCommute
+      have dataEq : combInsertData generatorCount (combPrefix, runLength) letter
+          = (combPrefix ++ [letter], runLength) := by
+        show (if letter + runLength + 2 ≤ generatorCount then (combPrefix ++ [letter], runLength)
+              else if letter + runLength + 1 = generatorCount then (combPrefix, runLength + 1)
+              else if letter + runLength = generatorCount then (combPrefix, runLength - 1)
+              else (combPrefix ++ [letter - 1], runLength)) = (combPrefix ++ [letter], runLength)
+        rw [if_pos condCommute]
+      rw [dataEq]
+      refine ⟨?_, runLe, ?_⟩
+      · have hLetterLe2 : letter + 2 ≤ generatorCount :=
+          Nat.le_trans (Nat.add_le_add_right (Nat.le_add_right letter runLength) 2) hCommute
+        exact mentionsOnlyBelow_snoc combPrefix (generatorCount - 1) letter uBelow
+          (natLePredOfSuccLe (letter + 1) generatorCount hLetterLe2)
+      · show BrauerConvFree7
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+            ++ [crossingAt letter])
+          (crossingWord ((combPrefix ++ [letter]) ++ descendingPositions (generatorCount - 1) runLength))
+        rw [combWord_snoc_reshape combPrefix (descendingPositions (generatorCount - 1) runLength) letter,
+          ← combWord_absorb combPrefix (descendingPositions (generatorCount - 1) runLength) letter]
+        exact BrauerConvFree7.whiskerLeft (crossingWord combPrefix)
+          (commuteLetterPastBlock letter (descendingPositions (generatorCount - 1) runLength)
+            (descendingPositions_allAbove letter (generatorCount - 1) runLength
+              (natLePredOfSuccLe (letter + runLength + 1) generatorCount hCommute)))
+    · -- EXTEND
+      have hExtend : letter + runLength + 1 = generatorCount := Nat.le_antisymm hLt hExtendGe
+      have notCommute : ¬ (letter + runLength + 2 ≤ generatorCount) := by
+        rw [← hExtend]; exact Nat.not_succ_le_self (letter + runLength + 1)
+      have dataEq : combInsertData generatorCount (combPrefix, runLength) letter
+          = (combPrefix, runLength + 1) := by
+        show (if letter + runLength + 2 ≤ generatorCount then (combPrefix ++ [letter], runLength)
+              else if letter + runLength + 1 = generatorCount then (combPrefix, runLength + 1)
+              else if letter + runLength = generatorCount then (combPrefix, runLength - 1)
+              else (combPrefix ++ [letter - 1], runLength)) = (combPrefix, runLength + 1)
+        rw [if_neg notCommute, if_pos hExtend]
+      rw [dataEq]
+      refine ⟨uBelow, hExtend ▸ Nat.add_le_add_right (Nat.le_add_left runLength letter) 1, ?_⟩
+      have letterEqExt : letter = (generatorCount - 1) - runLength :=
+        natEqSubOfAddEq letter runLength (generatorCount - 1)
+          (natEqSubOfAddEq (letter + runLength) 1 generatorCount hExtend)
+      have runSnocEqExt : descendingPositions (generatorCount - 1) runLength ++ [letter]
+          = descendingPositions (generatorCount - 1) (runLength + 1) := by
+        rw [letterEqExt]; exact descendingPositions_snoc (generatorCount - 1) runLength
+      show BrauerConvFree7
+        (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+          ++ [crossingAt letter])
+        (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (runLength + 1)))
+      have wordEq : crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+            ++ [crossingAt letter]
+          = crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (runLength + 1)) := by
+        rw [← runSnocEqExt,
+          crossingWord_append combPrefix (descendingPositions (generatorCount - 1) runLength),
+          appendAssocComb (crossingWord combPrefix)
+            (crossingWord (descendingPositions (generatorCount - 1) runLength)) [crossingAt letter],
+          crossingWord_append combPrefix (descendingPositions (generatorCount - 1) runLength ++ [letter]),
+          crossingWord_append (descendingPositions (generatorCount - 1) runLength) [letter],
+          crossingWord_singleton letter]
+      rw [wordEq]
+      exact BrauerConvFree7.ofFree (BrauerConvFree.refl _)
+  · -- CANCEL
+    have notCommute : ¬ (letter + runLength + 2 ≤ generatorCount) := fun h => by
+      rw [hEq] at h
+      exact Nat.not_succ_le_self generatorCount (Nat.le_trans (Nat.le_succ (generatorCount + 1)) h)
+    have notExtend : ¬ (letter + runLength + 1 = generatorCount) := fun h => by
+      rw [hEq] at h
+      exact absurd (Nat.le_of_eq h) (Nat.not_succ_le_self generatorCount)
+    have dataEq : combInsertData generatorCount (combPrefix, runLength) letter
+        = (combPrefix, runLength - 1) := by
+      show (if letter + runLength + 2 ≤ generatorCount then (combPrefix ++ [letter], runLength)
+            else if letter + runLength + 1 = generatorCount then (combPrefix, runLength + 1)
+            else if letter + runLength = generatorCount then (combPrefix, runLength - 1)
+            else (combPrefix ++ [letter - 1], runLength)) = (combPrefix, runLength - 1)
+      rw [if_neg notCommute, if_neg notExtend, if_pos hEq]
+    rw [dataEq]
+    refine ⟨uBelow, Nat.le_trans (Nat.sub_le runLength 1) runLe, ?_⟩
+    cases runLength with
+    | zero =>
+        have hEq' : letter = generatorCount := hEq
+        exact absurd (hEq' ▸ letterLt) (Nat.lt_irrefl generatorCount)
+    | succ c =>
+        have letterEqSub : letter = (generatorCount - 1) - c :=
+          natEqSubOfAddEq letter c (generatorCount - 1)
+            (natEqSubOfAddEq (letter + c) 1 generatorCount hEq)
+        have runSnocEq : descendingPositions (generatorCount - 1) (c + 1)
+            = descendingPositions (generatorCount - 1) c ++ [letter] := by
+          rw [letterEqSub]; exact (descendingPositions_snoc (generatorCount - 1) c).symm
+        have cancelBase : BrauerConvFree7
+            (crossingWord (descendingPositions (generatorCount - 1) c)
+              ++ [crossingAt letter, crossingAt letter])
+            (crossingWord (descendingPositions (generatorCount - 1) c)) := by
+          have base := BrauerConvFree7.whiskerLeft
+            (crossingWord (descendingPositions (generatorCount - 1) c)) (crossingCancelFree letter)
+          rw [appendNilComb (crossingWord (descendingPositions (generatorCount - 1) c))] at base
+          exact base
+        show BrauerConvFree7
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (c + 1))
+            ++ [crossingAt letter])
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) c))
+        have lhsEq : crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (c + 1))
+              ++ [crossingAt letter]
+            = crossingWord combPrefix ++ (crossingWord (descendingPositions (generatorCount - 1) c)
+              ++ ([crossingAt letter] ++ [crossingAt letter])) := by
+          rw [runSnocEq,
+            crossingWord_append combPrefix (descendingPositions (generatorCount - 1) c ++ [letter]),
+            crossingWord_append (descendingPositions (generatorCount - 1) c) [letter],
+            crossingWord_singleton letter,
+            appendAssocComb (crossingWord combPrefix)
+              (crossingWord (descendingPositions (generatorCount - 1) c) ++ [crossingAt letter])
+              [crossingAt letter],
+            appendAssocComb (crossingWord (descendingPositions (generatorCount - 1) c))
+              [crossingAt letter] [crossingAt letter]]
+        rw [lhsEq, crossingWord_append combPrefix (descendingPositions (generatorCount - 1) c)]
+        exact BrauerConvFree7.whiskerLeft (crossingWord combPrefix) cancelBase
+  · -- CARRY
+    have gLt2 : generatorCount < letter + runLength + 2 :=
+      Nat.lt_of_lt_of_le hGt (Nat.le_add_right (letter + runLength) 2)
+    have notCommute : ¬ (letter + runLength + 2 ≤ generatorCount) := Nat.not_le.mpr gLt2
+    have notExtend : ¬ (letter + runLength + 1 = generatorCount) := fun h => by
+      have gLt1 : generatorCount < letter + runLength + 1 :=
+        Nat.lt_of_lt_of_le hGt (Nat.le_succ (letter + runLength))
+      rw [h] at gLt1
+      exact Nat.lt_irrefl generatorCount gLt1
+    have notCancel : ¬ (letter + runLength = generatorCount) := fun h => by
+      have hGtCopy : generatorCount < letter + runLength := hGt
+      rw [h] at hGtCopy
+      exact Nat.lt_irrefl generatorCount hGtCopy
+    have dataEq : combInsertData generatorCount (combPrefix, runLength) letter
+        = (combPrefix ++ [letter - 1], runLength) := by
+      show (if letter + runLength + 2 ≤ generatorCount then (combPrefix ++ [letter], runLength)
+            else if letter + runLength + 1 = generatorCount then (combPrefix, runLength + 1)
+            else if letter + runLength = generatorCount then (combPrefix, runLength - 1)
+            else (combPrefix ++ [letter - 1], runLength)) = (combPrefix ++ [letter - 1], runLength)
+      rw [if_neg notCommute, if_neg notExtend, if_neg notCancel]
+    rw [dataEq]
+    have letterPos : 1 ≤ letter := by
+      have hchain : generatorCount + 1 ≤ letter + generatorCount :=
+        Nat.le_trans hGt (Nat.add_le_add_left runLe letter)
+      exact natLeOfAddLeAddLeft generatorCount 1 letter (Nat.add_comm letter generatorCount ▸ hchain)
+    have runLeTop : runLength ≤ (generatorCount - 1) + 1 := by
+      rw [predSuccOfPos generatorCount genPos]; exact runLe
+    have aboveBottom : (generatorCount - 1) + 2 ≤ letter + runLength := by
+      rw [show (generatorCount - 1) + 2 = generatorCount + 1 from
+        congrArg Nat.succ (predSuccOfPos generatorCount genPos)]
+      exact hGt
+    refine ⟨?_, runLe, ?_⟩
+    · apply mentionsOnlyBelow_snoc combPrefix (generatorCount - 1) (letter - 1) uBelow
+      show (letter - 1) + 1 ≤ generatorCount - 1
+      rw [predSuccOfPos letter letterPos]
+      exact natLePredOfSuccLe letter generatorCount letterLt
+    · show BrauerConvFree7
+        (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+          ++ [crossingAt letter])
+        (crossingWord ((combPrefix ++ [letter - 1]) ++ descendingPositions (generatorCount - 1) runLength))
+      rw [combWord_snoc_reshape combPrefix (descendingPositions (generatorCount - 1) runLength) letter,
+        ← combWord_absorb combPrefix (descendingPositions (generatorCount - 1) runLength) (letter - 1)]
+      exact BrauerConvFree7.whiskerLeft (crossingWord combPrefix)
+        (carryIntoRun letter letterPos (generatorCount - 1) runLength
+          (natLePredOfSuccLe letter generatorCount letterLt) runLeTop aboveBottom)
+
+/-- ★ **The comb fold from a state, FUNCTIONAL.**  Folds `rest` onto `(combPrefix, runLength)` via the DATA step
+`combInsertData`, returning the concrete final state's certificate + convertibility.  Structural on `rest`. -/
+theorem comb_fold_from_fn (generatorCount : Nat) :
+    (rest : List Nat) → (combPrefix : List Nat) → (runLength : Nat) →
+    mentionsOnlyBelow (generatorCount - 1) combPrefix = true → runLength ≤ generatorCount →
+    mentionsOnlyBelow generatorCount rest = true →
+    mentionsOnlyBelow (generatorCount - 1)
+        (rest.foldl (combInsertData generatorCount) (combPrefix, runLength)).1 = true
+      ∧ (rest.foldl (combInsertData generatorCount) (combPrefix, runLength)).2 ≤ generatorCount
+      ∧ BrauerConvFree7 (combWord generatorCount combPrefix runLength ++ crossingWord rest)
+          (combWord generatorCount
+            (rest.foldl (combInsertData generatorCount) (combPrefix, runLength)).1
+            (rest.foldl (combInsertData generatorCount) (combPrefix, runLength)).2)
+  | [], combPrefix, runLength, uBelow, runLe, _ => by
+      refine ⟨uBelow, runLe, ?_⟩
+      show BrauerConvFree7 (combWord generatorCount combPrefix runLength ++ [])
+        (combWord generatorCount combPrefix runLength)
+      rw [appendNilComb (combWord generatorCount combPrefix runLength)]
+      exact BrauerConvFree7.ofFree (BrauerConvFree.refl _)
+  | letter :: restTail, combPrefix, runLength, uBelow, runLe, hRange => by
+      have letterLt : letter < generatorCount := natLtOfBlt letter generatorCount (boolAndLeftComb _ _ hRange)
+      obtain ⟨belowMid, runLeMid, stepConv⟩ :=
+        combInsert_step_fn generatorCount combPrefix runLength uBelow runLe letter letterLt
+      obtain ⟨below', runLe', tailConv⟩ :=
+        comb_fold_from_fn generatorCount restTail
+          (combInsertData generatorCount (combPrefix, runLength) letter).1
+          (combInsertData generatorCount (combPrefix, runLength) letter).2 belowMid runLeMid
+          (boolAndRightComb _ _ hRange)
+      refine ⟨below', runLe', ?_⟩
+      have reshaped : combWord generatorCount combPrefix runLength ++ crossingWord (letter :: restTail)
+          = (combWord generatorCount combPrefix runLength ++ [crossingAt letter]) ++ crossingWord restTail :=
+        (appendAssocComb (combWord generatorCount combPrefix runLength) [crossingAt letter]
+          (crossingWord restTail)).symm
+      rw [reshaped]
+      exact (BrauerConvFree7.whiskerRight (crossingWord restTail) stepConv).trans tailConv
+
+/-- ★★ **The DATA comb normal form is convertible to the input, hypothesis-free (up to `mentionsOnlyBelow`).**  The
+functional companion of `comb_straightens`: `combNormalizeForm generatorCount input` — the computable `combInsertData`
+fold read off as `combPrefix ++ descendingRun` — is `BrauerConvFree7`-convertible to `crossingWord input`.  This is the
+version BREACH r2 recurses on. -/
+theorem combNormalizeForm_conv (generatorCount : Nat) (input : List Nat)
+    (inRange : mentionsOnlyBelow generatorCount input = true) :
+    BrauerConvFree7 (crossingWord input) (crossingWord (combNormalizeForm generatorCount input)) := by
+  obtain ⟨_, _, conv⟩ :=
+    comb_fold_from_fn generatorCount input [] 0 rfl (Nat.zero_le generatorCount) inRange
+  have startEq : combWord generatorCount [] 0 ++ crossingWord input = crossingWord input := rfl
+  have finishEq : combWord generatorCount
+        (input.foldl (combInsertData generatorCount) ([], 0)).1
+        (input.foldl (combInsertData generatorCount) ([], 0)).2
+      = crossingWord (combNormalizeForm generatorCount input) := rfl
+  rw [startEq, finishEq] at conv
+  exact conv
+
 /-! ## Honesty marker -/
 
 /-- ★★ **Honesty marker — the COMB FOLD is SHIPPED (hypothesis-free).**  `comb_straightens` proves that EVERY

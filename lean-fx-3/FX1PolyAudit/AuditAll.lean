@@ -393,6 +393,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardForm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraightening
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraighteningGap
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCombFold
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStaircaseCanonical
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescUntwist
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescUntwistNormalize
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerLedger
