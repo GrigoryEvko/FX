@@ -121,13 +121,18 @@ and GENUINE thinness instances are proved — the hom `t ⇒ t` collapses on its
 law.  `= true`. -/
 def fxIdempotentMonad_hasDecisionAssemblyModuloThinness : Bool := true
 
-/-- **Honesty marker — the named residual.**  The FULL local posetality `IdempotentMonadThinness` (EVERY parallel
-pair convertible — the coherence / normalization theorem) is TRUE (the walking idempotent monad is locally posetal,
-Lack / nLab) but NOT mechanized this round: it is the exact analog of the walking monad's open EZ reconstruction
-`convOfMapEq` (`fxMonad_hasMonotoneMapDecisionAssembled = false`).  Idempotence collapses the target normal forms —
-so it should be COARSER than the monad's open faithfulness — but it is still a genuine coherence proof (normalize
-every free `t^m ⇒ t^n` to the canonical cell of its `(min(m,1), min(n,1))` boundary, then any two agree).  Until it
-lands, `IdempotentMonadLocalPosetality` is NOT inhabited and the decision is not real.  `= false`. -/
+/-- **Honesty marker — the named residual (crux now DONE; only general-`n` closure remains).**  The FULL local
+posetality `IdempotentMonadThinness` (EVERY parallel pair convertible — the coherence / normalization theorem) is
+TRUE (the walking idempotent monad is locally posetal, Lack / nLab) but NOT yet fully mechanized: it is the coarse
+analog of the walking monad's open EZ reconstruction `convOfMapEq` (`fxMonad_hasMonotoneMapDecisionAssembled =
+false`).  The route normalizes every free `t^m ⇒ t^n` to the canonical cell of its `(min(m,1), min(n,1))` boundary,
+then any two agree; "the whole weight compresses onto ONE lemma — the mu-iso, fold-then-grow ≈ id".  That CRUX is
+now MECHANIZED in `WalkingIdempotent/IdempotentMonadMuInvertible` (`idempotentMulRightInverse` :
+`mu ∘ (eta ▷ t) ≈ id_{t.t}`, zero-axiom), lifting the hom collapse from `t ⇒ t` to `t.t ⇒ t.t` and exhibiting `mu`
+as invertible (`idempotentMulInvertible`).  What REMAINS is the general-`n` normalizer — the fold/grow ladder
+closure whose base case is exactly that mu-iso — packaged by the honest reduction
+`idempotentThinness_ofNormalize` (thinness from any boundary-determined normalizer).  Until that closure lands,
+`IdempotentMonadLocalPosetality` is NOT inhabited and the decision is not real.  `= false`. -/
 def fxIdempotentMonad_hasLocalPosetalityCollapse : Bool := false
 
 end FX1Poly.Polygraph
