@@ -30,6 +30,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.canonThroughT_reindexSource
 #assert_no_axioms FX1Poly.Polygraph.canonThroughT_reindexTarget
 #assert_no_axioms FX1Poly.Polygraph.vcompCanonCollapse
+#assert_no_axioms FX1Poly.Polygraph.repFull_def
+#assert_no_axioms FX1Poly.Polygraph.repNFVcompCollapse
+#assert_no_axioms FX1Poly.Polygraph.repNFWhiskerLeftBrick
+#assert_no_axioms FX1Poly.Polygraph.repNFWhiskerRightBrick
+#assert_no_axioms FX1Poly.Polygraph.repNF_lengthCast
+#assert_no_axioms FX1Poly.Polygraph.toNF
+#assert_no_axioms FX1Poly.Polygraph.normalizeFull
+#assert_no_axioms FX1Poly.Polygraph.idempotentLocalPosetality
+#assert_no_axioms FX1Poly.Polygraph.decideIdempotentConv
+#assert_no_axioms FX1Poly.Polygraph.idempotentDecidesTrue_smoke_holds
+#assert_no_axioms FX1Poly.Polygraph.idempotentDecision_emptyHom_separates
 #assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasNormalizeFull
 
 end FX1PolyAudit

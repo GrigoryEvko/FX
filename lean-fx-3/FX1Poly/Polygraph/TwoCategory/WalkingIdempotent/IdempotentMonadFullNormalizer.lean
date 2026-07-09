@@ -254,18 +254,295 @@ theorem vcompCanonCollapse (sourceLen middlePred targetPred : Nat) :
     (idempotentConvOfStep (TwoCellStep.vcompIdLeft (growTower targetPred)))) ?_
   exact IdempotentMonadSaturatedTwoCellConv.refl _
 
-/-- **Honesty marker — the `normalizeFull` REDUCTION KIT is shipped; the six-case assembly is the residual.**
-The length-keyed `repNF` / `repFull` reductions (`repFull_populated` / `repFull_zeroZero`, proved by `cases` on the
-boundary-length proof so they actually FIRE the stuck dependent match) plus the CONV-level cast helpers
-(`whiskerRight/LeftPullConv`, `whiskerRight/LeftWhiskerEqConv`, `canonThroughT_reindexSource/Target`, applied so
-defeq handles the `congrArg` beta-redexes) are the shared tools `normalizeFull` consumes.  Every MATHEMATICAL crux
-is proved zero-axiom: `gen` (unit/mul laws), `id` (`idNFConv` via `foldThenGrow`), populated-`whiskerRight`
-(`whiskerRightCanon`), and the `vcomp` middle collapse (`vcompCanonCollapse`).  What is NOT assembled this round is
-the full `normalizeFull` INDUCTION — pure boundary-cast plumbing: the two whisker EMPTY sub-cases (a `nil ⇒ nil`
-body whiskered — the whisker-length reindex through `whiskerRightId`/`idNFConv`), the general-width LEFT whisker
-(an `add_comm` reindex on both indices vs `whiskerLeftCanon`'s `a+k` order), and wrapping `vcompCanonCollapse` in
-the outer `monadPath_normalForm` casts across the `middle`/`target` length sub-cases.  Until `normalizeFull` lands
-and feeds `idempotentThinness_ofNormalize`, `IdempotentMonadLocalPosetality` is NOT inhabited.  `= false`. -/
-def fxIdempotentMonad_hasNormalizeFull : Bool := false
+/-! ## The six-case assembly `normalizeFull : cell ≈ repFull cell`
+
+`normalizeFull` is assembled at the CELL level: each constructor recomposes the boundary-canonical
+representatives of its children (`repFull child`, unfolded DEFINITIONALLY so the shared `monadPath_normalForm`
+seams line up) through a free-`Nat` COLLAPSE lemma (the `vcomp` middle-collapse `repNFVcompCollapse`, the whisker
+canonicalisations `repNFWhiskerLeftBrick` / `repNFWhiskerRightBrick`), then transports back.  The collapse lemmas
+are over FREE `Nat` boundary lengths, so their internal case splits (`0` vs successor — the whisker-EMPTY vs
+populated sub-cases) run on genuine variables, discharging the empty homs by cell-level rigidity
+(`rawCell_targetLenZero_impliesSourceLenZero`).  All zero-axiom, STRUCTURAL. -/
+
+/-- `repFull` in point-to-point coordinates unfolds definitionally to its `monadPath_normalForm`-transported
+`repNF` body.  Stated as an `rfl` so the recomposition lemmas can `rw` the outer transports open and match the
+shared `monadPath_normalForm` seams. -/
+theorem repFull_def {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    repFull cell = RawTwoCellExpr.castBoundary (monadPath_normalForm sourcePath).symm
+      (monadPath_normalForm targetPath).symm
+      (repNF sourcePath.length targetPath.length
+        (RawTwoCellExpr.castBoundary (monadPath_normalForm sourcePath) (monadPath_normalForm targetPath) cell)) :=
+  rfl
+
+/-- ★ **The `vcomp` middle-collapse in `monadTPower` coordinates** — over FREE `Nat` boundary lengths.  Two
+boundary-canonical cells `repNF Fl Gl cA` and `repNF Gl Hl cB` compose to the boundary-canonical of the outer
+`Fl ⇒ Hl` hom.  Case split on the middle length `Gl` (and the endpoints): both populated ⇒ `vcompCanonCollapse`;
+empty middle ⇒ `vcompIdLeft`; the `t^{≥1} ⇒ t^0` empty homs are refuted by cell-level rigidity. -/
+theorem repNFVcompCollapse : (Fl Gl Hl : Nat) →
+    (cA : RawTwoCellExpr monadModeSignature (monadTPower Fl) (monadTPower Gl)) →
+    (cB : RawTwoCellExpr monadModeSignature (monadTPower Gl) (monadTPower Hl)) →
+    IdempotentMonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (repNF Fl Gl cA) (repNF Gl Hl cB))
+      (repNF Fl Hl (RawTwoCellExpr.vcomp cA cB))
+  | Fl, 0, Hl, cA, cB => by
+      cases Fl with
+      | succ fp =>
+          exact absurd (rawCell_targetLenZero_impliesSourceLenZero cA rfl)
+            (fun hlen => Nat.noConfusion ((monadTPower_length (fp + 1)).symm.trans hlen))
+      | zero =>
+          refine IdempotentMonadSaturatedTwoCellConv.trans (idempotentConvOfStep (TwoCellStep.vcompIdLeft (repNF 0 Hl cB))) ?_
+          rw [repNF_cellIndependent 0 Hl cB (RawTwoCellExpr.vcomp cA cB)]
+          exact IdempotentMonadSaturatedTwoCellConv.refl _
+  | Fl, gp + 1, Hl, cA, cB => by
+      cases Hl with
+      | zero =>
+          exact absurd (rawCell_targetLenZero_impliesSourceLenZero cB rfl)
+            (fun hlen => Nat.noConfusion ((monadTPower_length (gp + 1)).symm.trans hlen))
+      | succ hp =>
+          exact vcompCanonCollapse Fl gp hp
+
+/-- ★ **The general-width LEFT-whisker canonicalisation in `monadTPower` coordinates** — over FREE `Nat` boundary
+lengths.  `t^k ◁ (repNF G H X) ≈ (transported) repNF (k+G) (k+H) W`.  Populated body ⇒ `whiskerLeftCanon` with the
+`add_comm` reindex (`canonThroughT_reindexSource`/`Target`); empty body (`H = 0` forces `G = 0` by rigidity) ⇒
+`whiskerLeftId` + `idNFConv`.  The `W` argument is any parallel cell — `repNF` reads only the boundary. -/
+theorem repNFWhiskerLeftBrick : (k G H : Nat) →
+    (X : RawTwoCellExpr monadModeSignature (monadTPower G) (monadTPower H)) →
+    (W : RawTwoCellExpr monadModeSignature (monadTPower (k + G)) (monadTPower (k + H))) →
+    IdempotentMonadSaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) (monadTPower k) (repNF G H X))
+      (RawTwoCellExpr.castBoundary (monadTPower_add k G) (monadTPower_add k H) (repNF (k + G) (k + H) W))
+  | k, G, hp + 1, X, W => by
+      refine IdempotentMonadSaturatedTwoCellConv.trans (whiskerLeftCanon k G hp) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (canonThroughT_reindexSource (Nat.add_comm G k))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _
+        (castBoundaryCongr _ _ (canonThroughT_reindexTarget (Nat.add_comm hp k)))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (castChainCollapseConv _ _ _ _ _)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castChainCollapseConv _ _ _ _ _) ?_
+      exact IdempotentMonadSaturatedTwoCellConv.refl _
+  | k, G, 0, X, W => by
+      have hG0 : G = 0 := (monadTPower_length G).symm.trans (rawCell_targetLenZero_impliesSourceLenZero X rfl)
+      subst hG0
+      show IdempotentMonadSaturatedTwoCellConv
+        (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) (monadTPower k)
+          (RawTwoCellExpr.id (signature := monadModeSignature) (monadTPower 0)))
+        (RawTwoCellExpr.castBoundary (monadTPower_add k 0) (monadTPower_add k 0) (repNF (k + 0) (k + 0) W))
+      refine IdempotentMonadSaturatedTwoCellConv.trans
+        (idempotentConvOfStep
+          (TwoCellStep.whiskerLeftId (signature := monadModeSignature) (monadTPower k) (monadTPower 0))) ?_
+      rw [repNF_cellIndependent (k + 0) (k + 0) W
+        (RawTwoCellExpr.id (signature := monadModeSignature) (monadTPower (k + 0)))]
+      refine IdempotentMonadSaturatedTwoCellConv.trans ?_
+        (castBoundaryCongr _ _ (idNFConv (k + 0)))
+      rw [castBoundary_id (monadTPower_add k 0)]
+      exact IdempotentMonadSaturatedTwoCellConv.refl _
+
+/-- ★ **The general-width RIGHT-whisker canonicalisation in `monadTPower` coordinates** — over FREE `Nat` boundary
+lengths.  `(repNF G H X) ▷ t^k ≈ (transported) repNF (G+k) (H+k) W`.  Populated body ⇒ `whiskerRightCanon` (the
+target length `(hp+1)+k` re-expressed as `(hp+k)+1` by `repNF_of_targetLen` + `Nat.succ_add`, the casts fusing by
+proof irrelevance); empty body ⇒ `whiskerRightId` + `idNFConv`. -/
+theorem repNFWhiskerRightBrick : (k G H : Nat) →
+    (X : RawTwoCellExpr monadModeSignature (monadTPower G) (monadTPower H)) →
+    (W : RawTwoCellExpr monadModeSignature (monadTPower (G + k)) (monadTPower (H + k))) →
+    IdempotentMonadSaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) (monadTPower k) (repNF G H X))
+      (RawTwoCellExpr.castBoundary (monadTPower_add G k) (monadTPower_add H k) (repNF (G + k) (H + k) W))
+  | k, G, hp + 1, X, W => by
+      refine IdempotentMonadSaturatedTwoCellConv.trans (whiskerRightCanon k G hp) ?_
+      rw [repNF_of_targetLen W (hp + k) (Nat.succ_add hp k), RawTwoCellExpr.castBoundary_castBoundary]
+      exact IdempotentMonadSaturatedTwoCellConv.refl _
+  | k, G, 0, X, W => by
+      have hG0 : G = 0 := (monadTPower_length G).symm.trans (rawCell_targetLenZero_impliesSourceLenZero X rfl)
+      subst hG0
+      show IdempotentMonadSaturatedTwoCellConv
+        (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) (monadTPower k)
+          (RawTwoCellExpr.id (signature := monadModeSignature) (monadTPower 0)))
+        (RawTwoCellExpr.castBoundary (monadTPower_add 0 k) (monadTPower_add 0 k) (repNF (0 + k) (0 + k) W))
+      refine IdempotentMonadSaturatedTwoCellConv.trans
+        (idempotentConvOfStep
+          (TwoCellStep.whiskerRightId (signature := monadModeSignature) (monadTPower 0) (monadTPower k))) ?_
+      rw [repNF_cellIndependent (0 + k) (0 + k) W
+        (RawTwoCellExpr.id (signature := monadModeSignature) (monadTPower (0 + k)))]
+      refine IdempotentMonadSaturatedTwoCellConv.trans ?_
+        (castBoundaryCongr _ _ (idNFConv (0 + k)))
+      rw [castBoundary_id (monadTPower_add 0 k)]
+      exact IdempotentMonadSaturatedTwoCellConv.refl _
+
+/-- Transport `repNF` along `Nat` boundary-length equalities (`cases` both, then `rfl`).  The whisker `normalizeFull`
+cases bridge the stuck `(composePath oc gg).length` against the brick's `oc.length + gg.length`. -/
+theorem repNF_lengthCast {sourceLen sourceLen' targetLen targetLen' : Nat}
+    (hsource : sourceLen = sourceLen') (htarget : targetLen = targetLen')
+    (cell : RawTwoCellExpr monadModeSignature (monadTPower sourceLen) (monadTPower targetLen)) :
+    repNF sourceLen targetLen cell
+      = RawTwoCellExpr.castBoundary (congrArg monadTPower hsource).symm (congrArg monadTPower htarget).symm
+        (repNF sourceLen' targetLen'
+          (RawTwoCellExpr.castBoundary (congrArg monadTPower hsource) (congrArg monadTPower htarget) cell)) := by
+  cases hsource; cases htarget; rfl
+
+/-- Convert a `Conv cell (repFull cell)` result into `monadTPower`-coordinate NF form (the inverse of `ofCastLeft`,
+via `castBoundaryCongr` + the round-trip cast cancellation).  The `vcomp` recomposition consumes the children's
+recursive results in this NF form. -/
+theorem toNF {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    {cell : RawTwoCellExpr monadModeSignature sourcePath targetPath}
+    (conv : IdempotentMonadSaturatedTwoCellConv cell (repFull cell)) :
+    IdempotentMonadSaturatedTwoCellConv
+      (RawTwoCellExpr.castBoundary (monadPath_normalForm sourcePath) (monadPath_normalForm targetPath) cell)
+      (repNF sourcePath.length targetPath.length
+        (RawTwoCellExpr.castBoundary (monadPath_normalForm sourcePath) (monadPath_normalForm targetPath) cell)) := by
+  have hcongr := castBoundaryCongr (monadPath_normalForm sourcePath) (monadPath_normalForm targetPath) conv
+  rw [repFull_def cell, RawTwoCellExpr.castBoundary_castBoundary] at hcongr
+  exact hcongr
+
+/-- ★★ **`normalizeFull`** — every free 2-cell is convertible to its boundary-determined representative
+`repFull cell`.  MODE-GENERIC structural recursion over `RawTwoCellExpr` (binder-form mode indices — no partial
+index match, so `propext`/`Quot.sound`-free), each arm making its recursive calls BEFORE resolving the (unique)
+mode to `point`: `gen` bases (unit / mul chases, casts strip on the concrete boundaries), `id` (`idNFConv`),
+`vcomp` (`vcompCastMergeConv` decompose + `repNFVcompCollapse` on the children's `toNF` results), the two whiskers
+(`repNFWhiskerLeft`/`RightBrick` after re-expressing the whisker 1-cell as `monadTPower oc.length`, the
+`length_composePath` boundary bridged by `repNF_lengthCast`).  Feeds `idempotentThinness_ofNormalize`. -/
+theorem normalizeFull :
+    {sourceMode targetMode : MonadMode} →
+    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode} →
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) →
+    IdempotentMonadSaturatedTwoCellConv cell (repFull cell)
+  | _, _, _, _, .gen MonadTwoCell.eta =>
+      IdempotentMonadSaturatedTwoCellConv.symm
+        (idempotentConvOfStep (TwoCellStep.vcompIdRight monadUnitTwoCell))
+  | _, _, _, _, .gen MonadTwoCell.mu => by
+      refine IdempotentMonadSaturatedTwoCellConv.trans
+        (IdempotentMonadSaturatedTwoCellConv.symm
+          (idempotentConvOfStep (TwoCellStep.vcompIdLeft monadMulTwoCell))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans
+        (vcompCongrLeft monadMulTwoCell
+          (IdempotentMonadSaturatedTwoCellConv.symm
+            (idempotentConvOfStep
+              (TwoCellStep.whiskerLeftId (signature := monadModeSignature) monadT monadT)))) ?_
+      exact IdempotentMonadSaturatedTwoCellConv.symm
+        (idempotentConvOfStep (TwoCellStep.vcompIdRight (monadGadget 2)))
+  | smode, tmode, _, _, .id path => by
+      cases smode; cases tmode
+      exact IdempotentMonadSaturatedTwoCellConv.ofCastLeft
+        (monadPath_normalForm path) (monadPath_normalForm path)
+        (by rw [castBoundary_id (monadPath_normalForm path)]; exact idNFConv path.length)
+  | smode, tmode, _, _, .vcomp a b => by
+      have iha := normalizeFull a
+      have ihb := normalizeFull b
+      cases smode; cases tmode
+      refine IdempotentMonadSaturatedTwoCellConv.ofCastLeft
+        (monadPath_normalForm _) (monadPath_normalForm _) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans
+        (IdempotentMonadSaturatedTwoCellConv.symm
+          (vcompCastMergeConv (monadPath_normalForm _) (monadPath_normalForm _)
+            (monadPath_normalForm _) a b)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans
+        (IdempotentMonadSaturatedTwoCellConv.trans
+          (vcompCongrLeft _ (toNF iha)) (vcompCongrRight _ (toNF ihb))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans
+        (repNFVcompCollapse _ _ _ _ _) ?_
+      rw [repNF_cellIndependent _ _
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.castBoundary (monadPath_normalForm _) (monadPath_normalForm _) a)
+          (RawTwoCellExpr.castBoundary (monadPath_normalForm _) (monadPath_normalForm _) b))
+        (RawTwoCellExpr.castBoundary (monadPath_normalForm _) (monadPath_normalForm _)
+          (RawTwoCellExpr.vcomp a b))]
+      exact IdempotentMonadSaturatedTwoCellConv.refl _
+  | smode, tmode, _, _, @RawTwoCellExpr.whiskerLeft _ _ middleMode _ oc gg hh body => by
+      have hBody := normalizeFull body
+      cases smode; cases middleMode; cases tmode
+      refine IdempotentMonadSaturatedTwoCellConv.ofCastLeft
+        (monadPath_normalForm (composePath oc gg)) (monadPath_normalForm (composePath oc hh)) ?_
+      have heq := repNF_lengthCast (ModalityPath.length_composePath oc gg)
+        (ModalityPath.length_composePath oc hh)
+        (RawTwoCellExpr.castBoundary (monadPath_normalForm (composePath oc gg))
+          (monadPath_normalForm (composePath oc hh)) (RawTwoCellExpr.whiskerLeft oc body))
+      refine heq ▸ ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (whiskerLeftCongr oc hBody)) ?_
+      rw [repFull_def body]
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (whiskerLeftPullConv oc _ _ _)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _
+        (castBoundaryCongr _ _ (whiskerLeftWhiskerEqConv (monadPath_normalForm oc) _))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (castChainCollapseConv _ _ _ _ _)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _
+        (castBoundaryCongr _ _ (repNFWhiskerLeftBrick oc.length gg.length hh.length _
+          (RawTwoCellExpr.castBoundary (congrArg monadTPower (ModalityPath.length_composePath oc gg))
+            (congrArg monadTPower (ModalityPath.length_composePath oc hh))
+            (RawTwoCellExpr.castBoundary (monadPath_normalForm (composePath oc gg))
+              (monadPath_normalForm (composePath oc hh)) (RawTwoCellExpr.whiskerLeft oc body)))))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (castChainCollapseConv _ _ _ _ _)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castChainCollapseConv _ _ _ _ _) ?_
+      exact IdempotentMonadSaturatedTwoCellConv.refl _
+  | smode, tmode, _, _, @RawTwoCellExpr.whiskerRight _ _ middleMode _ gg hh oc body => by
+      have hBody := normalizeFull body
+      cases smode; cases middleMode; cases tmode
+      refine IdempotentMonadSaturatedTwoCellConv.ofCastLeft
+        (monadPath_normalForm (composePath gg oc)) (monadPath_normalForm (composePath hh oc)) ?_
+      have heq := repNF_lengthCast (ModalityPath.length_composePath gg oc)
+        (ModalityPath.length_composePath hh oc)
+        (RawTwoCellExpr.castBoundary (monadPath_normalForm (composePath gg oc))
+          (monadPath_normalForm (composePath hh oc)) (RawTwoCellExpr.whiskerRight oc body))
+      refine heq ▸ ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (whiskerRightCongr oc hBody)) ?_
+      rw [repFull_def body]
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (whiskerRightPullConv oc _ _ _)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _
+        (castBoundaryCongr _ _ (whiskerRightWhiskerEqConv (monadPath_normalForm oc) _))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (castChainCollapseConv _ _ _ _ _)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _
+        (castBoundaryCongr _ _ (repNFWhiskerRightBrick oc.length gg.length hh.length _
+          (RawTwoCellExpr.castBoundary (congrArg monadTPower (ModalityPath.length_composePath gg oc))
+            (congrArg monadTPower (ModalityPath.length_composePath hh oc))
+            (RawTwoCellExpr.castBoundary (monadPath_normalForm (composePath gg oc))
+              (monadPath_normalForm (composePath hh oc)) (RawTwoCellExpr.whiskerRight oc body)))))) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castBoundaryCongr _ _ (castChainCollapseConv _ _ _ _ _)) ?_
+      refine IdempotentMonadSaturatedTwoCellConv.trans (castChainCollapseConv _ _ _ _ _) ?_
+      exact IdempotentMonadSaturatedTwoCellConv.refl _
+
+/-! ## Inhabiting local posetality + the TOTAL decision -/
+
+/-- ★★ **Local posetality is INHABITED** — the real closed term (zero hypotheses): thinness from the
+boundary-determined normalizer `repFull` (`repFull_boundary` + `normalizeFull`), via
+`idempotentThinness_ofNormalize`.  Every parallel pair of free 2-cells of the walking idempotent monad is
+convertible. -/
+def idempotentLocalPosetality : IdempotentMonadLocalPosetality :=
+  ⟨idempotentThinness_ofNormalize repFull repFull_boundary normalizeFull⟩
+
+/-- ★★ **The TOTAL walking-idempotent-monad saturated 2-cell decision** — with local posetality now inhabited, the
+decision interface is a real closed term deciding EVERY parallel pair (always `isTrue`), zero hypotheses. -/
+@[reducible] def decideIdempotentConv : IdempotentMonadDecidableSaturatedTwoCellConvFor :=
+  idempotentSaturatedWordProblemModuloPosetality idempotentLocalPosetality
+
+/-- Non-vacuity smoke: a GENUINE `size 4` parallel pair at the hom `t.t ⇒ t.t` — `mu ∘ (eta ▷ t)`
+(`vcomp mu (eta ▷ t)`) and its `t ◁ eta` twin `mu ∘ (t ◁ eta)` — is decided TRUE by the TOTAL decision. -/
+def idempotentDecidesTrue_smoke : Bool :=
+  match decideIdempotentConv (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
+      (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell) with
+  | isTrue _ => true
+  | isFalse _ => false
+
+/-- Smoke value: the total decision returns `true` on the genuine `size 4` parallel pair (non-vacuous). -/
+theorem idempotentDecidesTrue_smoke_holds : idempotentDecidesTrue_smoke = true := rfl
+
+/-- Non-vacuity: the empty hom still SEPARATES — there is NO free 2-cell `t.t ⇒ nil` (rigidity forces `t.t`'s
+length `2 = 0`), so the total decision does not spuriously populate empty homs. -/
+theorem idempotentDecision_emptyHom_separates
+    (cell : RawTwoCellExpr monadModeSignature monadTThenT
+      (ModalityPath.nil (graph := monadGraph) MonadMode.point)) :
+    (2 : Nat) = 0 :=
+  rawCell_targetLenZero_impliesSourceLenZero cell rfl
+
+/-! ## Honesty marker -/
+
+/-- ★★ **ESTABLISHED — `normalizeFull` + the TOTAL decision.**  Every free 2-cell is convertible to its
+boundary-determined representative (`normalizeFull : cell ≈ repFull cell`), the six-case structural NF induction
+`NFnorm` transported by `ofCastLeft`: `gen` (unit / mul chases), `id` (`idNFConv`), `vcomp` (`vcompCastMergeConv`
+decompose + `repNFVcompCollapse`), the two whiskers (`repNFWhiskerLeft`/`RightBrick` = `whiskerLeftCanon` /
+`whiskerRightCanon` + the `add_comm` / `succ_add` reindex + `length_composePath` boundary bridge `repNF_lengthCast`),
+the whisker-EMPTY sub-cases discharged by cell-level rigidity.  This feeds `idempotentThinness_ofNormalize` (with
+`repFull` / `repFull_boundary`) to inhabit `IdempotentMonadLocalPosetality` as a REAL closed term
+(`idempotentLocalPosetality`, zero hypotheses), making `decideIdempotentConv` a TOTAL zero-axiom decision.
+Non-vacuous: a `size 4` parallel pair decides `true` (`idempotentDecidesTrue_smoke_holds`) while the empty hom
+`t.t ⇒ nil` still separates (`idempotentDecision_emptyHom_separates`).  Closes the walking-idempotent-monad word
+problem — the property-like / posetal walker rung DECIDED.  `= true`. -/
+def fxIdempotentMonad_hasNormalizeFull : Bool := true
 
 end FX1Poly.Polygraph
