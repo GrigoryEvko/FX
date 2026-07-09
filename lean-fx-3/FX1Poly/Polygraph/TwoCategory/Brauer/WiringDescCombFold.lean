@@ -849,8 +849,8 @@ descending run by `carryIntoRun`.  Non-vacuous + DISSOLVES the insertion-route j
 `combNormalizeForm_stuck_word` show the exact stuck word `[2, 0, 1, 2]` reaches the canonical `[0, 1, 2, 1]` the
 insertion residual could not.  HONEST SCOPE: this is the coset FACTORIZATION (`u` need not be canonical — the fold does
 NOT further normalize `u`), so it is a valid `u ++ run` form with the right-descent certificate, NOT the unique
-Matsumoto normal form; the master `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) stays
-`false` for the full-NF / diagram-connection legs, untouched.  `= true`. -/
+Matsumoto normal form.  The recursive comb (`recComb`, `Brauer/WiringDescStaircaseCanonical.lean`) DOES normalize `u`,
+and `crossingWords_equalPerm_conv` flips the master `fxBrauer_hasCrossingOnlyStraightening` to `true` (BREACH r2).  `= true`. -/
 def fxBrauer_hasCombFold : Bool := true
 
 end FX1Poly.Polygraph

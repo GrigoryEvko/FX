@@ -29,7 +29,7 @@ round.  This file lands exactly that assembly — and NOTHING beyond the honest,
 does NOT canonicalize the crossing (`S_n`) block — that block is the WALLED braid-ascent leaf
 (`fxBrauer_hasBraidAscentLeafWalled`, `Brauer/WiringDescInsertion.lean`, Regime A definitive).  So this file flips
 `fxBrauer_hasUntwistNormalization` and NOTHING above it: `fxBrauer_hasBrauerCompleteness` /
-`fxBrauer_hasCrossingOnlyStraightening` / `fxBrauer_hasCrossingStraighteningInsertionResidual` stay `false`.  The
+`fxBrauer_hasCrossingStraighteningInsertionResidual` stays `false` (INSERTION route walled); `fxBrauer_hasCrossingOnlyStraightening` is now `true` via the comb-fold BREACH r2, a different route.  The
 honest founding contrast is the r12 marker's own: the untwist measure is a plateau-free structural word length,
 UNLIKE the crossing straightening whose `inversionCount` is frozen across the ascent.
 
@@ -291,7 +291,7 @@ the `fuel ≥ length` fuel induction with the `lengthReductKeep*` drop).  Non-va
 (`untwistNF_cup_single` / `untwistNF_cap_single` / `untwistNF_cup_cascade` re-exposing a fresh redex /
 `untwistNF_fixed_points` with the same-position guard load-bearing).  HONEST SCOPE: this is the untwist FRAGMENT —
 it removes cup/crossing and crossing/cap adjacencies only, NOT the cups-above-caps sort and NOT the walled crossing
-(`S_n`) block; `fxBrauer_hasBrauerCompleteness` / `fxBrauer_hasCrossingOnlyStraightening` stay `false`.  `= true`. -/
+(`S_n`) block; `fxBrauer_hasBrauerCompleteness` stays `false` (`fxBrauer_hasCrossingOnlyStraightening` now `true` via the comb-fold BREACH r2).  `= true`. -/
 def fxBrauer_hasUntwistNormalization : Bool := true
 
 end FX1Poly.Polygraph

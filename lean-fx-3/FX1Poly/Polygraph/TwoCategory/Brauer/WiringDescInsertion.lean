@@ -1454,7 +1454,7 @@ inversionCount perm` (`inversionCount_ofLeftmostDescentSwap_succ`), the multiset
      `pureCupSpine_sort`-magnitude wall) on top of that permutation structure.
 
 So the residual shrinks to "the IN-RANGE braid mode over genuine permutations"; the master markers
-`fxBrauer_hasCrossingOnlyStraightening` / `fxBrauer_hasCrossingStraighteningInsertionResidual` stay `false`.  `= true`. -/
+`fxBrauer_hasCrossingStraighteningInsertionResidual` stays `false` (INSERTION route walled); `fxBrauer_hasCrossingOnlyStraightening` is now `true` via the comb-fold BREACH r2.  `= true`. -/
 def fxBrauer_hasInsertionCancelMode : Bool := true
 
 /-- ★ **Honesty marker — WP-BRAUER r7: the insertion residual is REFORMULATED honestly, and the fold consumes it.**
@@ -2519,8 +2519,8 @@ def fxBrauer_hasBraidAscentCarryAlgebra : Bool := true
 
 /-- **Honesty marker — the SOLE remaining leg of `InRangeInsertionStep` is the BRAID-ASCENT residual (`false`); r10
 sharpens the wall to a MEASURE gap.**  After r9's closed outer induction and r10's carry algebra,
-`fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
-`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false` because of ONE
+`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stays `false` — and the
+INSERTION route to `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) is walled — because of ONE
 leaf: `BraidAscentInsertionStep` — `position = leftmostDescent perm + 1` over a genuine permutation, an ASCENT there,
 non-reflex (`leftmostDescent (perm · s_{d+1}) = d`, the 305-of-547 census cases).
 
@@ -2575,8 +2575,8 @@ filter — both FAIL on Regime-B-SHAPE non-residual inputs (e.g. `leftmostDescen
 so proving them in general is a belowDescent/distant-family index induction threading the non-reflex + ascent
 conditions (the sole Regime-B leg).  And this is Regime B only: Regime A (`leftmostDescent (perm · s_d) = d - 1`, the 823
 other residual leaves `n ≤ 7`) has no shipped local braid move (needs a preparatory prefix commute) and remains the
-separate open leg.  `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
-`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false`.  A route/measure
+separate open leg.  `fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stays `false` (INSERTION
+route walled; `fxBrauer_hasCrossingOnlyStraightening` is now `true` via the comb-fold BREACH r2).  A route/measure
 gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations DO present the category).  `= true`. -/
 def fxBrauer_hasBraidAscentRegimeBReduction : Bool := true
 
@@ -2599,8 +2599,9 @@ only the weak exchange property).  The Regime-B general facts `ldP0Gt` / `ldP2Eq
 their proof is a ~350-line regimeB-dependent head-strip window induction (junction needs the TRANSITIVE
 `a_{d-1} < a_{d+1} < a_{d+2}`, `ldP0Gt` needs an `inversionCount` → adjacent-order conversion) — a route cost that,
 since Regime A stays walled regardless, would sharpen but NOT flip the master flag.  So the leaf's terminal state is
-WALLED.  `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
-`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false`.  `= true`. -/
+WALLED (INSERTION route).  `fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`)
+stays `false`; `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) is now `true` via the
+comb-fold BREACH r2 (a different route that bypasses this leaf).  `= true`. -/
 def fxBrauer_hasBraidAscentLeafWalled : Bool := true
 
 /-- ★ **Honesty marker — WP-BRAUER r12: the braid-ascent carry-COLLAPSE identity is SHIPPED.**  `p2_eq_swapSuccSwap`

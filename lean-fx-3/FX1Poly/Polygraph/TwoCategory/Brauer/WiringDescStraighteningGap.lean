@@ -45,7 +45,7 @@ counting the ∗/♯ transforms — the FX five omit the cup untwist and its dua
 (`fxBrauer_hasConnectivityCongruenceDecision`, r1) are untouched.  The fix is a design choice for the user: add the
 two untwist relations `σ ∘ cup = cup` and `cap ∘ σ = cap` (the seven-relation presentation), after which
 completeness is classically true — but the straightening PROOF additionally needs the crossing-only Matsumoto
-insertion + whiskerRight congruence (`fxBrauer_hasCrossingOnlyStraightening`, still `false`), i.e. further rounds.
+insertion + whiskerRight congruence — SHIPPED via the comb-fold BREACH r2 (`fxBrauer_hasCrossingOnlyStraightening` now `true`, `crossingWords_equalPerm_conv`).
 
 Raw Lean 4 + Init; structural recursion, no `omega` / `simp`-AC / `native_decide` / `WellFounded.fix`.
 Per-declaration `#assert_no_axioms` in the audit twin. -/

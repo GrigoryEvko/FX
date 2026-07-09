@@ -32,7 +32,8 @@ generators a bubble-sort insertion induction consumes, with the suffix congruenc
 
 ## Honest scope — what is NOT closed, and the exact jam
 
-The MASTER `fxBrauer_hasBrauerCompleteness` and `fxBrauer_hasCrossingOnlyStraightening` STAY `false` (honestly, not
+The MASTER `fxBrauer_hasBrauerCompleteness` STAYS `false` (`fxBrauer_hasCrossingOnlyStraightening` is now `true` via
+the comb-fold BREACH r2, `crossingWords_equalPerm_conv`; this file's INSERTION route remains the historical jam) (honestly, not
 walled — Lehrer–Zhang Thm 2.6 guarantees NO relation 8; any jam is a route/measure gap).  The remaining leg after
 this round is the CANONICAL reduced word `canonicalReducedWord` + its braid-move INSERTION induction (insert one
 adjacent transposition into the canonical word of a permutation, driven by these free Coxeter moves) — the standard
@@ -318,7 +319,8 @@ straightening — the standing jam is the canonical reduced word + its braid-mov
 for `S_n`), whose faithful zero-axiom mirror is the 1300-line sibling `pureCupSpine_sort`.  `= true`. -/
 def fxBrauer_hasCrossingWordFreeCoxeterMoves : Bool := true
 
-/-- **Honesty marker — the crossing-only straightening ASSEMBLY stays `false`; the exact jam is named.**  With the
+/-- **Honesty marker — the crossing-only straightening ASSEMBLY via the INSERTION route stays jammed (the comb fold in
+`Brauer/WiringDescStaircaseCanonical.lean` is the route that flipped `fxBrauer_hasCrossingOnlyStraightening` to `true`).**  With the
 suffix congruence now FREE (`fxBrauer_hasCrossingWordFreeCoxeterMoves`) and untwist absorption shipped
 (`fxBrauer_hasUntwistAbsorption`), the SOLE remaining leg of `fxBrauer_hasCrossingOnlyStraightening`
 (`Brauer/WiringDescStandardForm.lean`) is the CANONICAL reduced word `canonicalReducedWord` plus its braid-move
