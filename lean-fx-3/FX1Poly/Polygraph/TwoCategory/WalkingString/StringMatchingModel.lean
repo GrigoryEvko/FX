@@ -33,16 +33,23 @@ siblings, all `rfl` (the same phenomenon as the adjunction's `matchingOf_triangl
 shared-`G` coupling is matching-sound too.  These four `rfl` collapses ARE the two-level matching's per-level
 soundness — the backed, unconditional content this round ships.
 
-## The FULL two-level soundness, and the exact cross-level residual
+## The FULL two-level soundness — UNCONDITIONAL (both cross-level residuals discharged in round 2)
 
 The full soundness (`StringSaturatedTwoCellConv a b → matchingOf a = matchingOf b`) reduces, EXACTLY as the
 adjunction's `saturatedConv_matchingOf_eq`, to two named residuals: the union-find Godement INDEPENDENCE
 (`godementInvariant`, the `ofFull` input — via the polymorphic `matchingOf_sound_of_godementInvariant`) and the
 matching's saturated-CONGRUENCE compositionality (`StringMatchingSaturatedCongruence`, the four congruences).  The
-four triangle cases are `rfl`; `refl`/`symm`/`trans` chain.  The NEW content the single-adjunction machinery does
-NOT cover is inside `godementInvariant`: a colour-1 cup/cap horizontally ADJACENT to a colour-2 cup/cap on a
-SHARED `G`-wire — the cross-colour transposition, equivalently the confluence of the `triangleGlo`/`triangleGhi`
-overlap on the central strand.  That is the named cross-level residual (`fxString_hasAdjointTripleSoundness`).
+four triangle cases are `rfl`; `refl`/`symm`/`trans` chain.  Round 2 DISCHARGES BOTH residuals unconditionally: the
+congruence bundle is proved in `WalkingString/StringMatchingCongruence`
+(`stringMatchingSaturatedCongruence_proved`, the colour-blind whisker/vcomp cores ported from the walking
+adjunction), and the cross-colour `ofFull` Godement is discharged in `WalkingString/StringMatchingSoundness` by the
+shipped cup/cap capstone (`stringSaturatedConv_matchingOf_eq_ofBoundaryDiscipline`, the `godementInvariant` premise
+GONE).  The apparent NEW content inside `godementInvariant` — a colour-1 cup/cap horizontally ADJACENT to a colour-2
+cup/cap on a SHARED `G`-wire (the `triangleGlo`/`triangleGhi` overlap on the central strand) — is NOT a cross-colour
+critical pair: the union-find is colour-BLIND, so cross-colour adjacency is exactly the disjoint-window fragment the
+single-colour Godement already commuted (`fxString_hasCrossColourGodementObstruction = false`).  So
+`fxString_hasAdjointTripleSoundness` flips `:= true` unconditionally; the assembled term is
+`stringSaturatedConv_matchingOf_eq_final` (base) / `stringSaturatedConv_colouredMatchingOf_eq_final` (two-level).
 
 Raw Lean 4 + Init; the collapses are `rfl`, the reduction is induction reusing the polymorphic shipped lemmas.
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
