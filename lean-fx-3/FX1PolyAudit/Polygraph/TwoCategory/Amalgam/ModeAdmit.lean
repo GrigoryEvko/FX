@@ -111,7 +111,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.transportConvForwardAlong
 
 -- P6 (r2): the honesty markers
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasInheritedSeparation
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasRowAwareRecognizedSeparation
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasRenamingWitnessInterface
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasCertifiedDataAdmission
 

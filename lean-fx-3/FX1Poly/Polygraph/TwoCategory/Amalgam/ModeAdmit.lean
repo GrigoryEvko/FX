@@ -815,16 +815,20 @@ theorem transportConvForwardAlong {candidate registered : ModeComputad}
 
 /-! ## P6 (r2) — honesty markers -/
 
-/-- ★★ **Honesty marker — the ROW-AWARE fingerprint SEPARATES the colliding walkers + inherits the SEPARATION
-(MODE-ADMIT r2).**  The reflected law-row data (`RawCellData` + `monadLawRowsData` / `idempotentLawRowsData`)
-distinguishes the walking monad from the walking idempotent monad AS DATA (`monadLawRowsData_ne_idempotentLawRowsData`,
+/-- ★★ **Honesty marker — the ROW-AWARE fingerprint RECOGNISES the separating walker as DATA (MODE-ADMIT r2).**
+The reflected law-row data (`RawCellData` + `monadLawRowsData` / `idempotentLawRowsData`) distinguishes the
+walking monad from the walking idempotent monad AS DATA (`monadLawRowsData_ne_idempotentLawRowsData`,
 `monadRowAware_notMatches_idempotent`) — the exact conflation r1's plain `PresentationData` could not resolve.
 The row-aware admission gate (`admitByRowAware`) routes each fingerprint to the CORRECT registered family
 (`admitByRowAware_monad_isMonadFamily` / `admitByRowAware_idempotent_isIdempotentFamily`, by `rfl`), and the
 recognised monad family exhibits BOTH verdicts — associativity `isTrue`, unit faces `isFalse`
-(`rowAwareInheritedBothVerdicts_holds`).  HONEST: the decider runs on the registered walker's OWN cells; this is
-DATA-RECOGNITION routed to the registered decider, not cell-level transport (that leg is walled, P2).  `= true`. -/
-def fxModeAdmit_hasInheritedSeparation : Bool := true
+(`rowAwareInheritedBothVerdicts_holds`).  HONEST NAMING (the marker was `fxModeAdmit_hasInheritedSeparation`; the
+word "inherited" over-claimed cell-level transport of the separation onto a CANDIDATE's own cells): the decider
+runs on the registered walker's OWN cells, so this is DATA-RECOGNITION routed to the registered decider, NOT
+cell-level transport.  Cell-level transport onto the reconstructed signature is the r3 reseat
+(`MonadReseat.lean` `fxModeAdmit_hasRenamingDeciderTransport`), whose FORWARD leg now ships and whose isTrue leg
+stays walled.  `= true`. -/
+def fxModeAdmit_hasRowAwareRecognizedSeparation : Bool := true
 
 /-- ★ **Honesty marker — the renaming-iso WITNESS interface + FORWARD transport SHIP (MODE-ADMIT r2).**  The
 extended match witness `RenamingIso` (the renaming carried BOTH ways as `ComputadMorphismTwo`, the recon's
