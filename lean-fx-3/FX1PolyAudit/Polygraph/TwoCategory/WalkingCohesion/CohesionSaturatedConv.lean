@@ -1,0 +1,61 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.TwoCategory.WalkingCohesion.CohesionSaturatedConv
+
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesion.CohesionSaturatedConv — zero-axiom gate (the saturated conv)
+
+Per-declaration zero-axiom gate for the walking-cohesion saturated 2-cell convertibility: the ten generator cells,
+the identity cells, the idempotence faces, the (co)monad-law and adjoint-string composites, the relation itself,
+the embeddings, and the saturation witnesses.
+Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeUnitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeMulCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatCounitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatComulCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpUnitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpMulCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionUnitShapeFlatCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionCounitShapeFlatCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionUnitFlatSharpCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionCounitFlatSharpCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeIdCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatIdCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpIdCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeEtaRightWhiskerCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeEtaLeftWhiskerCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatEpsRightWhiskerCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatEpsLeftWhiskerCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpEtaRightWhiskerCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpEtaLeftWhiskerCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeShapeShape
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatFlatFlat
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpSharpSharp
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeLeftUnitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeRightUnitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeAssocLeftCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeAssocRightCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatLeftCounitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatRightCounitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatCoassocLeftCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatCoassocRightCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpLeftUnitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpRightUnitCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpAssocLeftCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpAssocRightCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeFlatSnakeOnShapeCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeFlatSnakeOnFlatCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatSharpSnakeOnFlatCell
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatSharpSnakeOnSharpCell
+#assert_no_axioms FX1Poly.Polygraph.CohesionSaturatedTwoCellConv
+#assert_no_axioms FX1Poly.Polygraph.CohesionSaturatedTwoCellConv.ofConv
+#assert_no_axioms FX1Poly.Polygraph.cohesionConvOfStep
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeIdempotenceHolds
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatIdempotenceHolds
+#assert_no_axioms FX1Poly.Polygraph.cohesionSharpIdempotenceHolds
+#assert_no_axioms FX1Poly.Polygraph.cohesionFlatSnakesCohere
+#assert_no_axioms FX1Poly.Polygraph.cohesionShapeIdempotenceWhiskeredHolds
+#assert_no_axioms FX1Poly.Polygraph.fxCohesion_hasSaturatedConvWithIdempotence
+
+end FX1PolyAudit
