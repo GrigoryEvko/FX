@@ -28,9 +28,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_toSpiderConv
 #assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_partitionSound
 
+-- FROB-4: non-vacuity — the sentinel special row identified after a genuine prefix, via the bridge
+#assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_special_afterIdentityPrefix
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_afterIdentityPrefix
+#assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_special_identifies_distinct
+#assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_special_partitionAgrees
+#assert_no_axioms FX1Poly.Polygraph.spiderConvSyntactic_H_not_identity
+
+-- FROB-4: the closed-component (full Cospan) leg — in-context witness + honest wall
+#assert_no_axioms FX1Poly.Polygraph.specialAfterPrefix_fullDiagram_preserved_inContext
+#assert_no_axioms FX1Poly.Polygraph.specialAfterPrefix_closedComponents_zero
+
 -- FROB-4: the honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderForgetViewFunctoriality
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderPrefixBridge
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderConvSyntactic
+#assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpecialRowClosedCountInContext
 
 end FX1PolyAudit

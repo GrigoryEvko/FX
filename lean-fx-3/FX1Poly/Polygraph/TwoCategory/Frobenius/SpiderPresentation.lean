@@ -539,11 +539,15 @@ loops-free re-homing to the partition view is the standing residual (`fxFrob_has
 def fxFrob_hasContextualSpiderSoundness : Bool := false
 
 /-- **Honesty marker — the FULL special (`Cospan(FinSet)`) closed-component soundness is the standing residual
-(FROB-3).**  The partition soundness (`fxFrob_hasPartitionSoundness`) is closed for the corelation invariant.  Lifting
-it to the full `spiderDiagramOf` needs the closed-component count preserved under the boundary connectivity view — a
-renaming/pad invariance of `closedComponentCount` (own-roots touching no boundary), provable from the pad simulation's
-`componentComm` / `padRootsFixed` / `rootAvoidsPad` but requiring an own-root correspondence under the shift the
-`MatchingRightPadSim` view does not directly expose.  Real, tractable work; not shipped.  `= false`. -/
+(FROB-3, sharpened FROB-4).**  The partition soundness (`fxFrob_hasPartitionSoundness`) is closed for the corelation
+invariant, and the prefix bridge (`Frobenius/SpiderAfterPrefix.lean`) closes the after-prefix PARTITION leg loops-free.
+Lifting to the full `spiderDiagramOf` needs the closed-component count preserved under the boundary connectivity view.
+FROB-4 pins the obstacle precisely: the SPECIAL row is NOT it — its μ-after-δ bubble stays boundary-connected, so the
+full diagram (partition + count `0`) is preserved after a prefix (`specialAfterPrefix_fullDiagram_preserved_inContext`,
+`fxFrob_hasSpecialRowClosedCountInContext`).  The sole remaining obstacle is that `closedComponentCount` scans
+`List.range state.nextFresh` (interior own-roots) while the mid-state relativization shifts the fresh block above
+`nextFresh` via `relativeWireMap`; the boundary-only view parts the bridge transports do NOT expose an interior
+own-root correspondence under that shift.  Real, tractable work; not shipped.  `= false`. -/
 def fxFrob_hasCospanClosedCountSoundness : Bool := false
 
 /-- **Honesty marker — the symbolic `SaturatedConvOver` congruence is the r2 deliverable.**  The value-level engine +

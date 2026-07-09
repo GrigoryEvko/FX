@@ -415,7 +415,110 @@ theorem spiderConvSyntactic_partitionSound {bottomCount : Nat} {leftWord rightWo
     extraSpiderDiagramOf bottomCount leftWord = extraSpiderDiagramOf bottomCount rightWord :=
   spiderConv_partitionSound (spiderConvSyntactic_toSpiderConv conv)
 
+/-! ## Non-vacuity — the sentinel special row identified after a GENUINE prefix, via the bridge
+
+The special law `μδ = 1` is the r1 sentinel (sound only because its μ-after-δ bubble stays boundary-connected — and,
+crucially, its two canonical runs carry UNEQUAL loops, the exact obstruction the loops-free re-homing removes).  Here
+it is whiskered after a NON-empty boundary-preserving prefix (an identity strand) through the syntactic layer, whose
+generator obligations are the special row's own SEED facts — supplied by `decide` / `rfl` once, independent of the
+prefix. -/
+
+/-- The special row's SEED boundary view, in the `Nat.decidableBallLT`-friendly order (guard immediately after each
+binder), discharged by `decide` on the concrete boundary-`1` states. -/
+private theorem specialSeedView_ordered : ∀ firstIndex,
+    firstIndex < 1 + (processBrauer (brauerSeed 1) [comultAt 0, multAt 0]).openWires.length →
+    ∀ secondIndex,
+    secondIndex < 1 + (processBrauer (brauerSeed 1) [comultAt 0, multAt 0]).openWires.length →
+    matchingSameComponent 1 (processBrauer (brauerSeed 1) [comultAt 0, multAt 0]) firstIndex secondIndex
+      = matchingSameComponent 1 (processBrauer (brauerSeed 1) ([] : List BrauerAtom)) firstIndex secondIndex := by
+  decide
+
+/-- ★ **The special law whiskered after a non-empty boundary-preserving prefix, in the syntactic layer.**  After a
+prefix identity strand (boundary `1` preserved), `μδ = 1` fired on the produced strand is `SpiderConvSyntactic`, from
+the special row's own seed facts (`specialSeedView_ordered` + `rfl`).  Unlike the r3 `decide`-witness
+`spiderConv_whisker_commComult_inContext` (whose obligations live at the concrete post-prefix state), this obligation
+is prefix-independent — it comes from the GENERAL bridge machine. -/
+theorem spiderConvSyntactic_special_afterIdentityPrefix :
+    SpiderConvSyntactic 1 ([identityStrandAt 0] ++ [comultAt 0, multAt 0])
+      ([identityStrandAt 0] ++ ([] : List BrauerAtom)) :=
+  SpiderConvSyntactic.relationAfterPrefix 1 (by decide) [identityStrandAt 0] [comultAt 0, multAt 0] []
+    (BrauerWordInRange.cons (identityStrandAt 0) 0 rfl (by decide) (BrauerWordInRange.nil 1))
+    (by decide)
+    (BrauerWordInRange.cons (comultAt 0) 0 rfl (by decide)
+      (BrauerWordInRange.cons (multAt 0) 0 rfl (by decide) (BrauerWordInRange.nil 1)))
+    (BrauerWordInRange.nil 1)
+    rfl
+    (fun firstIndex secondIndex firstBelow secondBelow =>
+      specialSeedView_ordered firstIndex firstBelow secondIndex secondBelow)
+
+/-- ★ **The same identification, projected into `SpiderConv`** — the bridge embedding demonstrates the syntactic move
+is a genuine partition-convertibility move for the spider alphabet. -/
+theorem spiderConv_special_afterIdentityPrefix :
+    SpiderConv 1 ([identityStrandAt 0] ++ [comultAt 0, multAt 0])
+      ([identityStrandAt 0] ++ ([] : List BrauerAtom)) :=
+  spiderConvSyntactic_toSpiderConv spiderConvSyntactic_special_afterIdentityPrefix
+
+/-- ★ **Non-vacuity — the syntactic layer identifies GENUINELY DIFFERENT words after a real prefix.**  The two words
+`[identityStrandAt 0, comultAt 0, multAt 0]` and `[identityStrandAt 0]` are distinct lists, yet
+`SpiderConvSyntactic`-convertible; so the syntactic congruence is not merely reflexive. -/
+theorem spiderConvSyntactic_special_identifies_distinct :
+    ([identityStrandAt 0] ++ [comultAt 0, multAt 0]) ≠ ([identityStrandAt 0] ++ ([] : List BrauerAtom))
+      ∧ SpiderConvSyntactic 1 ([identityStrandAt 0] ++ [comultAt 0, multAt 0])
+          ([identityStrandAt 0] ++ ([] : List BrauerAtom)) :=
+  ⟨by decide, spiderConvSyntactic_special_afterIdentityPrefix⟩
+
+/-- ★ **The identification is partition-real** — the two distinct words induce the SAME boundary partition, via
+`spiderConvSyntactic_partitionSound` on the sentinel witness (the FUNCTORIAL soundness, not a per-instance `decide`). -/
+theorem spiderConvSyntactic_special_partitionAgrees :
+    extraSpiderDiagramOf 1 ([identityStrandAt 0] ++ [comultAt 0, multAt 0])
+      = extraSpiderDiagramOf 1 ([identityStrandAt 0] ++ ([] : List BrauerAtom)) :=
+  spiderConvSyntactic_partitionSound spiderConvSyntactic_special_afterIdentityPrefix
+
+/-- ★ **The syntactic congruence is a PROPER relation.**  The Frobenius "H" element δμ (all four ports one block) is
+NOT `SpiderConvSyntactic`-convertible to the identity pair (two separate blocks): if it were,
+`spiderConvSyntactic_partitionSound` would equate their genuinely-distinct partitions
+(`extraSpiderDiagram_H_ne_identity`).  So the syntactic partition soundness genuinely constrains convertibility. -/
+theorem spiderConvSyntactic_H_not_identity :
+    ¬ SpiderConvSyntactic 2 [multAt 0, comultAt 0] [identityStrandAt 0, identityStrandAt 1] :=
+  fun conv => extraSpiderDiagram_H_ne_identity (spiderConvSyntactic_partitionSound conv)
+
+/-! ## The closed-component (full Cospan) leg — in-context witness + honest wall
+
+The prefix bridge is proved for the PARTITION invariant (`extraSpiderDiagramOf`); the full special `Cospan(FinSet)`
+invariant `spiderDiagramOf` additionally tracks the closed-component count.  The special row `μδ = 1` re-merges two
+already-same-component ports, so its μ-after-δ bubble stays boundary-connected and adds NO isolated component — the
+count is preserved IN CONTEXT, exactly as at the seed.  The witness below confirms it after a non-empty prefix: the
+FULL diagram (partition + closed count) agrees, both sides carrying `closedComponents = 0`.
+
+Why this does NOT generalize to a `spiderDiagramOf` prefix bridge: `closedComponentCount` scans
+`List.range state.nextFresh` (interior own-roots touching no boundary), and the mid-state relativization shifts the
+fresh block above `midState.nextFresh` via `relativeWireMap`.  The boundary-only view parts this file transports do
+NOT expose an interior own-root correspondence under that shift, so the count leg cannot be re-homed the way the view
+leg was.  That is precisely the standing `fxFrob_hasCospanClosedCountSoundness` residual (SpiderPresentation.lean). -/
+
+/-- ★ **The special row preserves the FULL Cospan diagram after a prefix (in-context, boundary `1`).**  After the
+identity-strand prefix, `μδ = 1` fired on the produced strand agrees on the FULL `spiderDiagramOf` — partition AND
+closed-component count (`0` on both, the bubble stays boundary-connected).  A concrete confirmation that the special
+row is NOT the count obstruction; the general count leg's wall is the interior own-root correspondence, not this
+row. -/
+theorem specialAfterPrefix_fullDiagram_preserved_inContext :
+    spiderDiagramOf 1 ([identityStrandAt 0] ++ [comultAt 0, multAt 0])
+      = spiderDiagramOf 1 ([identityStrandAt 0] ++ ([] : List BrauerAtom)) := by decide
+
+/-- ★ **The preserved closed count is genuinely `0`** — the special-after-prefix bubble adds no isolated circle
+(contrast the bone circle `unitAt 0, counitAt 0`, which does: `bone_closedComponents_one`). -/
+theorem specialAfterPrefix_closedComponents_zero :
+    (spiderDiagramOf 1 ([identityStrandAt 0] ++ [comultAt 0, multAt 0])).closedComponents = 0 := by decide
+
 /-! ## Honesty markers -/
+
+/-- ★ **Honesty marker — the special row is NOT the closed-count obstruction (in-context witness, FROB-4).**
+`specialAfterPrefix_fullDiagram_preserved_inContext` confirms the special law `μδ = 1` preserves the FULL
+`spiderDiagramOf` (partition + closed count `0`) after a non-empty prefix — its μ-after-δ bubble stays
+boundary-connected.  So the standing `fxFrob_hasCospanClosedCountSoundness` residual is NOT blocked by the special
+row; the sole remaining obstacle is the interior own-root correspondence under the `relativeWireMap` fresh-block shift
+(the boundary-only view parts do not expose it).  `= true`. -/
+def fxFrob_hasSpecialRowClosedCountInContext : Bool := true
 
 /-- ★ **Honesty marker — the LOOPS-FREE two-word functoriality port is SHIPPED (the FROB-3 residual).**
 `processBrauer_forgetView_eq_ofCanonicalViewParts`: two Brauer words whose canonical runs agree on open-wire length
