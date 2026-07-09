@@ -38,4 +38,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.combFold_preservesPerm
 #assert_no_axioms FX1Poly.Polygraph.combNormalizeForm_preservesPerm
 
+-- R2.A: the strand pins + the prefix-fixes-top lemma (private helpers covered transitively)
+#assert_no_axioms FX1Poly.Polygraph.swap_moves_value_down
+#assert_no_axioms FX1Poly.Polygraph.run_bubblesFromIndex
+#assert_no_axioms FX1Poly.Polygraph.perm_extend_fixedTop
+
 end FX1PolyAudit

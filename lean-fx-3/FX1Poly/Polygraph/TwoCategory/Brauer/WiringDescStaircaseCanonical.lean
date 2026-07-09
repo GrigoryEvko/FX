@@ -607,4 +607,155 @@ theorem combNormalizeForm_preservesPerm (generatorCount : Nat) (genPos : 1 ≤ g
   rw [startEq] at folded
   exact folded
 
+/-! ## R2.A — the strand pin + the extend/injectivity infrastructure
+
+The permutation determines the coset structure at each level: the top strand's image reads off the descending-run
+length (`run_bubblesFromIndex`: the run `[g, g-1, …, g-k+1]` sends strand `g+1` to `g+1-k`), and the prefix fixes the
+top strand (`perm_extend_fixedTop`).  These are the two pins the canonicity induction runs on. -/
+
+/-- `Nat.beq a b = false` from `a < b` — structural on `a`/`b`, `propext`-free. -/
+private theorem natBeqFalseOfLt : (a b : Nat) → a < b → Nat.beq a b = false
+  | 0, 0, h => absurd h (Nat.lt_irrefl 0)
+  | 0, _ + 1, _ => rfl
+  | _ + 1, 0, h => absurd h (Nat.not_lt_zero _)
+  | a + 1, b + 1, h => natBeqFalseOfLt a b (Nat.lt_of_succ_lt_succ h)
+
+/-- The one-step `natIndexOfValue` unfold on a cons — `rfl`, used to drive the `Bool`-equality case splits without
+a fragile inline `match` in `show`. -/
+private theorem natIndexOfValue_cons (head target : Nat) (rest : List Nat) :
+    natIndexOfValue (head :: rest) target
+      = (match head == target with | true => 0 | false => natIndexOfValue rest target + 1) := rfl
+
+/-- ★ **A swap moves a value down one index** — if `V` sits at a genuine index `top + 1` of `p`, then
+`applyAdjacentSwap p top` puts `V` at index `top`.  Structural on `(p, top)` matching both `natIndexOfValue` and
+`applyAdjacentSwap`; distinctness is not needed (the in-range index rules out the fallback). -/
+theorem swap_moves_value_down : (p : List Nat) → (top : Nat) → (V : Nat) →
+    natIndexOfValue p V = top + 1 → top + 1 < p.length →
+    natIndexOfValue (applyAdjacentSwap p top) V = top
+  | [], top, V, hIdx, _ => Nat.noConfusion (show (0 : Nat) = top + 1 from hIdx)
+  | [_], top, _, _, hbound => absurd (Nat.le_of_succ_le_succ hbound) (Nat.not_succ_le_zero top)
+  | first :: second :: rest, 0, V, hIdx, _ => by
+      rw [natIndexOfValue_cons] at hIdx
+      cases hfv : (first == V) with
+      | true => rw [hfv] at hIdx; exact Nat.noConfusion hIdx
+      | false =>
+          rw [hfv] at hIdx
+          have hSecond : natIndexOfValue (second :: rest) V = 0 := Nat.succ.inj hIdx
+          rw [natIndexOfValue_cons] at hSecond
+          cases hsv : (second == V) with
+          | true =>
+              show natIndexOfValue (second :: first :: rest) V = 0
+              rw [natIndexOfValue_cons, hsv]
+          | false => rw [hsv] at hSecond; exact Nat.noConfusion hSecond.symm
+  | first :: second :: rest, top + 1, V, hIdx, hbound => by
+      rw [natIndexOfValue_cons] at hIdx
+      cases hfv : (first == V) with
+      | true => rw [hfv] at hIdx; exact Nat.noConfusion hIdx
+      | false =>
+          rw [hfv] at hIdx
+          have hTail : natIndexOfValue (second :: rest) V = top + 1 := Nat.succ.inj hIdx
+          have hboundTail : top + 1 < (second :: rest).length := Nat.lt_of_succ_lt_succ hbound
+          have moved : natIndexOfValue (applyAdjacentSwap (second :: rest) top) V = top :=
+            swap_moves_value_down (second :: rest) top V hTail hboundTail
+          show natIndexOfValue (first :: applyAdjacentSwap (second :: rest) top) V = top + 1
+          rw [natIndexOfValue_cons, hfv, moved]
+
+/-- ★ **The descending run bubbles the top value down by its length.**  If `V` sits at index `idx` of `p` (a genuine
+in-range index) and `k ≤ idx`, then folding the descending run `[idx-1, idx-2, …, idx-k]` moves `V` to index
+`idx - k`.  Structural on `k`; each head swap `s_{idx-1}` moves `V` from `idx` to `idx-1`. -/
+theorem run_bubblesFromIndex : (idx k : Nat) → (p : List Nat) → (V : Nat) →
+    natIndexOfValue p V = idx → idx < p.length → k ≤ idx →
+    natIndexOfValue ((descendingPositions (idx - 1) k).foldl applyAdjacentSwap p) V = idx - k
+  | idx, 0, p, _, hIdx, _, _ => hIdx
+  | idx, k + 1, p, V, hIdx, hbound, hk => by
+      have idxPos : 1 ≤ idx := Nat.le_trans (Nat.succ_le_succ (Nat.zero_le k)) hk
+      have idxPred : (idx - 1) + 1 = idx := predSuccStaircase idx idxPos
+      have moved : natIndexOfValue (applyAdjacentSwap p (idx - 1)) V = idx - 1 :=
+        swap_moves_value_down p (idx - 1) V (idxPred ▸ hIdx) (idxPred ▸ hbound)
+      show natIndexOfValue ((descendingPositions ((idx - 1) - 1) k).foldl applyAdjacentSwap
+              (applyAdjacentSwap p (idx - 1))) V = idx - (k + 1)
+      have ih := run_bubblesFromIndex (idx - 1) k (applyAdjacentSwap p (idx - 1)) V moved
+        (by rw [applyAdjacentSwap_length p (idx - 1)]
+            exact Nat.lt_of_le_of_lt (Nat.sub_le idx 1) hbound)
+        (natLePredStaircase k idx (idxPred ▸ hk))
+      rw [ih]
+      show (idx - 1) - k = idx - k - 1
+      exact (subOneCommStaircase idx k).symm
+
+/-- One `applyAdjacentSwap` on a snoc, when the swap window is inside the front, leaves the last element. -/
+private theorem applyAdjacentSwap_fixes_last : (front : List Nat) → (last : Nat) → (position : Nat) →
+    position + 1 < front.length →
+    applyAdjacentSwap (front ++ [last]) position = applyAdjacentSwap front position ++ [last]
+  | [], _, position, h => absurd h (Nat.not_lt_zero (position + 1))
+  | [_], _, position, h => absurd (Nat.le_of_succ_le_succ h) (Nat.not_succ_le_zero position)
+  | _ :: _ :: _, _, 0, _ => rfl
+  | first :: second :: rest, last, position + 1, h =>
+      congrArg (first :: ·)
+        (applyAdjacentSwap_fixes_last (second :: rest) last position (Nat.lt_of_succ_lt_succ h))
+
+/-- The fold of swaps whose positions are all `< bound` leaves the appended last element (`bound + 1 = front.length`
+so the swaps never reach the last index). -/
+private theorem foldlSwap_fixes_last : (word : List Nat) → (front : List Nat) → (last : Nat) → (bound : Nat) →
+    mentionsOnlyBelow bound word = true → bound + 1 = front.length →
+    word.foldl applyAdjacentSwap (front ++ [last]) = word.foldl applyAdjacentSwap front ++ [last]
+  | [], _, _, _, _, _ => rfl
+  | position :: rest, front, last, bound, hRange, hLen => by
+      have positionLt : position < bound := natLtOfBltStaircase position bound (boolAndLeftStaircase _ _ hRange)
+      have posP1LtLen : position + 1 < front.length := by rw [← hLen]; exact Nat.succ_lt_succ positionLt
+      show rest.foldl applyAdjacentSwap (applyAdjacentSwap (front ++ [last]) position)
+         = rest.foldl applyAdjacentSwap (applyAdjacentSwap front position) ++ [last]
+      rw [applyAdjacentSwap_fixes_last front last position posP1LtLen]
+      exact foldlSwap_fixes_last rest (applyAdjacentSwap front position) last bound
+        (boolAndRightStaircase _ _ hRange)
+        (by rw [applyAdjacentSwap_length front position]; exact hLen)
+
+/-- `front ++ (value :: rest) = (front ++ [value]) ++ rest` — the snoc/cons repositioning, structural on `front`,
+`propext`-free (avoids the `propext`-leaking `List.append_assoc`). -/
+private theorem appendSnocConsStaircase : (front rest : List Nat) → (value : Nat) →
+    front ++ (value :: rest) = (front ++ [value]) ++ rest
+  | [], _, _ => rfl
+  | head :: tail, rest, value => congrArg (head :: ·) (appendSnocConsStaircase tail rest value)
+
+/-- `(List.range n).length = n` — structural via the `range.loop`, `propext`-free. -/
+private theorem rangeLengthLoopStaircase : (count : Nat) → (accumulated : List Nat) →
+    (List.range.loop count accumulated).length = count + accumulated.length
+  | 0, accumulated => (Nat.zero_add accumulated.length).symm
+  | count + 1, accumulated => by
+      show (List.range.loop count (count :: accumulated)).length = (count + 1) + accumulated.length
+      rw [rangeLengthLoopStaircase count (count :: accumulated)]
+      show count + (accumulated.length + 1) = (count + 1) + accumulated.length
+      rw [Nat.add_succ, Nat.succ_add]
+
+/-- `(List.range n).length = n`. -/
+private theorem rangeLengthStaircase (count : Nat) : (List.range count).length = count :=
+  rangeLengthLoopStaircase count []
+
+/-- `List.range.loop count acc = List.range.loop count [] ++ acc` — the accumulator factors out.  Structural on
+`count`, `propext`-free via `appendSnocConsStaircase`. -/
+private theorem rangeLoopAppendStaircase : (count : Nat) → (accumulated : List Nat) →
+    List.range.loop count accumulated = List.range.loop count [] ++ accumulated
+  | 0, _ => rfl
+  | count + 1, accumulated => by
+      show List.range.loop count (count :: accumulated)
+         = List.range.loop count (count :: []) ++ accumulated
+      rw [rangeLoopAppendStaircase count (count :: accumulated),
+          rangeLoopAppendStaircase count (count :: [])]
+      exact appendSnocConsStaircase (List.range.loop count []) accumulated count
+
+/-- `List.range (n + 1) = List.range n ++ [n]` — the `propext`-free replacement for `List.range_succ` (which leaks
+`propext`). -/
+private theorem rangeSuccStaircase (n : Nat) : List.range (n + 1) = List.range n ++ [n] := by
+  show List.range.loop n (n :: []) = List.range.loop n [] ++ [n]
+  exact rangeLoopAppendStaircase n (n :: [])
+
+/-- ★ **The prefix fixes the top strand.**  A word mentioning only positions `< bound` fixes strand `bound + 1`:
+`permuteOfCrossingWord (bound + 2) word = permuteOfCrossingWord (bound + 1) word ++ [bound + 1]`. -/
+theorem perm_extend_fixedTop (bound : Nat) (word : List Nat) (hBelow : mentionsOnlyBelow bound word = true) :
+    permuteOfCrossingWord (bound + 2) word = permuteOfCrossingWord (bound + 1) word ++ [bound + 1] := by
+  show word.foldl applyAdjacentSwap (List.range (bound + 2))
+     = word.foldl applyAdjacentSwap (List.range (bound + 1)) ++ [bound + 1]
+  rw [show List.range (bound + 2) = List.range (bound + 1) ++ [bound + 1] from rangeSuccStaircase (bound + 1)]
+  exact foldlSwap_fixes_last word (List.range (bound + 1)) (bound + 1) bound hBelow
+    (rangeLengthStaircase (bound + 1)).symm
+
 end FX1Poly.Polygraph
