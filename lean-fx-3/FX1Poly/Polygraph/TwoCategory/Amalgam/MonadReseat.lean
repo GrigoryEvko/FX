@@ -32,10 +32,24 @@ finite generator data-iso plus a structural cell functor plus a `recInto` conv-t
     (`gen` via `reseatGen`, `id`/`vcomp` cast-free, the two whisker cases through the single `castBoundary`
     reconciling `reseatPath (composePath ..)` with `composePath (reseatPath ..) (reseatPath ..)`).
 
-## The conv transport + the reconstructed decider
+## The conv transport + the reconstructed decider (the MODE-ADMIT r4 PLAN)
 
-  * **`MonadLawRelReconstructed`** — the walking monad's three laws stated over the reconstructed signature (the
-    `reseatCell`-image of the three bespoke `MonadLawRel` rows).
+r3 (this file) ships the forward FUNCTOR only; the forward CONV TRANSPORT is the r4 target.  DESIGN (the r4
+declarations that discharge it are added in the commits below; the honesty markers at the file foot are the
+authoritative shipped/walled ledger):
+
+  * **`reseatCell_preservesConv`** (P1a linchpin) — `reseatCell` preserves the COMPLETED free-strict-2-category
+    convertibility, `TwoCellConvFull monadComputad.toModeSignature a b ==> TwoCellConvFull monadModeSignature
+    (reseatCell a) (reseatCell b)`, by induction over all thirteen `TwoCellConvFull` constructors (and, in the
+    `ofConv` case, over the free `TwoCellConv` and the twelve `TwoCellStep` rewrites).  The reseat analogue of the
+    shipped `mapTwoCellConvFull`, ported arm-for-arm; `TwoCellConvFull` is LAW-FREE and purely structural, so no
+    arm needs a monad coherence — the residual is pure cast LABOR, as the r3 markers claim.
+  * **`MonadLawRelReconstructed`** — the walking monad's three laws stated over the reconstructed signature as a
+    `CellRel monadComputad.toModeSignature`, mirroring the bespoke `MonadLawRel` rows at reconstructed boundaries.
+  * **`reseatCell_reconLeftUnit` / `reseatCell_reconRightUnit` / `reseatCell_reconAssoc` / `reseatCell_reconIdT`**
+    — the three propositional law-cell equalities `reseatCell reconLawCell = bespokeLawCell` (the r3 "second
+    obstruction": read off the generator inversions `reseatGen_unit_isEta` / `reseatGen_mult_isMu` plus a
+    reflexive-`castBoundary` collapse, NOT `rfl`).
   * **`reseatConvForward`** — `SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed a b
     ==> SaturatedConvOver monadModeSignature MonadLawRel (reseatCell a) (reseatCell b)` by `recInto`: each
     reconstructed congruence constructor maps to its `reseatCell`-image bespoke constructor, the three
@@ -50,9 +64,10 @@ The FULL two-sided `DecidableSaturatedConvForRel monadComputad.toModeSignature M
 needs the isTrue leg: `bespoke-conv (reseatCell a) (reseatCell b) ==> reconstructed-conv a b`.  Running `recInto`
 backward lands on `reseatCell a` / `reseatCell b`, so concluding about `a` / `b` needs the round-trip
 `reseatCellInv (reseatCell a) = a` — cast-heavy because `reseatPath` is only PROPOSITIONALLY a monoid
-homomorphism (the whisker `castBoundary` threading), a genuine multi-lemma file.  It is LABOR, not undecidability
-(`fxAmalg_hasReconstructionDecoderReseat` in `DeciderReseat.lean` stays `false`;
-`fxModeAdmit_hasRenamingDeciderTransport` in `ModeAdmit.lean` stays `false` until it ships).
+homomorphism (the whisker `castBoundary` threading), a genuine multi-lemma file.  It is LABOR, not undecidability;
+the honesty markers below are the ledger of which legs ship (`fxAmalg_hasReseatConvTransport` = the forward half)
+and which stay walled (`fxAmalg_hasReconstructionDecoderReseat` in `DeciderReseat.lean` — the full two-sided
+decider — and `fxModeAdmit_hasRenamingDeciderTransport` in `ModeAdmit.lean`).
 
 Raw Lean 4 + Init.  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
