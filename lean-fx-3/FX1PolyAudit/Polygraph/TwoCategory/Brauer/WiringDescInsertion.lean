@@ -150,4 +150,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braidAscent_reInsert
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braidAscent_reInsert_smoke
 
+-- WP-BRAUER r10 non-vacuity: a second equal-permutation hard pair decided convertible (four-move chain), and a
+-- different-permutation pair correctly excluded (equal-permutation hypothesis decidably false).
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_conv_secondResidualPair
+#assert_no_axioms FX1Poly.Polygraph.crossingWords_differentPerm_excluded
+
 end FX1PolyAudit

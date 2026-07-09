@@ -2106,6 +2106,51 @@ theorem crossingInsertionStep_braidAscent_reInsert_smoke :
     (BrauerConvFree7.ofFree (BrauerConvFree.refl _))
     (BrauerConvFree7.ofFree (BrauerConvFree.refl _))
 
+/-! ### r10 non-vacuity — a second equal-permutation hard pair decided convertible, and a different-permutation pair
+correctly excluded
+
+Two `S_n` pairs decided at the boundary the crossing-only word problem draws (equal realised permutation).  The FIRST
+is a second stuck-example-magnitude EQUAL-permutation pair, convertible by an explicit four-move Coxeter chain — the
+positive pole (the conclusion the conditional word-problem theorem delivers).  The SECOND is a DIFFERENT-permutation
+pair: two reduced crossing words realising distinct `S_3` elements, so the equal-permutation hypothesis of
+`crossingWords_equalPerm_conv_{ofBraidAscent,wellFormed,ofInsertionStep}` is decidably FALSE — the word problem
+correctly does NOT relate them (the negative pole). -/
+
+/-- ★★ **Non-vacuity (equal perm) — the S_5 residual pair `[1,2,0,1,2] ~ [0,1,2,0,1]` IS convertible.**  Both realise
+`[2,3,1,0,4]` on five strands (the braid-ascent residual of the genuine permutation `[2,3,0,1]`, `d = 1`).  The explicit
+four-move chain: commute `s_2 s_0 -> s_0 s_2` (front), braid `s_2 s_1 s_2 -> s_1 s_2 s_1` (tail), braid
+`s_1 s_0 s_1 -> s_0 s_1 s_0` (front), commute `s_0 s_2 -> s_2 s_0` (interior) — the exact prefix-sweep the plateau
+requires, realised as a `BrauerConvFree7` chain.  A second independent hard witness alongside the r8/r9
+`crossingWords_conv_residualStuckExample`. -/
+theorem crossingWords_conv_secondResidualPair :
+    permuteOfCrossingWord 5 [1, 2, 0, 1, 2] = permuteOfCrossingWord 5 [0, 1, 2, 0, 1]
+      ∧ BrauerConvFree7 (crossingWord [1, 2, 0, 1, 2]) (crossingWord [0, 1, 2, 0, 1]) := by
+  refine ⟨by decide, ?_⟩
+  show BrauerConvFree7 [crossingAt 1, crossingAt 2, crossingAt 0, crossingAt 1, crossingAt 2]
+    [crossingAt 0, crossingAt 1, crossingAt 2, crossingAt 0, crossingAt 1]
+  refine BrauerConvFree7.trans
+    (BrauerConvFree7.whiskerLeft [crossingAt 1]
+      (BrauerConvFree7.whiskerRight [crossingAt 1, crossingAt 2]
+        (BrauerConvFree7.symm (crossingCommuteFree 0 2 (by decide))))) ?_
+  refine BrauerConvFree7.trans
+    (BrauerConvFree7.whiskerLeft [crossingAt 1, crossingAt 0]
+      (BrauerConvFree7.symm (crossingBraidFree 1))) ?_
+  refine BrauerConvFree7.trans
+    (BrauerConvFree7.whiskerRight [crossingAt 2, crossingAt 1]
+      (BrauerConvFree7.symm (crossingBraidFree 0))) ?_
+  exact BrauerConvFree7.whiskerLeft [crossingAt 0, crossingAt 1]
+    (BrauerConvFree7.whiskerRight [crossingAt 1] (crossingCommuteFree 0 2 (by decide)))
+
+/-- ★★ **Non-vacuity (different perm) — two reduced crossing words correctly OUTSIDE the word problem.**  `[0, 1]`
+realises the 3-cycle `[1, 2, 0]` and `[1, 0]` realises `[2, 0, 1]` on three strands — DISTINCT `S_3` elements.  So the
+equal-permutation hypothesis `permuteOfCrossingWord 3 [0, 1] = permuteOfCrossingWord 3 [1, 0]` of the word-problem
+theorems is decidably FALSE: the crossing-only word problem asserts convertibility EXACTLY on equal-permutation pairs,
+and this pair is correctly excluded (the negative pole; `BrauerConvFree7` itself is the deliberately-generous
+over-approximation, so the exclusion lives at the realised-permutation invariant, which is what the word problem is
+about). -/
+theorem crossingWords_differentPerm_excluded :
+    ¬ (permuteOfCrossingWord 3 [0, 1] = permuteOfCrossingWord 3 [1, 0]) := by decide
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — WP-BRAUER r9: the REFLEX mode + the DESCENT reduction are SHIPPED.**  The general reflexivity
