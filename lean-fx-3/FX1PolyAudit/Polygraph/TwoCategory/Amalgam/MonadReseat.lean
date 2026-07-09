@@ -44,6 +44,34 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_gen
 
+-- P1a: the reseat cast kit (signature-generic `Eq.rec` lemmas)
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.convFullOfCellEq
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.castBoundaryCongr
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.castBoundaryId
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.castBoundaryVcomp
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.castBoundaryTrans
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.whiskerLeftCastBoundary
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.whiskerRightCastBoundary
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.whiskerLeftPathCongr
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.ReseatCastKit.whiskerRightPathCongr
+
+-- P1a: the reseatCell per-constructor reduction lemmas
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_id
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_vcomp
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_whiskerLeft
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_whiskerRight
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_castBoundary
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_hcomp
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_whiskerLeft_whiskerLeft
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_whiskerRight_whiskerRight
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_whiskerLeft_whiskerRight
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_whiskerRight_whiskerLeft
+
+-- P1a: the forward conv functoriality (the linchpin `reseatCell_preservesConv`)
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatTwoCellStep
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatTwoCellConv
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_preservesConv
+
 -- The honesty markers
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasForwardReseatFunctor
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasReseatConvTransport
