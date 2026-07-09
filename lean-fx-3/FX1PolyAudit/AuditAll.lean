@@ -368,6 +368,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPortReconnection
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingInvolution
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescDirectRelationAgrees
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescInsertion
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPadCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardForm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraightening

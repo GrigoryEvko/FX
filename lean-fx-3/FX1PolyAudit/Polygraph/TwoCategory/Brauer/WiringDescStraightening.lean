@@ -27,6 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.cupUntwist_crossingCount
 #assert_no_axioms FX1Poly.Polygraph.capUntwist_crossingCount
 #assert_no_axioms FX1Poly.Polygraph.cupUntwistAbsorb_crossingCount
+#assert_no_axioms FX1Poly.Polygraph.capUntwistAbsorb_crossingCount
 
 -- block (b): the free Coxeter moves + their arbitrary-context (prefix / suffix) versions
 #assert_no_axioms FX1Poly.Polygraph.crossingCancelFree

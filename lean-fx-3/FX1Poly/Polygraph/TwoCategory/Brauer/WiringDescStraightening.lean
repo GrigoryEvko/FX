@@ -172,6 +172,22 @@ theorem cupUntwistAbsorb_crossingCount (prefixWord suffixWord : List BrauerAtom)
   rw [Nat.zero_add, Nat.add_comm 1 (crossingCount suffixWord),
     ← Nat.add_assoc (crossingCount prefixWord) (crossingCount suffixWord) 1]
 
+/-- ★ **The cap untwist strictly drops the crossing count by one IN CONTEXT.**  The exact mirror of
+`cupUntwistAbsorb_crossingCount`: the redex `[crossingAt position, capAt position]` contributes `1` to the crossing
+count while its reduced form `[capAt position]` contributes `0`, so the measure decreases by exactly one across any
+prefix / suffix — the fold homomorphism `crossingCount_append` cancels the common context. -/
+theorem capUntwistAbsorb_crossingCount (prefixWord suffixWord : List BrauerAtom) (position : Nat) :
+    crossingCount (prefixWord ++ ([crossingAt position, capAt position] ++ suffixWord))
+      = crossingCount (prefixWord ++ ([capAt position] ++ suffixWord)) + 1 := by
+  rw [crossingCount_append prefixWord ([crossingAt position, capAt position] ++ suffixWord),
+    crossingCount_append [crossingAt position, capAt position] suffixWord,
+    crossingCount_append prefixWord ([capAt position] ++ suffixWord),
+    crossingCount_append [capAt position] suffixWord]
+  show crossingCount prefixWord + (1 + crossingCount suffixWord)
+    = crossingCount prefixWord + (0 + crossingCount suffixWord) + 1
+  rw [Nat.zero_add, Nat.add_comm 1 (crossingCount suffixWord),
+    ← Nat.add_assoc (crossingCount prefixWord) (crossingCount suffixWord) 1]
+
 /-! ## Block (b) — the FREE Coxeter moves (unconditional, in any context) -/
 
 /-- ★ **Coxeter CANCEL (R2, `s² = 1`), FREE.**  A double crossing at any position is `BrauerConvFree7` to the empty
