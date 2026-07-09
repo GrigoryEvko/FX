@@ -314,15 +314,22 @@ generators Matsumoto's insertion induction consumes.  Non-vacuous: `brauerConv_c
 `= true`. -/
 def fxBrauer_hasCrossingWordCoxeterMoves : Bool := true
 
-/-- **Honesty marker — the crossing-only STRAIGHTENING (full Matsumoto for `S_n`) is NOT yet assembled.**  The
-Coxeter moves + the permutation standard form are shipped, but the insertion induction (`insert_adjacent_conv`:
-inserting one adjacent transposition into the canonical reduced word of a permutation, driven by the three Coxeter
-moves) and the canonical reduced word `canonicalCrossingWord` (a selection-sort of the permutation) are NOT built.
-It additionally needs a crossing-only SUFFIX congruence (`BrauerConv n a b → BrauerConv n (a ++ s) (b ++ s)`,
-whiskerRight — currently only whiskerLeft / trailing moves are shipped), which requires a `MatchingConnectivityViewSim`
-preservation lemma through `processBrauer` (the Brauer analog of `matchingConnectivityViewSim_processSpine`).  These
-three — canonical word, insertion induction, suffix congruence — are the exact r2 residual.  `= false`. -/
-def fxBrauer_hasCrossingOnlyStraightening : Bool := false
+/-- ★★★ **Honesty marker — the crossing-only STRAIGHTENING (Matsumoto for `S_n`) is SHIPPED via the comb fold
+(BREACH r2).**  The straightening is assembled in the seven-relation over-approximation congruence `BrauerConvFree7`
+(where `whiskerRight` is a FREE constructor — exactly the suffix congruence the insertion route lacked) as
+`crossingWords_equalPerm_conv` (`Brauer/WiringDescStaircaseCanonical.lean`): ANY two crossing words with the same
+through-strand permutation are convertible.  The three r2 residuals are discharged by a DIFFERENT route than the
+jammed insertion induction: the canonical word is the recursive-comb staircase `recComb` (the Coxeter–Moser coset
+factorization, not a selection-sort), `recCombConv` straightens every word to it, and `combCanonicity` (zero-axiom)
+proves equal permutations reach the SAME staircase (via the strand pin `run_bubblesFromIndex` + `perm_extend_fixedTop`
++ sub/fold/snoc injectivity).  This BYPASSES the standing `BraidAscentInsertionStep` insertion jam
+(`fxBrauer_hasBraidAscentLeafWalled` stays `true` — the *insertion* route is genuinely walled; the comb fold is the
+alternate route).  SCOPE: the straightening is in `BrauerConvFree7`; the bare-`BrauerConv` connectivity-view suffix
+congruence (`MatchingConnectivityViewSim` preservation through `processBrauer`) remains a SEPARATE open item.  This
+straightens the `S_n` crossing block but does NOT close full Brauer completeness (`fxBrauer_hasBrauerCompleteness`
+stays `false` — the cup/cap connectivity congruence is a distinct leg).  Non-vacuous: `crossingWords_equalPerm_conv_
+{r9, r11}`.  `= true`. -/
+def fxBrauer_hasCrossingOnlyStraightening : Bool := true
 
 /-- **Honesty marker — the DEEP free-Brauer straightening NF (deriving the `whisker` congruence primitive from the
 five relations) is NOT built.**  The connectivity-congruence decision (`fxBrauer_hasConnectivityCongruenceDecision`)

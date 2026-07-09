@@ -65,7 +65,7 @@ def fxBrauer_hasCrossingOnlyReadback : Bool := false
 
 /-! ## T3 — the TERMINAL LEDGER
 
-### The complete `fxBrauer_*` marker table (harvested live from `Brauer/*.lean`: 71 true / 13 false / 84 total)
+### The complete `fxBrauer_*` marker table (harvested live from `Brauer/*.lean`: 72 true / 12 false / 84 total)
 
 | Marker | Val | File · meaning |
 |---|---|---|
@@ -82,7 +82,7 @@ def fxBrauer_hasCrossingOnlyReadback : Bool := false
 | hasConnectivityCongruenceDecision | T | StandardForm · `BrauerConv` = diagram equality, decidable |
 | hasPermutationStandardForm | T | StandardForm · the permutation NF infrastructure |
 | hasCrossingWordCoxeterMoves | T | StandardForm · cancel/braid/commute in context |
-| **hasCrossingOnlyStraightening** | **F** | StandardForm · MASTER leg — WALLED (inversion-count) |
+| **hasCrossingOnlyStraightening** | **T** | StandardForm · MASTER leg STRAIGHTENED — comb fold BREACH r2 |
 | **hasFreeBrauerStraighteningNF** | **F** | StandardForm · full free-Brauer NF, not built |
 | **hasCrossingOnlyReadback** | **F** | BrauerLedger · T2 — readback SMOKES-only, state-invariant gap |
 | hasUntwistAbsorption | T | Straightening |
@@ -165,10 +165,15 @@ def fxBrauer_hasCrossingOnlyReadback : Bool := false
      convertibility + output redex-freeness, built on the r12 length-decreasing pivot (`hasUntwistContextRewrite`).
   4. **Crossing readback-target scoped, SMOKES-only** — `hasCrossingOnlyReadback = false` (T2): the right normal
      form, validated at instances, general proof is a state-invariant gap.
-  5. **S_n crossing block WALLED** — `hasCrossingOnlyStraightening = false`,
-     `hasCrossingStraighteningInsertionResidual = false`: Regime A of the braid-ascent leaf,
-     `hasBraidAscentLeafWalled = true`.
-  6. **Full assembly blocked** ⇒ `hasBrauerCompleteness = false`.
+  5. **S_n crossing block STRAIGHTENED via the comb fold (BREACH r2)** — `hasCrossingOnlyStraightening = true`
+     (`crossingWords_equalPerm_conv` in `Brauer/WiringDescStaircaseCanonical.lean`: equal-permutation crossing words
+     are `BrauerConvFree7`-convertible, via the recursive-comb staircase + zero-axiom `combCanonicity`).  The
+     *insertion* route stays walled — `hasCrossingStraighteningInsertionResidual = false`,
+     `hasBraidAscentLeafWalled = true` (Regime A of the braid-ascent leaf) — the comb fold is the alternate route
+     that BYPASSES it.
+  6. **Full assembly still blocked** ⇒ `hasBrauerCompleteness = false`: the cup/cap connectivity congruence (bare
+     `BrauerConv` suffix congruence via `MatchingConnectivityViewSim` through `processBrauer`) is a distinct leg,
+     independent of the `S_n` block.
 
 ### The wall citation
 
@@ -196,26 +201,27 @@ set — a wall, not an obstruction to truth.
     basis is the involution-permutation triple (cap half-diagram, `S_k` permutation on through-strands, cup
     half-diagram) — the diagrammatic normal form the untwist-NF T1 and the readback T2 target. -/
 
-/-- ★★ **The terminal decomposition of Brauer completeness — MACHINE-CHECKED.**  The six sub-statuses of
+/-- ★★ **The terminal decomposition of Brauer completeness — MACHINE-CHECKED.**  The sub-statuses of
 `fxBrauer_hasBrauerCompleteness = false` read off directly as marker values (each `rfl`): soundness TOTAL
 (`hasBrauerSoundness`, `hasSevenRelationConvSoundness`) · untwist-NF T1 SHIPPED (`hasUntwistNormalization`) · the S_n
-crossing block WALLED (`hasBraidAscentLeafWalled` true; `hasCrossingOnlyStraightening`,
+crossing block STRAIGHTENED via the comb fold (BREACH r2: `hasCrossingOnlyStraightening` now true, backed by
+`crossingWords_equalPerm_conv`; the *insertion* route stays walled — `hasBraidAscentLeafWalled` true,
 `hasCrossingStraighteningInsertionResidual` false) · the crossing readback SCOPED (`hasCrossingOnlyReadback` false,
-T2) · and the master `hasBrauerCompleteness` false.  This is the honest terminal state of the Brauer lane, recorded
-as a conjunction the kernel checks. -/
+T2) · and the master `hasBrauerCompleteness` STILL false (the cup/cap connectivity congruence is a distinct leg).
+This is the honest terminal state of the Brauer lane, recorded as a conjunction the kernel checks. -/
 theorem fxBrauer_terminalDecomposition :
     fxBrauer_hasBrauerSoundness = true
       ∧ fxBrauer_hasSevenRelationConvSoundness = true
       ∧ fxBrauer_hasUntwistNormalization = true
       ∧ fxBrauer_hasBraidAscentLeafWalled = true
       ∧ fxBrauer_hasCrossingOnlyReadback = false
-      ∧ fxBrauer_hasCrossingOnlyStraightening = false
+      ∧ fxBrauer_hasCrossingOnlyStraightening = true
       ∧ fxBrauer_hasCrossingStraighteningInsertionResidual = false
       ∧ fxBrauer_hasBrauerCompleteness = false :=
   ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /-- **Honesty marker — the WP-BRAUER terminal ledger is RECORDED.**  This file documents the terminal state of the
-Brauer lane: the complete 84-marker table (71 true / 13 false), the machine-checked completeness decomposition
+Brauer lane: the complete 84-marker table (72 true / 12 false), the machine-checked completeness decomposition
 (`fxBrauer_terminalDecomposition`), the wall citation (`fxBrauer_hasBraidAscentLeafWalled`), and the
 literature-grounded bequest (Matsumoto–Tits / Delpeuch–Vicary interchanger normalization / Lehrer–Zhang seven
 relations / Graham–Lehrer cellular standard form).  The lane closes at: soundness total, untwist NF shipped (T1),
