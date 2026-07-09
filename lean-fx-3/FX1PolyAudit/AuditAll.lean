@@ -607,6 +607,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadOrderModel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZOrderCompleteness
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesionQuadruple.QuadrupleSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingCohesionQuadruple.QuadrupleSaturatedConv
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSim
