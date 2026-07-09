@@ -24,6 +24,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxCeil_hasUndecidabilityReduction
 #assert_no_axioms FX1Poly.Polygraph.fxCeil_hasUndecidabilityReduction_isReduction
 
+-- The Ceitin anchor — the concrete undecidable instance (lit-verified rule list, data only)
+#assert_no_axioms FX1Poly.Polygraph.CeitinLetter
+#assert_no_axioms FX1Poly.Polygraph.ceitinRules
+#assert_no_axioms FX1Poly.Polygraph.ceitinRuleCount
+#assert_no_axioms FX1Poly.Polygraph.ceitinFirstRule_mem
+#assert_no_axioms FX1Poly.Polygraph.ceitinCommutes_ac
+#assert_no_axioms FX1Poly.Polygraph.ceitinEncodedConnectednessUndecidable_ofThueUndecidable
+#assert_no_axioms FX1Poly.Polygraph.fxCeil_hasCeitinAnchor
+#assert_no_axioms FX1Poly.Polygraph.fxCeil_hasCeitinAnchor_isDeclared
+
 -- Toy non-vacuity — the involution as a discriminating point of the FORM-A target
 #assert_no_axioms FX1Poly.Polygraph.involutionEncodedConnectedness_positive
 #assert_no_axioms FX1Poly.Polygraph.involutionEncodedConnectedness_separation

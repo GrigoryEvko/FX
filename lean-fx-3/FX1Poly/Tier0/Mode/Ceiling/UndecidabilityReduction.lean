@@ -123,6 +123,91 @@ def fxCeil_hasUndecidabilityReduction : Bool := true
 theorem fxCeil_hasUndecidabilityReduction_isReduction :
     fxCeil_hasUndecidabilityReduction = true := rfl
 
+/-! ## The Ceitin anchor — the concrete undecidable instance (lit-verified rule list)
+
+The rung-3 wall's undecidable INSTANCE, made concrete AS DATA (never as a kernel-checked undecidability
+claim).  Ceitin/Tseytin (1958) exhibited a semigroup on FIVE generators `{a, b, c, d, e}` with SEVEN defining
+relations whose word problem is undecidable — the shortest-known such presentation by total relation length.
+The seven relations, transcribed VERBATIM from the modern citable translation/survey (Nyberg-Brodda,
+"G. S. Tseytin's seven-relation semigroup with undecidable word problem", arXiv:2401.11757 (2024),
+equation (1); translating Tseitin, Trudy Mat. Inst. Steklov 52 (1958) 172-189):
+
+    a·c = c·a      a·d = d·a      b·c = c·b      b·d = d·b
+    e·c·a = c·e    e·d·b = d·e    c·c·a = c·c·a·e
+
+We ship these AS a semi-Thue system (`ceitinRules`, kernel-checked DATA), embed it as the one-object
+2-polygraph `encodedModeSignature ceitinRules`, and instantiate the ceiling reduction at it: IF Ceitin's word
+problem is undecidable (CITED — Post 1947 / Markov 1947 undecidability, at this 5-generator/7-relation
+witness, taken as the `ceitinThueUndecidable` HYPOTHESIS), THEN the 1-cell connectedness of this concrete
+polygraph is undecidable.  Undecidability itself is NEVER asserted as a Lean theorem — mechanizing it needs a
+computability substrate, out of scope.  For comparison: Matiyasevich (1967) gives a TWO-generator /
+three-relation witness (`a·a·b·a·b = b·a·a`, `a·a·b·b = b·a·a`, and a 304-letter-vs-608-letter third
+relation) — smallest generator count, but not blackboard-writable; the Ceitin 7-relation system is the one to
+encode. -/
+
+/-- The five generators of Ceitin's (1958) seven-relation semigroup. -/
+inductive CeitinLetter where
+  /-- Generator `a`. -/
+  | a
+  /-- Generator `b`. -/
+  | b
+  /-- Generator `c`. -/
+  | c
+  /-- Generator `d`. -/
+  | d
+  /-- Generator `e`. -/
+  | e
+
+/-- ★ Ceitin's SEVEN relations as a semi-Thue system over `{a, b, c, d, e}`, verbatim from
+arXiv:2401.11757 eq. (1).  Kernel-checked DATA only — the undecidability of its word problem stays CITED. -/
+def ceitinRules : List (List CeitinLetter × List CeitinLetter) :=
+  [ ([CeitinLetter.a, CeitinLetter.c], [CeitinLetter.c, CeitinLetter.a]),
+    ([CeitinLetter.a, CeitinLetter.d], [CeitinLetter.d, CeitinLetter.a]),
+    ([CeitinLetter.b, CeitinLetter.c], [CeitinLetter.c, CeitinLetter.b]),
+    ([CeitinLetter.b, CeitinLetter.d], [CeitinLetter.d, CeitinLetter.b]),
+    ([CeitinLetter.e, CeitinLetter.c, CeitinLetter.a], [CeitinLetter.c, CeitinLetter.e]),
+    ([CeitinLetter.e, CeitinLetter.d, CeitinLetter.b], [CeitinLetter.d, CeitinLetter.e]),
+    ([CeitinLetter.c, CeitinLetter.c, CeitinLetter.a],
+      [CeitinLetter.c, CeitinLetter.c, CeitinLetter.a, CeitinLetter.e]) ]
+
+/-- Ceitin's presentation has exactly SEVEN relations (the count fingerprint). -/
+theorem ceitinRuleCount : ceitinRules.length = 7 := rfl
+
+/-- The first Ceitin relation `a·c = c·a` is a member of the rule set. -/
+theorem ceitinFirstRule_mem :
+    (([CeitinLetter.a, CeitinLetter.c], [CeitinLetter.c, CeitinLetter.a])) ∈ ceitinRules :=
+  List.Mem.head _
+
+/-- Non-vacuity: `a·c ~ c·a` is a positive Thue conversion in Ceitin's system (one rule application), so the
+encoded one-object 2-polygraph `encodedModeSignature ceitinRules` is genuinely inhabited. -/
+theorem ceitinCommutes_ac :
+    ThueCong ceitinRules [CeitinLetter.a, CeitinLetter.c] [CeitinLetter.c, CeitinLetter.a] :=
+  thueCong_of_mem ceitinFirstRule_mem
+
+/-- ★ THE CONCRETE CEILING.  IF Ceitin's word problem is undecidable — the CITED Post/Markov fact at the
+5-generator/7-relation witness, taken as the HYPOTHESIS `ceitinThueUndecidable` — THEN the 1-cell
+connectedness of the encoded one-object 2-polygraph `encodedModeSignature ceitinRules` is undecidable: a
+per-pair decision of `EncodedConv ceitinRules` would decide every Ceitin word-pair via
+`thueDecidableOfEncodedDecidable`.  This is the rung-3 wall at a NAMED, blackboard-writable instance,
+mechanized to the honest boundary. -/
+theorem ceitinEncodedConnectednessUndecidable_ofThueUndecidable
+    (ceitinThueUndecidable :
+      (∀ (u v : List CeitinLetter), Decidable (ThueCong ceitinRules u v)) → False) :
+    (∀ (u v : List CeitinLetter),
+        Decidable (EncodedConv ceitinRules (encodeWord u) (encodeWord v))) → False :=
+  fun decideEncoded =>
+    ceitinThueUndecidable
+      (fun u v => thueDecidableOfEncodedDecidable ceitinRules u v (decideEncoded u v))
+
+/-- **Honesty marker.**  The rung-3 undecidable instance is ANCHORED at a concrete, lit-verified presentation:
+Ceitin's (1958) five-generator/seven-relation semigroup (`ceitinRules`, verbatim from Nyberg-Brodda
+arXiv:2401.11757).  The rules are kernel-checked DATA; the undecidability of the instance stays CITED (never a
+Lean theorem).  `= true` (the anchor is declared and embedded). -/
+def fxCeil_hasCeitinAnchor : Bool := true
+
+/-- The Ceitin anchor is declared (non-vacuity of the marker). -/
+theorem fxCeil_hasCeitinAnchor_isDeclared : fxCeil_hasCeitinAnchor = true := rfl
+
 /-! ## Toy non-vacuity — the involution as a discriminating point of the FORM-A target (below the wall)
 
 The FORM-A reduction target (`EncodedConv`, the 1-cell connectedness relation) genuinely discriminates: at the
