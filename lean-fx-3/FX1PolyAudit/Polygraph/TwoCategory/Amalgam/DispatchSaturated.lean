@@ -28,6 +28,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.thinUPath
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.thinIdBody
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.crossComponentCommuteWitness
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.innerPushoutRel
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.combinedDeciderIsComposable
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.threeWaySameModes
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.threeWayThinFold
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasSaturatedPushoutBaseRelation
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasFullSaturatedPushoutDispatch
 

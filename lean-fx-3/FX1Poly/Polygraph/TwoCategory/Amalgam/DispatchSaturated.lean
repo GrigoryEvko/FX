@@ -278,6 +278,51 @@ def crossComponentCommuteWitness :=
   crossComponentWhiskerCommute (baseRel := emptyCellRel thinPushout.toModeSignature)
     thinSPath thinUPath thinIdBody
 
+/-! ## Composability (#2043): decider out IS decider in -/
+
+/-- The inner pushout's base relation (the `involution +_M semiring` `SaturatedConvOverPushout`), abbreviated for
+the fold below. -/
+abbrev innerPushoutRel : CellRel thinPushout.toModeSignature :=
+  SaturatedConvOverPushout involutionComputad secondThinComputad involutionSecondSameModes
+    (inclusionLeftTwo involutionComputad secondThinComputad involutionSecondSameModes rfl)
+    (inclusionRightTwo involutionComputad secondThinComputad involutionSecondSameModes rfl)
+    (emptyCellRel involutionComputad.toModeSignature)
+    (emptyCellRel secondThinComputad.toModeSignature)
+
+/-- ★ **Composability, level 0 — the combined decider INHABITS the component-decider interface.**  The output
+`combinedDecider` of the saturated dispatch has EXACTLY the type a component decider input has
+(`DecidableSaturatedConvForRel _ _`), so it can be fed straight back as a component of a further amalgam — the
+#2043 "decider in ⟹ decider out" invariant, witnessed by a type-preserving identity. -/
+def combinedDeciderIsComposable :
+    DecidableSaturatedConvForRel thinPushout.toModeSignature innerPushoutRel :=
+  involutionSecondSaturatedPushoutDispatch.combinedDecider
+
+/-- The two-then-one nesting shares the single mode (all three components have `modeCount = 1`). -/
+theorem threeWaySameModes : thinPushout.modeCount = secondThinComputad.modeCount := rfl
+
+/-- ★ **Composability, level 1 — the n-ary FOLD.**  A genuine `SaturatedDispatchDecidability` for the outer
+amalgam `(involution +_M semiring) +_M semiring` whose `componentOneDecider` IS the previous level's OUTPUT
+(`involutionSecondSaturatedPushoutDispatch.combinedDecider`, over the non-empty inner `SaturatedConvOverPushout`
+relation) — the combined decider fed straight back as a component input.  The outer pushout is again thin (all
+2-generator lists empty), so the disjointness and combined decider close by `rfl` / thinness.  This is the
+concrete n-ary fold the #2043 design constraint promises: each amalgam step consumes deciders and produces a
+decider of the same interface. -/
+def threeWayThinFold :
+    SaturatedDispatchDecidability thinPushout secondThinComputad threeWaySameModes
+      innerPushoutRel
+      (emptyCellRel secondThinComputad.toModeSignature)
+      (SaturatedConvOverPushout thinPushout secondThinComputad threeWaySameModes
+        (inclusionLeftTwo thinPushout secondThinComputad threeWaySameModes rfl)
+        (inclusionRightTwo thinPushout secondThinComputad threeWaySameModes rfl)
+        innerPushoutRel
+        (emptyCellRel secondThinComputad.toModeSignature)) where
+  componentOneDecider := involutionSecondSaturatedPushoutDispatch.combinedDecider
+  componentTwoDecider := saturatedThinDeciderForAnyRel (noGen_of_twoGenLenZero rfl)
+  generatorsDisjoint := rfl
+  combinedDecider :=
+    saturatedThinDeciderForAnyRel
+      (noGen_of_twoGenLenZero (pushout_twoGenLenZero_of_components threeWaySameModes rfl rfl))
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — residual (B) SETTLED + residual (A) STATABLE + the thin dispatch re-based (r4 B + C
