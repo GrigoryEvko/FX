@@ -39,6 +39,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.crossPair_arityMapsDiffer
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.crossPairPushoutNonConv
 
+-- the bundle inhabited for the monad + the unconditional monad-face cross-check
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadArityFoldConvSound
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadFaces_arityMapsDiffer
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadFaces_notFullConv
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasArityFoldReflection
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasPushoutArityFoldConvSoundness

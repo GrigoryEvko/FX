@@ -164,10 +164,12 @@ structure ArityFoldConvSound (signature : ModeSignature) : Prop where
     arityMonotoneMapOf cellBeta = arityMonotoneMapOf cellBeta' →
     arityMonotoneMapOf (RawTwoCellExpr.whiskerLeft oneCell cellBeta)
       = arityMonotoneMapOf (RawTwoCellExpr.whiskerLeft oneCell cellBeta')
-  /-- Right-whisker congruence: whiskering map-equal bodies on the right gives equal maps. -/
+  /-- Right-whisker congruence: whiskering map-equal bodies on the right gives equal maps.  Binder order (the
+  whiskered 1-cells before `oneCell`) mirrors `monadMonotoneMapOf_whiskerRightCongr` so the monad cross-check
+  inhabits it by bare assignment. -/
   whiskerRightCongr : {sourceMode middleMode targetMode : signature.graph.Mode} →
-    (oneCell : ModalityPath signature.graph middleMode targetMode) →
     {oneCellF oneCellG : ModalityPath signature.graph sourceMode middleMode} →
+    (oneCell : ModalityPath signature.graph middleMode targetMode) →
     {cellAlpha cellAlpha' : RawTwoCellExpr signature oneCellF oneCellG} →
     arityMonotoneMapOf cellAlpha = arityMonotoneMapOf cellAlpha' →
     arityMonotoneMapOf (RawTwoCellExpr.whiskerRight oneCell cellAlpha)
@@ -313,6 +315,44 @@ theorem crossPairPushoutNonConv (sound : ArityFoldConvSound involutionMonadPusho
         crossPairAlpha crossPairBeta :=
   fun conv => crossPair_arityMapsDiffer (SaturatedConvOver.recInto (arityFoldPushoutCongruence sound) conv)
 
+/-! ## The bundle is INHABITED: the walking-monad cross-check (UNCONDITIONAL)
+
+The bundle `ArityFoldConvSound` is not a shape in a vacuum — over the BESPOKE `monadModeSignature` it is inhabited
+by the shipped walking-monad Δ-fold soundness (`WalkingMonad/MonadDeltaDecision` + `MonadMapFactorization` +
+`MonadWhiskerEmbedding`), verbatim, because `arityMonotoneMapOf = monadMonotoneMapOf` there.  So the reflection
+route works END-TO-END and unconditionally on the monad — reproducing `monadDecision_no_faces` through the generic
+fold machinery.  Only the pushout signature's bundle stays open (the reconstruction arity discipline). -/
+
+/-- ★ **The convertibility-soundness bundle is INHABITED for the walking monad** — its five fields are the shipped
+Δ-fold soundness lemmas (interchange = the disjoint-window commute; the four congruences = fold functoriality),
+inhabiting `ArityFoldConvSound monadModeSignature` since `arityMonotoneMapOf = monadMonotoneMapOf` (`rfl`).  This
+witnesses that the bundle is realizable — the pushout gap is precisely the RECONSTRUCTION arity discipline, not the
+interface. -/
+def monadArityFoldConvSound : ArityFoldConvSound monadModeSignature where
+  interchange := monadMonotoneMapOf_interchange
+  vcompCongrLeft := monadMonotoneMapOf_vcompCongrLeft
+  vcompCongrRight := monadMonotoneMapOf_vcompCongrRight
+  whiskerLeftCongr := monadMonotoneMapOf_whiskerLeftCongr
+  whiskerRightCongr := monadMonotoneMapOf_whiskerRightCongr
+
+/-- The two bespoke monad faces `t ⇒ t·t` fold to DIFFERENT arity maps (`[1] ≠ [0]`) by `decide` — the generic
+fold reproducing the bespoke `monadDecision_no_faces` separation. -/
+theorem monadFaces_arityMapsDiffer :
+    arityMonotoneMapOf (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadT monadUnitTwoCell)
+      ≠ arityMonotoneMapOf (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT monadUnitTwoCell) := by
+  decide
+
+/-- ★★ **UNCONDITIONAL non-convertibility of the two monad faces, through the generic reflection.**  The bespoke
+faces `whiskerRight t eta` (`δ₁`) and `whiskerLeft t eta` (`δ₀`) are NOT `TwoCellConvFull`-convertible: the arity
+fold, invariant under the completed convertibility via the INHABITED bundle (`monadArityFoldConvSound`), would force
+their maps equal, contradicting `monadFaces_arityMapsDiffer`.  This is `monadDecision_no_faces` re-derived through
+the generic `arityMonotoneMapOf` machinery — the reflection route, closed end-to-end where the bundle is inhabited. -/
+theorem monadFaces_notFullConv :
+    ¬ TwoCellConvFull monadModeSignature
+        (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadT monadUnitTwoCell)
+        (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT monadUnitTwoCell) :=
+  fun conv => monadFaces_arityMapsDiffer (arityMonotoneMapOf_eqOfConvFull monadArityFoldConvSound conv)
+
 /-! ## Observability -/
 
 -- The δ₁ face (whiskered by s) folds to `[0, 2]`.
@@ -335,7 +375,10 @@ whisker-functoriality laws are spine-invariant, so free), the pushout congruence
 `[0, 1]`, differing by `decide`) assembling into the CONDITIONAL live isFalse
 `crossPairPushoutNonConv : ArityFoldConvSound pushout → ¬ SaturatedConvOver … crossPairAlpha crossPairBeta`.  The
 non-vacuous discriminating pair: this isFalse (conditional) against r6's UNCONDITIONAL isTrue
-`crossPairConvertibleCounterpart`.  Literature: free-product / Δ₊ word problem (Nyberg-Brodda; Street; Mac Lane
+`crossPairConvertibleCounterpart`.  The bundle is INHABITED (`monadArityFoldConvSound`, the shipped monad Δ-fold
+soundness), so the route closes UNCONDITIONALLY on the monad (`monadFaces_notFullConv` re-derives
+`monadDecision_no_faces` through the generic fold) — the pushout gap is precisely the reconstruction arity
+discipline, not the interface.  Literature: free-product / Δ₊ word problem (Nyberg-Brodda; Street; Mac Lane
 §VII.5); Nelson-Oppen soundness (the projecting direction needs no convexity).  `= true`. -/
 def fxAmalg_hasArityFoldReflection : Bool := true
 
