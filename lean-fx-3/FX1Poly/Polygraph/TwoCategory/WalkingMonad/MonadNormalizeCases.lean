@@ -332,25 +332,26 @@ composite of trivial gadgets `monadGadget 1 = id_t` that collapses to the identi
 `= true`. -/
 def fxMonad_hasNormalizeIdCase : Bool := true
 
-/-- **Honesty marker — the two WHISKER cases and the `vcomp` case of `normalize` are NOT landed.**  `normalize :
-MonadNormalizesToCanon` inducts on the cell's five constructors; the two `gen` leaves
-(`fxMonad_hasNormalizeGeneratorBaseCases`) AND the `id` case (`fxMonad_hasNormalizeIdCase`, `monadNormalize_id`)
-are now CLOSED zero-axiom.  What remains (the compound-cell cases):
+/-- **Honesty marker — FOUR of the five `normalize` cases are landed; the SOLE remaining case is `vcomp`.**
+`normalize : MonadNormalizesToCanon` inducts on the cell's five constructors.  CLOSED zero-axiom: the two `gen`
+leaves (`fxMonad_hasNormalizeGeneratorBaseCases`), the `id` case (`fxMonad_hasNormalizeIdCase`,
+`monadNormalize_id`), AND the two WHISKER cases (`monadNormalize_whiskerLeft` / `monadNormalize_whiskerRight`,
+`WalkingMonad/MonadWhiskerNormalizeCases`, `fxMonad_hasWhiskerNormalizeCases`) — the whisker cases assembled from
+the whisker word multiplicativities (`wordMul_whiskerLeft/Right`), the boundary transport, and the counts-alignment
+(`canonCounts_whiskerLeft/Right`), no monad law.
 
-  * **`whiskerLeft W body` / `whiskerRight W body`** — the congruence `whiskerLeftCongr` / `whiskerRightCongr`
-    (shipped constructors) + IH reduces each to `whiskerLeft (t^k) (canon body) ≈ canon (whiskerLeft W body)`,
-    i.e. the HORIZONTAL word multiplicativity `wordMul_hcomp` (canonical words compose horizontally by counts-list
-    concatenation, `hcomp id_t`-blocks re-expressed as a `t^k` left-whisker); needs `hcomp`-associativity as a
-    `MonadSaturatedTwoCellConv` and the `countsOf_embedLocalMap_left` counts identity — structural, no monad law,
-    but new infrastructure not in the lane.
+What remains (the SOLE case using the monad LAWS):
+
   * **`vcomp cellL cellR`** — the congruences + IH reduce it to `vcomp (canon cellL) (canon cellR) ≈ canon (vcomp
-    cellL cellR)`, i.e. the VERTICAL word multiplicativity `wordMul_vcomp`: concatenate two canonical EZ words and
-    re-normalize (degeneracies-then-faces, index-sorted) to one, a terminating adjacent-swap insertion sort at the
-    `MonadSaturatedTwoCellConv` level (the simplicial identities `σσ` commute via `assoc`, `σδ = id` cancel via the
-    two unit laws; convergent by Guiraud–Malbos–Mimram Example 2.6, Weibel Lemma 8.1.2 uniqueness).  This is the
-    faithfulness-weight brick — the adjunction lane's flag-B analog — and is the SOLE case using the monad LAWS.
+    cellL cellR)`, i.e. the VERTICAL word multiplicativity `wordMul_vcomp`: fold the mu-tree amalgamation
+    `gadgetAbsorb` (the associativity crossing, now CLOSED zero-axiom in `WalkingMonad/MonadVcompMult`) over the
+    two words — `vcomp (word ccL) (word ccR) ≈ cast (word (composeCounts ccL ccR))` — via the `wordMul_hcomp` word
+    split at `take/drop ccL`, the interchange assembly, and the data-level `countsOf ∘ composeMap = composeCounts
+    ∘ countsOf` bridge (the degeneracies-then-faces re-sort; convergent by Guiraud–Malbos–Mimram Example 2.6,
+    Weibel Lemma 8.1.2).  The associativity brick `gadgetAbsorb` is now landed; the word-fold assembly is the
+    residual.
 
-Until ALL five cases land, `normalize` is not inhabited, so `MonadSaturatedCanonicalization.convOfMapEq`
+Until the `vcomp` case lands, `normalize` is not inhabited, so `MonadSaturatedCanonicalization.convOfMapEq`
 (`monadConvOfMapEq_ofNormalize`) is not inhabited and `fxMonad_hasMonotoneMapDecisionAssembled` /
 `fxMonad_hasConvOfMapEqNormalization` / `fxMonad_hasFullMapEqOfConvAndCompleteness` stay `false`.  `= false`. -/
 def fxMonad_hasNormalizeIdWhiskerVcompCases : Bool := false

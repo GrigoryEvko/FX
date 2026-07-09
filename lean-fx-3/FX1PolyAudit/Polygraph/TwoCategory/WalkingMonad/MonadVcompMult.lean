@@ -16,5 +16,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.gadgetSucc
 #assert_no_axioms FX1Poly.Polygraph.gadgetAbsorb_zero
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasVcompUnitAdjacencies
+#assert_no_axioms FX1Poly.Polygraph.godementMuGadget
+#assert_no_axioms FX1Poly.Polygraph.gadgetMuCross
+#assert_no_axioms FX1Poly.Polygraph.monadGadget_cast_ofEq
+#assert_no_axioms FX1Poly.Polygraph.monadGadget_castEq
+#assert_no_axioms FX1Poly.Polygraph.gadgetAbsorb_formB
+#assert_no_axioms FX1Poly.Polygraph.gadgetRightMerge
+#assert_no_axioms FX1Poly.Polygraph.gadgetAbsorb
+#assert_no_axioms FX1Poly.Polygraph.fxMonad_hasVcompAssocAmalgamation
 
 end FX1PolyAudit
