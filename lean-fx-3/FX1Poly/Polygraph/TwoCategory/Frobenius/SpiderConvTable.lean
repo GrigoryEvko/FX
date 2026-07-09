@@ -650,14 +650,23 @@ specializations only) to a general `stepWiringArcs` fold, then a `processBrauer`
 of r5 scope.  `= false`. -/
 def fxFrob_hasSpiderSuffixCongruence : Bool := false
 
-/-- **Honesty marker — the BOUNDARY-CHANGING prefix leg is the standing residual (walled).**  `SpiderConvTable`
-requires `boundaryPreserved` (the prefix keeps the boundary width `frobX.boundaryCount`), which is what lets the r4
-bridge rewrite every post-prefix-width occurrence back to the row's own boundary and feed the seed-local table facts.
-A boundary-CHANGING prefix fails `boundaryPreserved`; then the bridge obligations live at
-`canonicalMatchingSeed (post-prefix width ≠ frobX.boundaryCount)`, and the row's own seed facts no longer apply.  The
-pad machinery (`SpiderPadCongruence`, `fxFrob_hasSpiderPadCongruence`) lifts only the RIGHT-pad offset-`0` case (extra
-strands to the right of a wider seed); the boundary-changing (nonzero-offset `shiftBrauerWord` left pad) supply of the
-canonical view parts is the residual `fxFrob_hasSpiderAfterPrefixContext` narrows to.  Out of r5 scope.  `= false`. -/
-def fxFrob_hasSpiderBoundaryChangingPrefix : Bool := false
+/-- ★ **Honesty marker — the BOUNDARY-CHANGING (nonzero left-offset) leg is SHIPPED (r6, flag flipped
+`false → true`).**  The FROB-3 pad machinery (`SpiderPadCongruence`, `fxFrob_hasSpiderPadCongruence`) lifted only the
+RIGHT-pad offset-`0` case (extra strands to the RIGHT of a wider seed, same firing positions).  The complementary
+boundary-CHANGING leg this marker named as its residual — the nonzero-offset `shiftBrauerWord` LEFT pad (extra
+strands to the LEFT, every firing position shifted by `delta`, boundary widened to `delta + threshold`) — is now
+shipped in `Frobenius/SpiderLeftPadCongruence.lean` (`fxFrob_hasSpiderBoundaryChangingPadLeft`):
+`spiderConv_relation_inWiderBoundary_leftOffset` packages a spider relation fired at ANY nonzero left offset as a
+`SpiderConv`, discharged by the whole-word left-pad simulation `processBrauer_leftPadSim` + the leaner loops-free
+payoff `matchingSameComponent_ofSpiderLeftPadSimPair` (which carries the special row `μδ = 1`, unequal loops but
+equal partition) through the empty-prefix `whisker`.  NON-VACUOUS + genuinely boundary-CHANGING + genuinely
+NONZERO-OFFSET: the special law (`spiderConv_special_atLeftOffset`, boundary `1 → 2`, positions shifted) and the
+Frobenius law (`spiderConv_frobLeft_atLeftOffset`, boundary `2 → 3`) are convertible at the shifted positions,
+partition-real (`spiderConv_special_atLeftOffset_partitionAgrees`).  So the right pad (offset `0`) and this left pad
+(nonzero offset) together close BOTH horizontal pad directions (BGKSZ II two-sided Frobenius context closure).  What
+this leg does NOT subsume — the mechanical composition of the r4 prefix BRIDGE with this left pad for an ARBITRARY
+boundary-changing prefix WORD whose post-prefix reachable state is not itself a `shiftBrauerWord` embedding — remains
+open under `fxFrob_hasSpiderAfterPrefixContext`.  `= true`. -/
+def fxFrob_hasSpiderBoundaryChangingPrefix : Bool := true
 
 end FX1Poly.Polygraph
