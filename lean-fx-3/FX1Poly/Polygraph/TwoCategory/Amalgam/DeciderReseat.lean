@@ -276,10 +276,18 @@ is coupled to `fxMode_hasDecidableTwoCellEquality` (fib-3), the residual (ii) of
 true` (the graph half ships). -/
 def fxAmalg_hasReconstructionGraphBridge : Bool := true
 
-/-- **Honesty marker — the FULL decider reseat is the JAM.**  Transporting `monadSaturatedTwoCellDecision` from the
-bespoke `monadModeSignature` onto the reconstructed `monadComputad.toModeSignature` (the field discrepancy tabled
-above) needs the 2-cell-inclusive signature equivalence + the bidirectional cell re-basing functor, coupled to
-`fxMode_hasDecidableTwoCellEquality` (fib-3).  Larger than one r6 round.  `= false`. -/
+/-- **Honesty marker — the FULL decider reseat is the JAM (r3 RECLASSIFIED: LABOR, not fib-3).**  Transporting
+`monadSaturatedTwoCellDecision` from the bespoke `monadModeSignature` onto the reconstructed
+`monadComputad.toModeSignature` (the field discrepancy tabled above) needs the 2-cell-inclusive signature
+equivalence + the bidirectional cell re-basing functor.  MODE-ADMIT r3 (`MonadReseat.lean`) BUILDS the FORWARD
+half zero-axiom — `reseatPath` (1-cell functor), `reseatGen` (the `twoCell` equivalence's forward map, verified on
+`eta` AND `mu` by codomain boundary inversion), `reseatCell` (the free 2-cell functor) — and thereby shows this is
+NOT coupled to `fxMode_hasDecidableTwoCellEquality` (fib-3): the forward reseat decides NO 2-cell equality modulo
+the 3-cell laws (`fxAmalg_hasForwardReseatFunctor = true`).  The residual is cast LABOR: the isFalse leg needs
+`reseatCell` preserving `TwoCellConvFull` (`fxAmalg_hasReseatConvTransport`, the 12-constructor functoriality — the
+reseat analogue of `mapTwoCellConvFull`, untypable via `mapCellAlong` because `monadModeSignature` is not a
+`_.toModeSignature`); the isTrue leg additionally needs the backward round-trip.  Larger than one round, but a
+bounded multi-lemma file, fib-3-DECOUPLED.  `= false`. -/
 def fxAmalg_hasReconstructionDecoderReseat : Bool := false
 
 /-! ## Honesty markers -/
