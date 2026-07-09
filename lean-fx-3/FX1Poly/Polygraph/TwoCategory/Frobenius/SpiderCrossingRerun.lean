@@ -82,4 +82,101 @@ theorem rowSuffixCongruence_shape_atEmptySuffix :
     SpiderConvRows 2 (frobLeft.lhs ++ []) (frobRight.lhs ++ []) :=
   spiderConvRows_frobLeft_frobRight_lhs
 
+/-! ## P2 — the crossing canonical section IMPORTED for the row program (carrier-independent WIRE) -/
+
+/-- ★ **The crossing canonical section, exposed for the row program.**  `recComb generatorCount word` is the
+recursive-comb STAIRCASE of a crossing word (`Brauer/WiringDescStaircaseCanonical.lean`) — a pure `List Nat → List Nat`
+data function with NO `BrauerConvFree7` dependence, so it re-homes verbatim.  It is the crossing-fragment readback the
+row program's `CrossingCompletenessHook.readback` restricts to (single symmetric-group block). -/
+def frobCrossingStaircase (generatorCount : Nat) (word : List Nat) : List Nat :=
+  recComb generatorCount word
+
+/-- ★ **The crossing staircase respects the through-strand permutation (canonicity, banked into the row program).**
+This IS `combCanonicity` re-exposed at the Frobenius layer: two crossing words over generators `< generatorCount` with
+the SAME permutation on `generatorCount + 1` strands reach the SAME staircase.  Carrier-independent — the Regev–Roichman
+section property, importable with zero rewrite. -/
+theorem frobCrossingStaircase_respectsPermutation (generatorCount : Nat) (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow generatorCount word1 = true)
+    (hRange2 : mentionsOnlyBelow generatorCount word2 = true)
+    (permEq : permuteOfCrossingWord (generatorCount + 1) word1
+      = permuteOfCrossingWord (generatorCount + 1) word2) :
+    frobCrossingStaircase generatorCount word1 = frobCrossingStaircase generatorCount word2 :=
+  combCanonicity generatorCount word1 word2 hRange1 hRange2 permEq
+
+/-- Concrete Frobenius-layer canonicity witness — the r9 jam pair `[2,0,1,2]` / `[0,1,2,1]` (same permutation on four
+strands) reaches the SAME crossing staircase.  The BREACH-2 canonicity is LIVE for the row program. -/
+theorem frobCrossingStaircase_r9jam :
+    frobCrossingStaircase 3 [2, 0, 1, 2] = frobCrossingStaircase 3 [0, 1, 2, 1] :=
+  frobCrossingStaircase_respectsPermutation 3 [2, 0, 1, 2] [0, 1, 2, 1] (by decide) (by decide) rfl
+
+/-- Concrete Frobenius-layer STRAIGHTENING witness — the same r9 jam pair is `BrauerConvFree7`-convertible (the crossing
+straightening, re-exposed).  This is the substrate the row rerun rides; it is imported and firing. -/
+theorem frobCrossingStraightening_r9jam :
+    BrauerConvFree7 (crossingWord [2, 0, 1, 2]) (crossingWord [0, 1, 2, 1]) :=
+  crossingWords_equalPerm_conv 3 [2, 0, 1, 2] [0, 1, 2, 1] (by decide) (by decide) rfl
+
+/-! ## P2 — the whole-staircase convertibility brick + the comb rerun ASSEMBLY -/
+
+/-- ★ **`RowStaircaseConv bottomCount generatorCount`** — the `SpiderConvRows` analogue of `recCombConv`: every
+crossing word over generators `< generatorCount` is row-generatively convertible to its crossing staircase.  This is
+the whole-staircase convertibility the comb rerun would prove; per the r9 machine-anchored analysis its OWN proof rides
+the walled `RowSuffixCongruence` (the `recCombConv` recursive carry is `BrauerConvFree7.whiskerRight (crossingWord
+(descendingPositions …))`, the append-common-suffix step), so it is kept as the honest antecedent the assembly
+consumes.  Inhabited at `generatorCount = 0` (`rowStaircaseConv_atGeneratorCountZero`). -/
+def RowStaircaseConv (bottomCount generatorCount : Nat) : Prop :=
+  ∀ word : List Nat, mentionsOnlyBelow generatorCount word = true →
+    SpiderConvRows bottomCount (crossingWord word) (crossingWord (recComb generatorCount word))
+
+/-- ★★ **The comb rerun ASSEMBLY (WIRE) — equal-permutation crossing words are `SpiderConvRows`-convertible, given the
+staircase brick.**  Mirrors `crossingWords_equalPerm_conv` exactly, but inside the ROW-generated congruence: each word
+straightens to its staircase (the brick), the imported `combCanonicity` proves equal permutations reach the SAME
+staircase, and `trans`/`symm` chain them.  SOUND without the transport detour (obstruction A): every intermediate is
+the crossing staircase `crossingWord (recComb …)`, never a non-crossing word.  So the crossing STRAIGHTENING transports
+into `SpiderConvRows` modulo exactly the one walled brick — the comb rerun done, minus the row-level suffix congruence. -/
+theorem crossingWords_equalPerm_convRows_ofStaircase {bottomCount generatorCount : Nat}
+    (staircase : RowStaircaseConv bottomCount generatorCount)
+    (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow generatorCount word1 = true)
+    (hRange2 : mentionsOnlyBelow generatorCount word2 = true)
+    (permEq : permuteOfCrossingWord (generatorCount + 1) word1
+      = permuteOfCrossingWord (generatorCount + 1) word2) :
+    SpiderConvRows bottomCount (crossingWord word1) (crossingWord word2) := by
+  have canon : recComb generatorCount word1 = recComb generatorCount word2 :=
+    combCanonicity generatorCount word1 word2 hRange1 hRange2 permEq
+  have conv2 : SpiderConvRows bottomCount
+      (crossingWord (recComb generatorCount word1)) (crossingWord word2) := by
+    rw [canon]
+    exact (staircase word2 hRange2).symm
+  exact SpiderConvRows.trans (staircase word1 hRange1) conv2
+
+/-- ★ **The staircase brick is inhabited at `generatorCount = 0`** (non-vacuity of the antecedent).  At level `0` the
+only in-range word is empty (`mentionsOnlyBelow 0 (head :: tail)` reduces to `false`), `recComb 0 word = []`, and both
+crossing words are `[]`, so the obligation is `SpiderConvRows bottomCount [] []` — closed by the reflexive table row.
+So the conditional assembly is genuinely conditional on a NON-EMPTY antecedent type. -/
+theorem rowStaircaseConv_atGeneratorCountZero (bottomCount : Nat) :
+    RowStaircaseConv bottomCount 0 := by
+  intro word hRange
+  cases word with
+  | nil => exact SpiderConvRows.ofTable (SpiderConvTable.refl bottomCount [])
+  | cons head tail => exact Bool.noConfusion hRange
+
+/-- ★ **The assembly FIRES end-to-end at `generatorCount = 0`** — feeding the proven gc=0 brick into
+`crossingWords_equalPerm_convRows_ofStaircase` yields a genuine `SpiderConvRows` conclusion (non-vacuity of the whole
+conditional, no hypothesis left dangling). -/
+theorem crossingWords_equalPerm_convRows_atGeneratorCountZero (bottomCount : Nat)
+    (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow 0 word1 = true) (hRange2 : mentionsOnlyBelow 0 word2 = true)
+    (permEq : permuteOfCrossingWord 1 word1 = permuteOfCrossingWord 1 word2) :
+    SpiderConvRows bottomCount (crossingWord word1) (crossingWord word2) :=
+  crossingWords_equalPerm_convRows_ofStaircase (rowStaircaseConv_atGeneratorCountZero bottomCount)
+    word1 word2 hRange1 hRange2 permEq
+
+/-- ★ **The assembly's CONCLUSION shape is populated by the rows** — the distant-commute crossing identification
+`crossingWord [0,2] ~ crossingWord [2,0]` is a genuine `SpiderConvRows` (via the Godement `interchange`), matching the
+assembly's `SpiderConvRows bottomCount (crossingWord _) (crossingWord _)` target on DISTINCT words.  (`crossingWord
+[0,2]` reduces definitionally to `[crossingAt 0, crossingAt 2]`.) -/
+theorem crossingWords_convRows_distantCommute :
+    SpiderConvRows 4 (crossingWord [0, 2]) (crossingWord [2, 0]) :=
+  spiderConvRows_distantCommute
+
 end FX1Poly.Polygraph
