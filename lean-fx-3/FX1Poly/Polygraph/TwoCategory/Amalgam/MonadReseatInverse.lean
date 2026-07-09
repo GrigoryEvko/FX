@@ -645,4 +645,139 @@ theorem reseatConvBackward {sourceMode targetMode : monadModeSignature.graph.Mod
       (reseatCellInv cellAlpha) (reseatCellInv cellBeta) :=
   SaturatedConvOver.recInto reseatCongruenceBackward conv
 
+/-! ## B5 — the reseated reconstructed-signature decider + both verdicts on real recon cells
+
+The decider over `monadComputad.toModeSignature` `MonadLawRelReconstructed` runs the shipped bespoke
+`monadSaturatedTwoCellDecision` on the `reseatCell`-images, bridged by `monadSaturated_iff_generic`.  The isFalse
+leg is LIVE and roundtrip-free (`monadReconRefutes`, the shipped forward transport).  The isTrue leg needs the
+REFLECTION `SaturatedConvOver monadModeSignature MonadLawRel (reseatCell a) (reseatCell b) ==> SaturatedConvOver
+monadComputad.toModeSignature MonadLawRelReconstructed a b` — which is exactly `reseatConvBackward` (B4) COMPOSED
+with the cell round-trip `reseatCellInv (reseatCell a) = a`.  The general decider is therefore stated CONDITIONAL
+on that reflection; the round-trip is the honest residual (see the marker). -/
+
+/-- The reconstructed monad face δ₁ — the reconstructed unit whiskered on the RIGHT by `t`: a 2-cell `t ⇒ t·t`. -/
+def reconFaceDeltaOne :
+    RawTwoCellExpr monadComputad.toModeSignature
+      monadComputadReconstructedT monadComputadReconstructedTT :=
+  RawTwoCellExpr.whiskerRight (signature := monadComputad.toModeSignature) monadComputadReconstructedT reconEta
+
+/-- The reconstructed monad face δ₀ — the reconstructed unit whiskered on the LEFT by `t`: a 2-cell `t ⇒ t·t`
+(the domain `t·id` is DEFINITIONALLY `t`).  The δ₀/δ₁ counterpart of `reconFaceDeltaOne`. -/
+def reconFaceDeltaZero :
+    RawTwoCellExpr monadComputad.toModeSignature
+      monadComputadReconstructedT monadComputadReconstructedTT :=
+  RawTwoCellExpr.whiskerLeft (signature := monadComputad.toModeSignature) monadComputadReconstructedT reconEta
+
+/-- `reseatCell` of the reconstructed δ₁ face IS the bespoke δ₁ face `whiskerRight monadT monadUnitTwoCell` (the
+`reseatPath_composePath` cast on `t`-powers collapses definitionally, then the `eta` generator inversion). -/
+theorem reseatCell_reconFaceDeltaOne :
+    reseatCell reconFaceDeltaOne
+      = RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadT monadUnitTwoCell :=
+  congrArg (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadT) reseatCell_reconEta
+
+/-- `reseatCell` of the reconstructed δ₀ face IS the bespoke δ₀ face `whiskerLeft monadT monadUnitTwoCell`. -/
+theorem reseatCell_reconFaceDeltaZero :
+    reseatCell reconFaceDeltaZero
+      = RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT monadUnitTwoCell :=
+  congrArg (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT) reseatCell_reconEta
+
+/-- ★★ **The isFalse verdict on a REAL reconstructed pair (LIVE, roundtrip-free)** — the two reconstructed monad
+faces `reconFaceDeltaOne` (δ₁, monotone map `[1]`) and `reconFaceDeltaZero` (δ₀, monotone map `[0]`) are NOT
+convertible over the reconstructed signature.  Discharged by the shipped forward transport `monadReconRefutes`:
+their `reseatCell`-images are the bespoke faces (`reseatCell_reconFaceDeltaOne` / `Zero`), which the shipped
+walking-monad decision SEPARATES (`monadDecision_no_faces`, via `monadSaturated_iff_generic`).  The reseated
+decider's isFalse branch made literal on a concrete separating pair. -/
+theorem reconFacesDecideFalse :
+    ¬ SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed
+        reconFaceDeltaOne reconFaceDeltaZero :=
+  monadReconRefutes (fun conv =>
+    monadDecision_no_faces
+      ((monadSaturated_iff_generic _ _).mpr
+        (reseatCell_reconFaceDeltaOne ▸ reseatCell_reconFaceDeltaZero ▸ conv)))
+
+/-- ★★ **The isTrue verdict on a REAL reconstructed pair (LIVE), EXERCISING the backward transport** — the two
+reconstructed associativity foldings `t·t·t ⇒ t` (`reseatCellInv monadAssocLeftCell` / `reseatCellInv
+monadAssocRightCell`, DEFINITIONALLY the reconstructed `mu . (mu |> t)` / `mu . (t <| mu)`) ARE saturated
+convertible over the reconstructed signature.  Discharged by `reseatConvBackward` (B4) on the shipped bespoke
+associativity decision `monadDecision_yes_assoc` (both fold to the width-3 degeneracy `[0,0,0]`).  The reseated
+decider's isTrue branch made literal on a concrete convertible pair, routed through the inverse functor. -/
+theorem reconAssocDecidesTrue :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed
+      (reseatCellInv monadAssocLeftCell) (reseatCellInv monadAssocRightCell) :=
+  reseatConvBackward ((monadSaturated_iff_generic _ _).mp monadDecision_yes_assoc)
+
+/-- ★ The reconstructed left-unit law holds directly as a reconstructed saturated-conv row — the trivial isTrue
+verdict on the reconstructed left-unit composite. -/
+theorem reconLeftUnitDecidesTrue :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed reconLeftUnitCell reconIdTCell :=
+  SaturatedConvOver.ofRelation MonadLawRelReconstructed.leftUnit
+
+/-- ★★ **The reseated reconstructed-signature decider, CONDITIONAL on the reflection.**  A total
+`DecidableSaturatedConvForRel monadComputad.toModeSignature MonadLawRelReconstructed` obtained by running the
+shipped bespoke `monadSaturatedTwoCellDecision` on the `reseatCell`-images.  The isFalse leg ships UNCONDITIONALLY
+(`monadReconRefutes` + `monadSaturated_iff_generic`); the isTrue leg is supplied by the `reflect` hypothesis — the
+reconstructed-signature reflection of a bespoke convertibility.  `reflect` is inhabited by `reseatConvBackward`
+(B4) COMPOSED with the cell round-trip `reseatCellInv (reseatCell a) = a`; the round-trip is the sole residual for
+the UNCONDITIONAL decider (see `fxAmalgInverse_hasReseatedReconstructionDecider`). -/
+def monadReconstructedDecisionViaReflection
+    (reflect : {sourceMode targetMode : Fin 1} →
+      {sourcePath targetPath : ModalityPath monadComputad.toModeGraph sourceMode targetMode} →
+      {cellAlpha cellBeta : RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath} →
+      SaturatedConvOver monadModeSignature MonadLawRel (reseatCell cellAlpha) (reseatCell cellBeta) →
+      SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed cellAlpha cellBeta) :
+    DecidableSaturatedConvForRel monadComputad.toModeSignature MonadLawRelReconstructed :=
+  fun cellAlpha cellBeta =>
+    match monadSaturatedTwoCellDecision (reseatCell cellAlpha) (reseatCell cellBeta) with
+    | isTrue hbespoke => isTrue (reflect ((monadSaturated_iff_generic _ _).mp hbespoke))
+    | isFalse hbespoke =>
+        isFalse (monadReconRefutes (fun hgen => hbespoke ((monadSaturated_iff_generic _ _).mpr hgen)))
+
+/-! ## Honesty markers -/
+
+/-- ★★ **Honesty marker (`true`) — the INVERSE reseat functor + the BACKWARD conv transport SHIP (MODE-ADMIT-INV
+r1).**  The FIXED-pair `(monadModeSignature, monadComputad.toModeSignature)` inverse half is BUILT zero-axiom: the
+inverse 1-cell functor `reseatPathInv` (bespoke `t`-powers to reconstructed, `reseatPathInv_monadT` /
+`reseatPathInv_monadTThenT` by `rfl`) with its homomorphism law `reseatPathInv_composePath` and the bespoke-start
+round-trip `reseatPath_reseatPathInv`; the DIRECT inverse generator map `reseatGenInv` (bespoke `eta`/`mu` to the
+reconstructed generators, cast-free — the reconstructed boundaries are the `reseatPathInv` images DEFINITIONALLY);
+the inverse free 2-cell functor `reseatCellInv` (+ its per-constructor reduction lemmas); the thirteen-constructor
+`TwoCellConvFull` functoriality `reseatCellInv_preservesConv` (the exact inverse mirror of
+`reseatCell_preservesConv`); the three backward law rows (`reconLeftUnitConvBackward` etc.); and the BACKWARD conv
+transport `reseatConvBackward` (`recInto` into the `reseatCellInv`-image congruence).  fib-3-DECOUPLED (no 2-cell
+equality modulo the 3-cell laws is decided), all `Eq.rec` / no `HEq`.  `= true`. -/
+def fxAmalgInverse_hasBackwardReseatTransport : Bool := true
+
+/-- ★★ **Honesty marker (`true`) — the reseated reconstructed-signature decider ASSEMBLES, with both verdicts LIVE
+on real recon cells.**  `monadReconstructedDecisionViaReflection` is a total `DecidableSaturatedConvForRel` over
+`monadComputad.toModeSignature MonadLawRelReconstructed` whose isFalse leg ships UNCONDITIONALLY (`monadReconRefutes`
++ `monadSaturated_iff_generic`) and whose isTrue leg is the reconstructed-signature reflection.  Both verdicts are
+demonstrated LIVE on concrete real reconstructed cells: isFalse on the two separating monad faces
+(`reconFacesDecideFalse`, δ₁ vs δ₀, roundtrip-free via the forward transport) and isTrue on the two associativity
+foldings (`reconAssocDecidesTrue`, routed through the backward transport `reseatConvBackward`).  `= true`. -/
+def fxAmalgInverse_hasReseatedDeciderBothVerdicts : Bool := true
+
+/-- ★ **Honesty marker (`false`) — the UNCONDITIONAL two-sided reseated decider still needs the cell round-trip.**
+`fxAmalg_hasReconstructionDecoderReseat` (`DeciderReseat.lean`) named the residual for the FULL two-sided decider:
+after the FORWARD transport (r4, isFalse leg literal) the isTrue leg needs the inverse functor + the round-trip.
+MODE-ADMIT-INV r1 SHIPS the inverse functor and the BACKWARD conv transport (`reseatConvBackward`), and assembles
+the decider CONDITIONAL on the reflection (`monadReconstructedDecisionViaReflection`); it does NOT discharge the
+UNCONDITIONAL isTrue leg, whose sole residual is the cell round-trip `reseatCellInv (reseatCell a) = a`.
+
+The round-trip is a genuine, precisely-located WALL (NOT mere cast labor), on TWO nodes:
+  (1) the PATH leg `reseatPathInv (reseatPath path) = path` is awkward because `path` lives over the FIXED `Fin 1`
+      endpoints `⟨0⟩ ⟨0⟩` (non-variable inductive-family indices), so structural recursion is unavailable and the
+      `cons` case must `subst` the middle mode (breaking the well-founded measure — the `rest`/`rest✝` split);
+  (2) the GEN leg `reseatGenInv (reseatGen g) = g` is the hard node: for a GENERIC reconstructed generator `g` at an
+      arbitrary boundary, the forward `reseatGen g` is a STUCK `castMonadTwoCell` (the boundary is only
+      PROPOSITIONALLY `(nil point, monadT)` via the interpreter witnesses, so the `Eq.rec` cast does NOT collapse
+      and `reseatGenInv` cannot pattern-match the `eta`/`mu` constructor through it), so `reseatGenInv (reseatGen g)`
+      does not reduce — recovering `g` needs codomain-uniqueness reasoning that the forward DELIBERATELY avoided
+      (`monadTwoCellAtUnit_isEta` read the codomain instead of the stuck matcher).
+
+Both verdicts nevertheless ship LIVE on real recon cells (isFalse roundtrip-free, isTrue via the backward
+transport), so the reseated decider is DEMONSTRATED complete on concrete pairs; only the GENERAL unconditional
+isTrue leg stays behind the round-trip wall.  `= false` (the unconditional flip of
+`fxAmalg_hasReconstructionDecoderReseat` remains the r2 scope). -/
+def fxAmalgInverse_hasReseatedReconstructionDecider : Bool := false
+
 end FX1Poly.Polygraph.Amalgam
