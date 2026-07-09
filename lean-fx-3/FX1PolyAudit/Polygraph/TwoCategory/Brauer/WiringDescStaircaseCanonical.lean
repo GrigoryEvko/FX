@@ -32,4 +32,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.swap_commutes_runBelow
 #assert_no_axioms FX1Poly.Polygraph.carry_perm
 
+-- R3.B: the DATA comb fold preserves the through-strand permutation (the soundness leg)
+#assert_no_axioms FX1Poly.Polygraph.perm_append_split
+#assert_no_axioms FX1Poly.Polygraph.combInsertData_realizesSwap
+#assert_no_axioms FX1Poly.Polygraph.combFold_preservesPerm
+#assert_no_axioms FX1Poly.Polygraph.combNormalizeForm_preservesPerm
+
 end FX1PolyAudit

@@ -337,4 +337,274 @@ theorem carry_perm (letter : Nat) (letterPos : 1 ≤ letter) :
                 exact swap_commutes_runBelow letter (letter - 2) (lowerLen2 + 1)
                   (applyAdjacentSwap (applyAdjacentSwap perm letter) (letter - 1)) lowerBelow
 
+/-! ## R3.B — the DATA comb fold preserves the through-strand permutation (the soundness leg)
+
+Each `combInsertData` step realizes exactly one adjacent swap of `permuteOfCrossingWord (generatorCount + 1)`
+applied to the config word; folding gives `permuteOfCrossingWord (generatorCount + 1) (combNormalizeForm gc W) =
+permuteOfCrossingWord (generatorCount + 1) W` — the permutation is preserved by the comb.  This is the DATA-level
+soundness the canonicity argument reads the strand pin off. -/
+
+/-- `top - count - 1 = top - 1 - count` — structural on `count`, `propext`-free. -/
+private theorem subOneCommStaircase : (top count : Nat) → top - count - 1 = top - 1 - count
+  | _, 0 => rfl
+  | top, count + 1 => congrArg Nat.pred (subOneCommStaircase top count)
+
+/-- The descending run has a distinguished LAST element `top - count`. -/
+private theorem descendingPositions_snocStaircase : (top count : Nat) →
+    descendingPositions top count ++ [top - count] = descendingPositions top (count + 1)
+  | _, 0 => rfl
+  | top, count + 1 => by
+      have idxEq : top - (count + 1) = (top - 1) - count := subOneCommStaircase top count
+      have inner : descendingPositions (top - 1) count ++ [top - (count + 1)]
+          = descendingPositions (top - 1) (count + 1) := by
+        rw [idxEq]; exact descendingPositions_snocStaircase (top - 1) count
+      show top :: (descendingPositions (top - 1) count ++ [top - (count + 1)])
+         = top :: descendingPositions (top - 1) (count + 1)
+      exact congrArg (top :: ·) inner
+
+/-- `a + c - c = a` — structural on `c`, `propext`-free (Init's `Nat.add_sub_cancel` leaks). -/
+private theorem natAddSubCancelStaircase : (a c : Nat) → a + c - c = a
+  | _, 0 => rfl
+  | a, c + 1 => (Nat.succ_sub_succ (a + c) c).trans (natAddSubCancelStaircase a c)
+
+/-- `a = b - c` from `a + c = b` — clean replacement for Init's `Nat.eq_sub_of_add_eq`. -/
+private theorem natEqSubOfAddEqStaircase (a c b : Nat) (h : a + c = b) : a = b - c := by
+  rw [← h]; exact (natAddSubCancelStaircase a c).symm
+
+/-- `(front ++ mid) ++ back = front ++ (mid ++ back)` — cons-only structural copy (Init's `List.append_assoc`
+leaks `propext`). -/
+private theorem appendAssocStaircase {alpha : Type _} :
+    (front mid back : List alpha) → (front ++ mid) ++ back = front ++ (mid ++ back)
+  | [], _, _ => rfl
+  | head :: rest, mid, back => congrArg (head :: ·) (appendAssocStaircase rest mid back)
+
+/-- `permuteOfCrossingWord` splits over concatenation — the append law. -/
+theorem perm_append_split (bottomCount : Nat) (a b : List Nat) :
+    permuteOfCrossingWord bottomCount (a ++ b)
+      = b.foldl applyAdjacentSwap (permuteOfCrossingWord bottomCount a) :=
+  foldl_append_swap a b (List.range bottomCount)
+
+/-- ★★ **Each `combInsertData` step realizes exactly one adjacent swap of the permutation.**  The permutation of the
+new config word is the old config's permutation with `s_letter` applied on the right.  Four branches: COMMUTE
+(disjoint commute past the run), EXTEND (the run grows — a pure snoc), CANCEL (the run shrinks — snoc + involution),
+CARRY (`carry_perm`). -/
+theorem combInsertData_realizesSwap (generatorCount : Nat) (genPos : 1 ≤ generatorCount)
+    (statePrefix : List Nat) (stateRun : Nat) (stateRunLe : stateRun ≤ generatorCount)
+    (letter : Nat) (letterLt : letter < generatorCount) :
+    permuteOfCrossingWord (generatorCount + 1)
+        ((combInsertData generatorCount (statePrefix, stateRun) letter).1
+          ++ descendingPositions (generatorCount - 1)
+              (combInsertData generatorCount (statePrefix, stateRun) letter).2)
+      = applyAdjacentSwap (permuteOfCrossingWord (generatorCount + 1)
+          (statePrefix ++ descendingPositions (generatorCount - 1) stateRun)) letter := by
+  rcases Nat.lt_trichotomy (letter + stateRun) generatorCount with hLt | hEq | hGt
+  · rcases Nat.lt_or_ge (letter + stateRun + 1) generatorCount with hCommute | hExtendGe
+    · -- COMMUTE
+      have condCommute : letter + stateRun + 2 ≤ generatorCount := hCommute
+      have dataEq : combInsertData generatorCount (statePrefix, stateRun) letter
+          = (statePrefix ++ [letter], stateRun) := by
+        show (if letter + stateRun + 2 ≤ generatorCount then (statePrefix ++ [letter], stateRun)
+              else if letter + stateRun + 1 = generatorCount then (statePrefix, stateRun + 1)
+              else if letter + stateRun = generatorCount then (statePrefix, stateRun - 1)
+              else (statePrefix ++ [letter - 1], stateRun)) = (statePrefix ++ [letter], stateRun)
+        rw [if_pos condCommute]
+      rw [dataEq]
+      show permuteOfCrossingWord (generatorCount + 1)
+          ((statePrefix ++ [letter]) ++ descendingPositions (generatorCount - 1) stateRun)
+        = applyAdjacentSwap (permuteOfCrossingWord (generatorCount + 1)
+            (statePrefix ++ descendingPositions (generatorCount - 1) stateRun)) letter
+      rw [perm_append_split (generatorCount + 1) (statePrefix ++ [letter])
+            (descendingPositions (generatorCount - 1) stateRun),
+        permuteOfCrossingWord_snoc (generatorCount + 1) statePrefix letter,
+        perm_append_split (generatorCount + 1) statePrefix
+          (descendingPositions (generatorCount - 1) stateRun)]
+      exact swap_commutes_runAbove letter (generatorCount - 1) stateRun
+        (permuteOfCrossingWord (generatorCount + 1) statePrefix)
+        (natLePredStaircase (letter + stateRun + 1) generatorCount condCommute)
+    · -- EXTEND
+      have hExtend : letter + stateRun + 1 = generatorCount := Nat.le_antisymm hLt hExtendGe
+      have notCommute : ¬ (letter + stateRun + 2 ≤ generatorCount) := by
+        rw [← hExtend]; exact Nat.not_succ_le_self _
+      have dataEq : combInsertData generatorCount (statePrefix, stateRun) letter
+          = (statePrefix, stateRun + 1) := by
+        show (if letter + stateRun + 2 ≤ generatorCount then (statePrefix ++ [letter], stateRun)
+              else if letter + stateRun + 1 = generatorCount then (statePrefix, stateRun + 1)
+              else if letter + stateRun = generatorCount then (statePrefix, stateRun - 1)
+              else (statePrefix ++ [letter - 1], stateRun)) = (statePrefix, stateRun + 1)
+        rw [if_neg notCommute, if_pos hExtend]
+      rw [dataEq]
+      show permuteOfCrossingWord (generatorCount + 1)
+          (statePrefix ++ descendingPositions (generatorCount - 1) (stateRun + 1))
+        = applyAdjacentSwap (permuteOfCrossingWord (generatorCount + 1)
+            (statePrefix ++ descendingPositions (generatorCount - 1) stateRun)) letter
+      have letterEq : letter = (generatorCount - 1) - stateRun :=
+        natEqSubOfAddEqStaircase letter stateRun (generatorCount - 1)
+          (natEqSubOfAddEqStaircase (letter + stateRun) 1 generatorCount hExtend)
+      have runSnoc : descendingPositions (generatorCount - 1) (stateRun + 1)
+          = descendingPositions (generatorCount - 1) stateRun ++ [letter] := by
+        rw [letterEq]; exact (descendingPositions_snocStaircase (generatorCount - 1) stateRun).symm
+      rw [runSnoc, ← appendAssocStaircase statePrefix (descendingPositions (generatorCount - 1) stateRun) [letter],
+        permuteOfCrossingWord_snoc (generatorCount + 1)
+          (statePrefix ++ descendingPositions (generatorCount - 1) stateRun) letter]
+  · -- CANCEL
+    have notCommute : ¬ (letter + stateRun + 2 ≤ generatorCount) := fun h => by
+      rw [hEq] at h
+      exact Nat.not_succ_le_self generatorCount (Nat.le_trans (Nat.le_succ (generatorCount + 1)) h)
+    have notExtend : ¬ (letter + stateRun + 1 = generatorCount) := fun h => by
+      rw [hEq] at h
+      exact absurd (Nat.le_of_eq h) (Nat.not_succ_le_self generatorCount)
+    have dataEq : combInsertData generatorCount (statePrefix, stateRun) letter
+        = (statePrefix, stateRun - 1) := by
+      show (if letter + stateRun + 2 ≤ generatorCount then (statePrefix ++ [letter], stateRun)
+            else if letter + stateRun + 1 = generatorCount then (statePrefix, stateRun + 1)
+            else if letter + stateRun = generatorCount then (statePrefix, stateRun - 1)
+            else (statePrefix ++ [letter - 1], stateRun)) = (statePrefix, stateRun - 1)
+      rw [if_neg notCommute, if_neg notExtend, if_pos hEq]
+    rw [dataEq]
+    cases stateRun with
+    | zero =>
+        have hEq' : letter = generatorCount := hEq
+        exact absurd (hEq' ▸ letterLt) (Nat.lt_irrefl generatorCount)
+    | succ c =>
+        show permuteOfCrossingWord (generatorCount + 1)
+            (statePrefix ++ descendingPositions (generatorCount - 1) c)
+          = applyAdjacentSwap (permuteOfCrossingWord (generatorCount + 1)
+              (statePrefix ++ descendingPositions (generatorCount - 1) (c + 1))) letter
+        have letterEq : letter = (generatorCount - 1) - c :=
+          natEqSubOfAddEqStaircase letter c (generatorCount - 1)
+            (natEqSubOfAddEqStaircase (letter + c) 1 generatorCount hEq)
+        have runSnoc : descendingPositions (generatorCount - 1) (c + 1)
+            = descendingPositions (generatorCount - 1) c ++ [letter] := by
+          rw [letterEq]; exact (descendingPositions_snocStaircase (generatorCount - 1) c).symm
+        rw [runSnoc, ← appendAssocStaircase statePrefix (descendingPositions (generatorCount - 1) c) [letter],
+          permuteOfCrossingWord_snoc (generatorCount + 1)
+            (statePrefix ++ descendingPositions (generatorCount - 1) c) letter,
+          applyAdjacentSwap_involutive (permuteOfCrossingWord (generatorCount + 1)
+            (statePrefix ++ descendingPositions (generatorCount - 1) c)) letter]
+  · -- CARRY
+    have gLt2 : generatorCount < letter + stateRun + 2 :=
+      Nat.lt_of_lt_of_le hGt (Nat.le_add_right (letter + stateRun) 2)
+    have notCommute : ¬ (letter + stateRun + 2 ≤ generatorCount) := Nat.not_le.mpr gLt2
+    have notExtend : ¬ (letter + stateRun + 1 = generatorCount) := fun h => by
+      have gLt1 : generatorCount < letter + stateRun + 1 :=
+        Nat.lt_of_lt_of_le hGt (Nat.le_succ (letter + stateRun))
+      rw [h] at gLt1
+      exact Nat.lt_irrefl generatorCount gLt1
+    have notCancel : ¬ (letter + stateRun = generatorCount) := fun h => by
+      have hGtCopy : generatorCount < letter + stateRun := hGt
+      rw [h] at hGtCopy
+      exact Nat.lt_irrefl generatorCount hGtCopy
+    have dataEq : combInsertData generatorCount (statePrefix, stateRun) letter
+        = (statePrefix ++ [letter - 1], stateRun) := by
+      show (if letter + stateRun + 2 ≤ generatorCount then (statePrefix ++ [letter], stateRun)
+            else if letter + stateRun + 1 = generatorCount then (statePrefix, stateRun + 1)
+            else if letter + stateRun = generatorCount then (statePrefix, stateRun - 1)
+            else (statePrefix ++ [letter - 1], stateRun)) = (statePrefix ++ [letter - 1], stateRun)
+      rw [if_neg notCommute, if_neg notExtend, if_neg notCancel]
+    rw [dataEq]
+    show permuteOfCrossingWord (generatorCount + 1)
+        ((statePrefix ++ [letter - 1]) ++ descendingPositions (generatorCount - 1) stateRun)
+      = applyAdjacentSwap (permuteOfCrossingWord (generatorCount + 1)
+          (statePrefix ++ descendingPositions (generatorCount - 1) stateRun)) letter
+    have letterPos : 1 ≤ letter := by
+      have h1 : generatorCount + 1 ≤ letter + generatorCount :=
+        Nat.le_trans hGt (Nat.add_le_add_left stateRunLe letter)
+      exact natLeOfAddLeAddLeftStaircase generatorCount 1 letter
+        (by rw [Nat.add_comm letter generatorCount] at h1; exact h1)
+    rw [perm_append_split (generatorCount + 1) (statePrefix ++ [letter - 1])
+          (descendingPositions (generatorCount - 1) stateRun),
+      permuteOfCrossingWord_snoc (generatorCount + 1) statePrefix (letter - 1),
+      perm_append_split (generatorCount + 1) statePrefix
+        (descendingPositions (generatorCount - 1) stateRun)]
+    exact carry_perm letter letterPos (generatorCount - 1) stateRun
+      (permuteOfCrossingWord (generatorCount + 1) statePrefix)
+      (natLePredStaircase letter generatorCount letterLt)
+      (by rw [predSuccStaircase generatorCount genPos]; exact stateRunLe)
+      (by rw [show (generatorCount - 1) + 2 = generatorCount + 1 from
+          congrArg Nat.succ (predSuccStaircase generatorCount genPos)]; exact hGt)
+      (by rw [permuteOfCrossingWord_length (generatorCount + 1) statePrefix]
+          exact Nat.le_of_eq (congrArg Nat.succ (predSuccStaircase generatorCount genPos)))
+
+/-- `list ++ [] = list` — cons-only structural copy (Init's `List.append_nil` leaks `propext`). -/
+private theorem appendNilStaircase : (list : List Nat) → list ++ [] = list
+  | [] => rfl
+  | head :: rest => congrArg (head :: ·) (appendNilStaircase rest)
+
+/-- Left projection of a true boolean conjunction. -/
+private theorem boolAndLeftStaircase : (leftFlag rightFlag : Bool) → (leftFlag && rightFlag) = true → leftFlag = true
+  | true, _, _ => rfl
+  | false, _, conj => Bool.noConfusion conj
+
+/-- Right projection of a true boolean conjunction. -/
+private theorem boolAndRightStaircase : (leftFlag rightFlag : Bool) → (leftFlag && rightFlag) = true → rightFlag = true
+  | true, _, conj => conj
+  | false, _, conj => Bool.noConfusion conj
+
+/-- `a ≤ b` from `Nat.ble a b = true` — structural on `a`, `propext`-free. -/
+private theorem natLeOfBleStaircase : (a b : Nat) → Nat.ble a b = true → a ≤ b
+  | 0, _, _ => Nat.zero_le _
+  | _ + 1, 0, h => Bool.noConfusion h
+  | a + 1, b + 1, h => Nat.succ_le_succ (natLeOfBleStaircase a b h)
+
+/-- `a < b` from `Nat.blt a b = true`. -/
+private theorem natLtOfBltStaircase (a b : Nat) (h : Nat.blt a b = true) : a < b :=
+  natLeOfBleStaircase (a + 1) b h
+
+/-- ★★ **The DATA comb fold preserves the permutation, from any state.**  Folding `rest` (in range) onto a state
+gives a config whose permutation equals the permutation of the state's config followed by `rest`.  Structural on
+`rest`, threading the state invariants (`mentionsOnlyBelow`, run bound) via the shipped `combInsert_step_fn`. -/
+theorem combFold_preservesPerm (generatorCount : Nat) (genPos : 1 ≤ generatorCount) :
+    (rest : List Nat) → (statePrefix : List Nat) → (stateRun : Nat) →
+    mentionsOnlyBelow (generatorCount - 1) statePrefix = true → stateRun ≤ generatorCount →
+    mentionsOnlyBelow generatorCount rest = true →
+    permuteOfCrossingWord (generatorCount + 1)
+        ((rest.foldl (combInsertData generatorCount) (statePrefix, stateRun)).1
+          ++ descendingPositions (generatorCount - 1)
+              (rest.foldl (combInsertData generatorCount) (statePrefix, stateRun)).2)
+      = permuteOfCrossingWord (generatorCount + 1)
+          ((statePrefix ++ descendingPositions (generatorCount - 1) stateRun) ++ rest)
+  | [], statePrefix, stateRun, _, _, _ => by
+      show permuteOfCrossingWord (generatorCount + 1)
+          (statePrefix ++ descendingPositions (generatorCount - 1) stateRun)
+        = permuteOfCrossingWord (generatorCount + 1)
+            ((statePrefix ++ descendingPositions (generatorCount - 1) stateRun) ++ [])
+      rw [appendNilStaircase (statePrefix ++ descendingPositions (generatorCount - 1) stateRun)]
+  | letter :: restTail, statePrefix, stateRun, uBelow, runLe, hRange => by
+      have letterLt : letter < generatorCount :=
+        natLtOfBltStaircase letter generatorCount (boolAndLeftStaircase _ _ hRange)
+      obtain ⟨belowMid, runLeMid, _⟩ :=
+        combInsert_step_fn generatorCount statePrefix stateRun uBelow runLe letter letterLt
+      have ihEq := combFold_preservesPerm generatorCount genPos restTail
+        (combInsertData generatorCount (statePrefix, stateRun) letter).1
+        (combInsertData generatorCount (statePrefix, stateRun) letter).2 belowMid runLeMid
+        (boolAndRightStaircase _ _ hRange)
+      have stepEq := combInsertData_realizesSwap generatorCount genPos statePrefix stateRun runLe letter letterLt
+      -- combine: fold(letter::restTail) = fold restTail (combInsertData ... letter)
+      show permuteOfCrossingWord (generatorCount + 1)
+          ((restTail.foldl (combInsertData generatorCount)
+              (combInsertData generatorCount (statePrefix, stateRun) letter)).1
+            ++ descendingPositions (generatorCount - 1)
+                (restTail.foldl (combInsertData generatorCount)
+                  (combInsertData generatorCount (statePrefix, stateRun) letter)).2)
+        = permuteOfCrossingWord (generatorCount + 1)
+            ((statePrefix ++ descendingPositions (generatorCount - 1) stateRun) ++ (letter :: restTail))
+      rw [ihEq, perm_append_split (generatorCount + 1)
+            ((combInsertData generatorCount (statePrefix, stateRun) letter).1
+              ++ descendingPositions (generatorCount - 1)
+                  (combInsertData generatorCount (statePrefix, stateRun) letter).2) restTail,
+        stepEq]
+      exact (perm_append_split (generatorCount + 1)
+        (statePrefix ++ descendingPositions (generatorCount - 1) stateRun) (letter :: restTail)).symm
+
+/-- ★★ **The comb normal form preserves the through-strand permutation.**  `permuteOfCrossingWord (gc+1)
+(combNormalizeForm gc W) = permuteOfCrossingWord (gc+1) W` for in-range `W` — the soundness leg the strand pin reads. -/
+theorem combNormalizeForm_preservesPerm (generatorCount : Nat) (genPos : 1 ≤ generatorCount)
+    (input : List Nat) (inRange : mentionsOnlyBelow generatorCount input = true) :
+    permuteOfCrossingWord (generatorCount + 1) (combNormalizeForm generatorCount input)
+      = permuteOfCrossingWord (generatorCount + 1) input := by
+  have folded := combFold_preservesPerm generatorCount genPos input [] 0 rfl (Nat.zero_le generatorCount) inRange
+  have startEq : ([] ++ descendingPositions (generatorCount - 1) 0) ++ input = input := rfl
+  rw [startEq] at folded
+  exact folded
+
 end FX1Poly.Polygraph
