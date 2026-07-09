@@ -41,9 +41,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.spiderConvTable_frobLeft_frobRight_identifies_distinct
 #assert_no_axioms FX1Poly.Polygraph.spiderConvTable_H_not_identity
 
--- FROB-5: the honesty markers (shipped gate-free table + walled two-sided residuals)
+-- FROB-5: the concrete two-sided context witness (per-instance, decided through the r4 bridge)
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_twoSidedContext
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_twoSidedContext_distinct
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_twoSidedContext_partitionAgrees
+
+-- FROB-5: the honesty markers (shipped gate-free table + two-sided witness + walled uniform residuals)
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderSeedViewTable
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderConvTable
+#assert_no_axioms FX1Poly.Polygraph.fxFrob_hasTwoSidedContextWitness
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderSuffixCongruence
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderBoundaryChangingPrefix
 

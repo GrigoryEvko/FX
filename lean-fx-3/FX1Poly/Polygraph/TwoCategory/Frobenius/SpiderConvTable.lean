@@ -552,6 +552,63 @@ theorem spiderConvTable_H_not_identity :
     ¬ SpiderConvTable 2 [multAt 0, comultAt 0] [identityStrandAt 0, identityStrandAt 1] :=
   fun conv => extraSpiderDiagram_H_ne_identity (spiderConvTable_partitionSound conv)
 
+/-! ## The two-sided context — a concrete DECIDED witness (piece 2, partial)
+
+`SpiderConvTable` whiskers a presented row after a PREFIX.  A genuinely TWO-SIDED context `prefix ++ side ++ suffix`
+is reachable PER-INSTANCE through the SAME r4 bridge (`SpiderConvSyntactic.relationAfterPrefix`): treat `side ++
+suffix` as the bridge's word and supply the seed-local two-sided view fact by `decide`.  The special law `μδ = 1`
+under a prefix identity strand AND a suffix comultiplication — `δμδ ≡ δ` — is such a witness: it is sound because the
+seed runs of `δμδ` and `δ` agree on the boundary partition view (`specialTwoSidedSeedView_ordered`, `decide`).
+
+What this DOES demonstrate: the machinery handles two-sided contexts whenever the seed-local two-sided view is
+decided.  What it does NOT give: the GENERAL suffix congruence UNIFORM over all suffixes — that
+(`SpiderConvTable n a b → SpiderConvTable n (a ++ suffix) (b ++ suffix)`) needs the forward `stepWiring`
+view-functoriality brick (`fxFrob_hasSpiderSuffixCongruence`, r6), NOT a second application of the r4 keystone (which
+fixes one mid-state and varies the word, the transpose of what the suffix leg needs). -/
+
+/-- Firing discipline for the two-sided witness word `δμδ` at boundary `1`. -/
+private theorem inRange_comultMultComult : BrauerWordInRange 1 [comultAt 0, multAt 0, comultAt 0] :=
+  BrauerWordInRange.cons (comultAt 0) 0 rfl (by decide)
+    (BrauerWordInRange.cons (multAt 0) 0 rfl (by decide)
+      (BrauerWordInRange.cons (comultAt 0) 0 rfl (by decide) (BrauerWordInRange.nil 2)))
+
+/-- The seed-local two-sided boundary view: `δμδ` and `δ` agree on `matchingSameComponent` (boundary `1`), in the
+guard-after-binder order.  By `decide` — the special row survives a suffix comultiplication at the partition level. -/
+private theorem specialTwoSidedSeedView_ordered : ∀ firstIndex,
+    firstIndex < 1 + (processBrauer (brauerSeed 1) [comultAt 0, multAt 0, comultAt 0]).openWires.length →
+    ∀ secondIndex,
+    secondIndex < 1 + (processBrauer (brauerSeed 1) [comultAt 0, multAt 0, comultAt 0]).openWires.length →
+    matchingSameComponent 1 (processBrauer (brauerSeed 1) [comultAt 0, multAt 0, comultAt 0]) firstIndex secondIndex
+      = matchingSameComponent 1 (processBrauer (brauerSeed 1) [comultAt 0]) firstIndex secondIndex := by decide
+
+/-- ★ **A concrete TWO-SIDED context identification.**  The special law `μδ = 1` fired between a prefix identity
+strand (left context) and a suffix comultiplication (right context) — `δμδ ≡ δ` — is a `SpiderConv` theorem, routed
+through the r4 bridge with the seed-local two-sided view decided.  Genuinely two-sided: BOTH the left context
+`[identityStrandAt 0]` and the right context `[comultAt 0]` are non-empty. -/
+theorem spiderConv_special_twoSidedContext :
+    SpiderConv 1 (([identityStrandAt 0] ++ [comultAt 0, multAt 0]) ++ [comultAt 0])
+      (([identityStrandAt 0] ++ ([] : List BrauerAtom)) ++ [comultAt 0]) :=
+  spiderConvSyntactic_toSpiderConv
+    (SpiderConvSyntactic.relationAfterPrefix 1 (by decide) [identityStrandAt 0]
+      ([comultAt 0, multAt 0] ++ [comultAt 0]) (([] : List BrauerAtom) ++ [comultAt 0])
+      (BrauerWordInRange.cons (identityStrandAt 0) 0 rfl (by decide) (BrauerWordInRange.nil 1))
+      (by decide)
+      inRange_comultMultComult inRange_comultSingle rfl
+      (fun firstIndex secondIndex firstBelow secondBelow =>
+        specialTwoSidedSeedView_ordered firstIndex firstBelow secondIndex secondBelow))
+
+/-- The two-sided witness genuinely relates DISTINCT words. -/
+theorem spiderConv_special_twoSidedContext_distinct :
+    (([identityStrandAt 0] ++ [comultAt 0, multAt 0]) ++ [comultAt 0])
+      ≠ (([identityStrandAt 0] ++ ([] : List BrauerAtom)) ++ [comultAt 0]) := by decide
+
+/-- ★ **The two-sided identification is partition-real** — `δμδ` and `δ` in the doubled context induce the SAME
+boundary partition, via `spiderConv_partitionSound`. -/
+theorem spiderConv_special_twoSidedContext_partitionAgrees :
+    extraSpiderDiagramOf 1 (([identityStrandAt 0] ++ [comultAt 0, multAt 0]) ++ [comultAt 0])
+      = extraSpiderDiagramOf 1 (([identityStrandAt 0] ++ ([] : List BrauerAtom)) ++ [comultAt 0]) :=
+  spiderConv_partitionSound spiderConv_special_twoSidedContext
+
 /-! ## Honesty markers — the gate-free table (shipped) and the two-sided residuals (walled) -/
 
 /-- ★ **Honesty marker — the DECIDED per-row seed-view table is SHIPPED.**  The thirteen `frobXSeedView_ordered`
@@ -572,15 +629,25 @@ composed two-row identification (`spiderConvTable_frobLeft_frobRight_identifies_
 finite-decided per row.  `= true`. -/
 def fxFrob_hasSpiderConvTable : Bool := true
 
-/-- **Honesty marker — the two-sided SUFFIX congruence is the standing residual (r6, walled).**  `SpiderConvTable`
-whiskers a row after a PREFIX; the two-sided context `prefix ++ side ++ suffix` additionally needs: view-equal inputs
-to a `stepWiring` fold give view-equal outputs (forward view-functoriality).  This is NOT a second application of the
-r4 keystone `processBrauer_forgetView_eq_ofCanonicalViewParts` — that keystone fixes ONE mid-state and varies the WORD
-(`atomsAlpha` vs `atomsBeta`), whereas the suffix leg fixes ONE word (`suffix`) and varies the MID-STATE
-(`processBrauer P sideA` vs `processBrauer P sideB`); the transposed quantifier shape structurally blocks reuse.  It
-is a genuinely new brick: generalize the cap/cup per-atom view congruence (`matchingViewAgrees_stepCap` /
-`matchingViewAgrees_stepCup`, `MatchingViewStability.lean`, proved for the cap/cup specializations only) to a general
-`stepWiringArcs` fold, then a `processBrauer` fold induction.  Real, tractable, out of r5 scope.  `= false`. -/
+/-- ★ **Honesty marker — a concrete TWO-SIDED context witness is SHIPPED (piece 2, partial).**
+`spiderConv_special_twoSidedContext` identifies `δμδ ≡ δ` between a non-empty prefix (identity strand) AND a non-empty
+suffix (comultiplication), routed through the r4 bridge with the seed-local two-sided view decided
+(`specialTwoSidedSeedView_ordered`); partition-real (`spiderConv_special_twoSidedContext_partitionAgrees`).  So the
+machinery DOES handle two-sided contexts per-instance whenever the seed-local two-sided view is decided.  The GENERAL
+(uniform-over-all-suffixes) congruence is the separate `fxFrob_hasSpiderSuffixCongruence` residual.  `= true`. -/
+def fxFrob_hasTwoSidedContextWitness : Bool := true
+
+/-- **Honesty marker — the UNIFORM two-sided SUFFIX congruence is the standing residual (r6, walled).**  A concrete
+two-sided context is decided per-instance (`fxFrob_hasTwoSidedContextWitness`); what is NOT shipped is the UNIFORM
+congruence closure `SpiderConvTable n a b → SpiderConvTable n (a ++ suffix) (b ++ suffix)` for ALL suffixes.  That
+needs: view-equal inputs to a `stepWiring` fold give view-equal outputs (forward view-functoriality).  This is NOT a
+second application of the r4 keystone `processBrauer_forgetView_eq_ofCanonicalViewParts` — that keystone fixes ONE
+mid-state and varies the WORD (`atomsAlpha` vs `atomsBeta`), whereas the suffix leg fixes ONE word (`suffix`) and
+varies the MID-STATE (`processBrauer P sideA` vs `processBrauer P sideB`); the transposed quantifier shape structurally
+blocks reuse.  It is a genuinely new brick: generalize the cap/cup per-atom view congruence
+(`matchingViewAgrees_stepCap` / `matchingViewAgrees_stepCup`, `MatchingViewStability.lean`, proved for the cap/cup
+specializations only) to a general `stepWiringArcs` fold, then a `processBrauer` fold induction.  Real, tractable, out
+of r5 scope.  `= false`. -/
 def fxFrob_hasSpiderSuffixCongruence : Bool := false
 
 /-- **Honesty marker — the BOUNDARY-CHANGING prefix leg is the standing residual (walled).**  `SpiderConvTable`
