@@ -17,5 +17,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.repFull
 #assert_no_axioms FX1Poly.Polygraph.repFull_boundary
 #assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasBoundaryRepresentative
+#assert_no_axioms FX1Poly.Polygraph.castBoundary_id
+#assert_no_axioms FX1Poly.Polygraph.repNF_of_targetLen
+#assert_no_axioms FX1Poly.Polygraph.repNF_of_bothZero
+#assert_no_axioms FX1Poly.Polygraph.repFull_populated
+#assert_no_axioms FX1Poly.Polygraph.repFull_zeroZero
+#assert_no_axioms FX1Poly.Polygraph.idNFConv
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightPullConv
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftPullConv
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightWhiskerEqConv
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftWhiskerEqConv
+#assert_no_axioms FX1Poly.Polygraph.canonThroughT_reindexSource
+#assert_no_axioms FX1Poly.Polygraph.canonThroughT_reindexTarget
+#assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasNormalizeFull
 
 end FX1PolyAudit
