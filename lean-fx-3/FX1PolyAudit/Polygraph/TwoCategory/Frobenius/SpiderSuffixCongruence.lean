@@ -36,6 +36,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.spiderConv_special_suffixComult_distinct
 #assert_no_axioms FX1Poly.Polygraph.spiderConv_special_suffixComult_partitionAgrees
 
+-- FROB-6: the full two-sided (prefix AND suffix) context capstone
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_prefixAndSuffix
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_prefixAndSuffix_distinct
+#assert_no_axioms FX1Poly.Polygraph.spiderConv_special_prefixAndSuffix_partitionAgrees
+
+-- FROB-6: the closed-component counter — machine-checked permanent wall
+#assert_no_axioms FX1Poly.Polygraph.closedCount_notDeterminedByBoundaryView
+#assert_no_axioms FX1Poly.Polygraph.fxFrob_hasCospanClosedCountPermanentWall
+
 -- FROB-6: the honesty markers (new + the flipped ledger flag)
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderSuffixCongruenceShipped
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderSuffixCongruence

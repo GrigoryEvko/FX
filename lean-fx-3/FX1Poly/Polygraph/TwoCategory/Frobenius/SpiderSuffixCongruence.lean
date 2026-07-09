@@ -794,4 +794,76 @@ of the r5 table).  NON-VACUOUS: the ONE lemma whiskers TWO distinct suffixes ont
 (`spiderConv_special_suffixComult_partitionAgrees`).  `= true`. -/
 def fxFrob_hasSpiderSuffixCongruenceShipped : Bool := true
 
+/-! ## The full two-sided (prefix AND suffix) context — the r6 capstone, subsuming the r5 per-instance witness -/
+
+/-- The comultiplication suffix is in range on the produced strand of the special row whiskered after an
+identity-strand prefix (boundary `1`). -/
+private theorem inRange_specialAfterPrefix_comult :
+    BrauerWordInRange
+      (processBrauer (brauerSeed 1) ([identityStrandAt 0] ++ frobSpecial.lhs)).openWires.length [comultAt 0] :=
+  BrauerWordInRange.cons (comultAt 0) 0 rfl (by decide) (BrauerWordInRange.nil 2)
+
+/-- ★ **The special law in a FULL two-sided context — prefix identity strand AND suffix comultiplication —
+UNIFORMLY.**  The r5 gate-free table gives the special row after the identity-strand prefix
+(`spiderConvTable_special_afterIdentityPrefix`); the r6 uniform suffix congruence
+(`spiderConvTable_suffixCongruence`) then appends the suffix comultiplication.  This is exactly the r5 per-instance
+witness `spiderConv_special_twoSidedContext` (prefix identity + suffix comult around the special row), now produced
+UNIFORMLY through the general machinery instead of a bespoke seed-local `decide` — demonstrating the suffix brick
+SUBSUMES the per-instance two-sided context. -/
+theorem spiderConv_special_prefixAndSuffix :
+    SpiderConv 1 (([identityStrandAt 0] ++ frobSpecial.lhs) ++ [comultAt 0])
+      (([identityStrandAt 0] ++ frobSpecial.rhs) ++ [comultAt 0]) :=
+  spiderConvTable_suffixCongruence (by decide) spiderConvTable_special_afterIdentityPrefix
+    inRange_specialAfterPrefix_comult
+
+/-- The full-context identification genuinely relates DISTINCT words. -/
+theorem spiderConv_special_prefixAndSuffix_distinct :
+    (([identityStrandAt 0] ++ frobSpecial.lhs) ++ [comultAt 0])
+        ≠ (([identityStrandAt 0] ++ frobSpecial.rhs) ++ [comultAt 0])
+      ∧ SpiderConv 1 (([identityStrandAt 0] ++ frobSpecial.lhs) ++ [comultAt 0])
+          (([identityStrandAt 0] ++ frobSpecial.rhs) ++ [comultAt 0]) :=
+  ⟨by decide, spiderConv_special_prefixAndSuffix⟩
+
+/-- ★ **The full two-sided context identification is partition-real** — via `spiderConv_partitionSound`. -/
+theorem spiderConv_special_prefixAndSuffix_partitionAgrees :
+    extraSpiderDiagramOf 1 (([identityStrandAt 0] ++ frobSpecial.lhs) ++ [comultAt 0])
+      = extraSpiderDiagramOf 1 (([identityStrandAt 0] ++ frobSpecial.rhs) ++ [comultAt 0]) :=
+  spiderConv_partitionSound spiderConv_special_prefixAndSuffix
+
+/-! ## The closed-component COUNTER — the exact jam, machine-checked as a PERMANENT wall (third naming)
+
+The r6 boundary-view bricks (W1 suffix forward-fold, W2 left pad) are BOUNDARY-INDEXED by construction: W1's
+`StepNodeCorr` invariant tracks only boundary reads and fresh legs; W2's pad taxonomy classifies only boundary reads.
+Neither exposes an interior-own-root correspondence.  The full special `Cospan(FinSet)` invariant `spiderDiagramOf`
+additionally carries `closedComponentCount`, which scans `List.range state.nextFresh` (INTERIOR own-roots touching no
+boundary).  The witness below MACHINE-CHECKS that the boundary partition view provably does NOT determine that count:
+the bone circle and the empty word induce the SAME boundary partition (empty boundary) but DIFFERENT closed counts
+(`1` vs `0`).  So no amount of boundary-view threading — the entire r3/r4/r5/r6 partition machinery — can recover the
+count.  The counter is therefore PERMANENTLY walled: it needs a SEPARATE interior-own-root correspondence invariant,
+orthogonal to every boundary-view brick shipped.  This is the third naming of the jam (FROB-3, FROB-4, FROB-6); no
+further boundary-view attempt can move it. -/
+
+/-- ★ **The boundary partition view provably does NOT determine the closed-component count.**  The bone circle
+(`unitAt 0, counitAt 0`) and the empty word induce the SAME `extraSpiderDiagramOf` (empty boundary partition) but
+DIFFERENT `spiderDiagramOf` (closed counts `1` vs `0`).  A machine-checked counterexample: any soundness restricted to
+the boundary partition view (the r3–r6 machinery) is provably insufficient for the full `Cospan(FinSet)` count
+invariant. -/
+theorem closedCount_notDeterminedByBoundaryView :
+    extraSpiderDiagramOf 0 [unitAt 0, counitAt 0] = extraSpiderDiagramOf 0 ([] : List BrauerAtom)
+      ∧ spiderDiagramOf 0 [unitAt 0, counitAt 0] ≠ spiderDiagramOf 0 ([] : List BrauerAtom) := by
+  refine ⟨by decide, ?_⟩
+  decide
+
+/-- ★ **Honesty marker — the closed-component COUNTER is PERMANENTLY walled (r6, machine-checked orthogonality).**
+Its jam is named for the THIRD time (FROB-3 / FROB-4 / FROB-6) and now PROVED orthogonal to every boundary-view
+brick: `closedCount_notDeterminedByBoundaryView` machine-checks that the boundary partition view does NOT determine
+`closedComponentCount` (the bone circle and the empty word: SAME partition, DIFFERENT count).  The r6 bricks W1
+(`StepNodeCorr` covers boundary reads + fresh legs only) and W2 (pad taxonomy classifies boundary reads only) are
+boundary-indexed by construction, so neither could ever recover the interior-own-root count — this is not "hard", it
+is provably out of reach of boundary-view threading.  Closing `fxFrob_hasCospanClosedCountSoundness` requires a
+SEPARATE interior-own-root correspondence invariant (a closed-count congruence under rename + boundary-connected-merge
+invariance), a genuinely different machine.  No further boundary-view attempt is warranted.  `= true` (the wall is
+machine-checked and permanent; the count soundness itself remains `fxFrob_hasCospanClosedCountSoundness = false`). -/
+def fxFrob_hasCospanClosedCountPermanentWall : Bool := true
+
 end FX1Poly.Polygraph

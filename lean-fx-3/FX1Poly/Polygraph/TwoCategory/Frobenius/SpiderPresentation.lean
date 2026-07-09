@@ -539,10 +539,12 @@ re-homing `processBrauer_forgetView_eq_ofCanonicalViewParts` + bridge `spiderCon
 never a boundary-view / post-prefix-state quantifier — the row's view obligation is discharged ONCE by the decided
 seed-view table (`fxFrob_hasSpiderSeedViewTable`), and `spiderConvTable_partitionSound` is the FUNCTORIAL partition
 soundness of the whole gate-free layer.  This is the boundary-COMPLEMENT-restricted contextual rewrite (BGKSZ Thm 35),
-finite-decided per row.  Two SEPARATE residuals remain, each with its own marker — NOT covered by this one: the
-BOUNDARY-CHANGING prefix (`fxFrob_hasSpiderBoundaryChangingPrefix = false`, the nonzero-offset `shiftBrauerWord` left
-pad supplying canonical view parts at a changed width) and the two-sided SUFFIX congruence
-(`fxFrob_hasSpiderSuffixCongruence = false`, the forward `stepWiring` view-functoriality brick).  `= true`. -/
+finite-decided per row.  Two SEPARATE residuals this marker named are now BOTH shipped (r6): the BOUNDARY-CHANGING
+prefix (`fxFrob_hasSpiderBoundaryChangingPrefix = true`, the nonzero-offset `shiftBrauerWord` left pad,
+`Frobenius/SpiderLeftPadCongruence.lean`) and the two-sided SUFFIX congruence
+(`fxFrob_hasSpiderSuffixCongruence = true`, the forward `stepWiring` view-functoriality brick,
+`Frobenius/SpiderSuffixCongruence.lean`), composing into the full prefix+suffix context capstone
+`spiderConv_special_prefixAndSuffix`.  `= true`. -/
 def fxFrob_hasContextualSpiderSoundness : Bool := true
 
 /-- **Honesty marker — the FULL special (`Cospan(FinSet)`) closed-component soundness is the standing residual
@@ -554,7 +556,13 @@ full diagram (partition + count `0`) is preserved after a prefix (`specialAfterP
 `fxFrob_hasSpecialRowClosedCountInContext`).  The sole remaining obstacle is that `closedComponentCount` scans
 `List.range state.nextFresh` (interior own-roots) while the mid-state relativization shifts the fresh block above
 `nextFresh` via `relativeWireMap`; the boundary-only view parts the bridge transports do NOT expose an interior
-own-root correspondence under that shift.  Real, tractable work; not shipped.  `= false`. -/
+own-root correspondence under that shift.  ★ **PERMANENTLY walled (r6, machine-checked orthogonality).**  The r6
+boundary-view bricks (W1 suffix forward-fold, W2 left pad) are boundary-indexed by construction and provably cannot
+recover the count: `closedCount_notDeterminedByBoundaryView` (`Frobenius/SpiderSuffixCongruence.lean`) machine-checks
+that the boundary partition view does NOT determine `closedComponentCount` (the bone circle and the empty word: SAME
+partition, DIFFERENT count).  So this is not "hard" but provably out of reach of boundary-view threading; closing it
+needs a SEPARATE interior-own-root correspondence invariant (`fxFrob_hasCospanClosedCountPermanentWall = true` records
+the machine-checked wall).  This soundness flag itself stays `= false`. -/
 def fxFrob_hasCospanClosedCountSoundness : Bool := false
 
 /-- **Honesty marker — the symbolic `SaturatedConvOver` congruence is the r2 deliverable.**  The value-level engine +
