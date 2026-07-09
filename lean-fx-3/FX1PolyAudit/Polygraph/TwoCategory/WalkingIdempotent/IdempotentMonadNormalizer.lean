@@ -17,6 +17,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.growTower_one_unfold
 #assert_no_axioms FX1Poly.Polygraph.foldThenGrow
 #assert_no_axioms FX1Poly.Polygraph.growThenFold
+#assert_no_axioms FX1Poly.Polygraph.foldWhiskerStep
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftCanonOne
+#assert_no_axioms FX1Poly.Polygraph.foldThenGrow_tPowerThree
+#assert_no_axioms FX1Poly.Polygraph.homTThenT_thin_smoke
+#assert_no_axioms FX1Poly.Polygraph.emptyHom_tThenT_separates
 #assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasFoldGrowLadder
+#assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasWhiskerLeftCanonBase
+#assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasAssembledGeneralNormalizer
 
 end FX1PolyAudit
