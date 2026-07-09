@@ -272,4 +272,34 @@ exactly the open multi-block `BRAUER-BREACH`.  Isolated as the `bridge` antecede
 `crossingFragment_complete_ofBridgeAndStaircase`; inhabited only at `generatorCount = 0` so far.  `= false`. -/
 def fxFrob_hasCrossingPartitionPermutationBridge : Bool := false
 
+/-! ## P4 — the completion ledger (the honest terminal state of the r10 round) -/
+
+/-- ★★ **Honesty ledger — WP-FROB r10 is CLOSED as WALL + banked WIRE; the spider theorem is NOT flipped.**
+
+  * **WALL (P1).**  The row-level suffix congruence `RowSuffixCongruence` — the `SpiderConvRows` codomain of the shipped
+    `spiderConvRows_suffixCongruence` — is structurally unavailable: every non-equivalence generator fires content at
+    the TAIL (`ofTable` / `rowBone` / `interchange`), so a common suffix escapes re-absorption; the only closer lands in
+    `SpiderConv` via the `whisker` primitive (`rowSuffixCongruence_escapesToSpiderConv`).  Constructor-level, machine-
+    confirmed.  `fxFrob_hasRowLevelSuffixCongruence = false`.
+
+  * **WIRE (P2).**  The carrier-independent BREACH-2 crossing canonicity re-homes into the row program:
+    `frobCrossingStaircase` (= `recComb`) + `frobCrossingStaircase_respectsPermutation` (= `combCanonicity`) + concrete
+    witnesses (`frobCrossingStaircase_r9jam`, `frobCrossingStraightening_r9jam`).  The comb rerun ASSEMBLY
+    `crossingWords_equalPerm_convRows_ofStaircase` transports the crossing straightening into `SpiderConvRows` modulo
+    the ONE walled staircase brick (SOUND — no obstruction-A detour).  `fxFrob_hasCrossingCanonicityImport = true`,
+    `fxFrob_hasCrossingRerunAssembly = true`.
+
+  * **CASCADE (P3).**  `crossingFragment_complete_ofBridgeAndStaircase` decomposes crossing-fragment completeness into
+    EXACTLY two typed antecedents — the staircase brick (rides P1's walled `RowSuffixCongruence`) and the
+    partition→permutation bridge (the open multi-block `BRAUER-BREACH`, `fxFrob_hasCrossingPartitionPermutationBridge =
+    false`).  Both discharge at `generatorCount = 0`, so the conditional is non-vacuous end-to-end.
+
+  * **NOT flipped.**  No fragment-uniform straightening was produced; `fxFrob_hasCrossingFreeStraightening` stays
+    `false` and the whisker primitive stays a primitive.  The r10 gain is the precise LOCALISATION of the whole
+    remaining crossing-fragment obstruction to two named bricks, one walled (row suffix congruence — table-redesign
+    route named) and one open (multi-block routing — `BRAUER-BREACH`).  The bequest: a suffix-parametric `SpiderConvTable`
+    firing shape (`prefix ++ row ++ suffix`) would discharge P1's brick and unblock the rerun.  `= true` (the ledger is
+    honestly recorded). -/
+def fxFrob_hasCrossingRerunLedger : Bool := true
+
 end FX1Poly.Polygraph

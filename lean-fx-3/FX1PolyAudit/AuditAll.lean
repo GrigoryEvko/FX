@@ -409,6 +409,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderLeftPadCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderSuffixCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderCompleteness
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderWhiskerDerivability
+import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderCrossingRerun
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
