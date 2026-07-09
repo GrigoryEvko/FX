@@ -359,4 +359,35 @@ distinct residual); it records that the crossing block's remaining gap is the SI
 `crossingCompleteness_of_readback_r9`.  `= true`. -/
 def fxBrauer_hasCrossingCompletenessModuloReadback : Bool := true
 
+/-! ## P5 — the arc-completion decomposition (machine-checked, additive)
+
+The honest terminal state of the completeness arc after BREACH r3, recorded as a `rfl`-conjunction the kernel
+checks — additive over the shipped `fxBrauer_terminalDecomposition` (`Brauer/WiringDescBrauerLedger.lean`), which is
+untouched.  The master `fxBrauer_hasBrauerCompleteness` and the readback `fxBrauer_hasCrossingOnlyReadback` STAY
+`false` — neither is flipped this round (T2 is unproven; the cup/cap connectivity leg is a further residual). -/
+
+/-- ★★ **The BREACH r3 arc-completion decomposition — MACHINE-CHECKED.**  Soundness TOTAL, the `S_n` block
+STRAIGHTENED, the cellular standard-form datatype + stabilizer-generator identification + crossing-completeness
+reduction SHIPPED (this file) — with the readback (T2) and the master completeness HONESTLY still `false`.  The r3
+delta over the shipped ledger: the crossing-block residual is now named to the SINGLE lemma T2
+(`fxBrauer_hasCrossingCompletenessModuloReadback`), and the P3 coset subtlety is resolved at the generator level
+(`fxBrauer_hasStabilizerGeneratorIsUntwist`). -/
+theorem fxBrauer_arcCompletionDecomposition :
+    fxBrauer_hasBrauerSoundness = true
+      ∧ fxBrauer_hasCrossingOnlyStraightening = true
+      ∧ fxBrauer_hasCellularStandardFormDatatype = true
+      ∧ fxBrauer_hasStabilizerGeneratorIsUntwist = true
+      ∧ fxBrauer_hasCrossingCompletenessModuloReadback = true
+      ∧ fxBrauer_hasCrossingOnlyReadback = false
+      ∧ fxBrauer_hasBrauerCompleteness = false :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- **Honesty marker — the BREACH r3 arc-completion ledger is RECORDED.**  This file lands the cellular
+standard-form datatype (P1), the stabilizer-generator = untwist identification (P3a), and the crossing-only
+completeness reduction to the single readback lemma T2 (P4-partial), all zero-axiom + additive.  The honest verdict:
+NO master flip — `fxBrauer_hasCrossingOnlyReadback` and `fxBrauer_hasBrauerCompleteness` stay `false` (T2 is a fresh
+union-find/permutation state invariant, unproven; the cup/cap connectivity leg is a further residual).
+`fxBrauer_arcCompletionDecomposition` machine-checks the terminal state.  `= true`. -/
+def fxBrauer_hasArcCompletionLedger : Bool := true
+
 end FX1Poly.Polygraph

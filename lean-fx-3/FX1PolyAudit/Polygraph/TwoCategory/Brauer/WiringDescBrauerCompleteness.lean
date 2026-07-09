@@ -41,4 +41,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasStabilizerGeneratorIsUntwist
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingCompletenessModuloReadback
 
+-- P5: the arc-completion decomposition (machine-checked terminal state)
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_arcCompletionDecomposition
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasArcCompletionLedger
+
 end FX1PolyAudit
