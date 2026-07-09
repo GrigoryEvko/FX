@@ -296,16 +296,20 @@ real-relation pushout: disjoint-component whiskers commute (isTrue), same-compon
 the monad component).  `= true`. -/
 def fxAmalg_hasCrossComponentSeparationWitness : Bool := true
 
-/-- **Honesty marker — a LIVE combined `isFalse` verdict is NOT r6-reachable; the r7 target.**  Deciding
-`crossPairAlpha ≁ crossPairBeta` as a pushout verdict THROUGH `blockDecompose` + the component decider needs (i)
-the P3 reconstruction reseat (`fxAmalg_hasReconstructionDecoderReseat = false`) to feed the monad decider in, and
-decisively (iii) the REFLECTING direction of purification — that a common `s`-whiskering of non-convertible monad
-blocks stays non-convertible (Nelson-Oppen / Baader-Tinelli block-projection completeness).  That reflection is
-SOUND for word-preserving / left-connected component presentations but BROKEN precisely for the monad's
-wire-creating unit/mult generators (arity `(0,1)` / `(2,1)`), as `DispatchSaturated.lean` residual (iii) states.
-The r7 target is exactly this purification-reflection for the wire-creating regime, whose only literature rescue
-(Ghilardi–Nicolini–Zucchelli) is a Noetherian, `T₀`-compatible interface theory; `fxAmalg_hasSaturatedDispatchTheorem`
-stays `false`.  `= false`. -/
-def fxAmalg_hasLiveMonadPushoutIsFalse : Bool := false
+/-- ★★★ **Honesty marker — the LIVE combined `isFalse` verdict SHIPS HYPOTHESIS-FREE (r8, the #2043 milestone).**
+`crossPairAlpha ≁ crossPairBeta` is now a LIVE pushout non-convertibility verdict, discharged in
+`Amalgam/PushoutBundle.lean` (`crossPairPushoutNonConvUnconditional`) — NOT via the `blockDecompose` + component
+decider DISPATCH this marker originally scoped (that route needed the P3 reconstruction reseat + the broken
+purification reflection for the wire-creating unit/mult regime), but via a DIFFERENT, direct route: the
+signature-generic arity fold `arityMonotoneMapOf`, a SEMANTIC invariant that reflects blockwise monad inequality
+straight off the ordinal fold (`[0, 2] ≠ [0, 1]`).  Its convertibility-soundness bundle
+`ArityFoldConvSound involutionMonadPushout.toModeSignature` is inhabited unconditionally
+(`pushoutArityFoldConvSound`) by re-homing the walking-monad Δ-fold soundness generic-over-a-face/degen arity
+discipline that the pushout's two reconstructed generators satisfy (via `interpretWordFrom_length`).  With r6's
+UNCONDITIONAL isTrue `crossPairConvertibleCounterpart` it is the COMPLETE discriminating pair over a real-relation
+pushout.  The GENERAL saturated dispatch decision (arbitrary pairs, via the walled purification reflection /
+reconstruction reseat) stays the r9+ residual (`Amalgam/PushoutBundle.lean` `fxAmalg_hasGeneralPushoutDispatch`,
+`fxAmalg_hasSaturatedDispatchTheorem`).  `= true`. -/
+def fxAmalg_hasLiveMonadPushoutIsFalse : Bool := true
 
 end FX1Poly.Polygraph.Amalgam

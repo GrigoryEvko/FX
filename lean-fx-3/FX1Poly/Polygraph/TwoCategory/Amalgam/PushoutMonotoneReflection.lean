@@ -382,17 +382,17 @@ discipline, not the interface.  Literature: free-product / Δ₊ word problem (N
 §VII.5); Nelson-Oppen soundness (the projecting direction needs no convexity).  `= true`. -/
 def fxAmalg_hasArityFoldReflection : Bool := true
 
-/-- **Honesty marker — the reflection's residual is EXACTLY `ArityFoldConvSound` for the pushout (the r8 target);
-the LIVE isFalse stays hypothesis-CONDITIONAL.**  `crossPairPushoutNonConv` is green modulo
-`ArityFoldConvSound involutionMonadPushout.toModeSignature` — the Godement/interchange soundness plus the four fold
-congruence homomorphisms.  Inhabiting it is the re-homing of the walking-monad Δ-fold soundness
-(`monadMonotoneMapOf_interchange` + the four `monadMonotoneMapOf_*Congr`) onto the pushout signature; that re-homing
-needs the fold's ordinal-embedding discipline (`monadRunMonoCell_localEmbed`), sound only because every 2-generator
-has arity `(0,1)` or `(2,1)` — a `cases generator` fact on `MonadTwoCell` that for the pushout must be re-established
-by casing on the RECONSTRUCTED generators (index `0` = `eta`, index `1` = `mu`).  The interchange field is the
-genuine simplicial brick (cap-free disjoint-window commute); the four congruence fields are fold functoriality.  So
-`fxAmalg_hasLiveMonadPushoutIsFalse` (`DeciderReseat.lean`) stays `false` — the reflection chain is NOT yet
-hypothesis-free.  `= false`. -/
-def fxAmalg_hasPushoutArityFoldConvSoundness : Bool := false
+/-- ★ **Honesty marker — the reflection's residual `ArityFoldConvSound` for the pushout is DISCHARGED (r8).**
+`crossPairPushoutNonConv` was green modulo `ArityFoldConvSound involutionMonadPushout.toModeSignature` — the
+Godement/interchange soundness plus the four fold congruence homomorphisms.  `Amalgam/PushoutBundle.lean` now
+inhabits it (`pushoutArityFoldConvSound`) by re-homing the walking-monad Δ-fold soundness generic-over-a-face/degen
+arity DISCIPLINE (`arityFoldConvSound_ofDiscipline`) and proving the pushout satisfies that discipline
+(`pushoutHasFaceDegenArity`): the reconstruction arity fact — every 2-generator has arity `(0,1)` or `(2,1)` — is
+established by the interpreter length invariant `interpretWordFrom_length` casing the two `Fin 2` reconstructed
+generators (index `0` = `eta`, index `1` = `mu`).  The interchange field remains the genuine cap-free
+disjoint-window commute (`embedLocalMap_disjointCommute`, reused verbatim); the four congruence fields are fold
+functoriality.  Hence `crossPairPushoutNonConvUnconditional` is hypothesis-free and `fxAmalg_hasLiveMonadPushoutIsFalse`
+(`DeciderReseat.lean`) is now `true`.  `= true`. -/
+def fxAmalg_hasPushoutArityFoldConvSoundness : Bool := true
 
 end FX1Poly.Polygraph.Amalgam

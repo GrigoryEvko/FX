@@ -160,6 +160,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ConvFullFunctorDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealCoprojection
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DeciderReseat
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMonotoneReflection
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutBundle
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
