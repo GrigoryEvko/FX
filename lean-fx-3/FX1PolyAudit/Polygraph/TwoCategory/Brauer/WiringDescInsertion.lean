@@ -145,4 +145,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_braid_smoke
 #assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_braid_fivefold_smoke
 
+-- WP-BRAUER r10: the braid-ascent carry re-insertion (Regime B, conditional on the three swept sub-steps) — the honest
+-- braid-mode analog of the COMMUTE-full reduction — and its concrete Regime-B smoke landing on the braid pair.
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braidAscent_reInsert
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braidAscent_reInsert_smoke
+
 end FX1PolyAudit

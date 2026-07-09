@@ -1989,6 +1989,123 @@ theorem applyAdjacentSwap_braid_fivefold_smoke :
         (applyAdjacentSwap [1, 3, 0, 2] 1) 2) 1) 2) 1 = applyAdjacentSwap [1, 3, 0, 2] 2 :=
   applyAdjacentSwap_braid_fivefold [1, 3, 0, 2] 1 (by decide)
 
+/-! ## WP-BRAUER r10 — the BRAID-ASCENT CARRY RE-INSERTION (Regime B, conditional on the three swept sub-steps)
+
+The honest analog, for the BRAID mode, of the shipped `crossingInsertionStep_commute_full`.  In Regime B the local
+braid move (`crossingInsertionStep_braid_localReduction`) turns the leaf's `canonicalCrossingWord perm ++ [d+1]` into
+`canonicalCrossingWord (perm · s_d · s_{d+1}) ++ [d, d+1, d]` — the trailing triple `[d, d+1, d]` is the CARRY.  This
+lemma re-inserts that triple one letter at a time, left to right, GIVEN the three insertion steps at the swept
+permutations `p0 = perm · s_d · s_{d+1}`, `p1 = p0 · s_d`, `p2 = p1 · s_{d+1}` — and the five-fold braid collapse
+(`applyAdjacentSwap_braid_fivefold`) certifies the final swept permutation `p2 · s_d` IS the leaf's target
+`perm · s_{d+1}`.  So the leaf (in Regime B) is `BrauerConvFree7` GIVEN `step0`, `step1`, `step2`.
+
+Why this SHARPENS but does NOT close: by the inversion-count arithmetic of the ascent (all three re-insertions are
+themselves ascents, `inv p0 = inv perm - 2`, `inv p1 = inv perm - 1`, `inv p2 = inv perm`), the outer Lehmer induction
+discharges `step0` and `step1` (strictly smaller inversion count) but NOT `step2` — an insertion at `inv perm`, the SAME
+Lehmer level.  So the braid-ascent carry re-inserts to a residual at the same level, precisely the recon's plateau: the
+recursion is NOT on `inversionCount`.  And this covers only Regime B — Regime A (`leftmostDescent (perm · s_d) = d - 1`,
+the canonical example `[1, 3, 0, 2]`) needs a preparatory commute into the prefix BEFORE any braid, so the local braid
+move does not even apply.  See the residual marker.  Zero-axiom; pure convertibility chaining + the five-fold. -/
+
+/-- ★★ **The braid-ascent carry re-insertion (Regime B).**  For a Regime-B `perm` (`d = leftmostDescent perm`, once-
+bubbled `perm · s_d` non-identity with `leftmostDescent (perm · s_d) = d + 1`) in range, GIVEN the three insertion steps
+re-inserting `[d, d+1, d]` at the swept permutations `p0 = perm · s_d · s_{d+1}`, `p1 = p0 · s_d`, `p2 = p1 · s_{d+1}`,
+the braid-ascent leaf holds: `canonicalCrossingWord perm ++ [d+1] ~ canonicalCrossingWord (perm · s_{d+1})`.  PROOF:
+the shipped local braid move gives `~ canonicalCrossingWord p0 ++ [d, d+1, d]`; the three steps (each whiskered by the
+remaining tail) re-canonicalise the triple to `canonicalCrossingWord (p2 · s_d)`; the five-fold collapse
+`applyAdjacentSwap_braid_fivefold` identifies `p2 · s_d = perm · s_{d+1}`. -/
+theorem crossingInsertionStep_braidAscent_reInsert (perm : List Nat)
+    (nonIdentity : isIdentityPerm perm = false)
+    (nonIdentitySwapped : isIdentityPerm (applyAdjacentSwap perm (leftmostDescent perm)) = false)
+    (regimeB : leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm)) = leftmostDescent perm + 1)
+    (inRange : leftmostDescent perm + 2 < perm.length)
+    (step0 : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+        ++ [leftmostDescent perm]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm)))))
+    (step1 : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm))
+        ++ [leftmostDescent perm + 1]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm)) (leftmostDescent perm + 1)))))
+    (step2 : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm)) (leftmostDescent perm + 1))
+        ++ [leftmostDescent perm]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm)) (leftmostDescent perm + 1)) (leftmostDescent perm))))) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [leftmostDescent perm + 1]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm + 1)))) := by
+  have fivefold : applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+        (leftmostDescent perm)) (leftmostDescent perm + 1)) (leftmostDescent perm)
+      = applyAdjacentSwap perm (leftmostDescent perm + 1) :=
+    applyAdjacentSwap_braid_fivefold perm (leftmostDescent perm) inRange
+  have localMove :=
+    crossingInsertionStep_braid_localReduction perm nonIdentity nonIdentitySwapped regimeB
+  have conv1 : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+        ++ [leftmostDescent perm, leftmostDescent perm + 1, leftmostDescent perm]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm))
+        ++ [leftmostDescent perm + 1, leftmostDescent perm])) := by
+    rw [← appendSnocAssoc (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)))
+          (leftmostDescent perm) [leftmostDescent perm + 1, leftmostDescent perm],
+      crossingWord_append (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+        ++ [leftmostDescent perm]) [leftmostDescent perm + 1, leftmostDescent perm],
+      crossingWord_append (canonicalCrossingWord (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm))) [leftmostDescent perm + 1, leftmostDescent perm]]
+    exact BrauerConvFree7.whiskerRight
+      (crossingWord [leftmostDescent perm + 1, leftmostDescent perm]) step0
+  have conv2 : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm))
+        ++ [leftmostDescent perm + 1, leftmostDescent perm]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm)) (leftmostDescent perm + 1))
+        ++ [leftmostDescent perm])) := by
+    rw [← appendSnocAssoc (canonicalCrossingWord (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm))) (leftmostDescent perm + 1) [leftmostDescent perm],
+      crossingWord_append (canonicalCrossingWord (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm))
+        ++ [leftmostDescent perm + 1]) [leftmostDescent perm],
+      crossingWord_append (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+          (leftmostDescent perm)) (leftmostDescent perm + 1))) [leftmostDescent perm]]
+    exact BrauerConvFree7.whiskerRight (crossingWord [leftmostDescent perm]) step1
+  rw [← fivefold]
+  exact BrauerConvFree7.trans localMove (BrauerConvFree7.trans conv1 (BrauerConvFree7.trans conv2 step2))
+
+/-- Non-vacuity — the carry re-insertion CLOSES a concrete Regime-B braid-ascent leaf.  On `[2, 0, 1, 3]`
+(`d = leftmostDescent = 0`, insert `s_1`, an ascent to `[2, 1, 0, 3]`, non-reflex, Regime B), the swept permutation
+`p0 = perm · s_0 · s_1 = [0, 1, 2, 3]` is the identity, so all three re-insertion steps are pure reflexivity.  The
+reduction then yields the leaf conclusion `crossingWord [1, 0, 1] ~ crossingWord [0, 1, 0]` — exactly the braid pair,
+reached THROUGH the carry mechanism (local braid + five-fold-aligned triple re-insertion). -/
+theorem crossingInsertionStep_braidAscent_reInsert_smoke :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord [2, 0, 1, 3] ++ [leftmostDescent [2, 0, 1, 3] + 1]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap [2, 0, 1, 3] (leftmostDescent [2, 0, 1, 3] + 1)))) :=
+  crossingInsertionStep_braidAscent_reInsert [2, 0, 1, 3] (by decide) (by decide) (by decide) (by decide)
+    (BrauerConvFree7.ofFree (BrauerConvFree.refl _))
+    (BrauerConvFree7.ofFree (BrauerConvFree.refl _))
+    (BrauerConvFree7.ofFree (BrauerConvFree.refl _))
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — WP-BRAUER r9: the REFLEX mode + the DESCENT reduction are SHIPPED.**  The general reflexivity
