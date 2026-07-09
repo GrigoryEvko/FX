@@ -343,4 +343,306 @@ theorem reseatCellInv_whiskerRight_whiskerLeft {sm ms mt tm : MonadMode}
               (reseatCellInv body))))).trans
       (ReseatCastKit.castBoundaryTrans _ _ _ _ _))
 
+/-! ## B4 — the inverse conv functoriality: `reseatCellInv` preserves the free rewrites, then the completed conv -/
+
+/-- ★ `reseatCellInv` preserves the twelve free 3-cell rewrites — the arm-for-arm inverse mirror of
+`reseatTwoCellStep`, with `reseatCellInv` / `reseatPathInv` / `reseatPathInv_composePath` swapped in and the two
+signatures exchanged (source `monadModeSignature`, target `monadComputad.toModeSignature`). -/
+theorem reseatTwoCellStepInv {sourceMode targetMode : monadModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath monadModeSignature.graph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath}
+    (step : TwoCellStep monadModeSignature cellAlpha cellBeta) :
+    TwoCellConvFull monadComputad.toModeSignature (reseatCellInv cellAlpha) (reseatCellInv cellBeta) := by
+  induction step with
+  | vcompIdLeft cellA =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdLeft (reseatCellInv cellA)))
+  | vcompIdRight cellA =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdRight (reseatCellInv cellA)))
+  | vcompAssoc cellA cellB cellC =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.vcompAssoc (reseatCellInv cellA) (reseatCellInv cellB) (reseatCellInv cellC)))
+  | whiskerLeftId oneCell path =>
+      simp only [reseatCellInv_whiskerLeft, reseatCellInv_id]
+      exact TwoCellConvFull.trans
+        (ReseatCastKit.castBoundaryCongr
+          (reseatPathInv_composePath oneCell path).symm
+          (reseatPathInv_composePath oneCell path).symm
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+            (@TwoCellStep.whiskerLeftId monadComputad.toModeSignature _ _ _
+              (reseatPathInv oneCell) (reseatPathInv path)))))
+        (ReseatCastKit.convFullOfCellEq (ReseatCastKit.castBoundaryId
+          (reseatPathInv_composePath oneCell path).symm))
+  | whiskerRightId path oneCell =>
+      simp only [reseatCellInv_whiskerRight, reseatCellInv_id]
+      exact TwoCellConvFull.trans
+        (ReseatCastKit.castBoundaryCongr
+          (reseatPathInv_composePath path oneCell).symm
+          (reseatPathInv_composePath path oneCell).symm
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+            (@TwoCellStep.whiskerRightId monadComputad.toModeSignature _ _ _
+              (reseatPathInv path) (reseatPathInv oneCell)))))
+        (ReseatCastKit.convFullOfCellEq (ReseatCastKit.castBoundaryId
+          (reseatPathInv_composePath path oneCell).symm))
+  | whiskerLeftVcomp oneCell cellB cellC =>
+      exact TwoCellConvFull.trans
+        (ReseatCastKit.castBoundaryCongr _ _
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+            (TwoCellStep.whiskerLeftVcomp (reseatPathInv oneCell)
+              (reseatCellInv cellB) (reseatCellInv cellC)))))
+        (ReseatCastKit.convFullOfCellEq (ReseatCastKit.castBoundaryVcomp _ _ _ _ _))
+  | whiskerRightVcomp oneCell cellA cellB =>
+      exact TwoCellConvFull.trans
+        (ReseatCastKit.castBoundaryCongr _ _
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+            (TwoCellStep.whiskerRightVcomp (reseatPathInv oneCell)
+              (reseatCellInv cellA) (reseatCellInv cellB)))))
+        (ReseatCastKit.convFullOfCellEq (ReseatCastKit.castBoundaryVcomp _ _ _ _ _))
+  | vcompCongrLeft cellB _ ih =>
+      exact TwoCellConvFull.vcompCongrLeft (reseatCellInv cellB) ih
+  | vcompCongrRight cellA _ ih =>
+      exact TwoCellConvFull.vcompCongrRight (reseatCellInv cellA) ih
+  | whiskerLeftCongr oneCell _ ih =>
+      exact ReseatCastKit.castBoundaryCongr _ _
+        (TwoCellConvFull.whiskerLeftCongr (reseatPathInv oneCell) ih)
+  | whiskerRightCongr oneCell _ ih =>
+      exact ReseatCastKit.castBoundaryCongr _ _
+        (TwoCellConvFull.whiskerRightCongr (reseatPathInv oneCell) ih)
+  | interchange cellA cellAUpper cellB cellBUpper =>
+      simp only [reseatCellInv_hcomp, reseatCellInv_vcomp]
+      refine TwoCellConvFull.trans
+        (ReseatCastKit.castBoundaryCongr _ _
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+            (TwoCellStep.interchange (reseatCellInv cellA) (reseatCellInv cellAUpper)
+              (reseatCellInv cellB) (reseatCellInv cellBUpper))))) ?_
+      exact ReseatCastKit.convFullOfCellEq (ReseatCastKit.castBoundaryVcomp _ _ _ _ _)
+
+/-- `reseatCellInv` preserves the free `TwoCellConv` closure — inverse mirror of `reseatTwoCellConv`. -/
+theorem reseatTwoCellConvInv {sourceMode targetMode : monadModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath monadModeSignature.graph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath}
+    (conv : TwoCellConv monadModeSignature cellAlpha cellBeta) :
+    TwoCellConvFull monadComputad.toModeSignature (reseatCellInv cellAlpha) (reseatCellInv cellBeta) := by
+  induction conv with
+  | ofStep step => exact reseatTwoCellStepInv step
+  | refl cell => exact TwoCellConvFull.refl (reseatCellInv cell)
+  | symm _ ih => exact TwoCellConvFull.symm ih
+  | trans _ _ ih1 ih2 => exact TwoCellConvFull.trans ih1 ih2
+
+/-- ★★ **B4 linchpin — `reseatCellInv` preserves the COMPLETED convertibility.**  `TwoCellConvFull` over the
+bespoke `monadModeSignature` transports along `reseatCellInv` to the reconstructed `monadComputad.toModeSignature`.
+The thirteen-constructor structural functoriality, arm-for-arm the inverse mirror of `reseatCell_preservesConv`
+(the `ofConv` case reuses `reseatTwoCellConvInv`; the whisker-functoriality laws reconcile `reseatCellInv`'s cast
+with the same-named target law through the `ReseatCastKit` cast algebra).  NO arm needs a monad coherence —
+`TwoCellConvFull` is law-free, pure cast LABOR. -/
+theorem reseatCellInv_preservesConv {sourceMode targetMode : monadModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath monadModeSignature.graph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath}
+    (convFull : TwoCellConvFull monadModeSignature cellAlpha cellBeta) :
+    TwoCellConvFull monadComputad.toModeSignature (reseatCellInv cellAlpha) (reseatCellInv cellBeta) := by
+  induction convFull with
+  | ofConv conv => exact reseatTwoCellConvInv conv
+  | whiskerLeftUnit body => exact TwoCellConvFull.whiskerLeftUnit (reseatCellInv body)
+  | whiskerRightUnit body =>
+      rename_i sourceMode targetMode oneCellDom oneCellCod
+      refine TwoCellConvFull.trans (ReseatCastKit.convFullOfCellEq ?_)
+        (TwoCellConvFull.trans
+          (ReseatCastKit.castBoundaryCongr
+            (reseatPathInv_composePath oneCellDom (identityPath targetMode)).symm
+            (reseatPathInv_composePath oneCellCod (identityPath targetMode)).symm
+            (TwoCellConvFull.whiskerRightUnit (reseatCellInv body)))
+          (ReseatCastKit.convFullOfCellEq ?_))
+      · exact reseatCellInv_whiskerRight (identityPath targetMode) body
+      · exact (ReseatCastKit.castBoundaryTrans _ _ _ _ _).trans
+          (reseatCellInv_castBoundary _ _ body).symm
+  | whiskerLeftComp oneCellOuter oneCellInner body =>
+      rename_i oneCellDom oneCellCod
+      refine TwoCellConvFull.trans (ReseatCastKit.convFullOfCellEq ?_)
+        (TwoCellConvFull.trans
+          (ReseatCastKit.castBoundaryCongr
+            ((congrArg (fun path => composePath path (reseatPathInv oneCellDom))
+                (reseatPathInv_composePath oneCellOuter oneCellInner).symm).trans
+              (reseatPathInv_composePath (composePath oneCellOuter oneCellInner) oneCellDom).symm)
+            ((congrArg (fun path => composePath path (reseatPathInv oneCellCod))
+                (reseatPathInv_composePath oneCellOuter oneCellInner).symm).trans
+              (reseatPathInv_composePath (composePath oneCellOuter oneCellInner) oneCellCod).symm)
+            (TwoCellConvFull.whiskerLeftComp (reseatPathInv oneCellOuter)
+              (reseatPathInv oneCellInner) (reseatCellInv body)))
+          (ReseatCastKit.convFullOfCellEq ?_))
+      · exact (reseatCellInv_whiskerLeft (composePath oneCellOuter oneCellInner) body).trans
+          ((congrArg (RawTwoCellExpr.castBoundary _ _)
+            (ReseatCastKit.whiskerLeftPathCongr
+              (reseatPathInv_composePath oneCellOuter oneCellInner).symm
+              (reseatCellInv body))).trans
+            (ReseatCastKit.castBoundaryTrans _ _ _ _ _))
+      · refine Eq.trans ?_ (reseatCellInv_castBoundary _ _
+          (RawTwoCellExpr.whiskerLeft oneCellOuter (RawTwoCellExpr.whiskerLeft oneCellInner body))).symm
+        refine Eq.trans ?_ (congrArg (RawTwoCellExpr.castBoundary _ _)
+          (reseatCellInv_whiskerLeft_whiskerLeft oneCellOuter oneCellInner body).symm)
+        exact (ReseatCastKit.castBoundaryTrans _ _ _ _ _).trans
+          (ReseatCastKit.castBoundaryTrans _ _ _ _ _).symm
+  | whiskerRightComp oneCellInner oneCellOuter body =>
+      rename_i oneCellDom oneCellCod
+      refine TwoCellConvFull.trans (ReseatCastKit.convFullOfCellEq ?_)
+        (TwoCellConvFull.trans
+          (ReseatCastKit.castBoundaryCongr
+            ((congrArg (composePath (reseatPathInv oneCellDom))
+                (reseatPathInv_composePath oneCellInner oneCellOuter).symm).trans
+              (reseatPathInv_composePath oneCellDom (composePath oneCellInner oneCellOuter)).symm)
+            ((congrArg (composePath (reseatPathInv oneCellCod))
+                (reseatPathInv_composePath oneCellInner oneCellOuter).symm).trans
+              (reseatPathInv_composePath oneCellCod (composePath oneCellInner oneCellOuter)).symm)
+            (TwoCellConvFull.whiskerRightComp (reseatPathInv oneCellInner)
+              (reseatPathInv oneCellOuter) (reseatCellInv body)))
+          (ReseatCastKit.convFullOfCellEq ?_))
+      · exact (reseatCellInv_whiskerRight (composePath oneCellInner oneCellOuter) body).trans
+          ((congrArg (RawTwoCellExpr.castBoundary _ _)
+            (ReseatCastKit.whiskerRightPathCongr
+              (reseatPathInv_composePath oneCellInner oneCellOuter).symm
+              (reseatCellInv body))).trans
+            (ReseatCastKit.castBoundaryTrans _ _ _ _ _))
+      · refine Eq.trans ?_ (reseatCellInv_castBoundary _ _
+          (RawTwoCellExpr.whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body))).symm
+        refine Eq.trans ?_ (congrArg (RawTwoCellExpr.castBoundary _ _)
+          (reseatCellInv_whiskerRight_whiskerRight oneCellInner oneCellOuter body).symm)
+        exact (ReseatCastKit.castBoundaryTrans _ _ _ _ _).trans
+          (ReseatCastKit.castBoundaryTrans _ _ _ _ _).symm
+  | whiskerExchange leftWhisker rightWhisker body =>
+      rename_i bodyDom bodyCod
+      refine TwoCellConvFull.trans (ReseatCastKit.convFullOfCellEq ?_)
+        (TwoCellConvFull.trans
+          (ReseatCastKit.castBoundaryCongr
+            ((congrArg (composePath (reseatPathInv leftWhisker))
+                (reseatPathInv_composePath bodyDom rightWhisker).symm).trans
+              (reseatPathInv_composePath leftWhisker (composePath bodyDom rightWhisker)).symm)
+            ((congrArg (composePath (reseatPathInv leftWhisker))
+                (reseatPathInv_composePath bodyCod rightWhisker).symm).trans
+              (reseatPathInv_composePath leftWhisker (composePath bodyCod rightWhisker)).symm)
+            (TwoCellConvFull.whiskerExchange (reseatPathInv leftWhisker)
+              (reseatPathInv rightWhisker) (reseatCellInv body)))
+          (ReseatCastKit.convFullOfCellEq ?_))
+      · exact reseatCellInv_whiskerLeft_whiskerRight leftWhisker rightWhisker body
+      · refine Eq.trans ?_ (reseatCellInv_castBoundary _ _
+          (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body))).symm
+        refine Eq.trans ?_ (congrArg (RawTwoCellExpr.castBoundary _ _)
+          (reseatCellInv_whiskerRight_whiskerLeft leftWhisker rightWhisker body).symm)
+        exact (ReseatCastKit.castBoundaryTrans _ _ _ _ _).trans
+          (ReseatCastKit.castBoundaryTrans _ _ _ _ _).symm
+  | vcompCongrLeft cellBeta _ ih => exact TwoCellConvFull.vcompCongrLeft (reseatCellInv cellBeta) ih
+  | vcompCongrRight cellAlpha _ ih => exact TwoCellConvFull.vcompCongrRight (reseatCellInv cellAlpha) ih
+  | whiskerLeftCongr oneCell _ ih =>
+      exact ReseatCastKit.castBoundaryCongr _ _
+        (TwoCellConvFull.whiskerLeftCongr (reseatPathInv oneCell) ih)
+  | whiskerRightCongr oneCell _ ih =>
+      exact ReseatCastKit.castBoundaryCongr _ _
+        (TwoCellConvFull.whiskerRightCongr (reseatPathInv oneCell) ih)
+  | refl cell => exact TwoCellConvFull.refl (reseatCellInv cell)
+  | symm _ ih => exact TwoCellConvFull.symm ih
+  | trans _ _ ih1 ih2 => exact TwoCellConvFull.trans ih1 ih2
+
+/-! ## B4 — the three BACKWARD law rows (bespoke law cell ==> reconstructed conv, via the DIRECT generator inversions)
+
+The inverse mirror of `reconLeftUnitConv` / `reconRightUnitConv` / `reconAssocConv`.  Cleaner than the forward: the
+generator inversions `reseatCellInv_monadUnit` / `reseatCellInv_monadMul` are `rfl` (the DIRECT `reseatGenInv`),
+whereas the forward's `reseatCell_reconEta` / `reseatCell_reconMu` are not.  `reseatCellInv` of a bespoke law
+composite reduces DEFINITIONALLY to the reconstructed shape carrying `reseatCellInv`-image generators (the
+`castBoundary`s collapse — `reseatPathInv_composePath` on `t`-powers is `rfl`); the generator equalities are lifted
+to `TwoCellConvFull` by `convFullOfCellEq` and whiskered / vcomp'd through `SaturatedConvOver`'s congruences to
+reach the reconstructed law composite, then chained with the reconstructed `MonadLawRelReconstructed` row. -/
+
+/-- The bespoke left-unit law transports to the reconstructed saturated conv, at the `reseatCellInv`-image
+boundary. -/
+theorem reconLeftUnitConvBackward :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed
+      (reseatCellInv monadLeftUnitCell) (reseatCellInv monadIdTCell) :=
+  SaturatedConvOver.trans
+    (SaturatedConvOver.trans
+      (SaturatedConvOver.vcompCongrLeft (reseatCellInv monadMulTwoCell)
+        (SaturatedConvOver.whiskerRightCongr monadComputadReconstructedT
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadUnit))))
+      (SaturatedConvOver.vcompCongrRight
+        (RawTwoCellExpr.whiskerRight (signature := monadComputad.toModeSignature)
+          monadComputadReconstructedT reconEta)
+        (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadMul))))
+    (SaturatedConvOver.ofRelation MonadLawRelReconstructed.leftUnit)
+
+/-- The bespoke right-unit law transports to the reconstructed saturated conv. -/
+theorem reconRightUnitConvBackward :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed
+      (reseatCellInv monadRightUnitCell) (reseatCellInv monadIdTCell) :=
+  SaturatedConvOver.trans
+    (SaturatedConvOver.trans
+      (SaturatedConvOver.vcompCongrLeft (reseatCellInv monadMulTwoCell)
+        (SaturatedConvOver.whiskerLeftCongr monadComputadReconstructedT
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadUnit))))
+      (SaturatedConvOver.vcompCongrRight
+        (RawTwoCellExpr.whiskerLeft (signature := monadComputad.toModeSignature)
+          monadComputadReconstructedT reconEta)
+        (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadMul))))
+    (SaturatedConvOver.ofRelation MonadLawRelReconstructed.rightUnit)
+
+/-- The bespoke associativity law transports to the reconstructed saturated conv. -/
+theorem reconAssocConvBackward :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed
+      (reseatCellInv monadAssocLeftCell) (reseatCellInv monadAssocRightCell) :=
+  SaturatedConvOver.trans
+    (SaturatedConvOver.trans
+      (SaturatedConvOver.trans
+        (SaturatedConvOver.vcompCongrLeft (reseatCellInv monadMulTwoCell)
+          (SaturatedConvOver.whiskerRightCongr monadComputadReconstructedT
+            (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadMul))))
+        (SaturatedConvOver.vcompCongrRight
+          (RawTwoCellExpr.whiskerRight (signature := monadComputad.toModeSignature)
+            monadComputadReconstructedT reconMu)
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadMul))))
+      (SaturatedConvOver.ofRelation MonadLawRelReconstructed.assoc))
+    (SaturatedConvOver.symm
+      (SaturatedConvOver.trans
+        (SaturatedConvOver.vcompCongrLeft (reseatCellInv monadMulTwoCell)
+          (SaturatedConvOver.whiskerLeftCongr monadComputadReconstructedT
+            (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadMul))))
+        (SaturatedConvOver.vcompCongrRight
+          (RawTwoCellExpr.whiskerLeft (signature := monadComputad.toModeSignature)
+            monadComputadReconstructedT reconMu)
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCellInv_monadMul)))))
+
+/-! ## B4 — the BACKWARD conv transport -/
+
+/-- The absorbing congruence for the reseat backward transport — the inverse mirror of `reseatCongruence`:
+`ofFull` via `reseatCellInv_preservesConv`; `ofRelation` via the three backward law rows; the two `vcomp`
+congruences cast-free; the two `whisker` congruences through `SaturatedConvOver.castBoundaryCongr`;
+`refl`/`symm`/`trans` structural. -/
+def reseatCongruenceBackward :
+    IsSaturatedCongruence monadModeSignature MonadLawRel
+      (fun cellA cellB =>
+        SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed
+          (reseatCellInv cellA) (reseatCellInv cellB)) where
+  ofFull full := SaturatedConvOver.ofFull (reseatCellInv_preservesConv full)
+  ofRelation row :=
+    match row with
+    | MonadLawRel.leftUnit => reconLeftUnitConvBackward
+    | MonadLawRel.rightUnit => reconRightUnitConvBackward
+    | MonadLawRel.assoc => reconAssocConvBackward
+  vcompCongrLeft {_ _ _ _ _ _ _ cellBeta} ih := SaturatedConvOver.vcompCongrLeft (reseatCellInv cellBeta) ih
+  vcompCongrRight {_ _ _ _ _ cellAlpha _ _} ih := SaturatedConvOver.vcompCongrRight (reseatCellInv cellAlpha) ih
+  whiskerLeftCongr {_ _ _ oneCell _ _ _ _} ih :=
+    SaturatedConvOver.castBoundaryCongr _ _ (SaturatedConvOver.whiskerLeftCongr (reseatPathInv oneCell) ih)
+  whiskerRightCongr {_ _ _ _ _ oneCell _ _} ih :=
+    SaturatedConvOver.castBoundaryCongr _ _ (SaturatedConvOver.whiskerRightCongr (reseatPathInv oneCell) ih)
+  refl cell := SaturatedConvOver.refl (reseatCellInv cell)
+  symm ih := SaturatedConvOver.symm ih
+  trans ihLeft ihRight := SaturatedConvOver.trans ihLeft ihRight
+
+/-- ★★ **The BACKWARD reseat conv transport** — a bespoke saturated convertibility transports along `reseatCellInv`
+to the reconstructed image: `SaturatedConvOver monadModeSignature MonadLawRel a b ==> SaturatedConvOver
+monadComputad.toModeSignature MonadLawRelReconstructed (reseatCellInv a) (reseatCellInv b)`.  Via the universal
+property `SaturatedConvOver.recInto` with `reseatCongruenceBackward`.  The isTrue-leg direction of the reseated
+reconstructed decider. -/
+theorem reseatConvBackward {sourceMode targetMode : monadModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath monadModeSignature.graph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath}
+    (conv : SaturatedConvOver monadModeSignature MonadLawRel cellAlpha cellBeta) :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed
+      (reseatCellInv cellAlpha) (reseatCellInv cellBeta) :=
+  SaturatedConvOver.recInto reseatCongruenceBackward conv
+
 end FX1Poly.Polygraph.Amalgam
