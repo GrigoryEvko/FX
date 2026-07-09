@@ -258,6 +258,249 @@ theorem quadReflectionsAreIdempotent :
         QuadCohesionSaturatedTwoCellConv quadUpperCounitRoundLeftCell quadNilPointSetIdCell) :=
   ⟨quadLowerCounitIsInvertible, quadMiddleUnitIsInvertible, quadUpperCounitIsInvertible⟩
 
+/-! ## The `pi0`-letter parity obstruction — the induced refutation provably does NOT lift
+
+r1 hand-waved "the `WalkingCohesion` non-thinness refutation does not lift to the quadruple".  This section
+PROVES it.  The induced refutation (`CohesionNonThinness`) worked because there `cohesionParity` weighs the
+primitive shape unit `η^ʃ` at the ENDO boundary `id ⇒ shape` with `true` while a parallel route weighs `false` —
+the weight is NOT determined by the boundary, so parity SEPARATES a parallel pair.  At the FUNCTOR level the
+shape monad is the COMPOSITE `pi0·disc`, so the three parity-`true` generators (`unitLower`, `counitLower`,
+`invCounitLower` — the entire `Π₀ ⊣ Disc` column) are exactly the generators that change the `pi0`-LETTER count
+of the boundary by an odd amount.  Hence `quadCohesionParity` is a FUNCTION of the boundary
+(`pi0`-parity of source XOR of target) — it is CONSTANT on every parallel pair, so it can separate NOTHING.  The
+very invariant that killed the induced lane is neutered here; the induced non-thinness has no functor-level
+image. -/
+
+/-- A `false` on both sides of an XOR (`false = bit ^^ bit`) — exhaustive `Bool` casing, `propext`-free. -/
+private theorem quadXorSelfFalse (bit : Bool) : (false : Bool) = bit.xor bit := by
+  cases bit <;> rfl
+
+/-- The vertical-composite XOR telescope `(a ^^ b) ^^ (b ^^ c) = a ^^ c` — exhaustive casing. -/
+private theorem quadXorCross (bitA bitB bitC : Bool) :
+    (bitA.xor bitB).xor (bitB.xor bitC) = bitA.xor bitC := by
+  cases bitA <;> cases bitB <;> cases bitC <;> rfl
+
+/-- The left-whisker XOR cancellation `g ^^ h = (p ^^ g) ^^ (p ^^ h)` — exhaustive casing. -/
+private theorem quadXorCancelLeft (bitP bitG bitH : Bool) :
+    bitG.xor bitH = (bitP.xor bitG).xor (bitP.xor bitH) := by
+  cases bitP <;> cases bitG <;> cases bitH <;> rfl
+
+/-- The right-whisker XOR cancellation `f ^^ g = (f ^^ p) ^^ (g ^^ p)` — exhaustive casing. -/
+private theorem quadXorCancelRight (bitP bitF bitG : Bool) :
+    bitF.xor bitG = (bitF.xor bitP).xor (bitG.xor bitP) := by
+  cases bitP <;> cases bitF <;> cases bitG <;> rfl
+
+/-- The `ℤ/2` PARITY of a free 1-cell (word) under a GENERIC per-generator `Bool` weight — structural XOR fold
+over the path, constant `Bool` motive: `propext`-free.  Generic over any `ModeGraph` so the boundary-determined
+argument below (which recurses over the free 2-cell family whose paths are typed at `signature.graph`) rewrites
+against it without the concrete-graph projection mismatch. -/
+def modalityWordParity {graph : ModeGraph}
+    (modalityWeight : {sourceMode targetMode : graph.Mode} → graph.Modality sourceMode targetMode → Bool) :
+    {sourceMode targetMode : graph.Mode} →
+    ModalityPath graph sourceMode targetMode → Bool
+  | _, _, .nil _ => false
+  | _, _, .cons head rest => (modalityWeight head).xor (modalityWordParity modalityWeight rest)
+
+/-- `modalityWordParity` is a monoid homomorphism `(paths, composePath) -> (Bool, xor)` — structural induction
+on the first path (the `∀`-quantified `second` kept in the conclusion so the motive stays general, exactly the
+`composePath_assoc` pattern), unit by `Bool.false_xor`, cons by `Bool.xor_assoc`. -/
+theorem modalityWordParity_composePath {graph : ModeGraph}
+    (modalityWeight : {sourceMode targetMode : graph.Mode} → graph.Modality sourceMode targetMode → Bool)
+    {sourceMode middleMode : graph.Mode}
+    (first : ModalityPath graph sourceMode middleMode) :
+    ∀ {targetMode : graph.Mode} (second : ModalityPath graph middleMode targetMode),
+      modalityWordParity modalityWeight (composePath first second)
+        = (modalityWordParity modalityWeight first).xor (modalityWordParity modalityWeight second) := by
+  induction first with
+  | nil _ => intro _ second; exact (Bool.false_xor _).symm
+  | cons head rest ih =>
+      intro _ second
+      show (modalityWeight head).xor (modalityWordParity modalityWeight (composePath rest second)) = _
+      rw [ih second]
+      exact (Bool.xor_assoc _ _ _).symm
+
+/-- ★★ **`genParity` is BOUNDARY-DETERMINED whenever the generator weight is** — over any signature, if every
+generator's weight is the XOR of the `modalityWordParity` of its source and target 1-cells (`hcompat`), then the
+whole `genParity` factors through the boundary.  Structural recursion over the free 2-cell family: a generator is
+`hcompat`, the identity is `bit ^^ bit`, vertical composition telescopes, and whiskering threads the
+`modalityWordParity` homomorphism through the XOR cancellations.  Generic over `signature` so the recursion has
+no concrete-graph projection mismatch. -/
+theorem genParity_boundaryDetermined {signature : ModeSignature}
+    (generatorWeight : {sourceMode targetMode : signature.graph.Mode} →
+      {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+      signature.twoCell sourcePath targetPath → Bool)
+    (modalityWeight : {sourceMode targetMode : signature.graph.Mode} →
+      signature.graph.Modality sourceMode targetMode → Bool)
+    (hcompat : {sourceMode targetMode : signature.graph.Mode} →
+      {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+      (generator : signature.twoCell sourcePath targetPath) →
+      generatorWeight generator
+        = (modalityWordParity modalityWeight sourcePath).xor (modalityWordParity modalityWeight targetPath)) :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    (cell : RawTwoCellExpr signature sourcePath targetPath) →
+    genParity generatorWeight cell
+      = (modalityWordParity modalityWeight sourcePath).xor (modalityWordParity modalityWeight targetPath)
+  | _, _, _, _, .gen generator => hcompat generator
+  | _, _, _, _, .id path => quadXorSelfFalse (modalityWordParity modalityWeight path)
+  | _, _, _, _, .vcomp cellAlpha cellBeta => by
+      show (genParity generatorWeight cellAlpha).xor (genParity generatorWeight cellBeta) = _
+      rw [genParity_boundaryDetermined generatorWeight modalityWeight hcompat cellAlpha,
+        genParity_boundaryDetermined generatorWeight modalityWeight hcompat cellBeta]
+      exact quadXorCross _ _ _
+  | _, _, _, _, .whiskerLeft oneCell cellBeta => by
+      show genParity generatorWeight cellBeta = _
+      rw [modalityWordParity_composePath, modalityWordParity_composePath,
+        genParity_boundaryDetermined generatorWeight modalityWeight hcompat cellBeta]
+      exact quadXorCancelLeft _ _ _
+  | _, _, _, _, .whiskerRight oneCell cellAlpha => by
+      show genParity generatorWeight cellAlpha = _
+      rw [modalityWordParity_composePath, modalityWordParity_composePath,
+        genParity_boundaryDetermined generatorWeight modalityWeight hcompat cellAlpha]
+      exact quadXorCancelRight _ _ _
+
+/-- Whether a modality generator is the pieces functor `pi0 = Π₀` — the only generator that shifts a 1-cell's
+`pi0`-letter count.  Full four-case enumeration, constant `Bool` motive: `propext`-free. -/
+def isPi0Modality {sourceMode targetMode : QuadCohesionMode}
+    (modality : QuadCohesionModality sourceMode targetMode) : Bool :=
+  match modality with
+  | .pi0 => true
+  | .disc => false
+  | .gamma => false
+  | .codisc => false
+
+/-- The `ℤ/2` PARITY of the number of `pi0` letters in a free 1-cell (word) — `modalityWordParity` at the
+`pi0`-detecting weight. -/
+def pi0PathParity {sourceMode targetMode : QuadCohesionMode}
+    (path : ModalityPath quadCohesionGraph sourceMode targetMode) : Bool :=
+  modalityWordParity isPi0Modality path
+
+/-- Each quadruple generator's parity weight IS the `pi0`-parity XOR of its boundary — the `Π₀ ⊣ Disc` column
+(`unitLower`/`counitLower`/`invCounitLower`) shifts the `pi0`-count by one (weight `true`), everything else keeps
+it (weight `false`).  Nine-constructor `cases` then `rfl`. -/
+theorem quadCohesionGeneratorParity_boundaryCompat {sourceMode targetMode : QuadCohesionMode}
+    {sourcePath targetPath : ModalityPath quadCohesionGraph sourceMode targetMode}
+    (generator : QuadCohesionTwoCell sourcePath targetPath) :
+    quadCohesionGeneratorParity generator
+      = (pi0PathParity sourcePath).xor (pi0PathParity targetPath) := by
+  cases generator <;> rfl
+
+/-- ★★ **`quadCohesionParity` is BOUNDARY-DETERMINED.**  Every free 2-cell's parity equals the XOR of the
+`pi0`-letter parities of its source and target 1-cells — a genuine 2-functor `RawTwoCellExpr -> ℤ/2` that factors
+THROUGH the boundary (the generic `genParity_boundaryDetermined` at the quadruple weighting, with the
+per-generator compatibility `quadCohesionGeneratorParity_boundaryCompat`).  This is the functor-level fact the
+induced lane lacked: there the weight was a free choice, here it is FORCED by the boundary. -/
+theorem quadCohesionParity_boundaryDetermined {sourceMode targetMode : QuadCohesionMode}
+    {sourcePath targetPath : ModalityPath quadCohesionGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr quadCohesionModeSignature sourcePath targetPath) :
+    quadCohesionParity cell = (pi0PathParity sourcePath).xor (pi0PathParity targetPath) := by
+  exact genParity_boundaryDetermined quadCohesionGeneratorParity isPi0Modality
+    quadCohesionGeneratorParity_boundaryCompat cell
+
+/-- ★ **Parity separates NOTHING** — any two parallel free 2-cells have equal `quadCohesionParity` (both equal
+the boundary's `pi0`-parity XOR).  This is precisely the negation of the induced lane's separating power: there
+`cohesionParity` distinguished a parallel pair; here no boundary hosts a parity difference. -/
+theorem quadCohesionParity_constantOnParallel {sourceMode targetMode : QuadCohesionMode}
+    {sourcePath targetPath : ModalityPath quadCohesionGraph sourceMode targetMode}
+    (cellA cellB : RawTwoCellExpr quadCohesionModeSignature sourcePath targetPath) :
+    quadCohesionParity cellA = quadCohesionParity cellB := by
+  rw [quadCohesionParity_boundaryDetermined cellA, quadCohesionParity_boundaryDetermined cellB]
+
+/-- The `pi0·disc` (`= ʃ`) unit boundary `id_space ⇒ pi0·disc` — the functor-level analog of the induced lane's
+`id ⇒ shape` where `cohesionParity` SPLIT a parallel pair — is `quadCohesionParity`-HOMOGENEOUS at value `true`:
+its target carries one `pi0` letter (odd), its source none, so EVERY cell over it weighs `true`.  There is no
+`false`-parity partner to the lower unit; the induced separator has no image. -/
+theorem quadCohesionParity_constantTrueOnShapeUnitBoundary
+    (cell : RawTwoCellExpr quadCohesionModeSignature
+      (ModalityPath.nil (graph := quadCohesionGraph) QuadCohesionMode.space) quadPi0Disc) :
+    quadCohesionParity cell = true :=
+  quadCohesionParity_boundaryDetermined cell
+
+/-- ★★ **THE INDUCED NON-THINNESS REFUTATION DOES NOT LIFT (proved).**  `WalkingCohesion` refuted thinness by
+exhibiting a parallel pair at `id ⇒ shape` split by `cohesionParity`.  At the functor level the analogous
+invariant `quadCohesionParity` is BOUNDARY-DETERMINED (`quadCohesionParity_boundaryDetermined`), hence CONSTANT
+on every parallel pair (`quadCohesionParity_constantOnParallel`) — in particular over the shape-unit boundary
+`id_space ⇒ pi0·disc` it is uniformly `true` (`quadCohesionParity_unitLower`).  So the induced lane's separating
+mechanism structurally cannot exist here: `disc`/`gamma` straddle two adjunctions, the induced generators become
+DERIVED composites, and the `pi0`-column parity that would separate collapses to a boundary function.  The
+functor-level quadruple is thin-LEANING, diverging from the induced quotient — the refutation is dead, not
+merely absent. -/
+theorem quadInducedRefutationDoesNotLift :
+    (∀ (cellA cellB : RawTwoCellExpr quadCohesionModeSignature
+        (ModalityPath.nil (graph := quadCohesionGraph) QuadCohesionMode.space) quadPi0Disc),
+      quadCohesionParity cellA = quadCohesionParity cellB)
+      ∧ quadCohesionParity quadUnitLowerCell = true :=
+  ⟨fun cellA cellB => quadCohesionParity_constantOnParallel cellA cellB, quadCohesionParity_unitLower⟩
+
+/-! ## The ff-driven reflection critical-pair join on the shared leg `disc` (straddle-pair demo)
+
+Beyond the two cross-adjunction snake coherences r1 shipped (`quadDiscSnakesCohere`, `quadGammaSnakesCohere`),
+this is a genuine CRITICAL-PAIR JOIN on the shared leg `disc`, driven by the `Disc`-full-faithful iso.  The hom
+`disc ⇒ disc·pi0·disc` is populated by two syntactically distinct constructions — the lower unit whiskered on
+`disc`'s LEFT (`disc ◁ η`) and the lower-counit INVERSE whiskered on `disc`'s RIGHT (`ε⁻¹ ▷ disc`) — and they
+are convertible.  The join is the classic reflection confluence: insert the `Π₀ ⊣ Disc` triangle
+(`triDiscLo`) and let the ff-iso (`isoLowerCounitRight`) collapse the resulting `ε ⊟ ε⁻¹` loop.  The whisker
+functoriality it uses is the SHIPPED `whiskerRightVcomp` STEP (whisker-of-vcomp), not the deferred
+whisker-by-composite-1-cell brick. -/
+
+/-- The `disc`-right-whiskered lower ff round-trip `(ε ▷ disc) ⊟ (ε⁻¹ ▷ disc)` collapses to `id_{disc·pi0·disc}`:
+`whiskerRightVcomp` folds the two whiskers into `(ε ⊟ ε⁻¹) ▷ disc`, `isoLowerCounitRight` collapses
+`ε ⊟ ε⁻¹` to `id_{disc·pi0}`, and `whiskerRightId` erases the whisker. -/
+theorem quadDiscWhiskeredLowerRoundCollapses :
+    QuadCohesionSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp
+        (RawTwoCellExpr.whiskerRight quadDisc quadCounitLowerCell)
+        (RawTwoCellExpr.whiskerRight quadDisc quadInvCounitLowerCell))
+      (RawTwoCellExpr.id (signature := quadCohesionModeSignature) (composePath quadDiscPi0 quadDisc)) := by
+  refine QuadCohesionSaturatedTwoCellConv.trans
+    (QuadCohesionSaturatedTwoCellConv.symm
+      (quadCohesionConvOfStep
+        (TwoCellStep.whiskerRightVcomp quadDisc quadCounitLowerCell quadInvCounitLowerCell))) ?_
+  refine QuadCohesionSaturatedTwoCellConv.trans
+    (QuadCohesionSaturatedTwoCellConv.whiskerRightCongr quadDisc
+      QuadCohesionSaturatedTwoCellConv.isoLowerCounitRight) ?_
+  exact quadCohesionConvOfStep
+    (TwoCellStep.whiskerRightId (signature := quadCohesionModeSignature) quadDiscPi0 quadDisc)
+
+/-- ★★ **The straddle critical-pair join `disc ◁ η ≈ ε⁻¹ ▷ disc`** over the populated hom
+`disc ⇒ disc·pi0·disc`.  Two syntactically distinct 2-cells — the left-whiskered lower unit and the
+right-whiskered lower-counit INVERSE — are saturated-convertible: pad `disc ◁ η` with the identity on the
+target, expand the identity to `(ε ▷ disc) ⊟ (ε⁻¹ ▷ disc)` (`quadDiscWhiskeredLowerRoundCollapses`
+reversed), reassociate, straighten `(disc ◁ η) ⊟ (ε ▷ disc)` to `id_disc` via the `Π₀ ⊣ Disc` triangle
+`triDiscLo`, and drop the left identity.  A concrete populated hom where the quadruple's local posetality holds
+by an explicit ff-driven join — the thin fragment extended past the leg straightenings and snake coherences. -/
+theorem quadStraddleDiscUnitInvCounitJoin :
+    QuadCohesionSaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft quadDisc quadUnitLowerCell)
+      (RawTwoCellExpr.whiskerRight quadDisc quadInvCounitLowerCell) := by
+  refine QuadCohesionSaturatedTwoCellConv.trans
+    (QuadCohesionSaturatedTwoCellConv.symm
+      (quadCohesionConvOfStep
+        (TwoCellStep.vcompIdRight (RawTwoCellExpr.whiskerLeft quadDisc quadUnitLowerCell)))) ?_
+  refine QuadCohesionSaturatedTwoCellConv.trans
+    (QuadCohesionSaturatedTwoCellConv.vcompCongrRight
+      (RawTwoCellExpr.whiskerLeft quadDisc quadUnitLowerCell)
+      (QuadCohesionSaturatedTwoCellConv.symm quadDiscWhiskeredLowerRoundCollapses)) ?_
+  refine QuadCohesionSaturatedTwoCellConv.trans
+    (QuadCohesionSaturatedTwoCellConv.symm
+      (quadCohesionConvOfStep
+        (TwoCellStep.vcompAssoc
+          (RawTwoCellExpr.whiskerLeft quadDisc quadUnitLowerCell)
+          (RawTwoCellExpr.whiskerRight quadDisc quadCounitLowerCell)
+          (RawTwoCellExpr.whiskerRight quadDisc quadInvCounitLowerCell)))) ?_
+  refine QuadCohesionSaturatedTwoCellConv.trans
+    (QuadCohesionSaturatedTwoCellConv.vcompCongrLeft
+      (RawTwoCellExpr.whiskerRight quadDisc quadInvCounitLowerCell)
+      QuadCohesionSaturatedTwoCellConv.triDiscLo) ?_
+  show QuadCohesionSaturatedTwoCellConv
+    (RawTwoCellExpr.vcomp
+      (RawTwoCellExpr.id (signature := quadCohesionModeSignature)
+        (composePath (ModalityPath.nil (graph := quadCohesionGraph) QuadCohesionMode.pointSet) quadDisc))
+      (RawTwoCellExpr.whiskerRight quadDisc quadInvCounitLowerCell))
+    (RawTwoCellExpr.whiskerRight quadDisc quadInvCounitLowerCell)
+  exact quadCohesionConvOfStep
+    (TwoCellStep.vcompIdLeft (RawTwoCellExpr.whiskerRight quadDisc quadInvCounitLowerCell))
+
 /-! ## P4 — bridge notes (docstrings only): ZOO-COHESION + MODE-ADMIT -/
 
 /-- **Bridge note (docstrings only) — the ZOO-COHESION and MODE-ADMIT consumption points.**
@@ -294,17 +537,39 @@ outright: the six reflection legs straighten (`quadThinFragment_legsStraighten`)
 non-vacuous (`quadDecision_genuineIdentification` + `quadDecision_genuineSeparation`).  `= true`. -/
 def fxQuadCohesion_hasDecisionAssemblyModuloThinness : Bool := true
 
-/-- ★★ **HONEST WALL — the QUADRUPLE THINNESS is UNRESOLVED (NOT flipped, NOT refuted).**  The route
-hand-enumeration finds the low-complexity boundaries THIN (every reflection leg straightens; the ff-iso
-round-trips collapse the loops), a sound `ℤ/2` invariant (`quadCohesionParity_satConv`) finds NO low-complexity
-separator, and — crucially — the induced-quotient non-thinness (`WalkingCohesion`, machine-refuted) does NOT lift:
-`disc`/`gamma` straddle two adjunctions, so there is no clean strict 2-functor `quadruple ↠ induced` to pull the
-refutation back.  So `QuadCohesionThinness` is left NEITHER inhabited (would need a full general-boundary
-normalizer, the `WalkingIdempotent.normalizeFull`-style closure — NOT attempted this round) NOR refuted (no
-separator exists at low complexity — the functor level is thin-LEANING, diverging from the induced quotient).
-This is the honest FRAGMENT disposition: the presentation, the soundness, the thin fragment, and the decision
-assembly ship; the GLOBAL thinness claim is NOT forced, and the downstream cohesion computation stays gated.
-`= false`. -/
+/-- ★ **ESTABLISHED — the `pi0`-parity obstruction ships: the induced refutation provably does NOT lift.**  The
+r1 hand-wave is now a machine-checked theorem: `quadCohesionParity` is BOUNDARY-DETERMINED
+(`quadCohesionParity_boundaryDetermined` — parity = source `pi0`-parity XOR target `pi0`-parity), hence CONSTANT
+on every parallel pair (`quadCohesionParity_constantOnParallel`) and uniformly `true` on the shape-unit boundary
+`id_space ⇒ pi0·disc` (`quadInducedRefutationDoesNotLift`).  So the very `ℤ/2` invariant that SEPARATED a
+parallel pair in the induced lane (`CohesionNonThinness`) cannot separate anything here — the induced
+non-thinness has no functor-level image.  `= true`. -/
+def fxQuadCohesion_hasPi0ObstructionRefutationDoesNotLift : Bool := true
+
+/-- ★ **ESTABLISHED — the ff-driven straddle critical-pair join ships (thin fragment extended).**  Beyond the six
+leg straightenings and the two cross-adjunction snake coherences, the populated hom `disc ⇒ disc·pi0·disc` is
+shown thin by an explicit join: `disc ◁ η ≈ ε⁻¹ ▷ disc` (`quadStraddleDiscUnitInvCounitJoin`), the reflection
+confluence driven by the `Π₀ ⊣ Disc` triangle and the `Disc`-ff iso (`quadDiscWhiskeredLowerRoundCollapses`),
+using only the SHIPPED whisker-of-vcomp step.  A concrete straddle-leg witness where local posetality holds by
+construction.  `= true`. -/
+def fxQuadCohesion_hasStraddleReflectionJoin : Bool := true
+
+/-- ★★ **HONEST WALL — the QUADRUPLE THINNESS is UNRESOLVED (NOT flipped, NOT refuted), now with a SHARPER
+boundary.**  The route hand-enumeration finds the low-complexity boundaries THIN (every reflection leg
+straightens; the ff-iso round-trips collapse the loops; the straddle leg `disc` joins its unit against its
+ff-inverse-counit, `quadStraddleDiscUnitInvCounitJoin`), and the sound `ℤ/2` invariant is now shown
+BOUNDARY-DETERMINED (`quadCohesionParity_boundaryDetermined`) — so it CANNOT separate any parallel pair, and the
+induced-quotient non-thinness (`WalkingCohesion`, machine-refuted) provably does NOT lift
+(`quadInducedRefutationDoesNotLift`): `disc`/`gamma` straddle two adjunctions, the induced generators become
+derived composites, and the separating `pi0`-column parity collapses to a boundary function.  So
+`QuadCohesionThinness` is left NEITHER inhabited (would need a full general-boundary normalizer over FREE 1-cell
+words — the `WalkingIdempotent.normalizeFull`-style closure, but here the 1-cells have no length normal form, so
+it is a genuine multi-file arc — NOT attempted this round; and the literature warns the FREE ff-adjoint string is
+generically non-posetal, Dawson–Paré–Pronk) NOR refuted (no separator can exist — parity is neutered, the
+functor level is thin-LEANING, diverging from the induced quotient).  This is the honest FRAGMENT disposition:
+the presentation, the soundness, the thin fragment (now including the straddle join), the pi0-obstruction, and
+the decision assembly ship; the GLOBAL thinness claim is NOT forced, and the downstream cohesion computation
+stays gated.  `= false`. -/
 def fxQuadCohesion_hasQuadrupleThinnessResolution : Bool := false
 
 end FX1Poly.Polygraph
