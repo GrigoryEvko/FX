@@ -983,13 +983,16 @@ round-trip `reseatCellInv (reseatCell a) = a` — the remaining walled labor.  `
 def fxAmalg_hasReseatConvTransport : Bool := true
 
 /-- ★ **Honesty marker (`false`) — the WIRED inheritance pipeline (recognise → witness → transport → decide) is
-NOT one term yet.**  MODE-ADMIT r2 ships recognise (`admitByRowAware`) → registered-family retrieval (running the
-bespoke decider on the walker's OWN cells); r3 ships the forward reseat FUNCTOR (`reseatCell`), the missing
-"transport" leg's forward half.  Wiring the four legs into a single term that RECOGNISES a presented mode theory,
-witnesses the reseat, TRANSPORTS a candidate's cells to the bespoke decider, and returns a verdict on the
-CANDIDATE's own reconstructed cells requires the `fxAmalg_hasReseatConvTransport` functoriality above (the isFalse
-leg) and the backward round-trip (the isTrue leg).  Until both ship the pipeline cannot decide a candidate's
-reconstructed pair, only recognise + retrieve.  `= false`. -/
+NOT one term yet (r4: the isFalse HALF now ships).**  MODE-ADMIT r2 ships recognise (`admitByRowAware`) →
+registered-family retrieval (running the bespoke decider on the walker's OWN cells); r3 ships the forward reseat
+FUNCTOR (`reseatCell`); r4 ships the forward CONV TRANSPORT (`reseatConvForward`) and thereby the isFalse leg of a
+reconstructed-signature decision literally (`monadReconRefutes`: a reconstructed pair whose `reseatCell`-images the
+bespoke decider refutes is refuted at the reconstructed signature).  What remains for a SINGLE term that decides a
+CANDIDATE's own reconstructed pair (both verdicts) is the isTrue leg: the backward functor `reseatCellInv` + the
+round-trip `reseatCellInv (reseatCell a) = a` + the reverse conv induction (the P1a mirror over `reseatCellInv`) —
+a genuine multi-lemma inverse-functor file, bounded cast LABOR (all `Eq.rec`, fib-3-decoupled), NOT a mathematical
+wall.  Until it ships the pipeline decides only the isFalse direction of a candidate's reconstructed pair (plus
+recognise + retrieve for the registered walkers).  `= false`. -/
 def fxModeAdmit_hasWiredInheritancePipeline : Bool := false
 
 end FX1Poly.Polygraph.Amalgam

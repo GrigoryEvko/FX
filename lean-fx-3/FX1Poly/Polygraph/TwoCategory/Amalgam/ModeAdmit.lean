@@ -850,20 +850,19 @@ three things remain for fully-automatic, sound, data-keyed admission of an ARBIT
      rows are exactly the walker's laws.  A sound data key needs a decidable `reflects lawRows baseRel` certificate
      (an untyped-cell ↔ typed-cell bridge), so admission cannot be spoofed by mislabelled rows.
 
-  2. **The bespoke-vs-reconstructed reseat (r3 SHARPENED — the #2215 r4 scope).**  The separating deciders live
-     over `monadModeSignature`, not a `ModeComputad.toModeSignature`; reaching them by transport (rather than by
-     NAME / by recognition) is the reseat.  MODE-ADMIT r3 (`MonadReseat.lean`) SHIPS the reseat's FORWARD FUNCTOR
-     for the fixed pair `(monadComputad.toModeSignature, monadModeSignature)` — `reseatPath` (1-cell functor),
-     the crux `reseatGen` (the `twoCellEquiv` forward half, verified on `eta` AND `mu`), and `reseatCell` (the
-     free 2-cell functor) — and thereby DECOUPLES the reseat from fib-3: the forward reseat decides NO 2-cell
-     equality modulo the 3-cell laws (`fxAmalg_hasForwardReseatFunctor = true`).  So the earlier
-     "fib-3-coupled" framing (`fxAmalg_hasReconstructionDecoderReseat`) is a MISCLASSIFICATION — the residual is
-     cast LABOR, not undecidability.  The r4 residual is now PRECISE: (a) the isFalse leg needs `reseatCell`
-     preserving `TwoCellConvFull` — the 12-constructor structural functoriality (`fxAmalg_hasReseatConvTransport
-     = false`), the reseat analogue of the shipped `mapTwoCellConvFull` (which is untypable here because
-     `monadModeSignature` is not a `_.toModeSignature`); (b) the isTrue leg additionally needs the backward
-     round-trip `reseatCellInv (reseatCell _) = _` (the `mapPath`-hom cast threading).  Both are all-`Eq.rec`,
-     no-`HEq` cast labor at ONE signature — a genuine multi-lemma file, but bounded and fib-3-decoupled.
+  2. **The bespoke-vs-reconstructed reseat (r3 SHARPENED; r4 ships the isFalse leg).**  The separating deciders
+     live over `monadModeSignature`, not a `ModeComputad.toModeSignature`; reaching them by transport (rather than
+     by NAME / by recognition) is the reseat.  MODE-ADMIT r3 (`MonadReseat.lean`) SHIPPED the reseat's FORWARD
+     FUNCTOR (`reseatPath` / the crux `reseatGen`, verified on `eta` AND `mu` / `reseatCell`), DECOUPLING the reseat
+     from fib-3 (`fxAmalg_hasForwardReseatFunctor = true`).  MODE-ADMIT r4 DISCHARGES leg (a): the FORWARD CONV
+     TRANSPORT `reseatConvForward` via `reseatCell_preservesConv` — the THIRTEEN-constructor `TwoCellConvFull`
+     functoriality, the reseat analogue of the shipped `mapTwoCellConvFull` (re-derived because `monadModeSignature`
+     is not a `_.toModeSignature`) — so `fxAmalg_hasReseatConvTransport = true` and the isFalse leg is literal
+     (`monadReconRefutes`).  This confirms the reclassification (cast LABOR, not undecidability): the forward reseat
+     decides NO 2-cell equality modulo the 3-cell laws.  The remaining r4+ residual is leg (b): the isTrue leg's
+     backward functor `reseatCellInv` + the round-trip `reseatCellInv (reseatCell _) = _` + the reverse conv
+     induction — all-`Eq.rec`, no-`HEq` cast labor at ONE signature, a genuine multi-lemma inverse-functor file,
+     bounded and fib-3-decoupled, NOT a mathematical wall.
 
   3. **Tietze-closure matching.**  r2's match is bijective RENAMING (T3); a genuinely-different-but-isomorphic
      presentation needs bounded relator/generator Tietze moves, strictly stronger and strictly harder to decide.
