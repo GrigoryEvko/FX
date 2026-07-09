@@ -1015,17 +1015,15 @@ FUNCTORIAL supply of `relationAgrees`: the SAME bridge closes each relation afte
 `= true`. -/
 def fxBrauer_hasFunctorialRelationAgreesFiveOfFive : Bool := true
 
-/-- **Honesty marker — `fxBrauer_hasBrauerSoundness` STAYS `false`; the residual is now EXACTLY the horizontal
-pad/shift congruence.**  The functoriality port supplies `relationAgrees` (hence the whisker, hence `BrauerConv`) for
-every relation after any BOUNDARY-PRESERVING prefix — the vertical-composition (whiskerLeft) direction, closed here
-5/5.  The FULL soundness flip additionally needs the BOUNDARY-CHANGING (horizontal tensor / pad + offset) direction:
-the relation word fired at an offset in a WIDER boundary must extract equally to its rhs there — the Brauer analog of
-the spine's `MatchingLeftPadCongruence` / `MatchingRightPadCongruence`, which is genuinely UNBUILT (not refuted;
-Selinger arXiv:0908.3347 Thm 3.12 / 4.33 and Lehrer–Zhang arXiv:1207.5889 Thm 3.4 confirm the mathematics).  The port
-does NOT supply this (it transports a fixed word from the seed to a mid-state; it neither widens the seed nor shifts
-positions).  So `fxBrauer_hasBrauerSoundness` stays `false`, its residual sharpened from "the five relations' uniform
-`relationAgrees`" to precisely "the horizontal pad/shift congruence feeding `extractsEqual` at boundary-changing
-prefixes".  `= false`. -/
-def fxBrauer_hasBrauerSoundnessResidualIsPadShift : Bool := false
+/-- ★ **Honesty marker — the horizontal pad/shift congruence residual is now BUILT (KEYSTONE15).**  This port
+supplied `relationAgrees` for every relation after any BOUNDARY-PRESERVING prefix (the whiskerLeft direction, 5/5
+here); the residual it named was the BOUNDARY-CHANGING (horizontal tensor / pad + offset) direction — the relation
+word fired at an offset in a WIDER boundary extracting equally to its rhs there, the Brauer analog of the spine's
+`MatchingLeftPadCongruence` / `MatchingRightPadCongruence` (Selinger arXiv:0908.3347 Thm 3.12 / 4.33; Lehrer–Zhang
+arXiv:1207.5889 Thm 3.4).  It is now SHIPPED zero-axiom in `Brauer/WiringDescPadCongruence.lean`
+(`brauerSeedExtract_ofTwoSidedPad`, from the whole-word `processBrauer_{left,right}PadSim`), fed to this file's
+whisker bridge by `brauerConv_relation_inContext` — so `fxBrauer_hasBrauerSoundness` (`Brauer/WiringDesc.lean`) is now
+`true`.  `= true`. -/
+def fxBrauer_hasBrauerSoundnessResidualIsPadShift : Bool := true
 
 end FX1Poly.Polygraph

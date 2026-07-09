@@ -203,17 +203,16 @@ length / loop agreement into the shipped `whisker` move, yielding a full context
 net-identity witness flips into an arbitrary-context convertibility with one `exact`.  `= true`. -/
 def fxBrauer_hasPortReconnectionAssemblyBridge : Bool := true
 
-/-- **Honesty marker — no relation's `relationAgrees` closes this round; `fxBrauer_hasBrauerSoundness` STAYS
-`false`.**  A per-relation `relationAgrees` needs a full net-identity `MatchingComponentRenameRel` witness at the two
-post-prefix states: the `bnodeCorr` open-wire positional surgery (this file ships the crossing's links-level
-reconnection; the surgery to the boundary index at arbitrary offset is the residual) AND the `componentComm`
-freshness-threaded fold converse (this file ships the second-endpoint single-join converse tool; the fold-level
-threading combining it with the monotone half is the residual).  For the collapse trio (snake / snakeMirror / R2)
-the witness is net-identity and buildable; for the overlapping-window R1 (cap-slide) and R3 (Yang–Baxter) the
-`componentComm` is the cross-order partition independence whose only known renaming route is REFUTED
-(`fxBrauer_hasWiringDescBlockSwapWitness = false`).  So `fxBrauer_hasBrauerSoundness` stays `false`, its residual now
-sharpened to the two per-relation witness fields (`bnodeCorr` surgery + `componentComm` threading) over the shipped
-assembly bridge.  `= false`. -/
+/-- **Honesty marker — this port-reconnection route does not by itself close a per-relation `relationAgrees`.**  Its
+`relationAgrees` witness would need a full net-identity `MatchingComponentRenameRel` at the two post-prefix states:
+the `bnodeCorr` open-wire positional surgery (this file ships the crossing's links-level reconnection; the surgery to
+the boundary index at arbitrary offset is the residual on THIS route) AND the `componentComm` freshness-threaded fold
+converse (this file ships the second-endpoint single-join converse tool; the fold-level threading is the residual).
+It (correctly) noted that the overlapping-window R1 / R3 `componentComm` had only one known renaming route and it was
+REFUTED (`fxBrauer_hasWiringDescBlockSwapWitness = false`).  The uniform `relationAgrees` was ultimately closed off a
+DIFFERENT route — the KEYSTONE15 two-sided pad congruence + r14 functoriality whisker bridge, which does NOT go
+through the refuted block-swap — so `fxBrauer_hasBrauerSoundness` is now `true`
+(`Brauer/WiringDescPadCongruence.lean`).  This marker records this route's own standing.  `= false`. -/
 def fxBrauer_hasBrauerSoundnessPortReconnectionResidual : Bool := false
 
 end FX1Poly.Polygraph

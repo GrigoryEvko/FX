@@ -159,10 +159,13 @@ def fxBrauer_hasCrossingInvolutionReconnection : Bool := true
 
 /-- **Honesty marker — this does NOT flip `fxBrauer_hasBrauerSoundness`; the honest count stays 0/5
 `relationAgrees` closed.**  This ships the R2 net-identity reconnection composite (the `bnodeCorr` at links level),
-not a `relationAgrees`.  Closing R2 (and the snakes) additionally needs the boundary-index surgery + the
-`componentComm` freshness fold to a `MatchingComponentRenameRel` witness; R1 (cap-slide) is walled by the refuted
-cross-order block-swap (`fxBrauer_hasWiringDescBlockSwapWitness = false`).  With R1 walled, the full congruence
-closure cannot close this round regardless, so `fxBrauer_hasBrauerSoundness` STAYS `false`.  `= false`. -/
+not a `relationAgrees`.  This reconnection route does not itself close a uniform `relationAgrees` (that needs the
+boundary-index surgery + the `componentComm` freshness fold).  NOTE: the earlier claim here — that R1 (cap-slide)
+being walled by the refuted cross-order block-swap blocks the whole closure — was an OVER-attribution: the block-swap
+is only ONE attempted proof of `relationAgrees`; the KEYSTONE15 pad congruence + r14 functoriality whisker bridge
+close all five relations (`brauerConv_capSlide_inWiderContext` included) WITHOUT the block-swap, so
+`fxBrauer_hasBrauerSoundness` is now `true` (`Brauer/WiringDescPadCongruence.lean`).  This marker records that THIS
+reconnection composite does not by itself flip the flag.  `= false`. -/
 def fxBrauer_hasCrossingInvolutionReconnectionFlipsSoundness : Bool := false
 
 end FX1Poly.Polygraph

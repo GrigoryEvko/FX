@@ -1,6 +1,8 @@
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingRightPadSim
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingRightPadCongruence
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingLeftPadSim
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingLeftPadCongruence
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingFoldRename
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingCountRename
 
@@ -600,7 +602,443 @@ theorem brauerSeedExtract_ofRightPad (threshold delta : Nat) (lhs rhs : List Bra
     (processBrauer_rightPadSim threshold delta rhs inRangeRhs)
     baseEq
 
-/-! ## Honesty marker -/
+/-! ## The LEFT pad — position-shifted word, prefix-skip surgery -/
+
+/-- A block splice past a constant prefix inserts inside the suffix (local copy — the shipped generic-engine
+version is private).  Structural on the prefix. -/
+private theorem natListInsertAt_appendPrefixPad :
+    (prefixWires wires : List Nat) → (position : Nat) → (block : List Nat) →
+    natListInsertAt (prefixWires ++ wires) (prefixWires.length + position) block
+      = prefixWires ++ natListInsertAt wires position block
+  | [], wires, position, block => by
+      show natListInsertAt wires (0 + position) block = natListInsertAt wires position block
+      rw [Nat.zero_add]
+  | headWire :: restPrefix, wires, position, block => by
+      show natListInsertAt (headWire :: (restPrefix ++ wires)) (restPrefix.length + 1 + position) block
+        = headWire :: (restPrefix ++ natListInsertAt wires position block)
+      rw [Nat.add_right_comm restPrefix.length 1 position]
+      show headWire :: natListInsertAt (restPrefix ++ wires) (restPrefix.length + position) block
+        = headWire :: (restPrefix ++ natListInsertAt wires position block)
+      exact congrArg (headWire :: ·) (natListInsertAt_appendPrefixPad restPrefix wires position block)
+
+/-- ★ **Shift every atom's firing position by `delta`** — the left-pad word transport: the padded run fires the
+same generators at the prefix-offset windows `delta + position`. -/
+def shiftBrauerWord (delta : Nat) : List BrauerAtom → List BrauerAtom
+  | [] => []
+  | atom :: rest => { position := delta + atom.position, wiring := atom.wiring } :: shiftBrauerWord delta rest
+
+/-- Shifting positions leaves the per-generator internal-loop total unchanged (the wirings are untouched). -/
+theorem shiftBrauerWord_internalLoops (delta : Nat) :
+    (atoms : List BrauerAtom) →
+    brauerWordInternalLoops (shiftBrauerWord delta atoms) = brauerWordInternalLoops atoms
+  | [] => rfl
+  | atom :: rest => congrArg (atom.wiring.internalLoops + ·) (shiftBrauerWord_internalLoops delta rest)
+
+/-- ★ **The firing discipline transports under the position shift.**  A word in range at boundary `boundaryLength`
+is in range at `delta + boundaryLength` once every position is shifted by `delta`.  Structural on the word. -/
+theorem brauerWordInRange_shift (delta : Nat) :
+    (atoms : List BrauerAtom) → (boundaryLength : Nat) →
+    BrauerWordInRange boundaryLength atoms →
+    BrauerWordInRange (delta + boundaryLength) (shiftBrauerWord delta atoms)
+  | [], _, _ => BrauerWordInRange.nil _
+  | atom :: rest, boundaryLength, inRange => by
+      obtain ⟨rightLen, fits, tagsInRange, tailInRange⟩ := brauerWordInRange_tail inRange
+      refine BrauerWordInRange.cons { position := delta + atom.position, wiring := atom.wiring } rightLen ?_
+        tagsInRange ?_
+      · show delta + boundaryLength = delta + atom.position + atom.wiring.inputCount + rightLen
+        rw [fits, Nat.add_assoc delta atom.position atom.wiring.inputCount,
+          Nat.add_assoc delta (atom.position + atom.wiring.inputCount) rightLen]
+      · show BrauerWordInRange (delta + atom.position + atom.wiring.outputCount + rightLen)
+          (shiftBrauerWord delta rest)
+        have ext := brauerWordInRange_shift delta rest
+          (atom.position + atom.wiring.outputCount + rightLen) tailInRange
+        rw [Nat.add_assoc delta atom.position atom.wiring.outputCount,
+          Nat.add_assoc delta (atom.position + atom.wiring.outputCount) rightLen]
+        exact ext
+
+/-- The firing discipline transports under widening the boundary on the RIGHT (each `rightLen` grows).  Structural. -/
+theorem brauerWordInRange_rightExtend (extra : Nat) :
+    (atoms : List BrauerAtom) → (boundaryLength : Nat) →
+    BrauerWordInRange boundaryLength atoms →
+    BrauerWordInRange (boundaryLength + extra) atoms
+  | [], _, _ => BrauerWordInRange.nil _
+  | atom :: rest, boundaryLength, inRange => by
+      obtain ⟨rightLen, fits, tagsInRange, tailInRange⟩ := brauerWordInRange_tail inRange
+      refine BrauerWordInRange.cons atom (rightLen + extra) ?_ tagsInRange ?_
+      · rw [fits, Nat.add_assoc (atom.position + atom.wiring.inputCount) rightLen extra]
+      · have ext := brauerWordInRange_rightExtend extra rest
+          (atom.position + atom.wiring.outputCount + rightLen) tailInRange
+        rw [← Nat.add_assoc (atom.position + atom.wiring.outputCount) rightLen extra]
+        exact ext
+
+/-- ★ **The light left-pad WIRE simulation** — the padded run's open wires are a constant pad prefix `[0, delta)`
+followed by the uniform-shift (`freshShiftAbove 0 delta`) image of the base wires; the counter runs `delta`
+ahead.  (The link-level fields of `MatchingLeftPadSim` are read off the whole trace separately.) -/
+structure LeftPadWireSim (delta : Nat) (stateS stateT : WireState) : Prop where
+  /-- The padded wires are the constant pad prefix plus the shift-image of the base wires. -/
+  openMap : stateT.openWires
+    = padIdentifiers 0 delta ++ stateS.openWires.map (freshShiftAbove 0 delta)
+  /-- The padded counter runs exactly `delta` ahead. -/
+  nfShift : stateT.nextFresh = stateS.nextFresh + delta
+
+/-- ★ **ONE `stepWiring` step preserves the left-pad wire simulation.**  The base steps at `position`, the padded
+run at the prefix-offset window `delta + position`; the removal / splice happen past the untouched prefix
+(`natListRemoveManyAt_appendPrefix` / `natListInsertAt_appendPrefixPad`) and re-base under the uniform shift. -/
+theorem stepWiring_leftPadWireSim (delta : Nat) (stateS stateT : WireState)
+    (position : Nat) (desc : WiringDesc)
+    (sim : LeftPadWireSim delta stateS stateT) :
+    LeftPadWireSim delta (stepWiring stateS position desc)
+      (stepWiring stateT (delta + position) desc) := by
+  have prefixOffset : delta + position = (padIdentifiers 0 delta).length + position := by
+    rw [padIdentifiers_length]
+  have openMapAfter : (stepWiring stateT (delta + position) desc).openWires
+      = padIdentifiers 0 delta
+        ++ (stepWiring stateS position desc).openWires.map (freshShiftAbove 0 delta) := by
+    show natListInsertAt (natListRemoveManyAt stateT.openWires (delta + position) desc.inputCount)
+          (delta + position) ((List.range desc.outputCount).map (· + stateT.nextFresh))
+        = padIdentifiers 0 delta
+          ++ (natListInsertAt (natListRemoveManyAt stateS.openWires position desc.inputCount) position
+              ((List.range desc.outputCount).map (· + stateS.nextFresh))).map (freshShiftAbove 0 delta)
+    rw [sim.openMap, prefixOffset,
+      natListRemoveManyAt_appendPrefix (padIdentifiers 0 delta)
+        (stateS.openWires.map (freshShiftAbove 0 delta)) position desc.inputCount,
+      ← natListRemoveManyAt_map (freshShiftAbove 0 delta) stateS.openWires position desc.inputCount,
+      natListInsertAt_appendPrefixPad (padIdentifiers 0 delta)
+        ((natListRemoveManyAt stateS.openWires position desc.inputCount).map (freshShiftAbove 0 delta))
+        position ((List.range desc.outputCount).map (· + stateT.nextFresh)),
+      rightPadOutputNodes_map 0 delta stateS stateT desc.outputCount sim.nfShift (Nat.zero_le stateS.nextFresh),
+      ← natListInsertAt_map (freshShiftAbove 0 delta)
+        (natListRemoveManyAt stateS.openWires position desc.inputCount) position
+        ((List.range desc.outputCount).map (· + stateS.nextFresh))]
+  exact
+    { openMap := openMapAfter
+      nfShift := by
+        rw [stepWiring_nextFresh stateT (delta + position) desc, stepWiring_nextFresh stateS position desc,
+          sim.nfShift, Nat.add_right_comm stateS.nextFresh delta desc.outputCount] }
+
+/-- ★ **The left-pad wire simulation folds over any in-range Brauer word** (the padded run over the shifted word). -/
+theorem processBrauer_leftPadWireSim (delta : Nat) :
+    (atoms : List BrauerAtom) → (stateS stateT : WireState) → (boundaryLength : Nat) →
+    BrauerWordInRange boundaryLength atoms →
+    stateS.openWires.length = boundaryLength →
+    LeftPadWireSim delta stateS stateT →
+    LeftPadWireSim delta (processBrauer stateS atoms) (processBrauer stateT (shiftBrauerWord delta atoms))
+  | [], _, _, _, _, _, sim => sim
+  | atom :: rest, stateS, stateT, boundaryLength, inRange, tracks, sim => by
+      show LeftPadWireSim delta (processBrauer (stepWiring stateS atom.position atom.wiring) rest)
+        (processBrauer (stepWiring stateT (delta + atom.position) atom.wiring) (shiftBrauerWord delta rest))
+      obtain ⟨leftover, fits, _, tailInRange⟩ := brauerWordInRange_tail inRange
+      have lengthDecomp : stateS.openWires.length
+          = atom.position + atom.wiring.inputCount + leftover := by rw [tracks]; exact fits
+      exact processBrauer_leftPadWireSim delta rest (stepWiring stateS atom.position atom.wiring)
+        (stepWiring stateT (delta + atom.position) atom.wiring)
+        (atom.position + atom.wiring.outputCount + leftover) tailInRange
+        (stepWiring_openWires_length_fits stateS atom.position leftover atom.wiring lengthDecomp)
+        (stepWiring_leftPadWireSim delta stateS stateT atom.position atom.wiring sim)
+
+/-- ★ **The padded run's whole decoded trace is the uniform-shift rename of the base run's trace.**  Structural;
+the head arc events re-base node-wise after the slice-past-prefix / fresh-block correspondence. -/
+theorem leftPadWireSim_wordJoinEvents (delta : Nat) :
+    (atoms : List BrauerAtom) → (stateS stateT : WireState) → (boundaryLength : Nat) →
+    BrauerWordInRange boundaryLength atoms →
+    stateS.openWires.length = boundaryLength →
+    LeftPadWireSim delta stateS stateT →
+    brauerWordJoinEvents stateT (shiftBrauerWord delta atoms)
+      = (brauerWordJoinEvents stateS atoms).map
+          (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2))
+  | [], _, _, _, _, _, _ => rfl
+  | atom :: rest, stateS, stateT, boundaryLength, inRange, tracks, sim => by
+      obtain ⟨leftover, fits, tagsInRange, tailInRange⟩ := brauerWordInRange_tail inRange
+      have lengthDecomp : stateS.openWires.length
+          = atom.position + atom.wiring.inputCount + leftover := by rw [tracks]; exact fits
+      have inputNodesCorr :
+          stepWiringInputNodes stateT (delta + atom.position) atom.wiring
+            = (stepWiringInputNodes stateS atom.position atom.wiring).map (freshShiftAbove 0 delta) := by
+        show natListSliceAt stateT.openWires (delta + atom.position) atom.wiring.inputCount
+          = (natListSliceAt stateS.openWires atom.position atom.wiring.inputCount).map (freshShiftAbove 0 delta)
+        rw [sim.openMap,
+          show delta + atom.position = (padIdentifiers 0 delta).length + atom.position from by
+            rw [padIdentifiers_length],
+          natListSliceAt_appendSkipPrefix (stateS.openWires.map (freshShiftAbove 0 delta))
+            atom.position atom.wiring.inputCount (padIdentifiers 0 delta),
+          ← natListSliceAt_map (freshShiftAbove 0 delta) stateS.openWires atom.position atom.wiring.inputCount]
+      have outputNodesCorr :
+          stepWiringOutputNodes stateT atom.wiring
+            = (stepWiringOutputNodes stateS atom.wiring).map (freshShiftAbove 0 delta) :=
+        rightPadOutputNodes_map 0 delta stateS stateT atom.wiring.outputCount sim.nfShift
+          (Nat.zero_le stateS.nextFresh)
+      have sliceLenS : (stepWiringInputNodes stateS atom.position atom.wiring).length
+          = atom.wiring.inputCount :=
+        natListSliceAt_length_fits stateS.openWires atom.position atom.wiring.inputCount leftover
+          lengthDecomp
+      have outputLenS : (stepWiringOutputNodes stateS atom.wiring).length = atom.wiring.outputCount := by
+        show ((List.range atom.wiring.outputCount).map (· + stateS.nextFresh)).length
+          = atom.wiring.outputCount
+        rw [mapLength, rangeLengthPad]
+      have headCorr :
+          wiringArcEvents (stepWiringInputNodes stateT (delta + atom.position) atom.wiring)
+              (stepWiringOutputNodes stateT atom.wiring) atom.wiring.inputCount atom.wiring.arcs
+            = (wiringArcEvents (stepWiringInputNodes stateS atom.position atom.wiring)
+                (stepWiringOutputNodes stateS atom.wiring) atom.wiring.inputCount atom.wiring.arcs).map
+                (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2)) := by
+        rw [inputNodesCorr, outputNodesCorr]
+        exact wiringArcEvents_mapNodes (freshShiftAbove 0 delta)
+          (stepWiringInputNodes stateS atom.position atom.wiring)
+          (stepWiringOutputNodes stateS atom.wiring) atom.wiring.inputCount atom.wiring.outputCount
+          sliceLenS outputLenS atom.wiring.arcs tagsInRange
+      show wiringArcEvents (stepWiringInputNodes stateT (delta + atom.position) atom.wiring)
+              (stepWiringOutputNodes stateT atom.wiring) atom.wiring.inputCount atom.wiring.arcs
+            ++ brauerWordJoinEvents (stepWiring stateT (delta + atom.position) atom.wiring)
+                (shiftBrauerWord delta rest)
+          = (wiringArcEvents (stepWiringInputNodes stateS atom.position atom.wiring)
+              (stepWiringOutputNodes stateS atom.wiring) atom.wiring.inputCount atom.wiring.arcs
+            ++ brauerWordJoinEvents (stepWiring stateS atom.position atom.wiring) rest).map
+              (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2))
+      rw [padMapAppend
+          (fun event : Nat × Nat => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2)),
+        headCorr,
+        leftPadWireSim_wordJoinEvents delta rest (stepWiring stateS atom.position atom.wiring)
+          (stepWiring stateT (delta + atom.position) atom.wiring)
+          (atom.position + atom.wiring.outputCount + leftover) tailInRange
+          (stepWiring_openWires_length_fits stateS atom.position leftover atom.wiring lengthDecomp)
+          (stepWiring_leftPadWireSim delta stateS stateT atom.position atom.wiring sim)]
+
+/-- ★ **The two Brauer runs (base boundary vs LEFT-widened boundary over the shifted word) are
+left-pad-simulated.**  Wire fields from the folded light wire simulation (seeded by `leftPaddedRangeSplit`); link
+fields off the whole trace at the empty base, exactly as the right pad but at threshold `0`. -/
+theorem processBrauer_leftPadSim (delta boundaryCount : Nat) (atoms : List BrauerAtom)
+    (inRange : BrauerWordInRange boundaryCount atoms) :
+    MatchingLeftPadSim delta (padIdentifiers 0 delta)
+      (processBrauer (brauerSeed boundaryCount) atoms)
+      (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta atoms)) := by
+  have seedWireSim : LeftPadWireSim delta (brauerSeed boundaryCount) (brauerSeed (delta + boundaryCount)) :=
+    { openMap := leftPaddedRangeSplit delta boundaryCount
+      nfShift := Nat.add_comm delta boundaryCount }
+  have wireSim : LeftPadWireSim delta (processBrauer (brauerSeed boundaryCount) atoms)
+      (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta atoms)) :=
+    processBrauer_leftPadWireSim delta atoms (brauerSeed boundaryCount)
+      (brauerSeed (delta + boundaryCount)) boundaryCount inRange (rangeLengthPad boundaryCount) seedWireSim
+  have traceCorr : brauerWordJoinEvents (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta atoms)
+      = (brauerWordJoinEvents (brauerSeed boundaryCount) atoms).map
+          (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2)) :=
+    leftPadWireSim_wordJoinEvents delta atoms (brauerSeed boundaryCount)
+      (brauerSeed (delta + boundaryCount)) boundaryCount inRange (rangeLengthPad boundaryCount) seedWireSim
+  have linksS : (processBrauer (brauerSeed boundaryCount) atoms).links
+      = applyJoinEvents (brauerWordJoinEvents (brauerSeed boundaryCount) atoms) [] :=
+    processBrauer_links_eq_applyJoinEvents atoms (brauerSeed boundaryCount)
+  have linksT : (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta atoms)).links
+      = applyJoinEvents ((brauerWordJoinEvents (brauerSeed boundaryCount) atoms).map
+          (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2))) [] := by
+    rw [processBrauer_links_eq_applyJoinEvents (shiftBrauerWord delta atoms) (brauerSeed (delta + boundaryCount))]
+    show applyJoinEvents (brauerWordJoinEvents (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta atoms)) []
+        = applyJoinEvents ((brauerWordJoinEvents (brauerSeed boundaryCount) atoms).map
+            (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2))) []
+    rw [traceCorr]
+  have padInert := applyJoinEvents_padInert 0 delta
+    ((brauerWordJoinEvents (brauerSeed boundaryCount) atoms).map
+      (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2)))
+    [] True.intro
+    (renamedTraceAvoidsPadZone 0 delta (brauerWordJoinEvents (brauerSeed boundaryCount) atoms))
+    (fun _ _ _ => rfl) (fun _ avoids => avoids)
+  exact
+    { openMap := wireSim.openMap
+      prefixCount := padIdentifiers_length 0 delta
+      nfShift := wireSim.nfShift
+      componentComm := fun firstValue secondValue => by
+        show isSameComponent (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta atoms)).links
+            (freshShiftAbove 0 delta firstValue) (freshShiftAbove 0 delta secondValue)
+          = isSameComponent (processBrauer (brauerSeed boundaryCount) atoms).links firstValue secondValue
+        rw [linksS, linksT]
+        exact componentView_applyJoinEvents_ofRename (freshShiftAbove 0 delta)
+          (freshShiftAbove_injective 0 delta) (brauerWordJoinEvents (brauerSeed boundaryCount) atoms)
+          firstValue secondValue
+      loopsEq := by
+        rw [processBrauer_loops_eq_addJoinEventLoops (shiftBrauerWord delta atoms)
+            (brauerSeed (delta + boundaryCount)),
+          processBrauer_loops_eq_addJoinEventLoops atoms (brauerSeed boundaryCount)]
+        show (0 : Nat)
+              + countJoinEventLoops
+                  (brauerWordJoinEvents (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta atoms)) []
+              + brauerWordInternalLoops (shiftBrauerWord delta atoms)
+            = 0 + countJoinEventLoops (brauerWordJoinEvents (brauerSeed boundaryCount) atoms) []
+              + brauerWordInternalLoops atoms
+        rw [traceCorr, countJoinEventLoops_ofRename (freshShiftAbove 0 delta)
+            (freshShiftAbove_injective 0 delta) (brauerWordJoinEvents (brauerSeed boundaryCount) atoms),
+          shiftBrauerWord_internalLoops delta atoms]
+      forestS := by
+        rw [linksS]
+        exact isUnionFindForest_applyJoinEvents (brauerWordJoinEvents (brauerSeed boundaryCount) atoms) []
+          True.intro
+      forestT := by
+        rw [linksT]
+        exact isUnionFindForest_applyJoinEvents
+          ((brauerWordJoinEvents (brauerSeed boundaryCount) atoms).map
+            (fun event => (freshShiftAbove 0 delta event.1, freshShiftAbove 0 delta event.2))) [] True.intro
+      padRootsFixed := by
+        intro node nodeLtDelta
+        rw [linksT]
+        exact padInert.1 node (Nat.zero_le node) (by rw [Nat.zero_add]; exact nodeLtDelta)
+      rootAvoidsPad := by
+        intro node deltaLeNode
+        rw [linksT]
+        cases padInert.2 node (Or.inr (by rw [Nat.zero_add]; exact deltaLeNode)) with
+        | inl belowZero => exact absurd belowZero (Nat.not_lt_zero _)
+        | inr atOrAbove => rw [Nat.zero_add] at atOrAbove; exact atOrAbove }
+
+/-- ★ **KEYSTONE15 — the LEFT pad extract congruence at `processBrauer`.**  A Brauer extract equality at boundary
+width `boundaryCount` transports to boundary width `delta + boundaryCount` when the words fire at the offset window
+`delta + position` (the relation fired at offset `delta` in a wider boundary). -/
+theorem brauerSeedExtract_ofLeftPad (delta boundaryCount : Nat) (lhs rhs : List BrauerAtom)
+    (inRangeLhs : BrauerWordInRange boundaryCount lhs) (inRangeRhs : BrauerWordInRange boundaryCount rhs)
+    (baseEq : extractDiagram boundaryCount (processBrauer (brauerSeed boundaryCount) lhs)
+            = extractDiagram boundaryCount (processBrauer (brauerSeed boundaryCount) rhs)) :
+    extractDiagram (delta + boundaryCount)
+        (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta lhs))
+      = extractDiagram (delta + boundaryCount)
+        (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta rhs)) :=
+  extractDiagram_ofLeftPadSimPair delta boundaryCount
+    (processBrauer (brauerSeed boundaryCount) lhs)
+    (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta lhs))
+    (processBrauer (brauerSeed boundaryCount) rhs)
+    (processBrauer (brauerSeed (delta + boundaryCount)) (shiftBrauerWord delta rhs))
+    (processBrauer_leftPadSim delta boundaryCount lhs inRangeLhs)
+    (processBrauer_leftPadSim delta boundaryCount rhs inRangeRhs)
+    baseEq
+
+/-! ## The two-sided pad composition -/
+
+/-- ★ **KEYSTONE15 — the TWO-SIDED horizontal pad congruence.**  A Brauer extract equality at boundary width
+`boundaryCount` transports to any width `leftPad + (boundaryCount + rightPad)` with the words fired at offset
+`leftPad`: right-pad first (`boundaryCount -> boundaryCount + rightPad`), then left-pad (shift by `leftPad`,
+prefix `leftPad`).  This is exactly the `seedExtractEq` shape the r14 whisker bridge consumes for a relation in
+arbitrary horizontal context. -/
+theorem brauerSeedExtract_ofTwoSidedPad (leftPad boundaryCount rightPad : Nat) (lhs rhs : List BrauerAtom)
+    (inRangeLhs : BrauerWordInRange boundaryCount lhs) (inRangeRhs : BrauerWordInRange boundaryCount rhs)
+    (baseEq : extractDiagram boundaryCount (processBrauer (brauerSeed boundaryCount) lhs)
+            = extractDiagram boundaryCount (processBrauer (brauerSeed boundaryCount) rhs)) :
+    extractDiagram (leftPad + (boundaryCount + rightPad))
+        (processBrauer (brauerSeed (leftPad + (boundaryCount + rightPad))) (shiftBrauerWord leftPad lhs))
+      = extractDiagram (leftPad + (boundaryCount + rightPad))
+        (processBrauer (brauerSeed (leftPad + (boundaryCount + rightPad))) (shiftBrauerWord leftPad rhs)) :=
+  brauerSeedExtract_ofLeftPad leftPad (boundaryCount + rightPad) lhs rhs
+    (brauerWordInRange_rightExtend rightPad lhs boundaryCount inRangeLhs)
+    (brauerWordInRange_rightExtend rightPad rhs boundaryCount inRangeRhs)
+    (brauerSeedExtract_ofRightPad boundaryCount rightPad lhs rhs inRangeLhs inRangeRhs baseEq)
+
+/-! ## The FLIP wiring — the 5 relations close in ARBITRARY horizontal context
+
+The two-sided pad congruence supplies the `seedExtractEq` the r14 whisker bridge
+(`brauerConv_whisker_ofCanonicalExtractEq`) consumes, at BOUNDARY-CHANGING offsets.  This closes the residual the
+r14 markers named: for each relation and ANY prefix / offset / right-pad, the relation whiskered in that context is
+`BrauerConv`-convertible (hence diagram-sound by `brauerConv_sound`). -/
+
+/-- ★ **KEYSTONE15 — a relation whiskered in ARBITRARY horizontal context is convertible.**  Given a prefix leaving
+post-prefix width `leftPad + (relBoundary + rightPad)`, a relation diagram-sound at its own boundary `relBoundary`
+(in range, zero internal loops), fired at offset `leftPad` in that wider boundary, is `BrauerConv`-convertible to its
+rhs there — the two-sided pad congruence feeds the `seedExtractEq` the r14 whisker bridge consumes.  This is the
+FULL-generality `relationAgrees` supplier the flag named: boundary-PRESERVING (r14) generalized to
+boundary-CHANGING. -/
+theorem brauerConv_relation_inContext (bottomCount : Nat) (bottomPos : 0 < bottomCount)
+    (prefixAtoms : List BrauerAtom) (prefixInRange : BrauerWordInRange bottomCount prefixAtoms)
+    (leftPad relBoundary rightPad : Nat) (relLhs relRhs : List BrauerAtom)
+    (widthEq : (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length
+                = leftPad + (relBoundary + rightPad))
+    (inRangeLhs : BrauerWordInRange relBoundary relLhs) (inRangeRhs : BrauerWordInRange relBoundary relRhs)
+    (zeroLhs : brauerWordInternalLoops relLhs = 0) (zeroRhs : brauerWordInternalLoops relRhs = 0)
+    (relSound : extractDiagram relBoundary (processBrauer (brauerSeed relBoundary) relLhs)
+              = extractDiagram relBoundary (processBrauer (brauerSeed relBoundary) relRhs)) :
+    BrauerConv bottomCount (prefixAtoms ++ shiftBrauerWord leftPad relLhs)
+      (prefixAtoms ++ shiftBrauerWord leftPad relRhs) := by
+  have inLeft : BrauerWordInRange (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length
+      (shiftBrauerWord leftPad relLhs) := by
+    rw [widthEq]
+    exact brauerWordInRange_shift leftPad relLhs (relBoundary + rightPad)
+      (brauerWordInRange_rightExtend rightPad relLhs relBoundary inRangeLhs)
+  have inRight : BrauerWordInRange (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length
+      (shiftBrauerWord leftPad relRhs) := by
+    rw [widthEq]
+    exact brauerWordInRange_shift leftPad relRhs (relBoundary + rightPad)
+      (brauerWordInRange_rightExtend rightPad relRhs relBoundary inRangeRhs)
+  have seedEq : extractDiagram (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length
+        (processBrauer (canonicalMatchingSeed
+          (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length)
+          (shiftBrauerWord leftPad relLhs))
+      = extractDiagram (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length
+        (processBrauer (canonicalMatchingSeed
+          (processBrauer (brauerSeed bottomCount) prefixAtoms).openWires.length)
+          (shiftBrauerWord leftPad relRhs)) := by
+    rw [widthEq]
+    exact brauerSeedExtract_ofTwoSidedPad leftPad relBoundary rightPad relLhs relRhs
+      inRangeLhs inRangeRhs relSound
+  exact brauerConv_whisker_ofCanonicalExtractEq bottomCount bottomPos prefixAtoms
+    (shiftBrauerWord leftPad relLhs) (shiftBrauerWord leftPad relRhs) prefixInRange inLeft inRight
+    (by rw [shiftBrauerWord_internalLoops]; exact zeroLhs)
+    (by rw [shiftBrauerWord_internalLoops]; exact zeroRhs) seedEq
+
+/-! ### The 5 relations in a boundary-CHANGING context (non-vacuity for the flip)
+
+Each relation, fired at a NON-zero offset inside a boundary strictly wider than its own (empty prefix, `bottomCount`
+> the relation's boundary), is `BrauerConv`-convertible via `brauerConv_relation_inContext`.  Unlike the r14
+witnesses (which preserved the relation's boundary width), these are genuinely boundary-CHANGING — the pad congruence
+is doing the work. -/
+
+/-- R2 (crossing involutivity, boundary 2) fired at offset `1` in a width-4 boundary (`1 + (2 + 1)`). -/
+theorem brauerConv_crossingInvolution_inWiderContext :
+    BrauerConv 4 ([] ++ shiftBrauerWord 1 crossingInvolutionRelation.lhs)
+      ([] ++ shiftBrauerWord 1 crossingInvolutionRelation.rhs) :=
+  brauerConv_relation_inContext 4 (by decide) [] (BrauerWordInRange.nil 4) 1 2 1
+    crossingInvolutionRelation.lhs crossingInvolutionRelation.rhs (by decide)
+    (BrauerWordInRange.cons (crossingAt 0) 0 rfl (by decide)
+      (BrauerWordInRange.cons (crossingAt 0) 0 rfl (by decide) (BrauerWordInRange.nil 2)))
+    (BrauerWordInRange.nil 2) rfl rfl crossingInvolution_diagram_sound
+
+/-- R3 (Yang–Baxter, boundary 3) fired at offset `1` in a width-5 boundary (`1 + (3 + 1)`). -/
+theorem brauerConv_yangBaxter_inWiderContext :
+    BrauerConv 5 ([] ++ shiftBrauerWord 1 yangBaxterRelation.lhs)
+      ([] ++ shiftBrauerWord 1 yangBaxterRelation.rhs) :=
+  brauerConv_relation_inContext 5 (by decide) [] (BrauerWordInRange.nil 5) 1 3 1
+    yangBaxterRelation.lhs yangBaxterRelation.rhs (by decide)
+    (BrauerWordInRange.cons (crossingAt 0) 1 rfl (by decide)
+      (BrauerWordInRange.cons (crossingAt 1) 0 rfl (by decide)
+        (BrauerWordInRange.cons (crossingAt 0) 1 rfl (by decide) (BrauerWordInRange.nil 3))))
+    (BrauerWordInRange.cons (crossingAt 1) 0 rfl (by decide)
+      (BrauerWordInRange.cons (crossingAt 0) 1 rfl (by decide)
+        (BrauerWordInRange.cons (crossingAt 1) 0 rfl (by decide) (BrauerWordInRange.nil 3))))
+    rfl rfl yangBaxter_diagram_sound
+
+/-- R1 (cap-slide, boundary 3) fired at offset `1` in a width-5 boundary. -/
+theorem brauerConv_capSlide_inWiderContext :
+    BrauerConv 5 ([] ++ shiftBrauerWord 1 capSlideRelation.lhs)
+      ([] ++ shiftBrauerWord 1 capSlideRelation.rhs) :=
+  brauerConv_relation_inContext 5 (by decide) [] (BrauerWordInRange.nil 5) 1 3 1
+    capSlideRelation.lhs capSlideRelation.rhs (by decide)
+    (BrauerWordInRange.cons (crossingAt 1) 0 rfl (by decide)
+      (BrauerWordInRange.cons (capAt 0) 1 rfl (by decide) (BrauerWordInRange.nil 1)))
+    (BrauerWordInRange.cons (crossingAt 0) 1 rfl (by decide)
+      (BrauerWordInRange.cons (capAt 1) 0 rfl (by decide) (BrauerWordInRange.nil 1)))
+    rfl rfl capSlide_diagram_sound
+
+/-- S1 (snake, boundary 1) fired at offset `1` in a width-3 boundary (`1 + (1 + 1)`). -/
+theorem brauerConv_snake_inWiderContext :
+    BrauerConv 3 ([] ++ shiftBrauerWord 1 snakeRelation.lhs)
+      ([] ++ shiftBrauerWord 1 snakeRelation.rhs) :=
+  brauerConv_relation_inContext 3 (by decide) [] (BrauerWordInRange.nil 3) 1 1 1
+    snakeRelation.lhs snakeRelation.rhs (by decide)
+    (BrauerWordInRange.cons (cupAt 1) 0 rfl (by decide)
+      (BrauerWordInRange.cons (capAt 0) 1 rfl (by decide) (BrauerWordInRange.nil 1)))
+    (BrauerWordInRange.nil 1) rfl rfl snake_diagram_sound
+
+/-- S2 (mirror snake, boundary 1) fired at offset `1` in a width-3 boundary. -/
+theorem brauerConv_snakeMirror_inWiderContext :
+    BrauerConv 3 ([] ++ shiftBrauerWord 1 snakeMirrorRelation.lhs)
+      ([] ++ shiftBrauerWord 1 snakeMirrorRelation.rhs) :=
+  brauerConv_relation_inContext 3 (by decide) [] (BrauerWordInRange.nil 3) 1 1 1
+    snakeMirrorRelation.lhs snakeMirrorRelation.rhs (by decide)
+    (BrauerWordInRange.cons (cupAt 0) 1 rfl (by decide)
+      (BrauerWordInRange.cons (capAt 1) 0 rfl (by decide) (BrauerWordInRange.nil 1)))
+    (BrauerWordInRange.nil 1) rfl rfl snakeMirror_diagram_sound
+
+/-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the RIGHT horizontal pad congruence at `processBrauer` is SHIPPED.**  The
 whole-word right-pad simulation (`processBrauer_rightPadSim`) is constructed on the generic `stepWiring`
@@ -608,9 +1046,27 @@ engine (crossing included) — the wire plumbing folded, the link fields read of
 empty base via the shipped rename-equivariance / loop-invariance / pad-inertness bricks — and composed
 with the engine-agnostic payoff `extractDiagram_ofRightPadSimPair` to land `brauerSeedExtract_ofRightPad`:
 an extract equality at boundary width `threshold` transports to width `threshold + delta`.  This is the
-boundary-WIDENING half of the residual named at `WiringDescFunctoriality.lean` r14.  The LEFT pad
-(position offset via `shiftBrauerWord`) and the two-sided composition feeding the soundness flip are the
-next bricks.  `= true`. -/
+boundary-WIDENING half of the residual named at `WiringDescFunctoriality.lean` r14.  `= true`. -/
 def fxBrauer_hasRightPadCongruence : Bool := true
+
+/-- ★ **Honesty marker — the LEFT horizontal pad congruence + the TWO-SIDED composition are SHIPPED.**  The
+whole-word left-pad simulation (`processBrauer_leftPadSim`, over the position-shifted word `shiftBrauerWord`)
+lands `brauerSeedExtract_ofLeftPad` (offset `delta`), and `brauerSeedExtract_ofTwoSidedPad` chains right-then-left
+to transport an extract equality at width `boundaryCount` to any `leftPad + (boundaryCount + rightPad)` with the
+words fired at offset `leftPad` — exactly the `seedExtractEq` shape the r14 whisker bridge consumes for a relation in
+arbitrary horizontal context.  Both directions reuse the shipped engine-agnostic payoffs
+(`extractDiagram_of{Left,Right}PadSimPair`).  `= true`. -/
+def fxBrauer_hasTwoSidedPadCongruence : Bool := true
+
+/-- ★ **Honesty marker — the 5 relations close in ARBITRARY horizontal context (the flag's owed uniform
+`relationAgrees`, over ALL reachable states / offsets).**  `brauerConv_relation_inContext` produces, for a relation
+diagram-sound at its own boundary, a `BrauerConv` for it whiskered after ANY prefix at ANY offset in ANY wider
+boundary — the two-sided pad congruence feeds the r14 whisker bridge's `seedExtractEq`.  Non-vacuous + genuinely
+boundary-CHANGING: `brauerConv_{crossingInvolution,yangBaxter,capSlide,snake,snakeMirror}_inWiderContext` each fire
+the relation at offset `1` in a boundary strictly wider than the relation's own (which the r14 boundary-preserving
+witnesses could not).  This closes the exact obligation the flag docstring names ("for each of the five relations,
+its per-relation boundary same-component preservation, uniform over all reachable states / offsets") — see the flip
+of `fxBrauer_hasBrauerSoundness` in `Brauer/WiringDesc.lean`.  `= true`. -/
+def fxBrauer_hasRelationInArbitraryHorizontalContext : Bool := true
 
 end FX1Poly.Polygraph

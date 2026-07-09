@@ -278,10 +278,11 @@ def fxBrauer_hasR1R3ResidualIsTwoWordFunctoriality : Bool := true
 `relationAgrees` this round.**  The DIRECT assembler re-points the residual off the refuted cross-order onto the
 non-refuted boundary-restricted facts (H1 port-reconnection + H2 boundary two-sided locality), and closes them
 CONCRETELY for R2-at-offset-1 (`brauerConv_whisker_crossingInvolution_direct`); the UNIFORM (all reachable states /
-offsets) H1 + H2 remain unbuilt — the collapse trio needs the port-reconnection surgery + per-word old-endpoint
-confinement, R1 / R3 need the spine-to-Brauer functoriality port.  No relation's uniform `relationAgrees` closes, so
-`fxBrauer_hasBrauerSoundness` stays `false`; but the WALL is decisively re-attributed: it is NOT the block-swap
-refutation, it is the unbuilt (non-refuted) H1 + H2.  `= false`. -/
+offsets) H1 + H2 remained unbuilt on THIS (direct-assembler) route.  The WALL this marker re-attributed — NOT the
+block-swap refutation but the unbuilt (non-refuted) H1 + H2 — was the correct diagnosis: the uniform `relationAgrees`
+was subsequently closed off a DIFFERENT route, the KEYSTONE15 two-sided pad congruence fed to the r14 functoriality
+whisker bridge (`brauerConv_relation_inContext`, `Brauer/WiringDescPadCongruence.lean`), so
+`fxBrauer_hasBrauerSoundness` is now `true`.  This marker records the direct route's own 0/5 standing.  `= false`. -/
 def fxBrauer_hasBrauerSoundnessDirectRouteResidual : Bool := false
 
 end FX1Poly.Polygraph

@@ -261,19 +261,17 @@ words are distinct).  This is the uniform closure move: EVERY one of the five re
 context is an instance ONCE its per-relation boundary same-component preservation is proven.  `= true`. -/
 def fxBrauer_hasBrauerWhiskerMove : Bool := true
 
-/-- **Honesty marker — FULL Brauer soundness (the whole congruence closure) STAYS `false`, residual COLLAPSED to ONE
-uniform obligation.**  `brauerConv_sound` now covers { equivalence, the five relations AT THE BOUNDARY, contextual
-interchange, ANY connectivity-preserving contextual whisker }.  The FULL free-symmetric-self-dual congruence closure
-additionally whiskers the FIVE relations in ARBITRARY horizontal context.  With the `whisker` move shipped, that is
-no longer five separate state-parametric bricks: it is ONE uniform residual — for each relation, its per-relation
-BOUNDARY same-component preservation `relationAgrees` (the union-find window-locality: firing the relation word in an
-in-range window preserves the boundary partition, +length +loops), the exact hypothesis the `whisker` constructor
-consumes.  The interchange discharges it via `blockRotate`; the five relations discharge it via the un-built
-per-relation window-locality (crossing-inclusive analog of the arc route's boundary-discipline subsystem
-`fxMode_hasBoundaryDisciplinedSoundness`).  Concrete states discharge it by `decide`
-(`brauerConv_whisker_crossingInvolution_inContext`); the uniform (all reachable states / offsets) proof is the
-residual.  So `fxBrauer_hasBrauerSoundness` STAYS `false`, its residual now precisely = the five relations' uniform
-`relationAgrees` over the shipped `whisker` move.  `= true`. -/
+/-- ★ **Honesty marker — the named uniform `relationAgrees` residual is now DISCHARGED (KEYSTONE15).**
+`brauerConv_sound` covers { equivalence, the five relations AT THE BOUNDARY, contextual interchange, ANY
+connectivity-preserving contextual whisker }.  The FULL free-symmetric-self-dual congruence closure additionally
+whiskers the FIVE relations in ARBITRARY horizontal context — one uniform residual, for each relation its per-relation
+BOUNDARY same-component preservation `relationAgrees`, uniform over all reachable states / offsets, the exact
+hypothesis the `whisker` constructor consumes.  That residual is now DISCHARGED in
+`Brauer/WiringDescPadCongruence.lean`: the two-sided horizontal pad congruence `brauerSeedExtract_ofTwoSidedPad`
+(zero-axiom, generic `stepWiring` engine) feeds the whisker bridge, and `brauerConv_relation_inContext` produces the
+`BrauerConv` for each relation whiskered after ANY prefix at ANY offset in ANY wider boundary — hence
+`fxBrauer_hasBrauerSoundness` (`Brauer/WiringDesc.lean`) is now `true`.  This marker records that the residual was
+correctly NAMED (the pad/shift congruence) and is now closed.  `= true`. -/
 def fxBrauer_hasBrauerSoundnessResidualNamed : Bool := true
 
 end FX1Poly.Polygraph

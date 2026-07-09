@@ -37,7 +37,35 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.processBrauer_rightPadSim
 #assert_no_axioms FX1Poly.Polygraph.brauerSeedExtract_ofRightPad
 
--- honesty marker
+-- the LEFT pad: shifted word + prefix-skip surgery + simulation + payoff
+#assert_no_axioms FX1Poly.Polygraph.shiftBrauerWord
+#assert_no_axioms FX1Poly.Polygraph.shiftBrauerWord_internalLoops
+#assert_no_axioms FX1Poly.Polygraph.brauerWordInRange_shift
+#assert_no_axioms FX1Poly.Polygraph.brauerWordInRange_rightExtend
+#assert_no_axioms FX1Poly.Polygraph.LeftPadWireSim
+#assert_no_axioms FX1Poly.Polygraph.stepWiring_leftPadWireSim
+#assert_no_axioms FX1Poly.Polygraph.processBrauer_leftPadWireSim
+#assert_no_axioms FX1Poly.Polygraph.leftPadWireSim_wordJoinEvents
+#assert_no_axioms FX1Poly.Polygraph.processBrauer_leftPadSim
+#assert_no_axioms FX1Poly.Polygraph.brauerSeedExtract_ofLeftPad
+
+-- the two-sided composition + the 5 relations in arbitrary horizontal context
+#assert_no_axioms FX1Poly.Polygraph.brauerSeedExtract_ofTwoSidedPad
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_relation_inContext
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_crossingInvolution_inWiderContext
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_yangBaxter_inWiderContext
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_capSlide_inWiderContext
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_snake_inWiderContext
+#assert_no_axioms FX1Poly.Polygraph.brauerConv_snakeMirror_inWiderContext
+
+-- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasRightPadCongruence
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasTwoSidedPadCongruence
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasRelationInArbitraryHorizontalContext
+
+-- the flipped soundness flag (now `true`) + updated residual markers
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerSoundness
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerSoundnessResidualIsPadShift
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerSoundnessResidualNamed
 
 end FX1PolyAudit

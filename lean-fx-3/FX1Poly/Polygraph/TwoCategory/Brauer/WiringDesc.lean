@@ -403,16 +403,26 @@ low-depth ones by `rfl`, R3 by the staged single-step chain `yangBaxter_diagram_
 `brauerPresentation_allSound` conjoins the whole set.  `= true`. -/
 def fxBrauer_hasBrauerPresentation : Bool := true
 
-/-- **Honesty marker — GENERAL Brauer soundness rides ONE uniform residual (collapsed 5→1) over the shipped whisker
-move.**  Per-relation soundness is shipped at the seed; the contextual interchange (Godement) and the contextual
-`whisker` (congruence) moves are shipped in `BrauerConv` (`Brauer/WiringDescConv.lean`), so "every convertible pair
-has equal matching" now reduces — via `whisker` + `extractDiagram_eq_of_connectivityView` — to ONE uniform obligation:
-for each of the five relations, its per-relation BOUNDARY same-component preservation (`relationAgrees`, the union-find
-window-locality of firing the relation word in an in-range window).  The interchange discharges it via `blockRotate`;
-concrete states discharge it via `decide`; the uniform (all reachable states / offsets) proof — the crossing-inclusive
-analog of the arc route's boundary-discipline subsystem — is the standing brick.  No new obstruction, no discount.
-`= false`. -/
-def fxBrauer_hasBrauerSoundness : Bool := false
+/-- ★ **Honesty marker — GENERAL Brauer soundness: the uniform `relationAgrees` residual is now CLOSED (flag flipped
+`false → true`).**  Per-relation soundness is shipped at the seed; the contextual interchange (Godement) and the
+contextual `whisker` (congruence) moves are shipped in `BrauerConv` (`Brauer/WiringDescConv.lean`), so "every
+convertible pair has equal matching" reduced — via `whisker` + `extractDiagram_eq_of_connectivityView` — to ONE
+uniform obligation: for each of the five relations, its per-relation BOUNDARY same-component preservation
+(`relationAgrees`), UNIFORM over all reachable states / offsets.  That obligation is now DISCHARGED
+(`Brauer/WiringDescPadCongruence.lean`): the KEYSTONE15 two-sided horizontal pad congruence
+`brauerSeedExtract_ofTwoSidedPad` (built zero-axiom on the generic `stepWiring` engine — crossing included — from the
+whole-word left/right pad simulations `processBrauer_{left,right}PadSim` composed with the shipped engine-agnostic
+payoffs `extractDiagram_of{Left,Right}PadSimPair`) supplies the r14 whisker bridge's `seedExtractEq` at
+BOUNDARY-CHANGING offsets, and `brauerConv_relation_inContext` turns it into a `BrauerConv` for each relation
+whiskered after ANY prefix at ANY offset in ANY wider boundary.  `brauerConv_sound` (`Brauer/WiringDescConv.lean`)
+makes that closure diagram-sound.  Non-vacuous + genuinely boundary-CHANGING:
+`brauerConv_{crossingInvolution,yangBaxter,capSlide,snake,snakeMirror}_inWiderContext` fire each relation at offset
+`1` in a boundary strictly wider than its own (which the r14 boundary-PRESERVING witnesses could not), and
+`brauerConv_crossing_not_identity` keeps the relation proper.  Scope this flag names precisely: the closure of the
+five relations under prefix-whiskering (vertical) + two-sided pad (horizontal), diagram-sound; trailing-context
+whiskerRight, if wanted, is the mechanical composition of this pad congruence with the shipped functoriality
+`processBrauer_extract_eq_ofCanonicalExtractEq` through the post-relation word.  `= true`. -/
+def fxBrauer_hasBrauerSoundness : Bool := true
 
 /-- **Honesty marker — COMPLETENESS (equal matching ⇒ convertible) is the classical straightening NF, not yet
 built.**  Adding the snake + crossing relations makes `DiagramType` a COMPLETE invariant for the symmetric Brauer
