@@ -12,6 +12,8 @@ domain-path bridge, the word-gadget collapse, the block-sum composition `compose
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.MonadSaturatedTwoCellConv.ofEq
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.hcomp_castBoundaryLeft
+#assert_no_axioms FX1Poly.Polygraph.MonadSaturatedTwoCellConv.hcompCongrLeft
 #assert_no_axioms FX1Poly.Polygraph.natAddSubCancelLeft
 #assert_no_axioms FX1Poly.Polygraph.consAppend_consTake_consDrop
 #assert_no_axioms FX1Poly.Polygraph.consTake_length_of_le

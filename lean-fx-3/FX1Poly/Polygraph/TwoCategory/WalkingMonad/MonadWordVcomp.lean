@@ -43,6 +43,48 @@ theorem MonadSaturatedTwoCellConv.ofEq {sourceMode targetMode : MonadMode}
     (heq : cellAlpha = cellBeta) : MonadSaturatedTwoCellConv cellAlpha cellBeta := by
   cases heq; exact MonadSaturatedTwoCellConv.refl cellAlpha
 
+/-! ## The LEFT-factor `hcomp` cast / congruence lemmas (the mirrors of the shipped RIGHT variants)
+
+The `wordMul_vcomp` interchange assembly extrudes a boundary cast out of the LEFT `hcomp` factor and threads a
+convertibility through the LEFT `hcomp` factor — the mirrors of the shipped `hcomp_castBoundaryRight` /
+`hcompCongrRight` (whose Right factor was the whisker-in-context).  Left and right whiskering are the two partial
+applications of the ONE horizontal-composition bifunctor (nLab: `bicategory`, `whiskering`), so each Right
+coherence identity has a Left dual with no hidden asymmetry — the interchange IS that bifunctoriality. -/
+
+/-- Pull a boundary cast out of the LEFT `hcomp` factor: a cast on the left factor's boundary becomes a cast of the
+whole horizontal composite, the RIGHT whisker context `oneCellGDom` / `oneCellGCod` appended by `congrArg`.  The
+LEFT mirror of `RawTwoCellExpr.hcomp_castBoundaryRight` (`cases`-collapse of the two seams; `cases hcod` is
+load-bearing because the derived `hcomp`'s right whisker factor is gated by the LEFT factor's codomain). -/
+theorem RawTwoCellExpr.hcomp_castBoundaryLeft {signature : ModeSignature}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {oneCellFDom oneCellFDom' oneCellFCod oneCellFCod' :
+      ModalityPath signature.graph sourceMode middleMode}
+    {oneCellGDom oneCellGCod : ModalityPath signature.graph middleMode targetMode}
+    (hdom : oneCellFDom = oneCellFDom') (hcod : oneCellFCod = oneCellFCod')
+    (cellAlpha : RawTwoCellExpr signature oneCellFDom oneCellFCod)
+    (cellBeta : RawTwoCellExpr signature oneCellGDom oneCellGCod) :
+    RawTwoCellExpr.hcomp (RawTwoCellExpr.castBoundary hdom hcod cellAlpha) cellBeta
+      = RawTwoCellExpr.castBoundary (congrArg (fun path => composePath path oneCellGDom) hdom)
+          (congrArg (fun path => composePath path oneCellGCod) hcod)
+          (RawTwoCellExpr.hcomp cellAlpha cellBeta) := by
+  cases hdom; cases hcod; rfl
+
+/-- Congruence in the LEFT factor of a horizontal composite on the saturated relation: replacing the left factor by
+a saturated-convertible (parallel) one gives a saturated-convertible horizontal composite.  `hcomp α β = vcomp
+(whiskerRight β_dom α) (whiskerLeft α_cod β)`; the right `whiskerLeft` factor is unchanged (parallel `α` share a
+codomain), the left `whiskerRight` factor threads the convertibility (`whiskerRightCongr`).  The LEFT mirror of
+`MonadSaturatedTwoCellConv.hcompCongrRight`. -/
+theorem MonadSaturatedTwoCellConv.hcompCongrLeft {sourceMode middleMode targetMode : MonadMode}
+    {oneCellFDom oneCellFCod : ModalityPath monadModeSignature.graph sourceMode middleMode}
+    {oneCellGDom oneCellGCod : ModalityPath monadModeSignature.graph middleMode targetMode}
+    {cellAlpha cellAlpha' : RawTwoCellExpr monadModeSignature oneCellFDom oneCellFCod}
+    (conv : MonadSaturatedTwoCellConv cellAlpha cellAlpha')
+    (cellBeta : RawTwoCellExpr monadModeSignature oneCellGDom oneCellGCod) :
+    MonadSaturatedTwoCellConv (RawTwoCellExpr.hcomp cellAlpha cellBeta)
+      (RawTwoCellExpr.hcomp cellAlpha' cellBeta) :=
+  MonadSaturatedTwoCellConv.vcompCongrLeft _
+    (MonadSaturatedTwoCellConv.whiskerRightCongr oneCellGDom conv)
+
 /-! ## Cons-only sum + take/drop primitives -/
 
 /-- Cons-only list sum (the library `List.sum` folds through a monoid instance that pulls `propext`). -/
