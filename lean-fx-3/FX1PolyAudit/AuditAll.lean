@@ -360,6 +360,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescConnectivityOffConfin
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPortReconnection
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingInvolution
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescDirectRelationAgrees
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
