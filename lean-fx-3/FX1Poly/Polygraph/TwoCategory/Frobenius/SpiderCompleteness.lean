@@ -253,4 +253,133 @@ instance instDecidableSpiderConv (bottomCount : Nat) (leftWord rightWord : List 
     Decidable (SpiderConv bottomCount leftWord rightWord) :=
   decidable_of_iff _ spiderConv_iff_extraEq.symm
 
+/-! ## The connected-spider readback — the Fauser normal form `δ^{n-1} ∘ μ^{m-1}` (`stepView`)
+
+Fauser (*Some graphical aspects of Frobenius structures*, arXiv:1202.6380, Thm 3.8): any CONNECTED `m ⇒ n` tangle
+straightens to `δ^{n-1} ∘ l^r ∘ m^{m-1}` — a μ-left-comb collapsing all inputs to one wire, then a δ-left-comb fanning
+that wire to all outputs; the loop count `r` drops to `0` in the special theory.  This is the single-spider readback;
+the general multi-block readback (routing per block) is the r8 target (the closed-count wall aside).  The per-atom
+partition VIEW that the fold threads is `spiderViewOf`. -/
+
+/-- The per-word boundary partition VIEW (the extraspecial invariant the decision reads) — the `stepView` the fold
+computes atom by atom (`extraSpiderDiagramOf` IS that fold). -/
+def spiderViewOf (bottomCount : Nat) (word : List BrauerAtom) : SpiderPartitionType :=
+  extraSpiderDiagramOf bottomCount word
+
+/-- The μ-left-comb collapsing `inputCount` bottom wires to ONE wire: a birthing unit when there are no inputs, the
+identity when there is one, otherwise multiply the leftmost pair and recurse. -/
+def mergeToOne : Nat → List BrauerAtom
+  | 0 => [unitAt 0]
+  | 1 => []
+  | inputs + 2 => multAt 0 :: mergeToOne (inputs + 1)
+
+/-- The δ-left-comb fanning ONE wire to `outputCount` top wires: a terminating counit when there are no outputs, the
+identity when there is one, otherwise comultiply wire `0` and recurse. -/
+def fanToN : Nat → List BrauerAtom
+  | 0 => [counitAt 0]
+  | 1 => []
+  | outputs + 2 => comultAt 0 :: fanToN (outputs + 1)
+
+/-- ★ **The connected-spider Fauser normal form** `μ^{m-1}` then `δ^{n-1}` — the canonical representative of the
+CONNECTED `m ⇒ n` spider (all `m + n` boundary ports one block).  Computes. -/
+def canonicalSpiderOf (inputCount outputCount : Nat) : List BrauerAtom :=
+  mergeToOne inputCount ++ fanToN outputCount
+
+/-! ### The readback computes — `#eval` demos + per-size realization -/
+
+-- `#eval` — the connected readback realizes its `(m, n)` block (`SpiderPartitionType` derives `Repr`).
+#eval extraSpiderDiagramOf 2 (canonicalSpiderOf 2 1)   -- {2, 1, [0,0,0]}
+#eval extraSpiderDiagramOf 3 (canonicalSpiderOf 3 2)   -- {3, 2, [0,0,0,0,0]}
+
+/-- The connected `2 ⇒ 1` spider readback `[μ]` realizes the single block `{2, 1, [0,0,0]}`. -/
+theorem canonicalSpider_realizes_2_1 :
+    extraSpiderDiagramOf 2 (canonicalSpiderOf 2 1)
+      = { bottomCount := 2, topCount := 1, blockLabels := [0, 0, 0] } := by decide
+
+/-- The connected `2 ⇒ 2` spider readback `[μ, δ]` (the Frobenius "H" element) realizes `{2, 2, [0,0,0,0]}`. -/
+theorem canonicalSpider_realizes_2_2 :
+    extraSpiderDiagramOf 2 (canonicalSpiderOf 2 2)
+      = { bottomCount := 2, topCount := 2, blockLabels := [0, 0, 0, 0] } := by decide
+
+/-- The connected `3 ⇒ 2` spider readback realizes the size-5 single block `{3, 2, [0,0,0,0,0]}`. -/
+theorem canonicalSpider_realizes_3_2 :
+    extraSpiderDiagramOf 3 (canonicalSpiderOf 3 2)
+      = { bottomCount := 3, topCount := 2, blockLabels := [0, 0, 0, 0, 0] } := by decide
+
+/-- The `0 ⇒ 3` readback (unit birthing, then fan) realizes `{0, 3, [0,0,0]}` — the input-free spider. -/
+theorem canonicalSpider_realizes_0_3 :
+    extraSpiderDiagramOf 0 (canonicalSpiderOf 0 3)
+      = { bottomCount := 0, topCount := 3, blockLabels := [0, 0, 0] } := by decide
+
+/-! ### Fusion — connected words reduce to their canonical spider (via completeness) -/
+
+/-- ★ **Spider fusion, connected case.**  Associativity's RHS `μ(1⊗μ)` (`[multAt 1, multAt 0]`, a connected `3 ⇒ 1`
+word) FUSES to the canonical `3 ⇒ 1` spider `[μ, μ]` — a genuine normal-form reduction produced by completeness (both
+realize the same connected partition), NOT the seed associativity relation. -/
+theorem spiderFusion_assocRhs_toCanonical :
+    SpiderConv 3 [multAt 1, multAt 0] (canonicalSpiderOf 3 1) :=
+  spiderConv_complete (by decide)
+
+/-- ★ **Spider fusion is uniform over the partition, not the word.**  The `2 ⇒ 2` Frobenius "S" word `(μ⊗1)(1⊗δ)`
+(`frobLeft.lhs`) fuses to the canonical `2 ⇒ 2` spider `[μ, δ]` — the same canonical target the "H" word already IS,
+demonstrating both Frobenius orientations land on one normal form. -/
+theorem spiderFusion_frobLeftLhs_toCanonical :
+    SpiderConv 2 frobLeft.lhs (canonicalSpiderOf 2 2) :=
+  spiderConv_complete (by decide)
+
+/-! ## Non-vacuity of the DECIDER — both verdicts fire on real pairs -/
+
+/-- ★ **The decider returns `isTrue` on a genuinely-convertible pair.**  `SpiderConv 2 frobLeft.lhs frobLeft.rhs`
+(the Frobenius "S=X" law, distinct words) is decided TRUE by `instDecidableSpiderConv`. -/
+theorem spiderConvDecision_isTrue_frobLeft : decide (SpiderConv 2 frobLeft.lhs frobLeft.rhs) = true := by decide
+
+/-- ★ **The decider returns `isFalse` on a genuinely-non-convertible pair.**  The Frobenius "H" element `δμ` and the
+identity pair (`frobeniusH_ne_identity`, distinct partitions) are decided FALSE by `instDecidableSpiderConv` — the
+decision is proper, not vacuously accepting. -/
+theorem spiderConvDecision_isFalse_HvsIdentity :
+    decide (SpiderConv 2 [multAt 0, comultAt 0] [identityStrandAt 0, identityStrandAt 1]) = false := by decide
+
+/-- ★ **The two decider verdicts are DISTINCT** — non-vacuity of `instDecidableSpiderConv` in one statement. -/
+theorem spiderConvDecision_bothVerdicts :
+    decide (SpiderConv 2 frobLeft.lhs frobLeft.rhs) = true
+      ∧ decide (SpiderConv 2 [multAt 0, comultAt 0] [identityStrandAt 0, identityStrandAt 1]) = false :=
+  ⟨spiderConvDecision_isTrue_frobLeft, spiderConvDecision_isFalse_HvsIdentity⟩
+
+/-! ## Honesty markers -/
+
+/-- ★ **Honesty marker — the extraspecial (corelation) word problem is DECIDABLE, UNCONDITIONALLY (FROB-7).**
+`instDecidableSpiderConv` decides `SpiderConv n a b` by `DecidableEq` on the two `SpiderPartitionType` invariants,
+transported across `spiderConv_iff_extraEq` (soundness `spiderConv_partitionSound` ⊕ completeness
+`spiderConv_complete`).  The completeness leg needs NO `S_n` crossing canonicalization ("comb", the still-open
+`BRAUER-BREACH`): the invariant is the connectivity partition (Coya–Fong corelations), and the shipped `whisker`
+constructor is its quotient generator, so the bridge `matchingSameComponent_eq_blockLabelBeq` (equal partition ⟹ equal
+boundary view) closes crossing-free.  NON-VACUOUS: the decider returns `isTrue` on `frobLeft` and `isFalse` on
+`H`-vs-identity (`spiderConvDecision_bothVerdicts`).  `= true`. -/
+def fxFrob_hasSpiderConvDecision : Bool := true
+
+/-- ★ **Honesty marker — the connected-spider Fauser normal form ships and computes (FROB-7).**  `canonicalSpiderOf`
+(the μ-comb `mergeToOne` then δ-comb `fanToN`) is Fauser Thm 3.8's `δ^{n-1} ∘ μ^{m-1}` connected readback; its
+realization is machine-checked on a demonstrated `(m, n)` family (`canonicalSpider_realizes_2_1` / `2_2` / `3_2` /
+`0_3`), and connected words FUSE to it via completeness (`spiderFusion_assocRhs_toCanonical`,
+`spiderFusion_frobLeftLhs_toCanonical`) — the ZX/hypergraph spider theorem, connected fragment.  `= true`. -/
+def fxFrob_hasConnectedSpiderNF : Bool := true
+
+/-- **Honesty marker — the GENERAL multi-block spider-fusion readback is the r8 target.**  `canonicalSpiderOf`
+realizes the CONNECTED (single-block) spider.  A partition with MULTIPLE blocks needs a per-block realization plus a
+routing permutation that gathers each block's scattered ports (crossings).  That routing is a FORWARD computation
+(decidable per instance, NOT the `S_n` word-canonicalization comb — the DECISION `fxFrob_hasSpiderConvDecision` is
+already unconditional and needs no readback), but the general realization theorem
+`extraSpiderDiagramOf n (canonicalReadback D) = D` is an induction over block-routing not yet built.  The
+general-arity CONNECTED realization (`extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate (m+n) 0⟩` for
+all `m`, `n`) is likewise a comb-free induction, ledgered.  `= false`. -/
+def fxFrob_hasSpiderFusionNF : Bool := false
+
+/-- **Honesty marker — the SPECIAL (`Cospan(FinSet)`, closed-count) word problem stays walled.**  `SpiderConv` decides
+the EXTRASPECIAL / corelation classes (`extraSpiderDiagramOf`, partition only).  The full SPECIAL invariant
+`spiderDiagramOf` additionally tracks the isolated-closed-component count, which the boundary partition view provably
+does NOT determine (`closedCount_notDeterminedByBoundaryView`, `fxFrob_hasCospanClosedCountPermanentWall`).  So a
+decision of the SPECIAL word problem needs a SEPARATE interior-own-root count invariant — orthogonal to every
+boundary-view brick, the r8 residual.  `= false`. -/
+def fxFrob_hasSpecialFrobeniusDecision : Bool := false
+
 end FX1Poly.Polygraph
