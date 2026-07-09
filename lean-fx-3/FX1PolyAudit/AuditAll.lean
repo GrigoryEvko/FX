@@ -370,6 +370,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescDirectRelationAgrees
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPadCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardForm
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraighteningGap
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
@@ -536,6 +537,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingIdempotent.IdempotentMonadFullN
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadOrderModel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZMonadDecision
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingKZ.KZOrderCompleteness
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSim
