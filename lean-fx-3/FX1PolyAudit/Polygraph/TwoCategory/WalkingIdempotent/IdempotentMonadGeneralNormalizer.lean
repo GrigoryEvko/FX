@@ -21,5 +21,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.gadgetSplitRight_one
 #assert_no_axioms FX1Poly.Polygraph.whiskerRightLeftBraid
 #assert_no_axioms FX1Poly.Polygraph.gadgetSplitRight
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftCanon_width_two_smoke
+#assert_no_axioms FX1Poly.Polygraph.gadgetSplitRight_width_three_smoke
+#assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasGeneralWidthWhiskerLeftCanon
+#assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasGadgetSplitRight
+#assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasWhiskerRightCanon
 
 end FX1PolyAudit

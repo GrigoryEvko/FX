@@ -262,4 +262,72 @@ theorem gadgetSplitRight : (a : Nat) →
         (IdempotentMonadSaturatedTwoCellConv.vcompCastLeftExtrude _ _ _ monadMulTwoCell) ?_
       exact IdempotentMonadSaturatedTwoCellConv.refl _
 
+/-! ## Non-vacuity smokes -/
+
+/-- Smoke: a GENUINE positive-width general left whisker — `t^2 ◁ (canonThroughT 2 1) ≈ canonThroughT 4 3`
+(transported), a `t^2` prepend of a non-trivial through-`t` cell.  Decided by `whiskerLeftCanon` (brick 1). -/
+theorem whiskerLeftCanon_width_two_smoke :
+    IdempotentMonadSaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) (monadTPower 2) (canonThroughT 2 1))
+      (RawTwoCellExpr.castBoundary (monadTPower_add_left 2 2) (monadTPower_succ_add_left 2 1)
+        (canonThroughT (2 + 2) (1 + 2))) :=
+  whiskerLeftCanon 2 2 1
+
+/-- Smoke: a GENUINE positive-width right-leaning mu-tree peel — `(monadGadget 3 ▷ t) ∘ mu ≈ monadGadget 4`
+(transported).  `monadGadget 3` is a two-`mu` right-whiskered tree, so this is the associativity-law amalgamation at
+width `3`, decided by `gadgetSplitRight` (brick 2). -/
+theorem gadgetSplitRight_width_three_smoke :
+    IdempotentMonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp
+        (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadT (monadGadget 3))
+        monadMulTwoCell)
+      (RawTwoCellExpr.castBoundary (composePath_monadTPower_monadT 3).symm rfl (monadGadget 4)) :=
+  gadgetSplitRight 3
+
+/-! ## Honesty markers -/
+
+/-- ★ **ESTABLISHED — brick 1, the GENERAL-WIDTH left-whisker canonicalisation.**  `t^k ◁ (canonThroughT a n) ≈
+canonThroughT (a+k)(n+k)` (transported) for EVERY width `k` (`whiskerLeftCanon`), by induction on `k` peeling one
+`t` (`whiskerLeftComp`) and re-folding by the shipped single-`t` `whiskerLeftCanonOne`.  The recursion index
+`(a+k, n+k)` grows DEFINITIONALLY (`a+(k+1) = (a+k)+1`), so the induction carries no `succ_add` cast — only the
+fixed boundary lemmas `monadTPower_add_left` / `monadTPower_succ_add_left`.  The general-width heart of the
+`whiskerLeft` normalize case.  `= true`. -/
+def fxIdempotentMonad_hasGeneralWidthWhiskerLeftCanon : Bool := true
+
+/-- ★★ **ESTABLISHED — brick 2, the RIGHT-leaning mu-tree peel `gadgetSplitRight` (the shared open wall, broken).**
+`(monadGadget a ▷ t) ∘ mu ≈ monadGadget (a+1)` (transported across the genuine append cast `t^a·t = t^(a+1)`) for
+EVERY `a` (`gadgetSplitRight`), by structural recursion: bases `a = 0` (LEFT-unit law) / `a = 1` (`whiskerRightId`
+collapse); the step `a+2` fires monad ASSOCIATIVITY on the trailing `(mu ▷ t) ∘ mu ≈ (t ◁ mu) ∘ mu` (concrete-`t`,
+cast-FREE), braids the leading whisker (`whiskerRightLeftBraid` — the SOLE genuine cast, a `whiskerExchange` whose
+boundary casts vanish definitionally because the outer `composePath` by concrete `monadT` distributes), and folds by
+the induction hypothesis.  This is EXACTLY the walking monad's OWN open `gadgetAbsorb` inductive step
+(`WalkingMonad/MonadVcompMult` `fxMonad_hasVcompAssocAmalgamation = false`, the shared wall), now MECHANIZED
+zero-axiom over the idempotent relation (uses only monad laws + free-2-category, no idempotence).  `= true`. -/
+def fxIdempotentMonad_hasGadgetSplitRight : Bool := true
+
+/-- **Honesty marker — the RIGHT-whisker canonicalisation is the residual toward the `whiskerRight` normalize case;
+the `repFull`/`normalize` assembly + FLIP stay OPEN.**  Brick 1 (`whiskerLeftCanon`) closes the general-width LEFT
+whisker; brick 2 (`gadgetSplitRight`) closes the RIGHT-leaning mu-tree peel (the fold half).  What is NOT landed:
+
+  * **`growTowerRightWhisker`** — the GROW-tower right-whisker coherence
+    `vcomp (eta ▷ t) (whiskerRight t (growTower n)) ≈ growTower (n+1)` (transported), the eta-tower DUAL of
+    `gadgetSplitRight`.  Unlike `gadgetSplitRight` (pure monad law), this one genuinely USES idempotence (the two
+    grow towers are non-convertible in the plain walking monad); it reduces by the mu-iso cancellation
+    (`foldThenGrow`/`growThenFold`) to a `grow-then-fold-the-first-column` collapse `vcomp (whiskerRight t
+    (growTower n)) (monadGadget (n+2)) ≈ mu`, a fresh induction comparable in size to `gadgetSplitRight`.
+  * **`whiskerRightCanonOne` / `whiskerRightCanon`** — the single-`t` then general-width RIGHT whisker
+    `t^k ▷ (canonThroughT a n) ≈ canonThroughT (a+k)(n+k)`, assembling `gadgetSplitRight` (fold half, DONE) +
+    `growTowerRightWhisker` (grow half) through the mu-iso middle insertion, then an induction on `k` mirroring
+    brick 1.
+  * **`repFull` + `hRepBoundary` + `normalizeFull`** — the boundary-determined total representative (a dependent
+    match casing target length, the `t^{m≥1} ⇒ nil` empty hom discharged by `rawCell_targetLenZero_impliesSourceLenZero`)
+    and the six-case structural normalization (`gen`×2 / `id` via `foldThenGrow` / `vcomp` via `growThenFold` /
+    `whiskerLeft` via brick 1 / `whiskerRight` via `whiskerRightCanon`, plus a `nil ⇒ nil ≈ id` sub-lemma), closing
+    `idempotentThinness_ofNormalize`.
+
+Until all land, `IdempotentMonadLocalPosetality` is NOT inhabited, so `fxIdempotentMonad_hasLocalPosetalityCollapse`
+/ `fxIdempotentMonad_hasGeneralThinnessNormalizer` / `fxIdempotentMonad_hasAssembledGeneralNormalizer` stay
+`false`.  `= false`. -/
+def fxIdempotentMonad_hasWhiskerRightCanon : Bool := false
+
 end FX1Poly.Polygraph
