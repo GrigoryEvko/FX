@@ -47,12 +47,16 @@ namespace FX1Poly.Polygraph
 fold needs, file-locally. -/
 
 /-- `(front ++ mid) ++ back = front ++ (mid ++ back)` — structural on `front`, so it avoids the `propext`-tainted
-`List.append_assoc`.  Subsumes the snoc form (`appendSnocAssocComb front [mid] back` reduces to
-`front ++ (mid :: back)`). -/
-private theorem appendAssocComb :
-    (front mid back : List BrauerAtom) → (front ++ mid) ++ back = front ++ (mid ++ back)
+`List.append_assoc`.  Subsumes the snoc form (`appendAssocComb front [mid] back` reduces to `front ++ (mid :: back)`). -/
+private theorem appendAssocComb {alpha : Type _} :
+    (front mid back : List alpha) → (front ++ mid) ++ back = front ++ (mid ++ back)
   | [], _, _ => rfl
   | head :: rest, mid, back => congrArg (head :: ·) (appendAssocComb rest mid back)
+
+/-- `list ++ [] = list` — cons-only structural copy (Init's `List.append_nil` leaks `propext`). -/
+private theorem appendNilComb {alpha : Type _} : (list : List alpha) → list ++ [] = list
+  | [] => rfl
+  | head :: rest => congrArg (head :: ·) (appendNilComb rest)
 
 /-- `i - 1 + 1 = i` when `1 ≤ i` — structural on `i` (the positivity rules out `0`), `propext`-free. -/
 private theorem predSuccOfPos : (i : Nat) → 1 ≤ i → i - 1 + 1 = i
@@ -168,5 +172,448 @@ theorem combCase_carry (upperBlock lowerBlock : List Nat) (i : Nat) (hi : 1 ≤ 
   rw [appendAssocComb (crossingWord upperBlock)
     (crossingAt i :: crossingAt (i - 1) :: crossingWord lowerBlock) [crossingAt i]]
   exact step1.trans (step2.trans step3)
+
+/-! ## B2 support — structural facts about the descending run + the `mentionsOnlyBelow` certificate -/
+
+/-- `top - count - 1 = top - 1 - count` — subtraction commutes past `1`.  Structural on `count` (both sides reduce to
+`pred (pred (top - count))` at the successor), `propext`-free. -/
+private theorem subOneComm : (top count : Nat) → top - count - 1 = top - 1 - count
+  | _, 0 => rfl
+  | top, count + 1 => congrArg Nat.pred (subOneComm top count)
+
+/-- `a ≤ top - 1` from `a + 1 ≤ top` — structural on `top`, `propext`-free. -/
+private theorem natLePredOfSuccLe : (a top : Nat) → a + 1 ≤ top → a ≤ top - 1
+  | a, 0, h => absurd h (Nat.not_succ_le_zero a)
+  | _, _ + 1, h => Nat.le_of_succ_le_succ h
+
+/-- `a + c - c = a` — structural on `c` (Init's `Nat.add_sub_cancel` leaks `propext`); built from the clean
+`Nat.add_succ` / `Nat.succ_sub_succ`. -/
+private theorem natAddSubCancel : (a c : Nat) → a + c - c = a
+  | _, 0 => rfl
+  | a, c + 1 => (Nat.succ_sub_succ (a + c) c).trans (natAddSubCancel a c)
+
+/-- `a = b - c` from `a + c = b` — clean replacement for Init's `Nat.eq_sub_of_add_eq` (which leaks
+`propext` / `Quot.sound`). -/
+private theorem natEqSubOfAddEq (a c b : Nat) (h : a + c = b) : a = b - c := by
+  rw [← h]; exact (natAddSubCancel a c).symm
+
+/-- `m ≤ n` from `m + k ≤ n + k` — structural on `k` (`+ k` cancels on the DEFEQ-friendly right), `propext`-free. -/
+private theorem natLeOfAddLeAddRight : (m n k : Nat) → m + k ≤ n + k → m ≤ n
+  | _, _, 0, h => h
+  | m, n, k + 1, h => natLeOfAddLeAddRight m n k (Nat.le_of_succ_le_succ h)
+
+/-- `m ≤ n` from `k + m ≤ k + n` — clean replacement for Init's `Nat.le_of_add_le_add_left` (which leaks `propext`),
+via `Nat.add_comm` + `natLeOfAddLeAddRight`. -/
+private theorem natLeOfAddLeAddLeft (k m n : Nat) (h : k + m ≤ k + n) : m ≤ n :=
+  natLeOfAddLeAddRight m n k (by rw [Nat.add_comm m k, Nat.add_comm n k]; exact h)
+
+/-- ★ **The descending run has a distinguished LAST element** — `descendingPositions top (count+1)` is
+`descendingPositions top count` snoc `top - count` (the bottom index).  Structural on `count`, the `top - (count+1) =
+(top-1) - count` re-index discharged by `subOneComm`. -/
+private theorem descendingPositions_snoc : (top count : Nat) →
+    descendingPositions top count ++ [top - count] = descendingPositions top (count + 1)
+  | _, 0 => rfl
+  | top, count + 1 => by
+      have idxEq : top - (count + 1) = (top - 1) - count := subOneComm top count
+      have inner : descendingPositions (top - 1) count ++ [top - (count + 1)]
+          = descendingPositions (top - 1) (count + 1) := by
+        rw [idxEq]; exact descendingPositions_snoc (top - 1) count
+      show top :: (descendingPositions (top - 1) count ++ [top - (count + 1)])
+         = top :: descendingPositions (top - 1) (count + 1)
+      exact congrArg (top :: ·) inner
+
+/-- ★ **Every element of a descending run is distant-ABOVE the letter** — if `letter + count + 1 ≤ top` (the run
+bottom `top - count + 1` is `≥ letter + 2`), then `AllDistantFrom letter (descendingPositions top count)`.  Structural
+on `count`. -/
+private theorem descendingPositions_allAbove (letter : Nat) :
+    (top count : Nat) → letter + count + 1 ≤ top →
+    AllDistantFrom letter (descendingPositions top count)
+  | _, 0, _ => AllDistantFrom.nil
+  | top, count + 1, hLe =>
+      AllDistantFrom.cons top (descendingPositions (top - 1) count)
+        (Or.inr (Nat.le_trans (Nat.add_le_add_left (Nat.le_add_left 2 count) letter) hLe))
+        (descendingPositions_allAbove letter (top - 1) count
+          (natLePredOfSuccLe (letter + count + 1) top hLe))
+
+/-- ★ **Every element of a descending run is distant-BELOW the letter** — if `top + 2 ≤ letter` (the run TOP is
+`≤ letter - 2`), then `AllDistantFrom letter (descendingPositions top count)`.  Structural on `count`. -/
+private theorem descendingPositions_allBelow (letter : Nat) :
+    (top count : Nat) → top + 2 ≤ letter →
+    AllDistantFrom letter (descendingPositions top count)
+  | _, 0, _ => AllDistantFrom.nil
+  | top, count + 1, hLe =>
+      AllDistantFrom.cons top (descendingPositions (top - 1) count) (Or.inl hLe)
+        (descendingPositions_allBelow letter (top - 1) count
+          (Nat.le_trans (Nat.add_le_add_right (Nat.sub_le top 1) 2) hLe))
+
+/-- Left projection of a true boolean conjunction — full-enum `Bool` match, `propext`-free. -/
+private theorem boolAndLeftComb : (leftFlag rightFlag : Bool) → (leftFlag && rightFlag) = true → leftFlag = true
+  | true, _, _ => rfl
+  | false, _, conj => Bool.noConfusion conj
+
+/-- Right projection of a true boolean conjunction. -/
+private theorem boolAndRightComb : (leftFlag rightFlag : Bool) → (leftFlag && rightFlag) = true → rightFlag = true
+  | true, _, conj => conj
+  | false, _, conj => Bool.noConfusion conj
+
+/-- `Nat.ble a b = true` from `a ≤ b` — structural on `a`, `propext`-free. -/
+private theorem natBleOfLe : (a b : Nat) → a ≤ b → Nat.ble a b = true
+  | 0, _, _ => rfl
+  | _ + 1, 0, h => absurd h (Nat.not_succ_le_zero _)
+  | a + 1, b + 1, h => natBleOfLe a b (Nat.le_of_succ_le_succ h)
+
+/-- `Nat.blt a b = true` from `a < b` — `Nat.blt a b` is `Nat.ble (a+1) b`. -/
+private theorem natBltOfLt (a b : Nat) (h : a < b) : Nat.blt a b = true := natBleOfLe (a + 1) b h
+
+/-- `a ≤ b` from `Nat.ble a b = true` — structural on `a`, `propext`-free. -/
+private theorem natLeOfBle : (a b : Nat) → Nat.ble a b = true → a ≤ b
+  | 0, _, _ => Nat.zero_le _
+  | _ + 1, 0, h => Bool.noConfusion h
+  | a + 1, b + 1, h => Nat.succ_le_succ (natLeOfBle a b h)
+
+/-- `a < b` from `Nat.blt a b = true`. -/
+private theorem natLtOfBlt (a b : Nat) (h : Nat.blt a b = true) : a < b := natLeOfBle (a + 1) b h
+
+/-- ★ **`mentionsOnlyBelow` is closed under snoc** — appending a position strictly below `bound` preserves the
+certificate.  Structural on the word. -/
+private theorem mentionsOnlyBelow_snoc : (word : List Nat) → (bound position : Nat) →
+    mentionsOnlyBelow bound word = true → position < bound →
+    mentionsOnlyBelow bound (word ++ [position]) = true
+  | [], bound, position, _, hLt => by
+      show (Nat.blt position bound && mentionsOnlyBelow bound []) = true
+      rw [natBltOfLt position bound hLt]; rfl
+  | head :: rest, bound, position, hWord, hLt => by
+      show (Nat.blt head bound && mentionsOnlyBelow bound (rest ++ [position])) = true
+      rw [boolAndLeftComb _ _ hWord]
+      exact mentionsOnlyBelow_snoc rest bound position (boolAndRightComb _ _ hWord) hLt
+
+/-- `value - 2 + 2 = value` when `2 ≤ value` — the crossing-arity round-trip.  Structural on the `value + 2` shape. -/
+private theorem subTwoAddTwo : (value : Nat) → 2 ≤ value → value - 2 + 2 = value
+  | 0, h => absurd h (by decide)
+  | 1, h => absurd h (by decide)
+  | _ + 2, _ => rfl
+
+/-! ## B2 — the CARRY specialized to a descending run (C4 lifted by induction) -/
+
+/-- ★★ **The CARRY on a whole descending run.**  Appending `s_letter` on the right of `descendingPositions top runLen`
+(with `letter` strictly inside the run — above its bottom, at-or-below its top) emits `s_{letter-1}` on the left and
+restores the run.  Induction on `runLen`: the base (`top = letter`) is `combCase_carry` with an EMPTY upper block; each
+step (`letter < top`) peels the top generator `s_top` (distant from `s_{letter-1}`, so a single `commuteAdjacentPair`
+carries `s_{letter-1}` up past it) and recurses.  No run decomposition lemma needed. -/
+private theorem carryIntoRun (letter : Nat) (letterPos : 1 ≤ letter) :
+    (top runLen : Nat) → letter ≤ top → runLen ≤ top + 1 → top + 2 ≤ letter + runLen →
+    BrauerConvFree7 (crossingWord (descendingPositions top runLen) ++ [crossingAt letter])
+      (crossingAt (letter - 1) :: crossingWord (descendingPositions top runLen))
+  | top, 0, letterLeTop, _, aboveBottom =>
+      absurd (Nat.le_trans (Nat.le_trans aboveBottom letterLeTop) (Nat.le_succ top))
+        (Nat.not_succ_le_self (top + 1))
+  | top, runLen + 1, letterLeTop, runLenLe, aboveBottom => by
+      rcases Nat.lt_or_ge letter top with ltTop | geTop
+      · -- STEP: letter < top — peel `s_top`, recurse, commute `s_{letter-1}` past `s_top`.
+        have topPos : 1 ≤ top := Nat.le_trans letterPos (Nat.le_of_lt ltTop)
+        have ihConv := carryIntoRun letter letterPos (top - 1) runLen
+          (natLePredOfSuccLe letter top ltTop)
+          (by rw [predSuccOfPos top topPos]; exact Nat.le_of_succ_le_succ runLenLe)
+          (by
+            have e : top - 1 + 2 = top + 1 := congrArg Nat.succ (predSuccOfPos top topPos)
+            rw [e]; exact Nat.le_of_succ_le_succ aboveBottom)
+        have stepA := BrauerConvFree7.whiskerLeft [crossingAt top] ihConv
+        have letterM1Distant : letter - 1 + 2 ≤ top := by
+          rw [show letter - 1 + 2 = letter + 1 from congrArg Nat.succ (predSuccOfPos letter letterPos)]
+          exact ltTop
+        have stepB := BrauerConvFree7.whiskerRight (crossingWord (descendingPositions (top - 1) runLen))
+          (commuteAdjacentPair top (letter - 1) (Or.inr letterM1Distant))
+        exact stepA.trans stepB
+      · -- BASE: letter = top — `combCase_carry` with an empty upper block.
+        have eqTop : letter = top := Nat.le_antisymm letterLeTop geTop
+        subst eqTop
+        have predRunPos : 1 ≤ runLen :=
+          Nat.le_of_succ_le_succ (natLeOfAddLeAddLeft letter 2 (runLen + 1) aboveBottom)
+        cases runLen with
+        | zero => exact absurd predRunPos (Nat.not_succ_le_zero 0)
+        | succ p =>
+            have lowerDist : AllDistantFrom letter (descendingPositions (letter - 2) p) := by
+              cases p with
+              | zero => exact AllDistantFrom.nil
+              | succ q =>
+                  have letterGe2 : 2 ≤ letter :=
+                    Nat.le_trans (Nat.le_add_left 2 q) (Nat.le_of_succ_le_succ runLenLe)
+                  exact descendingPositions_allBelow letter (letter - 2) (q + 1)
+                    (Nat.le_of_eq (subTwoAddTwo letter letterGe2))
+            exact combCase_carry [] (descendingPositions (letter - 2) p) letter letterPos
+              AllDistantFrom.nil lowerDist
+
+/-! ## B3 — the comb state, the six-case single-letter insertion, and the outer fold -/
+
+/-- ★ **The comb word of a state** — the crossing word of `u ++ run`, where `u = combPrefix` mentions only indices
+`< generatorCount - 1` and `run = descendingPositions (generatorCount - 1) runLength` is the descending coset run. -/
+def combWord (generatorCount : Nat) (combPrefix : List Nat) (runLength : Nat) : List BrauerAtom :=
+  crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+
+/-- Reshape `combWord ... ++ [s_letter]` to expose the per-letter work `crossingWord run ++ [s_letter]` under the
+prefix `crossingWord combPrefix`. -/
+private theorem combWord_snoc_reshape (combPrefix run : List Nat) (letter : Nat) :
+    crossingWord (combPrefix ++ run) ++ [crossingAt letter]
+      = crossingWord combPrefix ++ (crossingWord run ++ [crossingAt letter]) := by
+  rw [crossingWord_append combPrefix run,
+    appendAssocComb (crossingWord combPrefix) (crossingWord run) [crossingAt letter]]
+
+/-- `crossingWord [x] = [crossingAt x]` — a `rfl`, but needed to normalize `rw` targets. -/
+private theorem crossingWord_singleton (x : Nat) : crossingWord [x] = [crossingAt x] := rfl
+
+/-- Absorbing a letter into the prefix: `crossingWord combPrefix ++ (s_x :: crossingWord run)` is the comb word of
+`(combPrefix ++ [x]) ++ run`. -/
+private theorem combWord_absorb (combPrefix run : List Nat) (letter : Nat) :
+    crossingWord combPrefix ++ (crossingAt letter :: crossingWord run)
+      = crossingWord ((combPrefix ++ [letter]) ++ run) := by
+  rw [appendAssocComb combPrefix [letter] run]
+  show crossingWord combPrefix ++ (crossingAt letter :: crossingWord run)
+     = crossingWord (combPrefix ++ (letter :: run))
+  exact (crossingWord_append combPrefix (letter :: run)).symm
+
+/-- ★★ **The single-letter comb insertion (the six cases, dispatched by `letter + runLength` vs `generatorCount`).**
+Appending `s_letter` to `combWord generatorCount combPrefix runLength` re-normalizes to a new comb state whose prefix
+still mentions only indices `< generatorCount - 1`, via exactly ONE of: COMMUTE (letter well below the run bottom —
+absorbs into the prefix), EXTEND (letter one below the bottom — grows the run; subsumes START on the empty run),
+CANCEL (letter equals the bottom — R2 cancels), CARRY (letter above the bottom — `carryIntoRun` emits `s_{letter-1}`
+into the prefix).  No cascade: one case per letter. -/
+theorem combInsert_step (generatorCount : Nat) (combPrefix : List Nat) (runLength : Nat)
+    (uBelow : mentionsOnlyBelow (generatorCount - 1) combPrefix = true)
+    (runLe : runLength ≤ generatorCount) (letter : Nat) (letterLt : letter < generatorCount) :
+    ∃ (combPrefix' : List Nat) (runLength' : Nat),
+      mentionsOnlyBelow (generatorCount - 1) combPrefix' = true ∧ runLength' ≤ generatorCount ∧
+      BrauerConvFree7 (combWord generatorCount combPrefix runLength ++ [crossingAt letter])
+        (combWord generatorCount combPrefix' runLength') := by
+  have genPos : 1 ≤ generatorCount := Nat.lt_of_le_of_lt (Nat.zero_le letter) letterLt
+  rcases Nat.lt_trichotomy (letter + runLength) generatorCount with hLt | hEq | hGt
+  · -- letter + runLength < generatorCount: COMMUTE or EXTEND
+    rcases Nat.lt_or_ge (letter + runLength + 1) generatorCount with hCommute | hExtendGe
+    · -- COMMUTE: letter + runLength + 2 ≤ generatorCount
+      refine ⟨combPrefix ++ [letter], runLength, ?_, runLe, ?_⟩
+      · have hLetterLe2 : letter + 2 ≤ generatorCount :=
+          Nat.le_trans (Nat.add_le_add_right (Nat.le_add_right letter runLength) 2) hCommute
+        exact mentionsOnlyBelow_snoc combPrefix (generatorCount - 1) letter uBelow
+          (natLePredOfSuccLe (letter + 1) generatorCount hLetterLe2)
+      · show BrauerConvFree7
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+            ++ [crossingAt letter])
+          (crossingWord ((combPrefix ++ [letter]) ++ descendingPositions (generatorCount - 1) runLength))
+        rw [combWord_snoc_reshape combPrefix (descendingPositions (generatorCount - 1) runLength) letter,
+          ← combWord_absorb combPrefix (descendingPositions (generatorCount - 1) runLength) letter]
+        exact BrauerConvFree7.whiskerLeft (crossingWord combPrefix)
+          (commuteLetterPastBlock letter (descendingPositions (generatorCount - 1) runLength)
+            (descendingPositions_allAbove letter (generatorCount - 1) runLength
+              (natLePredOfSuccLe (letter + runLength + 1) generatorCount hCommute)))
+    · -- EXTEND: letter + runLength + 1 = generatorCount
+      have hExtend : letter + runLength + 1 = generatorCount :=
+        Nat.le_antisymm hLt hExtendGe
+      refine ⟨combPrefix, runLength + 1, uBelow, ?_, ?_⟩
+      · exact hExtend ▸ Nat.add_le_add_right (Nat.le_add_left runLength letter) 1
+      · have letterEqExt : letter = (generatorCount - 1) - runLength :=
+          natEqSubOfAddEq letter runLength (generatorCount - 1)
+            (natEqSubOfAddEq (letter + runLength) 1 generatorCount hExtend)
+        have runSnocEqExt : descendingPositions (generatorCount - 1) runLength ++ [letter]
+            = descendingPositions (generatorCount - 1) (runLength + 1) := by
+          rw [letterEqExt]; exact descendingPositions_snoc (generatorCount - 1) runLength
+        show BrauerConvFree7
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+            ++ [crossingAt letter])
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (runLength + 1)))
+        have wordEq : crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+              ++ [crossingAt letter]
+            = crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (runLength + 1)) := by
+          rw [← runSnocEqExt,
+            crossingWord_append combPrefix (descendingPositions (generatorCount - 1) runLength),
+            appendAssocComb (crossingWord combPrefix)
+              (crossingWord (descendingPositions (generatorCount - 1) runLength)) [crossingAt letter],
+            crossingWord_append combPrefix (descendingPositions (generatorCount - 1) runLength ++ [letter]),
+            crossingWord_append (descendingPositions (generatorCount - 1) runLength) [letter],
+            crossingWord_singleton letter]
+        rw [wordEq]
+        exact BrauerConvFree7.ofFree (BrauerConvFree.refl _)
+  · -- CANCEL: letter + runLength = generatorCount
+    cases runLength with
+    | zero =>
+        have hEq' : letter = generatorCount := hEq
+        exact absurd (hEq' ▸ letterLt) (Nat.lt_irrefl generatorCount)
+    | succ c =>
+        refine ⟨combPrefix, c, uBelow, Nat.le_trans (Nat.le_succ c) runLe, ?_⟩
+        have letterEqSub : letter = (generatorCount - 1) - c :=
+          natEqSubOfAddEq letter c (generatorCount - 1)
+            (natEqSubOfAddEq (letter + c) 1 generatorCount hEq)
+        have runSnocEq : descendingPositions (generatorCount - 1) (c + 1)
+            = descendingPositions (generatorCount - 1) c ++ [letter] := by
+          rw [letterEqSub]; exact (descendingPositions_snoc (generatorCount - 1) c).symm
+        have cancelBase : BrauerConvFree7
+            (crossingWord (descendingPositions (generatorCount - 1) c)
+              ++ [crossingAt letter, crossingAt letter])
+            (crossingWord (descendingPositions (generatorCount - 1) c)) := by
+          have base := BrauerConvFree7.whiskerLeft
+            (crossingWord (descendingPositions (generatorCount - 1) c)) (crossingCancelFree letter)
+          rw [appendNilComb (crossingWord (descendingPositions (generatorCount - 1) c))] at base
+          exact base
+        show BrauerConvFree7
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (c + 1))
+            ++ [crossingAt letter])
+          (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) c))
+        have lhsEq : crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) (c + 1))
+              ++ [crossingAt letter]
+            = crossingWord combPrefix ++ (crossingWord (descendingPositions (generatorCount - 1) c)
+              ++ ([crossingAt letter] ++ [crossingAt letter])) := by
+          rw [runSnocEq,
+            crossingWord_append combPrefix (descendingPositions (generatorCount - 1) c ++ [letter]),
+            crossingWord_append (descendingPositions (generatorCount - 1) c) [letter],
+            crossingWord_singleton letter,
+            appendAssocComb (crossingWord combPrefix)
+              (crossingWord (descendingPositions (generatorCount - 1) c) ++ [crossingAt letter])
+              [crossingAt letter],
+            appendAssocComb (crossingWord (descendingPositions (generatorCount - 1) c))
+              [crossingAt letter] [crossingAt letter]]
+        rw [lhsEq, crossingWord_append combPrefix (descendingPositions (generatorCount - 1) c)]
+        exact BrauerConvFree7.whiskerLeft (crossingWord combPrefix) cancelBase
+  · -- CARRY: generatorCount < letter + runLength
+    have letterPos : 1 ≤ letter := by
+      have hchain : generatorCount + 1 ≤ letter + generatorCount :=
+        Nat.le_trans hGt (Nat.add_le_add_left runLe letter)
+      exact natLeOfAddLeAddLeft generatorCount 1 letter (Nat.add_comm letter generatorCount ▸ hchain)
+    have runLeTop : runLength ≤ (generatorCount - 1) + 1 := by
+      rw [predSuccOfPos generatorCount genPos]; exact runLe
+    have aboveBottom : (generatorCount - 1) + 2 ≤ letter + runLength := by
+      rw [show (generatorCount - 1) + 2 = generatorCount + 1 from
+        congrArg Nat.succ (predSuccOfPos generatorCount genPos)]
+      exact hGt
+    refine ⟨combPrefix ++ [letter - 1], runLength, ?_, runLe, ?_⟩
+    · apply mentionsOnlyBelow_snoc combPrefix (generatorCount - 1) (letter - 1) uBelow
+      show (letter - 1) + 1 ≤ generatorCount - 1
+      rw [predSuccOfPos letter letterPos]
+      exact natLePredOfSuccLe letter generatorCount letterLt
+    · show BrauerConvFree7
+        (crossingWord (combPrefix ++ descendingPositions (generatorCount - 1) runLength)
+          ++ [crossingAt letter])
+        (crossingWord ((combPrefix ++ [letter - 1]) ++ descendingPositions (generatorCount - 1) runLength))
+      rw [combWord_snoc_reshape combPrefix (descendingPositions (generatorCount - 1) runLength) letter,
+        ← combWord_absorb combPrefix (descendingPositions (generatorCount - 1) runLength) (letter - 1)]
+      exact BrauerConvFree7.whiskerLeft (crossingWord combPrefix)
+        (carryIntoRun letter letterPos (generatorCount - 1) runLength
+          (natLePredOfSuccLe letter generatorCount letterLt) runLeTop aboveBottom)
+
+/-- ★ **The comb fold from a state** — folding a crossing word `rest` (all letters `< generatorCount`) onto a comb
+state re-normalizes to a new comb state.  Structural recursion on `rest`; each letter fires `combInsert_step`. -/
+theorem comb_fold_from (generatorCount : Nat) (combPrefix : List Nat) (runLength : Nat)
+    (uBelow : mentionsOnlyBelow (generatorCount - 1) combPrefix = true)
+    (runLe : runLength ≤ generatorCount) :
+    (rest : List Nat) → mentionsOnlyBelow generatorCount rest = true →
+    ∃ (combPrefix' : List Nat) (runLength' : Nat),
+      mentionsOnlyBelow (generatorCount - 1) combPrefix' = true ∧ runLength' ≤ generatorCount ∧
+      BrauerConvFree7 (combWord generatorCount combPrefix runLength ++ crossingWord rest)
+        (combWord generatorCount combPrefix' runLength')
+  | [], _ => by
+      refine ⟨combPrefix, runLength, uBelow, runLe, ?_⟩
+      show BrauerConvFree7 (combWord generatorCount combPrefix runLength ++ [])
+        (combWord generatorCount combPrefix runLength)
+      rw [appendNilComb (combWord generatorCount combPrefix runLength)]
+      exact BrauerConvFree7.ofFree (BrauerConvFree.refl _)
+  | letter :: restTail, hRange => by
+      have letterLt : letter < generatorCount := natLtOfBlt letter generatorCount (boolAndLeftComb _ _ hRange)
+      obtain ⟨combPrefixMid, runLengthMid, uBelowMid, runLeMid, stepConv⟩ :=
+        combInsert_step generatorCount combPrefix runLength uBelow runLe letter letterLt
+      obtain ⟨combPrefix', runLength', uBelow', runLe', tailConv⟩ :=
+        comb_fold_from generatorCount combPrefixMid runLengthMid uBelowMid runLeMid restTail
+          (boolAndRightComb _ _ hRange)
+      refine ⟨combPrefix', runLength', uBelow', runLe', ?_⟩
+      have reshaped : combWord generatorCount combPrefix runLength ++ crossingWord (letter :: restTail)
+          = (combWord generatorCount combPrefix runLength ++ [crossingAt letter]) ++ crossingWord restTail :=
+        (appendAssocComb (combWord generatorCount combPrefix runLength) [crossingAt letter]
+          (crossingWord restTail)).symm
+      rw [reshaped]
+      exact (BrauerConvFree7.whiskerRight (crossingWord restTail) stepConv).trans tailConv
+
+/-- ★★ **THE COMB THEOREM — every crossing word is `BrauerConvFree7`-convertible to `u ++ run`, hypothesis-free.**
+For any generator count `generatorCount` and any crossing word over generators `< generatorCount`
+(`mentionsOnlyBelow generatorCount inputPositions`), there is a comb state `(combPrefix, runLength)` with `combPrefix`
+mentioning only indices `< generatorCount - 1` (the Björner–Brenti right-descent transversal certificate) and
+`runLength ≤ generatorCount` such that `crossingWord inputPositions` is `BrauerConvFree7`-convertible to
+`combWord generatorCount combPrefix runLength = crossingWord (combPrefix ++ descendingRun)`.  The Coxeter–Moser coset
+factorization, mechanized. -/
+theorem comb_straightens (generatorCount : Nat) (inputPositions : List Nat)
+    (inRange : mentionsOnlyBelow generatorCount inputPositions = true) :
+    ∃ (combPrefix : List Nat) (runLength : Nat),
+      mentionsOnlyBelow (generatorCount - 1) combPrefix = true ∧ runLength ≤ generatorCount ∧
+      BrauerConvFree7 (crossingWord inputPositions) (combWord generatorCount combPrefix runLength) := by
+  obtain ⟨combPrefix, runLength, uBelow, runLe, conv⟩ :=
+    comb_fold_from generatorCount [] 0 rfl (Nat.zero_le generatorCount) inputPositions inRange
+  refine ⟨combPrefix, runLength, uBelow, runLe, ?_⟩
+  have startEq : combWord generatorCount [] 0 ++ crossingWord inputPositions = crossingWord inputPositions := rfl
+  rw [startEq] at conv
+  exact conv
+
+/-! ## B4 — the computable comb normal form + non-vacuity on the wall's stuck word
+
+`combNormalizeForm` is the DATA-only mirror of `combInsert_step`'s branch selection — the SAME four side conditions
+(`letter + runLength + 2 ≤ generatorCount` COMMUTE, `+ 1 = generatorCount` EXTEND, `= generatorCount` CANCEL, else
+CARRY) — so it computes the witness `combPrefix ++ run` that `comb_straightens` proves the input is convertible to.  It
+lets us DISPLAY the normal form the fold reaches; the convertibility itself is `comb_straightens` (abstract) and
+`comb_dissolves_stuck_word` (concrete on the jam word). -/
+
+/-- One data-only comb-insertion step (the four side conditions of `combInsert_step`, no proof carried). -/
+def combInsertData (generatorCount : Nat) (state : List Nat × Nat) (letter : Nat) : List Nat × Nat :=
+  if letter + state.2 + 2 ≤ generatorCount then (state.1 ++ [letter], state.2)
+  else if letter + state.2 + 1 = generatorCount then (state.1, state.2 + 1)
+  else if letter + state.2 = generatorCount then (state.1, state.2 - 1)
+  else (state.1 ++ [letter - 1], state.2)
+
+/-- The computable comb normal form: fold the data step, then read off `combPrefix ++ descendingRun`. -/
+def combNormalizeForm (generatorCount : Nat) (input : List Nat) : List Nat :=
+  let result := input.foldl (combInsertData generatorCount) ([], 0)
+  result.1 ++ descendingPositions (generatorCount - 1) result.2
+
+/-- ★ **The comb fold reaches the canonical `[0, 1, 2, 1]` on the r9 STUCK word `[2, 0, 1, 2]`** (the standing
+`BraidAscentInsertionStep` jam at permutation `[1, 3, 0, 2]` that defeated the insertion route).  The computed normal
+form is exactly the canonical word the stuck insertion residual could not reach. -/
+theorem combNormalizeForm_stuck_word : combNormalizeForm 3 [2, 0, 1, 2] = [0, 1, 2, 1] := by decide
+
+/-- ★★ **The comb route DISSOLVES the r9 jam.**  The exact word `[2, 0, 1, 2]` that jammed the insertion route is
+`BrauerConvFree7`-convertible to the canonical `[0, 1, 2, 1]` — a single distant-commute (`s_2` past `s_0`) then a
+single R3 braid.  The conv term type-checks on the precise stuck word. -/
+theorem comb_dissolves_stuck_word :
+    BrauerConvFree7 (crossingWord [2, 0, 1, 2]) (crossingWord [0, 1, 2, 1]) :=
+  (BrauerConvFree7.whiskerRight [crossingAt 1, crossingAt 2]
+      (BrauerConvFree7.symm (crossingCommuteFree 0 2 (by decide)))).trans
+    (BrauerConvFree7.whiskerLeft [crossingAt 0] (BrauerConvFree7.symm (crossingBraidFree 1)))
+
+/-- ★ **The comb theorem APPLIES to the stuck word** — `comb_straightens` produces a coset factorization of
+`crossingWord [2, 0, 1, 2]` over the 3-generator symmetric group (non-vacuous existence). -/
+theorem comb_straightens_stuck_word :
+    ∃ (combPrefix : List Nat) (runLength : Nat),
+      mentionsOnlyBelow (3 - 1) combPrefix = true ∧ runLength ≤ 3 ∧
+      BrauerConvFree7 (crossingWord [2, 0, 1, 2]) (combWord 3 combPrefix runLength) :=
+  comb_straightens 3 [2, 0, 1, 2] (by decide)
+
+/-- ★ **A CLEAN word smoke** — an already-canonical word `[0, 1, 2]` straightens (to itself: `combNormalizeForm`
+computes `[0, 1, 2]`), and `comb_straightens` applies. -/
+theorem combNormalizeForm_clean_word : combNormalizeForm 3 [0, 1, 2] = [0, 1, 2] := by decide
+
+/-- The comb theorem applies to the clean word too. -/
+theorem comb_straightens_clean_word :
+    ∃ (combPrefix : List Nat) (runLength : Nat),
+      mentionsOnlyBelow (3 - 1) combPrefix = true ∧ runLength ≤ 3 ∧
+      BrauerConvFree7 (crossingWord [0, 1, 2]) (combWord 3 combPrefix runLength) :=
+  comb_straightens 3 [0, 1, 2] (by decide)
+
+/-! ## Honesty marker -/
+
+/-- ★★ **Honesty marker — the COMB FOLD is SHIPPED (hypothesis-free).**  `comb_straightens` proves that EVERY
+crossing word over generators `< generatorCount` is `BrauerConvFree7`-convertible to `combWord = crossingWord
+(combPrefix ++ descendingRun)` with the `mentionsOnlyBelow (generatorCount - 1) combPrefix` certificate — the
+Coxeter–Moser / Björner–Brenti right-coset factorization `w = u · (s_{n-1} … s_k)`, mechanized zero-axiom.  The engine
+is the six-case single-letter insertion `combInsert_step` (COMMUTE / EXTEND(≡START) / CANCEL / CARRY, no cascade),
+whose crux is the three-move C4 carry `combCase_carry` (distant-commute + R3 braid + distant-commute) lifted to a whole
+descending run by `carryIntoRun`.  Non-vacuous + DISSOLVES the insertion-route jam: `comb_dissolves_stuck_word` +
+`combNormalizeForm_stuck_word` show the exact stuck word `[2, 0, 1, 2]` reaches the canonical `[0, 1, 2, 1]` the
+insertion residual could not.  HONEST SCOPE: this is the coset FACTORIZATION (`u` need not be canonical — the fold does
+NOT further normalize `u`), so it is a valid `u ++ run` form with the right-descent certificate, NOT the unique
+Matsumoto normal form; the master `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) stays
+`false` for the full-NF / diagram-connection legs, untouched.  `= true`. -/
+def fxBrauer_hasCombFold : Bool := true
 
 end FX1Poly.Polygraph
