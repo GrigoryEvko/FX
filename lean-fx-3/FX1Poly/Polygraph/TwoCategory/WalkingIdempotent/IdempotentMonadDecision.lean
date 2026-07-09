@@ -131,8 +131,10 @@ now MECHANIZED in `WalkingIdempotent/IdempotentMonadMuInvertible` (`idempotentMu
 `mu ∘ (eta ▷ t) ≈ id_{t.t}`, zero-axiom), lifting the hom collapse from `t ⇒ t` to `t.t ⇒ t.t` and exhibiting `mu`
 as invertible (`idempotentMulInvertible`).  What REMAINS is the general-`n` normalizer — the fold/grow ladder
 closure whose base case is exactly that mu-iso — packaged by the honest reduction
-`idempotentThinness_ofNormalize` (thinness from any boundary-determined normalizer).  Until that closure lands,
-`IdempotentMonadLocalPosetality` is NOT inhabited and the decision is not real.  `= false`. -/
-def fxIdempotentMonad_hasLocalPosetalityCollapse : Bool := false
+`idempotentThinness_ofNormalize` (thinness from any boundary-determined normalizer).  That closure has NOW LANDED
+(`normalizeFull` in `WalkingIdempotent/IdempotentMonadFullNormalizer`, zero-axiom): `IdempotentMonadLocalPosetality`
+is inhabited as a real closed term (`idempotentLocalPosetality`) and `decideIdempotentConv` is a TOTAL decision.
+`= true`. -/
+def fxIdempotentMonad_hasLocalPosetalityCollapse : Bool := true
 
 end FX1Poly.Polygraph

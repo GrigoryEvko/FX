@@ -284,9 +284,10 @@ mode-indexed family, and its `composePath` reductions are NON-definitional):
      `targetPath` onto `monadTPower` forms (`monadPath_normalForm`), with the `n = 0, m ≥ 1` branch discharged by
      rigidity (`rawCell_targetLenZero_impliesSourceLenZero`, the empty hom is `absurd`).
 
-Until all three land and assemble into `normalizeFull`, `IdempotentMonadLocalPosetality` is NOT inhabited, the
-decision is not total, and `fxIdempotentMonad_hasLocalPosetalityCollapse` /
-`fxIdempotentMonad_hasGeneralThinnessNormalizer` stay `false`.  `= false`. -/
-def fxIdempotentMonad_hasAssembledGeneralNormalizer : Bool := false
+All three have NOW LANDED and assembled into `normalizeFull`
+(`WalkingIdempotent/IdempotentMonadFullNormalizer`, zero-axiom): `IdempotentMonadLocalPosetality` is inhabited and
+`decideIdempotentConv` is TOTAL, so `fxIdempotentMonad_hasLocalPosetalityCollapse` /
+`fxIdempotentMonad_hasGeneralThinnessNormalizer` are now `true`.  `= true`. -/
+def fxIdempotentMonad_hasAssembledGeneralNormalizer : Bool := true
 
 end FX1Poly.Polygraph

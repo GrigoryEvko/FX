@@ -289,8 +289,10 @@ general-`n` normalizer: an induction over `RawTwoCellExpr` sending every free `t
 representative of its `(min(m,1), min(n,1))` boundary, whose crux — the general fold-then-grow collapse
 `growUp n ∘ foldDown n ≈ id_{t^n}` — is the `n`-fold iterate of `idempotentMulRightInverse` (the `n = 2` base,
 now DONE), threaded through the three whisker/vcomp closure lemmas.  That closure induction (the coarse analog of
-the walking monad's open `wordMul_vcomp`) is NOT landed this round, so `IdempotentMonadLocalPosetality` is not yet
-inhabited and `fxIdempotentMonad_hasLocalPosetalityCollapse` stays `false`.  `= false`. -/
-def fxIdempotentMonad_hasGeneralThinnessNormalizer : Bool := false
+the walking monad's open `wordMul_vcomp`) has NOW LANDED as `normalizeFull`
+(`WalkingIdempotent/IdempotentMonadFullNormalizer`, zero-axiom): the general-`n` boundary-determined normalizer is
+the six-case structural NF induction feeding `idempotentThinness_ofNormalize`, inhabiting
+`IdempotentMonadLocalPosetality`.  `= true`. -/
+def fxIdempotentMonad_hasGeneralThinnessNormalizer : Bool := true
 
 end FX1Poly.Polygraph

@@ -325,9 +325,12 @@ whisker; brick 2 (`gadgetSplitRight`) closes the RIGHT-leaning mu-tree peel (the
     `whiskerLeft` via brick 1 / `whiskerRight` via `whiskerRightCanon`, plus a `nil ⇒ nil ≈ id` sub-lemma), closing
     `idempotentThinness_ofNormalize`.
 
-Until all land, `IdempotentMonadLocalPosetality` is NOT inhabited, so `fxIdempotentMonad_hasLocalPosetalityCollapse`
-/ `fxIdempotentMonad_hasGeneralThinnessNormalizer` / `fxIdempotentMonad_hasAssembledGeneralNormalizer` stay
-`false`.  `= false`. -/
-def fxIdempotentMonad_hasWhiskerRightCanon : Bool := false
+All have NOW LANDED: the grow-half `growTowerRightWhisker` + general-width `whiskerRightCanon` in
+`WalkingIdempotent/IdempotentMonadRightWhisker`, and `repFull` + `normalizeFull` in
+`WalkingIdempotent/IdempotentMonadFullNormalizer` (all zero-axiom), so
+`IdempotentMonadLocalPosetality` is inhabited and `fxIdempotentMonad_hasLocalPosetalityCollapse` /
+`fxIdempotentMonad_hasGeneralThinnessNormalizer` / `fxIdempotentMonad_hasAssembledGeneralNormalizer` are now
+`true`.  `= true`. -/
+def fxIdempotentMonad_hasWhiskerRightCanon : Bool := true
 
 end FX1Poly.Polygraph
