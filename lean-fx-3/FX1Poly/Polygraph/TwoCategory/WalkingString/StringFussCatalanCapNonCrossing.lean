@@ -172,18 +172,21 @@ survivor combo analysis.**  `stringNonCrossing_stepCap` in the JOIN branch (a DI
 one merge edge `(rootLeft, rootRight)`) is the string port of the shipped `arcNonCrossing_stepCapArc`
 (`ArcNonCrossingCapMain`), which needs two ingredients over the bare `WireState`, neither yet ported:
 
-  * **the boundary CENSUS** `ArcBoundaryCensus` — every union-find component carries at most TWO open-wire ends (the
-    perfect-matching structure of a planar cup/cap diagram), a genuine NEW fold invariant with its own seed / cup / cap
-    preservation.  It is LOAD-BEARING: the four join-dispatch combos where two survivors reach the SAME consumed window
-    end are refuted precisely because that end's component would then carry three boundary ends;
-  * **the survivor combo analysis** — the join-dispatch (`isSameComponent_unionFindJoin_split`, available over the
-    byte-identical `isUnionFindForest` via a trivial forest bridge) times the two paired components gives nine combos;
-    the five surviving ones each exhibit an OLD crossing quadruple (from the six tokens `{A',B',C',D', capLeft,
-    capRight}` by a position split), which the OLD non-crossing forbids.
+  * **the boundary CENSUS** `StringBoundaryCensus` — every union-find component carries at most TWO open-wire ends (the
+    perfect-matching structure of a planar cup/cap diagram).  As of FC-5 P1 this census is SHIPPED over the bare
+    `WireState` in `StringBoundaryCensus` (statement + seed + cup + cap preservation + the whole-fold transport
+    `stringBoundaryCensus_fromCell`, all zero-axiom).  It is LOAD-BEARING: the four join-dispatch combos where two
+    survivors reach the SAME consumed window end are refuted precisely because that end's component would then carry
+    three boundary ends;
+  * **the survivor combo analysis** — the join-dispatch (`sameComponent_unionFindJoin_dispatch`, available over the
+    byte-identical `isUnionFindForest` via the shipped `stringForest_toUnionFindForest` bridge) times the two paired
+    components gives nine combos; the five surviving ones each exhibit an OLD crossing quadruple (from the six tokens
+    `{A',B',C',D', capLeft, capRight}` by a position split), which the OLD non-crossing forbids.
 
-So `stringNonCrossing_stepCap` (full) STAYS a multi-round port, with the residual localized to exactly the CENSUS port
-+ the survivor analysis; `fxString_hasNoLoopsTheorem` (in `StringFussCatalan`) stays `false`, honestly, with the CAP
-non-crossing infrastructure + loop branch SHIPPED and the exact remaining site named.  `= false`. -/
+So with the CENSUS now SHIPPED (FC-5 P1), the sole remaining residual of `stringNonCrossing_stepCap` (join branch) is
+the survivor combo analysis — the string port of `ArcNonCrossingCapMain`; `fxString_hasNoLoopsTheorem` (in
+`StringFussCatalan`) stays `false`, honestly (and additionally owes the `capPin` label-tracking, which the census does
+NOT unlock — see `fxString_hasBoundaryCensusUnlocksBothResiduals`).  `= false`. -/
 def fxString_hasCapNonCrossingJoinBranch : Bool := false
 
 /-! ## Non-vacuity — the general loop-freedom reduction discharges on THREE real cells (incl. the cross-level cell) -/
