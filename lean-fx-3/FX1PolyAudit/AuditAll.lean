@@ -499,6 +499,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCell
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCases
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordMultiplicativity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerRightMult
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerCountsAlign
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
