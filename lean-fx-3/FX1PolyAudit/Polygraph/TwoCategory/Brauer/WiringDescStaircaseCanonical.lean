@@ -25,4 +25,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.recCombConv_width5_word
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasStaircaseCombNormalForm
 
+-- R3.A: the permutation-carry crux (the soundness leg's hard lemma)
+#assert_no_axioms FX1Poly.Polygraph.foldl_append_swap
+#assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_commute_of_le
+#assert_no_axioms FX1Poly.Polygraph.swap_commutes_runAbove
+#assert_no_axioms FX1Poly.Polygraph.swap_commutes_runBelow
+#assert_no_axioms FX1Poly.Polygraph.carry_perm
+
 end FX1PolyAudit

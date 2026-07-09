@@ -159,4 +159,182 @@ UNIFY the S_5 residual pair `[1,2,0,1,2]` / `[0,1,2,0,1]` that the one-level com
 convertibility on the r9 jam word, the r11 pair, and a width-5 word.  `= true`. -/
 def fxBrauer_hasStaircaseCombNormalForm : Bool := true
 
+/-! ## R3.A — the permutation-carry crux (the soundness leg's hard lemma)
+
+Each `combInsertData` step realizes exactly ONE adjacent swap of the through-strand permutation.  Three of the four
+branches are word rewrites (snoc / involution); the CARRY branch needs the Coxeter identity `s_{letter-1} · run =
+run · s_letter` on the one-line permutation — `carry_perm` — proved by induction on the run (mirroring the shipped
+`carryIntoRun`), using the shipped `applyAdjacentSwap_braid` at the pivot and disjoint-swap commutation for the two
+sub-runs. -/
+
+/-- `value - 2 + 2 = value` when `2 ≤ value` — the crossing-arity round-trip.  Structural on the `value + 2`
+shape. -/
+private theorem subTwoAddTwoStaircase : (value : Nat) → 2 ≤ value → value - 2 + 2 = value
+  | 0, twoLe => absurd twoLe (by decide)
+  | 1, twoLe => absurd twoLe (by decide)
+  | _ + 2, _ => rfl
+
+/-- `i - 1 + 1 = i` when `1 ≤ i` — structural on `i`, `propext`-free. -/
+private theorem predSuccStaircase : (i : Nat) → 1 ≤ i → i - 1 + 1 = i
+  | 0, positive => absurd positive (by decide)
+  | _ + 1, _ => rfl
+
+/-- `a ≤ top - 1` from `a + 1 ≤ top` — structural on `top`, `propext`-free. -/
+private theorem natLePredStaircase : (a top : Nat) → a + 1 ≤ top → a ≤ top - 1
+  | a, 0, h => absurd h (Nat.not_succ_le_zero a)
+  | _, _ + 1, h => Nat.le_of_succ_le_succ h
+
+/-- `m ≤ n` from `m + k ≤ n + k` — structural on `k` (`+ k` reduces on the right), `propext`-free. -/
+private theorem natLeOfAddLeAddRightStaircase : (m n k : Nat) → m + k ≤ n + k → m ≤ n
+  | _, _, 0, h => h
+  | m, n, k + 1, h => natLeOfAddLeAddRightStaircase m n k (Nat.le_of_succ_le_succ h)
+
+/-- `m ≤ n` from `k + m ≤ k + n` — via `Nat.add_comm` + `natLeOfAddLeAddRightStaircase`. -/
+private theorem natLeOfAddLeAddLeftStaircase (k m n : Nat) (h : k + m ≤ k + n) : m ≤ n :=
+  natLeOfAddLeAddRightStaircase m n k (by rw [Nat.add_comm m k, Nat.add_comm n k]; exact h)
+
+/-- `foldl applyAdjacentSwap` splits over a list concatenation.  Structural on the prefix. -/
+theorem foldl_append_swap : (prefixList suffixList init : List Nat) →
+    (prefixList ++ suffixList).foldl applyAdjacentSwap init
+      = suffixList.foldl applyAdjacentSwap (prefixList.foldl applyAdjacentSwap init)
+  | [], _, _ => rfl
+  | head :: rest, suffixList, init => foldl_append_swap rest suffixList (applyAdjacentSwap init head)
+
+/-- `low + (high - low - 2) + 2 = high` when `low + 2 ≤ high` — the index witness for the disjoint-swap form.
+Structural on `low`, `propext`-free. -/
+private theorem commuteHighEq : (low high : Nat) → low + 2 ≤ high → low + (high - low - 2) + 2 = high
+  | 0, high, hLe => by
+      rw [Nat.zero_add]
+      exact subTwoAddTwoStaircase high hLe
+  | _ + 1, 0, hLe => absurd hLe (Nat.not_succ_le_zero _)
+  | low + 1, high + 1, hLe => by
+      have inner : low + (high - low - 2) + 2 = high := commuteHighEq low high (Nat.le_of_succ_le_succ hLe)
+      rw [Nat.succ_sub_succ, Nat.succ_add, Nat.succ_add]
+      exact congrArg Nat.succ inner
+
+/-- ★ **Distant adjacent swaps commute, in `i + 2 ≤ j` form** — the shipped `applyAdjacentSwap_swap_disjoint`
+re-expressed with a plain `≤` distance hypothesis (via `commuteHighEq`). -/
+theorem applyAdjacentSwap_commute_of_le (perm : List Nat) (i j : Nat) (dist : i + 2 ≤ j) :
+    applyAdjacentSwap (applyAdjacentSwap perm i) j = applyAdjacentSwap (applyAdjacentSwap perm j) i := by
+  have jEq : i + (j - i - 2) + 2 = j := commuteHighEq i j dist
+  have shipped := applyAdjacentSwap_swap_disjoint perm i (j - i - 2)
+  rw [jEq] at shipped
+  exact shipped
+
+/-- ★ **A swap ABOVE a descending run commutes past the whole run fold.**  For `run = descendingPositions runTop
+count` all of whose elements are `≥ letter + 2` (`letter + count + 1 ≤ runTop`), the swap at `letter` commutes past
+the fold.  Structural on `count`. -/
+theorem swap_commutes_runAbove (letter : Nat) :
+    (runTop count : Nat) → (perm : List Nat) → letter + count + 1 ≤ runTop →
+    (descendingPositions runTop count).foldl applyAdjacentSwap (applyAdjacentSwap perm letter)
+      = applyAdjacentSwap ((descendingPositions runTop count).foldl applyAdjacentSwap perm) letter
+  | _, 0, _, _ => rfl
+  | runTop, count + 1, perm, hLe => by
+      have topDistant : letter + 2 ≤ runTop :=
+        Nat.le_trans (Nat.add_le_add_left (Nat.le_add_left 2 count) letter) hLe
+      show (descendingPositions (runTop - 1) count).foldl applyAdjacentSwap
+              (applyAdjacentSwap (applyAdjacentSwap perm letter) runTop)
+          = applyAdjacentSwap ((descendingPositions (runTop - 1) count).foldl applyAdjacentSwap
+              (applyAdjacentSwap perm runTop)) letter
+      rw [applyAdjacentSwap_commute_of_le perm letter runTop topDistant]
+      exact swap_commutes_runAbove letter (runTop - 1) count (applyAdjacentSwap perm runTop)
+        (by
+          have e : runTop - 1 + 1 = runTop := Nat.succ_pred_eq_of_pos (Nat.lt_of_lt_of_le
+            (Nat.lt_of_lt_of_le (Nat.zero_lt_succ letter) (Nat.le_add_right (letter + 1) 1)) topDistant)
+          have hStep : letter + count + 1 + 1 ≤ runTop := hLe
+          have : letter + count + 1 ≤ runTop - 1 := by
+            rw [← e] at hStep; exact Nat.le_of_succ_le_succ hStep
+          exact this)
+
+/-- ★ **A swap BELOW a descending run commutes past the whole run fold.**  For `run = descendingPositions runTop
+count` all of whose elements are `≤ letter - 2` (`runTop + 2 ≤ letter`), the swap at `letter` commutes past the fold.
+Structural on `count`. -/
+theorem swap_commutes_runBelow (letter : Nat) :
+    (runTop count : Nat) → (perm : List Nat) → runTop + 2 ≤ letter →
+    (descendingPositions runTop count).foldl applyAdjacentSwap (applyAdjacentSwap perm letter)
+      = applyAdjacentSwap ((descendingPositions runTop count).foldl applyAdjacentSwap perm) letter
+  | _, 0, _, _ => rfl
+  | runTop, count + 1, perm, hLe => by
+      have topDistant : runTop + 2 ≤ letter := hLe
+      show (descendingPositions (runTop - 1) count).foldl applyAdjacentSwap
+              (applyAdjacentSwap (applyAdjacentSwap perm letter) runTop)
+          = applyAdjacentSwap ((descendingPositions (runTop - 1) count).foldl applyAdjacentSwap
+              (applyAdjacentSwap perm runTop)) letter
+      rw [(applyAdjacentSwap_commute_of_le perm runTop letter topDistant).symm]
+      exact swap_commutes_runBelow letter (runTop - 1) count (applyAdjacentSwap perm runTop)
+        (Nat.le_trans (Nat.add_le_add_right (Nat.sub_le runTop 1) 2) hLe)
+
+/-- ★★ **The permutation-carry identity** `s_{letter-1} · run = run · s_letter`.  For `run = descendingPositions top
+runLen` with `letter` strictly inside the run (`1 ≤ letter`, `letter ≤ top`, `top + 2 ≤ letter + runLen`) and the
+braid window in range (`top + 2 ≤ perm.length`), folding `run` after the swap `s_{letter-1}` equals folding `run`
+then the swap `s_letter`.  Induction on `runLen` mirroring the shipped `carryIntoRun`: STEP peels `s_top` by
+disjoint commutation; BASE (`letter = top`) braids the pivot `s_{top-1} s_top s_{top-1}` and commutes past the lower
+sub-run. -/
+theorem carry_perm (letter : Nat) (letterPos : 1 ≤ letter) :
+    (top runLen : Nat) → (perm : List Nat) → letter ≤ top → runLen ≤ top + 1 →
+    top + 2 ≤ letter + runLen → top + 2 ≤ perm.length →
+    (descendingPositions top runLen).foldl applyAdjacentSwap (applyAdjacentSwap perm (letter - 1))
+      = applyAdjacentSwap ((descendingPositions top runLen).foldl applyAdjacentSwap perm) letter
+  | top, 0, _, letterLeTop, _, aboveBottom, _ =>
+      absurd (Nat.le_trans (Nat.le_trans aboveBottom letterLeTop) (Nat.le_succ top))
+        (Nat.not_succ_le_self (top + 1))
+  | top, runLen + 1, perm, letterLeTop, runLenLe, aboveBottom, lenOk => by
+      rcases Nat.lt_or_ge letter top with ltTop | geTop
+      · -- STEP: letter < top — peel s_top by disjoint commutation, recurse.
+        have topPos : 1 ≤ top := Nat.le_trans letterPos (Nat.le_of_lt ltTop)
+        have letterM1Distant : (letter - 1) + 2 ≤ top := by
+          rw [show (letter - 1) + 2 = letter + 1 from
+            congrArg Nat.succ (predSuccStaircase letter letterPos)]
+          exact ltTop
+        show (descendingPositions (top - 1) runLen).foldl applyAdjacentSwap
+                (applyAdjacentSwap (applyAdjacentSwap perm (letter - 1)) top)
+            = applyAdjacentSwap ((descendingPositions (top - 1) runLen).foldl applyAdjacentSwap
+                (applyAdjacentSwap perm top)) letter
+        rw [applyAdjacentSwap_commute_of_le perm (letter - 1) top letterM1Distant]
+        exact carry_perm letter letterPos (top - 1) runLen (applyAdjacentSwap perm top)
+          (natLePredStaircase letter top ltTop)
+          (by rw [predSuccStaircase top topPos]; exact Nat.le_of_succ_le_succ runLenLe)
+          (by
+            have e : top - 1 + 2 = top + 1 := congrArg Nat.succ (predSuccStaircase top topPos)
+            rw [e]; exact Nat.le_of_succ_le_succ aboveBottom)
+          (by
+            rw [applyAdjacentSwap_length perm top,
+              show top - 1 + 2 = top + 1 from congrArg Nat.succ (predSuccStaircase top topPos)]
+            exact Nat.le_trans (Nat.le_succ (top + 1)) lenOk)
+      · -- BASE: letter = top — braid the pivot, commute past the lower sub-run.
+        have eqTop : letter = top := Nat.le_antisymm letterLeTop geTop
+        subst eqTop
+        have runLenPos : 1 ≤ runLen :=
+          natLeOfAddLeAddLeftStaircase letter 1 runLen (Nat.le_of_succ_le_succ aboveBottom)
+        cases runLen with
+        | zero => exact absurd runLenPos (Nat.not_succ_le_zero 0)
+        | succ lowerLen =>
+            -- descendingPositions letter (lowerLen+2) = letter :: (letter-1) :: descendingPositions (letter-2) lowerLen
+            have runDecomp : descendingPositions letter (lowerLen + 1 + 1)
+                = letter :: (letter - 1) :: descendingPositions (letter - 2) lowerLen := rfl
+            rw [runDecomp]
+            show (descendingPositions (letter - 2) lowerLen).foldl applyAdjacentSwap
+                    (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap perm (letter - 1)) letter) (letter - 1))
+                = applyAdjacentSwap ((descendingPositions (letter - 2) lowerLen).foldl applyAdjacentSwap
+                    (applyAdjacentSwap (applyAdjacentSwap perm letter) (letter - 1))) letter
+            -- braid: s_{letter-1} s_letter s_{letter-1} = s_letter s_{letter-1} s_letter
+            have braidRaw := applyAdjacentSwap_braid perm (letter - 1)
+              (by
+                rw [show (letter - 1) + 2 = letter + 1 from
+                  congrArg Nat.succ (predSuccStaircase letter letterPos)]
+                exact Nat.lt_of_lt_of_le (Nat.lt_succ_self (letter + 1)) lenOk)
+            rw [predSuccStaircase letter letterPos] at braidRaw
+            rw [braidRaw]
+            -- commute the outer s_letter past the lower sub-run (empty at lowerLen = 0)
+            cases lowerLen with
+            | zero => rfl
+            | succ lowerLen2 =>
+                have letterGe2 : 2 ≤ letter :=
+                  Nat.le_trans (Nat.succ_le_succ (Nat.succ_le_succ (Nat.zero_le lowerLen2)))
+                    (Nat.le_of_succ_le_succ runLenLe)
+                have lowerBelow : (letter - 2) + 2 ≤ letter :=
+                  Nat.le_of_eq (subTwoAddTwoStaircase letter letterGe2)
+                exact swap_commutes_runBelow letter (letter - 2) (lowerLen2 + 1)
+                  (applyAdjacentSwap (applyAdjacentSwap perm letter) (letter - 1)) lowerBelow
+
 end FX1Poly.Polygraph
