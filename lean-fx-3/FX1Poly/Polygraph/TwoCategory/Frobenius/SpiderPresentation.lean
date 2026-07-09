@@ -528,15 +528,22 @@ closed-component count, whose preservation under the boundary view is the separa
 `fxFrob_hasCospanClosedCountSoundness` residual.  `= true`. -/
 def fxFrob_hasPartitionSoundness : Bool := true
 
-/-- **Honesty marker — the fully-uniform contextual whisker supply is PARTIAL (FROB-3, r3).**  The WIDER-BOUNDARY leg
-is SHIPPED: `spiderConv_relation_inWiderBoundary` (`Frobenius/SpiderPadCongruence.lean`,
-`fxFrob_hasSpiderPadCongruence`) re-runs the Brauer horizontal-pad simulation over `μ` / `δ` / `η` / `ε`, so a relation
-fired at offset `0` in ANY wider boundary is a `SpiderConv` theorem (the special row `μδ = 1`, whose two sides carry
-unequal loop counts, carried by the loops-free partition payoff).  The remaining leg — a relation whiskered after an
-ARBITRARY prefix — is the Brauer two-word functoriality bridge, which is LOOPS-based (it consumes a Brauer canonical
-extract equality) and so blocked by the special row exactly as the loops-based pad payoff would have been; its
-loops-free re-homing to the partition view is the standing residual (`fxFrob_hasSpiderAfterPrefixContext`).  `= false`. -/
-def fxFrob_hasContextualSpiderSoundness : Bool := false
+/-- ★ **Honesty marker — the BOUNDARY-PRESERVING contextual partition soundness is CLOSED and GATE-FREE (FROB-3/4/5).**
+Both legs of the boundary-preserving contextual whisker are shipped: the WIDER-BOUNDARY leg
+(`spiderConv_relation_inWiderBoundary`, `Frobenius/SpiderPadCongruence.lean`, `fxFrob_hasSpiderPadCongruence` — a
+relation fired at offset `0` in any wider boundary) and the AFTER-BOUNDARY-PRESERVING-PREFIX leg (the r4 loops-free
+re-homing `processBrauer_forgetView_eq_ofCanonicalViewParts` + bridge `spiderConv_relation_afterPrefix`,
+`fxFrob_hasSpiderAfterPrefixContext` — a relation whiskered after any prefix that keeps the boundary width).  r5
+(`Frobenius/SpiderConvTable.lean`, `fxFrob_hasSpiderConvTable`) makes the after-prefix leg GATE-FREE: the per-row
+`SpiderConvTable` constructors carry only the prefix + its firing discipline + a boundary-preservation length equation,
+never a boundary-view / post-prefix-state quantifier — the row's view obligation is discharged ONCE by the decided
+seed-view table (`fxFrob_hasSpiderSeedViewTable`), and `spiderConvTable_partitionSound` is the FUNCTORIAL partition
+soundness of the whole gate-free layer.  This is the boundary-COMPLEMENT-restricted contextual rewrite (BGKSZ Thm 35),
+finite-decided per row.  Two SEPARATE residuals remain, each with its own marker — NOT covered by this one: the
+BOUNDARY-CHANGING prefix (`fxFrob_hasSpiderBoundaryChangingPrefix = false`, the nonzero-offset `shiftBrauerWord` left
+pad supplying canonical view parts at a changed width) and the two-sided SUFFIX congruence
+(`fxFrob_hasSpiderSuffixCongruence = false`, the forward `stepWiring` view-functoriality brick).  `= true`. -/
+def fxFrob_hasContextualSpiderSoundness : Bool := true
 
 /-- **Honesty marker — the FULL special (`Cospan(FinSet)`) closed-component soundness is the standing residual
 (FROB-3, sharpened FROB-4).**  The partition soundness (`fxFrob_hasPartitionSoundness`) is closed for the corelation
