@@ -20,7 +20,9 @@ The `ℤ`-linear "count generators, whisker-transparent" functional `cohesionFla
 is a SOUND congruence invariant: the only saturation laws touching `flatCounit`/`flatComul` are the flat
 comonad's counit laws (which pair one of each — `flatComul` then `flatCounit`, degree `(−1) + 1 = 0 = id`),
 coassociativity (two `flatComul` each side), and flat idempotence (one `flatCounit` each side) — all balanced;
-every non-flat law weighs `0`.  r2's `genParity` is precisely this degree taken mod 2.
+every non-flat law weighs `0`.  This is a DIFFERENT invariant from r2's `genParity` (which weighs the
+shape-monad generators `shapeUnit`/`shapeMul`, not the flat pair): the two functionals agree on separating
+the r2 pair but count disjoint generator families, so neither is the other mod 2.
 
 Because `Int.add_assoc` / `Int.add_comm` / `Int.zero_add` LEAK `propext` in Lean core (only `Int.add_zero` is
 clean), we do NOT fold into `Int`.  Instead we realize the difference `#flatCounit − #flatComul` as a two-count
