@@ -362,6 +362,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingInvolution
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescDirectRelationAgrees
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPadCongruence
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardForm
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
@@ -503,6 +504,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerRightMult
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerCountsAlign
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerNormalizeCases
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadHcompMult
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadVcompMult
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
@@ -635,6 +637,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TwoCellWordProblemDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SaturationDecisionSmoke
 import FX1PolyAudit.Tier0.Mode.TierBThinDecision
 import FX1PolyAudit.Tier0.Mode.ExhibitedConvergentDecision
+import FX1PolyAudit.Tier0.Mode.SemiThueReduction
 import FX1PolyAudit.Tier0.Mode.DecidableCeilingLedger
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
