@@ -345,6 +345,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.BareConvCompleteness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.BareConvFragmentDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.BareConvWordCodeCompleteness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.BareConvPatternMultiset
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.BareConvCliqueSequence
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.TraceReducer
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedConvergence
@@ -513,6 +514,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadVcompMult
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordVcomp
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeVcomp
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSaturatedConv
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingModel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
