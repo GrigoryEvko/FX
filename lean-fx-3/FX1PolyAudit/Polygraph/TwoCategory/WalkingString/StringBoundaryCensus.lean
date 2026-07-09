@@ -14,5 +14,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringCapEndTokenBackmap_node
 #assert_no_axioms FX1Poly.Polygraph.stringCapEndTokenBackmap_isValid
 #assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_stepCap
+#assert_no_axioms FX1Poly.Polygraph.stringCupEndTokenBackmap_node
+#assert_no_axioms FX1Poly.Polygraph.stringCupEndTokenBackmap_isValid
+#assert_no_axioms FX1Poly.Polygraph.stringStepCup_links_cons
+#assert_no_axioms FX1Poly.Polygraph.stringNotSame_of_rootsNe
+#assert_no_axioms FX1Poly.Polygraph.stringCupLegSeparation
+#assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_stepCup
 
 end FX1PolyAudit

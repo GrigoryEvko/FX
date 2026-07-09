@@ -82,6 +82,13 @@ private theorem censusRangeGetBelow (count index : Nat) (indexBelow : index < co
     natListGetAt (List.range count) index = index :=
   censusRangeLoopGetBelow count [] index indexBelow
 
+/-- `a ≠ b → (a == b) = false`, propext-clean (per-file copy, following the codebase pattern). -/
+private theorem censusBeqFalseOfNe (leftNode rightNode : Nat) (notEqual : leftNode ≠ rightNode) :
+    (leftNode == rightNode) = false := by
+  cases beqCase : leftNode == rightNode with
+  | true => exact absurd (of_decide_eq_true beqCase) notEqual
+  | false => rfl
+
 /-! ## The forest bridge — `stringIsUnionFindForest` is byte-identical to `isUnionFindForest` -/
 
 /-- ★ **The trivial forest bridge.**  `stringIsUnionFindForest` (re-stated over the bare `WireState` in
@@ -480,6 +487,387 @@ theorem stringBoundaryCensus_stepCap (seedBoundary : Nat) (state : WireState) (p
                     (Ne.symm (capEndTokenBackmap_missesLeftWindow position tokenTwo))
                     (Ne.symm (capEndTokenBackmap_missesLeftWindow position tokenThree))
                     oldTwoNeThree leftReachesTwo leftReachesThree
+
+/-! ## The splice backmap on boundary end tokens (CUP), node/validity over `WireState` -/
+
+/-- The splice backmap (`cupEndTokenBackmap`, reused) preserves the read node on the old zone.  `stepCup`'s open
+wires are `natListInsertAt state.openWires position [nextFresh, nextFresh+1]`, so below-window reads are untouched and
+past-window reads shift over the spliced pair. -/
+theorem stringCupEndTokenBackmap_node (state : WireState) (position : Nat)
+    (cupInRange : position ≤ state.openWires.length) (token : ArcEndToken)
+    (zone : isCupOldZoneToken position token) :
+    stringEndTokenNode (stepCup state position) token
+      = stringEndTokenNode state (cupEndTokenBackmap position token) := by
+  cases token with
+  | bottomPort portValue => rfl
+  | openSlot slotPosition =>
+      show natListGetAt (natListInsertAt state.openWires position
+          [state.nextFresh, state.nextFresh + 1]) slotPosition
+        = natListGetAt state.openWires
+            (if slotPosition < position then slotPosition else slotPosition - 2)
+      cases zone with
+      | inl slotBelowWindow =>
+          rw [if_pos slotBelowWindow]
+          exact natListGetAt_natListInsertAt_below state.openWires position
+            [state.nextFresh, state.nextFresh + 1] slotPosition slotBelowWindow
+            (Nat.lt_of_lt_of_le slotBelowWindow cupInRange)
+      | inr windowPastSlot =>
+          obtain ⟨gapAmount, gapSpec⟩ := Nat.le.dest windowPastSlot
+          have slotSpec : slotPosition = position + gapAmount + 2 :=
+            gapSpec.symm.trans (Nat.add_right_comm position 2 gapAmount)
+          have positionLeSlot : position ≤ slotPosition :=
+            Nat.le_trans (Nat.le_add_right position 2) windowPastSlot
+          have backmapValue : slotPosition - 2 = position + gapAmount := by
+            rw [slotSpec]; exact rfl
+          have pastRead : natListGetAt (natListInsertAt state.openWires position
+              [state.nextFresh, state.nextFresh + 1]) (position + gapAmount + 2)
+              = natListGetAt state.openWires (position + gapAmount) :=
+            natListGetAt_natListInsertAt_pastBlock state.openWires position
+              [state.nextFresh, state.nextFresh + 1] gapAmount cupInRange
+          rw [if_neg (fun slotBelowWindow =>
+              Nat.lt_irrefl position (Nat.lt_of_le_of_lt positionLeSlot slotBelowWindow)),
+            backmapValue, slotSpec]
+          exact pastRead
+
+/-- The splice backmap preserves token validity on the old zone over `WireState`. -/
+theorem stringCupEndTokenBackmap_isValid (seedBoundary : Nat) (state : WireState) (position : Nat)
+    (token : ArcEndToken) (zone : isCupOldZoneToken position token)
+    (cupInRange : position ≤ state.openWires.length)
+    (validNew : isValidStringEndToken seedBoundary (stepCup state position) token) :
+    isValidStringEndToken seedBoundary state (cupEndTokenBackmap position token) := by
+  cases token with
+  | bottomPort portValue => exact validNew
+  | openSlot slotPosition =>
+      show (if slotPosition < position then slotPosition else slotPosition - 2)
+        < state.openWires.length
+      cases zone with
+      | inl slotBelowWindow =>
+          rw [if_pos slotBelowWindow]
+          exact Nat.lt_of_lt_of_le slotBelowWindow cupInRange
+      | inr windowPastSlot =>
+          obtain ⟨gapAmount, gapSpec⟩ := Nat.le.dest windowPastSlot
+          have slotSpec : slotPosition = position + gapAmount + 2 :=
+            gapSpec.symm.trans (Nat.add_right_comm position 2 gapAmount)
+          have positionLeSlot : position ≤ slotPosition :=
+            Nat.le_trans (Nat.le_add_right position 2) windowPastSlot
+          have backmapValue : slotPosition - 2 = position + gapAmount := by
+            rw [slotSpec]; exact rfl
+          have slotBelowNewLength : slotPosition < (natListInsertAt state.openWires position
+              [state.nextFresh, state.nextFresh + 1]).length := validNew
+          rw [natListInsertAt_length state.openWires position
+            [state.nextFresh, state.nextFresh + 1]] at slotBelowNewLength
+          rw [slotSpec] at slotBelowNewLength
+          rw [if_neg (fun slotBelowWindow =>
+              Nat.lt_irrefl position (Nat.lt_of_le_of_lt positionLeSlot slotBelowWindow)),
+            backmapValue]
+          exact Nat.lt_of_add_lt_add_right slotBelowNewLength
+
+/-! ## The cup's link update is a fresh-edge cons + the old/leg separation -/
+
+/-- ★ **A cup's link update is a fresh-edge prepend.**  Given freshness, the two spliced legs `nextFresh`,
+`nextFresh+1` are each nobody's child (roots), so `unionFindJoin state.links nextFresh (nextFresh+1)` prepends exactly
+`(nextFresh, nextFresh+1)`.  This puts `(stepCup state position).links` into the `freshChild :: links` shape the shipped
+`stringIsSameComponent_cons_freshAbove_forest` and freshness kits consume. -/
+theorem stringStepCup_links_cons (state : WireState) (position : Nat)
+    (fresh : StringWireStateFresh state) :
+    (stepCup state position).links = (state.nextFresh, state.nextFresh + 1) :: state.links := by
+  show unionFindJoin state.links state.nextFresh (state.nextFresh + 1)
+    = (state.nextFresh, state.nextFresh + 1) :: state.links
+  have leftNotChild : ∀ edge ∈ state.links, edge.1 ≠ state.nextFresh :=
+    fun edge memEdge => Nat.ne_of_lt (fresh.linksBelow edge memEdge).1
+  have rightNotChild : ∀ edge ∈ state.links, edge.1 ≠ state.nextFresh + 1 :=
+    fun edge memEdge =>
+      Nat.ne_of_lt (Nat.lt_trans (fresh.linksBelow edge memEdge).1 (Nat.lt_succ_self state.nextFresh))
+  have leftRoot : unionFindRootOf state.links state.nextFresh = state.nextFresh :=
+    unionFindRootOf_of_notChild state.links state.nextFresh leftNotChild
+  have rightRoot : unionFindRootOf state.links (state.nextFresh + 1) = state.nextFresh + 1 :=
+    unionFindRootOf_of_notChild state.links (state.nextFresh + 1) rightNotChild
+  have distinct : (state.nextFresh == state.nextFresh + 1) = false :=
+    censusBeqFalseOfNe state.nextFresh (state.nextFresh + 1) (Nat.ne_of_lt (Nat.lt_succ_self state.nextFresh))
+  exact unionFindJoin_freshPair state.links state.nextFresh (state.nextFresh + 1) leftRoot rightRoot distinct
+
+/-- Same-component is `false` when the two nodes have distinct roots. -/
+theorem stringNotSame_of_rootsNe (links : List (Nat × Nat)) (leftNode rightNode : Nat)
+    (rootsNe : unionFindRootOf links leftNode ≠ unionFindRootOf links rightNode) :
+    isSameComponent links leftNode rightNode = false := by
+  cases sameTest : isSameComponent links leftNode rightNode with
+  | false => rfl
+  | true => exact absurd (of_decide_eq_true sameTest) rootsNe
+
+/-- ★ **The cup leg SEPARATION.**  An OLD wire (`oldNode < nextFresh`) never shares a component with a fresh LEG
+(`nextFresh ≤ legNode`) after the cup's fresh join.  The join only relates `nextFresh ↔ nextFresh+1` (both ≥
+`nextFresh`); on the forest the old node's root stays below `nextFresh` (`unionFindRootOf_lt`) while every leg root is
+`≥ nextFresh` (`unionFindRootOf_of_notChild`), so the flat-disjunction characterization collapses to `false`.  This is
+the string port of the arc's `isSameComponent_stepCupArc_oldFreshProbes`, without an event node. -/
+theorem stringCupLegSeparation (state : WireState) (position : Nat)
+    (fresh : StringWireStateFresh state) (forest : stringIsUnionFindForest state.links)
+    (oldNode legNode : Nat) (oldBelow : oldNode < state.nextFresh)
+    (legAtLeast : state.nextFresh ≤ legNode) :
+    isSameComponent (stepCup state position).links oldNode legNode = false := by
+  have sharedForest : isUnionFindForest state.links := stringForest_toUnionFindForest state.links forest
+  have edgesSndBounded : ∀ edge ∈ state.links, edge.2 < state.nextFresh :=
+    fun edge memEdge => (fresh.linksBelow edge memEdge).2
+  have rootOldBelow : unionFindRootOf state.links oldNode < state.nextFresh :=
+    unionFindRootOf_lt state.nextFresh state.links edgesSndBounded oldNode oldBelow
+  have legNotChild : ∀ edge ∈ state.links, edge.1 ≠ legNode :=
+    fun edge memEdge => Nat.ne_of_lt (Nat.lt_of_lt_of_le (fresh.linksBelow edge memEdge).1 legAtLeast)
+  have rootLegSelf : unionFindRootOf state.links legNode = legNode :=
+    unionFindRootOf_of_notChild state.links legNode legNotChild
+  have freshNotChild : ∀ edge ∈ state.links, edge.1 ≠ state.nextFresh :=
+    fun edge memEdge => Nat.ne_of_lt (fresh.linksBelow edge memEdge).1
+  have rootFreshSelf : unionFindRootOf state.links state.nextFresh = state.nextFresh :=
+    unionFindRootOf_of_notChild state.links state.nextFresh freshNotChild
+  have freshSuccNotChild : ∀ edge ∈ state.links, edge.1 ≠ state.nextFresh + 1 :=
+    fun edge memEdge =>
+      Nat.ne_of_lt (Nat.lt_trans (fresh.linksBelow edge memEdge).1 (Nat.lt_succ_self state.nextFresh))
+  have rootFreshSuccSelf : unionFindRootOf state.links (state.nextFresh + 1) = state.nextFresh + 1 :=
+    unionFindRootOf_of_notChild state.links (state.nextFresh + 1) freshSuccNotChild
+  have disjOldLeg : isSameComponent state.links oldNode legNode = false := by
+    apply stringNotSame_of_rootsNe
+    rw [rootLegSelf]
+    exact Nat.ne_of_lt (Nat.lt_of_lt_of_le rootOldBelow legAtLeast)
+  have disjFreshOld : isSameComponent state.links state.nextFresh oldNode = false := by
+    apply stringNotSame_of_rootsNe
+    rw [rootFreshSelf]
+    exact (Nat.ne_of_lt rootOldBelow).symm
+  have disjOldFreshSucc : isSameComponent state.links oldNode (state.nextFresh + 1) = false := by
+    apply stringNotSame_of_rootsNe
+    rw [rootFreshSuccSelf]
+    exact Nat.ne_of_lt (Nat.lt_trans rootOldBelow (Nat.lt_succ_self state.nextFresh))
+  have expand := isSameComponent_unionFindJoin state.links sharedForest
+    state.nextFresh (state.nextFresh + 1) oldNode legNode
+  show isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) oldNode legNode
+    = false
+  rw [expand, disjOldLeg, disjFreshOld, disjOldFreshSucc]
+  cases isSameComponent state.links (state.nextFresh + 1) legNode <;>
+    cases isSameComponent state.links state.nextFresh legNode <;> rfl
+
+/-! ## ★ The CUP census preservation -/
+
+/-- ★ **A CUP step preserves the boundary census.**  The string port of `arcBoundaryCensus_stepCupArc`, over the bare
+`WireState`.  Classify the three offending tokens by node zone (below `nextFresh` = old, else one of the two spliced
+legs): any old/leg mixture contradicts the leg SEPARATION (`stringCupLegSeparation`), three leg tokens pigeonhole into
+the two window slots against their distinctness, and three old-zone tokens transport onto the old census through the
+fresh-edge invisibility (`stringIsSameComponent_cons_freshAbove_forest`) via the splice backmap.  STRICTLY simpler than
+the arc's cup: no event node — the fresh join is a direct `(nextFresh, nextFresh+1)` prepend
+(`stringStepCup_links_cons`). -/
+theorem stringBoundaryCensus_stepCup (seedBoundary : Nat) (state : WireState) (position : Nat)
+    (fresh : StringWireStateFresh state) (forest : stringIsUnionFindForest state.links)
+    (seedBelowFresh : seedBoundary ≤ state.nextFresh)
+    (cupInRange : position ≤ state.openWires.length)
+    (oldCensus : StringBoundaryCensus seedBoundary state) :
+    StringBoundaryCensus seedBoundary (stepCup state position) := by
+  intro tokenOne tokenTwo tokenThree validOne validTwo validThree
+    oneNeTwo oneNeThree twoNeThree sameOneTwo sameOneThree
+  have parentsBounded : ∀ parent ∈ state.links.map Prod.snd, parent < state.nextFresh :=
+    StringWireStateFresh_parentsBelow fresh
+  have linksCons : (stepCup state position).links = (state.nextFresh, state.nextFresh + 1) :: state.links :=
+    stringStepCup_links_cons state position fresh
+  have wireReadBelowFresh : ∀ index : Nat, index < state.openWires.length →
+      natListGetAt state.openWires index < state.nextFresh := by
+    intro index indexBelowLength
+    have boundPositive : 0 < state.nextFresh := by
+      cases wiresShape : state.openWires with
+      | nil =>
+          rw [wiresShape] at indexBelowLength
+          exact absurd indexBelowLength (Nat.not_lt_zero index)
+      | cons headWire restWires =>
+          have headInOpen : headWire ∈ state.openWires := by
+            rw [wiresShape]; exact List.Mem.head _
+          exact Nat.lt_of_le_of_lt (Nat.zero_le headWire) (fresh.openBelow headWire headInOpen)
+    exact natListGetAt_lt state.nextFresh boundPositive state.openWires index fresh.openBelow
+  have legReadLeft : natListGetAt (natListInsertAt state.openWires position
+      [state.nextFresh, state.nextFresh + 1]) position = state.nextFresh := by
+    have insideRead := natListGetAt_natListInsertAt_inside state.openWires position
+      [state.nextFresh, state.nextFresh + 1] 0 (Nat.zero_lt_succ 1) cupInRange
+    rw [Nat.add_zero] at insideRead
+    exact insideRead
+  have legReadRight : natListGetAt (natListInsertAt state.openWires position
+      [state.nextFresh, state.nextFresh + 1]) (position + 1) = state.nextFresh + 1 :=
+    natListGetAt_natListInsertAt_inside state.openWires position
+      [state.nextFresh, state.nextFresh + 1] 1 (Nat.lt_succ_self 1) cupInRange
+  have classify : ∀ token : ArcEndToken,
+      isValidStringEndToken seedBoundary (stepCup state position) token →
+      (isCupOldZoneToken position token
+          ∧ stringEndTokenNode (stepCup state position) token < state.nextFresh)
+        ∨ (token = ArcEndToken.openSlot position
+            ∧ stringEndTokenNode (stepCup state position) token = state.nextFresh)
+        ∨ (token = ArcEndToken.openSlot (position + 1)
+            ∧ stringEndTokenNode (stepCup state position) token = state.nextFresh + 1) := by
+    intro token tokenValid
+    cases token with
+    | bottomPort portValue =>
+        exact Or.inl ⟨True.intro, Nat.lt_of_lt_of_le tokenValid seedBelowFresh⟩
+    | openSlot slotPosition =>
+        cases Nat.lt_or_ge slotPosition position with
+        | inl slotBelowWindow =>
+            refine Or.inl ⟨Or.inl slotBelowWindow, ?_⟩
+            show natListGetAt (natListInsertAt state.openWires position
+                [state.nextFresh, state.nextFresh + 1]) slotPosition < state.nextFresh
+            rw [natListGetAt_natListInsertAt_below state.openWires position
+              [state.nextFresh, state.nextFresh + 1] slotPosition slotBelowWindow
+              (Nat.lt_of_lt_of_le slotBelowWindow cupInRange)]
+            exact wireReadBelowFresh slotPosition
+              (Nat.lt_of_lt_of_le slotBelowWindow cupInRange)
+        | inr windowLeSlot =>
+            cases Nat.lt_or_ge slotPosition (position + 2) with
+            | inl slotInWindow =>
+                cases Nat.lt_or_ge slotPosition (position + 1) with
+                | inl slotBelowSucc =>
+                    have slotEqualsWindow : slotPosition = position :=
+                      Nat.le_antisymm (Nat.le_of_lt_succ slotBelowSucc) windowLeSlot
+                    refine Or.inr (Or.inl
+                      ⟨congrArg ArcEndToken.openSlot slotEqualsWindow, ?_⟩)
+                    show natListGetAt (natListInsertAt state.openWires position
+                        [state.nextFresh, state.nextFresh + 1]) slotPosition = state.nextFresh
+                    rw [slotEqualsWindow]; exact legReadLeft
+                | inr succLeSlot =>
+                    have slotEqualsSucc : slotPosition = position + 1 :=
+                      Nat.le_antisymm (Nat.le_of_lt_succ slotInWindow) succLeSlot
+                    refine Or.inr (Or.inr
+                      ⟨congrArg ArcEndToken.openSlot slotEqualsSucc, ?_⟩)
+                    show natListGetAt (natListInsertAt state.openWires position
+                        [state.nextFresh, state.nextFresh + 1]) slotPosition = state.nextFresh + 1
+                    rw [slotEqualsSucc]; exact legReadRight
+            | inr windowPastSlot =>
+                refine Or.inl ⟨Or.inr windowPastSlot, ?_⟩
+                obtain ⟨gapAmount, gapSpec⟩ := Nat.le.dest windowPastSlot
+                have slotSpec : slotPosition = position + gapAmount + 2 :=
+                  gapSpec.symm.trans (Nat.add_right_comm position 2 gapAmount)
+                have pastRead : natListGetAt (natListInsertAt state.openWires position
+                    [state.nextFresh, state.nextFresh + 1]) (position + gapAmount + 2)
+                    = natListGetAt state.openWires (position + gapAmount) :=
+                  natListGetAt_natListInsertAt_pastBlock state.openWires position
+                    [state.nextFresh, state.nextFresh + 1] gapAmount cupInRange
+                have slotBelowNewLength : slotPosition < (natListInsertAt state.openWires
+                    position [state.nextFresh, state.nextFresh + 1]).length := tokenValid
+                rw [natListInsertAt_length state.openWires position
+                    [state.nextFresh, state.nextFresh + 1], slotSpec] at slotBelowNewLength
+                show natListGetAt (natListInsertAt state.openWires position
+                    [state.nextFresh, state.nextFresh + 1]) slotPosition < state.nextFresh
+                rw [slotSpec, pastRead]
+                exact wireReadBelowFresh (position + gapAmount)
+                  (Nat.lt_of_add_lt_add_right slotBelowNewLength)
+  have refuteOldLeg : ∀ oldNode legNode : Nat, oldNode < state.nextFresh →
+      state.nextFresh ≤ legNode →
+      isSameComponent (stepCup state position).links oldNode legNode = true → False := by
+    intro oldNode legNode oldBelow legAtLeast sameHolds
+    rw [stringCupLegSeparation state position fresh forest oldNode legNode oldBelow legAtLeast] at sameHolds
+    exact Bool.noConfusion sameHolds
+  have refuteLegOld : ∀ legNode oldNode : Nat, state.nextFresh ≤ legNode →
+      oldNode < state.nextFresh →
+      isSameComponent (stepCup state position).links legNode oldNode = true → False := by
+    intro legNode oldNode legAtLeast oldBelow sameHolds
+    have flipped := isSameComponent_flip (stepCup state position).links legNode oldNode sameHolds
+    rw [stringCupLegSeparation state position fresh forest oldNode legNode oldBelow legAtLeast] at flipped
+    exact Bool.noConfusion flipped
+  have legNodeAtLeast : ∀ token : ArcEndToken,
+      (token = ArcEndToken.openSlot position
+          ∧ stringEndTokenNode (stepCup state position) token = state.nextFresh)
+        ∨ (token = ArcEndToken.openSlot (position + 1)
+            ∧ stringEndTokenNode (stepCup state position) token = state.nextFresh + 1) →
+      state.nextFresh ≤ stringEndTokenNode (stepCup state position) token := by
+    intro token legFact
+    cases legFact with
+    | inl leftLeg => exact Nat.le_of_eq leftLeg.2.symm
+    | inr rightLeg =>
+        exact Nat.le_trans (Nat.le_succ state.nextFresh) (Nat.le_of_eq rightLeg.2.symm)
+  cases classify tokenOne validOne with
+  | inl oldOne =>
+      obtain ⟨zoneOne, nodeOneBelow⟩ := oldOne
+      cases classify tokenTwo validTwo with
+      | inl oldTwo =>
+          obtain ⟨zoneTwo, nodeTwoBelow⟩ := oldTwo
+          cases classify tokenThree validThree with
+          | inl oldThree =>
+              obtain ⟨zoneThree, nodeThreeBelow⟩ := oldThree
+              have backmapNodeOne := stringCupEndTokenBackmap_node state position cupInRange tokenOne zoneOne
+              have backmapNodeTwo := stringCupEndTokenBackmap_node state position cupInRange tokenTwo zoneTwo
+              have backmapNodeThree :=
+                stringCupEndTokenBackmap_node state position cupInRange tokenThree zoneThree
+              have oldBelowOne : stringEndTokenNode state (cupEndTokenBackmap position tokenOne)
+                  < state.nextFresh := backmapNodeOne ▸ nodeOneBelow
+              have oldBelowTwo : stringEndTokenNode state (cupEndTokenBackmap position tokenTwo)
+                  < state.nextFresh := backmapNodeTwo ▸ nodeTwoBelow
+              have oldBelowThree : stringEndTokenNode state (cupEndTokenBackmap position tokenThree)
+                  < state.nextFresh := backmapNodeThree ▸ nodeThreeBelow
+              have oldSameOneTwo : isSameComponent state.links
+                  (stringEndTokenNode state (cupEndTokenBackmap position tokenOne))
+                  (stringEndTokenNode state (cupEndTokenBackmap position tokenTwo)) = true := by
+                have transported := sameOneTwo
+                rw [backmapNodeOne, backmapNodeTwo, linksCons,
+                  stringIsSameComponent_cons_freshAbove_forest state.nextFresh (state.nextFresh + 1)
+                    state.nextFresh state.links parentsBounded (Nat.le_refl state.nextFresh) forest
+                    (stringEndTokenNode state (cupEndTokenBackmap position tokenOne))
+                    (stringEndTokenNode state (cupEndTokenBackmap position tokenTwo))
+                    oldBelowOne oldBelowTwo] at transported
+                exact transported
+              have oldSameOneThree : isSameComponent state.links
+                  (stringEndTokenNode state (cupEndTokenBackmap position tokenOne))
+                  (stringEndTokenNode state (cupEndTokenBackmap position tokenThree)) = true := by
+                have transported := sameOneThree
+                rw [backmapNodeOne, backmapNodeThree, linksCons,
+                  stringIsSameComponent_cons_freshAbove_forest state.nextFresh (state.nextFresh + 1)
+                    state.nextFresh state.links parentsBounded (Nat.le_refl state.nextFresh) forest
+                    (stringEndTokenNode state (cupEndTokenBackmap position tokenOne))
+                    (stringEndTokenNode state (cupEndTokenBackmap position tokenThree))
+                    oldBelowOne oldBelowThree] at transported
+                exact transported
+              exact oldCensus (cupEndTokenBackmap position tokenOne)
+                (cupEndTokenBackmap position tokenTwo) (cupEndTokenBackmap position tokenThree)
+                (stringCupEndTokenBackmap_isValid seedBoundary state position tokenOne zoneOne
+                  cupInRange validOne)
+                (stringCupEndTokenBackmap_isValid seedBoundary state position tokenTwo zoneTwo
+                  cupInRange validTwo)
+                (stringCupEndTokenBackmap_isValid seedBoundary state position tokenThree zoneThree
+                  cupInRange validThree)
+                (fun backmapsEqual => oneNeTwo (cupEndTokenBackmap_injective position tokenOne
+                  tokenTwo zoneOne zoneTwo backmapsEqual))
+                (fun backmapsEqual => oneNeThree (cupEndTokenBackmap_injective position tokenOne
+                  tokenThree zoneOne zoneThree backmapsEqual))
+                (fun backmapsEqual => twoNeThree (cupEndTokenBackmap_injective position tokenTwo
+                  tokenThree zoneTwo zoneThree backmapsEqual))
+                oldSameOneTwo oldSameOneThree
+          | inr legThree =>
+              exact refuteOldLeg (stringEndTokenNode (stepCup state position) tokenOne)
+                (stringEndTokenNode (stepCup state position) tokenThree) nodeOneBelow
+                (legNodeAtLeast tokenThree legThree) sameOneThree
+      | inr legTwo =>
+          exact refuteOldLeg (stringEndTokenNode (stepCup state position) tokenOne)
+            (stringEndTokenNode (stepCup state position) tokenTwo) nodeOneBelow
+            (legNodeAtLeast tokenTwo legTwo) sameOneTwo
+  | inr legOne =>
+      cases classify tokenTwo validTwo with
+      | inl oldTwo =>
+          exact refuteLegOld (stringEndTokenNode (stepCup state position) tokenOne)
+            (stringEndTokenNode (stepCup state position) tokenTwo)
+            (legNodeAtLeast tokenOne legOne) oldTwo.2 sameOneTwo
+      | inr legTwo =>
+          cases classify tokenThree validThree with
+          | inl oldThree =>
+              exact refuteLegOld (stringEndTokenNode (stepCup state position) tokenOne)
+                (stringEndTokenNode (stepCup state position) tokenThree)
+                (legNodeAtLeast tokenOne legOne) oldThree.2 sameOneThree
+          | inr legThree =>
+              cases legOne with
+              | inl oneIsLeft =>
+                  cases legTwo with
+                  | inl twoIsLeft => exact oneNeTwo (oneIsLeft.1.trans twoIsLeft.1.symm)
+                  | inr twoIsRight =>
+                      cases legThree with
+                      | inl threeIsLeft =>
+                          exact oneNeThree (oneIsLeft.1.trans threeIsLeft.1.symm)
+                      | inr threeIsRight =>
+                          exact twoNeThree (twoIsRight.1.trans threeIsRight.1.symm)
+              | inr oneIsRight =>
+                  cases legTwo with
+                  | inl twoIsLeft =>
+                      cases legThree with
+                      | inl threeIsLeft =>
+                          exact twoNeThree (twoIsLeft.1.trans threeIsLeft.1.symm)
+                      | inr threeIsRight =>
+                          exact oneNeThree (oneIsRight.1.trans threeIsRight.1.symm)
+                  | inr twoIsRight => exact oneNeTwo (oneIsRight.1.trans twoIsRight.1.symm)
 
 /-! ## Honesty marker -/
 
