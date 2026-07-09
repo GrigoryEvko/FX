@@ -8,6 +8,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
 import FX1Poly.Tier0.Mode.TierBThinDecision
 import FX1Poly.Tier0.Mode.ExhibitedConvergentDecision
+import FX1Poly.Tier0.Mode.SemiThueReduction
 
 /-! # DecidableCeilingLedger — the honest boundary of the 2-cell word problem (CEIL rung map)
 
@@ -55,11 +56,18 @@ per-presentation, not universal.
 **Rung 3 — ARBITRARY finite presentations, UNDECIDABLE.**  No generic procedure exists
 above rung 2: already 1-cell convertibility under the 2-cells of a ONE-OBJECT
 2-polygraph is the word problem of the finitely presented monoid it presents, which is
-undecidable (Markov 1947, Post 1947; the polygraphic framing is Burroni's).  The wall
-is CITED here, not mechanized — the reduction into the kernel's polygraph substrate is
-tracked as its own arc, and the marker below stays `false` until it lands.  This is the
-same undecidability-frontier discipline the term axis uses: state the wall as a marker
-with the citation, never as an unproved theorem.
+undecidable (Markov 1947, Post 1947; the polygraphic framing is Burroni's).  The Burroni
+BRIDGE is now MECHANIZED (`SemiThueReduction`, `semiThue_iff_encodedTwoCell`): the Thue
+congruence of an arbitrary semi-Thue system is exactly the 1-cell convertibility of the
+one-object 2-polygraph it encodes, over the shipped `ModalityPath` computad carrier
+(`fxMode_hasSemiThueReductionMechanized = true`, pinned below).  What stays CITED, not
+mechanized, is the EXISTENCE of a finite semi-Thue system whose word problem is
+undecidable (Post/Markov) — that needs a computability substrate (halting ⪯ string
+rewriting, as the Coq undecidability library does; Forster–Heiter–Smolka, ITP 2018),
+which is out of scope; so the FULL reduction to a known-undecidable instance
+(`hasUndecidabilityReductionMechanized` / `fxMode_hasArbitraryTwoCellUndecidabilityReduction`)
+stays `false`.  This is the same undecidability-frontier discipline the term axis uses:
+mechanize the bridge, state the undecidable-instance wall as a marker with the citation.
 
 Lives in `Tier0/Mode/` (not `Polygraph/`) although its declarations stay in the
 `FX1Poly.Polygraph` namespace: the rung-1 and ceiling pins reference the Tier0 mode-floor
@@ -109,7 +117,13 @@ structure DecidableCeilingLedger where
   /-- Tier C (Squier / Knuth-Bendix): exhibited-convergent decision — a hand-exhibited convergent
   presentation decides its word problem, exhibited at the involution presentation `s.s -> id`. -/
   hasExhibitedConvergentDecision : Bool
-  /-- Rung 3: the undecidability reduction, mechanized (the wall is cited either way). -/
+  /-- Rung 3: the Burroni BRIDGE is mechanized — the semi-Thue word problem IS one-object 2-polygraph
+  1-cell convertibility (`semiThue_iff_encodedTwoCell`).  This is the reduction that ties the classical
+  Post/Markov citation to the kernel's polygraph carrier; the undecidable INSTANCE stays cited. -/
+  hasSemiThueBridgeMechanized : Bool
+  /-- Rung 3: the FULL undecidability reduction (embedding a KNOWN-undecidable instance) mechanized.
+  Stays `false` — that needs a computability substrate (halting ⪯ string rewriting), out of scope; the
+  bridge above is what is mechanized. -/
   hasUndecidabilityReductionMechanized : Bool
 
 /-- ★ The current ledger value — the honest boundary as of the SATURATED matching-decision
@@ -128,6 +142,7 @@ def fxDecidableCeiling : DecidableCeilingLedger where
   hasSaturatedDecision := true
   hasTierBThinDecision := true
   hasExhibitedConvergentDecision := true
+  hasSemiThueBridgeMechanized := true
   hasUndecidabilityReductionMechanized := false
 
 /-! ## The pins — ledger fields match the source markers definitionally -/
@@ -183,7 +198,15 @@ to Tier B by `equationalTheory_iff_involutionOneCellConv`). -/
 theorem fxDecidableCeiling_exhibitedConvergent_matchesMarker :
     fxDecidableCeiling.hasExhibitedConvergentDecision = fxMode_hasExhibitedConvergentDecision := rfl
 
-/-- Rung 3 pin: the mechanization status matches the wall marker above. -/
+/-- Rung 3 pin: the mechanized Burroni bridge matches the reduction marker (backed by
+`semiThue_iff_encodedTwoCell` on the shipped `ModalityPath` carrier).  Flip the marker and this `rfl`
+breaks — the ledger cannot claim the bridge without the mechanized reduction. -/
+theorem fxDecidableCeiling_semiThueBridge_matchesMarker :
+    fxDecidableCeiling.hasSemiThueBridgeMechanized
+      = fxMode_hasSemiThueReductionMechanized := rfl
+
+/-- Rung 3 pin: the FULL undecidable-instance reduction status matches the wall marker above (both
+`false` — the bridge is mechanized, the known-undecidable instance stays cited). -/
 theorem fxDecidableCeiling_undecidabilityWall_matchesMarker :
     fxDecidableCeiling.hasUndecidabilityReductionMechanized
       = fxMode_hasArbitraryTwoCellUndecidabilityReduction := rfl
@@ -210,8 +233,22 @@ FLAG A — `FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false` (`Mode.lea
   WALL: rung-3 undecidability of ARBITRARY finite presentations.  A one-object f.p.
   2-polygraph encodes a f.p. monoid; its 1-cell convertibility is the monoid word problem,
   undecidable (Markov 1947 / Post 1947; Burroni polygraphic framing).  PERMANENT — no
-  procedure can be generic past rung 2.  Mechanization status of the reduction:
-  `fxMode_hasArbitraryTwoCellUndecidabilityReduction = false` (wall CITED, not mechanized).
+  procedure can be generic past rung 2.  Mechanization status:
+  * BRIDGE MECHANIZED — `fxMode_hasSemiThueReductionMechanized = true`
+    (`SemiThueReduction`, term `semiThue_iff_encodedTwoCell`): the Thue congruence of an
+    arbitrary semi-Thue system IS the 1-cell convertibility of the one-object 2-polygraph it
+    encodes, over the shipped `ModalityPath` computad carrier (`encodeWord` monoid-iso +
+    left/right whisker ⟷ two-sided sandwich); non-vacuous at the involution 1-rule system
+    (`involutionThue_positive` decides `s.s ~ id` TRUE, `involutionThue_separation` decides
+    `s ~ id` FALSE via Z/2 parity).  A monoid presentation IS a one-0-cell 2-polygraph
+    (Burroni, Theoret. Comput. Sci. 115 (1993)); this is that identification, inhabited as an
+    `encodedModeSignature` value.
+  * INSTANCE STILL CITED — `fxMode_hasArbitraryTwoCellUndecidabilityReduction = false`: the
+    EXISTENCE of a finite semi-Thue system with undecidable word problem (Post/Markov) is not
+    mechanized; that needs a computability substrate (halting ⪯ string rewriting, the Coq
+    undecidability library's `TM ⪯ SR`, Forster–Heiter–Smolka ITP 2018, which stays at the
+    string level and does not build the polygraph bridge).  So the wall rests on a
+    machine-checked REDUCTION plus a cited undecidable instance, not on an analogy.
 
 FLAG B — `FX1Poly.Tier0.fxMode_hasModeRelativeConvDecision = false`
   (`ModeRelativeMetatheory.lean`).  WALL: a RELATION MISMATCH, NOT undecidability and NOT an

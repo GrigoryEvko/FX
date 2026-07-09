@@ -122,7 +122,17 @@ def fxMode_hasStrictTwoCategoryCore : Bool := false
 /-- **Honesty marker.**  DECIDABLE 2-CELL EQUALITY via a convergent 3-polygraph (Gratzer's coherence hurdle)
 is `mode-3`, deferred.  `= false`.  (The FREE fragment IS decided — see
 `fxMode_hasDecidableFreeTwoCellEquality` below; this marker demands the mode theory WITH its
-presentation relations, ungated.) -/
+presentation relations, ungated.)
+
+WALL (rung-3, PERMANENT): 1-cell convertibility under the 2-cells of an ARBITRARY finite one-object
+2-polygraph is the word problem of the finitely presented monoid it presents, which is undecidable
+(Markov 1947 / Post 1947; Burroni's polygraphic framing).  This is now backed by a MACHINE-CHECKED
+reduction, not prose: `SemiThueReduction.semiThue_iff_encodedTwoCell` proves the Thue congruence of an
+arbitrary semi-Thue system IS the encoded one-object 2-polygraph's 1-cell convertibility over the shipped
+`ModalityPath` carrier (`fxMode_hasSemiThueReductionMechanized = true`), so no general procedure can exist
+past rung 2.  The undecidable INSTANCE itself stays CITED (mechanizing it needs a computability substrate,
+halting ⪯ string rewriting; `DecidableCeilingLedger.fxMode_hasArbitraryTwoCellUndecidabilityReduction`
+stays `false`).  This marker stays `false` — the general decision genuinely does not exist. -/
 def fxMode_hasDecidableTwoCellEquality : Bool := false
 
 /-- **ESTABLISHED (FREE-7 capstone).**  The FREE 2-cell word problem is decided GENERICALLY and
