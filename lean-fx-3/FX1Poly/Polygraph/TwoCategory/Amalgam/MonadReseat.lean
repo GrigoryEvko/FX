@@ -741,6 +741,201 @@ theorem reseatCell_preservesConv {sourceMode targetMode : monadComputad.toModeSi
   | symm _ ih => exact TwoCellConvFull.symm ih
   | trans _ _ ih1 ih2 => exact TwoCellConvFull.trans ih1 ih2
 
+/-! ## P2 — the reconstructed monad law cells + the reconstructed law relation -/
+
+/-- The reconstructed monad unit `eta` as a free 2-cell `id ⇒ t` over `monadComputad.toModeSignature`. -/
+def reconEta :
+    RawTwoCellExpr monadComputad.toModeSignature
+      (ModalityPath.nil (graph := monadComputad.toModeGraph) (⟨0, by decide⟩ : Fin 1))
+      monadComputadReconstructedT :=
+  RawTwoCellExpr.gen monadComputadReconstructsUnit
+
+/-- The reconstructed monad multiplication `mu` as a free 2-cell `t·t ⇒ t`. -/
+def reconMu :
+    RawTwoCellExpr monadComputad.toModeSignature
+      monadComputadReconstructedTT monadComputadReconstructedT :=
+  RawTwoCellExpr.gen monadComputadReconstructsMult
+
+/-- The reconstructed identity 2-cell on `t` (the RHS of both unit laws). -/
+def reconIdTCell :
+    RawTwoCellExpr monadComputad.toModeSignature
+      monadComputadReconstructedT monadComputadReconstructedT :=
+  RawTwoCellExpr.id (signature := monadComputad.toModeSignature) monadComputadReconstructedT
+
+/-- The reconstructed left-unit composite `mu . (eta |> t)` — a 2-cell `t ⇒ t`. -/
+def reconLeftUnitCell :
+    RawTwoCellExpr monadComputad.toModeSignature
+      monadComputadReconstructedT monadComputadReconstructedT :=
+  RawTwoCellExpr.vcomp
+    (RawTwoCellExpr.whiskerRight (signature := monadComputad.toModeSignature)
+      monadComputadReconstructedT reconEta)
+    reconMu
+
+/-- The reconstructed right-unit composite `mu . (t <| eta)` — a 2-cell `t ⇒ t`. -/
+def reconRightUnitCell :
+    RawTwoCellExpr monadComputad.toModeSignature
+      monadComputadReconstructedT monadComputadReconstructedT :=
+  RawTwoCellExpr.vcomp
+    (RawTwoCellExpr.whiskerLeft (signature := monadComputad.toModeSignature)
+      monadComputadReconstructedT reconEta)
+    reconMu
+
+/-- The reconstructed left-associativity composite `mu . (mu |> t)` — a 2-cell `t·t·t ⇒ t`. -/
+def reconAssocLeftCell :
+    RawTwoCellExpr monadComputad.toModeSignature
+      (composePath monadComputadReconstructedTT monadComputadReconstructedT)
+      monadComputadReconstructedT :=
+  RawTwoCellExpr.vcomp
+    (RawTwoCellExpr.whiskerRight (signature := monadComputad.toModeSignature)
+      monadComputadReconstructedT reconMu)
+    reconMu
+
+/-- The reconstructed right-associativity composite `mu . (t <| mu)` — a 2-cell `t·t·t ⇒ t` (source
+`t·(t·t)` DEFINITIONALLY `(t·t)·t`). -/
+def reconAssocRightCell :
+    RawTwoCellExpr monadComputad.toModeSignature
+      (composePath monadComputadReconstructedTT monadComputadReconstructedT)
+      monadComputadReconstructedT :=
+  RawTwoCellExpr.vcomp
+    (RawTwoCellExpr.whiskerLeft (signature := monadComputad.toModeSignature)
+      monadComputadReconstructedT reconMu)
+    reconMu
+
+/-- ★ **The reconstructed walking-monad law relation** — the three monad laws stated over the RECONSTRUCTED
+signature `monadComputad.toModeSignature` as a `CellRel`, the reconstructed mirror of the bespoke `MonadLawRel`.
+The base relation for `reseatConvForward`. -/
+inductive MonadLawRelReconstructed :
+    {sourceMode targetMode : monadComputad.toModeSignature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath monadComputad.toModeSignature.graph sourceMode targetMode} →
+    RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath →
+    RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath → Prop where
+  /-- The reconstructed left-unit law `mu . (eta |> t) ~ id_t`. -/
+  | leftUnit : MonadLawRelReconstructed reconLeftUnitCell reconIdTCell
+  /-- The reconstructed right-unit law `mu . (t <| eta) ~ id_t`. -/
+  | rightUnit : MonadLawRelReconstructed reconRightUnitCell reconIdTCell
+  /-- The reconstructed associativity law `mu . (mu |> t) ~ mu . (t <| mu)`. -/
+  | assoc : MonadLawRelReconstructed reconAssocLeftCell reconAssocRightCell
+
+/-! ## P2 — the propositional law-cell equalities `reseatCell reconLawCell = bespokeLawCell`
+
+The r3 "second obstruction": `reseatCell` of a reconstructed law cell is only PROPOSITIONALLY the bespoke law
+cell.  The whisker `castBoundary`s collapse definitionally (every path is a `t`-power, so `reseatPath_composePath`
+on them is `rfl`), and `reseatPath reconT` reduces to `monadT` — so `reseatCell reconLawCell` reduces DEFINITIONALLY
+to the bespoke shape with `reseatGen`-image generators, leaving exactly the two generator inversions
+(`reseatGen_unit_isEta` / `reseatGen_mult_isMu`) as the residual rewrites. -/
+
+/-- `reseatCell` of the reconstructed unit IS the bespoke unit 2-cell (the `eta` inversion). -/
+theorem reseatCell_reconEta : reseatCell reconEta = monadUnitTwoCell :=
+  congrArg RawTwoCellExpr.gen reseatGen_unit_isEta
+
+/-- `reseatCell` of the reconstructed multiplication IS the bespoke multiplication 2-cell (the `mu` inversion). -/
+theorem reseatCell_reconMu : reseatCell reconMu = monadMulTwoCell :=
+  congrArg RawTwoCellExpr.gen reseatGen_mult_isMu
+
+/-- `reseatCell` of the reconstructed identity 2-cell IS the bespoke identity 2-cell (`rfl`: `reseatPath reconT`
+reduces to `monadT`). -/
+theorem reseatCell_reconIdT : reseatCell reconIdTCell = monadIdTCell := rfl
+
+/-! The law-cell bridge is taken at the CONV level (not as a raw `reseatCell reconLawCell = bespokeLawCell`
+equality — the dependent generator rewrite through `composePath nil`-collapsed whisker boundaries is brittle).
+Each reconstructed law composite reseats DEFINITIONALLY to the bespoke shape carrying `reseatCell`-image generators
+(the `castBoundary`s collapse — `reseatPath_composePath` on `t`-powers is `rfl` — and `reseatPath reconT` reduces
+to `monadT`); the two generator inversions `reseatCell_reconEta` / `reseatCell_reconMu` are lifted to
+`TwoCellConvFull` by `convFullOfCellEq`, then whiskered / vcomp'd through `SaturatedConvOver`'s own congruences to
+reach the bespoke law composite, and chained with the bespoke `MonadLawRel` row. -/
+
+/-- The reconstructed left-unit law holds in the bespoke saturated conv, at the `reseatCell`-image boundary. -/
+theorem reconLeftUnitConv :
+    SaturatedConvOver monadModeSignature MonadLawRel (reseatCell reconLeftUnitCell) (reseatCell reconIdTCell) :=
+  SaturatedConvOver.trans
+    (SaturatedConvOver.trans
+      (SaturatedConvOver.vcompCongrLeft (reseatCell reconMu)
+        (SaturatedConvOver.whiskerRightCongr monadT
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconEta))))
+      (SaturatedConvOver.vcompCongrRight (RawTwoCellExpr.whiskerRight monadT monadUnitTwoCell)
+        (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconMu))))
+    (SaturatedConvOver.ofRelation MonadLawRel.leftUnit)
+
+/-- The reconstructed right-unit law holds in the bespoke saturated conv. -/
+theorem reconRightUnitConv :
+    SaturatedConvOver monadModeSignature MonadLawRel (reseatCell reconRightUnitCell) (reseatCell reconIdTCell) :=
+  SaturatedConvOver.trans
+    (SaturatedConvOver.trans
+      (SaturatedConvOver.vcompCongrLeft (reseatCell reconMu)
+        (SaturatedConvOver.whiskerLeftCongr monadT
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconEta))))
+      (SaturatedConvOver.vcompCongrRight (RawTwoCellExpr.whiskerLeft monadT monadUnitTwoCell)
+        (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconMu))))
+    (SaturatedConvOver.ofRelation MonadLawRel.rightUnit)
+
+/-- The reconstructed associativity law holds in the bespoke saturated conv. -/
+theorem reconAssocConv :
+    SaturatedConvOver monadModeSignature MonadLawRel
+      (reseatCell reconAssocLeftCell) (reseatCell reconAssocRightCell) :=
+  SaturatedConvOver.trans
+    (SaturatedConvOver.trans
+      (SaturatedConvOver.trans
+        (SaturatedConvOver.vcompCongrLeft (reseatCell reconMu)
+          (SaturatedConvOver.whiskerRightCongr monadT
+            (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconMu))))
+        (SaturatedConvOver.vcompCongrRight (RawTwoCellExpr.whiskerRight monadT monadMulTwoCell)
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconMu))))
+      (SaturatedConvOver.ofRelation MonadLawRel.assoc))
+    (SaturatedConvOver.symm
+      (SaturatedConvOver.trans
+        (SaturatedConvOver.vcompCongrLeft (reseatCell reconMu)
+          (SaturatedConvOver.whiskerLeftCongr monadT
+            (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconMu))))
+        (SaturatedConvOver.vcompCongrRight (RawTwoCellExpr.whiskerLeft monadT monadMulTwoCell)
+          (SaturatedConvOver.ofFull (ReseatCastKit.convFullOfCellEq reseatCell_reconMu)))))
+
+/-! ## P2 — the FORWARD conv transport + the isFalse-leg refutation -/
+
+/-- The absorbing congruence for the reseat forward transport — the reconstructed mirror of `mapCellAlongCongruence`:
+`ofFull` via the P1a functoriality `reseatCell_preservesConv`; `ofRelation` via the three law-cell equalities; the
+two `vcomp` congruences cast-free; the two `whisker` congruences through `SaturatedConvOver.castBoundaryCongr`
+(since `reseatCell` of a whiskering carries the `reseatPath_composePath` cast); `refl`/`symm`/`trans` structural. -/
+def reseatCongruence :
+    IsSaturatedCongruence monadComputad.toModeSignature MonadLawRelReconstructed
+      (fun cellA cellB =>
+        SaturatedConvOver monadModeSignature MonadLawRel (reseatCell cellA) (reseatCell cellB)) where
+  ofFull full := SaturatedConvOver.ofFull (reseatCell_preservesConv full)
+  ofRelation row :=
+    match row with
+    | MonadLawRelReconstructed.leftUnit => reconLeftUnitConv
+    | MonadLawRelReconstructed.rightUnit => reconRightUnitConv
+    | MonadLawRelReconstructed.assoc => reconAssocConv
+  vcompCongrLeft {_ _ _ _ _ _ _ cellBeta} ih := SaturatedConvOver.vcompCongrLeft (reseatCell cellBeta) ih
+  vcompCongrRight {_ _ _ _ _ cellAlpha _ _} ih := SaturatedConvOver.vcompCongrRight (reseatCell cellAlpha) ih
+  whiskerLeftCongr {_ _ _ oneCell _ _ _ _} ih :=
+    SaturatedConvOver.castBoundaryCongr _ _ (SaturatedConvOver.whiskerLeftCongr (reseatPath oneCell) ih)
+  whiskerRightCongr {_ _ _ _ _ oneCell _ _} ih :=
+    SaturatedConvOver.castBoundaryCongr _ _ (SaturatedConvOver.whiskerRightCongr (reseatPath oneCell) ih)
+  refl cell := SaturatedConvOver.refl (reseatCell cell)
+  symm ih := SaturatedConvOver.symm ih
+  trans ihLeft ihRight := SaturatedConvOver.trans ihLeft ihRight
+
+/-- ★★ **The FORWARD reseat conv transport** — a reconstructed saturated convertibility transports along
+`reseatCell` to the bespoke image: `SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed a b
+==> SaturatedConvOver monadModeSignature MonadLawRel (reseatCell a) (reseatCell b)`.  Via the universal property
+`SaturatedConvOver.recInto` with `reseatCongruence`.  The isFalse-leg direction of the reconstructed decider. -/
+theorem reseatConvForward {sourceMode targetMode : monadComputad.toModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath monadComputad.toModeSignature.graph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath}
+    (conv : SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed cellAlpha cellBeta) :
+    SaturatedConvOver monadModeSignature MonadLawRel (reseatCell cellAlpha) (reseatCell cellBeta) :=
+  SaturatedConvOver.recInto reseatCongruence conv
+
+/-- ★ **The reseat's isFalse leg, made literal** — a reconstructed candidate pair whose `reseatCell`-images the
+bespoke walking-monad decider refutes is refuted at the reconstructed signature: any hypothetical reconstructed
+convertibility would transport forward (`reseatConvForward`) into the refuted bespoke convertibility. -/
+theorem monadReconRefutes {sourceMode targetMode : monadComputad.toModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath monadComputad.toModeSignature.graph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath}
+    (refuted : ¬ SaturatedConvOver monadModeSignature MonadLawRel (reseatCell cellAlpha) (reseatCell cellBeta)) :
+    ¬ SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed cellAlpha cellBeta :=
+  fun conv => refuted (reseatConvForward conv)
+
 /-! ## Observability -/
 
 -- The reconstructed `t·t` path has length 2 (two `t`-generators): expect `2`.
@@ -770,23 +965,22 @@ laws — it is a finite generator data-iso (`reseatGen` cases the 2-generator in
 cell functor.  So the reseat is fib-3-DECOUPLED; the residual is cast LABOR, not undecidability.  `= true`. -/
 def fxAmalg_hasForwardReseatFunctor : Bool := true
 
-/-- ★ **Honesty marker (`false`) — the reseat CONV TRANSPORT (hence the reconstructed decider) is the LABOR
-residual.**  Transporting a verdict onto `monadComputad.toModeSignature` needs the FORWARD conv transport
-`SaturatedConvOver monadComputad.toModeSignature baseRel a b ==> SaturatedConvOver monadModeSignature MonadLawRel
-(reseatCell a) (reseatCell b)` (`recInto` into the `reseatCell`-image congruence), whose linchpin is
-`reseatCell` preserving `TwoCellConvFull` — the 12-constructor structural functoriality (the `whiskerLeftComp` /
-`whiskerRightComp` / `whiskerExchange` cases carry `composePath`-associativity `castBoundary` reconciliations).
-The shipped analogue `mapCellAlong_preservesConvUnconditional` (via `mapTwoCellConvFull`) does exactly this for a
-`ComputadMorphismTwo`, but CANNOT be reused: `reseatCell` lands in the BESPOKE `monadModeSignature`, which is not
-a `_.toModeSignature`, so it is not a `mapCellAlong`.  A second obstruction: `reseatGen` produces a boundary cast
-that does not reduce definitionally (the matcher stalls on the dependent motive), so `reseatCell (reconLawCell) =
-bespokeLawCell` is PROPOSITIONAL (read off the generator inversions + a reflexive-`castBoundary` collapse), not
-`rfl` — threading it through the three law rows is further labor.  Both are cast LABOR (all `Eq.rec`, no `HEq`,
-since after `reseatPath` both cells live at one signature), fib-3-DECOUPLED — NOT undecidability.  The isTrue leg
-additionally needs the BACKWARD round-trip `reseatCellInv (reseatCell a) = a`.  Until the functoriality ships,
-`fxAmalg_hasReconstructionDecoderReseat` (`DeciderReseat.lean`) and `fxModeAdmit_hasRenamingDeciderTransport`
-(`ModeAdmit.lean`) stay `false`.  `= false`. -/
-def fxAmalg_hasReseatConvTransport : Bool := false
+/-- ★★ **Honesty marker (`true`, MODE-ADMIT r4) — the FORWARD reseat CONV TRANSPORT SHIPS.**  The forward conv
+transport `SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed a b ==> SaturatedConvOver
+monadModeSignature MonadLawRel (reseatCell a) (reseatCell b)` is now BUILT (`reseatConvForward`, `recInto` into the
+`reseatCell`-image congruence `reseatCongruence`).  Its linchpin is `reseatCell` preserving `TwoCellConvFull` —
+the thirteen-constructor structural functoriality `reseatCell_preservesConv`, the reseat analogue of the shipped
+`mapTwoCellConvFull` ported arm-for-arm (untypable via `mapCellAlong` because `monadModeSignature` is not a
+`_.toModeSignature`, so re-derived here; `TwoCellConvFull` is law-free, so no arm needs a monad coherence — pure
+cast LABOR, as predicted).  The r3 "second obstruction" (`reseatCell reconLawCell` only PROPOSITIONALLY the bespoke
+law cell) is discharged at the CONV level: the three law-cell bridges `reconLeftUnitConv` / `reconRightUnitConv` /
+`reconAssocConv` lift the generator inversions `reseatCell_reconEta` / `reseatCell_reconMu` through
+`SaturatedConvOver`'s own congruences to the bespoke `MonadLawRel` rows.  The `monadReconRefutes` isFalse leg is
+literal.  fib-3-DECOUPLED (no 2-cell equality modulo the 3-cell laws is decided), all `Eq.rec` / no `HEq`.  The
+FULL two-sided decider (`fxAmalg_hasReconstructionDecoderReseat` in `DeciderReseat.lean`,
+`fxModeAdmit_hasRenamingDeciderTransport` in `ModeAdmit.lean`) additionally needs the isTrue leg's BACKWARD
+round-trip `reseatCellInv (reseatCell a) = a` — the remaining walled labor.  `= true`. -/
+def fxAmalg_hasReseatConvTransport : Bool := true
 
 /-- ★ **Honesty marker (`false`) — the WIRED inheritance pipeline (recognise → witness → transport → decide) is
 NOT one term yet.**  MODE-ADMIT r2 ships recognise (`admitByRowAware`) → registered-family retrieval (running the

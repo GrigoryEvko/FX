@@ -72,6 +72,29 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatTwoCellConv
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_preservesConv
 
+-- P2: the reconstructed law cells + the reconstructed law relation
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconEta
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconMu
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconIdTCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconLeftUnitCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconRightUnitCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconAssocLeftCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconAssocRightCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.MonadLawRelReconstructed
+
+-- P2: the generator inversions + the three conv-level law bridges
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_reconEta
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_reconMu
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCell_reconIdT
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconLeftUnitConv
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconRightUnitConv
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconAssocConv
+
+-- P2: the forward conv transport + the isFalse-leg refutation
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatCongruence
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatConvForward
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadReconRefutes
+
 -- The honesty markers
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasForwardReseatFunctor
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasReseatConvTransport
