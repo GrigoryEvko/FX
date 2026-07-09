@@ -154,6 +154,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.SaturatedOver
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.SaturatedComponentDecider
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.SaturatedDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.MapCell
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchSaturated
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
