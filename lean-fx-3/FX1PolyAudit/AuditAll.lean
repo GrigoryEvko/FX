@@ -890,6 +890,7 @@ import FX1PolyAudit.Typed.Fib.ModedLockContext
 import FX1PolyAudit.Typed.Fib.ModedLockFreePredicate
 import FX1PolyAudit.Typed.Fib.FibredDisplayPiAdjunction
 import FX1PolyAudit.Typed.Fib.KernelBridgeModeTheory
+import FX1PolyAudit.Typed.Fib.KernelBridgeAccessibility
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
