@@ -637,18 +637,23 @@ machinery DOES handle two-sided contexts per-instance whenever the seed-local tw
 (uniform-over-all-suffixes) congruence is the separate `fxFrob_hasSpiderSuffixCongruence` residual.  `= true`. -/
 def fxFrob_hasTwoSidedContextWitness : Bool := true
 
-/-- **Honesty marker — the UNIFORM two-sided SUFFIX congruence is the standing residual (r6, walled).**  A concrete
-two-sided context is decided per-instance (`fxFrob_hasTwoSidedContextWitness`); what is NOT shipped is the UNIFORM
-congruence closure `SpiderConvTable n a b → SpiderConvTable n (a ++ suffix) (b ++ suffix)` for ALL suffixes.  That
-needs: view-equal inputs to a `stepWiring` fold give view-equal outputs (forward view-functoriality).  This is NOT a
-second application of the r4 keystone `processBrauer_forgetView_eq_ofCanonicalViewParts` — that keystone fixes ONE
-mid-state and varies the WORD (`atomsAlpha` vs `atomsBeta`), whereas the suffix leg fixes ONE word (`suffix`) and
-varies the MID-STATE (`processBrauer P sideA` vs `processBrauer P sideB`); the transposed quantifier shape structurally
-blocks reuse.  It is a genuinely new brick: generalize the cap/cup per-atom view congruence
-(`matchingViewAgrees_stepCap` / `matchingViewAgrees_stepCup`, `MatchingViewStability.lean`, proved for the cap/cup
-specializations only) to a general `stepWiringArcs` fold, then a `processBrauer` fold induction.  Real, tractable, out
-of r5 scope.  `= false`. -/
-def fxFrob_hasSpiderSuffixCongruence : Bool := false
+/-- ★ **Honesty marker — the UNIFORM two-sided SUFFIX congruence is SHIPPED (r6, flag flipped `false → true`).**  A
+concrete two-sided context was decided per-instance in r5 (`fxFrob_hasTwoSidedContextWitness`); the UNIFORM congruence
+`SpiderConv n a b → (in-range suffix) → SpiderConv n (a ++ suffix) (b ++ suffix)` is now shipped in
+`Frobenius/SpiderSuffixCongruence.lean` (`spiderConv_suffixCongruence`, and the table-level
+`spiderConvTable_suffixCongruence`).  The one missing ingredient this marker named — the FORWARD `stepWiring`
+view-functoriality (view-equal inputs give view-equal outputs) — was built from scratch: NOT the r4 keystone
+`processBrauer_forgetView_eq_ofCanonicalViewParts` (which fixes ONE mid-state and varies the WORD under a single
+rename; the suffix leg fixes ONE word and varies the MID-STATE under two renames — transposed, no reuse), and NOT a
+global `sigma`-relabeling (the two states agree only on the boundary VIEW).  Instead a `StepNodeCorr` correspondence
+invariant is carried through the whole generic `stepWiringArcs` fold (`stepWiringArcs_viewInvariant`), from the
+fresh-separation base (`stepNodeCorr_baseSameComp`) and the four-zone post-step classifier
+(`stepWiring_boundaryRead_stepNodeCorr`), assembled into `stepWiring_viewCongruence` and folded over an in-range
+suffix (`processBrauer_viewCongruence`).  The loops-free reconstruction `spiderConv_stateViewEq` supplies the two seed
+states' view (carrying the special row `μδ = 1`, unequal loops), and the empty-prefix `whisker` re-packages.  Uniform
+over ALL in-range suffixes — no per-suffix semantic gate (the `BrauerWordInRange` datum is the same gate-free
+bookkeeping the table's own constructors carry).  See `fxFrob_hasSpiderSuffixCongruenceShipped`.  `= true`. -/
+def fxFrob_hasSpiderSuffixCongruence : Bool := true
 
 /-- ★ **Honesty marker — the BOUNDARY-CHANGING (nonzero left-offset) leg is SHIPPED (r6, flag flipped
 `false → true`).**  The FROB-3 pad machinery (`SpiderPadCongruence`, `fxFrob_hasSpiderPadCongruence`) lifted only the
