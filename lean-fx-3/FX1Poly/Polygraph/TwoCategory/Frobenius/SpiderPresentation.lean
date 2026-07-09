@@ -571,10 +571,17 @@ CellRel` + `SaturatedConvOver` instance (mirroring `Amalgam/SaturatedOver.lean`'
 r2, exactly as Brauer shipped value-level first.  `= false`. -/
 def fxFrob_hasSymbolicSaturatedConvOver : Bool := false
 
-/-- **Honesty marker — COMPLETENESS (equal spider diagram ⇒ convertible) is the classical straightening NF, not yet
-built.**  The Coya–Fong spider theorem (two morphisms are equal iff they induce the same corelation) is the
-reconstruction target; the Brauer/TL-style straightening algorithm for the spider is settled mathematics, real work,
-not shipped.  `= false`. -/
-def fxFrob_hasSpiderCompleteness : Bool := false
+/-- ★ **Honesty marker — COMPLETENESS (equal boundary partition ⇒ convertible) is SHIPPED, UNCONDITIONALLY (FROB-7).**
+`spiderConv_complete` (`Frobenius/SpiderCompleteness.lean`) proves the Coya–Fong corelation theorem for `SpiderConv`:
+two words inducing the same `extraSpiderDiagramOf` (the extraspecial / corelation invariant) ARE convertible.  It does
+NOT go through the classical Brauer/TL straightening NF, and needs NO `S_n` crossing canonicalization ("comb", the
+open `BRAUER-BREACH`): the invariant is the connectivity PARTITION, not a permutation, and the shipped `whisker`
+constructor is exactly the corelation-quotient generator — so the bridge `matchingSameComponent_eq_blockLabelBeq`
+(equal partition ⟹ equal boundary view, the converse of `extractSpiderDiagram_forget_eq_of_connectivityView`) closes
+it crossing-free.  Packaged as `spiderConv_iff_extraEq` + `instDecidableSpiderConv`
+(`fxFrob_hasSpiderConvDecision`).  The classical connected-spider straightening (Fauser Thm 3.8, `δ^{n-1} ∘ μ^{m-1}`)
+also ships as `canonicalSpiderOf` (`fxFrob_hasConnectedSpiderNF`).  The FULL special (`Cospan(FinSet)`, closed-count)
+completeness stays walled by `fxFrob_hasCospanClosedCountPermanentWall`.  `= true`. -/
+def fxFrob_hasSpiderCompleteness : Bool := true
 
 end FX1Poly.Polygraph
