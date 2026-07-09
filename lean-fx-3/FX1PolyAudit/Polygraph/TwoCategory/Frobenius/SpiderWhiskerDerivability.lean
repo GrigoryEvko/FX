@@ -34,6 +34,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.spiderConvRows_crossingInvolution
 #assert_no_axioms FX1Poly.Polygraph.spiderConvRows_yangBaxter
 
+-- FROB-9 (r9): the third crossing generator (distant commute) completing the Coxeter/Matsumoto triad
+#assert_no_axioms FX1Poly.Polygraph.spiderConvRows_distantCommute
+#assert_no_axioms FX1Poly.Polygraph.spiderConvRows_distantCommute_distinct
+
+-- FROB-9 (r9): the transport-vs-rerun wall analysis — the all-crossing predicate + the detour-unsoundness witness
+#assert_no_axioms FX1Poly.Polygraph.isAllCrossingAtom
+#assert_no_axioms FX1Poly.Polygraph.isAllCrossingWord
+#assert_no_axioms FX1Poly.Polygraph.brauerConvFree7_crossing_relates_noncrossing
+
 -- FROB-8 P3: the crossing-completeness hook + the two whisker-derivability conditionals
 #assert_no_axioms FX1Poly.Polygraph.CrossingCompletenessHook
 #assert_no_axioms FX1Poly.Polygraph.spiderConvRows_complete_ofHook
@@ -50,5 +59,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasWhiskerRowGeneration
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasCrossingFreeStraightening
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasWhiskerDerivabilityConditional
+
+-- FROB-9 (r9): the crossing-straightening residual isolated to the row-level suffix congruence
+#assert_no_axioms FX1Poly.Polygraph.fxFrob_hasCrossingStraighteningSuffixResidual
 
 end FX1PolyAudit

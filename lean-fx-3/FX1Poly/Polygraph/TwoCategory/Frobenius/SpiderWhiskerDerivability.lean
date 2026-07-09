@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.Frobenius.SpiderCompleteness
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescUntwist
 
 /-! # WP-FROB r8 (FROB-8) — whisker derivability: the ROW-GENERATED congruence + the crossing-free straightening
 
@@ -194,6 +195,78 @@ theorem spiderConvRows_yangBaxter :
     SpiderConvRows 3 frobYangBaxter.lhs frobYangBaxter.rhs :=
   SpiderConvRows.ofTable (SpiderConvTable.rowYangBaxter [] (BrauerWordInRange.nil _) (by decide))
 
+/-- ★ **Crossing-row witness (distant commute), r9 — the THIRD crossing generator.**  Two crossings at DISTANT
+positions (`σ₀` at `0`, `σ₂` at `2`, disjoint windows on four strands) commute — `[crossingAt 0, crossingAt 2] =
+[crossingAt 2, crossingAt 0]` — through a single `SpiderConvRows.interchange` at the empty prefix (`descA = descB =
+crossingWiring`, `positionA = 0`, `positionB = 2`; the shifted second index `positionB - inputCount + outputCount =
+2 - 2 + 2 = 2` is definitionally `2`).  This completes the pure-crossing generator TRIAD the symmetric-group word
+problem needs — R2 involution (`spiderConvRows_crossingInvolution`), R3 Yang–Baxter (`spiderConvRows_yangBaxter`),
+and distant commute — all firing by the rows of `SpiderConvRows`, exactly the Coxeter/Matsumoto generating moves
+(Lehrer–Zhang §2, the `S_n` sub-block).  (It IS the crossing hook, not crossing-free.) -/
+theorem spiderConvRows_distantCommute :
+    SpiderConvRows 4 [crossingAt 0, crossingAt 2] [crossingAt 2, crossingAt 0] :=
+  SpiderConvRows.interchange 4 [] 0 2 crossingWiring crossingWiring
+    (by decide) (by decide) (by decide)
+
+/-- The distant-commute generator genuinely relates DISTINCT words. -/
+theorem spiderConvRows_distantCommute_distinct :
+    ([crossingAt 0, crossingAt 2] : List BrauerAtom) ≠ [crossingAt 2, crossingAt 0]
+      ∧ SpiderConvRows 4 [crossingAt 0, crossingAt 2] [crossingAt 2, crossingAt 0] :=
+  ⟨by decide, spiderConvRows_distantCommute⟩
+
+/-! ## P1 (r9) — the transport-vs-rerun analysis: BOTH routes bottleneck on the row-level suffix congruence
+
+The recon proposed TRANSPORTING the BREACH-2 crossing-only straightening
+(`crossingWords_equalPerm_conv : … → BrauerConvFree7 (crossingWord w1) (crossingWord w2)`,
+`Brauer/WiringDescStaircaseCanonical.lean`) into `SpiderConvRows` by a predicate-carrying recursor over the seven
+`BrauerConvFree7` constructors.  r9 finds BOTH candidate routes DEAD at the SAME single residual — the row-level
+SUFFIX congruence — and additionally the transport route dead a SECOND way (a detour that escapes the crossing
+fragment).  The two obstructions are machine-anchored below; the crossing straightening therefore stays walled
+(sharpening r7's `fxFrob_hasSpiderFusionNF = false` / r8's `fxFrob_hasCrossingFreeStraightening = false` from "hard
+induction" to "the single named row-level suffix congruence, shared with BREACH-2's `whiskerRight`").
+
+## Obstruction A — the transport recursor is DETOUR-UNSOUND (the crossing fragment is not `trans`-closed)
+
+A recursor `BrauerConvFree7 a b → isAllCrossingWord a → isAllCrossingWord b → SpiderConvRows K a b` cannot recurse
+through `trans`: its middle word is existentially quantified and NOT constrained crossing-only.  And the crossing
+fragment is genuinely NOT closed under `BrauerConvFree7` intermediates — `brauerConvFree7_crossing_relates_noncrossing`
+exhibits a two-crossing word `BrauerConvFree7`-related to the cup/cap snake word `[cup, cap]` (through the empty word):
+crossing-only LHS, non-crossing RHS.  So at a `trans` node the crossing-only induction hypothesis is unavailable, and
+a blind recursor is stuck (the recon flagged this as the "detour" risk; here it is a concrete counterexample).
+
+## Obstruction B — the rerun of `recCombConv` rides `whiskerRight` = the row-level suffix congruence (the r8 wall)
+
+The clean alternative — re-run the BREACH-2 comb-fold straightening directly inside `SpiderConvRows` — re-derives
+`recCombConv` (`Brauer/WiringDescStaircaseCanonical.lean`), whose essential recursive carry is
+`BrauerConvFree7.whiskerRight (crossingWord (descendingPositions …))`: append a common crossing SUFFIX to both sides
+of the prefix's recursive convertibility.  `SpiderConvRows` has NO row-level suffix congruence — `SpiderConvTable`'s
+rows fire a relation only at the word's TAIL (`prefixAtoms ++ lhs` / `prefixAtoms ++ rhs`), leaving no room for a
+suffix, and the shipped `spiderConv_suffixCongruence` lands in `SpiderConv` via the `whisker` PRIMITIVE (r8's wall:
+row-level suffix closure would need the forward `stepWiring` brick to emit ROW derivations).  So the rerun stalls at
+the identical residual the transport's `whiskerRight` arm needs. -/
+
+/-- A generator atom IS a crossing (its wiring is exactly `crossingWiring`) — the complement of `isCrossingFreeAtom`,
+naming the pure-crossing (`S_n`) fragment the straightening lives in. -/
+def isAllCrossingAtom (atom : BrauerAtom) : Bool :=
+  if atom.wiring = crossingWiring then true else false
+
+/-- A word is ALL-crossing when every atom is a crossing — the pure symmetric-group words the BREACH-2 straightening
+canonicalizes. -/
+def isAllCrossingWord (word : List BrauerAtom) : Bool := word.all isAllCrossingAtom
+
+/-- ★ **Obstruction A, machine-anchored — the crossing fragment is NOT closed under `BrauerConvFree7`.**  The
+all-crossing word `σσ` is `BrauerConvFree7`-related to the cup/cap snake word `[cup, cap]` (through the empty word:
+R2 involution `σσ = 1` then the snake `[cup, cap] = 1` reversed), yet `σσ` is all-crossing and `[cup, cap]` is not.
+So a recursor transporting `BrauerConvFree7` with an all-crossing invariant on the endpoints cannot recurse through
+`trans` (the middle escapes the fragment) — the transport route is detour-UNSOUND, independent of the suffix wall. -/
+theorem brauerConvFree7_crossing_relates_noncrossing :
+    BrauerConvFree7 [crossingAt 0, crossingAt 0] [cupAt 1, capAt 0]
+      ∧ isAllCrossingWord [crossingAt 0, crossingAt 0] = true
+      ∧ isAllCrossingWord [cupAt 1, capAt 0] = false :=
+  ⟨(BrauerConvFree7.ofFree brauerConvFree_crossingInvolution_seed).trans
+      (BrauerConvFree7.ofFree (BrauerConvFree.snake 0).symm),
+    by decide, by decide⟩
+
 /-! ## P3 — the crossing-completeness HOOK + the whisker-derivability CONDITIONAL -/
 
 /-- ★ **The crossing-completeness HOOK** — the explicit interface a fragment-uniform straightening would supply: a
@@ -316,14 +389,36 @@ P2).**  The connected Frobenius words FUSE to their `canonicalSpiderOf` Fauser n
 `spiderConvRows_straighten_assocRhs` (`μ(1⊗μ) → μ(μ⊗1)`, one `rowAssoc`) and `spiderConvRows_straighten_frobLeftLhs`
 (`(μ⊗1)(1⊗δ) → δμ`, one `rowFrobLeft`), each associativity-only, NO commutativity reordering, both crossing-free
 (`straighteningWitnesses_isCrossingFree`).  These re-derive the r7 `spiderFusion_*_toCanonical` fusions WITHOUT the
-whisker primitive.  The pure-crossing rows are present too (`spiderConvRows_crossingInvolution` R2,
-`spiderConvRows_yangBaxter` R3), so a Brauer crossing derivation transports ctor-by-ctor.  BUT the FRAGMENT-UNIFORM
-(hypothesis-free) straightening — every crossing-free word to its readback by the rows — is a hard induction over
-block routing: within one connected block gathering is left-associated (associativity-only), but a MULTI-BLOCK
-partition needs the `S_n` gathering comb to bring non-adjacent ports together, which is exactly the open
-`BRAUER-BREACH`.  So this flag stays `false` (concrete witnesses shipped, the uniform theorem walled), mirroring r7's
-`fxFrob_hasSpiderFusionNF = false`.  `= false`. -/
+whisker primitive.  The pure-crossing rows are present too — the full Coxeter/Matsumoto TRIAD now fires by the rows:
+R2 involution (`spiderConvRows_crossingInvolution`), R3 Yang–Baxter (`spiderConvRows_yangBaxter`), and (r9) distant
+commute (`spiderConvRows_distantCommute`, via the Godement `interchange`).  BUT the FRAGMENT-UNIFORM (hypothesis-free)
+straightening — every crossing-free word to its readback by the rows — is a hard induction over block routing: within
+one connected block gathering is left-associated (associativity-only), but a MULTI-BLOCK partition needs the `S_n`
+gathering comb to bring non-adjacent ports together, which is exactly the open `BRAUER-BREACH`.  So this flag stays
+`false` (concrete witnesses shipped, the uniform theorem walled), mirroring r7's `fxFrob_hasSpiderFusionNF = false`.
+`= false`. -/
 def fxFrob_hasCrossingFreeStraightening : Bool := false
+
+/-- ★ **Honesty marker — the crossing STRAIGHTENING residual is ISOLATED to the row-level suffix congruence (FROB-9,
+r9).**  r9 tested both recon routes for lifting the BREACH-2 crossing-only straightening
+(`crossingWords_equalPerm_conv : … → BrauerConvFree7 (crossingWord w1) (crossingWord w2)`,
+`Brauer/WiringDescStaircaseCanonical.lean`) into `SpiderConvRows`, and found BOTH DEAD at the SAME single residual —
+the row-level SUFFIX congruence:
+  * **Transport** (a recursor over the seven `BrauerConvFree7` ctors) is additionally detour-UNSOUND: the crossing
+    fragment is NOT `trans`-closed — `brauerConvFree7_crossing_relates_noncrossing` machine-exhibits `σσ`
+    `BrauerConvFree7`-related to the cup/cap snake word (through the empty word), all-crossing LHS, non-crossing RHS,
+    so a `trans` node's middle escapes the all-crossing invariant and the recursor stalls.
+  * **Rerun** of the comb-fold (`recCombConv`) inside `SpiderConvRows` stalls at `BrauerConvFree7.whiskerRight
+    (crossingWord (descendingPositions …))` — the append-common-suffix carry — which `SpiderConvRows` LACKS: the
+    `SpiderConvTable` rows fire only at the word's TAIL, and `spiderConv_suffixCongruence` lands in `SpiderConv` via
+    the `whisker` PRIMITIVE (r8's wall).  So the rerun needs the identical residual the transport's `whiskerRight`
+    arm needs.
+The crossing GENERATORS are all present (the triad), only the row-level suffix congruence that would GATHER them into
+the staircase is walled — the exact `stepWiring`-emits-ROW-derivations brick r8 named.  This SHARPENS
+`fxFrob_hasCrossingFreeStraightening` from "hard block-routing induction" to "one named row-level suffix congruence,
+shared with BREACH-2's `whiskerRight`".  The marker records the diagnosis; the straightening itself stays walled.
+`= true`. -/
+def fxFrob_hasCrossingStraighteningSuffixResidual : Bool := true
 
 /-- ★ **Honesty marker — the whisker-derivability CONDITIONAL is SHIPPED (FROB-8, P3).**  The `SpiderConv.whisker`
 PRIMITIVE — the constructor that made r7's completeness non-derived — is, CONDITIONALLY on the explicit
