@@ -60,14 +60,23 @@ undecidable (Markov 1947, Post 1947; the polygraphic framing is Burroni's).  The
 BRIDGE is now MECHANIZED (`SemiThueReduction`, `semiThue_iff_encodedTwoCell`): the Thue
 congruence of an arbitrary semi-Thue system is exactly the 1-cell convertibility of the
 one-object 2-polygraph it encodes, over the shipped `ModalityPath` computad carrier
-(`fxMode_hasSemiThueReductionMechanized = true`, pinned below).  What stays CITED, not
-mechanized, is the EXISTENCE of a finite semi-Thue system whose word problem is
-undecidable (Post/Markov) — that needs a computability substrate (halting ⪯ string
-rewriting, as the Coq undecidability library does; Forster–Heiter–Smolka, ITP 2018),
-which is out of scope; so the FULL reduction to a known-undecidable instance
+(`fxMode_hasSemiThueReductionMechanized = true`, pinned below).  Atop the bridge the
+decidability REDUCTION is now mechanized too (`Ceiling/UndecidabilityReduction`,
+`fxCeil_hasUndecidabilityReduction = true`): a UNIFORM 1-cell-connectedness (hom-inhabitation,
+FORM-A) decider would decide the Thue word problem of EVERY semi-Thue system
+(`uniformEncodedConnectednessDecider_decidesThue`), and contrapositively an undecidable Thue
+congruence forbids any such decider (`noUniformConnectednessDecider_ofUndecidableThue`) — the
+rung-3 wall as a genuine reduction, anchored at Ceitin/Tseytin's (1958) concrete
+5-generator/7-relation semigroup (`ceitinRules`, verbatim from Nyberg-Brodda arXiv:2401.11757).
+What stays CITED, not mechanized, is the EXISTENCE of a finite semi-Thue system whose word
+problem is undecidable (Post/Markov) — that needs a computability substrate (halting ⪯ string
+rewriting, as the Coq undecidability library does; Forster–Heiter–Smolka, ITP 2018), which is
+out of scope, so it enters the reduction only as the wall's `thueUndecidable` HYPOTHESIS; the
+FULL reduction to a known-undecidable instance
 (`hasUndecidabilityReductionMechanized` / `fxMode_hasArbitraryTwoCellUndecidabilityReduction`)
 stays `false`.  This is the same undecidability-frontier discipline the term axis uses:
-mechanize the bridge, state the undecidable-instance wall as a marker with the citation.
+mechanize the bridge and the reduction, state the undecidable-instance wall as a marker with
+the citation.
 
 Lives in `Tier0/Mode/` (not `Polygraph/`) although its declarations stay in the
 `FX1Poly.Polygraph` namespace: the rung-1 and ceiling pins reference the Tier0 mode-floor
@@ -243,6 +252,17 @@ FLAG A — `FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false` (`Mode.lea
     `s ~ id` FALSE via Z/2 parity).  A monoid presentation IS a one-0-cell 2-polygraph
     (Burroni, Theoret. Comput. Sci. 115 (1993)); this is that identification, inhabited as an
     `encodedModeSignature` value.
+  * REDUCTION MECHANIZED — `fxCeil_hasUndecidabilityReduction = true`
+    (`Ceiling/UndecidabilityReduction`): atop the bridge, a UNIFORM 1-cell-connectedness decider
+    (FORM-A hom-inhabitation — deciding whether a 2-cell EXISTS between the encoded words, NOT
+    FORM-B parallel-2-cell equality, which is boundary-trivial + Eckmann–Hilton-commutative and
+    reduces no word problem) would decide the Thue word problem of EVERY semi-Thue system
+    (`uniformEncodedConnectednessDecider_decidesThue`), and contrapositively an undecidable Thue
+    congruence forbids any uniform decider (`noUniformConnectednessDecider_ofUndecidableThue`).
+    Anchored at Ceitin/Tseytin's (1958) concrete 5-generator/7-relation semigroup (`ceitinRules`,
+    verbatim from Nyberg-Brodda arXiv:2401.11757: ac=ca, ad=da, bc=cb, bd=db, eca=ce, edb=de,
+    cca=ccae).  The three markers form a strict tower recorded in `fxCeilingUndecidability`:
+    bridge < reduction < first-principles instance.
   * INSTANCE STILL CITED — `fxMode_hasArbitraryTwoCellUndecidabilityReduction = false`: the
     EXISTENCE of a finite semi-Thue system with undecidable word problem (Post/Markov) is not
     mechanized; that needs a computability substrate (halting ⪯ string rewriting, the Coq

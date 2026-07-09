@@ -233,4 +233,43 @@ theorem involutionEncodedConnectedness_separation :
     involutionThue_separation
       ((semiThue_iff_encodedTwoCell involutionThueRules [InvolutionLetter.s] []).mpr encoded)
 
+/-! ## The ceiling undecidability ledger — the three-marker honest boundary, pinned
+
+The top of the CEIL decidability lattice, recorded as a three-field ledger in a STRICT TOWER, each field
+`rfl`-pinned to its source marker so a marker drift breaks the build.  The tower: the BRIDGE (an iff of
+relations, mechanized) < the REDUCTION (a uniform decider would decide Thue, plus the contrapositive wall,
+mechanized) < the first-principles INSTANCE embedding (needs a computability substrate, stays `false` in the
+sibling `DecidableCeilingLedger.fxMode_hasArbitraryTwoCellUndecidabilityReduction`).  The Ceitin anchor field
+records that the undecidable instance is named concretely (data + citation), not embedded from scratch. -/
+
+/-- The ceiling of the decidability lattice: the three markers of the undecidability boundary. -/
+structure CeilingUndecidabilityLedger where
+  /-- The Burroni BRIDGE: Thue congruence ⟷ one-object 2-polygraph 1-cell convertibility (an iff). -/
+  hasSemiThueBridge : Bool
+  /-- The decidability REDUCTION: a uniform connectedness decider decides Thue, plus the contrapositive wall. -/
+  hasUndecidabilityReduction : Bool
+  /-- The Ceitin ANCHOR: the concrete lit-verified 5-generator/7-relation undecidable instance (data). -/
+  hasCeitinAnchor : Bool
+
+/-- ★ The ceiling ledger value — bridge, reduction, and Ceitin anchor all mechanized to the honest boundary.
+The first-principles undecidable-instance embedding stays `false` in the sibling `DecidableCeilingLedger`. -/
+def fxCeilingUndecidability : CeilingUndecidabilityLedger where
+  hasSemiThueBridge := true
+  hasUndecidabilityReduction := true
+  hasCeitinAnchor := true
+
+/-- Pin: the bridge field matches the shipped Burroni-bridge marker (`SemiThueReduction`). -/
+theorem fxCeilingUndecidability_bridge_matchesMarker :
+    fxCeilingUndecidability.hasSemiThueBridge = fxMode_hasSemiThueReductionMechanized := rfl
+
+/-- Pin: the reduction field matches the ceiling reduction marker.  Flip the marker and this `rfl` breaks —
+the ledger cannot claim the reduction without the mechanized `uniformEncodedConnectednessDecider_decidesThue`
+and its contrapositive wall. -/
+theorem fxCeilingUndecidability_reduction_matchesMarker :
+    fxCeilingUndecidability.hasUndecidabilityReduction = fxCeil_hasUndecidabilityReduction := rfl
+
+/-- Pin: the anchor field matches the Ceitin anchor marker (the lit-verified `ceitinRules` data). -/
+theorem fxCeilingUndecidability_ceitinAnchor_matchesMarker :
+    fxCeilingUndecidability.hasCeitinAnchor = fxCeil_hasCeitinAnchor := rfl
+
 end FX1Poly.Polygraph

@@ -38,4 +38,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.involutionEncodedConnectedness_positive
 #assert_no_axioms FX1Poly.Polygraph.involutionEncodedConnectedness_separation
 
+-- The ceiling undecidability ledger + the three marker pins
+#assert_no_axioms FX1Poly.Polygraph.CeilingUndecidabilityLedger
+#assert_no_axioms FX1Poly.Polygraph.fxCeilingUndecidability
+#assert_no_axioms FX1Poly.Polygraph.fxCeilingUndecidability_bridge_matchesMarker
+#assert_no_axioms FX1Poly.Polygraph.fxCeilingUndecidability_reduction_matchesMarker
+#assert_no_axioms FX1Poly.Polygraph.fxCeilingUndecidability_ceitinAnchor_matchesMarker
+
 end FX1PolyAudit
