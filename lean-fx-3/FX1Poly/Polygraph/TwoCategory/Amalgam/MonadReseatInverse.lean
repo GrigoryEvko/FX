@@ -108,4 +108,239 @@ theorem reseatPath_reseatPathInv :
   | ModalityPath.cons MonadModality.t rest =>
       congrArg (ModalityPath.cons (graph := monadGraph) MonadModality.t) (reseatPath_reseatPathInv rest)
 
+/-! ## B3 — the inverse generator translation + the inverse free 2-cell functor -/
+
+/-- ★★ **The inverse generator translation** — a bespoke `MonadTwoCell` maps to the reconstructed 2-generator at
+the `reseatPathInv`-image boundary.  `eta` to the reconstructed unit `monadComputadReconstructsUnit`, `mu` to the
+reconstructed multiplication `monadComputadReconstructsMult`.  DIRECT — unlike the forward `reseatGen` (which
+reads the codomain through interpreter witnesses), the bespoke generator boundaries `(nil point, monadT)` /
+`(monadTThenT, monadT)` are CONCRETE and their `reseatPathInv` images DEFINITIONALLY equal the reconstructed
+generator boundaries `(nil ⟨0⟩, t)` / `(t·t, t)`, so no boundary cast is needed. -/
+def reseatGenInv : {sourceMode targetMode : MonadMode} →
+    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode} →
+    MonadTwoCell sourcePath targetPath →
+    monadComputad.ReconstructedTwoCell (reseatPathInv sourcePath) (reseatPathInv targetPath)
+  | _, _, _, _, MonadTwoCell.eta => monadComputadReconstructsUnit
+  | _, _, _, _, MonadTwoCell.mu => monadComputadReconstructsMult
+
+/-- Smoke: `reseatGenInv` on the bespoke unit IS the reconstructed unit (`rfl`). -/
+theorem reseatGenInv_eta : reseatGenInv MonadTwoCell.eta = monadComputadReconstructsUnit := rfl
+
+/-- Smoke: `reseatGenInv` on the bespoke multiplication IS the reconstructed multiplication (`rfl`). -/
+theorem reseatGenInv_mu : reseatGenInv MonadTwoCell.mu = monadComputadReconstructsMult := rfl
+
+/-- ★★ **The inverse reseat cell functor** — lift `reseatGenInv` over the whole `RawTwoCellExpr` grammar: a bespoke
+free 2-cell over `monadModeSignature` transports to a reconstructed free 2-cell over
+`monadComputad.toModeSignature`, boundaries carried by `reseatPathInv`.  The arm-for-arm structural MIRROR of
+`reseatCell`: `gen` via `reseatGenInv`; `id` / `vcomp` cast-free; the two whisker cases through the single
+`castBoundary (reseatPathInv_composePath ..)`. -/
+def reseatCellInv {sourceMode targetMode : MonadMode}
+    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    RawTwoCellExpr monadComputad.toModeSignature (reseatPathInv sourcePath) (reseatPathInv targetPath) :=
+  match cell with
+  | RawTwoCellExpr.gen generator => RawTwoCellExpr.gen (reseatGenInv generator)
+  | RawTwoCellExpr.id path =>
+      RawTwoCellExpr.id (signature := monadComputad.toModeSignature) (reseatPathInv path)
+  | RawTwoCellExpr.vcomp cellAlpha cellBeta =>
+      RawTwoCellExpr.vcomp (reseatCellInv cellAlpha) (reseatCellInv cellBeta)
+  | @RawTwoCellExpr.whiskerLeft _ _ _ _ oneCell oneCellG oneCellH body =>
+      RawTwoCellExpr.castBoundary
+        (reseatPathInv_composePath oneCell oneCellG).symm
+        (reseatPathInv_composePath oneCell oneCellH).symm
+        (RawTwoCellExpr.whiskerLeft (reseatPathInv oneCell) (reseatCellInv body))
+  | @RawTwoCellExpr.whiskerRight _ _ _ _ oneCellF oneCellG oneCell body =>
+      RawTwoCellExpr.castBoundary
+        (reseatPathInv_composePath oneCellF oneCell).symm
+        (reseatPathInv_composePath oneCellG oneCell).symm
+        (RawTwoCellExpr.whiskerRight (reseatPathInv oneCell) (reseatCellInv body))
+
+/-- Smoke: `reseatCellInv` on a bare generator IS `gen (reseatGenInv ..)` (`rfl`). -/
+theorem reseatCellInv_gen {sourceMode targetMode : MonadMode}
+    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
+    (generator : MonadTwoCell sourcePath targetPath) :
+    reseatCellInv (RawTwoCellExpr.gen generator) = RawTwoCellExpr.gen (reseatGenInv generator) := rfl
+
+/-- ★ `reseatCellInv` of the bespoke unit IS the reconstructed unit 2-cell `reconEta` (`rfl` — `reseatGenInv` is
+DIRECT, cleaner than the forward's non-`rfl` `reseatCell_reconEta`). -/
+theorem reseatCellInv_monadUnit : reseatCellInv monadUnitTwoCell = reconEta := rfl
+
+/-- ★ `reseatCellInv` of the bespoke multiplication IS the reconstructed multiplication 2-cell `reconMu` (`rfl`). -/
+theorem reseatCellInv_monadMul : reseatCellInv monadMulTwoCell = reconMu := rfl
+
+/-- `reseatCellInv` of the bespoke identity 2-cell IS the reconstructed identity 2-cell `reconIdTCell` (`rfl`). -/
+theorem reseatCellInv_monadIdT : reseatCellInv monadIdTCell = reconIdTCell := rfl
+
+/-! ## B3 — `reseatCellInv` per-constructor reduction lemmas (mirror of `reseatCell_*`) -/
+
+/-- `reseatCellInv` on an identity 2-cell (`rfl`). -/
+theorem reseatCellInv_id {sourceMode targetMode : MonadMode}
+    (path : ModalityPath monadGraph sourceMode targetMode) :
+    reseatCellInv (RawTwoCellExpr.id path)
+      = RawTwoCellExpr.id (signature := monadComputad.toModeSignature) (reseatPathInv path) := rfl
+
+/-- `reseatCellInv` on a vertical composite (`rfl`, cast-free). -/
+theorem reseatCellInv_vcomp {sourceMode targetMode : MonadMode}
+    {oneCellF oneCellG oneCellH : ModalityPath monadGraph sourceMode targetMode}
+    (cellAlpha : RawTwoCellExpr monadModeSignature oneCellF oneCellG)
+    (cellBeta : RawTwoCellExpr monadModeSignature oneCellG oneCellH) :
+    reseatCellInv (RawTwoCellExpr.vcomp cellAlpha cellBeta)
+      = RawTwoCellExpr.vcomp (reseatCellInv cellAlpha) (reseatCellInv cellBeta) := rfl
+
+/-- `reseatCellInv` on a left whiskering — the single `reseatPathInv_composePath` cast (`rfl`). -/
+theorem reseatCellInv_whiskerLeft {sourceMode middleMode targetMode : MonadMode}
+    (oneCell : ModalityPath monadGraph sourceMode middleMode)
+    {oneCellG oneCellH : ModalityPath monadGraph middleMode targetMode}
+    (body : RawTwoCellExpr monadModeSignature oneCellG oneCellH) :
+    reseatCellInv (RawTwoCellExpr.whiskerLeft oneCell body)
+      = RawTwoCellExpr.castBoundary
+          (reseatPathInv_composePath oneCell oneCellG).symm
+          (reseatPathInv_composePath oneCell oneCellH).symm
+          (RawTwoCellExpr.whiskerLeft (reseatPathInv oneCell) (reseatCellInv body)) := rfl
+
+/-- `reseatCellInv` on a right whiskering — the single `reseatPathInv_composePath` cast (`rfl`). -/
+theorem reseatCellInv_whiskerRight {sourceMode middleMode targetMode : MonadMode}
+    {oneCellF oneCellG : ModalityPath monadGraph sourceMode middleMode}
+    (oneCell : ModalityPath monadGraph middleMode targetMode)
+    (body : RawTwoCellExpr monadModeSignature oneCellF oneCellG) :
+    reseatCellInv (RawTwoCellExpr.whiskerRight oneCell body)
+      = RawTwoCellExpr.castBoundary
+          (reseatPathInv_composePath oneCellF oneCell).symm
+          (reseatPathInv_composePath oneCellG oneCell).symm
+          (RawTwoCellExpr.whiskerRight (reseatPathInv oneCell) (reseatCellInv body)) := rfl
+
+/-- `reseatCellInv` commutes with `castBoundary` (both `Eq.rec`; `cases` the equalities). -/
+theorem reseatCellInv_castBoundary {sourceMode targetMode : MonadMode}
+    {sourcePath sourcePath' targetPath targetPath' : ModalityPath monadGraph sourceMode targetMode}
+    (hsource : sourcePath = sourcePath') (htarget : targetPath = targetPath')
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    reseatCellInv (RawTwoCellExpr.castBoundary hsource htarget cell)
+      = RawTwoCellExpr.castBoundary (congrArg reseatPathInv hsource) (congrArg reseatPathInv htarget)
+          (reseatCellInv cell) := by
+  cases hsource; cases htarget; rfl
+
+/-- `reseatCellInv` commutes with the derived Godement product `hcomp` up to one boundary cast. -/
+theorem reseatCellInv_hcomp {sourceMode middleMode targetMode : MonadMode}
+    {oneCellFDom oneCellFCod : ModalityPath monadGraph sourceMode middleMode}
+    {oneCellGDom oneCellGCod : ModalityPath monadGraph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr monadModeSignature oneCellFDom oneCellFCod)
+    (cellBeta : RawTwoCellExpr monadModeSignature oneCellGDom oneCellGCod) :
+    reseatCellInv (RawTwoCellExpr.hcomp cellAlpha cellBeta)
+      = RawTwoCellExpr.castBoundary
+          (reseatPathInv_composePath oneCellFDom oneCellGDom).symm
+          (reseatPathInv_composePath oneCellFCod oneCellGCod).symm
+          (RawTwoCellExpr.hcomp (reseatCellInv cellAlpha) (reseatCellInv cellBeta)) := by
+  show RawTwoCellExpr.vcomp (reseatCellInv (RawTwoCellExpr.whiskerRight oneCellGDom cellAlpha))
+      (reseatCellInv (RawTwoCellExpr.whiskerLeft oneCellFCod cellBeta)) = _
+  exact (ReseatCastKit.castBoundaryVcomp
+    (reseatPathInv_composePath oneCellFDom oneCellGDom).symm
+    (reseatPathInv_composePath oneCellFCod oneCellGDom).symm
+    (reseatPathInv_composePath oneCellFCod oneCellGCod).symm
+    (RawTwoCellExpr.whiskerRight (reseatPathInv oneCellGDom) (reseatCellInv cellAlpha))
+    (RawTwoCellExpr.whiskerLeft (reseatPathInv oneCellFCod) (reseatCellInv cellBeta))).symm
+
+/-- `reseatCellInv` through `whiskerLeft . whiskerLeft`. -/
+theorem reseatCellInv_whiskerLeft_whiskerLeft {sm mm1 mm2 tm : MonadMode}
+    (oneCellOuter : ModalityPath monadGraph sm mm1)
+    (oneCellInner : ModalityPath monadGraph mm1 mm2)
+    {bodyDom bodyCod : ModalityPath monadGraph mm2 tm}
+    (body : RawTwoCellExpr monadModeSignature bodyDom bodyCod) :
+    reseatCellInv (RawTwoCellExpr.whiskerLeft oneCellOuter (RawTwoCellExpr.whiskerLeft oneCellInner body))
+      = RawTwoCellExpr.castBoundary
+          ((congrArg (composePath (reseatPathInv oneCellOuter))
+              (reseatPathInv_composePath oneCellInner bodyDom).symm).trans
+            (reseatPathInv_composePath oneCellOuter (composePath oneCellInner bodyDom)).symm)
+          ((congrArg (composePath (reseatPathInv oneCellOuter))
+              (reseatPathInv_composePath oneCellInner bodyCod).symm).trans
+            (reseatPathInv_composePath oneCellOuter (composePath oneCellInner bodyCod)).symm)
+          (RawTwoCellExpr.whiskerLeft (reseatPathInv oneCellOuter)
+            (RawTwoCellExpr.whiskerLeft (reseatPathInv oneCellInner)
+              (reseatCellInv body))) :=
+  (reseatCellInv_whiskerLeft oneCellOuter (RawTwoCellExpr.whiskerLeft oneCellInner body)).trans
+    ((congrArg (RawTwoCellExpr.castBoundary _ _)
+        ((congrArg (RawTwoCellExpr.whiskerLeft (reseatPathInv oneCellOuter))
+            (reseatCellInv_whiskerLeft oneCellInner body)).trans
+          (ReseatCastKit.whiskerLeftCastBoundary (reseatPathInv oneCellOuter) _ _
+            (RawTwoCellExpr.whiskerLeft (reseatPathInv oneCellInner)
+              (reseatCellInv body))))).trans
+      (ReseatCastKit.castBoundaryTrans _ _ _ _ _))
+
+/-- `reseatCellInv` through `whiskerRight . whiskerRight`. -/
+theorem reseatCellInv_whiskerRight_whiskerRight {sm mm1 mm2 tm : MonadMode}
+    {bodyDom bodyCod : ModalityPath monadGraph sm mm1}
+    (oneCellInner : ModalityPath monadGraph mm1 mm2)
+    (oneCellOuter : ModalityPath monadGraph mm2 tm)
+    (body : RawTwoCellExpr monadModeSignature bodyDom bodyCod) :
+    reseatCellInv (RawTwoCellExpr.whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body))
+      = RawTwoCellExpr.castBoundary
+          ((congrArg (fun path => composePath path (reseatPathInv oneCellOuter))
+              (reseatPathInv_composePath bodyDom oneCellInner).symm).trans
+            (reseatPathInv_composePath (composePath bodyDom oneCellInner) oneCellOuter).symm)
+          ((congrArg (fun path => composePath path (reseatPathInv oneCellOuter))
+              (reseatPathInv_composePath bodyCod oneCellInner).symm).trans
+            (reseatPathInv_composePath (composePath bodyCod oneCellInner) oneCellOuter).symm)
+          (RawTwoCellExpr.whiskerRight (reseatPathInv oneCellOuter)
+            (RawTwoCellExpr.whiskerRight (reseatPathInv oneCellInner)
+              (reseatCellInv body))) :=
+  (reseatCellInv_whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body)).trans
+    ((congrArg (RawTwoCellExpr.castBoundary _ _)
+        ((congrArg (RawTwoCellExpr.whiskerRight (reseatPathInv oneCellOuter))
+            (reseatCellInv_whiskerRight oneCellInner body)).trans
+          (ReseatCastKit.whiskerRightCastBoundary (reseatPathInv oneCellOuter) _ _
+            (RawTwoCellExpr.whiskerRight (reseatPathInv oneCellInner)
+              (reseatCellInv body))))).trans
+      (ReseatCastKit.castBoundaryTrans _ _ _ _ _))
+
+/-- `reseatCellInv` through `whiskerLeft . whiskerRight`. -/
+theorem reseatCellInv_whiskerLeft_whiskerRight {sm ms mt tm : MonadMode}
+    (leftWhisker : ModalityPath monadGraph sm ms)
+    {bodyDom bodyCod : ModalityPath monadGraph ms mt}
+    (rightWhisker : ModalityPath monadGraph mt tm)
+    (body : RawTwoCellExpr monadModeSignature bodyDom bodyCod) :
+    reseatCellInv (RawTwoCellExpr.whiskerLeft leftWhisker (RawTwoCellExpr.whiskerRight rightWhisker body))
+      = RawTwoCellExpr.castBoundary
+          ((congrArg (composePath (reseatPathInv leftWhisker))
+              (reseatPathInv_composePath bodyDom rightWhisker).symm).trans
+            (reseatPathInv_composePath leftWhisker (composePath bodyDom rightWhisker)).symm)
+          ((congrArg (composePath (reseatPathInv leftWhisker))
+              (reseatPathInv_composePath bodyCod rightWhisker).symm).trans
+            (reseatPathInv_composePath leftWhisker (composePath bodyCod rightWhisker)).symm)
+          (RawTwoCellExpr.whiskerLeft (reseatPathInv leftWhisker)
+            (RawTwoCellExpr.whiskerRight (reseatPathInv rightWhisker)
+              (reseatCellInv body))) :=
+  (reseatCellInv_whiskerLeft leftWhisker (RawTwoCellExpr.whiskerRight rightWhisker body)).trans
+    ((congrArg (RawTwoCellExpr.castBoundary _ _)
+        ((congrArg (RawTwoCellExpr.whiskerLeft (reseatPathInv leftWhisker))
+            (reseatCellInv_whiskerRight rightWhisker body)).trans
+          (ReseatCastKit.whiskerLeftCastBoundary (reseatPathInv leftWhisker) _ _
+            (RawTwoCellExpr.whiskerRight (reseatPathInv rightWhisker)
+              (reseatCellInv body))))).trans
+      (ReseatCastKit.castBoundaryTrans _ _ _ _ _))
+
+/-- `reseatCellInv` through `whiskerRight . whiskerLeft`. -/
+theorem reseatCellInv_whiskerRight_whiskerLeft {sm ms mt tm : MonadMode}
+    (leftWhisker : ModalityPath monadGraph sm ms)
+    {bodyDom bodyCod : ModalityPath monadGraph ms mt}
+    (rightWhisker : ModalityPath monadGraph mt tm)
+    (body : RawTwoCellExpr monadModeSignature bodyDom bodyCod) :
+    reseatCellInv (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body))
+      = RawTwoCellExpr.castBoundary
+          ((congrArg (fun path => composePath path (reseatPathInv rightWhisker))
+              (reseatPathInv_composePath leftWhisker bodyDom).symm).trans
+            (reseatPathInv_composePath (composePath leftWhisker bodyDom) rightWhisker).symm)
+          ((congrArg (fun path => composePath path (reseatPathInv rightWhisker))
+              (reseatPathInv_composePath leftWhisker bodyCod).symm).trans
+            (reseatPathInv_composePath (composePath leftWhisker bodyCod) rightWhisker).symm)
+          (RawTwoCellExpr.whiskerRight (reseatPathInv rightWhisker)
+            (RawTwoCellExpr.whiskerLeft (reseatPathInv leftWhisker)
+              (reseatCellInv body))) :=
+  (reseatCellInv_whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body)).trans
+    ((congrArg (RawTwoCellExpr.castBoundary _ _)
+        ((congrArg (RawTwoCellExpr.whiskerRight (reseatPathInv rightWhisker))
+            (reseatCellInv_whiskerLeft leftWhisker body)).trans
+          (ReseatCastKit.whiskerRightCastBoundary (reseatPathInv rightWhisker) _ _
+            (RawTwoCellExpr.whiskerLeft (reseatPathInv leftWhisker)
+              (reseatCellInv body))))).trans
+      (ReseatCastKit.castBoundaryTrans _ _ _ _ _))
+
 end FX1Poly.Polygraph.Amalgam
