@@ -301,6 +301,13 @@ readback carriers are machine-witnessed to MISS it, from opposite sides:
     the FAITHFUL decision IS unconditional — `adjunctionDecideTwoCellConvFull`,
     `fxMode_hasFaithfulTwoCellDecisionModuloTrace = true` — but bare `TwoCellConv` is strictly finer, the snakes
     provably not collapsing, `leftSnakeSaturatedButNotFree`.)
+  * the additive whisker word-code `RawTwoCellExpr.wordCode` — COMPLETE on the single-generator nil-whisker
+    fragment (`frameWord_twoCellConv_iff`, `wordCode = phi` injective there) — is strictly COARSER than bare conv on
+    GENERAL cells: machine-refuted `wordCode_not_complete` (a two-generator Godement pair `wordCodeCollisionLeft` /
+    `wordCodeCollisionRight`, both `isInterchangeNormal`, `TwoCellConvFull` with EQUAL `wordCode` `5 = 5` yet
+    `coCrossSum` `1` vs `0`, hence NOT bare — `wordCodeCollision_not_twoCellConv`), so NO additive
+    `Σ_gen φ(pattern)` word-code decides bare conv either; the complete invariant is strictly the per-generator
+    pattern MULTISET.
 
 fib-3 is NOT blocked on this flag: its keystone is discharged at the granularity the MTT fibration consumes — the
 SATURATED modulo-triangles relation `SaturatedTwoCellConv`
