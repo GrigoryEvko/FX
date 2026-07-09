@@ -1,24 +1,19 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadVcompMult
 
-/-! # WalkingMonad — the VERTICAL word multiplicativity `wordMul_vcomp` (the sole open `normalizeCell` case)
+/-! # WalkingMonad — the word-gadget collapse + block-sum composition (toward `wordMul_vcomp`)
 
 `WalkingMonad/MonadVcompMult` closed the mu-tree amalgamation `gadgetAbsorb` (the three monad laws at the gadget
-level, zero-axiom).  This file folds it over two canonical Eilenberg–Zilber words to close the LAST open
-`normalizeCell` case, `vcomp`, and — with the four already-closed cases (`gen`, `id`, both whiskers) — assembles
-`normalize : MonadNormalizesToCanon`, inhabits `MonadSaturatedCanonicalization`, and makes the walking-monad
-saturated word problem an UNCONDITIONAL `Decidable`.
+level, zero-axiom).  Toward the LAST open `normalizeCell` case `vcomp` — the vertical word multiplicativity
+`wordMul_vcomp : vcomp (word ccL) (word ccR) ≈ word (composeCounts ccL ccR)` — this file ships the per-block
+collapse that fires on each block of the vertical composite, plus the block-sum composition data.
 
-## The vcomp word multiplicativity (the faithfulness-weight brick)
+## The classical picture
 
-`wordMul_vcomp ccL ccR (h : ccL.length = listSum ccR) :
-   vcomp (word ccL) (word ccR) ≈ word (composeCounts ccL ccR)`
-
-read off the classical statement: the domain `t`-power of `word ccR` splits into `ccR.length` blocks of widths
-`ccR = [r_0, …, r_{k-1}]`; the codomain `word ccL` splits (`wordMul_hcomp`) into matching groups of `r_j` counts;
-the free interchange `TwoCellStep.interchange` rewrites the vertical composite of two horizontal composites to the
-horizontal composite of vertical composites, factor `j` collapsing `word (group_j) ⊟ gadget r_j` to a single gadget
-`gadget (listSum group_j)` by `wordGadgetCollapse`.  Hence `composeCounts ccL ccR = [listSum group_0, …]`, the
-run-grouped block sums.
+The domain `t`-power of `word ccR` splits into `ccR.length` blocks of widths `ccR = [r_0, …, r_{k-1}]`; the codomain
+`word ccL` splits (`wordMul_hcomp`) into matching groups of `r_j` counts; the free interchange
+`TwoCellStep.interchange` rewrites the vertical composite of two horizontal composites to the horizontal composite of
+vertical composites, factor `j` collapsing `word (group_j) ⊟ gadget r_j` to a single gadget `gadget (listSum
+group_j)` by `wordGadgetCollapse`.  Hence `composeCounts ccL ccR = [listSum group_0, …]`, the run-grouped block sums.
 
 ## What this file ships (each piece zero-axiom)
 
@@ -27,9 +22,13 @@ run-grouped block sums.
   * **`countsDomainPath_eq_monadTPower_listSum`** — the domain of a canonical word is the `t`-power of its block sum
     (the boundary bridge lining the two words up for `vcomp`).
   * ★ **`wordGadgetCollapse`** — `vcomp (word cc) (gadget cc.length) ≈ cast (gadget (listSum cc))`: fold a word into
-    one gadget by absorbing (`gadgetRightMerge` per head, the associativity crossing).
-  * **`composeCounts`** — the run-grouped block sums (structural on `ccR`).
-  * ★ **`wordMul_vcomp`** — the vertical word multiplicativity (structural on `ccR`, the interchange assembly).
+    one gadget by absorbing (`gadgetRightMerge` per head, the associativity crossing).  The monad-law-bearing
+    per-block collapse.
+  * **`composeCounts`** (+ `composeCounts_length`, `listSum_composeCounts`) — the run-grouped block sums.
+  * **`wordMul_vcomp_hmid` / `wordMul_vcomp_hdom`** — the boundary-cast statements the vcomp step needs.
+
+The assembly `wordMul_vcomp` itself (the multi-cast interchange re-sort) is the NAMED residual — see
+`fxMonad_hasVcompWordMultiplicativity`.
 
 Raw Lean 4 + Init; `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free; STRUCTURAL recursion on
 `List Nat` / `Nat`.  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
@@ -89,6 +88,15 @@ theorem consDrop_length : ∀ (count : Nat) (values : List Nat),
   | count + 1, head :: rest => by
       show (consDrop count rest).length = (rest.length + 1) - (count + 1)
       rw [consDrop_length count rest, Nat.succ_sub_succ]
+
+/-- Left-cancellation of `Nat` subtraction, propext-clean (the library `Nat.add_sub_cancel` / `_left` pull
+`propext`; this structural induction on the cancelled summand does not). -/
+theorem natAddSubCancelLeft : ∀ (base offset : Nat), base + offset - base = offset
+  | 0, offset => Nat.zero_add offset
+  | base + 1, offset => by
+      show base + 1 + offset - (base + 1) = offset
+      rw [Nat.succ_add, Nat.succ_sub_succ]
+      exact natAddSubCancelLeft base offset
 
 /-- `listSum` is additive over `consAppend`. -/
 theorem listSum_consAppend : ∀ (a b : List Nat), listSum (consAppend a b) = listSum a + listSum b
@@ -243,5 +251,112 @@ theorem wordGadgetCollapse : ∀ (cc : List Nat),
         (MonadSaturatedTwoCellConv.castBoundaryCongr _ rfl (gadgetTailCollapse count (listSum rest))) ?_
       rw [monadCastBoundary_castBoundary]
       exact MonadSaturatedTwoCellConv.refl _
+
+/-- Taking exactly the first block back off a `consAppend` returns it. -/
+theorem consTake_consAppend : ∀ (a b : List Nat), consTake a.length (consAppend a b) = a
+  | [], _ => rfl
+  | head :: rest, b => by
+      show head :: consTake rest.length (consAppend rest b) = head :: rest
+      rw [consTake_consAppend rest b]
+
+/-- Dropping exactly the first block off a `consAppend` returns the second. -/
+theorem consDrop_consAppend : ∀ (a b : List Nat), consDrop a.length (consAppend a b) = b
+  | [], _ => rfl
+  | head :: rest, b => by
+      show consDrop rest.length (consAppend rest b) = b
+      exact consDrop_consAppend rest b
+
+/-! ## The block-sum composition of two counts lists -/
+
+/-- ★ **The block-sum composition** of two counts lists.  Grouping `ccL` into consecutive blocks of the widths
+`ccR = [r_0, r_1, …]` and summing each block: `composeCounts ccL (r :: ccR') = listSum (take r ccL) ::
+composeCounts (drop r ccL) ccR'`.  Structural recursion on the TOP word `ccR` (the block widths).  This is the
+data shadow of the vertical composite's canonical word — the block sums are the per-target merge multiplicities. -/
+def composeCounts : List Nat → List Nat → List Nat
+  | _, [] => []
+  | ccL, r :: ccR' => listSum (consTake r ccL) :: composeCounts (consDrop r ccL) ccR'
+
+/-- `composeCounts` produces exactly `ccR.length` block sums (one per top-word block). -/
+theorem composeCounts_length : ∀ (ccL ccR : List Nat), (composeCounts ccL ccR).length = ccR.length
+  | _, [] => rfl
+  | ccL, r :: ccR' => by
+      show (composeCounts (consDrop r ccL) ccR').length + 1 = ccR'.length + 1
+      rw [composeCounts_length (consDrop r ccL) ccR']
+
+/-- ★ The total width of `composeCounts ccL ccR` is the total width of `ccL` (each source strand contributes to
+exactly one block sum), when the blocks partition `ccL` (`ccL.length = listSum ccR`).  Structural recursion on
+`ccR` via `listSum_consAppend` + the take/drop split. -/
+theorem listSum_composeCounts : ∀ (ccL ccR : List Nat), ccL.length = listSum ccR →
+    listSum (composeCounts ccL ccR) = listSum ccL
+  | ccL, [], hlen => by
+      cases ccL with
+      | nil => rfl
+      | cons _ _ => exact Nat.noConfusion hlen
+  | ccL, r :: ccR', hlen => by
+      show listSum (consTake r ccL) + listSum (composeCounts (consDrop r ccL) ccR') = listSum ccL
+      have hdroplen : (consDrop r ccL).length = listSum ccR' := by
+        rw [consDrop_length, hlen]
+        show r + listSum ccR' - r = listSum ccR'
+        exact natAddSubCancelLeft r (listSum ccR')
+      rw [listSum_composeCounts (consDrop r ccL) ccR' hdroplen,
+          ← listSum_consAppend (consTake r ccL) (consDrop r ccL),
+          consAppend_consTake_consDrop r ccL]
+
+/-! ## The vertical word multiplicativity -/
+
+/-- The middle-boundary cast that lets `word ccL` and `word ccR` compose vertically: `countsDomainPath ccR =
+monadTPower ccL.length` (the codomain of `word ccL` is `t^ccL.length`, matched to the domain of `word ccR`). -/
+theorem wordMul_vcomp_hmid (ccL ccR : List Nat) (hlen : ccL.length = listSum ccR) :
+    countsDomainPath ccR = monadTPower ccL.length :=
+  (countsDomainPath_eq_monadTPower_listSum ccR).trans (congrArg monadTPower hlen.symm)
+
+/-- The target domain cast: `countsDomainPath (composeCounts ccL ccR) = countsDomainPath ccL` (the composite word
+lands at `word ccL`'s domain, both `t^(listSum ccL)`). -/
+theorem wordMul_vcomp_hdom (ccL ccR : List Nat) (hlen : ccL.length = listSum ccR) :
+    countsDomainPath (composeCounts ccL ccR) = countsDomainPath ccL :=
+  (countsDomainPath_eq_monadTPower_listSum (composeCounts ccL ccR)).trans
+    ((congrArg monadTPower (listSum_composeCounts ccL ccR hlen)).trans
+      (countsDomainPath_eq_monadTPower_listSum ccL).symm)
+
+/-! ## Honesty markers -/
+
+/-- **ESTABLISHED — the word-gadget collapse and the block-sum composition are shipped, zero-axiom.**  Toward the
+sole open `normalizeCell` case `vcomp` (the vertical word multiplicativity `wordMul_vcomp`), this lane lands:
+
+  * ★ **`wordGadgetCollapse`** — `vcomp (word cc) (gadget cc.length) ≈ cast (gadget (listSum cc))`: a whole canonical
+    word absorbed into a single merge gadget, folding `gadgetRightMerge` (the associativity crossing) over the head
+    gadget at each cons step, threading the induction hypothesis under the `t`-whisker, and reconciling the
+    `countsDomainPath`/`monadTPower` boundary casts through the merge/extrusion cast kit.  This is the per-block
+    collapse the vcomp assembly fires on each of the `ccR.length` blocks — the monad-law-bearing sub-brick.
+  * **`composeCounts`** (+ `composeCounts_length`, `listSum_composeCounts`) — the run-grouped block sums, the data
+    shadow of the vertical composite's canonical word.
+  * the take/drop split kit (`consTake` / `consDrop` / `consAppend_consTake_consDrop` / `consTake_consAppend` /
+    `consDrop_consAppend` / `listSum_consAppend`) and the domain-path bridge
+    (`countsDomainPath_eq_monadTPower_listSum`), plus the two boundary-cast statements the vcomp step needs
+    (`wordMul_vcomp_hmid`, `wordMul_vcomp_hdom`).
+
+`= true`. -/
+def fxMonad_hasWordGadgetCollapseAndComposeCounts : Bool := true
+
+/-- **Honesty marker — the vertical word multiplicativity `wordMul_vcomp` is the NAMED residual.**  With
+`wordGadgetCollapse`, `composeCounts`, `wordMul_hcomp` (the horizontal split), the free interchange
+(`TwoCellStep.interchange`), and the boundary-cast statements all shipped, the SOLE remaining piece is the assembly
+`wordMul_vcomp : vcomp (word ccL) (cast (word ccR)) ≈ cast (word (composeCounts ccL ccR))` (structural induction on
+`ccR`; the base and the `subst`-clean setup of the step are shipped in the working notes).
+
+The residual is EXACTLY the multi-cast interchange assembly of the `r :: ccR'` step: after splitting `word ccL` via
+`wordMul_hcomp` into `hcomp (word take) (word drop)` (whose codomain is `composePath (t^take.length) (t^drop.length)`)
+and recognizing `word (r :: ccR') = hcomp (gadget r) (word ccR')` (whose domain is `composePath (t^r)
+(countsDomainPath ccR')`), the two horizontal composites do NOT share a definitional middle boundary — reconciling
+`take.length = r`, `drop.length = listSum ccR'`, and `countsDomainPath ccR' = t^(listSum ccR')` requires threading a
+`monadTPower_add` middle cast so the cast-free `TwoCellStep.interchange` fires, then extruding one outer cast
+(`vcomp_castBoundaryLeft`), redistributing the right cast onto `word ccR'` (`hcomp_castBoundaryRight`), collapsing the
+front factor (`wordGadgetCollapse take`) and threading the IH through the back factor, and reassembling the two
+per-factor casts (needs a `hcomp_castBoundaryLeft` + a saturated `hcompCongrLeft`, both still to build) into the
+target via `hccEq` + `castBoundary_wordCongr`.  Until `wordMul_vcomp` lands, the `vcomp` `normalizeCell` case is not
+inhabited, so `normalize : MonadNormalizesToCanon` is not inhabited and `fxMonad_hasWordMulVcomp` /
+`fxMonad_hasConvOfMapEqNormalization` / `fxMonad_hasMonotoneMapDecisionAssembled` /
+`fxMonad_hasFullMapEqOfConvAndCompleteness` stay `false`.  `= false`. -/
+def fxMonad_hasVcompWordMultiplicativity : Bool := false
 
 end FX1Poly.Polygraph
