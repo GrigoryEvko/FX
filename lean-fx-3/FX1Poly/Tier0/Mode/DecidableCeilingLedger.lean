@@ -6,6 +6,8 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCanonica
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcReconstruction
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
+import FX1Poly.Tier0.Mode.TierBThinDecision
+import FX1Poly.Tier0.Mode.ExhibitedConvergentDecision
 
 /-! # DecidableCeilingLedger — the honest boundary of the 2-cell word problem (CEIL rung map)
 
@@ -101,13 +103,22 @@ structure DecidableCeilingLedger where
   wasGenericSaturatedCompletenessRefuted : Bool
   /-- Rung 2: the assembled saturated decision at the walking adjunction. -/
   hasSaturatedDecision : Bool
+  /-- Tier B (Gratzer): thin / poset-enriched decision — 2-cell conv = kernel of a decidable classifier,
+  exhibited at the walking involution (Z/2 parity).  Sits between the free rung and the wall. -/
+  hasTierBThinDecision : Bool
+  /-- Tier C (Squier / Knuth-Bendix): exhibited-convergent decision — a hand-exhibited convergent
+  presentation decides its word problem, exhibited at the involution presentation `s.s -> id`. -/
+  hasExhibitedConvergentDecision : Bool
   /-- Rung 3: the undecidability reduction, mechanized (the wall is cited either way). -/
   hasUndecidabilityReductionMechanized : Bool
 
 /-- ★ The current ledger value — the honest boundary as of the SATURATED matching-decision
-landing.  Rung 2 is now COMPLETE at the walking adjunction (soundness, completeness, and the
-assembled decision), all zero-axiom via the matching carrier; rung 1 stays fuel-gated and rung 3
-stays walled. -/
+landing, now with the two Wave-2 decidable BANDS between the saturated rung and the wall.  Rung 2 is
+COMPLETE at the walking adjunction (soundness, completeness, and the assembled decision), all zero-axiom via
+the matching carrier; Tier B (Gratzer thin) and Tier C (Squier/KB exhibited-convergent) are both DECIDED at
+the walking involution (`hasTierBThinDecision`, `hasExhibitedConvergentDecision` — the same object from two
+directions, tied by `equationalTheory_iff_involutionOneCellConv`); rung 1 stays ungated and rung 3 stays
+walled. -/
 def fxDecidableCeiling : DecidableCeilingLedger where
   hasGenericFreeDecision := true
   isFreeDecisionFuelGated := false
@@ -115,6 +126,8 @@ def fxDecidableCeiling : DecidableCeilingLedger where
   hasSaturatedCompleteness := true
   wasGenericSaturatedCompletenessRefuted := true
   hasSaturatedDecision := true
+  hasTierBThinDecision := true
+  hasExhibitedConvergentDecision := true
   hasUndecidabilityReductionMechanized := false
 
 /-! ## The pins — ledger fields match the source markers definitionally -/
@@ -157,6 +170,18 @@ the live matching route `fxMode_hasSaturatedMatchingDecisionAssembled`, backed b
 theorem fxDecidableCeiling_saturatedDecision_matchesMarker :
     fxDecidableCeiling.hasSaturatedDecision
       = fxMode_hasSaturatedMatchingDecisionAssembled := rfl
+
+/-- Tier B pin: the thin/poset-enriched decision matches the Tier-B thin marker (backed by
+`decideThinTwoCellConv` on `fxInvolutionThinModeTheory`, itself pinned to
+`fxInvolution_hasOneCellWordProblemDecided`). -/
+theorem fxDecidableCeiling_tierBThin_matchesMarker :
+    fxDecidableCeiling.hasTierBThinDecision = fxMode_hasTierBThinDecision := rfl
+
+/-- Tier C pin: the exhibited-convergent decision matches the Tier-C marker (backed by
+`decideInvolutionEquationalTheory` via the shipped KB engine on the convergent involution presentation, tied
+to Tier B by `equationalTheory_iff_involutionOneCellConv`). -/
+theorem fxDecidableCeiling_exhibitedConvergent_matchesMarker :
+    fxDecidableCeiling.hasExhibitedConvergentDecision = fxMode_hasExhibitedConvergentDecision := rfl
 
 /-- Rung 3 pin: the mechanization status matches the wall marker above. -/
 theorem fxDecidableCeiling_undecidabilityWall_matchesMarker :
@@ -241,7 +266,24 @@ RETIRED-FOR-DECISION (monotone route, #1975/#1999) — KEPT, NOT deleted; termin
   `WalkingAdjunction/MonotoneMap.lean`.
 
 CEIL-1 TIERING (this ledger): rung 1 free-generic (UN-GATED, total decider) < rung 2
-  saturated per-presentation (COMPLETE at the walking adjunction) < rung 3 arbitrary
-  undecidable (FLAG A's wall).  Every `fxDecidableCeiling` field is `rfl`-pinned to its source marker
-  above, so this status map cannot drift from the mechanized values. -/
+  saturated per-presentation (COMPLETE at the walking adjunction) < { Tier B thin, Tier C
+  exhibited-convergent } < rung 3 arbitrary undecidable (FLAG A's wall).  Every `fxDecidableCeiling` field
+  is `rfl`-pinned to its source marker above, so this status map cannot drift from the mechanized values.
+
+WAVE-2 DECIDABLE BANDS (both TRUE+backed, zero-axiom, strictly below the rung-3 wall):
+  * `fxMode_hasTierBThinDecision = true` (`TierBThinDecision`) — Gratzer: MTT conversion is decidable when
+    the mode theory decides its modalities/2-cells; for a THIN theory (<= one 2-cell per parallel pair) that
+    is a decidable-classifier comparison (`decideThinTwoCellConv`).  Instance: the walking involution as
+    `fxInvolutionThinModeTheory` (classifier = Z/2 parity), citing `fxInvolution_hasOneCellWordProblemDecided`.
+    Gratzer, arXiv:2106.01414 / 2301.11842.  CAVEAT: a NON-thin f.p. mode theory can encode an undecidable
+    word problem — that is FLAG A's wall; do not generalize past thin.
+  * `fxMode_hasExhibitedConvergentDecision = true` (`ExhibitedConvergentDecision`) — Squier/Knuth-Bendix: a
+    HAND-EXHIBITED convergent presentation decides its word problem via the shipped KB engine
+    (`ConvergentNormalizer.decidableEquationalTheory`, term `decideInvolutionEquationalTheory`).  Instance:
+    the involution presentation `s.s -> id` IS convergent (terminating: length drops by 2; confluent: the
+    parity-NF funnel, no critical pairs), and its `EquationalTheory` COINCIDES with the Tier-B thin relation
+    (`equationalTheory_iff_involutionOneCellConv`), tying Tiers B and C on the SAME object.  CAVEATS:
+    convergence is EXHIBITED, not COMPLETED (the completion algorithm/fairness is not mechanized; the
+    normalizer is data); by Squier {finite convergent presentation} is a PROPER subclass of {decidable word
+    problem} (arXiv:1402.2587), so this is not a decidability criterion; does not lift past this presentation. -/
 end FX1Poly.Polygraph
