@@ -29,6 +29,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.whiskerLeftWhiskerEqConv
 #assert_no_axioms FX1Poly.Polygraph.canonThroughT_reindexSource
 #assert_no_axioms FX1Poly.Polygraph.canonThroughT_reindexTarget
+#assert_no_axioms FX1Poly.Polygraph.vcompCanonCollapse
 #assert_no_axioms FX1Poly.Polygraph.fxIdempotentMonad_hasNormalizeFull
 
 end FX1PolyAudit

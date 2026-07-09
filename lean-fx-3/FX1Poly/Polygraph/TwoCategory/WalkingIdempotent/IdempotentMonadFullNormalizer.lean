@@ -230,18 +230,42 @@ theorem canonThroughT_reindexTarget {sourceCount targetPred targetPred' : Nat} (
         (canonThroughT sourceCount targetPred')) := by
   cases hpred; exact IdempotentMonadSaturatedTwoCellConv.refl _
 
+/-- ★ **The vcomp middle-collapse crux** — `canonThroughT s g ∘ canonThroughT (g+1) h ≈ canonThroughT s h`.  Two
+through-`t` canonical cells compose to the through-`t` canonical of the outer boundary: the inner grow tower
+`growTower g` (up to `t^{g+1}`) meets the fold `monadGadget (g+1)` and the round-trip collapses by `growThenFold g`
+(the mu-iso grow/fold ladder), leaving `monadGadget s ∘ growTower h = canonThroughT s h`.  The mathematical heart
+of the `vcomp` normalize case (in `monadTPower` coordinates), zero-axiom. -/
+theorem vcompCanonCollapse (sourceLen middlePred targetPred : Nat) :
+    IdempotentMonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (canonThroughT sourceLen middlePred) (canonThroughT (middlePred + 1) targetPred))
+      (canonThroughT sourceLen targetPred) := by
+  show IdempotentMonadSaturatedTwoCellConv
+    (RawTwoCellExpr.vcomp (RawTwoCellExpr.vcomp (monadGadget sourceLen) (growTower middlePred))
+      (RawTwoCellExpr.vcomp (monadGadget (middlePred + 1)) (growTower targetPred)))
+    (RawTwoCellExpr.vcomp (monadGadget sourceLen) (growTower targetPred))
+  refine trans (idempotentConvOfStep (TwoCellStep.vcompAssoc (monadGadget sourceLen) (growTower middlePred)
+    (RawTwoCellExpr.vcomp (monadGadget (middlePred + 1)) (growTower targetPred)))) ?_
+  refine trans (vcompCongrRight (monadGadget sourceLen)
+    (symm (idempotentConvOfStep (TwoCellStep.vcompAssoc (growTower middlePred) (monadGadget (middlePred + 1))
+      (growTower targetPred))))) ?_
+  refine trans (vcompCongrRight (monadGadget sourceLen)
+    (vcompCongrLeft (growTower targetPred) (growThenFold middlePred))) ?_
+  refine trans (vcompCongrRight (monadGadget sourceLen)
+    (idempotentConvOfStep (TwoCellStep.vcompIdLeft (growTower targetPred)))) ?_
+  exact IdempotentMonadSaturatedTwoCellConv.refl _
+
 /-- **Honesty marker — the `normalizeFull` REDUCTION KIT is shipped; the six-case assembly is the residual.**
 The length-keyed `repNF` / `repFull` reductions (`repFull_populated` / `repFull_zeroZero`, proved by `cases` on the
 boundary-length proof so they actually FIRE the stuck dependent match) plus the CONV-level cast helpers
 (`whiskerRight/LeftPullConv`, `whiskerRight/LeftWhiskerEqConv`, `canonThroughT_reindexSource/Target`, applied so
-defeq handles the `congrArg` beta-redexes) are the shared tools `normalizeFull` consumes.  With them the `gen`,
-`id`, and populated-`whiskerRight` cases are mechanical (each `ofCastLeft` + reduce + shipped whisker
-canonicalisation).  What is NOT assembled this round is the full `normalizeFull` induction: the two whisker EMPTY
-sub-cases (a `nil ⇒ nil` body whiskered — needs the whisker-length reindex through `whiskerRightId`/`idNFConv`),
-the general-width LEFT whisker (an `add_comm` reindex on both indices vs `whiskerLeftCanon`'s `a+k` order), and the
-`vcomp` case (the middle grow/fold collapse `growThenFold` across the four `middle`/`target` length sub-cases).
-Until `normalizeFull` lands and feeds `idempotentThinness_ofNormalize`, `IdempotentMonadLocalPosetality` is NOT
-inhabited.  `= false`. -/
+defeq handles the `congrArg` beta-redexes) are the shared tools `normalizeFull` consumes.  Every MATHEMATICAL crux
+is proved zero-axiom: `gen` (unit/mul laws), `id` (`idNFConv` via `foldThenGrow`), populated-`whiskerRight`
+(`whiskerRightCanon`), and the `vcomp` middle collapse (`vcompCanonCollapse`).  What is NOT assembled this round is
+the full `normalizeFull` INDUCTION — pure boundary-cast plumbing: the two whisker EMPTY sub-cases (a `nil ⇒ nil`
+body whiskered — the whisker-length reindex through `whiskerRightId`/`idNFConv`), the general-width LEFT whisker
+(an `add_comm` reindex on both indices vs `whiskerLeftCanon`'s `a+k` order), and wrapping `vcompCanonCollapse` in
+the outer `monadPath_normalForm` casts across the `middle`/`target` length sub-cases.  Until `normalizeFull` lands
+and feeds `idempotentThinness_ofNormalize`, `IdempotentMonadLocalPosetality` is NOT inhabited.  `= false`. -/
 def fxIdempotentMonad_hasNormalizeFull : Bool := false
 
 end FX1Poly.Polygraph
