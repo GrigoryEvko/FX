@@ -188,12 +188,15 @@ components (`inclusionLeftTwo` / `inclusionRightTwo`, vacuous `onTwoCell`).  Thi
 transport of a real generating 2-cell) is the documented residual.  `= true`. -/
 def fxAmalg_hasMapCellAlong : Bool := true
 
-/-- **Honesty marker.**  The REAL-relation coprojection `onTwoCell` — the action of a coprojection on a GENUINE
-generating 2-cell (`monadComputad`'s `eta` / `mu`) — stays open.  It needs `interpretWordFrom_map`: a genuine
-2-generator's `lhs` / `rhs` word interprets (under the retag `embedLeftLetter` / `embedRightLetter`) to the
-`mapPath`-image of the source interpretation, a dependent transport across the interpreter's discovered-mode
-seed.  Until it lands, `mapCellAlong` is populated for the LOCALLY-THIN coprojections only (vacuous `onTwoCell`),
-which is exactly the fragment the saturated dispatch closes.  `= false`. -/
-def fxAmalg_hasRealGeneratorCoprojection : Bool := false
+/-- ★ **Honesty marker — the REAL-relation coprojection `onTwoCell` SHIPS (r6 P2, `RealCoprojection.lean`).**  The
+action of the right coprojection on a GENUINE generating 2-cell (`monadComputad`'s `eta` / `mu`, or any component-2
+2-generator) is `inclusionRightTwoReal`, whose `onTwoCell` sends a reconstructed generating 2-cell to the pushout
+reconstructed 2-cell at `embedRightTwoGen`.  The engine is `interpretWordFrom_map`: a mode-injective coprojection
+commutes with the word-to-`ModalityPath` interpreter (`interpretWordFrom (onModes src) (word.map onModalityGen) =
+(interpretWordFrom src word).map (onModes × mapPath)`), so each generator's `lhs` / `rhs` word interprets, under the
+retag `embedRightLetter`, to the `mapPath`-image of the source interpretation — exactly the dependent seed-transport
+this marker named.  `mapCellAlong` is now populated for a coprojection into a pushout whose component has real
+2-generators, not only the LOCALLY-THIN fragment.  `= true`. -/
+def fxAmalg_hasRealGeneratorCoprojection : Bool := true
 
 end FX1Poly.Polygraph.Amalgam

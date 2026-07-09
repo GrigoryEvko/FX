@@ -157,6 +157,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.MapCell
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchSaturated
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ConvFullFunctor
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ConvFullFunctorDispatch
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealCoprojection
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
