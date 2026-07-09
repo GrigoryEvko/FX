@@ -29,6 +29,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.listSum_composeCounts
 #assert_no_axioms FX1Poly.Polygraph.wordMul_vcomp_hmid
 #assert_no_axioms FX1Poly.Polygraph.wordMul_vcomp_hdom
+#assert_no_axioms FX1Poly.Polygraph.monadGadget_cast
+#assert_no_axioms FX1Poly.Polygraph.wordFromCounts_castEq
+#assert_no_axioms FX1Poly.Polygraph.monadVcompHcompSplit
+#assert_no_axioms FX1Poly.Polygraph.monadCastTripleEqCast
+#assert_no_axioms FX1Poly.Polygraph.monadWordVcompStepCollapse
+#assert_no_axioms FX1Poly.Polygraph.wordMul_vcomp
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasWordGadgetCollapseAndComposeCounts
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasVcompWordMultiplicativity
 

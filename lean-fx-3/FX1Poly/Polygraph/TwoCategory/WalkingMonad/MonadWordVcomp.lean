@@ -360,6 +360,205 @@ theorem wordMul_vcomp_hdom (ccL ccR : List Nat) (hlen : ccL.length = listSum ccR
     ((congrArg monadTPower (listSum_composeCounts ccL ccR hlen)).trans
       (countsDomainPath_eq_monadTPower_listSum ccL).symm)
 
+/-! ## The interchange assembly primitives -/
+
+/-- Casting a merge gadget's DOMAIN along a `t`-power length equality is the gadget at the new length: for
+`hab : a = b`, `castBoundary (t^a = t^b) (gadget a) = gadget b`.  `cases hab; rfl` (the count is the gadget's only
+data, so re-indexing is spine-invisible).  Used to recognise the front interchange factor `word take ⊟ (t^r-cast of
+gadget r)` as `word take ⊟ gadget take.length` (`take.length = r`). -/
+theorem monadGadget_cast (a b : Nat) (hab : a = b) :
+    RawTwoCellExpr.castBoundary (congrArg monadTPower hab) rfl (monadGadget a) = monadGadget b := by
+  cases hab; rfl
+
+/-- The canonical word transports across a counts-list equality: `word cc = castBoundary (word dd)` when `cc = dd`
+(`cases; rfl` — the word is a function of the counts, the boundary casts proof-irrelevant).  Bridges `word ccL` to
+`word (consAppend take drop)` when `ccL = consAppend take drop`. -/
+theorem wordFromCounts_castEq (cc dd : List Nat) (heq : cc = dd) :
+    wordFromCounts cc
+      = RawTwoCellExpr.castBoundary (congrArg countsDomainPath heq.symm)
+          (congrArg (fun list => monadTPower list.length) heq.symm) (wordFromCounts dd) := by
+  cases heq; rfl
+
+/-- ★ **The free interchange (symm direction), packaged for the saturated relation.**  A vertical composite of two
+horizontal composites is the horizontal composite of the two vertical composites: `(A ⊠ B) ⊟ (C ⊠ D) ≈ (A ⊟ C) ⊠
+(B ⊟ D)` — cast-free, both Godement orders sharing the boundary (`TwoCellStep.interchange`, symmetrised).  This is
+the interchange / Godement bifunctoriality that the `wordMul_vcomp` block re-sort turns on. -/
+theorem monadVcompHcompSplit {sourceMode middleMode targetMode : MonadMode}
+    {pathZero pathOne pathTwo : ModalityPath monadModeSignature.graph sourceMode middleMode}
+    {pathZeroBack pathOneBack pathTwoBack : ModalityPath monadModeSignature.graph middleMode targetMode}
+    (cellA : RawTwoCellExpr monadModeSignature pathZero pathOne)
+    (cellC : RawTwoCellExpr monadModeSignature pathOne pathTwo)
+    (cellB : RawTwoCellExpr monadModeSignature pathZeroBack pathOneBack)
+    (cellD : RawTwoCellExpr monadModeSignature pathOneBack pathTwoBack) :
+    MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.hcomp cellA cellB) (RawTwoCellExpr.hcomp cellC cellD))
+      (RawTwoCellExpr.hcomp (RawTwoCellExpr.vcomp cellA cellC) (RawTwoCellExpr.vcomp cellB cellD)) :=
+  MonadSaturatedTwoCellConv.symm
+    (MonadSaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.interchange cellA cellC cellB cellD)))
+
+/-- Fuse a TRIPLE boundary cast into one along the composite endpoints (`cases` on the six seams).  The vcomp step
+accumulates three casts — the bridge's outer source cast, and the two per-factor extrusion casts from
+`hcomp_castBoundaryLeft` / `hcomp_castBoundaryRight` — whose shared intermediate 1-cells live only in the (erased)
+equality proofs, so neither `rw` nor `simp` can fuse them; this `cases`-collapse does. -/
+theorem monadCastTripleEqCast {sourceMode targetMode : MonadMode}
+    {pathZero pathOne pathTwo pathThree targetZero targetOne targetTwo targetThree :
+      ModalityPath monadGraph sourceMode targetMode}
+    (cSource : pathZero = pathOne) (cTarget : targetZero = targetOne)
+    (bSource : pathOne = pathTwo) (bTarget : targetOne = targetTwo)
+    (aSource : pathTwo = pathThree) (aTarget : targetTwo = targetThree)
+    (hdom : pathZero = pathThree) (hcod : targetZero = targetThree)
+    (cell : RawTwoCellExpr monadModeSignature pathZero targetZero) :
+    RawTwoCellExpr.castBoundary aSource aTarget
+        (RawTwoCellExpr.castBoundary bSource bTarget (RawTwoCellExpr.castBoundary cSource cTarget cell))
+      = RawTwoCellExpr.castBoundary hdom hcod cell := by
+  cases cSource; cases cTarget; cases bSource; cases bTarget; cases aSource; cases aTarget; rfl
+
+/-- The two-factor COLLAPSE of the interchanged composite: the front vertical composite `word take ⊟ gadget r-cast`
+collapses to `gadget (listSum take)` (`wordGadgetCollapse`, absorbing the block into one merge), and the back
+vertical composite `word drop ⊟ word ccR'-cast` is the induction hypothesis; horizontally re-composing gives the
+head-gadget word of the next block sum.  Uses the two saturated hcomp congruences (`hcompCongrLeft` / `Right`). -/
+theorem monadWordVcompStepCollapse (r : Nat) (take drop ccR' : List Nat)
+    (htake : take.length = r) (hdrop : drop.length = listSum ccR')
+    (ih : MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (wordFromCounts drop)
+        (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid drop ccR' hdrop) rfl (wordFromCounts ccR')))
+      (RawTwoCellExpr.castBoundary (wordMul_vcomp_hdom drop ccR' hdrop)
+        (congrArg monadTPower (composeCounts_length drop ccR'))
+        (wordFromCounts (composeCounts drop ccR')))) :
+    MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.hcomp
+        (RawTwoCellExpr.vcomp (wordFromCounts take)
+          (RawTwoCellExpr.castBoundary (congrArg monadTPower htake.symm) rfl (monadGadget r)))
+        (RawTwoCellExpr.vcomp (wordFromCounts drop)
+          (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid drop ccR' hdrop) rfl (wordFromCounts ccR'))))
+      (RawTwoCellExpr.hcomp
+        (RawTwoCellExpr.castBoundary (countsDomainPath_eq_monadTPower_listSum take).symm rfl
+          (monadGadget (listSum take)))
+        (RawTwoCellExpr.castBoundary (wordMul_vcomp_hdom drop ccR' hdrop)
+          (congrArg monadTPower (composeCounts_length drop ccR'))
+          (wordFromCounts (composeCounts drop ccR')))) := by
+  have hFrontCollapse : MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (wordFromCounts take)
+        (RawTwoCellExpr.castBoundary (congrArg monadTPower htake.symm) rfl (monadGadget r)))
+      (RawTwoCellExpr.castBoundary
+        (countsDomainPath_eq_monadTPower_listSum take).symm rfl (monadGadget (listSum take))) := by
+    refine MonadSaturatedTwoCellConv.trans
+      (MonadSaturatedTwoCellConv.vcompCongrRight (wordFromCounts take)
+        (MonadSaturatedTwoCellConv.ofEq (monadGadget_cast r take.length htake.symm))) ?_
+    exact wordGadgetCollapse take
+  refine MonadSaturatedTwoCellConv.trans
+    (MonadSaturatedTwoCellConv.hcompCongrLeft hFrontCollapse _) ?_
+  exact MonadSaturatedTwoCellConv.hcompCongrRight _ ih
+
+/-! ## The vertical word multiplicativity -/
+
+/-- ★★ **The VERTICAL word multiplicativity.**  Vertically composing two canonical Eilenberg–Zilber words is the
+canonical word of their block-sum composition (`composeCounts`), up to the boundary casts: given the partition
+`ccL.length = listSum ccR`, `vcomp (word ccL) (cast (word ccR)) ≈ cast (word (composeCounts ccL ccR))`.  This is the
+monad-law-bearing `normalizeCell` `vcomp` case — the second saturated decision of the ladder, closing #2008/#2009.
+Structural recursion on `ccR`:
+
+  * `ccR = []` — the partition forces `ccL = []`; both words are `id (t^0)`, convertible by `vcompIdRight` and cast
+    collapse.
+  * `ccR = r :: ccR'` — split `ccL` at the first block via `consTake r` / `consDrop r`; `wordMul_hcomp` rewrites
+    `word ccL` as the horizontal composite `word take ⊠ word drop`, the free interchange `monadVcompHcompSplit`
+    swaps the vertical-of-horizontal into horizontal-of-vertical, the front vertical composite collapses to
+    `gadget (listSum take)` (`wordGadgetCollapse`) and the back is the induction hypothesis, and re-composing
+    horizontally lands on `word (listSum take :: composeCounts drop ccR') = word (composeCounts ccL (r :: ccR'))`.
+    The `monadTPower_add` middle cast lets the cast-free interchange fire; the accumulated boundary casts are fused
+    by `monadCastTripleEqCast` (proof-irrelevant seams) and reconciled to the target by `castBoundary_wordCongr`.
+
+Uses the three monad laws through `wordGadgetCollapse`.  Raw, zero-axiom, STRUCTURAL on the counts list. -/
+theorem wordMul_vcomp : ∀ (ccR ccL : List Nat) (hlen : ccL.length = listSum ccR),
+    MonadSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (wordFromCounts ccL)
+        (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid ccL ccR hlen) rfl (wordFromCounts ccR)))
+      (RawTwoCellExpr.castBoundary (wordMul_vcomp_hdom ccL ccR hlen)
+        (congrArg monadTPower (composeCounts_length ccL ccR))
+        (wordFromCounts (composeCounts ccL ccR)))
+  | [], ccL, hlen => by
+      cases ccL with
+      | cons head tail => exact absurd hlen (fun heq => Nat.noConfusion heq)
+      | nil =>
+          refine MonadSaturatedTwoCellConv.trans
+            (MonadSaturatedTwoCellConv.vcompCongrRight (wordFromCounts [])
+              (MonadSaturatedTwoCellConv.ofEq (monadCastBoundary_id _ _))) ?_
+          refine MonadSaturatedTwoCellConv.trans
+            (MonadSaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+              (TwoCellStep.vcompIdRight (wordFromCounts [])))) ?_
+          exact MonadSaturatedTwoCellConv.symm
+            (MonadSaturatedTwoCellConv.ofEq (monadCastBoundary_id _ _))
+  | r :: ccR', ccL, hlen => by
+      have hr : r ≤ ccL.length := by
+        rw [hlen]; exact Nat.le_add_right r (listSum ccR')
+      have htake : (consTake r ccL).length = r := consTake_length_of_le r ccL hr
+      have hdrop : (consDrop r ccL).length = listSum ccR' := by
+        rw [consDrop_length, hlen]; exact natAddSubCancelLeft r (listSum ccR')
+      have hsplit : consAppend (consTake r ccL) (consDrop r ccL) = ccL :=
+        consAppend_consTake_consDrop r ccL
+      have ih := wordMul_vcomp ccR' (consDrop r ccL) hdrop
+      -- bridge: word ccL ~ single-cast of hcomp (word take) (word drop)
+      have hbridge : MonadSaturatedTwoCellConv (wordFromCounts ccL)
+          (RawTwoCellExpr.castBoundary
+            (((countsDomainPath_consAppend (consTake r ccL) (consDrop r ccL)).symm).trans
+              (congrArg countsDomainPath hsplit.symm.symm))
+            (((monadTPower_length_consAppend (consTake r ccL) (consDrop r ccL)).symm).trans
+              (congrArg (fun list => monadTPower list.length) hsplit.symm.symm))
+            (RawTwoCellExpr.hcomp (wordFromCounts (consTake r ccL)) (wordFromCounts (consDrop r ccL)))) := by
+        refine MonadSaturatedTwoCellConv.trans
+          (MonadSaturatedTwoCellConv.ofEq
+            (wordFromCounts_castEq ccL (consAppend (consTake r ccL) (consDrop r ccL)) hsplit.symm)) ?_
+        refine MonadSaturatedTwoCellConv.trans
+          (MonadSaturatedTwoCellConv.castBoundaryCongr _ _
+            (wordMul_hcomp (consTake r ccL) (consDrop r ccL))) ?_
+        exact MonadSaturatedTwoCellConv.ofEq
+          (RawTwoCellExpr.castBoundary_castBoundary _ _ _ _
+            (RawTwoCellExpr.hcomp (wordFromCounts (consTake r ccL)) (wordFromCounts (consDrop r ccL))))
+      -- apply the bridge on the LEFT factor, then extrude the outer source cast
+      refine MonadSaturatedTwoCellConv.trans
+        (MonadSaturatedTwoCellConv.vcompCongrLeft _ hbridge) ?_
+      refine MonadSaturatedTwoCellConv.trans
+        (MonadSaturatedTwoCellConv.ofEq
+          (RawTwoCellExpr.vcomp_castBoundaryLeft _ _
+            (RawTwoCellExpr.hcomp (wordFromCounts (consTake r ccL)) (wordFromCounts (consDrop r ccL)))
+            (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid ccL (r :: ccR') hlen) rfl
+              (wordFromCounts (r :: ccR'))))) ?_
+      -- recognise the middle-cast of `word (r :: ccR')` as the hcomp of the two interchange factors
+      have hMiddle : RawTwoCellExpr.castBoundary
+            ((((monadTPower_length_consAppend (consTake r ccL) (consDrop r ccL)).symm).trans
+              (congrArg (fun list => monadTPower list.length) hsplit.symm.symm)).symm) rfl
+            (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid ccL (r :: ccR') hlen) rfl
+              (wordFromCounts (r :: ccR')))
+          = RawTwoCellExpr.hcomp
+              (RawTwoCellExpr.castBoundary (congrArg monadTPower htake.symm) rfl (monadGadget r))
+              (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid (consDrop r ccL) ccR' hdrop) rfl
+                (wordFromCounts ccR')) := by
+        rw [RawTwoCellExpr.castBoundary_castBoundary,
+            RawTwoCellExpr.hcomp_castBoundaryLeft, RawTwoCellExpr.hcomp_castBoundaryRight,
+            RawTwoCellExpr.castBoundary_castBoundary]
+        rfl
+      refine MonadSaturatedTwoCellConv.trans
+        (MonadSaturatedTwoCellConv.castBoundaryCongr _ _
+          (MonadSaturatedTwoCellConv.vcompCongrRight
+            (RawTwoCellExpr.hcomp (wordFromCounts (consTake r ccL)) (wordFromCounts (consDrop r ccL)))
+            (MonadSaturatedTwoCellConv.ofEq hMiddle))) ?_
+      -- interchange, then the two-factor collapse
+      refine MonadSaturatedTwoCellConv.trans
+        (MonadSaturatedTwoCellConv.castBoundaryCongr _ _
+          (monadVcompHcompSplit (wordFromCounts (consTake r ccL))
+            (RawTwoCellExpr.castBoundary (congrArg monadTPower htake.symm) rfl (monadGadget r))
+            (wordFromCounts (consDrop r ccL))
+            (RawTwoCellExpr.castBoundary (wordMul_vcomp_hmid (consDrop r ccL) ccR' hdrop) rfl
+              (wordFromCounts ccR')))) ?_
+      refine MonadSaturatedTwoCellConv.trans
+        (MonadSaturatedTwoCellConv.castBoundaryCongr _ _
+          (monadWordVcompStepCollapse r (consTake r ccL) (consDrop r ccL) ccR' htake hdrop ih)) ?_
+      -- extrude the collapsed hcomp and reconcile with the target cast (same word, proof-irrelevant seams)
+      refine MonadSaturatedTwoCellConv.ofEq ?_
+      rw [RawTwoCellExpr.hcomp_castBoundaryLeft, RawTwoCellExpr.hcomp_castBoundaryRight]
+      exact monadCastTripleEqCast _ _ _ _ _ _ _ _ _
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED — the word-gadget collapse and the block-sum composition are shipped, zero-axiom.**  Toward the
@@ -380,25 +579,22 @@ sole open `normalizeCell` case `vcomp` (the vertical word multiplicativity `word
 `= true`. -/
 def fxMonad_hasWordGadgetCollapseAndComposeCounts : Bool := true
 
-/-- **Honesty marker — the vertical word multiplicativity `wordMul_vcomp` is the NAMED residual.**  With
-`wordGadgetCollapse`, `composeCounts`, `wordMul_hcomp` (the horizontal split), the free interchange
-(`TwoCellStep.interchange`), and the boundary-cast statements all shipped, the SOLE remaining piece is the assembly
-`wordMul_vcomp : vcomp (word ccL) (cast (word ccR)) ≈ cast (word (composeCounts ccL ccR))` (structural induction on
-`ccR`; the base and the `subst`-clean setup of the step are shipped in the working notes).
-
-The residual is EXACTLY the multi-cast interchange assembly of the `r :: ccR'` step: after splitting `word ccL` via
-`wordMul_hcomp` into `hcomp (word take) (word drop)` (whose codomain is `composePath (t^take.length) (t^drop.length)`)
-and recognizing `word (r :: ccR') = hcomp (gadget r) (word ccR')` (whose domain is `composePath (t^r)
-(countsDomainPath ccR')`), the two horizontal composites do NOT share a definitional middle boundary — reconciling
-`take.length = r`, `drop.length = listSum ccR'`, and `countsDomainPath ccR' = t^(listSum ccR')` requires threading a
-`monadTPower_add` middle cast so the cast-free `TwoCellStep.interchange` fires, then extruding one outer cast
-(`vcomp_castBoundaryLeft`), redistributing the right cast onto `word ccR'` (`hcomp_castBoundaryRight`), collapsing the
-front factor (`wordGadgetCollapse take`) and threading the IH through the back factor, and reassembling the two
-per-factor casts (needs a `hcomp_castBoundaryLeft` + a saturated `hcompCongrLeft`, both still to build) into the
-target via `hccEq` + `castBoundary_wordCongr`.  Until `wordMul_vcomp` lands, the `vcomp` `normalizeCell` case is not
-inhabited, so `normalize : MonadNormalizesToCanon` is not inhabited and `fxMonad_hasWordMulVcomp` /
-`fxMonad_hasConvOfMapEqNormalization` / `fxMonad_hasMonotoneMapDecisionAssembled` /
-`fxMonad_hasFullMapEqOfConvAndCompleteness` stay `false`.  `= false`. -/
-def fxMonad_hasVcompWordMultiplicativity : Bool := false
+/-- **ESTABLISHED — the VERTICAL word multiplicativity `wordMul_vcomp` is CLOSED, zero-axiom.**  The
+monad-law-bearing `normalizeCell` `vcomp` brick is landed: `wordMul_vcomp : vcomp (word ccL) (cast (word ccR)) ≈
+cast (word (composeCounts ccL ccR))` under the partition `ccL.length = listSum ccR`, by STRUCTURAL recursion on
+`ccR`.  The `r :: ccR'` step splits `word ccL` at the first block via `wordMul_hcomp` into `hcomp (word take)
+(word drop)`, recognises `word (r :: ccR') = hcomp (gadget r) (word ccR')`, threads a `monadTPower_add` middle cast
+so the cast-free free interchange `monadVcompHcompSplit` (`TwoCellStep.interchange` symmetrised) fires, collapses the
+FRONT vertical composite `word take ⊟ gadget r` to `gadget (listSum take)` (`wordGadgetCollapse`, the three monad
+laws) and threads the induction hypothesis through the BACK, then re-composes horizontally — landing on
+`word (listSum take :: composeCounts drop ccR') = word (composeCounts ccL (r :: ccR'))`.  The accumulated boundary
+casts extrude by the LEFT/RIGHT `hcomp_castBoundary` lemmas and fuse by `monadCastTripleEqCast` (proof-irrelevant
+seams — `rw`/`simp` cannot fuse them because the shared intermediate 1-cells live only in the erased proofs); the
+front factor is recognised via `monadGadget_cast`, the `word ccL` split via `wordFromCounts_castEq`.  This is the
+SECOND saturated decision of the ladder (after the walking-adjunction saturated matching) and closes #2008/#2009's
+`vcomp` residual.  With `wordMul_vcomp` in hand the `vcomp` `normalizeCell` case is inhabited; the remaining data
+bridge `canonCounts (vcomp) = composeCounts (canonCounts, canonCounts)` completes `normalize` and the completeness
+flags.  `= true`. -/
+def fxMonad_hasVcompWordMultiplicativity : Bool := true
 
 end FX1Poly.Polygraph

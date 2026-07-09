@@ -246,22 +246,18 @@ machine-checked function of `normalize`, and `normalize` (a `MonadNormalizesToCa
 ingredient toward inhabiting `MonadSaturatedCanonicalization`.  `= true`. -/
 def fxMonad_hasConvOfMapEqReducedToNormalize : Bool := true
 
-/-- **Honesty marker — the SOLE residual is `normalizeCell`, whose SOLE hard case is the vertical word
-multiplicativity `wordMul_vcomp`.**  `convOfMapEq` is machine-checked-reduced to `normalize : MonadNormalizesToCanon`
-(`monadConvOfMapEq_ofNormalize`); what is NOT landed is `normalize` itself — `normalizeCell : cell ≈ canon cell` by
-induction on the cell.  Its cases split as: `gen`/`id` (base) and `whiskerLeft`/`whiskerRight` reduce to the
-HORIZONTAL word multiplicativity `wordMul_hcomp` (canonical words compose horizontally by counts-list concatenation),
-which needs the free-2-category structural infrastructure — associativity of horizontal composition, gadget-chain
-reassembly — NOT present in the lane; the `vcomp` case needs the VERTICAL word multiplicativity `wordMul_vcomp`:
-concatenate two canonical EZ words and re-normalize (degeneracies-then-faces, index-sorted) to one canonical word, a
-terminating adjacent-swap insertion sort at the `MonadSaturatedTwoCellConv` level (the simplicial identities `σσ`
-commute via `assoc`, `σδ = id` cancel via the two unit laws; classically Δ₊ is convergent — Guiraud–Malbos–Mimram
-Example 2.6, Weibel Lemma 8.1.2 uniqueness — but the zero-axiom mechanization of the terminating normalizer, on an
-inversion-count structural `Nat` measure, is the multi-hundred-line faithfulness-weight brick, the adjunction lane's
-flag-B analog, also NOT landed there).  Neither `wordMul_hcomp` nor `wordMul_vcomp` is landed; until BOTH are,
-`normalize` is not inhabited, so `MonadSaturatedCanonicalization.convOfMapEq` is not inhabited and
-`fxMonad_hasMonotoneMapDecisionAssembled` / `fxMonad_hasConvOfMapEqNormalization` /
-`fxMonad_hasFullMapEqOfConvAndCompleteness` stay `false`.  `= false`. -/
-def fxMonad_hasWordMulVcomp : Bool := false
+/-- **ESTABLISHED — the vertical word multiplicativity `wordMul_vcomp` is CLOSED, zero-axiom** (with the horizontal
+`wordMul_hcomp`).  `convOfMapEq` is machine-checked-reduced to `normalize : MonadNormalizesToCanon`
+(`monadConvOfMapEq_ofNormalize`); the `normalizeCell` induction splits as `gen`/`id` (base), `whiskerLeft`/
+`whiskerRight` (reduced to `wordMul_whiskerLeft/Right` + `wordMul_hcomp`, SHIPPED), and `vcomp` (reduced to the
+VERTICAL word multiplicativity `wordMul_vcomp`).  The last — `wordMul_vcomp : vcomp (word ccL) (cast (word ccR)) ≈
+cast (word (composeCounts ccL ccR))` — is now LANDED (`WalkingMonad/MonadWordVcomp`,
+`fxMonad_hasVcompWordMultiplicativity`): the block-sum re-sort of two canonical EZ words, via the `wordMul_hcomp`
+block split, the free interchange, the `wordGadgetCollapse` per-block merge (the three monad laws), and the
+proof-irrelevant boundary-cast fusion.  Both word multiplicativities are thus closed; the remaining ingredient
+toward inhabiting `normalize` is the DATA bridge `canonCounts (vcomp cellL cellR) = composeCounts (canonCounts
+cellL) (canonCounts cellR)` (`countsOf ∘ composeMap = composeCounts ∘ countsOf`, the degeneracies-then-faces
+identity), the analog of the shipped whisker bridges `canonCounts_whiskerLeft/Right`.  `= true`. -/
+def fxMonad_hasWordMulVcomp : Bool := true
 
 end FX1Poly.Polygraph
