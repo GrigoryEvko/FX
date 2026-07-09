@@ -527,6 +527,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingSoundness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingCompleteness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingValleyDescent
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringColouredRefinement
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringLabelPinning
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
