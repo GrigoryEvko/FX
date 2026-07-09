@@ -61,8 +61,11 @@ def countLess (bound : Nat) : List Nat → Nat
 /-- ★ The **bubble-sort inversion count** of a colour-key word: the number of pairs `(i, j)` with `i < j` (position)
 but `keys[i] > keys[j]` (out of canonical order).  Structural: each head contributes the count of strictly-smaller
 keys AFTER it.  With NO braid ascent this equals the symmetric-group length = the minimum number of adjacent swaps to
-sort to canonical order — the FC-3b `commutePotential`. -/
-def countInversions : List Nat → Nat
+sort to canonical order — the FC-3b `commutePotential`.  `private` per the codebase convention for re-declared
+helpers: a public `countInversions` already lives in `WalkingAdjunction.SpineValleyDisorder` in the shared
+`FX1Poly.Polygraph` namespace, and a second public copy breaks the `AuditAll` umbrella import; consumers use the
+public wrapper `commutePotential` (and the public lemmas below, whose statements mention this constant). -/
+private def countInversions : List Nat → Nat
   | [] => 0
   | head :: rest => countLess head rest + countInversions rest
 

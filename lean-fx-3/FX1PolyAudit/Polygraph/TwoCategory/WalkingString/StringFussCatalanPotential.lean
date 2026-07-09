@@ -11,7 +11,6 @@ term-level CANCEL / EXTEND / COMMUTE-INTERLEAVE wiring.  Must be free of `propex
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.countLess
-#assert_no_axioms FX1Poly.Polygraph.countInversions
 #assert_no_axioms FX1Poly.Polygraph.commutePotential
 #assert_no_axioms FX1Poly.Polygraph.countInversions_nil
 #assert_no_axioms FX1Poly.Polygraph.countInversions_swapAdjacent_dropsOne
