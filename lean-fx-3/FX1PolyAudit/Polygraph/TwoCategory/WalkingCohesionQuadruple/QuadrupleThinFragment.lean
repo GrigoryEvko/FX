@@ -1,0 +1,40 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.TwoCategory.WalkingCohesionQuadruple.QuadrupleThinFragment
+
+/-! # FX1PolyAudit.…WalkingCohesionQuadruple.QuadrupleThinFragment — zero-axiom gate (thin fragment + decision)
+
+Per-declaration zero-axiom gate for the quadruple thin fragment and decision-modulo-thinness: the six leg
+straightenings and their bundle, the sound `ℤ/2` parity invariant and its soundness / non-triviality / agreement,
+the thinness Prop and local-posetality package, the decision assembly and interface, the non-vacuity witnesses,
+the reflections-idempotent demo, the ModeAdmit bridge note, and the honesty markers (the OPEN thinness wall).
+Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.quadTriPi0_straightens
+#assert_no_axioms FX1Poly.Polygraph.quadTriDiscLo_straightens
+#assert_no_axioms FX1Poly.Polygraph.quadTriDiscHi_straightens
+#assert_no_axioms FX1Poly.Polygraph.quadTriGammaLo_straightens
+#assert_no_axioms FX1Poly.Polygraph.quadTriGammaHi_straightens
+#assert_no_axioms FX1Poly.Polygraph.quadTriCodisc_straightens
+#assert_no_axioms FX1Poly.Polygraph.quadThinFragment_legsStraighten
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionGeneratorParity
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionParity
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionParity_satConv
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionParity_unitLower
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionParity_lowerRoundRight
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionParity_agreesOnDiscSnakes
+#assert_no_axioms FX1Poly.Polygraph.QuadCohesionThinness
+#assert_no_axioms FX1Poly.Polygraph.QuadCohesionLocalPosetality
+#assert_no_axioms FX1Poly.Polygraph.decideQuadCohesionConvViaThinness
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionSaturatedWordProblemModuloPosetality
+#assert_no_axioms FX1Poly.Polygraph.decideQuadCohesion_isTrue_ofPosetality
+#assert_no_axioms FX1Poly.Polygraph.quadDecision_genuineIdentification
+#assert_no_axioms FX1Poly.Polygraph.quadDecision_genuineSeparation
+#assert_no_axioms FX1Poly.Polygraph.quadReflectionsAreIdempotent
+#assert_no_axioms FX1Poly.Polygraph.fxQuadCohesion_isModeAdmitRegistryCandidate
+#assert_no_axioms FX1Poly.Polygraph.fxQuadCohesion_hasQuadruplePresentation
+#assert_no_axioms FX1Poly.Polygraph.fxQuadCohesion_hasDecisionAssemblyModuloThinness
+#assert_no_axioms FX1Poly.Polygraph.fxQuadCohesion_hasQuadrupleThinnessResolution
+
+end FX1PolyAudit
