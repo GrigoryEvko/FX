@@ -218,6 +218,25 @@ theorem kzAtomicCoveringLiteral (widthLeft widthRight : Nat) :
     KZTwoCellLE (wordFromCounts [widthLeft, 1, 0, widthRight]) (wordFromCounts [widthLeft, 0, 1, widthRight]) :=
   kzAtomicCovering widthLeft widthRight
 
+/-! ## The atomic covering carrying an arbitrary count-list SUFFIX -/
+
+/-- ★ **The atomic covering with an arbitrary count-list SUFFIX** `word ([a,1,0,b] ++ suf) ⇒ word ([a,0,1,b] ++
+suf)`: the single-strand move `[a,1,0,b] ⇒ [a,0,1,b]` with the `a`-merge and `b`-merge on the active block and an
+ARBITRARY count-list `suf` riding as right horizontal context (generalizing `kzAtomicCovering`'s single
+`[widthRight]` block to any `suf`).  The four-block active pattern `[a,1,0,b]` is a LITERAL that computes through
+`consAppend`, so the `[1,0]↔[0,1]` swap stays definitionally parallel; the `suf` tail splits off by
+`wordMul_hcomp`, `kzAtomicCoveringLiteral` fires on the active factor through `hcompCongrLeft`, and the boundary
+casts thread through `castBoundaryCongr`.  Works for any `suf` because `wordMul_hcomp` is polymorphic in its second
+argument. -/
+theorem kzAtomicCoveringSuffix (widthLeft widthRight : Nat) (suf : List Nat) :
+    KZTwoCellLE (wordFromCounts (consAppend [widthLeft, 1, 0, widthRight] suf))
+      (wordFromCounts (consAppend [widthLeft, 0, 1, widthRight] suf)) := by
+  refine KZTwoCellLE.trans (KZTwoCellLE.ofMonad (wordMul_hcomp [widthLeft, 1, 0, widthRight] suf)) ?_
+  refine KZTwoCellLE.trans (KZTwoCellLE.castBoundaryCongr _ _
+    (KZTwoCellLE.hcompCongrLeft (wordFromCounts suf) (kzAtomicCoveringLiteral widthLeft widthRight))) ?_
+  exact KZTwoCellLE.ofMonad
+    (MonadSaturatedTwoCellConv.symm (wordMul_hcomp [widthLeft, 0, 1, widthRight] suf))
+
 /-! ## The flat covering carrier: canonical words cast to `t^(listSum) ⇒ t^length` -/
 
 /-- ★ The **flat Eilenberg–Zilber word** of a count vector `cs` at the FLAT boundary `t^(listSum cs) ⇒ t^m`
@@ -297,6 +316,242 @@ theorem kzLocalCovering (widthLeft widthRight widthTotal : Nat)
       = monadMonotoneMapOf (kzFlatWord widthTotal 2 [widthLeft, widthRight + 1] hsumTgt rfl) from ?_)
   rw [monadMonotoneMapOf_vcomp, kzFlatWord_map, kzFlatWord_map, kzFlatWord_map, mergeCollapse_tgtCounts]
 
+/-! ## ★★ The FRONT covering with an arbitrary suffix — the covering brick with context
+
+`kzLocalCovering` moves one unit between the ONLY two blocks (`m = 2`).  The completeness chain needs the same move
+in front of an arbitrary tail: `flat ((a+1)::b::suf) ⇒ flat (a::(b+1)::suf)`.  This section ships that via the SAME
+merge-collapse route as `kzLocalCovering` but with the suffix `suf` riding through the merge word.  The new
+combinatorial content is the two merge-collapse identities with a suffix (`mergeCollapseSuffix_src`/`_tgt`), built
+from `composeMap_reconstructFrom_relabel` (post-composition relabels a reconstruction) and the ones-block value law
+`reconstructFrom_ones_get`. -/
+
+/-- The reconstruction of a run of `1`s (a `consReplicate 1 kount []` count-vector) is the ascending block: its
+value at an in-range position is `base + position`.  Structural recursion on the count. -/
+theorem reconstructFrom_ones_get : ∀ (base kount position : Nat), position < kount →
+    monotoneMapGet (reconstructFrom base (consReplicate 1 kount [])) position = base + position
+  | _, 0, _, hlt => absurd hlt (Nat.not_lt_zero _)
+  | base, kount + 1, 0, _ => by
+      show monotoneMapGet (reconstructFrom base (1 :: consReplicate 1 kount [])) 0 = base + 0
+      show base = base + 0
+      rw [Nat.add_zero]
+  | base, kount + 1, position + 1, hlt => by
+      show monotoneMapGet (reconstructFrom base (1 :: consReplicate 1 kount [])) (position + 1)
+        = base + (position + 1)
+      show monotoneMapGet (reconstructFrom (base + 1) (consReplicate 1 kount [])) position
+        = base + (position + 1)
+      rw [reconstructFrom_ones_get (base + 1) kount position (Nat.lt_of_succ_lt_succ hlt),
+          Nat.add_assoc, Nat.add_comm 1 position]
+
+/-- **Post-composition relabels a reconstruction.**  If a map `postMap` sends every value `srcBase + index` (for
+`index` in range) to `tgtBase + index`, then post-composing the reconstruction `reconstructFrom srcBase counts`
+with `postMap` is the reconstruction `reconstructFrom tgtBase counts` — the block structure is preserved, only the
+target labels shift.  Structural recursion on `counts`, peeling `consReplicate` blocks. -/
+theorem composeMap_reconstructFrom_relabel : ∀ (counts : List Nat) (srcBase tgtBase : Nat) (postMap : List Nat),
+    (∀ index, index < counts.length → monotoneMapGet postMap (srcBase + index) = tgtBase + index) →
+    composeMap (reconstructFrom srcBase counts) postMap = reconstructFrom tgtBase counts
+  | [], _, _, _, _ => rfl
+  | count :: counts', srcBase, tgtBase, postMap, hrelabel => by
+      show composeMap (consReplicate srcBase count (reconstructFrom (srcBase + 1) counts')) postMap
+        = consReplicate tgtBase count (reconstructFrom (tgtBase + 1) counts')
+      rw [composeMap_consReplicate]
+      have hhead : monotoneMapGet postMap srcBase = tgtBase := by
+        have hget := hrelabel 0 (Nat.succ_pos _)
+        rw [Nat.add_zero, Nat.add_zero] at hget
+        exact hget
+      rw [hhead,
+          composeMap_reconstructFrom_relabel counts' (srcBase + 1) (tgtBase + 1) postMap
+            (fun index hindex => by
+              rw [Nat.add_right_comm srcBase 1 index, Nat.add_right_comm tgtBase 1 index]
+              exact hrelabel (index + 1) (Nat.succ_lt_succ hindex))]
+
+/-- `listSum` of a run of `1`s is the count.  Structural recursion on the count. -/
+theorem listSum_consReplicate_ones : ∀ (kount : Nat), listSum (consReplicate 1 kount []) = kount
+  | 0 => rfl
+  | kount + 1 => by
+      show 1 + listSum (consReplicate 1 kount []) = kount + 1
+      rw [listSum_consReplicate_ones kount, Nat.add_comm]
+
+/-- **The suffix merge word counts**: fuse the first two target blocks (`[2, 2]`, the `kzLocalCovering` merge) and
+pass the remaining `kount` targets through the identity (`consReplicate 1 kount []`, a run of `1`s).  Its fold is
+`[0,0,1,1,2,3,…,kount+1]` — merge `{0,1}→0`, `{2,3}→1`, identity above. -/
+def kzMergeSuffix (kount : Nat) : List Nat := consAppend [2, 2] (consReplicate 1 kount [])
+
+/-- The suffix merge word has block sum `4 + kount` (two 2-blocks plus `kount` ones). -/
+theorem kzMergeSuffix_listSum (kount : Nat) : listSum (kzMergeSuffix kount) = 4 + kount := by
+  show 2 + (2 + listSum (consReplicate 1 kount [])) = 4 + kount
+  rw [listSum_consReplicate_ones]
+  exact (Nat.add_assoc 2 2 kount).symm
+
+/-- The suffix merge word has `2 + kount` blocks (two merged targets plus the `kount` pass-through targets). -/
+theorem kzMergeSuffix_length (kount : Nat) : (kzMergeSuffix kount).length = 2 + kount := by
+  show (consAppend [2, 2] (consReplicate 1 kount [])).length = 2 + kount
+  rw [consAppend_length, consReplicate_length]
+  show (2 : Nat) + (0 + kount) = 2 + kount
+  rw [Nat.zero_add]
+
+/-- The suffix merge word's fold at a position `≥ 4` reads the identity pass-through: `map (4 + index) = 2 + index`
+(the `index`-th target above the two merged blocks). -/
+theorem mergemapSuffix_get_ge (kount : Nat) : ∀ (index : Nat), index < kount →
+    monotoneMapGet (reconstructFrom 0 (kzMergeSuffix kount)) (4 + index) = 2 + index := by
+  intro index hindex
+  show monotoneMapGet
+      (consReplicate 0 2 (consReplicate 1 2 (reconstructFrom 2 (consReplicate 1 kount [])))) (4 + index)
+    = 2 + index
+  rw [show (4 : Nat) + index = 2 + (2 + index) from Nat.add_assoc 2 2 index,
+      monotoneMapGet_consReplicate_ge 0 2 (2 + index)
+        (consReplicate 1 2 (reconstructFrom 2 (consReplicate 1 kount []))),
+      monotoneMapGet_consReplicate_ge 1 2 index (reconstructFrom 2 (consReplicate 1 kount []))]
+  exact reconstructFrom_ones_get 2 kount index hindex
+
+/-- ★ **The SOURCE merge collapse with a suffix.**  Post-composing the unmerged `[a,1,0,b] ++ suf` reconstruction
+with the suffix merge word collapses to the merged `[a+1,b] ++ suf` reconstruction — the moving strand fuses into
+the `a`-block; the suffix relabels down by two.  Cons-only `composeMap`/`consReplicate` algebra plus the relabel of
+the suffix tail. -/
+theorem mergeCollapseSuffix_src (widthLeft widthRight : Nat) (suf : List Nat) :
+    composeMap (reconstructFrom 0 (consAppend [widthLeft, 1, 0, widthRight] suf))
+      (reconstructFrom 0 (kzMergeSuffix suf.length))
+      = reconstructFrom 0 (consAppend [widthLeft + 1, widthRight] suf) := by
+  show composeMap (consReplicate 0 widthLeft (1 :: consReplicate 3 widthRight (reconstructFrom 4 suf)))
+      (reconstructFrom 0 (kzMergeSuffix suf.length))
+    = consReplicate 0 (widthLeft + 1) (consReplicate 1 widthRight (reconstructFrom 2 suf))
+  rw [composeMap_consReplicate]
+  show consReplicate 0 widthLeft
+      (composeMap (1 :: consReplicate 3 widthRight (reconstructFrom 4 suf))
+        (reconstructFrom 0 (kzMergeSuffix suf.length)))
+    = consReplicate 0 (widthLeft + 1) (consReplicate 1 widthRight (reconstructFrom 2 suf))
+  show consReplicate 0 widthLeft
+      (0 :: composeMap (consReplicate 3 widthRight (reconstructFrom 4 suf))
+        (reconstructFrom 0 (kzMergeSuffix suf.length)))
+    = consReplicate 0 (widthLeft + 1) (consReplicate 1 widthRight (reconstructFrom 2 suf))
+  rw [composeMap_consReplicate]
+  show consReplicate 0 widthLeft
+      (0 :: consReplicate 1 widthRight
+        (composeMap (reconstructFrom 4 suf) (reconstructFrom 0 (kzMergeSuffix suf.length))))
+    = consReplicate 0 (widthLeft + 1) (consReplicate 1 widthRight (reconstructFrom 2 suf))
+  rw [composeMap_reconstructFrom_relabel suf 4 2 (reconstructFrom 0 (kzMergeSuffix suf.length))
+        (fun index hindex => mergemapSuffix_get_ge suf.length index hindex)]
+  show consReplicate 0 widthLeft (consReplicate 0 1 (consReplicate 1 widthRight (reconstructFrom 2 suf)))
+    = consReplicate 0 (widthLeft + 1) (consReplicate 1 widthRight (reconstructFrom 2 suf))
+  rw [consReplicate_add]
+
+/-- ★ **The TARGET merge collapse with a suffix** (the dual): post-composing the moved `[a,0,1,b] ++ suf`
+reconstruction with the suffix merge word collapses to `[a,b+1] ++ suf` — the moved strand fuses into the
+`b`-block. -/
+theorem mergeCollapseSuffix_tgt (widthLeft widthRight : Nat) (suf : List Nat) :
+    composeMap (reconstructFrom 0 (consAppend [widthLeft, 0, 1, widthRight] suf))
+      (reconstructFrom 0 (kzMergeSuffix suf.length))
+      = reconstructFrom 0 (consAppend [widthLeft, widthRight + 1] suf) := by
+  show composeMap
+      (consReplicate 0 widthLeft (consReplicate 2 1 (consReplicate 3 widthRight (reconstructFrom 4 suf))))
+      (reconstructFrom 0 (kzMergeSuffix suf.length))
+    = consReplicate 0 widthLeft (consReplicate 1 (widthRight + 1) (reconstructFrom 2 suf))
+  rw [composeMap_consReplicate, composeMap_consReplicate, composeMap_consReplicate]
+  show consReplicate 0 widthLeft (consReplicate 1 1 (consReplicate 1 widthRight
+        (composeMap (reconstructFrom 4 suf) (reconstructFrom 0 (kzMergeSuffix suf.length)))))
+    = consReplicate 0 widthLeft (consReplicate 1 (widthRight + 1) (reconstructFrom 2 suf))
+  rw [composeMap_reconstructFrom_relabel suf 4 2 (reconstructFrom 0 (kzMergeSuffix suf.length))
+        (fun index hindex => mergemapSuffix_get_ge suf.length index hindex),
+      consReplicate_add, Nat.add_comm 1 widthRight]
+
+/-- ★★ **The FRONT covering with an arbitrary suffix** `flat ((a+1)::b::suf) ⇒ flat (a::(b+1)::suf)` at the flat
+boundary `(t^n, t^(2+|suf|))` — the general covering move `(a+1,b) ↦ (a,b+1)` on the FIRST two merged blocks with
+an arbitrary count-list `suf` following.  Realized exactly as `kzLocalCovering` but with the suffix merge word:
+`kzAtomicCoveringSuffix` supplies the whiskered `kzGen` between the unmerged `[a,1,0,b]++suf` and `[a,0,1,b]++suf`
+words, post-composed with `kzMergeSuffix`, the endpoints bridged by the suffix merge-collapse identities through
+EQUALITY completeness at the flat carrier.  The covering brick the completeness chain iterates. -/
+theorem kzFrontCovering (widthLeft widthRight widthTotal : Nat) (suf : List Nat)
+    (hsumSrc : listSum (consAppend [widthLeft + 1, widthRight] suf) = widthTotal)
+    (hsumTgt : listSum (consAppend [widthLeft, widthRight + 1] suf) = widthTotal)
+    (hlenSrc : (consAppend [widthLeft + 1, widthRight] suf).length = 2 + suf.length)
+    (hlenTgt : (consAppend [widthLeft, widthRight + 1] suf).length = 2 + suf.length) :
+    KZTwoCellLE
+      (kzFlatWord widthTotal (2 + suf.length) (consAppend [widthLeft + 1, widthRight] suf) hsumSrc hlenSrc)
+      (kzFlatWord widthTotal (2 + suf.length) (consAppend [widthLeft, widthRight + 1] suf) hsumTgt hlenTgt) := by
+  have hsum4Src : listSum (consAppend [widthLeft, 1, 0, widthRight] suf) = widthTotal := by
+    rw [listSum_consAppend]
+    rw [listSum_consAppend] at hsumSrc
+    have hstep : listSum [widthLeft, 1, 0, widthRight] = listSum [widthLeft + 1, widthRight] := by
+      show widthLeft + (1 + (0 + (widthRight + 0))) = (widthLeft + 1) + (widthRight + 0)
+      rw [Nat.zero_add, Nat.add_zero, Nat.add_zero, ← Nat.add_assoc]
+    rw [hstep]; exact hsumSrc
+  have hsum4Tgt : listSum (consAppend [widthLeft, 0, 1, widthRight] suf) = widthTotal := by
+    rw [listSum_consAppend]
+    rw [listSum_consAppend] at hsumTgt
+    have hstep : listSum [widthLeft, 0, 1, widthRight] = listSum [widthLeft, widthRight + 1] := by
+      show widthLeft + (0 + (1 + (widthRight + 0))) = widthLeft + ((widthRight + 1) + 0)
+      rw [Nat.zero_add, Nat.add_zero, Nat.add_zero, Nat.add_comm 1 widthRight]
+    rw [hstep]; exact hsumTgt
+  have hlen4Src : (consAppend [widthLeft, 1, 0, widthRight] suf).length = 4 + suf.length :=
+    consAppend_length [widthLeft, 1, 0, widthRight] suf
+  have hlen4Tgt : (consAppend [widthLeft, 0, 1, widthRight] suf).length = 4 + suf.length :=
+    consAppend_length [widthLeft, 0, 1, widthRight] suf
+  have hAtomicFlat :
+      KZTwoCellLE
+        (kzFlatWord widthTotal (4 + suf.length) (consAppend [widthLeft, 1, 0, widthRight] suf) hsum4Src hlen4Src)
+        (kzFlatWord widthTotal (4 + suf.length) (consAppend [widthLeft, 0, 1, widthRight] suf) hsum4Tgt hlen4Tgt) := by
+    rw [kzFlatWord, kzFlatWord]
+    exact KZTwoCellLE.castBoundaryCongr _ _ (kzAtomicCoveringSuffix widthLeft widthRight suf)
+  refine KZTwoCellLE.trans
+    (kzLE_ofMapEq (show monadMonotoneMapOf
+        (kzFlatWord widthTotal (2 + suf.length) (consAppend [widthLeft + 1, widthRight] suf) hsumSrc hlenSrc)
+      = monadMonotoneMapOf (RawTwoCellExpr.vcomp
+          (kzFlatWord widthTotal (4 + suf.length) (consAppend [widthLeft, 1, 0, widthRight] suf) hsum4Src hlen4Src)
+          (kzFlatWord (4 + suf.length) (2 + suf.length) (kzMergeSuffix suf.length)
+            (kzMergeSuffix_listSum suf.length) (kzMergeSuffix_length suf.length))) from ?_)) ?_
+  · rw [kzFlatWord_map, monadMonotoneMapOf_vcomp, kzFlatWord_map, kzFlatWord_map, mergeCollapseSuffix_src]
+  refine KZTwoCellLE.trans
+    (KZTwoCellLE.vcompCongrLeft
+      (kzFlatWord (4 + suf.length) (2 + suf.length) (kzMergeSuffix suf.length)
+        (kzMergeSuffix_listSum suf.length) (kzMergeSuffix_length suf.length)) hAtomicFlat) ?_
+  refine kzLE_ofMapEq
+    (show monadMonotoneMapOf (RawTwoCellExpr.vcomp
+        (kzFlatWord widthTotal (4 + suf.length) (consAppend [widthLeft, 0, 1, widthRight] suf) hsum4Tgt hlen4Tgt)
+        (kzFlatWord (4 + suf.length) (2 + suf.length) (kzMergeSuffix suf.length)
+          (kzMergeSuffix_listSum suf.length) (kzMergeSuffix_length suf.length)))
+      = monadMonotoneMapOf
+          (kzFlatWord widthTotal (2 + suf.length) (consAppend [widthLeft, widthRight + 1] suf) hsumTgt hlenTgt)
+        from ?_)
+  rw [monadMonotoneMapOf_vcomp, kzFlatWord_map, kzFlatWord_map, kzFlatWord_map, mergeCollapseSuffix_tgt]
+
+/-! ## ★★ The front-strip: prepend a head block to a flat covering -/
+
+/-- The flat word of `headBlock :: w` is a boundary cast of the head gadget horizontally composed with the flat
+word of `w`: `flat (c::w) = cast (gadget c ⊠ flat w)`.  Definitionally `wordFromCounts (c::w) = gadget c ⊠
+wordFromCounts w`; `hcomp_castBoundaryRight` pulls the inner flat cast out and `castBoundary_castBoundary` fuses the
+two casts — the residual is proof-irrelevant (`rfl`). -/
+theorem kzFlatWord_cons (headBlock widthTotal widthCod : Nat) (w : List Nat)
+    (hsum : listSum w = widthTotal) (hlen : w.length = widthCod)
+    (hsum' : listSum (headBlock :: w) = headBlock + widthTotal)
+    (hlen' : (headBlock :: w).length = widthCod + 1) :
+    kzFlatWord (headBlock + widthTotal) (widthCod + 1) (headBlock :: w) hsum' hlen'
+      = RawTwoCellExpr.castBoundary (monadTPower_add headBlock widthTotal).symm rfl
+          (RawTwoCellExpr.hcomp (monadGadget headBlock) (kzFlatWord widthTotal widthCod w hsum hlen)) := by
+  dsimp only [kzFlatWord]
+  rw [RawTwoCellExpr.hcomp_castBoundaryRight, RawTwoCellExpr.castBoundary_castBoundary]
+  rfl
+
+/-- ★★ **The front-strip congruence** — prepend a head block to both sides of a flat covering: from a covering
+`flat w_src ⇒ flat w_tgt` build `flat (c::w_src) ⇒ flat (c::w_tgt)`.  The head gadget `c` rides as free
+horizontal context: `hcompCongrRight (gadget c)` lifts the covering, `kzFlatWord_cons` re-anchors both endpoints to
+the flat `(t^(c+n), t^(m+1))` boundary, and `castBoundaryCongr` transports the order across the `t^(c+n) =
+t^c · t^n` associator.  This is the length-INCREASING move the head-peel chain recursion needs (the covering itself
+is length-preserving; the strip prepends a settled head). -/
+theorem kzPrefixAdd (headBlock widthTotal widthCod : Nat) {w_src w_tgt : List Nat}
+    (hsum_src : listSum w_src = widthTotal) (hlen_src : w_src.length = widthCod)
+    (hsum_tgt : listSum w_tgt = widthTotal) (hlen_tgt : w_tgt.length = widthCod)
+    (hsum_src' : listSum (headBlock :: w_src) = headBlock + widthTotal)
+    (hlen_src' : (headBlock :: w_src).length = widthCod + 1)
+    (hsum_tgt' : listSum (headBlock :: w_tgt) = headBlock + widthTotal)
+    (hlen_tgt' : (headBlock :: w_tgt).length = widthCod + 1)
+    (le : KZTwoCellLE (kzFlatWord widthTotal widthCod w_src hsum_src hlen_src)
+      (kzFlatWord widthTotal widthCod w_tgt hsum_tgt hlen_tgt)) :
+    KZTwoCellLE (kzFlatWord (headBlock + widthTotal) (widthCod + 1) (headBlock :: w_src) hsum_src' hlen_src')
+      (kzFlatWord (headBlock + widthTotal) (widthCod + 1) (headBlock :: w_tgt) hsum_tgt' hlen_tgt') := by
+  rw [kzFlatWord_cons headBlock widthTotal widthCod w_src hsum_src hlen_src hsum_src' hlen_src',
+      kzFlatWord_cons headBlock widthTotal widthCod w_tgt hsum_tgt hlen_tgt hsum_tgt' hlen_tgt']
+  exact KZTwoCellLE.castBoundaryCongr (monadTPower_add headBlock widthTotal).symm rfl
+    (KZTwoCellLE.hcompCongrRight (monadGadget headBlock) le)
+
 /-! ## Non-vacuity: the covering move is genuine and strictly directional -/
 
 /-- ★ **Non-vacuity — the base covering IS the strict KZ pair.**  At `widthLeft = widthRight = 0` the local
@@ -322,6 +577,21 @@ theorem kzLocalCovering_merged_smoke :
     KZTwoCellLE (kzFlatWord 3 2 [2, 1] rfl rfl) (kzFlatWord 3 2 [1, 2] rfl rfl) :=
   kzLocalCovering 1 1 3 rfl rfl
 
+/-- ★ Non-vacuity — the FRONT covering fires WITH a real suffix: `flat [2,1,5] ⇒ flat [1,2,5]` (a covering at the
+first two blocks with a width-`5` block riding as context).  `kzFrontCovering 1 1 8 [5]` instantiated — the covering
+brick works past a nonempty tail. -/
+theorem kzFrontCovering_suffix_smoke :
+    KZTwoCellLE (kzFlatWord 8 (2 + [5].length) (consAppend [2, 1] [5]) rfl rfl)
+      (kzFlatWord 8 (2 + [5].length) (consAppend [1, 2] [5]) rfl rfl) :=
+  kzFrontCovering 1 1 8 [5] rfl rfl rfl rfl
+
+/-- ★ Non-vacuity — the front-strip prepends a settled head: from the merged covering `flat [2,1] ⇒ flat [1,2]`
+build `flat [3,2,1] ⇒ flat [3,1,2]` (head block `3` prepended).  `kzPrefixAdd 3 3 2` applied to
+`kzLocalCovering_merged_smoke` — the length-increasing move the chain recursion needs. -/
+theorem kzPrefixAdd_smoke :
+    KZTwoCellLE (kzFlatWord 6 3 [3, 2, 1] rfl rfl) (kzFlatWord 6 3 [3, 1, 2] rfl rfl) :=
+  kzPrefixAdd 3 3 2 rfl rfl rfl rfl rfl rfl rfl rfl kzLocalCovering_merged_smoke
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED — the KZ covering MOVE is mechanized zero-axiom (the genuine `kzGen` order content).**  The
@@ -334,6 +604,18 @@ completeness at the flat carrier `kzFlatWord`.  Non-vacuous and strictly directi
 `kzLocalCovering_merged_smoke`).  This CONFIRMS the dominance order is generated by whiskered-`kzGen` covering
 moves with NO rigid coordinate — there is no covering gap, no wall.  `= true`. -/
 def fxKZ_hasWalkingKZLocalCovering : Bool := true
+
+/-- **ESTABLISHED — the CONTEXTUAL covering + the front-strip are mechanized zero-axiom (GAP-1 closed).**  Beyond
+the bare 2-block move, the chain-assembly bricks are shipped: (i) `kzFrontCovering : flat ((a+1)::b::suf) ⇒
+flat (a::(b+1)::suf)` — the covering move at the FIRST two blocks with an ARBITRARY count-list `suf` riding through
+the suffix merge word `kzMergeSuffix` (new combinatorics: `mergeCollapseSuffix_src`/`_tgt` via the reconstruction
+relabel `composeMap_reconstructFrom_relabel`), the whiskered `kzGen` supplied by `kzAtomicCoveringSuffix`; (ii)
+`kzPrefixAdd : (flat w_src ⇒ flat w_tgt) → (flat (c::w_src) ⇒ flat (c::w_tgt))` — the front-strip that prepends a
+settled head block (`hcompCongrRight (gadget c)` + the boundary re-anchor `kzFlatWord_cons` + `castBoundaryCongr`
+across the `t^(c+n) = t^c · t^n` associator).  Non-vacuous (`kzFrontCovering_suffix_smoke`, `kzPrefixAdd_smoke`).
+Together they are exactly the length-preserving covering-in-context and the length-increasing head-peel the
+head-recursion completeness chain iterates — the covering side of the residual is now fully closed.  `= true`. -/
+def fxKZ_hasWalkingKZContextualCoveringAndStrip : Bool := true
 
 /-- **Honesty marker — the RESIDUAL toward `KZOrderCompleteness`.**  The FULL order-completeness leg
 `leOfMapLE : mapLE (fold a) (fold b) → KZTwoCellLE a b` needs, beyond the now-mechanized covering MOVE

@@ -27,9 +27,24 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.kzFlatWord_map
 #assert_no_axioms FX1Poly.Polygraph.kzLE_ofFlatMapEq
 #assert_no_axioms FX1Poly.Polygraph.kzLocalCovering
+#assert_no_axioms FX1Poly.Polygraph.kzAtomicCoveringSuffix
+#assert_no_axioms FX1Poly.Polygraph.reconstructFrom_ones_get
+#assert_no_axioms FX1Poly.Polygraph.composeMap_reconstructFrom_relabel
+#assert_no_axioms FX1Poly.Polygraph.listSum_consReplicate_ones
+#assert_no_axioms FX1Poly.Polygraph.kzMergeSuffix_listSum
+#assert_no_axioms FX1Poly.Polygraph.kzMergeSuffix_length
+#assert_no_axioms FX1Poly.Polygraph.mergemapSuffix_get_ge
+#assert_no_axioms FX1Poly.Polygraph.mergeCollapseSuffix_src
+#assert_no_axioms FX1Poly.Polygraph.mergeCollapseSuffix_tgt
+#assert_no_axioms FX1Poly.Polygraph.kzFrontCovering
+#assert_no_axioms FX1Poly.Polygraph.kzFlatWord_cons
+#assert_no_axioms FX1Poly.Polygraph.kzPrefixAdd
 #assert_no_axioms FX1Poly.Polygraph.kzBaseCovering_isStrict
 #assert_no_axioms FX1Poly.Polygraph.kzLocalCovering_merged_smoke
+#assert_no_axioms FX1Poly.Polygraph.kzFrontCovering_suffix_smoke
+#assert_no_axioms FX1Poly.Polygraph.kzPrefixAdd_smoke
 #assert_no_axioms FX1Poly.Polygraph.fxKZ_hasWalkingKZLocalCovering
+#assert_no_axioms FX1Poly.Polygraph.fxKZ_hasWalkingKZContextualCoveringAndStrip
 #assert_no_axioms FX1Poly.Polygraph.fxKZ_hasWalkingKZOrderCompletenessChain
 
 end FX1PolyAudit
