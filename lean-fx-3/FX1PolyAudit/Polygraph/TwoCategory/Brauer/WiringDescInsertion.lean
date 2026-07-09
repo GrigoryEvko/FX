@@ -138,4 +138,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionOuterInductionAssembly
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentResidual
 
+-- WP-BRAUER r10: the braid carry algebra (list-level braid relation `s_d s_{d+1} s_d = s_{d+1} s_d s_{d+1}` and its
+-- five-fold collapse `s_d s_{d+1} s_d s_{d+1} s_d = s_{d+1}` — the carry-landing identity) and their smokes.
+#assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_braid
+#assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_braid_fivefold
+#assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_braid_smoke
+#assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_braid_fivefold_smoke
+
 end FX1PolyAudit

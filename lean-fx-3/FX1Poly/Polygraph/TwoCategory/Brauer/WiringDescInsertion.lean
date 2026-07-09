@@ -1917,6 +1917,78 @@ theorem braidAscentResidual_conclusion_isStuckExample :
       ∧ canonicalCrossingWord (applyAdjacentSwap [1, 3, 0, 2] (leftmostDescent [1, 3, 0, 2] + 1)) = [0, 1, 2, 1] := by
   refine ⟨?_, ?_⟩ <;> decide
 
+/-! ## WP-BRAUER r10 — the BRAID CARRY ALGEBRA: the list-level braid relation and its five-fold collapse
+
+The braid-ascent leaf's only shipped local move (`crossingInsertionStep_braid_localReduction`, Regime B) leaves the
+trailing triple `[d, d+1, d]` to re-insert leftward — the CARRY.  This round ships the ALGEBRAIC core of that carry:
+the braid relation `s_d s_{d+1} s_d = s_{d+1} s_d s_{d+1}` realized on the ONE-LINE permutation itself
+(`applyAdjacentSwap_braid`), and its FIVE-FOLD collapse `s_d s_{d+1} s_d s_{d+1} s_d = s_{d+1}`
+(`applyAdjacentSwap_braid_fivefold`).  The five-fold is exactly the Little-bump / column-insertion identity that makes
+the carry LAND: re-inserting `[d, d+1, d]` into `perm · s_d · s_{d+1}` (three adjacent swaps `s_d s_{d+1} s_d`) followed
+by the two swaps `s_{d+1} s_d` already present from the two staircase peels reaches
+`perm · s_d · s_{d+1} · s_d · s_{d+1} · s_d = perm · s_{d+1}` — the leaf's target permutation.  So the displaced letters
+DO re-enter at the target; the algebra of the carry is closed here.  (What stays open is the CONVERTIBILITY fold that
+sequences the re-insertions and its termination measure — see the residual marker.)
+
+Both are `applyAdjacentSwap`-structural (mirroring `applyAdjacentSwap_swap_disjoint` / `applyAdjacentSwap_involutive`),
+in-range (`position + 2 < perm.length`, exactly the leaf's `d + 1 + 1 < perm.length`), zero-axiom. -/
+
+/-- ★★ **The braid relation on the one-line permutation** (`s_d s_{d+1} s_d = s_{d+1} s_d s_{d+1}`).  For a position with
+its full braid window in range (`position + 2 < perm.length`, so all three strands `position`, `position + 1`,
+`position + 2` genuinely swap), the two orders of the braid triple realize the same permutation.  Structural on `perm` /
+`position`; the head is stripped by `applyAdjacentSwap_cons_succ` and the recursion drops to the tail (mirrors the
+distant-swap commutation `applyAdjacentSwap_swap_disjoint`).  The in-range hypothesis is essential — on a length-2 list
+`s_{d+1}` is a no-op, so `[a, b] · s_0 s_1 s_0 = [a, b]` but `[a, b] · s_1 s_0 s_1 = [b, a]`. -/
+theorem applyAdjacentSwap_braid :
+    (perm : List Nat) → (position : Nat) → position + 2 < perm.length →
+    applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap perm position) (position + 1)) position
+      = applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap perm (position + 1)) position) (position + 1)
+  | [], position, inRange => absurd inRange (Nat.not_lt_zero (position + 2))
+  | _ :: [], position, inRange => absurd inRange (Nat.not_lt.mpr (Nat.le_add_left 1 (position + 1)))
+  | _ :: _ :: [], position, inRange => absurd inRange (Nat.not_lt.mpr (Nat.le_add_left 2 position))
+  | _ :: _ :: _ :: _, 0, _ => rfl
+  | first :: second :: third :: rest, position + 1, inRange => by
+      have inRangeTail : position + 2 < (second :: third :: rest).length :=
+        Nat.lt_of_succ_lt_succ inRange
+      rw [applyAdjacentSwap_cons_succ first (second :: third :: rest) position,
+        applyAdjacentSwap_cons_succ first (applyAdjacentSwap (second :: third :: rest) position) (position + 1),
+        applyAdjacentSwap_cons_succ first
+          (applyAdjacentSwap (applyAdjacentSwap (second :: third :: rest) position) (position + 1)) position,
+        applyAdjacentSwap_cons_succ first (second :: third :: rest) (position + 1),
+        applyAdjacentSwap_cons_succ first (applyAdjacentSwap (second :: third :: rest) (position + 1)) position,
+        applyAdjacentSwap_cons_succ first
+          (applyAdjacentSwap (applyAdjacentSwap (second :: third :: rest) (position + 1)) position) (position + 1)]
+      exact congrArg (first :: ·) (applyAdjacentSwap_braid (second :: third :: rest) position inRangeTail)
+
+/-- ★★ **The five-fold braid collapse** (`s_d s_{d+1} s_d s_{d+1} s_d = s_{d+1}`).  Applying the braid triple
+`s_d s_{d+1} s_d` and then `s_{d+1} s_d` collapses to the single swap `s_{d+1}`: rewrite the leading braid triple to
+`s_{d+1} s_d s_{d+1}` (`applyAdjacentSwap_braid`), then the two adjacent `s_{d+1}` and the two adjacent `s_d` each
+annihilate by involution (`applyAdjacentSwap_involutive`).  This is the exact identity by which the braid-ascent carry
+LANDS at the leaf's target `perm · s_{d+1}`: re-inserting `[d, d+1, d]` after the two staircase peels realizes precisely
+these five swaps.  In-range (`position + 2 < perm.length`), zero-axiom. -/
+theorem applyAdjacentSwap_braid_fivefold (perm : List Nat) (position : Nat)
+    (inRange : position + 2 < perm.length) :
+    applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap perm position) (position + 1)) position) (position + 1)) position
+      = applyAdjacentSwap perm (position + 1) := by
+  rw [applyAdjacentSwap_braid perm position inRange,
+    applyAdjacentSwap_involutive (applyAdjacentSwap (applyAdjacentSwap perm (position + 1)) position) (position + 1),
+    applyAdjacentSwap_involutive (applyAdjacentSwap perm (position + 1)) position]
+
+/-- Non-vacuity — the braid relation on `[0, 1, 2, 3]` at position `0`: both orders realize `[2, 1, 0, 3]`. -/
+theorem applyAdjacentSwap_braid_smoke :
+    applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap [0, 1, 2, 3] 0) 1) 0
+      = applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap [0, 1, 2, 3] 1) 0) 1 :=
+  applyAdjacentSwap_braid [0, 1, 2, 3] 0 (by decide)
+
+/-- Non-vacuity — the five-fold collapse on the canonical residual permutation `[1, 3, 0, 2]` at position `1`
+(`d = leftmostDescent = 1`): the five swaps `s_1 s_2 s_1 s_2 s_1` collapse to `s_2`, landing at
+`applyAdjacentSwap [1, 3, 0, 2] 2 = [1, 3, 2, 0]` — exactly `perm · s_{d+1}`, the leaf's target permutation. -/
+theorem applyAdjacentSwap_braid_fivefold_smoke :
+    applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap [1, 3, 0, 2] 1) 2) 1) 2) 1 = applyAdjacentSwap [1, 3, 0, 2] 2 :=
+  applyAdjacentSwap_braid_fivefold [1, 3, 0, 2] 1 (by decide)
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — WP-BRAUER r9: the REFLEX mode + the DESCENT reduction are SHIPPED.**  The general reflexivity
