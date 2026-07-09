@@ -179,6 +179,154 @@ theorem cupFootSwap_preserves_diagram_smoke :
       = brauerDiagramOf 1 ([] ++ shiftBrauerWord 1 cupUntwistRelation.rhs) :=
   cupFootSwap_preserves_diagram 1 1 0 (by decide) (by decide)
 
+/-! ## P4-partial — crossing-only completeness REDUCES to the readback (T2 isolated as the sole input)
+
+The `S_n` crossing block is straightened (`crossingWords_equalPerm_conv`): equal through-strand permutations give
+`BrauerConvFree7`-convertible crossing words.  What separates that from crossing-only COMPLETENESS (equal DIAGRAM
+gives convertibility) is exactly the crossing-only READBACK T2 (`BrauerCrossingOnlyReadback`,
+`Brauer/WiringDescBrauerLedger.lean`): the union-find boundary matching of a crossing word IS its permutation
+diagram.  We ship `crossingCompleteness_of_readback` — the clean reduction showing T2 is the SOLE remaining input —
+together with the reusable `permutationDiagram_injective` (a `DiagramType` determines its permutation).  This does
+NOT flip a master (T2 is unproven — a fresh union-find/permutation state invariant no shipped lemma supplies), but
+it names the residual to the single lemma. -/
+
+/-- Read `natListGetAt` through a `List.map` at an in-range index — structural on the list and index. -/
+private theorem natListGetAt_mapLocal (mapFn : Nat → Nat) : (entries : List Nat) → (index : Nat) →
+    index < entries.length → natListGetAt (entries.map mapFn) index = mapFn (natListGetAt entries index)
+  | [], index, indexBelow => absurd indexBelow (Nat.not_lt_zero index)
+  | _ :: _, 0, _ => rfl
+  | _ :: rest, index + 1, indexBelow =>
+      natListGetAt_mapLocal mapFn rest index (Nat.lt_of_succ_lt_succ indexBelow)
+
+/-- `(entries.map mapFn).length = entries.length` — structural, propext-free. -/
+private theorem mapLengthLocal (mapFn : Nat → Nat) : (entries : List Nat) →
+    (entries.map mapFn).length = entries.length
+  | [] => rfl
+  | _ :: rest => congrArg (· + 1) (mapLengthLocal mapFn rest)
+
+/-- Reading `List.range.loop` at a past-the-front offset drops into the accumulator (local copy). -/
+private theorem rangeLoopGetPastLocal : (count : Nat) → (accumulated : List Nat) → (offset : Nat) →
+    natListGetAt (List.range.loop count accumulated) (offset + count) = natListGetAt accumulated offset
+  | 0, _, _ => rfl
+  | count + 1, accumulated, offset => by
+      have inner := rangeLoopGetPastLocal count (count :: accumulated) (offset + 1)
+      rw [Nat.add_assoc offset 1 count, Nat.add_comm 1 count] at inner
+      exact inner
+
+/-- Reading `List.range.loop` below its front returns the index (local copy). -/
+private theorem rangeLoopGetBelowLocal : (count : Nat) → (accumulated : List Nat) → (index : Nat) →
+    index < count → natListGetAt (List.range.loop count accumulated) index = index
+  | 0, _, _, indexBelow => absurd indexBelow (Nat.not_lt_zero _)
+  | count + 1, accumulated, index, indexBelow => by
+      cases Nat.lt_or_ge index count with
+      | inl below => exact rangeLoopGetBelowLocal count (count :: accumulated) index below
+      | inr atLeast =>
+          have indexEq : index = count := Nat.le_antisymm (Nat.le_of_succ_le_succ indexBelow) atLeast
+          have past := rangeLoopGetPastLocal count (count :: accumulated) 0
+          rw [Nat.zero_add count] at past
+          rw [indexEq]; exact past
+
+/-- Reading `List.range count` below its length returns the index. -/
+private theorem natListGetAt_rangeBelowLocal (count index : Nat) (indexBelow : index < count) :
+    natListGetAt (List.range count) index = index :=
+  rangeLoopGetBelowLocal count [] index indexBelow
+
+/-- Extensionality for `Nat` lists by `natListGetAt` at equal length — structural on both lists. -/
+private theorem listExt_ofGetAt : (entriesLeft entriesRight : List Nat) →
+    entriesLeft.length = entriesRight.length →
+    (∀ index, index < entriesLeft.length → natListGetAt entriesLeft index = natListGetAt entriesRight index) →
+    entriesLeft = entriesRight
+  | [], [], _, _ => rfl
+  | [], _ :: _, lengthsEq, _ => Nat.noConfusion lengthsEq
+  | _ :: _, [], lengthsEq, _ => Nat.noConfusion lengthsEq
+  | headLeft :: tailLeft, headRight :: tailRight, lengthsEq, getAtEq => by
+      have headEq : headLeft = headRight := getAtEq 0 (Nat.succ_pos _)
+      have tailEq : tailLeft = tailRight :=
+        listExt_ofGetAt tailLeft tailRight (Nat.succ.inj lengthsEq)
+          (fun index indexBelow => getAtEq (index + 1) (Nat.succ_lt_succ indexBelow))
+      rw [headEq, tailEq]
+
+/-- Right-cancel a common-length prefix off an append equality — structural on the two prefixes. -/
+private theorem appendRightCancel_ofEqLen : (prefixLeft prefixRight tailLeft tailRight : List Nat) →
+    prefixLeft ++ tailLeft = prefixRight ++ tailRight → prefixLeft.length = prefixRight.length →
+    tailLeft = tailRight
+  | [], [], _, _, appendEq, _ => appendEq
+  | [], _ :: _, _, _, _, lengthsEq => Nat.noConfusion lengthsEq
+  | _ :: _, [], _, _, _, lengthsEq => Nat.noConfusion lengthsEq
+  | _ :: restLeft, _ :: restRight, tailLeft, tailRight, appendEq, lengthsEq => by
+      injection appendEq with _headEq restEq
+      exact appendRightCancel_ofEqLen restLeft restRight tailLeft tailRight restEq (Nat.succ.inj lengthsEq)
+
+/-- ★ **`permutationDiagram` is injective in its permutation** (for length-`bottomCount` permutations).  A
+crossing-only Brauer diagram determines the through-strand permutation it came from: the diagram's `partner` field
+splits as `bottomMap ++ topMap`, both `List.range`-maps of length `bottomCount`; right-cancelling the bottom half
+leaves `topMap = (List.range bottomCount).map (natListGetAt perm)`, and reading that off index-by-index reconstructs
+`perm`.  Zero-axiom, structural. -/
+theorem permutationDiagram_injective (bottomCount : Nat) (permLeft permRight : List Nat)
+    (lengthLeft : permLeft.length = bottomCount) (lengthRight : permRight.length = bottomCount)
+    (diagramEq : permutationDiagram bottomCount permLeft = permutationDiagram bottomCount permRight) :
+    permLeft = permRight := by
+  have partnerEq :
+      ((List.range bottomCount).map (fun bottomPort => bottomCount + natIndexOfValue permLeft bottomPort))
+          ++ ((List.range bottomCount).map (natListGetAt permLeft))
+        = ((List.range bottomCount).map (fun bottomPort => bottomCount + natIndexOfValue permRight bottomPort))
+          ++ ((List.range bottomCount).map (natListGetAt permRight)) :=
+    congrArg DiagramType.partner diagramEq
+  have topEq : (List.range bottomCount).map (natListGetAt permLeft)
+      = (List.range bottomCount).map (natListGetAt permRight) :=
+    appendRightCancel_ofEqLen
+      ((List.range bottomCount).map (fun bottomPort => bottomCount + natIndexOfValue permLeft bottomPort))
+      ((List.range bottomCount).map (fun bottomPort => bottomCount + natIndexOfValue permRight bottomPort))
+      ((List.range bottomCount).map (natListGetAt permLeft))
+      ((List.range bottomCount).map (natListGetAt permRight))
+      partnerEq
+      (by rw [mapLengthLocal, mapLengthLocal])
+  apply listExt_ofGetAt permLeft permRight (lengthLeft.trans lengthRight.symm)
+  intro index indexBelow
+  have indexBottom : index < bottomCount := lengthLeft ▸ indexBelow
+  have indexRange : index < (List.range bottomCount).length := by
+    rw [rangeLength_local]; exact indexBottom
+  have entryEq : natListGetAt ((List.range bottomCount).map (natListGetAt permLeft)) index
+      = natListGetAt ((List.range bottomCount).map (natListGetAt permRight)) index :=
+    congrArg (fun entries => natListGetAt entries index) topEq
+  rw [natListGetAt_mapLocal (natListGetAt permLeft) (List.range bottomCount) index indexRange,
+    natListGetAt_mapLocal (natListGetAt permRight) (List.range bottomCount) index indexRange,
+    natListGetAt_rangeBelowLocal bottomCount index indexBottom] at entryEq
+  exact entryEq
+
+/-- ★★ **Crossing-only Brauer completeness REDUCES to the readback (T2).**  GIVEN the crossing-only readback
+`BrauerCrossingOnlyReadback` (T2), any two crossing words over generators `< generatorCount` that induce the SAME
+Brauer diagram on `generatorCount + 1` strands are `BrauerConvFree7`-convertible: the readback turns diagram
+equality into permutation-diagram equality, `permutationDiagram_injective` extracts the permutation equality, and
+the shipped comb straightening `crossingWords_equalPerm_conv` finishes.  So T2 is the SOLE input separating the
+shipped `S_n` straightening from crossing-only completeness — the residual named to one union-find/permutation state
+invariant. -/
+theorem crossingCompleteness_of_readback (readback : BrauerCrossingOnlyReadback)
+    (generatorCount : Nat) (word1 word2 : List Nat)
+    (hRange1 : mentionsOnlyBelow generatorCount word1 = true)
+    (hRange2 : mentionsOnlyBelow generatorCount word2 = true)
+    (diagramEq : brauerDiagramOf (generatorCount + 1) (crossingWord word1)
+      = brauerDiagramOf (generatorCount + 1) (crossingWord word2)) :
+    BrauerConvFree7 (crossingWord word1) (crossingWord word2) := by
+  have permDiagEq :
+      permutationDiagram (generatorCount + 1) (permuteOfCrossingWord (generatorCount + 1) word1)
+        = permutationDiagram (generatorCount + 1) (permuteOfCrossingWord (generatorCount + 1) word2) := by
+    rw [← readback (generatorCount + 1) word1, ← readback (generatorCount + 1) word2]; exact diagramEq
+  have permEq : permuteOfCrossingWord (generatorCount + 1) word1
+      = permuteOfCrossingWord (generatorCount + 1) word2 :=
+    permutationDiagram_injective (generatorCount + 1) _ _
+      (permuteOfCrossingWord_length (generatorCount + 1) word1)
+      (permuteOfCrossingWord_length (generatorCount + 1) word2) permDiagEq
+  exact crossingWords_equalPerm_conv generatorCount word1 word2 hRange1 hRange2 permEq
+
+/-- Non-vacuity — the reduction fires at a real instance: FED the (unproven) readback, the r9 jam pair
+`[2, 0, 1, 2]` / `[0, 1, 2, 1]` (equal diagram on four strands) is convertible.  The hypothesis is genuine — this is
+NOT a proof of the readback, only the reduction consuming it. -/
+theorem crossingCompleteness_of_readback_r9 (readback : BrauerCrossingOnlyReadback) :
+    BrauerConvFree7 (crossingWord [2, 0, 1, 2]) (crossingWord [0, 1, 2, 1]) :=
+  crossingCompleteness_of_readback readback 3 [2, 0, 1, 2] [0, 1, 2, 1] (by decide) (by decide)
+    ((readback 4 [2, 0, 1, 2]).trans (readback 4 [0, 1, 2, 1]).symm)
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the cellular STANDARD-FORM datatype is SHIPPED (P1).**  `BrauerStandardForm` is the
@@ -198,5 +346,17 @@ generated by cup / cap foot swaps, each a Lehrer–Zhang untwist redex.  `cupFoo
 the stabilizer is quotiented by the presentation, resolving the P3 coset subtlety at the generator level:
 `untwistNormalize` consumes exactly these generators.  Non-vacuous: `cupFootSwap_preserves_diagram_smoke`.  `= true`. -/
 def fxBrauer_hasStabilizerGeneratorIsUntwist : Bool := true
+
+/-- ★★ **Honesty marker — crossing-only completeness is REDUCED to the readback T2 (the residual named to one
+lemma).**  `crossingCompleteness_of_readback` proves: GIVEN `BrauerCrossingOnlyReadback` (T2), equal-diagram crossing
+words are `BrauerConvFree7`-convertible — the readback turns diagram equality into permutation-diagram equality, the
+reusable `permutationDiagram_injective` (a crossing-only diagram determines its permutation, zero-axiom) extracts
+the permutation equality, and the shipped comb straightening `crossingWords_equalPerm_conv` finishes.  So the crux
+of crossing-only completeness is EXACTLY T2 — a single union-find/permutation state invariant — nothing else.  This
+does NOT flip `fxBrauer_hasCrossingOnlyReadback` (T2 is unproven — a fresh `stepWiring crossingWiring` connectivity
+induction no shipped lemma supplies) nor `fxBrauer_hasBrauerCompleteness` (the cup/cap connectivity leg is a further
+distinct residual); it records that the crossing block's remaining gap is the SINGLE lemma T2.  Non-vacuous:
+`crossingCompleteness_of_readback_r9`.  `= true`. -/
+def fxBrauer_hasCrossingCompletenessModuloReadback : Bool := true
 
 end FX1Poly.Polygraph

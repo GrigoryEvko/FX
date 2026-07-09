@@ -31,8 +31,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.capFootSwap_conv
 #assert_no_axioms FX1Poly.Polygraph.cupFootSwap_preserves_diagram_smoke
 
+-- P4-partial: permutationDiagram injectivity + crossing-only completeness reduced to the readback (T2)
+#assert_no_axioms FX1Poly.Polygraph.permutationDiagram_injective
+#assert_no_axioms FX1Poly.Polygraph.crossingCompleteness_of_readback
+#assert_no_axioms FX1Poly.Polygraph.crossingCompleteness_of_readback_r9
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCellularStandardFormDatatype
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasStabilizerGeneratorIsUntwist
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingCompletenessModuloReadback
 
 end FX1PolyAudit
