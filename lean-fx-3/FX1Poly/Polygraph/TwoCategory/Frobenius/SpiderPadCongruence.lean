@@ -234,12 +234,14 @@ carried); `spiderConv_relation_inWiderBoundary` packages a relation fired in ANY
 wider boundaries.  `= true`. -/
 def fxFrob_hasSpiderPadCongruence : Bool := true
 
-/-- **Honesty marker — the nonzero-offset and after-arbitrary-prefix legs are the standing residual.**  The right pad
-supplies the WIDER-BOUNDARY (offset `0`) leg.  The nonzero-offset leg (`shiftBrauerWord` left pad) and the
-after-arbitrary-prefix leg (the Brauer two-word functoriality bridge) complete the fully-general contextual closure;
-the functoriality bridge is LOOPS-based (it consumes a Brauer canonical extract equality) and so is blocked by the
-special row exactly as the right-pad payoff would have been — its loops-free re-homing to the partition view is real,
-tractable work, not shipped here.  `= false`. -/
-def fxFrob_hasSpiderAfterPrefixContext : Bool := false
+/-- ★ **Honesty marker — the after-arbitrary-prefix leg is SHIPPED (loops-free re-homing, FROB-4).**  The
+after-arbitrary-prefix leg — a relation whiskered after ANY prefix — is now closed in
+`Frobenius/SpiderAfterPrefix.lean`: `spiderConv_relation_afterPrefix` feeds the two boundary-partition `whisker` legs
+from the loops-free functoriality port `processBrauer_forgetView_eq_ofCanonicalViewParts` (the loops-free re-homing of
+the Brauer two-word functoriality, legs length + view kept, leg loops dropped through the cloned view-parts transfer
+bricks).  So the special row `μδ = 1` (unequal canonical loops) is no longer an obstruction.  The residual now
+narrows to the NONZERO-OFFSET (`shiftBrauerWord` left pad) supply of the canonical view parts at a boundary-CHANGING
+post-prefix width; a boundary-PRESERVING prefix reuses the relation's own seed facts prefix-independently.  `= true`. -/
+def fxFrob_hasSpiderAfterPrefixContext : Bool := true
 
 end FX1Poly.Polygraph
