@@ -1159,6 +1159,71 @@ theorem crossingInsertionStep_commute_localReduction_smoke :
         ++ [2, leftmostDescent [1, 0, 2, 3]])) :=
   crossingInsertionStep_commute_localReduction [1, 0, 2, 3] 2 (by decide) (by decide)
 
+/-! ## WP-BRAUER r8 — the BRAID mode, LOCAL reduction (Regime B, general, IH-free)
+
+The BRAID mode inserts `position = leftmostDescent perm + 1` — adjacent to the trailing canonical descent
+`d = leftmostDescent perm`, so it neither cancels (R2 needs equal generators) nor commutes (needs `|Δ| ≥ 2`).  A braid
+(R3) needs a THIRD generator, supplied by the second-to-last canonical letter `d2 = leftmostDescent (perm · s_d)`.  The
+recon's hand-verified dichotomy splits on `d2`: in Regime B (`d2 = d + 1`, the tail-local regime) the trailing three
+canonical letters are `s_{d+1} s_d s_{d+1}`, which braid to `s_d s_{d+1} s_d`.  This lemma ships that single braid step
+as a GENERAL, IH-free reduction — the exact analog of `crossingInsertionStep_commute_localReduction`:
+`canonicalCrossingWord perm ++ [d+1] ~ canonicalCrossingWord (perm · s_d · s_{d+1}) ++ [d, d+1, d]`.  The residual after
+it — the moved trailing `[d, d+1, d]` re-interacting leftward through the shorter prefix `perm · s_d · s_{d+1}` — is the
+CARRY, whose fold is the standing lexicographic wall (Regime A additionally reaches into the prefix BEFORE braiding, so
+the carry is not tail-local; see the residual marker). -/
+
+/-- ★★ **The insertion step — BRAID mode, LOCAL reduction (Regime B, general, IH-free).**  For any `perm` whose leftmost
+descent `d` and once-bubbled `perm · s_d` are both genuine descents (non-identity) with
+`leftmostDescent (perm · s_d) = d + 1` (Regime B), the inserted `s_{d+1}` braids past the trailing canonical
+`s_d s_{d+1}`: `canonicalCrossingWord perm ++ [d+1]` is `BrauerConvFree7` to
+`canonicalCrossingWord (perm · s_d · s_{d+1}) ++ [d, d+1, d]`.  PROOF: two staircase-snocs
+(`canonicalCrossingWord_snoc_leftmostDescent` on `perm`, then on `perm · s_d` with its descent rewritten to `d + 1` by
+the Regime-B hypothesis) expose the trailing triple `s_{d+1} s_d s_{d+1}`, which `crossingBraidFree d` (symm, whiskered
+left) transposes to `s_d s_{d+1} s_d`.  IH-free; it is the single Coxeter BRAID step of the mode.  The residual
+`… ++ [d, d+1, d]` re-inserts leftward via the carry fold (the standing wall). -/
+theorem crossingInsertionStep_braid_localReduction (perm : List Nat)
+    (nonIdentity : isIdentityPerm perm = false)
+    (nonIdentitySwapped : isIdentityPerm (applyAdjacentSwap perm (leftmostDescent perm)) = false)
+    (regimeB : leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm)) = leftmostDescent perm + 1) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [leftmostDescent perm + 1]))
+      (crossingWord (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+        ++ [leftmostDescent perm, leftmostDescent perm + 1, leftmostDescent perm])) := by
+  have snocOuter := canonicalCrossingWord_snoc_leftmostDescent perm nonIdentity
+  have snocInner :=
+    canonicalCrossingWord_snoc_leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm)) nonIdentitySwapped
+  rw [regimeB] at snocInner
+  rw [snocInner] at snocOuter
+  rw [snocOuter,
+    appendSnocAssoc (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+        ++ [leftmostDescent perm + 1]) (leftmostDescent perm) [leftmostDescent perm + 1],
+    appendSnocAssoc (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)))
+        (leftmostDescent perm + 1) [leftmostDescent perm, leftmostDescent perm + 1],
+    crossingWord_append (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)))
+        [leftmostDescent perm + 1, leftmostDescent perm, leftmostDescent perm + 1],
+    crossingWord_append (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)))
+        [leftmostDescent perm, leftmostDescent perm + 1, leftmostDescent perm]]
+  exact BrauerConvFree7.whiskerLeft
+    (crossingWord (canonicalCrossingWord
+      (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))))
+    (BrauerConvFree7.symm (crossingBraidFree (leftmostDescent perm)))
+
+/-- Non-vacuity — the GENERAL Regime-B BRAID local move on the reversal `[2, 1, 0]` (leftmost descent `0`, once-bubbled
+`[1, 2, 0]` with leftmost descent `1 = 0 + 1`) inserting `1`: `canonicalCrossingWord [2, 1, 0] ++ [1] = [0, 1, 0, 1]`
+braids to `[0, 0, 1, 0] = canonicalCrossingWord [1, 0, 2] ++ [0, 1, 0]`
+(`applyAdjacentSwap (applyAdjacentSwap [2, 1, 0] 0) 1 = [1, 0, 2]`). -/
+theorem crossingInsertionStep_braid_localReduction_smoke :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord [2, 1, 0] ++ [leftmostDescent [2, 1, 0] + 1]))
+      (crossingWord (canonicalCrossingWord
+          (applyAdjacentSwap (applyAdjacentSwap [2, 1, 0] (leftmostDescent [2, 1, 0]))
+            (leftmostDescent [2, 1, 0] + 1))
+        ++ [leftmostDescent [2, 1, 0], leftmostDescent [2, 1, 0] + 1, leftmostDescent [2, 1, 0]])) :=
+  crossingInsertionStep_braid_localReduction [2, 1, 0] (by decide) (by decide) (by decide)
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the CANONICAL CROSSING-WORD layer is SHIPPED.**  `canonicalCrossingWord` (the reverse of
@@ -1244,6 +1309,19 @@ def fxBrauer_hasInsertionExtendMode : Bool := true
 that only closes once the BRAID mode does (see the residual marker below).  Non-vacuous:
 `crossingInsertionStep_commute_localReduction_smoke` on `[1, 0, 2, 3]`.  `= true`. -/
 def fxBrauer_hasInsertionCommuteLocalMove : Bool := true
+
+/-- ★ **Honesty marker — WP-BRAUER r8: the BRAID mode's LOCAL Coxeter step is SHIPPED (Regime B, general, IH-free).**
+`crossingInsertionStep_braid_localReduction` proves, for any `perm` with leftmost descent `d` and once-bubbled
+`perm · s_d` both non-identity and `leftmostDescent (perm · s_d) = d + 1` (Regime B, the recon's tail-local dichotomy
+branch), that the inserted `s_{d+1}` braids past the trailing canonical `s_d s_{d+1}`:
+`canonicalCrossingWord perm ++ [d+1] ~ canonicalCrossingWord (perm · s_d · s_{d+1}) ++ [d, d+1, d]` (two staircase-snocs
+exposing the trailing `s_{d+1} s_d s_{d+1}`, then `crossingBraidFree d` symm whiskered left).  This is the single
+Coxeter BRAID move of the mode — the FIRST general artifact on the standing BRAID wall itself (the analog of the
+shipped COMMUTE local reduction).  The residual it leaves, `canonicalCrossingWord (perm · s_d · s_{d+1}) ++ [d, d+1, d]`,
+re-inserts the moved `[d, d+1, d]` leftward through the shorter prefix — the CARRY, whose fold is the standing
+lexicographic wall (see the residual marker).  Non-vacuous: `crossingInsertionStep_braid_localReduction_smoke` on the
+reversal `[2, 1, 0]`.  `= true`. -/
+def fxBrauer_hasInsertionBraidLocalMove : Bool := true
 
 /-- **Honesty marker — the FULL insertion step stays `false`; after r7 the residual is exactly the IN-RANGE BRAID mode
 plus its `inversionCount` assembly.**  Three of the four modes of the honest `InRangeInsertionStep` (in-range, genuine

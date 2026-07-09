@@ -89,6 +89,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_commute_localReduction
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_commute_localReduction_smoke
 
+-- WP-BRAUER r8: the BRAID mode local Coxeter step (Regime B, general, IH-free).
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braid_localReduction
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braid_localReduction_smoke
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCanonicalCrossingWordLayer
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingWordProblemConditionalReduction
@@ -96,6 +100,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInRangeInsertionReformulation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionExtendMode
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionCommuteLocalMove
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionBraidLocalMove
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingInsertionStepGeneralResidual
 
 end FX1PolyAudit
