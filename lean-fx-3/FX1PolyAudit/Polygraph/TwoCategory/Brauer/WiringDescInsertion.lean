@@ -159,4 +159,13 @@ namespace FX1PolyAudit
 -- now sharpened to a termination-MEASURE gap (`= false`).
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentCarryAlgebra
 
+-- WP-BRAUER r11: the REGIME-B braid-ascent leaf reduced to two decidable leftmost-descent facts.  The reusable
+-- non-identity discharge (`isIdentityPerm_eq_false_ofLeftmostDescentInRange`) and the Regime-B reduction closing the
+-- leaf via EXTEND/REFLEX sub-steps + the r10 carry re-insertion.  Private Nat helpers (natBleSuccSelf_false,
+-- natBltSelf_false) covered transitively.
+#assert_no_axioms FX1Poly.Polygraph.isIdentityPerm_eq_false_ofLeftmostDescentInRange
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents_smoke
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentRegimeBReduction
+
 end FX1PolyAudit

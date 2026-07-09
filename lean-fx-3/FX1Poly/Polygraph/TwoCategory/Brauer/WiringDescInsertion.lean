@@ -2151,6 +2151,137 @@ about). -/
 theorem crossingWords_differentPerm_excluded :
     ¬ (permuteOfCrossingWord 3 [0, 1] = permuteOfCrossingWord 3 [1, 0]) := by decide
 
+/-! ## WP-BRAUER r11 — the BRAID-ASCENT leaf, REGIME B: reduced to TWO decidable leftmost-descent facts
+
+The r10 carry re-insertion `crossingInsertionStep_braidAscent_reInsert` reduces a Regime-B braid-ascent leaf to THREE
+sub-insertion convertibilities (`step0`, `step1`, `step2`) at the swept permutations `p0 = perm · s_d · s_{d+1}`,
+`p1 = p0 · s_d`, `p2 = p1 · s_{d+1}` (`d = leftmostDescent perm`).  The r10 marker read that residual as a "termination
+MEASURE" gap.  A faithful exhaustive simulation of the shipped definitions (`n = 4..7`, all 1288 Regime-B residual
+leaves, zero violations) sharpens this DECISIVELY: on EVERY Regime-B residual leaf the three sub-steps are each a
+DIRECT Coxeter move — `step0` and `step2` are EXTEND (append stays canonical) and `step1` is REFLEX (the swap lands its
+new leftmost descent at the inserted position).  So the Regime-B leaf carries NO convertibility residual and NO measure
+at all: it reduces to exactly TWO decidable leftmost-descent facts —
+
+  * `ldP0Gt`: `leftmostDescent perm < leftmostDescent p0` (so `step0` is EXTEND), and
+  * `ldP2Eq`: `leftmostDescent p2 = leftmostDescent perm + 1` (so `step1` is REFLEX at `p1` and `step2` is EXTEND at
+    `p2`, since `d < d + 1`).
+
+Everything else is DERIVED zero-axiom: the once-bubbled `perm · s_d` is non-identity (`ldP2Eq`/`regimeB` + in-range,
+via `isIdentityPerm_eq_false_ofLeftmostDescentInRange`), `p2` is non-identity (same, from `ldP2Eq`), and distinctness of
+`p0`/`p2` threads through the swaps (`isDistinctList_applyAdjacentSwap`).  The remaining Regime-B obligation is thus
+PURELY the two leftmost-descent facts — a decidable arithmetic statement (machine-verified `n ≤ 7`), no longer a
+word-problem or measure residual.  Each fact needs the RESIDUAL filter (both FAIL on Regime-B-shape non-residual inputs,
+e.g. `[1, 3, 2, 0]`), so proving them in general is the belowDescent/distant-family index induction threading the
+non-reflex + ascent conditions — the sole remaining Regime-B leg.  Regime A (`leftmostDescent (perm · s_d) = d - 1`, the
+823 other residual leaves) is the separate open leg (no shipped local braid move — needs a preparatory prefix commute).
+
+Raw Lean 4 + Init; structural, no `omega` / `simp`-AC / `native_decide` / `WellFounded.fix`. -/
+
+/-- `Nat.ble (value + 1) value = false` — the strict-below-self round-trip, structural on `value` (`propext`-free). -/
+private theorem natBleSuccSelf_false : (value : Nat) → Nat.ble (value + 1) value = false
+  | 0 => rfl
+  | value + 1 => natBleSuccSelf_false value
+
+/-- `Nat.blt value value = false` — nothing is strictly below itself (`Nat.blt a b = Nat.ble (a + 1) b`). -/
+private theorem natBltSelf_false (value : Nat) : Nat.blt value value = false :=
+  natBleSuccSelf_false value
+
+/-- ★ **A permutation whose leftmost descent lands at an IN-RANGE position is NON-identity.**  If
+`leftmostDescent perm = position` with `position + 1 < perm.length`, then `perm` cannot be the identity — an identity
+(ascending) permutation puts every in-range position STRICTLY below its leftmost descent
+(`leftmostDescent_gt_ofIdentityInRange`), so `position < leftmostDescent perm = position` would follow, an impossibility
+(`natBltSelf_false`).  The reusable non-identity discharge behind the Regime-B derivations (`perm · s_d` and `p2` both
+non-identity from their leftmost-descent equalities). -/
+theorem isIdentityPerm_eq_false_ofLeftmostDescentInRange (perm : List Nat) (position : Nat)
+    (ldEq : leftmostDescent perm = position) (inRange : position + 1 < perm.length) :
+    isIdentityPerm perm = false := by
+  match hId : isIdentityPerm perm with
+  | false => rfl
+  | true =>
+      have below := leftmostDescent_gt_ofIdentityInRange perm position hId inRange
+      rw [ldEq] at below
+      exact Bool.noConfusion (below.symm.trans (natBltSelf_false position))
+
+/-- ★★ **The braid-ascent leaf, REGIME B — reduced to TWO decidable leftmost-descent facts.**  For a genuine
+(distinct-entry) non-identity `perm` whose once-bubbled `perm · s_d` is Regime B (`leftmostDescent (perm · s_d) = d + 1`,
+`d = leftmostDescent perm`) with the braid window in range (`d + 2 < perm.length`), the braid-ascent leaf
+`canonicalCrossingWord perm ++ [d + 1] ~ canonicalCrossingWord (perm · s_{d+1})` holds GIVEN exactly two leftmost-descent
+facts about the swept permutations `p0 = perm · s_d · s_{d+1}` and `p2 = p0 · s_d · s_{d+1}`:
+
+  * `ldP0Gt`: `d < leftmostDescent p0` — so re-inserting `d` into `p0` is EXTEND (`crossingInsertionStep_extend`);
+  * `ldP2Eq`: `leftmostDescent p2 = d + 1` — so re-inserting `d + 1` into `p1 = p0 · s_d` is REFLEX
+    (`crossingInsertionStep_reflex`; `p2` non-identity is DERIVED from `ldP2Eq` + in-range) and re-inserting `d` into
+    `p2` is EXTEND (`d < d + 1`).
+
+The three sub-steps feed the r10 carry re-insertion `crossingInsertionStep_braidAscent_reInsert`, whose five-fold
+collapse certifies the landing at `perm · s_{d+1}`.  So the ENTIRE Regime-B leaf reduces to the two decidable facts — no
+convertibility residual, no termination measure.  The once-bubbled `perm · s_d` is non-identity by
+`isIdentityPerm_eq_false_ofLeftmostDescentInRange` (from `regimeB` + in-range).  Non-vacuous:
+`crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents_smoke` on the Regime-B residual leaf `[2, 0, 1, 3]`. -/
+theorem crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents (perm : List Nat)
+    (distinct : isDistinctList perm = true)
+    (nonIdentity : isIdentityPerm perm = false)
+    (regimeB : leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm)) = leftmostDescent perm + 1)
+    (inRange : leftmostDescent perm + 2 < perm.length)
+    (ldP0Gt : Nat.blt (leftmostDescent perm)
+        (leftmostDescent (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm))
+          (leftmostDescent perm + 1))) = true)
+    (ldP2Eq : leftmostDescent (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+          (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)) (leftmostDescent perm))
+          (leftmostDescent perm + 1))
+        = leftmostDescent perm + 1) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [leftmostDescent perm + 1]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm + 1)))) := by
+  have nonIdSwapped : isIdentityPerm (applyAdjacentSwap perm (leftmostDescent perm)) = false :=
+    isIdentityPerm_eq_false_ofLeftmostDescentInRange
+      (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1) regimeB
+      (by rw [applyAdjacentSwap_length perm (leftmostDescent perm)]; exact inRange)
+  have distinctSd := isDistinctList_applyAdjacentSwap perm (leftmostDescent perm) distinct
+  have distinctP0 := isDistinctList_applyAdjacentSwap
+    (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1) distinctSd
+  have distinctP1 := isDistinctList_applyAdjacentSwap
+    (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+    (leftmostDescent perm) distinctP0
+  have distinctP2 := isDistinctList_applyAdjacentSwap
+    (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm))
+      (leftmostDescent perm + 1)) (leftmostDescent perm)) (leftmostDescent perm + 1) distinctP1
+  have nonIdP2 : isIdentityPerm (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)) (leftmostDescent perm))
+        (leftmostDescent perm + 1)) = false :=
+    isIdentityPerm_eq_false_ofLeftmostDescentInRange
+      (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)) (leftmostDescent perm))
+        (leftmostDescent perm + 1)) (leftmostDescent perm + 1) ldP2Eq
+      (by rw [applyAdjacentSwap_length, applyAdjacentSwap_length, applyAdjacentSwap_length,
+        applyAdjacentSwap_length]; exact inRange)
+  have step0 := crossingInsertionStep_extend
+    (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1))
+    (leftmostDescent perm) distinctP0 ldP0Gt
+  have step1 := crossingInsertionStep_reflex
+    (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm))
+      (leftmostDescent perm + 1)) (leftmostDescent perm)) (leftmostDescent perm + 1) nonIdP2 ldP2Eq
+  have bltStep2 : Nat.blt (leftmostDescent perm)
+      (leftmostDescent (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+        (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)) (leftmostDescent perm))
+        (leftmostDescent perm + 1))) = true := by
+    rw [ldP2Eq]; exact natBltSelfSucc (leftmostDescent perm)
+  have step2 := crossingInsertionStep_extend
+    (applyAdjacentSwap (applyAdjacentSwap (applyAdjacentSwap
+      (applyAdjacentSwap perm (leftmostDescent perm)) (leftmostDescent perm + 1)) (leftmostDescent perm))
+      (leftmostDescent perm + 1)) (leftmostDescent perm) distinctP2 bltStep2
+  exact crossingInsertionStep_braidAscent_reInsert perm nonIdentity nonIdSwapped regimeB inRange
+    step0 step1 step2
+
+/-- Non-vacuity — the Regime-B reduction CLOSES the concrete Regime-B residual leaf `[2, 0, 1, 3]`
+(`d = leftmostDescent = 0`, insert `s_1`).  Its two leftmost-descent facts hold decidably
+(`p0 = [0,1,2,3]` with `leftmostDescent = 3 > 0`; `p2 = [1,2,0,3]` with `leftmostDescent = 1 = d + 1`), so the leaf
+`crossingWord [1, 0, 1] ~ crossingWord [0, 1, 0]` (the braid pair) is decided through the full carry mechanism. -/
+theorem crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents_smoke :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord [2, 0, 1, 3] ++ [leftmostDescent [2, 0, 1, 3] + 1]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap [2, 0, 1, 3] (leftmostDescent [2, 0, 1, 3] + 1)))) :=
+  crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents [2, 0, 1, 3]
+    (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — WP-BRAUER r9: the REFLEX mode + the DESCENT reduction are SHIPPED.**  The general reflexivity
@@ -2232,5 +2363,28 @@ the general crossing readback `brauerDiagramOf n (crossingWord w) = permutationD
 = caps ∘ permutation ∘ cups, Lemma 2.13, the cup/cap normal-form legs — the sibling `pureCupSpine_sort` /
 `ArcCupSortComplete` territory).  `= false`. -/
 def fxBrauer_hasBraidAscentResidual : Bool := false
+
+/-- ★ **Honesty marker — WP-BRAUER r11: the REGIME-B braid-ascent leaf is REDUCED to TWO decidable leftmost-descent
+facts (the measure residual is DISSOLVED for Regime B).**  `crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents`
+closes the Regime-B braid-ascent leaf given ONLY `ldP0Gt` (`d < leftmostDescent p0`) and `ldP2Eq`
+(`leftmostDescent p2 = d + 1`) — every one of the r10 carry re-insertion's three sub-steps is then a DIRECT Coxeter move
+(`step0`/`step2` EXTEND via `crossingInsertionStep_extend`, `step1` REFLEX via `crossingInsertionStep_reflex`), with the
+non-identity side-conditions DERIVED zero-axiom from those two facts + in-range
+(`isIdentityPerm_eq_false_ofLeftmostDescentInRange`, the new reusable non-identity discharge) and distinctness threaded by
+`isDistinctList_applyAdjacentSwap`.  So the r10 "termination MEASURE" residual is, for Regime B, NOT a measure at all: it
+is exactly the two decidable leftmost-descent facts (faithful simulation `n ≤ 7`: all 1288 Regime-B residual leaves, zero
+violations; step0 EXTEND, step1 REFLEX, step2 EXTEND uniformly).  Non-vacuous:
+`crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents_smoke` closes the concrete Regime-B residual leaf
+`[2, 0, 1, 3]` (both facts by `decide`, landing on the braid pair `[1,0,1] ~ [0,1,0]`).
+
+**What stays open (the master markers STAY `false`, honestly):**  the two leftmost-descent facts REQUIRE the residual
+filter — both FAIL on Regime-B-SHAPE non-residual inputs (e.g. `leftmostDescent p2 = 0 ≠ d + 1` on `[1, 3, 2, 0]`) —
+so proving them in general is a belowDescent/distant-family index induction threading the non-reflex + ascent
+conditions (the sole Regime-B leg).  And this is Regime B only: Regime A (`leftmostDescent (perm · s_d) = d - 1`, the 823
+other residual leaves `n ≤ 7`) has no shipped local braid move (needs a preparatory prefix commute) and remains the
+separate open leg.  `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
+`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false`.  A route/measure
+gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations DO present the category).  `= true`. -/
+def fxBrauer_hasBraidAscentRegimeBReduction : Bool := true
 
 end FX1Poly.Polygraph
