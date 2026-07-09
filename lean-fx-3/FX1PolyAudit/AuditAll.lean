@@ -383,6 +383,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardForm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraightening
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraighteningGap
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescUntwist
+import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
