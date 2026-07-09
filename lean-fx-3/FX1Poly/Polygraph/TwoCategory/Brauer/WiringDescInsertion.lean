@@ -2179,19 +2179,58 @@ S_4 reversal, and the r8 stuck example; `braidAscentResidual_hypotheses_inhabite
 hardest small instance IS that stuck example.  `= true`. -/
 def fxBrauer_hasInsertionOuterInductionAssembly : Bool := true
 
-/-- **Honesty marker — the SOLE remaining leg of `InRangeInsertionStep` is the BRAID-ASCENT residual (`false`).**  After
-r9's closed outer induction, `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
+/-- ★ **Honesty marker — WP-BRAUER r10: the BRAID CARRY ALGEBRA is SHIPPED (the Little-bump identity + its Regime-B
+re-insertion).**  The braid-ascent carry's ALGEBRAIC core is closed zero-axiom: the braid relation on the one-line
+permutation `applyAdjacentSwap_braid` (`s_d s_{d+1} s_d = s_{d+1} s_d s_{d+1}`, in range) and its FIVE-FOLD collapse
+`applyAdjacentSwap_braid_fivefold` (`s_d s_{d+1} s_d s_{d+1} s_d = s_{d+1}`) — the Little-bump / column-insertion identity
+that makes the re-inserted triple `[d, d+1, d]` LAND exactly at the leaf's target `perm · s_{d+1}`.  On top of it,
+`crossingInsertionStep_braidAscent_reInsert` is the honest braid-mode analog of the shipped
+`crossingInsertionStep_commute_full`: for a Regime-B `perm` it reduces the braid-ascent leaf, via the shipped local braid
+move (`crossingInsertionStep_braid_localReduction`) + the three swept re-insertion steps (whiskered) + the five-fold
+alignment, to those three sub-steps.  Non-vacuous: `crossingInsertionStep_braidAscent_reInsert_smoke` closes the concrete
+Regime-B instance `[2, 0, 1, 3]` (all three sub-steps reflexivity, landing on the braid pair `[1,0,1] ~ [0,1,0]`), and
+`crossingWords_conv_secondResidualPair` decides a second S_5 residual pair `[1,2,0,1,2] ~ [0,1,2,0,1]` convertible.  This
+SHARPENS the wall but does NOT breach it — see below.  `= true`. -/
+def fxBrauer_hasBraidAscentCarryAlgebra : Bool := true
+
+/-- **Honesty marker — the SOLE remaining leg of `InRangeInsertionStep` is the BRAID-ASCENT residual (`false`); r10
+sharpens the wall to a MEASURE gap.**  After r9's closed outer induction and r10's carry algebra,
+`fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
 `fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false` because of ONE
 leaf: `BraidAscentInsertionStep` — `position = leftmostDescent perm + 1` over a genuine permutation, an ASCENT there,
-where the swap does NOT become the new leftmost descent (`leftmostDescent (perm · s_{d+1}) = d`, the 305-of-547 census
-cases the reflex mode does NOT catch).  There the moved `[d, d+1]` must sweep leftward into the canonical prefix before
-it can braid; the recon's exhaustive simulation found NO literal `inversionCount` / carried-index / regional monovariant
-descending per shipped-move step (the machine-documented plateau), consistent with the Björner–Brenti / Little
-"defect-row" hand-argument, which has no drop-in mechanized precedent (mathlib's `CoxeterSystem` proves only the weak
-exchange property, via inversion count, not the strong exchange this leaf needs).  The termination is carried by the
-distinguished-active-letter position — a `pureCupSpine_sort`-magnitude induction (the 1300-line zero-axiom sibling), the
-work of a further round.  This is a route/measure gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations
-DO present the category).  `= false`. -/
+non-reflex (`leftmostDescent (perm · s_{d+1}) = d`, the 305-of-547 census cases).
+
+**What r10 established about the wall (the carry algebra is closed; the termination MEASURE is the residual):**
+
+  * The braid-ascent carry does re-insert to the target — `crossingInsertionStep_braidAscent_reInsert` shows the Regime-B
+    leaf reduces to three re-insertion sub-steps at the swept permutations `p0 = perm · s_d · s_{d+1}`, `p1 = p0 · s_d`,
+    `p2 = p1 · s_{d+1}`, whose final swap `p2 · s_d = perm · s_{d+1}` is certified by the five-fold collapse.  So the
+    ALGEBRA of the carry is machine-checked, not conjectural.
+  * But the reduction does NOT descend the Lehmer measure: the ascent forces all three re-insertions to be ascents
+    (`inv p0 = inv perm − 2`, `inv p1 = inv perm − 1`, `inv p2 = inv perm`), so the outer `inversionCount` induction
+    discharges `step0` / `step1` (strictly smaller) but NOT `step2` — a re-insertion at the SAME Lehmer level.  The
+    braid-ascent carry re-inserts to a residual at the same level; the recursion is provably NOT on `inversionCount`.
+  * And this is Regime B only.  Regime A (`leftmostDescent (perm · s_d) = d − 1`; the canonical example `[1, 3, 0, 2]`
+    and `[2, 3, 0, 1]` are BOTH Regime A) needs a PREPARATORY commute into the prefix BEFORE any braid — the local braid
+    move does not even apply, matching the hand-witness `crossingWords_conv_residualStuckExample`
+    (`commute(2,0)`-at-front, then braid).
+
+**The residual is now precisely a MEASURE gap.**  The recon's exhaustive simulation (`n ≤ 6`) found NO single scalar in
+`{firstMismatchIndex, lastMismatchIndex, word-lex, hamming-to-target, carried-index / position}` monotone per shipped
+move; a hard core of 63/305 provably needs a prefix-sweep move while every scalar is frozen.  A terminating strategy DOES
+exist — the two-key `(lastMismatchIndex desc, distinguished-active-letter)` lexicographic descent solves 100 % to `n = 6`
+— so the leaf is TRUE and provable, but the honest measure is a 3-level lexicographic / distinguished-active-letter
+induction (`(lastMismatchIndex, activeLetterValue, activeSlotDistance)`) of `pureCupSpine_sort` magnitude, with no
+drop-in mechanized precedent (mathlib's `CoxeterSystem` proves only the weak exchange property; Björner–Brenti / Little's
+"defect-row" hand-argument is not a `Nat`-fuel recursion).  That multi-level well-founded assembly — not any algebra,
+which r10 shipped — is the work of a further round.  A route/measure gap, not an obstruction (Lehrer–Zhang Thm 2.6(2):
+the seven relations DO present the category).
+
+Beyond this leaf, the MASTER `fxBrauer_hasBrauerCompleteness` (`Brauer/WiringDesc.lean`) needs its OTHER legs regardless:
+the general crossing readback `brauerDiagramOf n (crossingWord w) = permutationDiagram n (permuteOfCrossingWord n w)`
+(SMOKES-only, `Brauer/WiringDescStandardForm.lean`) and the Lehrer–Zhang regular-form factorization (every Brauer diagram
+= caps ∘ permutation ∘ cups, Lemma 2.13, the cup/cap normal-form legs — the sibling `pureCupSpine_sort` /
+`ArcCupSortComplete` territory).  `= false`. -/
 def fxBrauer_hasBraidAscentResidual : Bool := false
 
 end FX1Poly.Polygraph

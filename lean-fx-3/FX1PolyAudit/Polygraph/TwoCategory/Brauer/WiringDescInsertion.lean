@@ -155,4 +155,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.crossingWords_conv_secondResidualPair
 #assert_no_axioms FX1Poly.Polygraph.crossingWords_differentPerm_excluded
 
+-- WP-BRAUER r10 honesty markers: the braid carry algebra is shipped (`= true`); the braid-ascent residual stays open,
+-- now sharpened to a termination-MEASURE gap (`= false`).
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBraidAscentCarryAlgebra
+
 end FX1PolyAudit
