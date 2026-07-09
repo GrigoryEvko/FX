@@ -93,6 +93,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braid_localReduction
 #assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_braid_localReduction_smoke
 
+-- WP-BRAUER r8: the distant-swap kit (disjoint-swap commutation + leftmost-descent invariance) and the COMMUTE mode
+-- FULL reduction (conditional on the smaller-perm insertion step).  Private helpers covered transitively.
+#assert_no_axioms FX1Poly.Polygraph.applyAdjacentSwap_swap_disjoint
+#assert_no_axioms FX1Poly.Polygraph.leftmostDescent_applyAdjacentSwap_distant
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_commute_full
+#assert_no_axioms FX1Poly.Polygraph.crossingInsertionStep_commute_full_smoke
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCanonicalCrossingWordLayer
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingWordProblemConditionalReduction
@@ -101,6 +108,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionExtendMode
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionCommuteLocalMove
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionBraidLocalMove
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasDistantSwapKit
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasInsertionCommuteFullMode
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingInsertionStepGeneralResidual
 
 end FX1PolyAudit

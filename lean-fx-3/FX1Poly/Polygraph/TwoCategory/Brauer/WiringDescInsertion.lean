@@ -1224,6 +1224,190 @@ theorem crossingInsertionStep_braid_localReduction_smoke :
         ++ [leftmostDescent [2, 1, 0], leftmostDescent [2, 1, 0] + 1, leftmostDescent [2, 1, 0]])) :=
   crossingInsertionStep_braid_localReduction [2, 1, 0] (by decide) (by decide) (by decide)
 
+/-! ## WP-BRAUER r8 — the distant-swap kit (the two structural lemmas the residual marker named)
+
+The outer `inversionCount` insertion induction re-inserts `position` at the strictly-smaller `perm · s_d`, which needs
+two structural facts about a DISTANT swap (`position ≥ d + 2`): (1) disjoint adjacent swaps COMMUTE
+(`applyAdjacentSwap_swap_disjoint`), so `perm · s_d · s_position = perm · s_position · s_d`; and (2) the leftmost
+descent is INVARIANT under a distant swap (`leftmostDescent_applyAdjacentSwap_distant`), so the trailing canonical
+letter of `perm · s_position` is still `d`.  Both were named as the missing structural inductions in the r7 residual
+marker; this section ships them, retiring those two named sub-obligations. -/
+
+/-- `(value + 1) + offset = (value + offset) + 1` — the head successor floats out (local `Nat.succ_add`, structural
+on `offset`, `propext`-free). -/
+private theorem succAddSwap : (value offset : Nat) → (value + 1) + offset = (value + offset) + 1
+  | _, 0 => rfl
+  | value, offset + 1 => congrArg Nat.succ (succAddSwap value offset)
+
+/-- `value ≤ value + gap` as a `Nat.ble` — structural on `value` (`propext`-free), the distant-position witness. -/
+private theorem natBleAddRight : (value gap : Nat) → Nat.ble value (value + gap) = true
+  | 0, _ => rfl
+  | value + 1, gap => by rw [succAddSwap value gap]; exact natBleAddRight value gap
+
+/-- ★★ **Disjoint adjacent swaps COMMUTE.**  A swap at `posLow` and a swap at the distant `posLow + gap + 2` (windows
+`{posLow, posLow+1}` and `{posLow+gap+2, posLow+gap+3}` disjoint) apply in either order.  Structural on `perm` /
+`posLow`; the common head is stripped by `applyAdjacentSwap_cons_succ` and the position bookkeeping by `succAddSwap`.
+This is the disjoint-swap-commutation leg named by the r7 residual marker
+(`applyAdjacentSwap (perm · s_d) position = applyAdjacentSwap (perm · s_position) d` when `position ≥ d + 2`). -/
+theorem applyAdjacentSwap_swap_disjoint :
+    (perm : List Nat) → (posLow gap : Nat) →
+    applyAdjacentSwap (applyAdjacentSwap perm posLow) (posLow + gap + 2)
+      = applyAdjacentSwap (applyAdjacentSwap perm (posLow + gap + 2)) posLow
+  | [], _, _ => rfl
+  | _ :: [], _, _ => rfl
+  | first :: second :: rest, 0, gap => by
+      show second :: applyAdjacentSwap (first :: rest) (0 + gap + 1)
+          = applyAdjacentSwap (first :: applyAdjacentSwap (second :: rest) (0 + gap + 1)) 0
+      rw [applyAdjacentSwap_cons_succ second rest (0 + gap),
+        applyAdjacentSwap_cons_succ first rest (0 + gap)]
+      rfl
+  | first :: second :: rest, posLow + 1, gap => by
+      show applyAdjacentSwap (first :: applyAdjacentSwap (second :: rest) posLow) (posLow + 1 + gap + 1 + 1)
+          = applyAdjacentSwap (first :: applyAdjacentSwap (second :: rest) (posLow + 1 + gap + 1)) (posLow + 1)
+      rw [applyAdjacentSwap_cons_succ first (applyAdjacentSwap (second :: rest) posLow) (posLow + 1 + gap + 1),
+        applyAdjacentSwap_cons_succ first (applyAdjacentSwap (second :: rest) (posLow + 1 + gap + 1)) posLow,
+        succAddSwap posLow gap]
+      exact congrArg (first :: ·) (applyAdjacentSwap_swap_disjoint (second :: rest) posLow gap)
+
+/-- The head of a swap at a POSITIVE position is unchanged — a `position + 1` swap fixes the head (arm 4 / the
+singleton no-op).  Structural on `perm`, `propext`-free. -/
+private theorem firstEntry_applyAdjacentSwap_succ : (perm : List Nat) → (position : Nat) →
+    firstEntry (applyAdjacentSwap perm (position + 1)) = firstEntry perm
+  | [], _ => rfl
+  | _ :: [], _ => rfl
+  | _ :: _ :: _, _ => rfl
+
+/-- ★★ **The leftmost descent is INVARIANT under a DISTANT swap.**  For a non-identity `perm` and a position
+`≥ leftmostDescent perm + 2` (strictly past the trailing canonical descent `d` and its partner strand), the swap
+touches only strands beyond `d + 1`, so the leftmost descent stays at `d` and the permutation stays non-identity.
+Structural on `perm` / `position` (mirrors `leftmostDescent_applyAdjacentSwap_belowDescent`); the head-preservation
+`firstEntry_applyAdjacentSwap_succ` keeps the junction descent-free.  This is the leftmost-descent-invariance leg named
+by the r7 residual marker (`leftmostDescent (perm · s_position) = d` for `position ≥ d + 2`). -/
+theorem leftmostDescent_applyAdjacentSwap_distant :
+    (perm : List Nat) → (position : Nat) →
+    isIdentityPerm perm = false → Nat.ble (leftmostDescent perm + 2) position = true →
+    leftmostDescent (applyAdjacentSwap perm position) = leftmostDescent perm
+      ∧ isIdentityPerm (applyAdjacentSwap perm position) = false
+  | [], _, nonIdentity, _ => Bool.noConfusion nonIdentity
+  | _ :: [], _, nonIdentity, _ => Bool.noConfusion nonIdentity
+  | first :: second :: rest, 0, _, distant => Bool.noConfusion distant
+  | first :: second :: rest, 1, _, distant => Bool.noConfusion distant
+  | first :: second :: rest, position + 2, nonIdentity, distant =>
+      match hDescent : Nat.blt second first with
+      | true => by
+          have ld0 : leftmostDescent (first :: second :: rest) = 0 :=
+            condTrue 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          refine ⟨?_, ?_⟩
+          · show leftmostDescent (first :: applyAdjacentSwap (second :: rest) (position + 1))
+                = leftmostDescent (first :: second :: rest)
+            rw [applyAdjacentSwap_cons_succ second rest position, ld0]
+            exact condTrue 0 (leftmostDescent (second :: applyAdjacentSwap rest position) + 1)
+              (Nat.blt second first) hDescent
+          · show isIdentityPerm (first :: applyAdjacentSwap (second :: rest) (position + 1)) = false
+            rw [applyAdjacentSwap_cons_succ second rest position]
+            exact condTrue false (isIdentityPerm (second :: applyAdjacentSwap rest position))
+              (Nat.blt second first) hDescent
+      | false => by
+          have ldSucc : leftmostDescent (first :: second :: rest) = leftmostDescent (second :: rest) + 1 :=
+            condFalse 0 (leftmostDescent (second :: rest) + 1) (Nat.blt second first) hDescent
+          have identityReduces : isIdentityPerm (first :: second :: rest) = isIdentityPerm (second :: rest) :=
+            condFalse false (isIdentityPerm (second :: rest)) (Nat.blt second first) hDescent
+          have tailNonIdentity : isIdentityPerm (second :: rest) = false := identityReduces ▸ nonIdentity
+          have distantTail : Nat.ble (leftmostDescent (second :: rest) + 2) (position + 1) = true := by
+            rw [ldSucc] at distant; exact distant
+          have ih := leftmostDescent_applyAdjacentSwap_distant (second :: rest) (position + 1)
+            tailNonIdentity distantTail
+          have headPreserved : firstEntry (applyAdjacentSwap (second :: rest) (position + 1)) = second :=
+            firstEntry_applyAdjacentSwap_succ (second :: rest) position
+          have noJunction : Nat.blt (firstEntry (applyAdjacentSwap (second :: rest) (position + 1))) first = false := by
+            rw [headPreserved]; exact hDescent
+          have ysCons : applyAdjacentSwap (second :: rest) (position + 1)
+              = firstEntry (applyAdjacentSwap (second :: rest) (position + 1))
+                :: dropFirst (applyAdjacentSwap (second :: rest) (position + 1)) :=
+            consEta (applyAdjacentSwap (second :: rest) (position + 1)) rest.length
+              (applyAdjacentSwap_length (second :: rest) (position + 1))
+          refine ⟨?_, ?_⟩
+          · show leftmostDescent (first :: applyAdjacentSwap (second :: rest) (position + 1))
+                = leftmostDescent (first :: second :: rest)
+            rw [ysCons, leftmostDescent_cons_headBltFalse first
+              (firstEntry (applyAdjacentSwap (second :: rest) (position + 1)))
+              (dropFirst (applyAdjacentSwap (second :: rest) (position + 1))) noJunction, ← ysCons, ih.1, ldSucc]
+          · show isIdentityPerm (first :: applyAdjacentSwap (second :: rest) (position + 1)) = false
+            rw [ysCons, isIdentityPerm_cons_headBltFalse first
+              (firstEntry (applyAdjacentSwap (second :: rest) (position + 1)))
+              (dropFirst (applyAdjacentSwap (second :: rest) (position + 1))) noJunction, ← ysCons, ih.2]
+
+/-! ## WP-BRAUER r8 — the COMMUTE mode, FULL reduction (conditional on the smaller-permutation insertion step)
+
+The COMMUTE local move (`crossingInsertionStep_commute_localReduction`) slides the inserted `position` past the
+trailing canonical descent `d`, leaving `canonicalCrossingWord (perm · s_d) ++ [position, d]`.  This lemma completes
+the COMMUTE case: GIVEN the insertion step at the strictly-smaller `perm · s_d` (the outer-`inversionCount`-induction
+IH), the moved letter re-canonicalises to `canonicalCrossingWord (perm · s_position)`.  The two distant-swap kit
+lemmas do the alignment: `applyAdjacentSwap_swap_disjoint` gives `perm · s_d · s_position = perm · s_position · s_d`
+and `leftmostDescent_applyAdjacentSwap_distant` gives `leftmostDescent (perm · s_position) = d`, so staircase-snoc on
+`perm · s_position` reads its trailing letter as exactly the carried `d`.  The COMMUTE case is thus fully assembled
+modulo the IH — the residual is now EXACTLY the BRAID carry fold (the standing wall). -/
+
+/-- ★★ **The insertion step — COMMUTE mode, FULL reduction (conditional on the smaller-permutation insertion step).**
+For a non-identity `perm` and a distant `position = leftmostDescent perm + gap + 2`, GIVEN the insertion step at the
+strictly-smaller `perm · s_d` (`d = leftmostDescent perm`) — the `inversionCount`-induction hypothesis `ih` — the full
+COMMUTE case holds:
+`canonicalCrossingWord perm ++ [position] ~ canonicalCrossingWord (perm · s_position)`.  PROOF: the local move
+(`crossingInsertionStep_commute_localReduction`) gives `~ canonicalCrossingWord (perm · s_d) ++ [position, d]`; the
+IH whiskered right by `[d]` rewrites the `[position]` prefix to `canonicalCrossingWord (perm · s_d · s_position)`; then
+`applyAdjacentSwap_swap_disjoint` (`perm · s_d · s_position = perm · s_position · s_d`) and staircase-snoc on
+`perm · s_position` (whose leftmost descent is `d` by `leftmostDescent_applyAdjacentSwap_distant`, non-identity by the
+same) identify `canonicalCrossingWord (perm · s_position · s_d) ++ [d]` with `canonicalCrossingWord (perm · s_position)`.
+The COMMUTE case is assembled modulo the IH; the ONLY remaining leg of `InRangeInsertionStep` is the BRAID carry fold. -/
+theorem crossingInsertionStep_commute_full (perm : List Nat) (gap : Nat)
+    (nonIdentity : isIdentityPerm perm = false)
+    (ih : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm))
+        ++ [leftmostDescent perm + gap + 2]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm))
+        (leftmostDescent perm + gap + 2))))) :
+    BrauerConvFree7 (crossingWord (canonicalCrossingWord perm ++ [leftmostDescent perm + gap + 2]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm + gap + 2)))) := by
+  have disjoint : leftmostDescent perm + 2 ≤ leftmostDescent perm + gap + 2 :=
+    leOfBleTrue (leftmostDescent perm + 2) (leftmostDescent perm + gap + 2)
+      (natBleAddRight (leftmostDescent perm) gap)
+  have localMove := crossingInsertionStep_commute_localReduction perm (leftmostDescent perm + gap + 2)
+    nonIdentity disjoint
+  have swapCommute := applyAdjacentSwap_swap_disjoint perm (leftmostDescent perm) gap
+  have ldInvariant := leftmostDescent_applyAdjacentSwap_distant perm (leftmostDescent perm + gap + 2)
+    nonIdentity (natBleAddRight (leftmostDescent perm) gap)
+  have snocTarget :=
+    canonicalCrossingWord_snoc_leftmostDescent (applyAdjacentSwap perm (leftmostDescent perm + gap + 2))
+      ldInvariant.2
+  rw [ldInvariant.1, ← swapCommute] at snocTarget
+  have step2 : BrauerConvFree7
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm))
+        ++ [leftmostDescent perm + gap + 2, leftmostDescent perm]))
+      (crossingWord (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm))
+          (leftmostDescent perm + gap + 2))
+        ++ [leftmostDescent perm])) := by
+    rw [← appendSnocAssoc (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm)))
+        (leftmostDescent perm + gap + 2) [leftmostDescent perm],
+      crossingWord_append (canonicalCrossingWord (applyAdjacentSwap perm (leftmostDescent perm))
+        ++ [leftmostDescent perm + gap + 2]) [leftmostDescent perm],
+      crossingWord_append (canonicalCrossingWord (applyAdjacentSwap (applyAdjacentSwap perm (leftmostDescent perm))
+        (leftmostDescent perm + gap + 2))) [leftmostDescent perm]]
+    exact BrauerConvFree7.whiskerRight (crossingWord [leftmostDescent perm]) ih
+  rw [snocTarget]
+  exact BrauerConvFree7.trans localMove step2
+
+/-- Non-vacuity — the GENERAL COMMUTE-full reduction on `[1, 0, 2, 3]` (leftmost descent `0`) inserting the distant `2`
+(`gap = 0`).  The smaller permutation `perm · s_0 = [0, 1, 2, 3]` is the identity, so its insertion step `ih` is
+reflexivity (`crossingWord [2] ~ crossingWord [2]`), and the theorem then yields
+`crossingWord [0, 2] ~ crossingWord [2, 0]` — the distant commute. -/
+theorem crossingInsertionStep_commute_full_smoke :
+    BrauerConvFree7
+      (crossingWord (canonicalCrossingWord [1, 0, 2, 3] ++ [leftmostDescent [1, 0, 2, 3] + 0 + 2]))
+      (crossingWord (canonicalCrossingWord
+        (applyAdjacentSwap [1, 0, 2, 3] (leftmostDescent [1, 0, 2, 3] + 0 + 2)))) :=
+  crossingInsertionStep_commute_full [1, 0, 2, 3] 0 (by decide)
+    (BrauerConvFree7.ofFree (BrauerConvFree.refl _))
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the CANONICAL CROSSING-WORD layer is SHIPPED.**  `canonicalCrossingWord` (the reverse of
@@ -1323,28 +1507,56 @@ lexicographic wall (see the residual marker).  Non-vacuous: `crossingInsertionSt
 reversal `[2, 1, 0]`.  `= true`. -/
 def fxBrauer_hasInsertionBraidLocalMove : Bool := true
 
-/-- **Honesty marker — the FULL insertion step stays `false`; after r7 the residual is exactly the IN-RANGE BRAID mode
-plus its `inversionCount` assembly.**  Three of the four modes of the honest `InRangeInsertionStep` (in-range, genuine
-permutations) now close as GENERAL theorems: CANCEL (`crossingInsertionStep_atLeftmostDescent`, `position = d`),
-EXTEND (`crossingInsertionStep_extend`, `position < d`, reflexivity), and the COMMUTE local Coxeter step
-(`crossingInsertionStep_commute_localReduction`, `position ≥ d + 2`).  What remains for a full proof of
-`InRangeInsertionStep` (hence the flip of `fxBrauer_hasCrossingOnlyStraightening`) is:
+/-- ★ **Honesty marker — WP-BRAUER r8: the DISTANT-SWAP KIT is SHIPPED (the two structural lemmas the r7 residual
+marker named).**  The outer `inversionCount` insertion induction re-inserts `position` at the strictly-smaller
+`perm · s_d`, which needs two facts about a distant swap (`position ≥ d + 2`), BOTH named as missing structural
+inductions in the r7 residual: (1) disjoint adjacent swaps COMMUTE — `applyAdjacentSwap_swap_disjoint`
+(`perm · s_d · s_position = perm · s_position · s_d`), structural on `perm` / `posLow`, head stripped by
+`applyAdjacentSwap_cons_succ` and positions bookkept by the local `succAddSwap`; and (2) the leftmost descent is
+INVARIANT under a distant swap — `leftmostDescent_applyAdjacentSwap_distant` (`leftmostDescent (perm · s_position) = d`
+and `perm · s_position` non-identity), structural on `perm` (mirroring `leftmostDescent_applyAdjacentSwap_belowDescent`)
+with head-preservation `firstEntry_applyAdjacentSwap_succ`.  Both closed zero-axiom, retiring the two named
+sub-obligations.  `= true`. -/
+def fxBrauer_hasDistantSwapKit : Bool := true
 
-  1. **the outer `inversionCount` induction** assembling CANCEL / EXTEND / COMMUTE, where the COMMUTE and BRAID cases
-     re-insert `position` at the strictly-smaller `perm · s_d` via the IH — this needs the distant-swap commutation
-     `applyAdjacentSwap (perm · s_d) position = applyAdjacentSwap (perm · s_position) d` and the leftmost-descent
-     invariance under a distant swap (`leftmostDescent (perm · s_position) = d` for `position ≥ d + 2`), both further
-     structural inductions; and
-  2. **the BRAID mode itself** (`position = d + 1`): the inserted `s_{d+1}` meets the trailing `s_d`, which neither
-     cancels nor commutes — it must BRAID (`crossingBraidFree`) and then the moved letter can KEEP interacting leftward
-     through the canonical prefix of arbitrary length, so the recursion is NOT on `inversionCount` (it can rise) and
-     needs the secondary lexicographic measure `(inversionCount perm, position)`.  This is the standing jam — the exact
-     jamming configuration is *the braided `s_{d+1}` becoming `d`-adjacent to the next canonical run, forcing another
-     braid up to `O(word length)` times* — the `locateAux` / `pureCupSpine_sort`-magnitude induction (the 1300-line
-     zero-axiom sibling).
+/-- ★ **Honesty marker — WP-BRAUER r8: the COMMUTE mode's FULL reduction is CLOSED (conditional on the smaller-perm
+insertion step).**  `crossingInsertionStep_commute_full` completes the COMMUTE case: for a distant
+`position = d + gap + 2`, GIVEN the insertion step at the strictly-smaller `perm · s_d` (the exact
+`inversionCount`-induction hypothesis), `canonicalCrossingWord perm ++ [position] ~ canonicalCrossingWord (perm ·
+s_position)`.  It chains the shipped local move (`crossingInsertionStep_commute_localReduction`) with the IH whiskered
+by `[d]`, then closes with the distant-swap kit: `applyAdjacentSwap_swap_disjoint` commutes the two swaps and
+`leftmostDescent_applyAdjacentSwap_distant` makes the trailing canonical letter of `perm · s_position` exactly the
+carried `d`, so staircase-snoc identifies the two sides.  This assembles the COMMUTE case in full modulo the IH — so
+the residual now shrinks to EXACTLY the BRAID carry fold.  Non-vacuous: `crossingInsertionStep_commute_full_smoke` on
+`[1, 0, 2, 3]` (the smaller perm is the identity, so `ih` is reflexivity, and the theorem yields the distant commute
+`crossingWord [0, 2] ~ crossingWord [2, 0]`).  `= true`. -/
+def fxBrauer_hasInsertionCommuteFullMode : Bool := true
 
-So the residual has shrunk from "the general insertion step" (r6) to "the IN-RANGE BRAID mode + the `inversionCount`
-assembly"; the master markers `fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
+/-- **Honesty marker — the FULL insertion step stays `false`; after r8 the residual is EXACTLY the BRAID CARRY FOLD.**
+Of the four modes of the honest `InRangeInsertionStep` (in-range, genuine permutations), THREE now close as general
+theorems and the fourth's local step ships:
+
+  * CANCEL (`crossingInsertionStep_atLeftmostDescent`, `position = d`) — general, R2;
+  * EXTEND (`crossingInsertionStep_extend`, `position < d`) — general, reflexivity;
+  * COMMUTE (`position ≥ d + 2`) — the local Coxeter step is general (`crossingInsertionStep_commute_localReduction`)
+    AND the FULL COMMUTE case is now assembled MODULO the IH (`crossingInsertionStep_commute_full`), using the r8
+    distant-swap kit `applyAdjacentSwap_swap_disjoint` + `leftmostDescent_applyAdjacentSwap_distant` (the two structural
+    inductions the r7 residual named — now SHIPPED);
+  * BRAID (`position = d + 1`) — the local Coxeter step ships (`crossingInsertionStep_braid_localReduction`, Regime B:
+    `s_{d+1} s_d s_{d+1} → s_d s_{d+1} s_d`).
+
+So after r8 the two structural sub-obligations the r7 marker named (distant-swap commutation, leftmost-descent
+invariance) are DISCHARGED, and the COMMUTE case is fully reduced to the IH.  The SOLE remaining leg of
+`InRangeInsertionStep` (hence the flip of `fxBrauer_hasCrossingOnlyStraightening`) is the **BRAID CARRY FOLD**: the
+local braid move leaves `canonicalCrossingWord (perm · s_d · s_{d+1}) ++ [d, d+1, d]`, whose trailing `[d, d+1, d]`
+re-inserts leftward through the shorter prefix.  The recon's hand-verified dichotomy is the exact jam: in Regime B
+(`d2 = d + 1`) the carry is tail-local (braid, then meet the next run and braid/cancel again), but in Regime A
+(`d2 = d - 1`) the moved letter is stuck at the tail and must FIRST commute into the canonical prefix (hand-example:
+`[2, 0, 1, 2]`, the only legal move is `commute(2, 0)` at the FRONT) before it can braid — so the carry is NOT
+tail-local, the recursion is NOT on `inversionCount` (braiding preserves it), and the measure is the secondary
+lexicographic `(inversionCount perm, carried-index / prefix-length)`.  This is the standing jam — the
+`locateAux` / `pureCupSpine_sort`-magnitude induction (the 1300-line zero-axiom sibling).  The master markers
+`fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
 `fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false` because of it
 — a route/measure gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations DO present the category).
 `= false`. -/
