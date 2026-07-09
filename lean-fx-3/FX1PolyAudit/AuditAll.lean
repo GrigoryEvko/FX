@@ -390,6 +390,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraightening
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraighteningGap
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescUntwist
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescUntwistNormalize
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
