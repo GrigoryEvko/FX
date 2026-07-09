@@ -11,8 +11,15 @@ boundary-determined representative, and the assembled normalization.  Must be fr
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.IdempotentMonadSaturatedTwoCellConv.castBoundaryCongr
+#assert_no_axioms FX1Poly.Polygraph.IdempotentMonadSaturatedTwoCellConv.ofCastLeft
+#assert_no_axioms FX1Poly.Polygraph.IdempotentMonadSaturatedTwoCellConv.vcompCastLeftExtrude
 #assert_no_axioms FX1Poly.Polygraph.monadTPower_add_left
 #assert_no_axioms FX1Poly.Polygraph.monadTPower_succ_add_left
 #assert_no_axioms FX1Poly.Polygraph.whiskerLeftCanon
+#assert_no_axioms FX1Poly.Polygraph.composePath_monadTPower_monadT
+#assert_no_axioms FX1Poly.Polygraph.gadgetSplitRight_zero
+#assert_no_axioms FX1Poly.Polygraph.gadgetSplitRight_one
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightLeftBraid
+#assert_no_axioms FX1Poly.Polygraph.gadgetSplitRight
 
 end FX1PolyAudit
