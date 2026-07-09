@@ -738,6 +738,7 @@ import FX1PolyAudit.Tier0.Mode.TierBThinDecision
 import FX1PolyAudit.Tier0.Mode.ExhibitedConvergentDecision
 import FX1PolyAudit.Tier0.Mode.SemiThueReduction
 import FX1PolyAudit.Tier0.Mode.DecidableCeilingLedger
+import FX1PolyAudit.Tier0.Mode.Ceiling.UndecidabilityReduction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
