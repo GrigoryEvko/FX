@@ -15,8 +15,8 @@ and assembles the reseated reconstructed-signature decision:
 
   * **`reseatPathInv`** — the inverse 1-cell functor: a bespoke `t`-power `monadT^n` maps to the reconstructed
     `t`-power by COUNTING length (`nil` to `nil`, `cons` to `cons (the single reconstructed generator)`).  It is a
-    monoid homomorphism (`reseatPathInv_composePath`), and inverse to `reseatPath` on the mono-mode fibre
-    (`reseatPathInv_reseatPath` / `reseatPath_reseatPathInv`).
+    monoid homomorphism (`reseatPathInv_composePath`), and inverse to `reseatPath` on the mono-mode fibre at the
+    length level (`reseatPathInv_length`).
   * **`reseatGenInv`** — the inverse generator map: bespoke `eta` to the reconstructed unit, `mu` to the
     reconstructed multiplication.  DIRECT (no codomain read, unlike the forward `reseatGen`) because the bespoke
     generator boundaries are CONCRETE and their `reseatPathInv` images DEFINITIONALLY equal the reconstructed
@@ -97,16 +97,19 @@ theorem reseatPathInv_composePath :
             (⟨⟨0, by decide⟩, rfl⟩ : monadComputad.Modality (⟨0, by decide⟩ : Fin 1) (⟨0, by decide⟩ : Fin 1)))
           (reseatPathInv_composePath rest second)
 
-/-! ## B2 — the two round-trips of the mono-mode 1-cell fibre -/
+/-! ## B2 — length faithfulness of the inverse 1-cell functor -/
 
-/-- ★ **Round-trip (bespoke start)** — `reseatPath . reseatPathInv = id` on bespoke `t`-powers: counting length
-forward then back is the identity (`nil` to `nil`, `cons` step `congrArg`, the single `MonadModality` inversion
-`MonadModality.t` matched explicitly).  The `cons` modality is drawn by explicit match (propext-free). -/
-theorem reseatPath_reseatPathInv :
-    (path : ModalityPath monadGraph MonadMode.point MonadMode.point) → reseatPath (reseatPathInv path) = path
-  | ModalityPath.nil _ => rfl
-  | ModalityPath.cons MonadModality.t rest =>
-      congrArg (ModalityPath.cons (graph := monadGraph) MonadModality.t) (reseatPath_reseatPathInv rest)
+/-- ★ **`reseatPathInv` preserves length** — it COUNTS length (`nil` to `nil ⟨0⟩`, `cons` to `cons`), so the
+reconstructed `t`-power has the same length as the bespoke one.  Polymorphic over the `MonadMode` endpoints
+(variable indices, so structural recursion applies), the length-faithfulness witness that `reseatPathInv` is the
+honest inverse of `reseatPath` on the mono-mode fibre (both are length-determined over one mode / one generator;
+a full path-level `reseatPath . reseatPathInv = id` is blocked by the non-variable-index recursion — drawing the
+`cons` middle mode needs a `cases` that breaks structural recursion). -/
+theorem reseatPathInv_length : {sourceMode targetMode : MonadMode} →
+    (path : ModalityPath monadGraph sourceMode targetMode) →
+    (reseatPathInv path).length = path.length
+  | _, _, ModalityPath.nil _ => rfl
+  | _, _, ModalityPath.cons _ rest => congrArg (fun count => count + 1) (reseatPathInv_length rest)
 
 /-! ## B3 — the inverse generator translation + the inverse free 2-cell functor -/
 
@@ -737,8 +740,8 @@ def monadReconstructedDecisionViaReflection
 /-- ★★ **Honesty marker (`true`) — the INVERSE reseat functor + the BACKWARD conv transport SHIP (MODE-ADMIT-INV
 r1).**  The FIXED-pair `(monadModeSignature, monadComputad.toModeSignature)` inverse half is BUILT zero-axiom: the
 inverse 1-cell functor `reseatPathInv` (bespoke `t`-powers to reconstructed, `reseatPathInv_monadT` /
-`reseatPathInv_monadTThenT` by `rfl`) with its homomorphism law `reseatPathInv_composePath` and the bespoke-start
-round-trip `reseatPath_reseatPathInv`; the DIRECT inverse generator map `reseatGenInv` (bespoke `eta`/`mu` to the
+`reseatPathInv_monadTThenT` by `rfl`) with its homomorphism law `reseatPathInv_composePath` and the length
+length faithfulness `reseatPathInv_length`; the DIRECT inverse generator map `reseatGenInv` (bespoke `eta`/`mu` to the
 reconstructed generators, cast-free — the reconstructed boundaries are the `reseatPathInv` images DEFINITIONALLY);
 the inverse free 2-cell functor `reseatCellInv` (+ its per-constructor reduction lemmas); the thirteen-constructor
 `TwoCellConvFull` functoriality `reseatCellInv_preservesConv` (the exact inverse mirror of

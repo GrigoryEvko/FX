@@ -165,6 +165,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ComposableFragmentDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.SaturatedRelationFamily
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ModeAdmit
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.MonadReseat
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.MonadReseatInverse
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.EndgameDemo
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
