@@ -476,4 +476,179 @@ work); the Tier B matcher is confined to the THIN fragment, whose empty law rela
 Tier A disambiguates the non-thin walkers by NAME.  `= false`. -/
 def fxModeAdmit_hasDataFingerprintAdmission : Bool := false
 
+/-! ## P1 (MODE-ADMIT r2) — the ROW-AWARE fingerprint: reflected law rows as untyped cell data
+
+r1's `fxModeAdmit_hasDataFingerprintAdmission = false` wall named the exact defect: `monadComputad` and the
+walking-idempotent-monad walker have the SAME `PresentationData` (they share the very same `ModeComputad`,
+differing ONLY in the `Prop`-valued law relation `MonadLawRel` vs `IdempotentLawRel`, which `ModeComputad` does
+NOT store).  The plain fingerprint therefore CONFLATES the separating walking monad with the total walking
+idempotent monad.
+
+r2 reflects the law ROWS as untyped data (`RawCellData`) — the "named future work" of that wall — and pairs them
+with the `PresentationData` into a `RowAwarePresentationData`.  The two colliding walkers now carry DISTINCT
+row-aware fingerprints (3 monad law rows vs 4 idempotent law rows), drawn apart propext-free by
+`List.length` + `Nat.noConfusion` — exactly the `involutionPresentation_ne_monadPresentation` pattern, one
+dimension up.  The reflection is author-SUPPLIED (a data mirror of the `Prop` relation, not extracted from the
+computad and not yet certified faithful to it — that certification is the r3 scope, see the ledger below), so the
+row-aware layer RESOLVES the conflation for RECOGNITION but does not yet license fully-automatic data admission. -/
+
+/-- A **reflected 2-cell** — an untyped, `Nat`-indexed mirror of `RawTwoCellExpr`: a generating 2-cell by its
+`Nat` index, an identity on a 1-cell word, a vertical composite, and the two whiskerings (each carrying the
+whiskering 1-cell word).  Non-dependent (no boundary indices), so its structural `beq` is a clean `Bool` fold with
+no index reconciliation — the untyped `RawCellData` layer the r1 wall named. -/
+inductive RawCellData where
+  /-- A generating 2-cell, recorded by its `Nat` index. -/
+  | genAtom (index : Nat)
+  /-- The identity 2-cell on a 1-cell word (the word as `Nat` generator indices). -/
+  | idCell (word : List Nat)
+  /-- A vertical composite of two reflected cells. -/
+  | vcomp (upper lower : RawCellData)
+  /-- A left whiskering of a reflected cell by a 1-cell word. -/
+  | whiskerLeft (word : List Nat) (inner : RawCellData)
+  /-- A right whiskering of a reflected cell by a 1-cell word. -/
+  | whiskerRight (word : List Nat) (inner : RawCellData)
+
+/-- **Structural `Bool` equality on reflected cells** — recurses on the first argument (each recursive call on a
+structurally-smaller subcell), `Nat` / `List Nat` `BEq` on the leaf words, `false` on any head mismatch.  ALL 25
+constructor pairs enumerated explicitly (NO wildcard `_, _ => false`, which would leak `propext` per the
+match-compiler recipe) — pure `Bool`, propext-free.  The matcher's row comparator. -/
+def RawCellData.beq : RawCellData → RawCellData → Bool
+  | .genAtom firstIndex, .genAtom secondIndex => firstIndex == secondIndex
+  | .genAtom _, .idCell _ => false
+  | .genAtom _, .vcomp _ _ => false
+  | .genAtom _, .whiskerLeft _ _ => false
+  | .genAtom _, .whiskerRight _ _ => false
+  | .idCell _, .genAtom _ => false
+  | .idCell firstWord, .idCell secondWord => firstWord == secondWord
+  | .idCell _, .vcomp _ _ => false
+  | .idCell _, .whiskerLeft _ _ => false
+  | .idCell _, .whiskerRight _ _ => false
+  | .vcomp _ _, .genAtom _ => false
+  | .vcomp _ _, .idCell _ => false
+  | .vcomp firstUpper firstLower, .vcomp secondUpper secondLower =>
+      firstUpper.beq secondUpper && firstLower.beq secondLower
+  | .vcomp _ _, .whiskerLeft _ _ => false
+  | .vcomp _ _, .whiskerRight _ _ => false
+  | .whiskerLeft _ _, .genAtom _ => false
+  | .whiskerLeft _ _, .idCell _ => false
+  | .whiskerLeft _ _, .vcomp _ _ => false
+  | .whiskerLeft firstWord firstInner, .whiskerLeft secondWord secondInner =>
+      (firstWord == secondWord) && firstInner.beq secondInner
+  | .whiskerLeft _ _, .whiskerRight _ _ => false
+  | .whiskerRight _ _, .genAtom _ => false
+  | .whiskerRight _ _, .idCell _ => false
+  | .whiskerRight _ _, .vcomp _ _ => false
+  | .whiskerRight _ _, .whiskerLeft _ _ => false
+  | .whiskerRight firstWord firstInner, .whiskerRight secondWord secondInner =>
+      (firstWord == secondWord) && firstInner.beq secondInner
+
+/-- **`Bool` equality on a law row** — a law row is a `(RawCellData x RawCellData)` pair (the two sides of one
+generating equation); compare both sides by `RawCellData.beq`. -/
+def beqLawRow (firstRow secondRow : RawCellData × RawCellData) : Bool :=
+  firstRow.1.beq secondRow.1 && firstRow.2.beq secondRow.2
+
+/-- **`Bool` equality on law-row lists** — structural on both lists, `beqLawRow` pointwise, `false` on a length
+mismatch.  Order-sensitive (the tiny law lists are given in a fixed order); the `List.beq` pattern, propext-free. -/
+def beqLawRows : List (RawCellData × RawCellData) → List (RawCellData × RawCellData) → Bool
+  | [], [] => true
+  | [], _ :: _ => false
+  | _ :: _, [] => false
+  | firstRow :: firstRest, secondRow :: secondRest =>
+      beqLawRow firstRow secondRow && beqLawRows firstRest secondRest
+
+/-- A **row-aware presentation fingerprint** — the plain `PresentationData` (mode count + 1-generator endpoints +
+flattened 2-generators) PLUS the reflected law ROWS (`RawCellData` pairs).  The registry key that distinguishes
+walkers sharing a `ModeComputad` but differing in their doctrine laws. -/
+structure RowAwarePresentationData where
+  /-- The plain (law-blind) presentation fingerprint. -/
+  base : PresentationData
+  /-- The reflected doctrine law rows (a data mirror of the `Prop`-valued law relation). -/
+  lawRows : List (RawCellData × RawCellData)
+
+/-- **The row-aware fingerprint of a `ModeComputad` plus supplied law rows** — the computad gives the plain `base`
+fingerprint; the law rows are SUPPLIED (they are not stored on the computad).  Declared into `ModeComputad`'s own
+namespace so `computad.toRowAwarePresentationData lawRows` resolves by dot-notation. -/
+def _root_.FX1Poly.Polygraph.ModeComputad.toRowAwarePresentationData (computad : ModeComputad)
+    (lawRows : List (RawCellData × RawCellData)) : RowAwarePresentationData :=
+  { base := computad.toPresentationData, lawRows := lawRows }
+
+/-- The reflected 1-cell word of the monad's endo-generator `t` — the single generator, index `0`. -/
+def monadGeneratorWord : List Nat := [0]
+
+/-- The reflected unit 2-generator `eta` — index `0` in the monad's 2-generator list. -/
+def reflectedEta : RawCellData := RawCellData.genAtom 0
+
+/-- The reflected multiplication 2-generator `mu` — index `1` in the monad's 2-generator list. -/
+def reflectedMu : RawCellData := RawCellData.genAtom 1
+
+/-- The reflected identity 2-cell on `t` (the RHS of both unit laws). -/
+def reflectedIdT : RawCellData := RawCellData.idCell monadGeneratorWord
+
+/-- ★ **The walking monad's three laws reflected as data** — left unit `mu . (eta |> t) ~ id_t`, right unit
+`mu . (t <| eta) ~ id_t`, associativity `mu . (mu |> t) ~ mu . (t <| mu)`.  A faithful structural mirror of
+`monadLeftUnitCell` / `monadRightUnitCell` / `monadIdTCell` / `monadAssocLeftCell` / `monadAssocRightCell`
+(`WalkingMonad/MonadSaturatedConv.lean`): three rows. -/
+def monadLawRowsData : List (RawCellData × RawCellData) :=
+  [ (RawCellData.vcomp (RawCellData.whiskerRight monadGeneratorWord reflectedEta) reflectedMu, reflectedIdT),
+    (RawCellData.vcomp (RawCellData.whiskerLeft monadGeneratorWord reflectedEta) reflectedMu, reflectedIdT),
+    (RawCellData.vcomp (RawCellData.whiskerRight monadGeneratorWord reflectedMu) reflectedMu,
+      RawCellData.vcomp (RawCellData.whiskerLeft monadGeneratorWord reflectedMu) reflectedMu) ]
+
+/-- ★ **The walking IDEMPOTENT monad's four laws reflected as data** — the three monad rows PLUS the idempotence
+row `eta |> t ~ t <| eta` (a faithful mirror of `monadEtaTCell` / `monadTEtaCell`,
+`WalkingIdempotent/IdempotentMonadSeed.lean`).  Four rows — one more than the monad, the DATA distinction the
+plain fingerprint could not see. -/
+def idempotentLawRowsData : List (RawCellData × RawCellData) :=
+  monadLawRowsData ++
+    [ (RawCellData.whiskerRight monadGeneratorWord reflectedEta,
+        RawCellData.whiskerLeft monadGeneratorWord reflectedEta) ]
+
+/-- ★ **The idempotent-vs-monad DATA DISEQUALITY (decided)** — the reflected law-row lists genuinely differ: the
+monad has three rows, the idempotent monad four, drawn apart propext-free by projecting `List.length` and
+`Nat.noConfusion`.  This is the fact the plain `PresentationData` could NOT express (both share the same computad);
+reflecting the law rows as data resolves the r1 conflation. -/
+theorem monadLawRowsData_ne_idempotentLawRowsData :
+    monadLawRowsData ≠ idempotentLawRowsData :=
+  fun equalRows =>
+    absurd
+      (show (0 : Nat) = 1 from congrArg (fun rows => (List.drop 3 rows).length) equalRows)
+      (fun contradiction => Nat.noConfusion contradiction)
+
+/-- The walking monad's row-aware fingerprint. -/
+def monadRowAware : RowAwarePresentationData :=
+  monadComputad.toRowAwarePresentationData monadLawRowsData
+
+/-- The walking idempotent monad's row-aware fingerprint — SAME `base` (same computad) but DISTINCT `lawRows`. -/
+def idempotentRowAware : RowAwarePresentationData :=
+  monadComputad.toRowAwarePresentationData idempotentLawRowsData
+
+/-- ★ The two row-aware walkers share their PLAIN base fingerprint (the r1 collision, made explicit): they are the
+SAME `ModeComputad`, so `base` coincides by `rfl`.  The distinction lives entirely in the reflected `lawRows`. -/
+theorem monadRowAware_idempotentRowAware_sameBase :
+    monadRowAware.base = idempotentRowAware.base := rfl
+
+/-- ★★ **The row-aware match predicate (the matcher UPGRADE)** — a candidate row-aware fingerprint matches a
+reference when they have the SAME mode count, their 1-generator endpoint lists are a permutation of each other
+(the endpoint-preserving renaming, reused from r1's `isPermutationOfPairs`), AND their reflected law-row lists
+agree (`beqLawRows`).  Unlike r1's `isThinPresentationMatch` this is NOT confined to the thin fragment: the law
+rows are the discriminator that makes non-thin matching sound at the DATA level. -/
+def isRowAwarePresentationMatch (candidate reference : RowAwarePresentationData) : Bool :=
+  (candidate.base.modeCount == reference.base.modeCount)
+    && isPermutationOfPairs candidate.base.modalityGenerators reference.base.modalityGenerators
+    && beqLawRows candidate.lawRows reference.lawRows
+
+/-- ★ The row-aware match RECOGNISES the monad as itself (reflexive self-match). -/
+theorem monadRowAware_matches_self :
+    isRowAwarePresentationMatch monadRowAware monadRowAware = true := rfl
+
+/-- ★★ **The row-aware match SEPARATES the monad from the idempotent monad** — the exact conflation r1's plain
+data fingerprint could not resolve.  Despite the identical `base`, the reflected law rows differ (3 vs 4), so the
+row-aware matcher returns `false`.  This is the DATA-level separation that upgrades recognition. -/
+theorem monadRowAware_notMatches_idempotent :
+    isRowAwarePresentationMatch monadRowAware idempotentRowAware = false := rfl
+
+/-- ★ The row-aware match also REJECTS the idempotent-against-monad direction (row lists differ the other way). -/
+theorem idempotentRowAware_notMatches_monad :
+    isRowAwarePresentationMatch idempotentRowAware monadRowAware = false := rfl
+
 end FX1Poly.Polygraph.Amalgam

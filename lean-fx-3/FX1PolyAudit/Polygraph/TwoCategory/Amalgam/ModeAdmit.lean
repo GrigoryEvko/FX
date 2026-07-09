@@ -75,4 +75,26 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasRenamingDeciderTransport
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxModeAdmit_hasDataFingerprintAdmission
 
+-- P1 (r2): the row-aware fingerprint — reflected cell data + its structural Bool equality
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.RawCellData
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.RawCellData.beq
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.beqLawRow
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.beqLawRows
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.RowAwarePresentationData
+#assert_no_axioms FX1Poly.Polygraph.ModeComputad.toRowAwarePresentationData
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadGeneratorWord
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reflectedEta
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reflectedMu
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reflectedIdT
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadLawRowsData
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.idempotentLawRowsData
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadLawRowsData_ne_idempotentLawRowsData
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadRowAware
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.idempotentRowAware
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadRowAware_idempotentRowAware_sameBase
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.isRowAwarePresentationMatch
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadRowAware_matches_self
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadRowAware_notMatches_idempotent
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.idempotentRowAware_notMatches_monad
+
 end FX1PolyAudit
