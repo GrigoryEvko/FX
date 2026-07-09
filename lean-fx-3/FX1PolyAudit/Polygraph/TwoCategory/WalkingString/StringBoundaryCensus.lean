@@ -11,5 +11,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.stringForest_toUnionFindForest
 #assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_initial
+#assert_no_axioms FX1Poly.Polygraph.stringCapEndTokenBackmap_node
+#assert_no_axioms FX1Poly.Polygraph.stringCapEndTokenBackmap_isValid
+#assert_no_axioms FX1Poly.Polygraph.stringBoundaryCensus_stepCap
 
 end FX1PolyAudit
