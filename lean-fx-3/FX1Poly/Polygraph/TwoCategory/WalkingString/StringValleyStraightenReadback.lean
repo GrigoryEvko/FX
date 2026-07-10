@@ -285,21 +285,24 @@ GIVEN the band collapse, taking the reconnection from the shipped colour-aware `
 `= true`. -/
 def fxString_hasStringValleyStraightenReadback : Bool := true
 
-/-- **★ HONEST WALL RECORD — the band collapse is the one genuinely-new colour node the STRAIGHTEN arm reduces to;
-it does NOT flip this round.**  `stringStraightenCellDescentStep_ofCollapse` takes as its SINGLE remaining input the
-band collapse `stringReadbackBand cup ⊟ castBoundary (stringReadbackBand cap) ≈ id` on the shared boundary.
-Producing it for a `zigZagSharedLeg` string redex is a four-generator, two-colour re-derivation of the adjunction's
-single-colour `mergedSharedLegFramesCollapse` (`SpineValleyFrameCollapse` + `SpineValleyStraightenCastBridge`): the
-width-only classifier is colour-BLIND, so it must first refute the MIXED-colour case at the 2-cell level (the
-shipped `stringSharedLegForcesSameColour` handles it at the RECONNECT level — `F ≠ H` via the mode clash — but the
-2-cell collapse needs the same refutation lifted), then fire the matching STRING triangle
-(`triangleF`/`triangleGlo`/`triangleGhi`/`triangleH`) whiskered into the general context by the generic whisker
-functoriality (`TwoCellConvFull.whiskerLeftComp`/`whiskerRightComp`/`whiskerExchange`, which DO exist at the string
-signature — verified).  The RIGHT-handedness (`capLeft + 1 = cupLeft`) additionally needs a mirror reconnect (the
-shipped `stringCupCapDeletionReconnects` carries only the LEFT width relation).  This is a separate multi-file arc,
-NOT a shared-`G` coherence gap (`fxString_hasAdjointTripleCoherenceGap` stays `false`).  So
-`StringCellDescentStepOracle` stays UN-inhabited and `fxString_hasAdjointTripleCompleteness` stays `false`.
-`= false`. -/
-def fxString_hasStringValleyStraightenBandCollapse : Bool := false
+/-- **★★★ DISCHARGED for the LEFT handedness (FC-3 r7) — the band collapse the STRAIGHTEN arm reduces to is PROVEN,
+unconditionally, for a LEFT-handed zigzag.**  `stringStraightenCellDescentStep_ofCollapse` takes as its SINGLE
+remaining input the band collapse `stringReadbackBand cup ⊟ castBoundary (stringReadbackBand cap) ≈ id`, gated on the
+LEFT width relation `|lcCup| + 1 = |lcCap|`.  That input is now supplied by `stringZigZagBandCollapseLeft`
+(`WalkingString/StringStraightenBandCollapseProducer`): the four-generator, two-colour re-derivation is complete —
+the two SAME-colour snakes fire the string port of `mergedSharedLegFramesCollapse`
+(`stringMergedSharedLegFramesCollapse`, via `triangleF` at `L = F` and `triangleGhi` at `L = G`, whiskered by the
+generic `whiskerLeftComp`/`whiskerRightComp`/`whiskerExchange`) after the leg-factorization subst
+(`stringSharedLegLegShape`), and the two MIXED combos are refuted at the 2-cell level by `sharedLegModeClash`
+(`F ≠ H`).  `stringStraightenCellDescentStep_left` is the resulting UNCONDITIONAL LEFT producer — the gated producer
+with the hypothesis discharged.  All zero-axiom.
+
+  Scope (honest): this covers the LEFT handedness ONLY.  The descent classifier is handedness-symmetric
+  (`stringZigZagSharedLeg_widthDichotomy` admits both `|lcCup| + 1 = |lcCap|` and `|lcCap| + 1 = |lcCup|`), so the
+  RIGHT mirror (a RIGHT reconnect + the `triangleGlo`/`triangleH` RIGHT-snakes; the shipped
+  `stringCupCapDeletionReconnects` carries only the LEFT width relation) is still owed for
+  `StringCellDescentStepOracle` TOTALITY.  So `StringCellDescentStepOracle` stays UN-inhabited and
+  `fxString_hasAdjointTripleCompleteness` stays `false`.  `= true`. -/
+def fxString_hasStringValleyStraightenBandCollapse : Bool := true
 
 end FX1Poly.Polygraph
