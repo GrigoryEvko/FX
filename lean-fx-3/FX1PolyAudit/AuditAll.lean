@@ -967,6 +967,7 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.Reconstruct
 import FX1PolyAudit.Polygraph.Omega.Steiner.LinearizeFull
 import FX1PolyAudit.Polygraph.Omega.Steiner.WhiskerFix
 import FX1PolyAudit.Polygraph.Omega.Steiner.SoundnessFull
+import FX1PolyAudit.Polygraph.Omega.Steiner.DesignLockOmega25
 import FX1PolyAudit.Polygraph.Omega.SuspensionAudit
 import FX1PolyAudit.Polygraph.Omega.CeilingLiftAudit
 
