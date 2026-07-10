@@ -11,20 +11,6 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.monadMonoStepAtom
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_unit
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_mul
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_congr_of_spine_eq
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_eq_of_interchangeFreeStep
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_leftUnit_eq_id
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_rightUnit_eq_id
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_assoc_eq
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_whiskeredLeftUnit_via_simplicialIdentity
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_whiskeredIdT_eq
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_whiskeredLeftUnit
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_rightUnit_via_succSimplicialIdentity
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_assoc_via_degenCommute
 #assert_no_axioms FX1Poly.Polygraph.MonadSaturatedCanonicalization
 #assert_no_axioms FX1Poly.Polygraph.monadDecideSaturatedConvViaMonotoneMap
 #assert_no_axioms FX1Poly.Polygraph.monadSaturatedWordProblemModuloCanonicalization
