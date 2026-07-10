@@ -859,4 +859,32 @@ theorem canon_eqOfMapEq {sourcePath targetPath : ModalityPath monadGraph MonadMo
     (canonDomain_eq cellB) (canonCodomain_eq cellB) (canonCounts_eqOfMapEq cellA cellB hmap)
 
 
+/-! ## The t-power exponent-add + consReplicate domain lemmas, relocated from `MonadWordMultiplicativity` -/
+
+/-- ★ **`t^(a+b) = t^a · t^b`.**  The `t`-power is the free-monoid exponent; adding exponents is `composePath`
+(`composePath_assoc` threads the `a+1` step).  Structural recursion on `a`. -/
+theorem monadTPower_add : ∀ (a b : Nat),
+    monadTPower (a + b) = composePath (monadTPower a) (monadTPower b)
+  | 0, b => by rw [Nat.zero_add]; rfl
+  | a + 1, b => by
+      rw [Nat.succ_add]
+      show composePath monadT (monadTPower (a + b))
+        = composePath (composePath monadT (monadTPower a)) (monadTPower b)
+      rw [monadTPower_add a b]
+      exact (composePath_assoc monadT (monadTPower a) (monadTPower b)).symm
+
+/-- The domain 1-cell of a `k`-ones-prefixed word is `t^k` prepended to the tail's domain.  Structural recursion on
+`k` (the head `1`-gadget prepends one `t`; `composePath` associativity threads). -/
+theorem countsDomainPath_consReplicate_one : ∀ (k : Nat) (counts : List Nat),
+    countsDomainPath (consReplicate 1 k counts) = composePath (monadTPower k) (countsDomainPath counts)
+  | 0, _ => rfl
+  | k + 1, counts => by
+      show composePath (monadTPower 1) (countsDomainPath (consReplicate 1 k counts))
+        = composePath (monadTPower (k + 1)) (countsDomainPath counts)
+      rw [countsDomainPath_consReplicate_one k counts]
+      show composePath monadT (composePath (monadTPower k) (countsDomainPath counts))
+        = composePath (composePath monadT (monadTPower k)) (countsDomainPath counts)
+      exact (composePath_assoc monadT (monadTPower k) (countsDomainPath counts)).symm
+
+
 end FX1Poly.Polygraph

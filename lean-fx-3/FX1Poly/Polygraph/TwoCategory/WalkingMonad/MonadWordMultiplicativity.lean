@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCases
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedCanonReps
 
 /-! # WalkingMonad — WORD MULTIPLICATIVITY under whiskering (the two whisker `normalize` cases)
 
@@ -30,30 +31,14 @@ namespace FX1Poly.Polygraph
 
 /-! ## `t`-power ordinal sum + the ones-prefixed domain path -/
 
-/-- ★ **`t^(a+b) = t^a · t^b`.**  The `t`-power is the free-monoid exponent; adding exponents is `composePath`
-(`composePath_assoc` threads the `a+1` step).  Structural recursion on `a`. -/
-theorem monadTPower_add : ∀ (a b : Nat),
-    monadTPower (a + b) = composePath (monadTPower a) (monadTPower b)
-  | 0, b => by rw [Nat.zero_add]; rfl
-  | a + 1, b => by
-      rw [Nat.succ_add]
-      show composePath monadT (monadTPower (a + b))
-        = composePath (composePath monadT (monadTPower a)) (monadTPower b)
-      rw [monadTPower_add a b]
-      exact (composePath_assoc monadT (monadTPower a) (monadTPower b)).symm
+/-! ## The t-power exponent-add + consReplicate domain lemmas (relocated to `MonadSaturatedCanonReps`)
 
-/-- The domain 1-cell of a `k`-ones-prefixed word is `t^k` prepended to the tail's domain.  Structural recursion on
-`k` (the head `1`-gadget prepends one `t`; `composePath` associativity threads). -/
-theorem countsDomainPath_consReplicate_one : ∀ (k : Nat) (counts : List Nat),
-    countsDomainPath (consReplicate 1 k counts) = composePath (monadTPower k) (countsDomainPath counts)
-  | 0, _ => rfl
-  | k + 1, counts => by
-      show composePath (monadTPower 1) (countsDomainPath (consReplicate 1 k counts))
-        = composePath (monadTPower (k + 1)) (countsDomainPath counts)
-      rw [countsDomainPath_consReplicate_one k counts]
-      show composePath monadT (composePath (monadTPower k) (countsDomainPath counts))
-        = composePath (composePath monadT (monadTPower k)) (countsDomainPath counts)
-      exact (composePath_assoc monadT (monadTPower k) (countsDomainPath counts)).symm
+The conv-FREE `monadTPower_add` (`t^(a+b) = t^a · t^b`, the survivor-needed exponent law) and
+`countsDomainPath_consReplicate_one` are relocated VERBATIM (MONAD-R7 r4) to the bespoke-free deep leaf
+`MonadSaturatedCanonReps`.  The remaining conv-FREE list/path helpers in this file (`consAppend*`,
+`monadTPower_length_*`, the `*_ones` variants) support the conv-BEARING `wordMul_*` decls below and — for the
+`*_consAppend_ones` pair — depend on the conv-free `monadOnes` helpers that still reside in the pure-bespoke
+`MonadNormalizeCases`; they are left in place. -/
 
 /-! ## A leading `1`-gadget peels to a left-`t`-whisker -/
 

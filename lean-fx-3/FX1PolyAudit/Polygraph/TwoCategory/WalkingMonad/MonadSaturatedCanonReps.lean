@@ -84,4 +84,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.castBoundary_wordCongr
 #assert_no_axioms FX1Poly.Polygraph.canonCounts_eqOfMapEq
 #assert_no_axioms FX1Poly.Polygraph.canon_eqOfMapEq
+
+#assert_no_axioms FX1Poly.Polygraph.monadTPower_add
+#assert_no_axioms FX1Poly.Polygraph.countsDomainPath_consReplicate_one
 end FX1PolyAudit

@@ -10,8 +10,6 @@ ordinal-sum / ones-prefix path lemmas and the leading-`1`-gadget peel, and the t
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.monadTPower_add
-#assert_no_axioms FX1Poly.Polygraph.countsDomainPath_consReplicate_one
 #assert_no_axioms FX1Poly.Polygraph.wordFromCounts_consOne_conv
 #assert_no_axioms FX1Poly.Polygraph.monadTPower_length_consReplicate_one
 #assert_no_axioms FX1Poly.Polygraph.wordMul_whiskerLeft
