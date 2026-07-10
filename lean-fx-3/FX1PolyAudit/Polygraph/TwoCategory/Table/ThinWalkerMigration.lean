@@ -19,5 +19,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.monadSeparatingRouteAgreement_holds
 #assert_no_axioms FX1Poly.Polygraph.fxTab_hasThinClassWalkerMigrations
 #assert_no_axioms FX1Poly.Polygraph.fxTab_hasKZWalkerMigration
+#assert_no_axioms FX1Poly.Polygraph.fxTab_hasKZMonadConvGenericRepoint
 
 end FX1PolyAudit

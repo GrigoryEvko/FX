@@ -176,7 +176,25 @@ generic `SaturatedConvOver` carrier is symmetric; the walking lax-idempotent (KZ
 DIRECTED preorder (`t <| eta => eta |> t`).  A born-generic migration needs the symmetric closure `kzEq` as the
 walker conv and a proof it agrees with the directed decision over a preorder-valued base relation the symmetric
 fold does not model — genuine POLY-TAB-2 design work (the lock's decision 1 flags KZ as "needs an oriented /
-preorder-valued base relation"), not a mechanical re-exposure like the two thin-class walkers above.  `= false`. -/
+preorder-valued base relation"), not a mechanical re-exposure like the two thin-class walkers above.  `= false`.
+
+  UPDATE (POLY-TAB r7 r1): the WalkingKZ lane's `KZTwoCellLE.ofMonad` field is now re-pointed onto the generic
+  `MonadSaturatedConvGen` carrier (`fxTab_hasKZMonadConvGenericRepoint`, below), severing the KZ lane's dependency
+  on the bespoke monad conv at the PROOF level.  This marker STAYS `false` regardless: that re-point migrates only
+  the SYMMETRIC monad-law embedding; the directed `KZTwoCellLE` preorder (its `kzGen` generator) is native
+  by-design, NOT a bespoke-conv migration target, so the full walker-onto-generic migration remains unshipped. -/
 def fxTab_hasKZWalkerMigration : Bool := false
+
+/-- ★ **Honesty marker (`true`) — the WalkingKZ lane's monad-conv embedding is re-pointed born-generic (POLY-TAB r7
+r1).**  `KZTwoCellLE.ofMonad` (the sole structural entry of a monad EQUALITY of 2-cells into the directed KZ order)
+now stores `MonadSaturatedConvGen := SaturatedConvOver monadModeSignature MonadLawRel` instead of the bespoke
+`MonadSaturatedTwoCellConv`, and every KZ consumption site (`kzLeftUnitEq`, the covering producers via
+`wordMul_hcompGen`, `kzLE_sound`'s `ofMonad` case via `monadMonotoneMapOf_mapEqOfConvGen`, `kzLE_ofMapEq` /
+`kzEq_iff_mapEq` via `monadConvOfMapEqGen_ofNormalizeGen monadNormalizeGen`) swapped bespoke→generic uniformly.  The
+KZ deciders (`decideKZEq`, `decideKZLETotal`, `kz_strict`, `kzBaseCovering_isStrict`) are conv-independent and survive
+UNCHANGED (the green build is the continuity tie).  This is the proof-level severance of the r7 KZ hard blocker; the
+full DIRECTED walker migration (`fxTab_hasKZWalkerMigration`) stays `false` — the generic carrier is symmetric.
+`= true`. -/
+def fxTab_hasKZMonadConvGenericRepoint : Bool := true
 
 end FX1Poly.Polygraph

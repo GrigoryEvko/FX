@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingKZ.KZMonadPresentation
 import FX1Poly.Polygraph.TwoCategory.WalkingKZ.KZMonadOrderModel
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeGen
 
 /-! # WalkingKZ/KZMonadDecision — soundness, the TOTAL KZ-equality decision, and the order decision modulo completeness
 
@@ -44,6 +44,9 @@ comparisons, so every declaration is `propext`/`Quot.sound`/`Classical`/`sorry`/
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 namespace FX1Poly.Polygraph
+
+open FX1Poly.Polygraph.Amalgam (monadMonotoneMapOf_mapEqOfConvGen monadConvOfMapEqGen_ofNormalizeGen
+  monadNormalizeGen)
 
 /-! ## The soundness congruence helpers (order analogs of the map-homomorphism congruences) -/
 
@@ -117,7 +120,7 @@ theorem kzLE_sound {sourceMode targetMode : MonadMode}
     (le : KZTwoCellLE cellA cellB) :
     mapLE (monadMonotoneMapOf cellA) (monadMonotoneMapOf cellB) := by
   induction le with
-  | ofMonad h => exact mapLE_of_eq (monadMonotoneMapOf_mapEqOfConv h)
+  | ofMonad h => exact mapLE_of_eq (monadMonotoneMapOf_mapEqOfConvGen h)
   | kzGen =>
       have h0 : monadMonotoneMapOf kzTEtaCell = [0] := rfl
       have h1 : monadMonotoneMapOf kzEtaTCell = [1] := rfl
@@ -157,7 +160,7 @@ theorem kzLE_ofMapEq {sourceMode targetMode : MonadMode}
     {cellA cellB : RawTwoCellExpr monadModeSignature sourcePath targetPath}
     (hmap : monadMonotoneMapOf cellA = monadMonotoneMapOf cellB) :
     KZTwoCellLE cellA cellB :=
-  KZTwoCellLE.ofMonad (monadConvOfMapEq_ofNormalize monadNormalize hmap)
+  KZTwoCellLE.ofMonad (monadConvOfMapEqGen_ofNormalizeGen monadNormalizeGen hmap)
 
 /-- ★★ **KZ 2-cell EQUALITY is fold equality.**  Parallel cells are KZ-equal (`<=` both ways) exactly when their
 Delta_+ folds coincide: forward by `mapLE_antisymm` on the two soundness images, backward by `kzLE_ofMapEq` both

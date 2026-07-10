@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingKZ.KZMonadDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadHcompMult
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordMultGen
 
 /-! # WalkingKZ/KZOrderCompleteness — the LOCAL covering move of the KZ order (`kzGen` in merge context)
 
@@ -56,6 +56,8 @@ declaration is `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega
 `does not depend on any axioms`).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 namespace FX1Poly.Polygraph
+
+open FX1Poly.Polygraph.Amalgam (SaturatedConvOver wordMul_hcompGen)
 
 /-! ## KZ boundary-cast congruence + fold-invisibility of casts -/
 
@@ -192,10 +194,10 @@ order by `KZTwoCellLE.ofMonad`; the boundary casts thread through `castBoundaryC
 theorem kzCoveringRightContext (widthRight : Nat) :
     KZTwoCellLE (wordFromCounts (consAppend [1, 0] [widthRight]))
       (wordFromCounts (consAppend [0, 1] [widthRight])) := by
-  refine KZTwoCellLE.trans (KZTwoCellLE.ofMonad (wordMul_hcomp [1, 0] [widthRight])) ?_
+  refine KZTwoCellLE.trans (KZTwoCellLE.ofMonad (wordMul_hcompGen [1, 0] [widthRight])) ?_
   refine KZTwoCellLE.trans (KZTwoCellLE.castBoundaryCongr _ _
     (KZTwoCellLE.hcompCongrLeft (wordFromCounts [widthRight]) kzBaseCovering)) ?_
-  exact KZTwoCellLE.ofMonad (MonadSaturatedTwoCellConv.symm (wordMul_hcomp [0, 1] [widthRight]))
+  exact KZTwoCellLE.ofMonad (SaturatedConvOver.symm (wordMul_hcompGen [0, 1] [widthRight]))
 
 /-- ★★ **The ATOMIC covering move** `word [a,1,0,b] ⇒ word [a,0,1,b]`: one strand moves one fibre rightward past
 the `eta`-inserted target, with the `a`-merge on the LEFT and the `b`-merge on the RIGHT carried as horizontal
@@ -206,11 +208,11 @@ sole GENUINE order content of the completeness leg, mechanized zero-axiom. -/
 theorem kzAtomicCovering (widthLeft widthRight : Nat) :
     KZTwoCellLE (wordFromCounts (consAppend [widthLeft] (consAppend [1, 0] [widthRight])))
       (wordFromCounts (consAppend [widthLeft] (consAppend [0, 1] [widthRight]))) := by
-  refine KZTwoCellLE.trans (KZTwoCellLE.ofMonad (wordMul_hcomp [widthLeft] (consAppend [1, 0] [widthRight]))) ?_
+  refine KZTwoCellLE.trans (KZTwoCellLE.ofMonad (wordMul_hcompGen [widthLeft] (consAppend [1, 0] [widthRight]))) ?_
   refine KZTwoCellLE.trans (KZTwoCellLE.castBoundaryCongr _ _
     (KZTwoCellLE.hcompCongrRight (wordFromCounts [widthLeft]) (kzCoveringRightContext widthRight))) ?_
   exact KZTwoCellLE.ofMonad
-    (MonadSaturatedTwoCellConv.symm (wordMul_hcomp [widthLeft] (consAppend [0, 1] [widthRight])))
+    (SaturatedConvOver.symm (wordMul_hcompGen [widthLeft] (consAppend [0, 1] [widthRight])))
 
 /-- The atomic covering restated on the literal 4-count lists (`consAppend [a] (consAppend [1,0] [b]) = [a,1,0,b]`
 definitionally). -/
@@ -231,11 +233,11 @@ argument. -/
 theorem kzAtomicCoveringSuffix (widthLeft widthRight : Nat) (suf : List Nat) :
     KZTwoCellLE (wordFromCounts (consAppend [widthLeft, 1, 0, widthRight] suf))
       (wordFromCounts (consAppend [widthLeft, 0, 1, widthRight] suf)) := by
-  refine KZTwoCellLE.trans (KZTwoCellLE.ofMonad (wordMul_hcomp [widthLeft, 1, 0, widthRight] suf)) ?_
+  refine KZTwoCellLE.trans (KZTwoCellLE.ofMonad (wordMul_hcompGen [widthLeft, 1, 0, widthRight] suf)) ?_
   refine KZTwoCellLE.trans (KZTwoCellLE.castBoundaryCongr _ _
     (KZTwoCellLE.hcompCongrLeft (wordFromCounts suf) (kzAtomicCoveringLiteral widthLeft widthRight))) ?_
   exact KZTwoCellLE.ofMonad
-    (MonadSaturatedTwoCellConv.symm (wordMul_hcomp [widthLeft, 0, 1, widthRight] suf))
+    (SaturatedConvOver.symm (wordMul_hcompGen [widthLeft, 0, 1, widthRight] suf))
 
 /-! ## The flat covering carrier: canonical words cast to `t^(listSum) ⇒ t^length` -/
 

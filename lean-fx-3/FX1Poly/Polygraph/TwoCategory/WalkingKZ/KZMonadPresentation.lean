@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedConv
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadLawRelation
 
 /-! # WalkingKZ/KZMonadPresentation — the walking Kock-Zoberlein (lax-idempotent) monad presentation
 
@@ -31,6 +31,8 @@ gated in the audit twin. -/
 
 namespace FX1Poly.Polygraph
 
+open FX1Poly.Polygraph.Amalgam (MonadSaturatedConvGen SaturatedConvOver monadLeftUnitRowGen)
+
 /-! ## The two idempotence faces (the KZ comparison endpoints) -/
 
 /-- **`t ◁ eta`** — the unit whiskered on the LEFT by `t`: a free 2-cell `t ⇒ t.t`.  The SMALL side of the KZ
@@ -56,11 +58,13 @@ inductive KZTwoCellLE :
     RawTwoCellExpr monadModeSignature sourcePath targetPath →
     RawTwoCellExpr monadModeSignature sourcePath targetPath → Prop where
   /-- Embed a walking-monad EQUALITY of 2-cells as `<=` (applied in both directions it keeps the monad laws
-  symmetric, so the order's antisymmetrization is exactly `MonadSaturatedTwoCellConv`). -/
+  symmetric, so the order's antisymmetrization is exactly `MonadSaturatedConvGen`, the born-generic walking-monad
+  saturated conv `SaturatedConvOver monadModeSignature MonadLawRel` — logically identical to the bespoke
+  `MonadSaturatedTwoCellConv` via `monadSaturated_iff_generic`). -/
   | ofMonad {sourceMode targetMode : MonadMode}
       {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
       {cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath} :
-      MonadSaturatedTwoCellConv cellAlpha cellBeta →
+      MonadSaturatedConvGen cellAlpha cellBeta →
       KZTwoCellLE cellAlpha cellBeta
   /-- ★ The **KZ generating inequality** `t ◁ eta <= eta ▷ t` (`Tη <= ηT`) — the sole lax-idempotency generator; it
   is DIRECTED (its reverse does not hold), so the walking KZ monad is properly laxer than the idempotent one. -/
@@ -123,7 +127,7 @@ are available as order facts directly). -/
 theorem KZTwoCellLE.ofMonadLaw {sourceMode targetMode : MonadMode}
     {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
     {cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath}
-    (conv : MonadSaturatedTwoCellConv cellAlpha cellBeta) :
+    (conv : MonadSaturatedConvGen cellAlpha cellBeta) :
     KZTwoCellLE cellAlpha cellBeta :=
   KZTwoCellLE.ofMonad conv
 
@@ -138,8 +142,8 @@ theorem kzComparisonWhiskeredHolds :
 /-- Smoke: the monad LEFT-UNIT law is an order fact both ways (via `ofMonad`) — the walking KZ monad is still a
 monad, its laws entering the order symmetrically. -/
 theorem kzLeftUnitEq : KZTwoCellEq monadLeftUnitCell monadIdTCell :=
-  ⟨KZTwoCellLE.ofMonad MonadSaturatedTwoCellConv.leftUnit,
-   KZTwoCellLE.ofMonad (MonadSaturatedTwoCellConv.symm MonadSaturatedTwoCellConv.leftUnit)⟩
+  ⟨KZTwoCellLE.ofMonad monadLeftUnitRowGen,
+   KZTwoCellLE.ofMonad (SaturatedConvOver.symm monadLeftUnitRowGen)⟩
 
 /-- Smoke: the KZ comparison chained through `refl`/`trans` — `t ◁ eta <= eta ▷ t` composed with reflexivity,
 exercising `trans` around the generator. -/
