@@ -1759,4 +1759,52 @@ theorem smithDivisibilityRepairSweepPastWindow :
   | 0, _, _, _, _, _ => rfl
   | _ + 1, _, _, _, _, pastWindow => if_neg pastWindow
 
+/-! ## The sign-phase kernel toward INV-NONNEG (B1)
+
+The final `smithDiagonalSignSweep` establishes INV-NONNEG-PREFIX (the Euclid clears leave transient
+negatives; the sign phase repairs them).  Its two atomic facts, completing the entry-under-operation
+formula family (`addRowMultiplePreservesEntryOffTargetRow` OFF-target row, `addRowMultipleEntryOnTargetRow`
+ON-target row, and now `negateRowEntry` for the sign letter):
+
+  * `negateRowEntry` — the sign letter negates every entry of its (in-range) row, so a negative
+    diagonal pivot flips to its positive magnitude; rides `listGetWithDefaultMapNeg` (pointwise read of
+    a negated row) and the shipped `listGetWithDefaultModifyAtEq`.
+  * `smithSignNormalizeOpsNonneg` — the sign-normalization emits no operation on an
+    already-nonnegative pivot, so the sign phase is a no-op wherever the diagonal is already
+    nonnegative (the regression battery's already-nonnegative inputs). -/
+
+/-- Pointwise read of a negated row — reading `index` of `row.map (fun entry => -entry)` is the
+negation of `row[index]` (the out-of-range default `0` negates to `0` through `intNegZero`).  Structural
+on the row with the index. -/
+theorem listGetWithDefaultMapNeg : ∀ (row : IntRow) (index : Nat),
+    listGetWithDefault 0 (row.map (fun entry => -entry)) index
+      = -(listGetWithDefault 0 row index)
+  | [], 0 => intNegZero.symm
+  | [], _ + 1 => intNegZero.symm
+  | _ :: _, 0 => rfl
+  | _ :: remainingEntries, index + 1 => listGetWithDefaultMapNeg remainingEntries index
+
+/-- **The sign letter negates its row's entries** — `(matrix.negateRow rowIndex).entryAt rowIndex
+colIndex = -(matrix.entryAt rowIndex colIndex)` for an in-range row.  The sign-phase analog of the
+transvection entry formulas: a negative diagonal pivot flips to its positive magnitude, the mechanism
+by which the sign sweep establishes INV-NONNEG. -/
+theorem negateRowEntry (matrix : IntMatrix) (rowIndex colIndex : Nat)
+    (isInRange : rowIndex < matrix.rows.length) :
+    (matrix.negateRow rowIndex).entryAt rowIndex colIndex
+      = -(matrix.entryAt rowIndex colIndex) := by
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (listModifyAt (fun row => row.map (fun entry => -entry)) matrix.rows rowIndex) rowIndex)
+      colIndex = _
+  rw [listGetWithDefaultModifyAtEq [] _ matrix.rows rowIndex isInRange]
+  exact listGetWithDefaultMapNeg (listGetWithDefault [] matrix.rows rowIndex) colIndex
+
+/-- **The sign normalization is a no-op on a nonnegative pivot** — `smithSignNormalizeOps` emits no
+operation when `matrix.entryAt pivotIndex pivotIndex` is not negative, so the sign phase adds nothing
+wherever the diagonal is already nonnegative. -/
+theorem smithSignNormalizeOpsNonneg (matrix : IntMatrix) (pivotIndex : Nat)
+    (isNonneg : ¬ (matrix.entryAt pivotIndex pivotIndex < 0)) :
+    smithSignNormalizeOps matrix pivotIndex = [] :=
+  if_neg isNonneg
+
 end FX1Poly.ComputerAlgebra

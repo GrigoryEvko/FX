@@ -107,5 +107,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDiagonalSignSweepPastWindow
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalSweepPastWindow
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepPastWindow
+#assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultMapNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.negateRowEntry
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSignNormalizeOpsNonneg
 
 end FX1PolyAudit
