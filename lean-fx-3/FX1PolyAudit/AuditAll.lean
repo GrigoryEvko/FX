@@ -1089,6 +1089,8 @@ import FX1PolyAudit.Polygraph.Omega.InvolutionSquierBasisAudit
 import FX1PolyAudit.Polygraph.Omega.CertificateFunctorLedgerAudit
 -- OMEGA-4 continued — the Squier ascent: the walking-monad five-critical-pair coherent presentation
 import FX1PolyAudit.Polygraph.Omega.MonadCoherentPresentationAudit
+-- WP-SQUIER r2 — the family round: the walking-idempotent-semigroup one-critical-pair demonstrator (half-globular)
+import FX1PolyAudit.Polygraph.Omega.IdempotentSemigroupDemonstratorAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
