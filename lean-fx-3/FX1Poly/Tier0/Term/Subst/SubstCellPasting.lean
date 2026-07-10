@@ -152,4 +152,49 @@ theorem substCellEqPasteAlong_is_substCompose_assoc
   ⟨substCompose_assoc firstSubstitution middleSubstitution lastSubstitution position,
    substCell_assoc valuation cellA cellB cellC⟩
 
+/-! ## Non-vacuity — two concrete witnesses computing to identical concrete chains -/
+
+/-- ★ Non-vacuity (the identification computes): on the demo dim-3 cells, `linearizeFull (pasteAlong
+cellThreeA cellThreeB) = substCell cellThreeA cellThreeB`, via the shipped `substCell_eq_pasteAlong`. -/
+theorem substCellEqPasteAlong_nonVacuity :
+    linearizeFull demoValuation (pasteAlong cellThreeA cellThreeB)
+      = substCell demoValuation cellThreeA cellThreeB :=
+  substCell_eq_pasteAlong demoValuation cellThreeA cellThreeB
+
+/-- ★ Non-vacuity (chain associativity computes): a concrete dim-3 triple re-brackets identically under the
+genuine map, via the shipped `substCell_assoc`. -/
+theorem substCell_assoc_nonVacuity :
+    linearizeFull demoValuation (pasteAlong (pasteAlong cellThreeA cellThreeB) cellThreeA)
+      = linearizeFull demoValuation (pasteAlong cellThreeA (pasteAlong cellThreeB cellThreeA)) :=
+  substCell_assoc demoValuation cellThreeA cellThreeB cellThreeA
+
+/-! ## Non-vacuity evals — identical concrete chains + boundary-faithfulness -/
+
+/-- The identification's TOP row computes to the concrete SUM `[1,1,0] = [1,0,0] + [0,1,0]` — the pasting
+composite's realization. -/
+example : (linearizeFull demoValuation (pasteAlong cellThreeA cellThreeB)).top = [1, 1, 0] := rfl
+
+/-- The substitution-realization action's TOP row computes to the SAME concrete SUM `[1,1,0]` — identical
+chain top, the identification made concrete. -/
+example : (substCell demoValuation cellThreeA cellThreeB).top = [1, 1, 0] := rfl
+
+/-- Boundary-faithfulness (recon risk #2): `substCell` retains a length-3 boundary pole table — it is the
+CHAIN form, NOT the single-vector shadow. -/
+example : (substCell demoValuation cellThreeA cellThreeB).poles.length = 3 := rfl
+
+/-- The chain associativity's TOP row computes to `[2,1,0] = ([1,0,0] + [0,1,0]) + [1,0,0]` — the re-bracketed
+triple realizes to one concrete chain. -/
+example :
+    (linearizeFull demoValuation
+        (pasteAlong (pasteAlong cellThreeA cellThreeB) cellThreeA)).top = [2, 1, 0] := rfl
+
+/-- Boundary-faithfulness (the r2-vs-r1 payoff): the chain carrier `substCell` rides SEPARATES the
+whisker-conflated pair (`decideFullConvSound = false`) that the single-vector shadow MERGES
+(`decideFreeConvSound = true`) — the r2 map is genuine, not the arithmetic shadow. -/
+example : decideFullConvSound whiskerDemoValuation (whiskeredCell true) (whiskeredCell false) = false := by
+  decide
+
+/-- The single-vector shadow conflates the same pair (`true`). -/
+example : decideFreeConvSound whiskerDemoValuation (whiskeredCell true) (whiskeredCell false) = true := rfl
+
 end FX1Poly.Polygraph.Omega
