@@ -420,6 +420,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcExtractor
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraddleDescent
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescExtractorFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescExtractorLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcExtractorRec
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
@@ -965,6 +966,7 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.AgreementBattery
 import FX1PolyAudit.Polygraph.Omega.Steiner.Reconstruct
 import FX1PolyAudit.Polygraph.Omega.Steiner.LinearizeFull
 import FX1PolyAudit.Polygraph.Omega.Steiner.WhiskerFix
+import FX1PolyAudit.Polygraph.Omega.Steiner.SoundnessFull
 import FX1PolyAudit.Polygraph.Omega.SuspensionAudit
 import FX1PolyAudit.Polygraph.Omega.CeilingLiftAudit
 
