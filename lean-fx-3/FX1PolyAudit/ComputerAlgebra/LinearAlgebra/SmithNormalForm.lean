@@ -110,5 +110,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultMapNeg
 #assert_no_axioms FX1Poly.ComputerAlgebra.negateRowEntry
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithSignNormalizeOpsNonneg
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithCascadeReDiagonalizesStatement
 
 end FX1PolyAudit

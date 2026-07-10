@@ -1807,4 +1807,58 @@ theorem smithSignNormalizeOpsNonneg (matrix : IntMatrix) (pivotIndex : Nat)
     smithSignNormalizeOps matrix pivotIndex = [] :=
   if_neg isNonneg
 
+/-! ## The named wall: cascade re-diagonalization = the r6 elimination-correctness pole (B3)
+
+`SmithReduceFullDriverStatement` stays UNINHABITED this round.  The r5 decomposition ships every
+independently-closeable sub-lemma of the recon's three-level induction — the composition substrate
+(`applyOperationsAppend`), the applied-output phase split (`smithReduceFullApplied`), the middle-level
+fold descent measure (`smithRepairDecreasesPivotSize`), the invariant Props
+(`IsWindowDiagonal` / `SmithChainPrefix`), the column half of crosses-stay-zero
+(`foldPreservesSettledColumnZero`, resting on `addRowMultipleEntryOnTargetRow`), the outer fuel-lockstep
+base (`smith*SweepPastWindow`), and the sign-phase kernel (`negateRowEntry`).  What remains is the ONE
+deep obligation the recon flags `[HIGH, shared with the r3 pole]`: obligation (a), that the Euclid
+cascade `smithCascadeSweep` RE-DIAGONALIZES a folded window — a full verified Gaussian-elimination
+correctness proof over the extrinsic-shape substrate, not a one-round deliverable.
+
+`SmithCascadeReDiagonalizesStatement` NAMES that obligation as a first-class `Prop` (the honest r6
+pole's subject, mirroring how `SmithReduceTotalDriverStatement` / `SmithReduceFullDriverStatement` name
+their poles): after firing the cascade at `pivotIndex` on a window that is diagonal from `pivotIndex`,
+the pivot cross is clear, the sub-window from `pivotIndex + 1` is again diagonal, and the pivot divides
+every later diagonal (`gcd` landed at the pivot).  The r4 refutation
+`smithReduceTotalIsNotFullyReducing` forecloses any cross-only shortcut, so the r6 proof must genuinely
+engage the repair Euclid semantics — there is no cheaper path.  Given this statement, the three-level
+induction assembles `SmithReduceFullDriverStatement` phase by phase over the shipped decomposition; it
+is NOT inhabited here. -/
+
+/-- **The r6 elimination-correctness pole, named** — that firing the Euclid cascade
+`smithCascadeSweep` at `pivotIndex` on a window diagonal from `pivotIndex` (a) clears the pivot cross,
+(b) leaves the sub-window from `pivotIndex + 1` diagonal, and (c) lands the `gcd` at the pivot so it
+divides every later diagonal entry.  This is obligation (a) of the r5 recon — the deep verified-Euclid
+elimination correctness shared with the r3 pole, empirically true on the whole `#eval` battery
+(including `diag(4, 6, 9) ↝ diag(1, 6, 36)`) but NOT machine-proved this round.  Its inhabitant, wired
+through the shipped r5 decomposition and the invariant bundle, inhabits
+`SmithReduceFullDriverStatement`. -/
+def SmithCascadeReDiagonalizesStatement : Prop :=
+  ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
+    matrix.IsRectangular height width →
+    IsWindowDiagonal matrix pivotIndex height width →
+    smithCrossIsClear
+        (matrix.applyOperations
+          (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width))
+        pivotIndex height width = true
+      ∧ IsWindowDiagonal
+          (matrix.applyOperations
+            (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+              matrix pivotIndex height width))
+          (pivotIndex + 1) height width
+      ∧ (∀ laterIndex, pivotIndex < laterIndex → laterIndex < Nat.min height width →
+          dividesExactly
+            ((matrix.applyOperations
+              (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+                matrix pivotIndex height width)).diagonalEntryAt pivotIndex)
+            ((matrix.applyOperations
+              (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+                matrix pivotIndex height width)).diagonalEntryAt laterIndex))
+
 end FX1Poly.ComputerAlgebra
