@@ -53,5 +53,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationPreservesRectangular
 #assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationsPreservesRectangular
 #assert_no_axioms FX1Poly.ComputerAlgebra.SmithReduceTotalStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithExampleBoundaryMap
 
 end FX1PolyAudit

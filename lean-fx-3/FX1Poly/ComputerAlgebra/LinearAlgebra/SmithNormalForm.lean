@@ -691,4 +691,42 @@ def SmithReduceTotalStatement : Prop :=
   ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
     (smithReduce matrix height width).reducesToSmithForm matrix height width
 
+/-! ## The walker teaser: a degree-2 boundary map's torsion + free read-off (H2-SMITH r2, B4)
+
+The H2-CHAIN framing (H2-SMITH's sibling #2136, frontiers.md Domain XI) reads a polygraphic degree-2
+boundary `∂₂ : C₂ → C₁` as an integer matrix; its Smith normal form's diagonal `d₁ | d₂ | ...` reads
+off the integral homology at that degree — `im ∂₂ ≅ ⨁ dᵢ·ℤ`, so the cokernel `C₁ / im ∂₂` is
+`(⨁_{dᵢ > 1} ℤ / dᵢ·ℤ) ⊕ ℤ^(rankC₁ − #nonzero dᵢ)`: TORSION from each invariant factor above one, a
+FREE summand from each zero column.  ℤ-coefficients see the torsion that the shipped 𝔽₂
+`F2ChainComplex` cannot.
+
+The r1 seed `smithExampleCyclicTwo` (`[[2]] ↝ [[2]]`) is the pure-`ℤ/2` torsion reading (the walking
+involution's degree-2 seed).  This teaser is one rung richer: a representative degree-2 boundary
+matrix whose SNF exhibits BOTH a torsion coefficient AND a free summand. -/
+
+/-- **The torsion-plus-free boundary read-off** — the degree-2 boundary `[[2, 2], [2, 2]]` (rank one,
+gcd `2`, determinant `0`) reduces to `diag(2, 0)`.  The homology read-off: `im ∂₂ ≅ 2·ℤ`, so
+`H = ℤ/2 ⊕ ℤ` — a `ℤ/2` TORSION summand from the invariant factor `2`, plus one FREE `ℤ` from the
+zero column.  The kernel-checked SNF the H2-WALKERS integral-homology lane consumes, one rung beyond
+the `[[2]]` pure-`ℤ/2` seed. -/
+theorem smithExampleBoundaryMap :
+    (({ rows := [[2, 2], [2, 2]] } : IntMatrix).applyOperations
+        [ ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 0 1 (-1))
+        , ElementaryOperation.columnOperation
+            (ElementaryColumnOperation.addColumnMultiple 0 1 (-1)) ]).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
 end FX1Poly.ComputerAlgebra
