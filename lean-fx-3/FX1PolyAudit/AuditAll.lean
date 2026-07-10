@@ -409,6 +409,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideSoundness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideExtract
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideReadback
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcDescent
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
