@@ -1864,41 +1864,35 @@ def SmithCascadeReDiagonalizesStatement : Prop :=
               (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
                 matrix pivotIndex height width)).diagonalEntryAt laterIndex))
 
-/-! ## The CORRECTED r6 poles + their truth probes (H2-SMITH r6, B1)
+/-! ## The r6 poles — ★ BOTH REFUTED by the r6 adversarial verification (history retained)
 
-The r5 refutation of `SmithCascadeReDiagonalizesStatement` (above) demanded the corrected pole be
-stated over the POST-FOLD window shape, and it warned of the R1 trap: a naive "the pivot gcd divides
-ALL later diagonal entries" clause REPEATS the r5 mistake.  On `diag(6, 10, 15)` one fold + cascade at
-pivot 0 lands `gcd(6, 10) = 2` at the pivot and pushes `lcm = 30` down, leaving `diag(2, 30, 15)` — and
-`2 ∤ 15`.  So the atomic per-fold guarantee CANNOT say "divides all later"; it says "divides the two
-folded operands `d_p`, `d_q`" only.  The two corrected poles, stated at two granularities:
+The r6 round stated two "corrected" poles with 2-input truth probes; the probes HELD but probed the
+wrong region, and the verifier refuted BOTH Props with kernel-checked counterexamples:
 
-  * **POLE-A** `SmithCascadeReDiagonalizesPostFoldStatement` — the DIRECT correction of the refuted
-    cascade decl: after folding the non-dividing `foundPos` row into the pivot row and re-firing
-    `smithCascadeSweep`, the pivot cross is clear, the sub-block `≥ pivotIndex + 1` is window-diagonal,
-    and the landed pivot divides BOTH folded operands (the WEAKENED clause — never "all later").
-  * **POLE-B** `SmithRepairChainDiagonalizesStatement` — the ASSEMBLY-facing end-to-end pole: the whole
-    `smithDivisibilityRepairSweep` takes a window-diagonal input to a window-diagonal output whose
-    FULL prefix chain divides (`SmithChainPrefix`).  Sign-blind (`dividesExactly` survives the transient
-    negatives the Euclid clears leave; nonnegativity is the sign phase's exclusive job — POLE-B does NOT
-    claim it, the r5 R4 caution).
+  * **POLE-A REFUTED on `diag(6, 4, 9)`, pivot 0, `foundPos = 2`**: the re-fired `smithCascadeSweep`
+    searches the WHOLE minor for the min-abs entry and lands the INTERVENING `4` at `(1,1)` on the
+    pivot — NOT `gcd(6, 9) = 3`.  Post-cascade the sub-block is not window-diagonal and the pivot
+    divides neither folded operand.  The 2-input probes used only ADJACENT `foundPos = pivot + 1`,
+    which structurally excludes the intervening-smaller-entry counterexample.
+  * **POLE-B REFUTED on `diag(30, 20, 12)`**: the repair sweep only re-scans DIAGONAL divisibility,
+    so a fold whose cascade lands off-pivot leaves off-diagonal residue (`60` at `(2, 1)`) that is
+    never cleared — the first conjunct (window-diagonality of the output) is FALSE.  The DRIVER
+    survives only because `smithReduceTotal` PRE-SORTS (min-abs pivot search) before the repair — a
+    precondition POLE-B omits.
 
-Neither is inhabited this round (their inhabitant is the deep Gaussian-elimination correctness pole,
-still the named r7 wall).  What ships here is the r6 forward-statement discipline: BEFORE any proof
-work, each pole is machine-checked to HOLD on both adversarial inputs — `diag(2, 3)` (the r5 refutation
-input) and `diag(6, 10, 15)` (the R1-trap input) — as kernel-checked, zero-axiom truth probes.  The
-statements HELD on every probe; had any probe failed, the pole would be re-stated, not proved.  The
-`smithCascadePostFoldDividesAllFailsOnSixTenFifteen` probe kernel-checks the R1 trap itself (`2 ∤ 15`),
-so the reason the clause is WEAKENED is a machine-checked fact, not a claim. -/
+★ **THE STRUCTURAL LESSON (two refuted-pole rounds in a row):** the driver is correct along ITS OWN
+PATH — the min-pivot pre-sort is load-bearing — so standalone poles quantifying over arbitrary
+window-diagonal inputs keep being FALSE.  The r7 strategy changes: prove the three B4 invariant
+hypotheses (`windowDiagHolds` / `nonnegHolds` / `chainHolds`) as REACHABILITY invariants along the
+driver's own recursion (each pass's postcondition under the pass's ACTUAL precondition — the Brauer
+fold-lift template), never as free-standing sweep lemmas.  Both Props are retained verbatim below as
+the honest record; do NOT attempt to inhabit either. -/
 
-/-- **POLE-A — the corrected post-fold cascade re-diagonalization (WEAKENED divides clause)** — the
-direct correction of the refuted `SmithCascadeReDiagonalizesStatement`: on a window-diagonal `matrix`
-with a later diagonal `foundPos` the pivot does NOT divide, folding row `foundPos` into the pivot row
-(`addRowMultiple foundPos pivotIndex 1`) and re-firing the Euclid cascade at the pivot (a) clears the
-pivot cross, (b) leaves the sub-block `≥ pivotIndex + 1` window-diagonal, and (c) lands a pivot that
-divides the two folded operands `d_p` and `d_q` — and ONLY those two (the R1-trap-safe clause; the
-cascade need NOT make the pivot divide entries beyond `foundPos`, as `diag(6, 10, 15)` witnesses).
-Truth-probed on `diag(2, 3)` and `diag(6, 10, 15)` below; NOT inhabited (the r7 elimination pole). -/
+/-- **POLE-A — REFUTED (r6 adversarial verification; see the section header).**  FALSE on
+`diag(6, 4, 9)`, pivot 0, `foundPos 2`: the whole-minor min-abs search lands the intervening `4` on
+the pivot, not `gcd(6, 9)`.  The 2-input adjacent-`foundPos` probes structurally missed this.
+Retained verbatim as the honest record; do NOT inhabit.  The r7 replacement is the driver-path
+reachability invariant, not a free-standing sweep pole. -/
 def SmithCascadeReDiagonalizesPostFoldStatement : Prop :=
   ∀ (matrix : IntMatrix) (pivotIndex foundPos height width : Nat),
     matrix.IsRectangular height width →
@@ -1914,16 +1908,13 @@ def SmithCascadeReDiagonalizesPostFoldStatement : Prop :=
       ∧ dividesExactly (cascaded.diagonalEntryAt pivotIndex) (matrix.diagonalEntryAt pivotIndex)
       ∧ dividesExactly (cascaded.diagonalEntryAt pivotIndex) (matrix.diagonalEntryAt foundPos)
 
-/-- **POLE-B — the end-to-end repair-sweep chain diagonalization (sign-blind)** — the assembly-facing
-corrected pole: the whole top-down `smithDivisibilityRepairSweep` takes a window-diagonal `matrix` to a
-window-diagonal `repaired` whose FULL settled prefix chain divides (`SmithChainPrefix` — every earlier
-diagonal divides every later one across the whole `Nat.min height width` window).  This is the clean
-"divides all" chain POLE-A cannot state per fold: it holds only END-TO-END, after the fold loop has
-settled every position.  Deliberately sign-BLIND — the repair output carries transient negatives
-(`diag(1, 30, -30)` on `diag(6, 10, 15)`), so `dividesExactly` (which ignores sign) is used, NOT
-nonnegativity (the sign phase's exclusive job).  POLE-B composes with `smithReduceFullApplied` toward
-`SmithReduceFullDriverStatement`.  Truth-probed on `diag(2, 3)` and `diag(6, 10, 15)` below; NOT
-inhabited (rides the same r7 cascade pole as POLE-A). -/
+/-- **POLE-B — REFUTED (r6 adversarial verification; see the section header).**  FALSE on
+`diag(30, 20, 12)`: a fold whose cascade lands off-pivot leaves off-diagonal residue (`60` at
+`(2, 1)`) that the repair sweep — which only re-scans DIAGONAL divisibility — never clears, so the
+window-diagonality conjunct fails.  The driver survives because `smithReduceTotal` PRE-SORTS
+(min-abs pivot search) before repair, a precondition this Prop omits.  Retained verbatim as the
+honest record; do NOT inhabit.  The r7 replacement proves B4's three invariant hypotheses along the
+driver's own recursion (the pre-sort carried), never over arbitrary window-diagonal inputs. -/
 def SmithRepairChainDiagonalizesStatement : Prop :=
   ∀ (matrix : IntMatrix) (height width : Nat),
     matrix.IsRectangular height width →
