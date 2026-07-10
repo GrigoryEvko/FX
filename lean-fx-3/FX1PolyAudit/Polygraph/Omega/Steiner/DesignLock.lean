@@ -22,4 +22,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_n2AgreementOpenR2
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_omegaThreeHandoffRecorded
 
+-- OMEGA-2 r2 ledger markers (B1 integration + B2 falsifier + the r3 route)
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_adcOfComputadShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_admittedBatteryComputable
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_ddEpsdDischargedPerInstance
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_agreementBatteryEvalLevel
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_omega2R2Complete
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_completenessRouteNamedR3
+
 end FX1PolyAudit

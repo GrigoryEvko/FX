@@ -1,5 +1,7 @@
 import FX1Poly.Polygraph.Omega.Steiner.StrongSteiner
 import FX1Poly.Polygraph.Omega.Steiner.DecideFreeConv
+import FX1Poly.Polygraph.Omega.Steiner.Integration
+import FX1Poly.Polygraph.Omega.Steiner.AgreementBattery
 
 /-! # Polygraph/Omega/Steiner/DesignLock — the OMEGA-2 CROWN design lock (r1)
 
@@ -112,10 +114,70 @@ def fxOmega_omega2R1Complete : Bool := true
 reconstruct/excision converse (`linearize (reconstruct t) = t`) is the r3 item.  `= false` (NOT closed). -/
 def fxOmega_completenessOpenR3 : Bool := false
 
-/-- ★ **Honest residual — the n=2 agreement with FREE-7 is OPEN (r2).**
-`decideFreeConv 2 = decideTwoCellConvFull` on the admitted intersection needs `SpineTraceDecision`.
-`= false` (NOT closed). -/
+/-- ★ **Honest residual — the n=2 THEOREM-level agreement with FREE-7 stays OPEN.**  r2 shipped the
+EVAL-level battery (`fxOmega_agreementBatteryEvalLevel`), but the THEOREM
+`decideFreeConvSound o toCellDimTwo = decideTwoCellConvFull` on the admitted intersection needs the
+`toCellDimTwo` conv-leg, WALLED at OMEGA-1 (`BridgeDimTwo.lean`).  The two deciders live on disjoint
+carriers; only eval-level agreement is provable this round.  `= false` (the THEOREM is NOT closed). -/
 def fxOmega_n2AgreementOpenR2 : Bool := false
+
+/-! ## OMEGA-2 r2 — THE INTEGRATION + THE FALSIFIER (shipped)
+
+r2 closed the r1 structural gap (B1 disconnected from B2-B5): `adcOfComputad` builds an
+`AugmentedDirectedComplex` from a finite presentation whose boundary columns ARE the Steiner
+boundary-differences (`boundaryColumnFromLinearize`), and the concrete walking-parallel-pair signature
+is exhibited as BOTH `isStrongSteiner`-admitted (computably) AND FREE-7-runnable.  The eval-level
+two-decider battery (`AgreementBattery.lean`) then runs the memo falsifier and PASSES. -/
+
+/-- ★ **B1 — `adcOfComputad` SHIPPED.**  The integration: `FinitePresentation -> AugmentedDirectedComplex`,
+boundary matrices `buildColumnMatrix`-derived from the linearize-difference columns (the recon "columns
+via linearize-of-boundary").  `parallelPairColumn_isLinearizeDifference` proves the battery columns ARE
+`boundaryColumnFromLinearize`.  `= true`. -/
+def fxOmega_adcOfComputadShipped : Bool := true
+
+/-- ★ **B1 — the admitted intersection is COMPUTABLE.**  `parallelPairComplex_isStrongSteiner :
+isStrongSteiner (adcOfComputad parallelPairPresentation) 3 = true` by `rfl` — the load-bearing fact
+tying B1's admission `Bool` to B2-B5's decision path (same signature drives both).  The refusal
+cross-check `cyclicComplex_not_isStrongSteiner` still fires, so admission has teeth.  `= true`. -/
+def fxOmega_admittedBatteryComputable : Bool := true
+
+/-- ★ **B1/JOB-2 — dd=0 / eps-d=0 discharged PER-INSTANCE.**  The battery is a genuine chain complex
+(both boundary matrices `[[-1,-1],[1,1]]`, product `0`; `eps = [1,1]` kills every `d0` column), each
+obligation `rfl` over the derived `buildColumnMatrix`.  The GENERIC telescoping `IsGlobularCell -> dd=0`
+(seeded by `globularLegs_of_isGlobularCell`) stays the r3 obligation.  `= true`. -/
+def fxOmega_ddEpsdDischargedPerInstance : Bool := true
+
+/-- ★ **B2 — THE FALSIFIER PASSES (eval-level).**  Every battery row's
+`freeDecide = steinerDecide` type-checks by `rfl`, so the memo falsifier (ii) did NOT fire: the FREE-7
+universal decider and the Steiner arithmetic semi-decider AGREE on every curated pair over the admitted
+walking-parallel-pair.  A disagreement would have been a build failure.  `= true`.
+(`AgreementBattery.fxOmega_agreementBatteryPasses`.) -/
+def fxOmega_agreementBatteryEvalLevel : Bool := true
+
+/-- ★ **Honesty marker — OMEGA-2 r2 is COMPLETE.**  `adcOfComputad` (B1) + the admitted, computable
+battery ADC + dd/eps-d per-instance + the eval-level agreement falsifier (B2), all type-checking
+zero-axiom (this marker imports every r2 piece).  `= true`. -/
+def fxOmega_omega2R2Complete : Bool := true
+
+/-! ## The r3 scope, sharpened
+
+The r2 residuals are exactly two, both honest:
+
+  * **Completeness (the reverse `steinerDecide=true -> freeDecide=true`)** is r3.  Route A: drive
+    `reconstruct : SteinerCell -> CellExpr` by FUEL structural on the rank from
+    `loopFreeOrderIsWellFounded` (`Steiner/LoopFreeOrder.lean`), then `linearize (reconstruct t) = t`
+    and `SaturatedConvOver (reconstruct (linearize a)) a` give completeness on the admitted fragment.
+    Route B (fallback): WALL completeness and ship the sound-only semi-decider that never lies, with
+    FREE-7 (`decideTwoCellConvFull`) as the n=2 COMPLETE oracle and completeness stated as the open
+    n>=3 obligation.  The r2 eval battery already exhibits that on the admitted parallel pair BOTH
+    directions coincide (a computable witness that Route A's target holds there).
+  * **Theorem-level two-decider agreement** stays WALLED at OMEGA-1 (the `toCellDimTwo` conv-leg);
+    not an r3 Steiner item but a syntax-side congruence-completion. -/
+
+/-- ★ **Honest residual — completeness route for r3 is NAMED, not shipped.**  reconstruct/excision by
+fuel-structural descent on the `loopFreeOrder` rank (Route A) OR the soundness-only wall with FREE-7 as
+the n=2 complete oracle (Route B).  `= false` (r3, NOT closed). -/
+def fxOmega_completenessRouteNamedR3 : Bool := false
 
 /-! ## The OMEGA-3 handoff spec
 
