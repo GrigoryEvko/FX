@@ -65,4 +65,23 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_r16Ledger
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR16Complete
 
+-- ★ BRAUER r17 (T-CLOSE top side): the TOP arc-class guards + the ∗-dual classification, counting engine, pairing
+-- bijection, and the ∗-dual crux.  The two ∗-dual assertions transitively cover the offset-port cancel helpers.
+#assert_no_axioms FX1Poly.Polygraph.cupSmallerGuard
+#assert_no_axioms FX1Poly.Polygraph.cupLargerGuard
+#assert_no_axioms FX1Poly.Polygraph.throughTopGuard
+#assert_no_axioms FX1Poly.Polygraph.partnerTopShift
+#assert_no_axioms FX1Poly.Polygraph.partitionThree_of_involution_top
+#assert_no_axioms FX1Poly.Polygraph.cupCruxCount_probe_adversarialB
+#assert_no_axioms FX1Poly.Polygraph.cupCruxCount_probe_freshMixed
+#assert_no_axioms FX1Poly.Polygraph.cupCruxCount_probe_nestedCaps
+#assert_no_axioms FX1Poly.Polygraph.cupCruxCount_probe_threeCups
+#assert_no_axioms FX1Poly.Polygraph.cupArcTopIndices_length_eq_count
+#assert_no_axioms FX1Poly.Polygraph.throughStrandTops_length_eq_count
+#assert_no_axioms FX1Poly.Polygraph.cupLargerTopIndices
+#assert_no_axioms FX1Poly.Polygraph.cupLargerTopIndices_length_eq_count
+#assert_no_axioms FX1Poly.Polygraph.cupLargerTopIndices_length_eq
+#assert_no_axioms FX1Poly.Polygraph.expandCupTopPairs_length
+#assert_no_axioms FX1Poly.Polygraph.cupArcTwiceThroughSumsToTop
+
 end FX1PolyAudit

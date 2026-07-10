@@ -1174,6 +1174,352 @@ theorem readOffBottomOrder_realizesRoundtrip (bottomCount topCount : Nat) (partn
   permuteOfCrossingWord_permutationToCrossingWord bottomCount _
     (readOffBottomOrder_isPermutationOfRange bottomCount topCount partner wf)
 
+/-! ## Section 14 — the TOP-side arithmetic helpers (the offset-port `Nat.sub` / cancel kit, propext-free)
+
+The top read-offs read the partner at the OFFSET port `bottomCount + topIndex` and subtract `bottomCount`, so the
+top dual needs the additive cancel lemmas the bottom side never touched.  Re-derived structurally here (never
+`Nat.sub_add_cancel` / `Nat.add_left_cancel`, both of which leak `propext`). -/
+
+/-- Left-cancel of `Nat` addition — structural on the left summand, `propext`-free. -/
+private theorem natAddLeftCancelTop : (base left right : Nat) → base + left = base + right → left = right
+  | 0, left, right, equal => by rw [Nat.zero_add, Nat.zero_add] at equal; exact equal
+  | base + 1, left, right, equal => by
+      rw [Nat.succ_add base left, Nat.succ_add base right] at equal
+      exact natAddLeftCancelTop base left right (Nat.succ.inj equal)
+
+/-- Left-cancel of `Nat` addition under `<` — structural on the left summand, `propext`-free. -/
+private theorem natLtOfAddLtAddLeftTop : (base left right : Nat) → base + left < base + right → left < right
+  | 0, left, right, lt => by rw [Nat.zero_add, Nat.zero_add] at lt; exact lt
+  | base + 1, left, right, lt => by
+      rw [Nat.succ_add base left, Nat.succ_add base right] at lt
+      exact natLtOfAddLtAddLeftTop base left right (Nat.lt_of_succ_lt_succ lt)
+
+/-- `base ≤ value → base + (value - base) = value` — structural, `propext`-free (the `Nat.le.dest`-style discharge,
+never `Nat.sub_add_cancel`). -/
+private theorem addSubCancelTop : (base value : Nat) → base ≤ value → base + (value - base) = value
+  | 0, value, _ => by rw [Nat.zero_add, Nat.sub_zero]
+  | base + 1, 0, le => absurd le (Nat.not_succ_le_zero base)
+  | base + 1, value + 1, le => by
+      rw [show (value + 1) - (base + 1) = value - base from Nat.succ_sub_succ value base,
+        Nat.add_right_comm base 1 (value - base)]
+      exact congrArg (· + 1) (addSubCancelTop base value (Nat.le_of_succ_le_succ le))
+
+/-- `(base + value) - base = value` — structural, `propext`-free. -/
+private theorem natAddSubCancelLeftTop : (base value : Nat) → (base + value) - base = value
+  | 0, value => by rw [Nat.zero_add, Nat.sub_zero]
+  | base + 1, value => by
+      rw [Nat.succ_add base value, Nat.succ_sub_succ (base + value) base]
+      exact natAddSubCancelLeftTop base value
+
+/-! ## Section 15 — the TOP arc-class guard functions (definitionally the offset-port `filterMap` predicates) -/
+
+/-- The SMALLER cup-top guard — a top port `bottomCount + topIndex` whose partner is a top port strictly larger (the
+smaller top foot of a top–top cup arc).  Definitionally the `cupArcTopIndices` `filterMap` predicate. -/
+def cupSmallerGuard (bottomCount : Nat) (partner : List Nat) (topIndex : Nat) : Bool :=
+  Nat.ble bottomCount (natListGetAt partner (bottomCount + topIndex))
+    && Nat.blt (bottomCount + topIndex) (natListGetAt partner (bottomCount + topIndex))
+
+/-- The LARGER cup-top guard — a top port whose partner is a top port strictly smaller (the larger top foot of a
+top–top cup arc).  The ∗-mirror of `cupSmallerGuard` under swapping the two top feet. -/
+def cupLargerGuard (bottomCount : Nat) (partner : List Nat) (topIndex : Nat) : Bool :=
+  Nat.ble bottomCount (natListGetAt partner (bottomCount + topIndex))
+    && Nat.blt (natListGetAt partner (bottomCount + topIndex)) (bottomCount + topIndex)
+
+/-- The THROUGH-top guard — a top port whose partner is a bottom port.  Definitionally the `throughStrandTops`
+`filterMap` predicate. -/
+def throughTopGuard (bottomCount : Nat) (partner : List Nat) (topIndex : Nat) : Bool :=
+  Nat.blt (natListGetAt partner (bottomCount + topIndex)) bottomCount
+
+/-! ## Section 16 — the ∗-dual per-index classification under the involution gate -/
+
+/-- ★ **The per-index TOP classification under the involution gate.**  Each top port `topIndex < topCount` is exactly
+one of a SMALLER cup top, a LARGER cup top, or a THROUGH top — `cupSmallerGuard` / `cupLargerGuard` /
+`throughTopGuard` are mutually-exclusive and exhaustive on it.  The cup threshold is `bottomCount ≤ partner` (opposite
+side from the cap's `partner < bottomCount`); the fixed-point-freeness at the offset port splits the two cup cases.
+The ∗-dual of `partitionThree_of_involution`. -/
+theorem partitionThree_of_involution_top (bottomCount topCount total : Nat) (partner : List Nat)
+    (topLe : bottomCount + topCount ≤ total) (wf : IsBoundaryInvolution total partner)
+    (topIndex : Nat) (below : topIndex < topCount) :
+    onlyOneTrueThree (cupSmallerGuard bottomCount partner topIndex)
+      (cupLargerGuard bottomCount partner topIndex)
+      (throughTopGuard bottomCount partner topIndex) := by
+  have portLtSum : bottomCount + topIndex < bottomCount + topCount := Nat.add_lt_add_left below bottomCount
+  have portLtTotal : bottomCount + topIndex < total := Nat.lt_of_lt_of_le portLtSum topLe
+  cases Nat.lt_or_ge (natListGetAt partner (bottomCount + topIndex)) bottomCount with
+  | inl ltBottom =>
+      exact Or.inr (Or.inr
+        ⟨andEqFalseLeftCount _ _
+           (natBleFalseOfGtCount bottomCount (natListGetAt partner (bottomCount + topIndex)) ltBottom),
+         andEqFalseLeftCount _ _
+           (natBleFalseOfGtCount bottomCount (natListGetAt partner (bottomCount + topIndex)) ltBottom),
+         natBltOfLtCount (natListGetAt partner (bottomCount + topIndex)) bottomCount ltBottom⟩)
+  | inr geBottom =>
+      have throughFalse : throughTopGuard bottomCount partner topIndex = false :=
+        natBltFalseOfLeCount (natListGetAt partner (bottomCount + topIndex)) bottomCount geBottom
+      have partnerNePort : natListGetAt partner (bottomCount + topIndex) ≠ bottomCount + topIndex :=
+        wf.isFixedPointFree (bottomCount + topIndex) portLtTotal
+      cases Nat.lt_or_ge (bottomCount + topIndex) (natListGetAt partner (bottomCount + topIndex)) with
+      | inl portLtPartner =>
+          exact Or.inl
+            ⟨andEqTrueCount _ _
+               (natBleOfLeCount bottomCount (natListGetAt partner (bottomCount + topIndex)) geBottom)
+               (natBltOfLtCount (bottomCount + topIndex) (natListGetAt partner (bottomCount + topIndex)) portLtPartner),
+             andEqFalseRightCount _ _
+               (natBltFalseOfLeCount (natListGetAt partner (bottomCount + topIndex)) (bottomCount + topIndex)
+                 (Nat.le_of_lt portLtPartner)),
+             throughFalse⟩
+      | inr partnerLePort =>
+          have partnerLtPort : natListGetAt partner (bottomCount + topIndex) < bottomCount + topIndex :=
+            natLtOfLeOfNeCount (natListGetAt partner (bottomCount + topIndex)) (bottomCount + topIndex)
+              partnerLePort partnerNePort
+          exact Or.inr (Or.inl
+            ⟨andEqFalseRightCount _ _
+               (natBltFalseOfLeCount (bottomCount + topIndex) (natListGetAt partner (bottomCount + topIndex))
+                 (Nat.le_of_lt partnerLtPort)),
+             andEqTrueCount _ _
+               (natBleOfLeCount bottomCount (natListGetAt partner (bottomCount + topIndex)) geBottom)
+               (natBltOfLtCount (natListGetAt partner (bottomCount + topIndex)) (bottomCount + topIndex) partnerLtPort),
+             throughFalse⟩)
+
+/-! ## Section 17 — truth-probes: the ∗-dual crux `2·|cupArcTopIndices| + |throughStrandTops| = topCount`
+
+Confirm the top counting CONCLUSION on the recon's hand-worked top-side cases before proving the general identity. -/
+
+/-- ★ **Truth-probe (adversarial-B, top).**  Partner `[2, 4, 0, 5, 1, 3]`, `topCount = 3`: one cup arc, one through —
+`1 + 1 + 1 = 3`. -/
+theorem cupCruxCount_probe_adversarialB :
+    (cupArcTopIndices 3 3 [2, 4, 0, 5, 1, 3]).length + (cupArcTopIndices 3 3 [2, 4, 0, 5, 1, 3]).length
+      + (throughStrandTops 3 3 [2, 4, 0, 5, 1, 3]).length = 3 := by decide
+
+/-- ★ **Truth-probe (fresh mixed, top).**  Partner `[3, 4, 5, 0, 1, 2, 7, 6]`, `topCount = 4`: one cup arc, two
+throughs — `1 + 1 + 2 = 4`. -/
+theorem cupCruxCount_probe_freshMixed :
+    (cupArcTopIndices 4 4 [3, 4, 5, 0, 1, 2, 7, 6]).length + (cupArcTopIndices 4 4 [3, 4, 5, 0, 1, 2, 7, 6]).length
+      + (throughStrandTops 4 4 [3, 4, 5, 0, 1, 2, 7, 6]).length = 4 := by decide
+
+/-- ★ **Truth-probe (wild-A, nested bottom caps).**  Partner `[3, 2, 1, 0, 6, 7, 4, 5]`, `bottomCount = 6`,
+`topCount = 2`: the top side is all-through — `0 + 0 + 2 = 2`. -/
+theorem cupCruxCount_probe_nestedCaps :
+    (cupArcTopIndices 6 2 [3, 2, 1, 0, 6, 7, 4, 5]).length + (cupArcTopIndices 6 2 [3, 2, 1, 0, 6, 7, 4, 5]).length
+      + (throughStrandTops 6 2 [3, 2, 1, 0, 6, 7, 4, 5]).length = 2 := by decide
+
+/-- ★ **Truth-probe (three crossing cups).**  Partner `[3, 4, 5, 0, 1, 2]`, `bottomCount = 0`, `topCount = 6`: three
+cup arcs, no through — `3 + 3 + 0 = 6` — the full cup machinery on a maximally-crossed top. -/
+theorem cupCruxCount_probe_threeCups :
+    (cupArcTopIndices 0 6 [3, 4, 5, 0, 1, 2]).length + (cupArcTopIndices 0 6 [3, 4, 5, 0, 1, 2]).length
+      + (throughStrandTops 0 6 [3, 4, 5, 0, 1, 2]).length = 6 := by decide
+
+/-! ## Section 18 — the three TOP read-off lengths as partition counts -/
+
+/-- The smaller cup-top count equals the `cupSmallerGuard` `countTrue` over `List.range topCount`. -/
+theorem cupArcTopIndices_length_eq_count (bottomCount topCount : Nat) (partner : List Nat) :
+    (cupArcTopIndices bottomCount topCount partner).length
+      = countTrue (cupSmallerGuard bottomCount partner) (List.range topCount) :=
+  filterMapLength_eq_countTrue
+    (fun topIndex => match cupSmallerGuard bottomCount partner topIndex with | true => some topIndex | false => none)
+    (cupSmallerGuard bottomCount partner)
+    (fun value => (guardIsSomeAgreeCount (cupSmallerGuard bottomCount partner value) value).symm)
+    (List.range topCount)
+
+/-- The through-top count equals the `throughTopGuard` `countTrue` over `List.range topCount`. -/
+theorem throughStrandTops_length_eq_count (bottomCount topCount : Nat) (partner : List Nat) :
+    (throughStrandTops bottomCount topCount partner).length
+      = countTrue (throughTopGuard bottomCount partner) (List.range topCount) :=
+  filterMapLength_eq_countTrue
+    (fun topIndex => match throughTopGuard bottomCount partner topIndex with | true => some topIndex | false => none)
+    (throughTopGuard bottomCount partner)
+    (fun value => (guardIsSomeAgreeCount (throughTopGuard bottomCount partner value) value).symm)
+    (List.range topCount)
+
+/-- ★ **The larger cup-top indices** — top ports whose partner is a top port strictly smaller (the ∗-mirror of
+`cupArcTopIndices`, listing the LARGER top foot of each cup arc). -/
+def cupLargerTopIndices (bottomCount topCount : Nat) (partner : List Nat) : List Nat :=
+  (List.range topCount).filterMap (fun topIndex =>
+    match cupLargerGuard bottomCount partner topIndex with | true => some topIndex | false => none)
+
+/-- The larger cup-top count equals the `cupLargerGuard` `countTrue` over `List.range topCount`. -/
+theorem cupLargerTopIndices_length_eq_count (bottomCount topCount : Nat) (partner : List Nat) :
+    (cupLargerTopIndices bottomCount topCount partner).length
+      = countTrue (cupLargerGuard bottomCount partner) (List.range topCount) :=
+  filterMapLength_eq_countTrue
+    (fun topIndex => match cupLargerGuard bottomCount partner topIndex with | true => some topIndex | false => none)
+    (cupLargerGuard bottomCount partner)
+    (fun value => (guardIsSomeAgreeCount (cupLargerGuard bottomCount partner value) value).symm)
+    (List.range topCount)
+
+/-! ## Section 19 — the ∗-dual pairing bijection: `|larger cup tops| = |smaller cup tops|` (the crux-of-crux)
+
+The involution maps the smaller top foot of each cup arc to its larger top foot bijectively, via the shift map
+`partnerTopShift` (`partner (bottomCount + topIndex) − bottomCount`).  Realized over the erase-kit length equality
+(`distinctSameMembersLengthEq`) by exhibiting `cupLargerTopIndices` and `cupArcTopIndices.map partnerTopShift` as two
+distinct lists with the same members. -/
+
+/-- The shift map: the top-index of the partner top of a cup top foot (`partner (bottomCount + topIndex) −
+bottomCount`).  Definitionally the second entry `expandCupTopPairs` emits per arc. -/
+def partnerTopShift (bottomCount : Nat) (partner : List Nat) (topIndex : Nat) : Nat :=
+  natListGetAt partner (bottomCount + topIndex) - bottomCount
+
+/-- ★★ **The ∗-dual pairing bijection (crux-of-crux).**  Under the involution gate over `bottomCount + topCount`
+ports, the number of LARGER cup tops equals the number of SMALLER cup tops: `partnerTopShift` bijects
+`cupArcTopIndices` onto `cupLargerTopIndices`.  Realized via the erase-kit length equality on `cupLargerTopIndices`
+and `cupArcTopIndices.map partnerTopShift` (two distinct lists with the same members).  The heart of the ∗-dual
+width-length identity — `|larger| = |smaller|`. -/
+theorem cupLargerTopIndices_length_eq (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    (cupLargerTopIndices bottomCount topCount partner).length
+      = (cupArcTopIndices bottomCount topCount partner).length := by
+  have sameMembers : ∀ value, memBool value (cupLargerTopIndices bottomCount topCount partner)
+      = memBool value ((cupArcTopIndices bottomCount topCount partner).map (partnerTopShift bottomCount partner)) := by
+    intro value
+    apply boolEqOfImpCount
+    · intro valueMemLarger
+      have valueMem : value ∈ cupLargerTopIndices bottomCount topCount partner := memBoolMemCount _ value valueMemLarger
+      obtain ⟨valueRange, valueLargerGuard⟩ :=
+        memFilterMapGuardInvertedCount (cupLargerGuard bottomCount partner) (List.range topCount) value valueMem
+      have valueLt : value < topCount := memRangeLtCount valueRange
+      have portValueLtSum : bottomCount + value < bottomCount + topCount := Nat.add_lt_add_left valueLt bottomCount
+      have bottomLeAtValue : bottomCount ≤ natListGetAt partner (bottomCount + value) :=
+        natLeOfBleCount bottomCount (natListGetAt partner (bottomCount + value)) (boolAndLeftCount _ _ valueLargerGuard)
+      have partnerAtValueLtPort : natListGetAt partner (bottomCount + value) < bottomCount + value :=
+        natLtOfBltCount (natListGetAt partner (bottomCount + value)) (bottomCount + value)
+          (boolAndRightCount _ _ valueLargerGuard)
+      have selfInvValue : natListGetAt partner (natListGetAt partner (bottomCount + value)) = bottomCount + value :=
+        wf.isSelfInverse (bottomCount + value) portValueLtSum
+      have bottomAddSmall : bottomCount + (natListGetAt partner (bottomCount + value) - bottomCount)
+          = natListGetAt partner (bottomCount + value) :=
+        addSubCancelTop bottomCount (natListGetAt partner (bottomCount + value)) bottomLeAtValue
+      have smallLtTop : natListGetAt partner (bottomCount + value) - bottomCount < topCount := by
+        have step : bottomCount + (natListGetAt partner (bottomCount + value) - bottomCount) < bottomCount + topCount := by
+          rw [bottomAddSmall]; exact Nat.lt_trans partnerAtValueLtPort portValueLtSum
+        exact natLtOfAddLtAddLeftTop bottomCount _ topCount step
+      have smallGuard : cupSmallerGuard bottomCount partner (natListGetAt partner (bottomCount + value) - bottomCount)
+          = true := by
+        show (Nat.ble bottomCount
+            (natListGetAt partner (bottomCount + (natListGetAt partner (bottomCount + value) - bottomCount)))
+          && Nat.blt (bottomCount + (natListGetAt partner (bottomCount + value) - bottomCount))
+            (natListGetAt partner (bottomCount + (natListGetAt partner (bottomCount + value) - bottomCount)))) = true
+        rw [bottomAddSmall, selfInvValue]
+        exact andEqTrueCount _ _
+          (natBleOfLeCount bottomCount (bottomCount + value) (Nat.le_add_right bottomCount value))
+          (natBltOfLtCount (natListGetAt partner (bottomCount + value)) (bottomCount + value) partnerAtValueLtPort)
+      have smallRange : natListGetAt partner (bottomCount + value) - bottomCount ∈ List.range topCount :=
+        memRangeOfLtCount (natListGetAt partner (bottomCount + value) - bottomCount) topCount smallLtTop
+      have smallMemCup : natListGetAt partner (bottomCount + value) - bottomCount
+          ∈ cupArcTopIndices bottomCount topCount partner :=
+        memFilterMapGuardComplete (cupSmallerGuard bottomCount partner) (List.range topCount)
+          (natListGetAt partner (bottomCount + value) - bottomCount) smallRange smallGuard
+      have shiftEq : partnerTopShift bottomCount partner
+          (natListGetAt partner (bottomCount + value) - bottomCount) = value := by
+        show natListGetAt partner (bottomCount + (natListGetAt partner (bottomCount + value) - bottomCount)) - bottomCount
+          = value
+        rw [bottomAddSmall, selfInvValue]
+        exact natAddSubCancelLeftTop bottomCount value
+      have mapMem : memBool (partnerTopShift bottomCount partner
+          (natListGetAt partner (bottomCount + value) - bottomCount))
+          ((cupArcTopIndices bottomCount topCount partner).map (partnerTopShift bottomCount partner)) = true :=
+        memBoolMapOfMemCount (partnerTopShift bottomCount partner) (cupArcTopIndices bottomCount topCount partner)
+          (natListGetAt partner (bottomCount + value) - bottomCount) smallMemCup
+      rw [shiftEq] at mapMem
+      exact mapMem
+    · intro valueMemMap
+      obtain ⟨smallerTop, smallerTopMemCup, smallerTopShiftEq⟩ :=
+        memBoolMapWitnessCount (partnerTopShift bottomCount partner)
+          (cupArcTopIndices bottomCount topCount partner) value valueMemMap
+      have smallerSound := cupArcTopIndices_mem_sound bottomCount topCount partner smallerTop smallerTopMemCup
+      have subExact : bottomCount + (natListGetAt partner (bottomCount + smallerTop) - bottomCount)
+          = natListGetAt partner (bottomCount + smallerTop) :=
+        cupArcTop_sub_exact bottomCount topCount partner smallerTop smallerTopMemCup
+      have valueEq : natListGetAt partner (bottomCount + smallerTop) - bottomCount = value := smallerTopShiftEq
+      have partnerAtEq : natListGetAt partner (bottomCount + smallerTop) = bottomCount + value := by
+        rw [← subExact, valueEq]
+      have portSmallerLtSum : bottomCount + smallerTop < bottomCount + topCount :=
+        Nat.add_lt_add_left smallerSound.1 bottomCount
+      have valueLt : value < topCount := by
+        have partnerAtLt : natListGetAt partner (bottomCount + smallerTop) < bottomCount + topCount :=
+          wf.mapsInRange (bottomCount + smallerTop) portSmallerLtSum
+        rw [partnerAtEq] at partnerAtLt
+        exact natLtOfAddLtAddLeftTop bottomCount value topCount partnerAtLt
+      have valueRange : value ∈ List.range topCount := memRangeOfLtCount value topCount valueLt
+      have selfInvSmaller :
+          natListGetAt partner (natListGetAt partner (bottomCount + smallerTop)) = bottomCount + smallerTop :=
+        wf.isSelfInverse (bottomCount + smallerTop) portSmallerLtSum
+      rw [partnerAtEq] at selfInvSmaller
+      have largerGuardValue : cupLargerGuard bottomCount partner value = true := by
+        show (Nat.ble bottomCount (natListGetAt partner (bottomCount + value))
+          && Nat.blt (natListGetAt partner (bottomCount + value)) (bottomCount + value)) = true
+        rw [selfInvSmaller]
+        exact andEqTrueCount _ _
+          (natBleOfLeCount bottomCount (bottomCount + smallerTop) (Nat.le_add_right bottomCount smallerTop))
+          (natBltOfLtCount (bottomCount + smallerTop) (bottomCount + value) (partnerAtEq ▸ smallerSound.2.2))
+      have valueMemLarger : value ∈ cupLargerTopIndices bottomCount topCount partner :=
+        memFilterMapGuardComplete (cupLargerGuard bottomCount partner) (List.range topCount)
+          value valueRange largerGuardValue
+      exact memBoolOfMemCount _ value valueMemLarger
+  have distinctLarger : isDistinctList (cupLargerTopIndices bottomCount topCount partner) = true :=
+    filterMapGuardIdentityDistinctCount (cupLargerGuard bottomCount partner) (List.range topCount)
+      (isDistinctListRangeCount topCount)
+  have distinctMap :
+      isDistinctList ((cupArcTopIndices bottomCount topCount partner).map (partnerTopShift bottomCount partner)) = true :=
+    mapDistinctOfInjOnCount (partnerTopShift bottomCount partner) (cupArcTopIndices bottomCount topCount partner)
+      (filterMapGuardIdentityDistinctCount (cupSmallerGuard bottomCount partner) (List.range topCount)
+        (isDistinctListRangeCount topCount))
+      (fun left right leftMem rightMem eqShift => by
+        have leftSound := cupArcTopIndices_mem_sound bottomCount topCount partner left leftMem
+        have rightSound := cupArcTopIndices_mem_sound bottomCount topCount partner right rightMem
+        have leftSub : bottomCount + (natListGetAt partner (bottomCount + left) - bottomCount)
+            = natListGetAt partner (bottomCount + left) :=
+          cupArcTop_sub_exact bottomCount topCount partner left leftMem
+        have rightSub : bottomCount + (natListGetAt partner (bottomCount + right) - bottomCount)
+            = natListGetAt partner (bottomCount + right) :=
+          cupArcTop_sub_exact bottomCount topCount partner right rightMem
+        have portsEq : natListGetAt partner (bottomCount + left) = natListGetAt partner (bottomCount + right) := by
+          rw [← leftSub, ← rightSub]
+          exact congrArg (bottomCount + ·) eqShift
+        have portIndexEq : bottomCount + left = bottomCount + right :=
+          involutionInjectiveCount (bottomCount + topCount) partner wf (bottomCount + left) (bottomCount + right)
+            (Nat.add_lt_add_left leftSound.1 bottomCount) (Nat.add_lt_add_left rightSound.1 bottomCount) portsEq
+        exact natAddLeftCancelTop bottomCount left right portIndexEq)
+  have lengthEq : (cupLargerTopIndices bottomCount topCount partner).length
+      = ((cupArcTopIndices bottomCount topCount partner).map (partnerTopShift bottomCount partner)).length :=
+    distinctSameMembersLengthEq (cupLargerTopIndices bottomCount topCount partner)
+      ((cupArcTopIndices bottomCount topCount partner).map (partnerTopShift bottomCount partner))
+      distinctLarger distinctMap sameMembers
+  rw [lengthEq, mapLengthCount]
+
+/-! ## Section 20 — the ∗-dual crux and doubling -/
+
+/-- ★★ **The ∗-dual doubling — `|cupArcTops| = 2·|cupArcTopIndices|`.**  Each cup arc contributes two top feet. -/
+theorem expandCupTopPairs_length (bottomCount : Nat) (partner : List Nat) : (feet : List Nat) →
+    (expandCupTopPairs bottomCount partner feet).length = feet.length + feet.length
+  | [] => rfl
+  | topIndex :: rest => by
+      show (expandCupTopPairs bottomCount partner rest).length + 1 + 1 = (rest.length + 1) + (rest.length + 1)
+      rw [expandCupTopPairs_length bottomCount partner rest]
+      exact twoSuccArithCount rest.length
+
+/-- ★★ **The ∗-dual crux — `2·|cupArcTopIndices| + |throughStrandTops| = topCount`.**  Assembles the ∗-dual pairing
+bijection (`|larger| = |smaller|`) with the three-way partition count over `List.range topCount`: the smaller cup
+tops, the larger cup tops, and the through tops exhaust the top boundary, and the two cup classes have equal
+cardinality. -/
+theorem cupArcTwiceThroughSumsToTop (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    (cupArcTopIndices bottomCount topCount partner).length + (cupArcTopIndices bottomCount topCount partner).length
+      + (throughStrandTops bottomCount topCount partner).length = topCount := by
+  have pairing : countTrue (cupLargerGuard bottomCount partner) (List.range topCount)
+      = countTrue (cupSmallerGuard bottomCount partner) (List.range topCount) := by
+    rw [← cupLargerTopIndices_length_eq_count, ← cupArcTopIndices_length_eq_count]
+    exact cupLargerTopIndices_length_eq bottomCount topCount partner wf
+  have partition : countTrue (cupSmallerGuard bottomCount partner) (List.range topCount)
+      + countTrue (cupLargerGuard bottomCount partner) (List.range topCount)
+      + countTrue (throughTopGuard bottomCount partner) (List.range topCount)
+      = topCount :=
+    (partitionCountThree (cupSmallerGuard bottomCount partner) (cupLargerGuard bottomCount partner)
+      (throughTopGuard bottomCount partner) (List.range topCount)
+      (fun value valueMem => partitionThree_of_involution_top bottomCount topCount (bottomCount + topCount) partner
+        (Nat.le_refl _) wf value (memRangeLtCount valueMem))).trans (lengthRangeCount topCount)
+  rw [cupArcTopIndices_length_eq_count, throughStrandTops_length_eq_count]
+  exact pairing ▸ partition
+
 /-! ## Honesty markers + the r16 ledger -/
 
 /-- ★★★ **Honesty marker — the BOTTOM read-off order is a range-permutation for EVERY well-formed involution (r16).**
