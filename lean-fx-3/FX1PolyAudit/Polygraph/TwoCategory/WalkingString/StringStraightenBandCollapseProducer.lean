@@ -20,6 +20,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringMergedFramesAlign
 #assert_no_axioms FX1Poly.Polygraph.stringMergedFramesEndpoint
 #assert_no_axioms FX1Poly.Polygraph.stringMergedSharedLegFramesCollapse
+#assert_no_axioms FX1Poly.Polygraph.stringZigZagBandCollapseLeft
+#assert_no_axioms FX1Poly.Polygraph.stringStraightenCellDescentStep_left
 #assert_no_axioms FX1Poly.Polygraph.fxString_hasStringSharedLegLegShape
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasStringZigZagBandCollapseLeft
 
 end FX1PolyAudit

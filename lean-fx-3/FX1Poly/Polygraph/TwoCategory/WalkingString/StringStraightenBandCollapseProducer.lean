@@ -322,6 +322,97 @@ theorem stringMergedSharedLegFramesCollapse
       (stringGeneralContextFrameLegsCollapse sharedLegModality otherLegModality cupGen capGen triangle
         contextLeft contextRight))
 
+/-! ## THE BAND COLLAPSE PRODUCER — the readback bands collapse, discharging the STRAIGHTEN hypothesis -/
+
+/-- ★★★ **THE LEFT-HANDED BAND COLLAPSE, unconditional.**  For a located LEFT-handed zigzag cup·cap pair
+(`|lcCup| + 1 = |lcCap|`) with the shared window coherence and the endpoint reconnect, the readback bands collapse:
+`stringReadbackBand cup ⊟ castBoundary (stringReadbackBand cap) ≈ id`.  This is EXACTLY the hypothesis
+`stringStraightenCellDescentStep_ofCollapse` takes — discharged.  Casing the four cup×cap generator combos: the two
+SAME-colour snakes (`η·ε` at `L = F`, `η'·ε'` at `L = G`) fire the merged cast bridge
+`stringMergedSharedLegFramesCollapse` (with `triangleF` / `triangleGhi`) after the leg-factorization subst rewrites
+the bands into the merged frames; the two MIXED combos are refuted at the 2-cell level by `sharedLegModeClash`
+(`F` targets `tip`, `H·G` starts `base`), `.elim`.  The goal's cast `castBoundary coh.symm reconnect.symm` and the
+bridge's `castBoundary(align)` agree by proof irrelevance (same boundary paths). -/
+theorem stringZigZagBandCollapseLeft
+    {overallSource overallTarget : AdjointTripleMode}
+    (cupAtom capAtom : SpineAtom adjointTripleModeSignature overallSource overallTarget)
+    (isCup : cupAtom.isCupAtom = true) (isCap : capAtom.isCupAtom = false)
+    (widthRel : cupAtom.leftContext.length + 1 = capAtom.leftContext.length)
+    (coh : atomFrameTarget cupAtom = atomFrameSource capAtom)
+    (reconnect : atomFrameSource cupAtom = atomFrameTarget capAtom) :
+    StringSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (stringReadbackBand cupAtom)
+        (RawTwoCellExpr.castBoundary coh.symm reconnect.symm (stringReadbackBand capAtom)))
+      (RawTwoCellExpr.id (signature := adjointTripleModeSignature) (atomFrameSource cupAtom)) := by
+  obtain ⟨cupLeftMid, cupRightMid, lcCup, cupDom, cupCod, genCup, rcCup⟩ := cupAtom
+  obtain ⟨capLeftMid, capRightMid, lcCap, capDom, capCod, genCap, rcCap⟩ := capAtom
+  dsimp only [SpineAtom.isCupAtom] at isCup isCap
+  dsimp only [atomFrameTarget, atomFrameSource] at coh reconnect
+  dsimp only [SpineAtom.leftContext] at widthRel
+  cases genCup with
+  | counitLower => exact absurd isCup (by decide)
+  | counitUpper => exact absurd isCup (by decide)
+  | unitLower =>
+      cases genCap with
+      | unitLower => exact absurd isCap (by decide)
+      | unitUpper => exact absurd isCap (by decide)
+      | counitLower =>
+          dsimp only [stringFG, stringGF] at coh
+          obtain ⟨lcCapEq, rcCupEq⟩ := stringSharedLegLegShape
+            AdjointTripleModality.left AdjointTripleModality.right lcCup rcCup lcCap rcCap coh widthRel
+          subst rcCupEq
+          subst lcCapEq
+          exact stringMergedSharedLegFramesCollapse AdjointTripleModality.left AdjointTripleModality.right
+            stringUnitLower stringCounitLower StringSaturatedTwoCellConv.triangleF lcCup rcCap
+      | counitUpper =>
+          dsimp only [stringFG, stringHG] at coh
+          exact (stringSharedLegMixedPairExcluded lcCup rcCup lcCap rcCap coh widthRel).elim
+  | unitUpper =>
+      cases genCap with
+      | unitLower => exact absurd isCap (by decide)
+      | unitUpper => exact absurd isCap (by decide)
+      | counitUpper =>
+          dsimp only [stringGH, stringHG] at coh
+          obtain ⟨lcCapEq, rcCupEq⟩ := stringSharedLegLegShape
+            AdjointTripleModality.right AdjointTripleModality.coLeft lcCup rcCup lcCap rcCap coh widthRel
+          subst rcCupEq
+          subst lcCapEq
+          exact stringMergedSharedLegFramesCollapse AdjointTripleModality.right AdjointTripleModality.coLeft
+            stringUnitUpper stringCounitUpper StringSaturatedTwoCellConv.triangleGhi lcCup rcCap
+      | counitLower =>
+          dsimp only [stringGH, stringGF] at coh
+          refine (sharedLegModeClash
+            (composePath lcCup (singletonModalityPath AdjointTripleModality.right))
+            (ModalityPath.cons AdjointTripleModality.coLeft rcCup) lcCap
+            (composePath stringGF rcCap) ?_ ?_
+            (fun modeEqual => AdjointTripleMode.noConfusion modeEqual)).elim
+          · rw [composePath_assoc lcCup (singletonModalityPath AdjointTripleModality.right)
+                (ModalityPath.cons AdjointTripleModality.coLeft rcCup)]
+            exact coh
+          · rw [ModalityPath.length_composePath, singletonModalityPath_length]
+            exact widthRel
+
+/-! ## The UNCONDITIONAL LEFT STRAIGHTEN producer — the gated producer, collapse supplied -/
+
+/-- ★★★ **The STRAIGHTEN producer for a LEFT-handed located zigzag redex — UNCONDITIONAL.**  The gated
+`stringStraightenCellDescentStep_ofCollapse` with its band-collapse hypothesis SUPPLIED by
+`stringZigZagBandCollapseLeft`.  No hypothesis remains: for a LEFT-handed zigzag cup·cap split
+(`|lcCup| + 1 = |lcCap|`) this produces a `StringCellDescentResult cell` outright — the LEFT STRAIGHTEN arm of the
+descent oracle, closed.  (The RIGHT-handed `|lcCap| + 1 = |lcCup|` mirror is the remaining arm for oracle
+totality.) -/
+def stringStraightenCellDescentStep_left
+    {sourceMode targetMode : AdjointTripleMode}
+    {sourcePath targetPath : ModalityPath adjointTripleGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjointTripleModeSignature sourcePath targetPath)
+    (prefixCells rest : List (SpineAtom adjointTripleModeSignature sourceMode targetMode))
+    {cupAtom capAtom : SpineAtom adjointTripleModeSignature sourceMode targetMode}
+    (isCupCup : cupAtom.isCupAtom = true) (isCapCap : capAtom.isCupAtom = false)
+    (sourceSplit : cell.spine = prefixCells ++ cupAtom :: capAtom :: rest)
+    (widthRel : cupAtom.leftContext.length + 1 = capAtom.leftContext.length) :
+    StringCellDescentResult cell :=
+  stringStraightenCellDescentStep_ofCollapse cell prefixCells rest isCupCup isCapCap sourceSplit widthRel
+    (stringZigZagBandCollapseLeft cupAtom capAtom isCupCup isCapCap widthRel)
+
 /-! ## Honesty marker -/
 
 /-- **★ ESTABLISHED — the leg-factorization extraction, the merged `atomFrame` frames, and THE MERGED CAST BRIDGE
@@ -334,11 +425,28 @@ cast, `whiskerLeftComp` + `whiskerExchange`) lift each merged frame to its itera
 port of `mergedSharedLegFramesCollapse`, GENERIC in the shared-leg / cup / cap generators and the triangle, so ONE
 bridge serves both same-colour snakes (`F`-snake / upper-`G`-snake).
 
-  What this marker does NOT close (gates stay `false`): the FINAL band-collapse producer — rewriting the readback
-  BANDS `stringReadbackBand` into the merged frames via the leg pins (a heterogeneous substitution on the atom's
-  stored contexts, plus the generator PATH-level pinning) and reconciling the goal's `castBoundary coh.symm
-  reconnect.symm` with the merged bridge's `castBoundary(align)`, together with the 2-cell MIXED-colour refutation.
-  `fxString_hasStringValleyStraightenBandCollapse` stays `false`.  `= true`. -/
+  What this marker does NOT close (gates stay `false`): the RIGHT-handedness (`|lcCap| + 1 = |lcCup|`) mirror band
+  collapse (needed for descent-oracle totality — the classifier is handedness-symmetric) and the oracle wire-up.
+  `fxString_hasStringValleyStraightenBandCollapse` is flipped for the LEFT arm (see below); the RIGHT arm and
+  `fxString_hasAdjointTripleCompleteness` stay `false`.  `= true`. -/
 def fxString_hasStringSharedLegLegShape : Bool := true
+
+/-- **★★★ ESTABLISHED — the LEFT-handed STRAIGHTEN BAND COLLAPSE is DISCHARGED unconditionally (FC-3 r7, B2).**
+`stringZigZagBandCollapseLeft` proves, with NO band-collapse hypothesis, the exact goal
+`stringReadbackBand cup ⊟ castBoundary (stringReadbackBand cap) ≈ id` for a LEFT-handed zigzag cup·cap pair
+(`|lcCup| + 1 = |lcCap|`): the four generator combos cased, the two SAME-colour snakes firing
+`stringMergedSharedLegFramesCollapse` (`triangleF` at `L = F`, `triangleGhi` at `L = G`) after the
+`stringSharedLegLegShape` subst, the two MIXED combos refuted by `sharedLegModeClash`.  The cast reconciliation
+(`castBoundary coh.symm reconnect.symm` vs the bridge's `castBoundary(align)`) closes by proof irrelevance.
+`stringStraightenCellDescentStep_left` then supplies this collapse to the shipped
+`stringStraightenCellDescentStep_ofCollapse`, making the LEFT STRAIGHTEN producer UNCONDITIONAL — the exact hypothesis
+that gated producer took is now proven.
+
+  Scope (honest): this is the LEFT handedness ONLY.  The descent oracle's zigzag arm is handedness-symmetric
+  (`stringZigZagSharedLeg_widthDichotomy` admits both `|lcCup| + 1 = |lcCap|` and `|lcCap| + 1 = |lcCup|`), so the
+  RIGHT mirror (`triangleGlo` / `triangleH` RIGHT-snakes + a RIGHT reconnect) is still owed for
+  `StringCellDescentStepOracle` totality.  So `StringCellDescentStepOracle` stays UN-inhabited and
+  `fxString_hasAdjointTripleCompleteness` stays `false`.  `= true`. -/
+def fxString_hasStringZigZagBandCollapseLeft : Bool := true
 
 end FX1Poly.Polygraph
