@@ -1021,6 +1021,7 @@ import FX1PolyAudit.Polygraph.Homology.InvolutionChainComplex
 import FX1PolyAudit.Polygraph.Homology.WalkerPresentationCarrier
 import FX1PolyAudit.Polygraph.Homology.CyclicThreeChainComplex
 import FX1PolyAudit.Polygraph.Homology.IdempotentSemigroupChainComplex
+import FX1PolyAudit.Polygraph.Homology.PresentationOpDualityHomology
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration

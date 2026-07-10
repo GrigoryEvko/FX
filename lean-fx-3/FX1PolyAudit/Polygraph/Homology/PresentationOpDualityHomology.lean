@@ -1,0 +1,80 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.Homology.PresentationOpDualityHomology
+
+/-! # FX1PolyAudit/Polygraph/Homology/PresentationOpDualityHomology — zero-axiom gate (the op-duality
+    TRANSPORT `d^op = −d` on the polygraphic homology carrier, and the op-dual census coverage: walking
+    comonad `H2 = 0`, idempotent comonad `H1 = 0` / `H2 = 0`, KZ / co-KZ abelianized `H2 = 0`, reaching
+    the census maximum `8` of `9`)
+
+Per-declaration zero-axiom gate: the generic op-dual (`opPresentation`), the basis-count preservation,
+the entrywise-negation transport theorem (via the repo Int-negation kit), the four op-dual walkers with
+their well-formedness / chain complexes / Smith certificates / homology read-offs, and the census
+maximum with the adjunction wall named.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpSwapRule
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpSwapCriticalPair
+#assert_no_axioms FX1Poly.Polygraph.Homology.opPresentation
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpMapPreservesLength
+#assert_no_axioms FX1Poly.Polygraph.Homology.opPresentationComputesBasisCount
+#assert_no_axioms FX1Poly.Polygraph.Homology.intNegMulNeg
+#assert_no_axioms FX1Poly.Polygraph.Homology.emptyRowsEntryIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpDimOneRowIsNegated
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpDimOneRowsIsNegated
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpDimTwoRowIsNegated
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpDimTwoRowsIsNegated
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpReplicateEmptyEntryIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.opPresentationBoundaryEntryIsNegated
+#assert_no_axioms FX1Poly.Polygraph.Homology.sumOverIndicesCongr
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadWalkerPresentation
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadPresentationComputesBoundaryDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadPresentationComputesBoundaryDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadPresentationComputesBoundaryDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryDimOneIsNegatedMonad
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryDimTwoIsNegatedMonad
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadPresentationIsWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadChainComplex
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryOfDimOneSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryOfDimTwoSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryOfDimOneReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadBoundaryOfDimTwoReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadDegreeTwoHomologyFreeRank
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadDegreeTwoHomologyFreeRankIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.ComonadDegreeTwoHomologyIsZeroStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.comonadDegreeTwoHomologyIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadWalkerPresentation
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadBoundaryOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadPresentationComputesBoundaryDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadPresentationComputesBoundaryDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadPresentationComputesBoundaryDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadBoundaryDimOneIsNegated
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadPresentationIsWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadChainComplex
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadBoundaryOfDimOneSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadBoundaryOfDimOneReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadDegreeOneHomologyFreeRank
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadDegreeOneHomologyFreeRankIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.IdempotentComonadDegreeOneHomologyIsTrivialStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadDegreeOneHomologyIsTrivial
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadDegreeTwoHomologyFreeRank
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadDegreeTwoHomologyFreeRankIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.IdempotentComonadDegreeTwoHomologyIsZeroStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentComonadDegreeTwoHomologyIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.kzAbelianizedPresentation
+#assert_no_axioms FX1Poly.Polygraph.Homology.kzAbelianizedPresentationEqualsMonad
+#assert_no_axioms FX1Poly.Polygraph.Homology.kzAbelianizedDegreeTwoHomologyIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.coKZAbelianizedPresentation
+#assert_no_axioms FX1Poly.Polygraph.Homology.coKZAbelianizedPresentationEqualsComonad
+#assert_no_axioms FX1Poly.Polygraph.Homology.coKZAbelianizedDegreeTwoHomologyIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithComputedHomologyCountAfterOpDuality
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithComputedHomologyCountAfterOpDualityValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithComputedHomologyIsAllButOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.presentationOpDualityHomologyLedgerIsComplete
+
+end FX1PolyAudit
