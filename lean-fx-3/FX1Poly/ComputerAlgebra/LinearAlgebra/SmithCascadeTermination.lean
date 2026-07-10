@@ -826,4 +826,29 @@ theorem smithClearColumnBelowStepsLandsAt (coeffMatrix : IntMatrix) (pivotIndex 
               pivotIndex pivotIndex pivotNeStart
           rw [ihResult, entryTargetEq, entryPivotEq]
 
+/-! ## Concrete truth probes for the clear-word lift
+
+Machine-checked on literal matrices (`decide` clean — no `Nat.min`/`Nat.sub` in the applied
+expressions), confirming the LIFT lemmas describe the ACTUAL threaded computation, including a case
+with TRANSIENT GROWTH in a non-pivot row (r8's shape).  Anonymous, so they carry no axiom footprint of
+their own. -/
+
+/-- Row-right clear of pivot row `0` (pivot `3`), columns `1..2`, over `[[3, 7, 5], [6, 2, 9]]`.  Row
+`1` column `1` grows `2 -> -10` MID-WORD, yet the pivot-row landings `(0, 1) = 1`, `(0, 2) = 2` match
+the per-column single-op residues — `smithClearRowRightStepsLandsAt`'s prediction on the real word. -/
+example :
+    (({ rows := [[3, 7, 5], [6, 2, 9]] } : IntMatrix).applyOperations
+        ((smithClearRowRightSteps { rows := [[3, 7, 5], [6, 2, 9]] } 0 2 1).map
+          ElementaryOperation.columnOperation)).rows
+      = [[3, 1, 2], [6, -10, 3]] := by decide
+
+/-- Column-below clear of pivot column `0` (pivot `3`), rows `1..2`, over
+`[[3, 0, 0], [7, 5, 0], [5, 0, 9]]`.  The pivot-column landings `(1, 0) = 1`, `(2, 0) = 2` match the
+per-row single-op residues — `smithClearColumnBelowStepsLandsAt`'s prediction on the real word. -/
+example :
+    (({ rows := [[3, 0, 0], [7, 5, 0], [5, 0, 9]] } : IntMatrix).applyOperations
+        ((smithClearColumnBelowSteps { rows := [[3, 0, 0], [7, 5, 0], [5, 0, 9]] } 0 2 1).map
+          ElementaryOperation.rowOperation)).rows
+      = [[3, 0, 0], [1, 5, 0], [2, 0, 9]] := by decide
+
 end FX1Poly.ComputerAlgebra
