@@ -1005,6 +1005,8 @@ import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4Audit
 import FX1PolyAudit.Polygraph.Omega.CertificateFunctorAudit
 -- OMEGA-4 r2 — the Squier ascent: the walking-involution homotopy-basis fragment
 import FX1PolyAudit.Polygraph.Omega.InvolutionSquierBasisAudit
+-- OMEGA-4 r2 — the Squier ascent: the r2 ledger + refined OMEGA-5 handoff
+import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4R2Audit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
