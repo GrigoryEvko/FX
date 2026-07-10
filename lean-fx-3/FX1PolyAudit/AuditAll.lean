@@ -1044,6 +1044,8 @@ import FX1PolyAudit.Polygraph.Omega.Graded.EnrichedCheckSeedAudit
 import FX1PolyAudit.Polygraph.Omega.Graded.CollisionCatalogAudit
 -- OMEGA-5 r1 — the r1 ledger + OMEGA-6 handoff (markers only hypothesis-free)
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCompositionLedgerAudit
+-- OMEGA-5 r2 — the cell-side graded composition: grade-leg algebra + enriched-functor slice + refusal
+import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellCompositionAudit
 -- OMEGA-6 r1 — the weak/directed rung: CaTT ps-context rows + the decidable ps-checker
 import FX1PolyAudit.Polygraph.Omega.PsContextAudit
 -- OMEGA-6 r1 — the CaTT coherence rule as a checked-ps + parallel-boundary generator seed
