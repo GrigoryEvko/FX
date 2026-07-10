@@ -53,7 +53,7 @@ matrix (never a sweep over arbitrary window-diagonal inputs, so immune to the r5
     (a `none` search means the minor is all zero — the cross-clear base case).
   * **The cross-clear segment characterization** (`smithCrossIsClearOfFindNone` +
     `smithCrossNotClearWitness`, over the segment pointwise/`false`-witness Bool-fold lemmas and the
-    propext-clean window bridge `natAddSubOfLe` / `natLtAddSubOfLt`): a `none` search means the cross is
+    propext-clean window bridge `smithNatAddSubOfLe` / `natLtAddSubOfLt`): a `none` search means the cross is
     ALREADY clear (the fuel-adequacy base case), and a `false` cross exhibits a nonzero cross residue in
     one of the two segments (the loop step's next-pivot witness).  This is r9's discharge of joint (b).
   * **The move swap-entry bridge** (`smithMoveToPivotEntryOnPivot`, over the new `listReplaceAt` read
@@ -1285,14 +1285,14 @@ The fuel-adequacy recursion's base case (`fuel = 0`, and the `none` search) need
 step needs the converse — a `false` cross exhibits a nonzero cross residue to feed as the next-pivot
 witness.  Both are structural Bool-fold facts over `smithRowSegmentAllZero` / `smithColSegmentAllZero`,
 refutation-immune (a statement about ONE matrix's cross, never a sweep over arbitrary window-diagonal
-inputs).  The window-range bridge is the propext-clean hand-proved `natAddSubOfLe` (Init's
+inputs).  The window-range bridge is the propext-clean hand-proved `smithNatAddSubOfLe` (Init's
 `Nat.add_sub_cancel'` is propext-dirty), so the whole family stays zero-axiom. -/
 
 /-- **`k + (n - k) = n` for `k ≤ n`** — the hand-proved, propext-clean replacement for Init's
 `Nat.add_sub_cancel'` (which drags `propext`).  Structural on `k`: the `succ`/`succ` arm reduces the
 subtraction with `Nat.succ_sub_succ` (`succ - succ` is NOT definitionally `sub`), then rides
 `Nat.succ_add` and the recursion. -/
-theorem natAddSubOfLe : ∀ (offset upper : Nat), offset ≤ upper → offset + (upper - offset) = upper
+theorem smithNatAddSubOfLe : ∀ (offset upper : Nat), offset ≤ upper → offset + (upper - offset) = upper
   | 0, upper, _ => Nat.zero_add upper
   | offset + 1, 0, isLe => absurd isLe (Nat.not_succ_le_zero offset)
   | offset + 1, upperPredecessor + 1, isLe =>
@@ -1300,17 +1300,17 @@ theorem natAddSubOfLe : ∀ (offset upper : Nat), offset ≤ upper → offset + 
           (Nat.succ_sub_succ upperPredecessor offset)).trans
         ((Nat.succ_add offset (upperPredecessor - offset)).trans
           (congrArg Nat.succ
-            (natAddSubOfLe offset upperPredecessor (Nat.le_of_succ_le_succ isLe))))
+            (smithNatAddSubOfLe offset upperPredecessor (Nat.le_of_succ_le_succ isLe))))
 
 /-- **A position below `upper` sits inside the `[offset, offset + (upper - offset))` window** — the
 window-membership bridge: from `offset ≤ target` and `target < upper`, `target < offset + (upper -
-offset)`, propext-clean through `natAddSubOfLe`.  Feeds the shipped scan lemmas whose ranges are the
+offset)`, propext-clean through `smithNatAddSubOfLe`.  Feeds the shipped scan lemmas whose ranges are the
 literal `pivotIndex + (dim - pivotIndex)` window bounds. -/
 theorem natLtAddSubOfLt (offset target upper : Nat)
     (isGe : offset ≤ target) (isLt : target < upper) :
     target < offset + (upper - offset) :=
   Eq.mp (congrArg (target < ·)
-      (natAddSubOfLe offset upper (Nat.le_trans isGe (Nat.le_of_lt isLt))).symm) isLt
+      (smithNatAddSubOfLe offset upper (Nat.le_trans isGe (Nat.le_of_lt isLt))).symm) isLt
 
 /-- **Row segment all-zero from pointwise zero** — if every entry of the scanned row window has
 magnitude zero, the segment-all-zero flag is `true`.  Structural on the column count; the head entry
@@ -1373,7 +1373,7 @@ theorem smithCrossIsClearOfFindNone (matrix : IntMatrix) (pivotIndex height widt
     smithRowSegmentAllZeroOfPointwiseZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1)
       (fun col colGe colLt =>
         have colLtWidth : col < width :=
-          Eq.mp (congrArg (col < ·) (natAddSubOfLe (pivotIndex + 1) width pivotColInRange)) colLt
+          Eq.mp (congrArg (col < ·) (smithNatAddSubOfLe (pivotIndex + 1) width pivotColInRange)) colLt
         smithFindMinAbsInMinorNoneAllZero matrix pivotIndex height width pivotIndex col findNone
           (Nat.le_refl pivotIndex)
           (natLtAddSubOfLt pivotIndex pivotIndex height (Nat.le_refl pivotIndex) pivotRowInRange)
@@ -1384,7 +1384,7 @@ theorem smithCrossIsClearOfFindNone (matrix : IntMatrix) (pivotIndex height widt
     smithColSegmentAllZeroOfPointwiseZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1)
       (fun row rowGe rowLt =>
         have rowLtHeight : row < height :=
-          Eq.mp (congrArg (row < ·) (natAddSubOfLe (pivotIndex + 1) height pivotRowInRange)) rowLt
+          Eq.mp (congrArg (row < ·) (smithNatAddSubOfLe (pivotIndex + 1) height pivotRowInRange)) rowLt
         smithFindMinAbsInMinorNoneAllZero matrix pivotIndex height width row pivotIndex findNone
           (Nat.le_of_succ_le rowGe)
           (natLtAddSubOfLt pivotIndex row height (Nat.le_of_succ_le rowGe) rowLtHeight)

@@ -54,7 +54,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithFindMinAbsInMinorNoneAllZero
 
 /- H2-SMITH r9 — the cross-clear segment characterization (the fuel-adequacy base/loop bridge). -/
-#assert_no_axioms FX1Poly.ComputerAlgebra.natAddSubOfLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNatAddSubOfLe
 #assert_no_axioms FX1Poly.ComputerAlgebra.natLtAddSubOfLt
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRowSegmentAllZeroOfPointwiseZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithColSegmentAllZeroOfPointwiseZero
