@@ -31,5 +31,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryDimTwoIsNonzero
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryDimOneIsNonzero
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerChainComplexIsNonVacuous
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimOneSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimOneReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimTwoSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimTwoReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.WalkerDegreeTwoSmithHandoffStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerDegreeTwoSmithHandoff
 
 end FX1PolyAudit

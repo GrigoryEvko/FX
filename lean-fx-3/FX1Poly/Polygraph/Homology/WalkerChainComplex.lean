@@ -272,4 +272,84 @@ theorem walkerBoundaryDimOneIsNonzero :
 `= true`. -/
 def walkerChainComplexIsNonVacuous : Bool := true
 
+/-! ## B4 — the Smith handoff (the SNF-consumption interface the H2-WALKERS lane, #2138, reads off)
+
+r1 ships the complex + the boundaries + `d d = 0`; #2138 computes `H2 = ker d2 / im d3` by Smith
+normal form.  This section seeds that lane with the Smith-reduced boundaries as KERNEL-CHECKED
+certificates — explicit unimodular reduction words over the shipped `IntMatrix` alphabet, checked
+propext-cleanly against the literal Smith normal form (deciding on the literal, never on any Smith
+driver, which taints `decide` through `Nat.min`/`Nat.sub`).  This deliberately does NOT import the
+work-in-progress Smith driver: the hand certificates suffice for the read-off TODAY, and #2138 owns
+any driver coupling.
+
+  * `SNF(d2) = [[1, 0]]` (rank 1, invariant factor 1) — one column transvection `col1 += col0`.
+  * `SNF(d3) = [[1, 0, 0, 0], [0, 0, 0, 0]]` (rank 1, invariant factor 1) — `swap(col0, col1)`,
+    `col2 −= col0`, `row1 −= row0`.
+
+**Homology read-off (the #2138 step, documented):** `C2 = ZZ^2`, so `nullity(d2) = 2 − rank(d2) = 1`;
+`rank(d3) = 1` with unit invariant factor (no torsion); hence the degree-2 homology has
+free rank `nullity(d2) − rank(d3) = 0` and no torsion, i.e. `H2(walking monad) = 0` — matching the
+homological triviality of `Δ₊`.  Formalising the quotient and this rank read-off is #2138's remaining
+work; the two certificates below are its complete SNF input. -/
+
+/-- The reduction certificate taking `d2 = [[1, −1]]` to its Smith normal form `[[1, 0]]` (one
+column transvection `col1 += 1·col0`). -/
+def walkerBoundaryOfDimOneSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations := [ ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 1 1) ] }
+
+/-- **`d2` reduces to `[[1, 0]]`** — the certificate is kernel-checked to land in Smith normal form
+within the `1 × 2` window; rank 1, invariant factor 1 (no torsion), one free column.  The literal SNF
+is closed against the driver-free `applyOperations` goal by defeq. -/
+theorem walkerBoundaryOfDimOneReducesToSmith :
+    walkerBoundaryOfDimOneSmithCertificate.reducesToSmithForm walkerBoundaryOfDimOne 1 2 :=
+  show (⟨[[1, 0]]⟩ : IntMatrix).IsSmithNormalFormWithin 1 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 1 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex → (⟨[[1, 0]]⟩ : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow)) }
+
+/-- The reduction certificate taking `d3 = [[0, 1, 1, 0], [0, 1, 1, 0]]` to its Smith normal form
+`[[1, 0, 0, 0], [0, 0, 0, 0]]` (`swap(col0, col1)`; `col2 −= col0`; `row1 −= row0`). -/
+def walkerBoundaryOfDimTwoSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 0 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 2 (-1))
+      , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 0 1 (-1)) ] }
+
+/-- **`d3` reduces to `[[1, 0, 0, 0], [0, 0, 0, 0]]`** — kernel-checked Smith normal form within the
+`2 × 4` window; rank 1, invariant factor 1 (no torsion), three free columns.  The chain `1 | 0` is
+the witness `⟨0, rfl⟩`. -/
+theorem walkerBoundaryOfDimTwoReducesToSmith :
+    walkerBoundaryOfDimTwoSmithCertificate.reducesToSmithForm walkerBoundaryOfDimTwo 2 4 :=
+  show (⟨[[1, 0, 0, 0], [0, 0, 0, 0]]⟩ : IntMatrix).IsSmithNormalFormWithin 2 4 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 4 →
+          rowIndex ≠ colIndex →
+          (⟨[[1, 0, 0, 0], [0, 0, 0, 0]]⟩ : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyond =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyond))) }
+
+/-- ★ **The Smith handoff statement for H2-WALKERS (#2138).**  Both boundaries are Smith-reduced:
+`d2` and `d3` each land in a rank-1 Smith normal form with unit invariant factor.  This is the
+complete SNF INPUT #2138 reads homology off (`H2 free-rank = nullity(d2) − rank(d3) = 1 − 1 = 0`, no
+torsion ⟹ `H2 = 0`).  Seeded as the interface `Prop`; the quotient and rank read-off are #2138's. -/
+def WalkerDegreeTwoSmithHandoffStatement : Prop :=
+  walkerBoundaryOfDimOneSmithCertificate.reducesToSmithForm walkerBoundaryOfDimOne 1 2 ∧
+  walkerBoundaryOfDimTwoSmithCertificate.reducesToSmithForm walkerBoundaryOfDimTwo 2 4
+
+/-- ★ **The handoff is INHABITED** — both boundary Smith reductions are kernel-checked, so #2138
+starts from a proven SNF interface, not a conjecture. -/
+theorem walkerDegreeTwoSmithHandoff : WalkerDegreeTwoSmithHandoffStatement :=
+  ⟨walkerBoundaryOfDimOneReducesToSmith, walkerBoundaryOfDimTwoReducesToSmith⟩
+
 end FX1Poly.Polygraph.Homology
