@@ -2282,16 +2282,24 @@ theorem smithSignSweepPreservesChain (matrix : IntMatrix) (height width : Nat)
 
 /-! ## The named wall: cascade re-diagonalization = the r6 elimination-correctness pole (B3)
 
-`SmithReduceFullDriverStatement` stays UNINHABITED this round.  The r5 decomposition ships every
+`SmithReduceFullDriverStatement` stays UNINHABITED — #2137 does NOT close — but the r7 sign-phase
+closure has shrunk the wall from THREE obligations to TWO.  The r5 decomposition already shipped every
 independently-closeable sub-lemma of the recon's three-level induction — the composition substrate
 (`applyOperationsAppend`), the applied-output phase split (`smithReduceFullApplied`), the middle-level
 fold descent measure (`smithRepairDecreasesPivotSize`), the invariant Props
 (`IsWindowDiagonal` / `SmithChainPrefix`), the column half of crosses-stay-zero
 (`foldPreservesSettledColumnZero`, resting on `addRowMultipleEntryOnTargetRow`), the outer fuel-lockstep
-base (`smith*SweepPastWindow`), and the sign-phase kernel (`negateRowEntry`).  What remains is the ONE
-deep obligation the recon flags `[HIGH, shared with the r3 pole]`: obligation (a), that the Euclid
-cascade `smithCascadeSweep` RE-DIAGONALIZES a folded window — a full verified Gaussian-elimination
-correctness proof over the extrinsic-shape substrate, not a one-round deliverable.
+base (`smith*SweepPastWindow`), and the sign-phase kernel (`negateRowEntry`).  r7 completes the SIGN
+PHASE outright: `nonnegHolds` is DISCHARGED as a driver postcondition (`smithReduceFullDiagonalNonneg`),
+and the sign sweep is proved to PRESERVE both window-diagonality (`smithSignSweepPreservesWindowDiagonal`)
+and the divisibility chain (`smithSignSweepPreservesChain`).  Composed, these give
+`smithReduceFullDriverOfRepairInvariants`: `SmithReduceFullDriverStatement` now follows from just the
+TWO invariants on the min-abs-pre-sorted repair output `afterRepair` — window-diagonality at 0 and the
+prefix chain (the corrected POLE-B, over the ACTUAL repair input, with NO refuted sortedness
+precondition).  What remains is the ONE deep obligation the recon flags `[HIGH, shared with the r3
+pole]`: obligation (a), that the Euclid cascade `smithCascadeSweep` RE-DIAGONALIZES a folded window — a
+full verified Gaussian-elimination correctness proof over the extrinsic-shape substrate, in which BOTH
+surviving `afterRepair` invariants bottom out; the r8/r9 core, not a one-round deliverable.
 
 `SmithCascadeReDiagonalizesStatement` NAMED that obligation as a first-class `Prop`, but the r5
 adversarial verification REFUTED the statement as written: its conclusion fires only the cross-clear
@@ -2686,23 +2694,29 @@ theorem isSmithNormalFormOfWindowDiagonalChainNonneg (matrix : IntMatrix) (heigh
 
 /-! ## The conditional totality assembly (H2-SMITH r6, B4)
 
-`SmithReduceFullDriverStatement` is NOT inhabited this round — #2137 does NOT close.  The augmented
-driver's total correctness rides the deep Gaussian-elimination pole (the corrected POLE-A / POLE-B
-above, and POLE-0 for the cross-clear phase), which the r6 recon flags as the r7 wall, not a
-one-round deliverable.  B4 ships the honest CONDITIONAL assembly instead: `smithReduceFullDriverOfInvariants`
-reduces the whole totality target to EXACTLY three invariant obligations on the augmented-driver
-output — window-diagonality at 0, diagonal nonnegativity, and the full prefix divisibility chain.
-Inhabit those three and the driver is total; that is now the precise r7 target.  The reduction is the
-SNF convergence glue (B3) lifted pointwise over every rectangular input.  A future discharge of the
-three hypotheses would split each driver output through the shipped `smithReduceFullApplied`
-(`diagOps ++ repairOps ++ signOps`) and prove the invariants phase by phase — window-diagonality +
-chain from the repair sweep (POLE-B, POLE-0), nonnegativity from the sign sweep. -/
+`SmithReduceFullDriverStatement` is NOT inhabited — #2137 does NOT close — but r7 has closed the SIGN
+PHASE and shrunk the conditional assembly from three obligations to two.  The r6 form
+`smithReduceFullDriverOfInvariants` reduced the totality target to THREE invariant obligations on the
+augmented-driver output (window-diagonality at 0, diagonal nonnegativity, and the full prefix chain).
+r7 discharges the second outright — `smithReduceFullDiagonalNonneg` proves `nonnegHolds` as a driver
+postcondition via the sign-sweep reachability invariant (the sign phase is negation-only, hence immune
+to the r5/r6 re-diagonalization refutation) — and proves the sign sweep PRESERVES the other two
+(`smithSignSweepPreservesWindowDiagonal`, `smithSignSweepPreservesChain`).  Composed through the shipped
+`smithReduceFullApplied` (`diagOps ++ repairOps ++ signOps`), the r7 companion
+`smithReduceFullDriverOfRepairInvariants` reduces the whole totality to EXACTLY TWO invariants on the
+min-abs-pre-sorted repair output `afterRepair`: window-diagonality at 0 and the prefix chain (the
+corrected POLE-B, over the ACTUAL repair input, with no refuted sortedness precondition).  Both
+survivors bottom out in the shared cascade re-diagonalization core (obligation (a) / POLE-A shape) — the
+r8/r9 wall, not a one-round deliverable. -/
 
-/-- **The conditional totality assembly** — `SmithReduceFullDriverStatement` follows from three
-invariant obligations on the augmented-driver output: that it is window-diagonal at 0, its diagonal is
-nonnegative, and its full prefix chain divides.  This does NOT inhabit the driver statement
-unconditionally (the three hypotheses are the r7 wall — POLE-B / POLE-0 for the first and third, the
-sign-phase induction for the second); it isolates that wall to exactly those three named goals.  Proof:
+/-- **The conditional totality assembly (r6 form)** — `SmithReduceFullDriverStatement` follows from
+three invariant obligations on the augmented-driver output: that it is window-diagonal at 0, its
+diagonal is nonnegative, and its full prefix chain divides.  This does NOT inhabit the driver statement
+unconditionally; it isolates the wall to exactly those three named goals.  r7 SUPERSEDES this with the
+stronger `smithReduceFullDriverOfRepairInvariants`, which discharges the nonnegativity obligation
+outright (`smithReduceFullDiagonalNonneg`) and pushes the other two off the raw driver output onto
+`afterRepair` — leaving TWO obligations, not three.  This r6 form is retained (name and meaning
+unchanged) as the assembly the r7 companion is built on.  Proof:
 the SNF convergence glue `isSmithNormalFormOfWindowDiagonalChainNonneg` applied to the driver output at
 every rectangular input. -/
 theorem smithReduceFullDriverOfInvariants
