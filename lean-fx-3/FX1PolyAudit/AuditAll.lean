@@ -1067,6 +1067,8 @@ import FX1PolyAudit.Polygraph.Omega.PsContextAudit
 import FX1PolyAudit.Polygraph.Omega.PsContextTypedAudit
 -- OMEGA-6 r1 — the CaTT coherence rule as a checked-ps + parallel-boundary generator seed
 import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
+-- OMEGA-6 r2 — the CaTT coherence FULLNESS gate typed over the ps-telescope + the load-bearing rejection
+import FX1PolyAudit.Polygraph.Omega.CohGateTypedAudit
 -- OMEGA-6 r1 — the coinductive-invertibility = SN-duality seed at the omega-cell carrier
 import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
 -- OMEGA-6 r1 — the ceiling ledger + the OMEGA-7 handoff (markers only hypothesis-free)
