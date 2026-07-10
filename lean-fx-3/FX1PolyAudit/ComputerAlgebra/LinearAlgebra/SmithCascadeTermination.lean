@@ -63,4 +63,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithColSegmentNotAllZeroWitness
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCrossNotClearWitness
 
+/- H2-SMITH r9 — the move swap-entry bridge (joint (a)'s backbone). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultReplaceAtEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultReplaceAtNe
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapRowsEntryAtFirst
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapEntriesWithinRowAtFirst
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapColumnsEntryAtFirst
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMoveToPivotEntryOnPivot
+
 end FX1PolyAudit

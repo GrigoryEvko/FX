@@ -56,23 +56,34 @@ matrix (never a sweep over arbitrary window-diagonal inputs, so immune to the r5
     propext-clean window bridge `natAddSubOfLe` / `natLtAddSubOfLt`): a `none` search means the cross is
     ALREADY clear (the fuel-adequacy base case), and a `false` cross exhibits a nonzero cross residue in
     one of the two segments (the loop step's next-pivot witness).  This is r9's discharge of joint (b).
+  * **The move swap-entry bridge** (`smithMoveToPivotEntryOnPivot`, over the new `listReplaceAt` read
+    atoms `listGetWithDefaultReplaceAt{Eq,Ne}` and the swap-entry formulas `swap{Rows,Columns}EntryAtFirst`
+    / `swapEntriesWithinRowAtFirst`): after `smithMoveToPivotOps` the pivot slot `(pivotIndex, pivotIndex)`
+    holds exactly `matrix.entryAt foundRow foundCol` — the swap-entry formula that was joint (a)'s backbone
+    (needs the found position in range, supplied by the caller).
 
 **The r10 residual (DESIGN-LOCKED, NOT shipped): the fuel-adequacy induction
 `smithCascadeReachesCrossClear`** — a strong induction on `smithCascadeSweep`'s inner fuel that threads
 the PIVOT MAGNITUDE (measure = the found min-abs pivot's `natAbs`; NEVER the abs-sum — the fuel is the
 STATIC budget `smithMinorAbsSum`, read ONCE at cascade entry, so the r8 transient abs-sum growth is
-IRRELEVANT).  With joint (b) now shipped (the segment characterization above), the recursive step bottoms
-on the ONE still-missing joint: (a) the move/sign pivot-slot POSITIVITY bridge — a swap-entry formula for
-`smithMoveToPivotOps` (NOT yet shipped: how `swapRows`/`swapColumns` transport `(pivotIndex, pivotIndex)`
-onto `matrix.entryAt foundRow foundCol`, needing new `listReplaceAt` read helpers plus a found-in-range
-scan companion) carrying `foundEntry.natAbs > 0` and nonnegativity onto the pivot slot after the two swaps
-and the sign pass — plus the ASSEMBLY itself (the `false`-branch bound `cascadeMeasure afterRowClear ≤ f`
-via `smithCrossNotClearWitness` → `smithClear{RowRight,ColumnBelow}StepsCrossEntryStrictlyDecreases` →
-`smithFindMinAbsInMinorBoundsWitness`, with the residue witness placed strictly below `pivotMag ≤ f + 1`).
-Even a COMPLETE `smithCascadeReachesCrossClear` delivers ONLY the cross-clear conjunct of obligation (a);
-the sub-block-stays-diagonal + gcd-divides-folded-operands (iv) + chain conjuncts feeding
-`SmithNormalForm`'s `repairWindowDiagHolds` / `repairChainHolds` remain the r10+ wall — so those two
-surviving repair hypotheses stay UNCLOSED (no flip; `SmithReduceFullDriverStatement` uninhabited).
+IRRELEVANT).  With joints (b) and the move swap-entry bridge now shipped, what remains for the recursive
+step is the pivot-magnitude PACKAGING plus the ASSEMBLY: (i) a `smithFindMinAbsInMinorFoundInRange` scan
+companion (the found position sits in `[pivotIndex, height) × [pivotIndex, width)`, feeding
+`smithMoveToPivotEntryOnPivot`'s in-range hypotheses — a structural mirror of the shipped
+`…FoundNonzero`); (ii) the sign-phase magnitude bridge (`(afterSign pivot).natAbs = (afterMove
+pivot).natAbs`, from the shipped `signNormalizeOpsEntryOnPivotIsSignedInput` since `|-x| = |x|`, then the
+shipped `smithClearColumnBelowStepsPreservesRow` carries it through the column clear, and
+`signNormalizeOpsEntryOnPivotNonneg` gives nonnegativity) so that `pivotMag = (matrix.entryAt foundRow
+foundCol).natAbs = cascadeMeasure matrix ≤ f + 1` and is positive (`smithFindMinAbsInMinorFoundNonzero`);
+and (iii) the induction body itself — the `false`-branch bound `cascadeMeasure afterRowClear ≤ f` via
+`smithCrossNotClearWitness` → `smithClear{RowRight,ColumnBelow}StepsCrossEntryStrictlyDecreases`
+(+ `smithClearRowRightStepsPreservesColumn` for the column segment) → `smithFindMinAbsInMinorBoundsWitness`,
+placing the residue witness strictly below `pivotMag ≤ f + 1`.  Every joint is now a NAMED shipped lemma
+except (i) and the assembly wiring.  Even a COMPLETE `smithCascadeReachesCrossClear` delivers ONLY the
+cross-clear conjunct of obligation (a); the sub-block-stays-diagonal + gcd-divides-folded-operands (iv) +
+chain conjuncts feeding `SmithNormalForm`'s `repairWindowDiagHolds` / `repairChainHolds` remain the r10+
+wall — so those two surviving repair hypotheses stay UNCLOSED (no flip; `SmithReduceFullDriverStatement`
+uninhabited).
 
 ## Zero-axiom
 
@@ -1470,5 +1481,155 @@ theorem smithCrossNotClearWitness (matrix : IntMatrix) (pivotIndex height width 
             = false := crossUnfold
       exact Or.inr (smithColSegmentNotAllZeroWitness matrix pivotIndex (height - (pivotIndex + 1))
         (pivotIndex + 1) colFalse)
+
+/-! ## The move swap-entry bridge (H2-SMITH r9) — joint (a)'s backbone
+
+`smithMoveToPivotOps` swaps the found min-abs entry into the pivot slot by one `swapRows` then one
+`swapColumns`.  The fuel-adequacy recursion needs the resulting pivot slot's value read off: after the
+move it holds exactly `matrix.entryAt foundRow foundCol` (the found min-abs entry).  This section ships
+the two `listReplaceAt` read atoms (the `listModifyAt` sibling was already shipped) and the swap-entry
+formulas built on them, then the move composition.  Each is a FUNCTION-CORRECTNESS fact about one
+definite operation on one matrix — refutation-immune, like the B1–B5 clear atoms. -/
+
+/-- **Reading the replaced position returns the new entry** — the `listReplaceAt` sibling of the shipped
+`listGetWithDefaultModifyAtEq`.  Structural on the entry list and position (in range). -/
+theorem listGetWithDefaultReplaceAtEq {Entry : Type} (defaultEntry : Entry) :
+    ∀ (entries : List Entry) (position : Nat) (newEntry : Entry), position < entries.length →
+      listGetWithDefault defaultEntry (listReplaceAt entries position newEntry) position = newEntry
+  | [], _, _, isInRange => Nat.noConfusion (natEqZeroOfLeZero isInRange)
+  | _ :: _, 0, _, _ => rfl
+  | _ :: remainingEntries, position + 1, newEntry, isInRange =>
+      listGetWithDefaultReplaceAtEq defaultEntry remainingEntries position newEntry
+        (natLeOfSuccLeSucc isInRange)
+
+/-- **Reading a different position is unchanged after a replace** — the `listReplaceAt` sibling of the
+shipped `listGetWithDefaultModifyAtNe`.  Fully enumerated on list/position/read-position. -/
+theorem listGetWithDefaultReplaceAtNe {Entry : Type} (defaultEntry : Entry) :
+    ∀ (entries : List Entry) (position index : Nat) (newEntry : Entry), index ≠ position →
+      listGetWithDefault defaultEntry (listReplaceAt entries position newEntry) index
+        = listGetWithDefault defaultEntry entries index
+  | [], 0, _, _, _ => rfl
+  | [], _ + 1, _, _, _ => rfl
+  | _ :: _, 0, 0, _, indexIsNotPosition => absurd rfl indexIsNotPosition
+  | _ :: _, 0, _ + 1, _, _ => rfl
+  | _ :: _, _ + 1, 0, _, _ => rfl
+  | _ :: remainingEntries, position + 1, index + 1, newEntry, indexIsNotPosition =>
+      listGetWithDefaultReplaceAtNe defaultEntry remainingEntries position index newEntry
+        (fun successorsAgree => indexIsNotPosition (congrArg (· + 1) successorsAgree))
+
+/-- **Swap reads the other row at the first index** — reading row `firstIndex` after `swapRows
+firstIndex secondIndex` returns the whole `secondIndex` row (so its entry at `colIndex` is
+`matrix.entryAt secondIndex colIndex`), both indices in range.  Cases the index equality (the
+identity-on-equal-indices swap is uniform), then reads through the two `listReplaceAt` atoms. -/
+theorem swapRowsEntryAtFirst (matrix : IntMatrix) (firstIndex secondIndex colIndex : Nat)
+    (isFirstInRange : firstIndex < matrix.rows.length)
+    (isSecondInRange : secondIndex < matrix.rows.length) :
+    (matrix.swapRows firstIndex secondIndex).entryAt firstIndex colIndex
+      = matrix.entryAt secondIndex colIndex := by
+  have rowEq :
+      listGetWithDefault [] (matrix.swapRows firstIndex secondIndex).rows firstIndex
+        = listGetWithDefault [] matrix.rows secondIndex := by
+    unfold IntMatrix.swapRows
+    rw [if_pos isFirstInRange, if_pos isSecondInRange]
+    show listGetWithDefault []
+        (listReplaceAt (listReplaceAt matrix.rows firstIndex
+            (listGetWithDefault [] matrix.rows secondIndex)) secondIndex
+          (listGetWithDefault [] matrix.rows firstIndex)) firstIndex
+      = listGetWithDefault [] matrix.rows secondIndex
+    cases Nat.decEq firstIndex secondIndex with
+    | isTrue firstEqSecond =>
+        subst firstEqSecond
+        rw [listGetWithDefaultReplaceAtEq [] _ firstIndex
+            (listGetWithDefault [] matrix.rows firstIndex)
+            (Eq.mp (congrArg (firstIndex < ·)
+              (listReplaceAtPreservesLength matrix.rows firstIndex
+                (listGetWithDefault [] matrix.rows firstIndex)).symm) isFirstInRange)]
+    | isFalse firstNeSecond =>
+        rw [listGetWithDefaultReplaceAtNe [] _ secondIndex firstIndex _ firstNeSecond,
+            listGetWithDefaultReplaceAtEq [] matrix.rows firstIndex _ isFirstInRange]
+  show listGetWithDefault 0
+      (listGetWithDefault [] (matrix.swapRows firstIndex secondIndex).rows firstIndex) colIndex
+    = listGetWithDefault 0 (listGetWithDefault [] matrix.rows secondIndex) colIndex
+  rw [rowEq]
+
+/-- **Within-row swap reads the other entry at the first index** — the entry-level mirror of
+`swapRowsEntryAtFirst`: reading position `firstIndex` after `swapEntriesWithinRow row firstIndex
+secondIndex` returns `listGetWithDefault 0 row secondIndex`, both positions in range. -/
+theorem swapEntriesWithinRowAtFirst (row : IntRow) (firstIndex secondIndex : Nat)
+    (isFirstInRange : firstIndex < row.length) (isSecondInRange : secondIndex < row.length) :
+    listGetWithDefault 0 (swapEntriesWithinRow row firstIndex secondIndex) firstIndex
+      = listGetWithDefault 0 row secondIndex := by
+  unfold IntMatrix.swapEntriesWithinRow
+  rw [if_pos isFirstInRange, if_pos isSecondInRange]
+  show listGetWithDefault 0
+      (listReplaceAt (listReplaceAt row firstIndex (listGetWithDefault 0 row secondIndex)) secondIndex
+        (listGetWithDefault 0 row firstIndex)) firstIndex
+    = listGetWithDefault 0 row secondIndex
+  cases Nat.decEq firstIndex secondIndex with
+  | isTrue firstEqSecond =>
+      subst firstEqSecond
+      rw [listGetWithDefaultReplaceAtEq 0 _ firstIndex (listGetWithDefault 0 row firstIndex)
+          (Eq.mp (congrArg (firstIndex < ·)
+            (listReplaceAtPreservesLength row firstIndex
+              (listGetWithDefault 0 row firstIndex)).symm) isFirstInRange)]
+  | isFalse firstNeSecond =>
+      rw [listGetWithDefaultReplaceAtNe 0 _ secondIndex firstIndex _ firstNeSecond,
+          listGetWithDefaultReplaceAtEq 0 row firstIndex _ isFirstInRange]
+
+/-- **Swap reads the other column at the first index** — the column mirror of `swapRowsEntryAtFirst`:
+reading column `firstIndex` of row `rowIndex` after `swapColumns firstIndex secondIndex` returns
+`matrix.entryAt rowIndex secondIndex`, all indices in range (rectangularity supplies the row width).
+Reads the mapped row by the shipped `listGetWithDefaultMapAllRows`, then rides
+`swapEntriesWithinRowAtFirst`. -/
+theorem swapColumnsEntryAtFirst {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (firstIndex secondIndex rowIndex : Nat)
+    (isRowInRange : rowIndex < height)
+    (isFirstInRange : firstIndex < width) (isSecondInRange : secondIndex < width) :
+    (matrix.swapColumns firstIndex secondIndex).entryAt rowIndex firstIndex
+      = matrix.entryAt rowIndex secondIndex := by
+  obtain ⟨rowCount, rowWidths⟩ := isRect
+  have rowInRows : rowIndex < matrix.rows.length :=
+    Eq.mp (congrArg (rowIndex < ·) rowCount.symm) isRowInRange
+  have rowHasWidth : (listGetWithDefault [] matrix.rows rowIndex).length = width :=
+    listGetWithDefaultHasWidth matrix.rows rowIndex rowWidths rowInRows
+  show listGetWithDefault 0 (listGetWithDefault []
+      (mapAllRows (fun row => swapEntriesWithinRow row firstIndex secondIndex) matrix.rows) rowIndex)
+      firstIndex
+    = listGetWithDefault 0 (listGetWithDefault [] matrix.rows rowIndex) secondIndex
+  rw [listGetWithDefaultMapAllRows _ matrix.rows rowIndex rowInRows]
+  exact swapEntriesWithinRowAtFirst (listGetWithDefault [] matrix.rows rowIndex) firstIndex secondIndex
+    (Eq.mp (congrArg (firstIndex < ·) rowHasWidth.symm) isFirstInRange)
+    (Eq.mp (congrArg (secondIndex < ·) rowHasWidth.symm) isSecondInRange)
+
+/-- **The move lands the found entry on the pivot slot** — after `smithMoveToPivotOps pivotIndex
+foundRow foundCol` (swap the found row into the pivot row, then the found column into the pivot column)
+the pivot slot `(pivotIndex, pivotIndex)` holds exactly `matrix.entryAt foundRow foundCol`.  The
+column swap reads column `pivotIndex` back to column `foundCol` (`swapColumnsEntryAtFirst`), the row
+swap reads row `pivotIndex` back to row `foundRow` (`swapRowsEntryAtFirst`).  This is joint (a)'s
+backbone: with the found position nonzero and sign-normalised nonnegative, the pivot magnitude the
+strict per-clear descent needs equals `(matrix.entryAt foundRow foundCol).natAbs`. -/
+theorem smithMoveToPivotEntryOnPivot {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex foundRow foundCol : Nat)
+    (isPivotRowInRange : pivotIndex < height) (isFoundRowInRange : foundRow < height)
+    (isPivotColInRange : pivotIndex < width) (isFoundColInRange : foundCol < width) :
+    (matrix.applyOperations (smithMoveToPivotOps pivotIndex foundRow foundCol)).entryAt
+        pivotIndex pivotIndex
+      = matrix.entryAt foundRow foundCol := by
+  have rowCount : matrix.rows.length = height := isRect.1
+  have pivotInRows : pivotIndex < matrix.rows.length :=
+    Eq.mp (congrArg (pivotIndex < ·) rowCount.symm) isPivotRowInRange
+  have foundInRows : foundRow < matrix.rows.length :=
+    Eq.mp (congrArg (foundRow < ·) rowCount.symm) isFoundRowInRange
+  have swapRowRect : (matrix.swapRows pivotIndex foundRow).IsRectangular height width :=
+    applyRowOperationPreservesRectangular (ElementaryRowOperation.swapRows pivotIndex foundRow) matrix
+      isRect
+  show ((matrix.swapRows pivotIndex foundRow).swapColumns pivotIndex foundCol).entryAt
+      pivotIndex pivotIndex
+    = matrix.entryAt foundRow foundCol
+  rw [swapColumnsEntryAtFirst (matrix.swapRows pivotIndex foundRow) swapRowRect pivotIndex foundCol
+      pivotIndex isPivotRowInRange isPivotColInRange isFoundColInRange]
+  exact swapRowsEntryAtFirst matrix pivotIndex foundRow foundCol pivotInRows foundInRows
 
 end FX1Poly.ComputerAlgebra
