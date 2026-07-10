@@ -29,9 +29,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.permInverse_threeCycle_eval
 #assert_no_axioms FX1Poly.Polygraph.isPermutationOfRange_permInverse_threeCycle
 
+-- the T-CLOSE truth-probes (read-off orders ARE range-permutations on concrete diagrams)
+#assert_no_axioms FX1Poly.Polygraph.freshMixedProbeDiagram
+#assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_isPermutationOfRange_adversarialB
+#assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_isPermutationOfRange_adversarialB
+#assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_isPermutationOfRange_freshMixed
+#assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_isPermutationOfRange_freshMixed
+
 -- the honesty markers + ledger
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasPermInverseRangePreservation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffOrderPermutation
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffOrderPermutationProbe
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_r15Ledger
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR15Complete
 
