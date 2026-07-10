@@ -142,4 +142,23 @@ equations) are inhabited via `globularLegs_of_isGlobularCell` — the B3 theorem
 theorem threeCellGen_globularLegs : GlobularLegs threeCellGen :=
   globularLegs_of_isGlobularCell threeCellGen threeCellGen_isGlobular
 
+/-! ## Non-vacuity 6 — the derived `*_k` operations are concrete carrier terms (B4) -/
+
+/-- The derived Godement composite `*_1` of two 3-cells — a real dim-3 carrier term (no new constructor). -/
+def derivedGodementDimThree : CellExpr demoComputad 3 := godementComp threeCellGen threeCellGen
+
+#eval cellSize derivedGodementDimThree
+
+/-- The derived Godement `*_1` composite has size 5 (two whiskers + a vcomp over two size-1 generators). -/
+theorem derivedGodementDimThree_size : cellSize derivedGodementDimThree = 5 := rfl
+
+/-- The derived deep whisker `*_0` — a 3-cell whiskered by a 1-cell via id-promotion (the recon's
+`whiskerLeft (id w) α`) — a real dim-3 carrier term. -/
+def derivedWhiskerDimThree : CellExpr demoComputad 3 := whiskerByLowerId oneCellGen threeCellGen
+
+#eval cellSize derivedWhiskerDimThree
+
+/-- The derived deep whisker has size 2 (one whisker over a size-1 generator). -/
+theorem derivedWhiskerDimThree_size : cellSize derivedWhiskerDimThree = 2 := rfl
+
 end FX1Poly.Polygraph.Omega

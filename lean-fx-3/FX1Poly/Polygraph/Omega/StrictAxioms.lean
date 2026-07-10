@@ -107,4 +107,50 @@ is the free strict omega-category congruence. -/
 def emptyPresentation (computad : OmegaComputad) : CellRelOver computad :=
   fun _ _ => False
 
+/-! ## Adequacy — the derived `*_k` operations (OMEGA-1 r2, B4)
+
+The recon adequacy verdict: the fixed-FIVE carrier / fixed-FOUR congruence is ADEQUATE — every codimension-`k`
+composite `*_k` is DEFINABLE from `vcomp` / `whisker` / `id`, so no `*_k` PRIMITIVE per level (the memo's `2n`
+growing constructor set) is needed.  This is strictly MORE faithful to the prime directive ("the dimension index
+is a PARAMETER, never a reason for a parallel structure"): the constructor COUNT is CONSTANT across dimensions.
+
+The two derived operations below span the levels: `godementComp` is the codimension-1 composite (`*_{dim}` of
+`(dim+2)`-cells — exactly the dim-2 `RawTwoCellExpr.hcomp`, whose two whisker-orders the `StrictAxiomRel.interchange`
+row already identifies); `whiskerByLowerId` is the codimension-2 whisker (a `(dim+2)`-cell whiskered by a lower
+`dim`-cell, via id-promotion).  Nesting these bottoms out the dim-3 `*_0` at the dim-0 interchange row — a
+concrete carrier term (witnessed in `Omega/NonVacuity.lean`).  Congruence adequacy is FREE in the whiskered-CELL
+positions: the derived ops are composites of the one-hole congruences (`whiskerByLowerId_congruence`).  (Full
+congruence VARYING a factor's boundary hits the same whiskering-1-cell gap as the B2 bridge conv-leg — the honest
+residual, not a new one.) -/
+
+/-- Derived operation: the **Godement / horizontal composite** `*_{dim}` of two `(dim+2)`-cells — DEFINED (no new
+constructor) as whisker-then-vcomp, exactly the dim-2 `RawTwoCellExpr.hcomp` lifted.  The codimension-1 composite
+of the biased carrier; its two whisker-orders are identified by `StrictAxiomRel.interchange`. -/
+def godementComp {computad : OmegaComputad} {dim : Nat}
+    (cellAlpha cellBeta : CellExpr computad (dim + 2)) : CellExpr computad (dim + 2) :=
+  CellExpr.vcomp (CellExpr.whiskerRight cellAlpha (boundarySource cellBeta))
+    (CellExpr.whiskerLeft (boundaryTarget cellAlpha) cellBeta)
+
+/-- Derived operation: **whisker a `(dim+2)`-cell by a lower `dim`-cell** along the deep boundary, via
+id-promotion (`CellExpr.id lower` is the identity `(dim+1)`-cell).  The codimension-2 whisker the fixed-five
+carrier DERIVES instead of adding a primitive — the recon's `whiskerLeft (id w) α` representative of `α *_0 w`. -/
+def whiskerByLowerId {computad : OmegaComputad} {dim : Nat}
+    (lower : CellExpr computad dim) (cell : CellExpr computad (dim + 2)) : CellExpr computad (dim + 2) :=
+  CellExpr.whiskerLeft (CellExpr.id lower) cell
+
+/-- The derived Godement composite's size reads off the composite structure (two whiskers + a vcomp) — it is a
+genuine carrier term, not a primitive. -/
+theorem godementComp_size {computad : OmegaComputad} {dim : Nat}
+    (cellAlpha cellBeta : CellExpr computad (dim + 2)) :
+    cellSize (godementComp cellAlpha cellBeta) = (cellSize cellAlpha + 1) + (cellSize cellBeta + 1) + 1 := rfl
+
+/-- ★ **Congruence adequacy is FREE (in the whiskered-cell position).**  The derived whisker
+`whiskerByLowerId` inherits congruence directly from the one-hole `whiskerLeftCongr` — no `2n`-primitive
+congruence constructor is needed for the derived operations. -/
+theorem whiskerByLowerId_congruence {computad : OmegaComputad} {baseRel : CellRelOver computad} {dim : Nat}
+    (lower : CellExpr computad dim) {cell cell' : CellExpr computad (dim + 2)}
+    (conv : SaturatedConvOver computad baseRel cell cell') :
+    SaturatedConvOver computad baseRel (whiskerByLowerId lower cell) (whiskerByLowerId lower cell') :=
+  SaturatedConvOver.whiskerLeftCongr (CellExpr.id lower) conv
+
 end FX1Poly.Polygraph.Omega

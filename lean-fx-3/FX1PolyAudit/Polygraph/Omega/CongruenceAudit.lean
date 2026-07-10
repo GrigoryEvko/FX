@@ -24,4 +24,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.freeStrictCongruence
 #assert_no_axioms FX1Poly.Polygraph.Omega.emptyPresentation
 
+-- StrictAxioms.lean — the derived `*_k` operations (OMEGA-1 r2, B4)
+#assert_no_axioms FX1Poly.Polygraph.Omega.godementComp
+#assert_no_axioms FX1Poly.Polygraph.Omega.whiskerByLowerId
+#assert_no_axioms FX1Poly.Polygraph.Omega.godementComp_size
+#assert_no_axioms FX1Poly.Polygraph.Omega.whiskerByLowerId_congruence
+
 end FX1PolyAudit

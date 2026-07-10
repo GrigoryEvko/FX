@@ -56,5 +56,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.twoCellGen_isGlobular
 #assert_no_axioms FX1Poly.Polygraph.Omega.threeCellGen_isGlobular
 #assert_no_axioms FX1Poly.Polygraph.Omega.threeCellGen_globularLegs
+#assert_no_axioms FX1Poly.Polygraph.Omega.derivedGodementDimThree
+#assert_no_axioms FX1Poly.Polygraph.Omega.derivedGodementDimThree_size
+#assert_no_axioms FX1Poly.Polygraph.Omega.derivedWhiskerDimThree
+#assert_no_axioms FX1Poly.Polygraph.Omega.derivedWhiskerDimThree_size
 
 end FX1PolyAudit
