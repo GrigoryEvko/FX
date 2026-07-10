@@ -1016,6 +1016,8 @@ import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedAppAnchorAudit
 -- OMEGA-5 r1 — the enriched-functor seed at the grade-vector level (usage factor)
 import FX1PolyAudit.Polygraph.Omega.Graded.EnrichedCheckSeedAudit
+-- OMEGA-5 r1 — the §6.8 soundness-collision catalog as data (non-free loci)
+import FX1PolyAudit.Polygraph.Omega.Graded.CollisionCatalogAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
