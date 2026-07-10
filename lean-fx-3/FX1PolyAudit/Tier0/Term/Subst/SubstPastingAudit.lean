@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.SubstPasting
+import FX1Poly.Tier0.Term.Subst.SubstPasting
 
-/-! # FX1PolyAudit.Polygraph.Omega.SubstPastingAudit — zero-axiom gate for the OMEGA-7 r1 identification
+/-! # FX1PolyAudit.Tier0.Term.Subst.SubstPastingAudit — zero-axiom gate for the OMEGA-7 r1 identification
 (OMEGA-7 r1, B1).
 
 Per-declaration `#assert_no_axioms` on the substitution-monoid anchor (`substCompose_assoc` = kernel

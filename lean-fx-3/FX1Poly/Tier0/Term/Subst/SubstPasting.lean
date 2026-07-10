@@ -1,7 +1,12 @@
 import FX1Poly.Tier0.Term.Subst.RawTermSubstAction
 import FX1Poly.Polygraph.Omega.Steiner.DecideFreeConv
 
-/-! # Polygraph/Omega/SubstPasting — substitution composition IS pasting arithmetic (OMEGA-7 r1, B1)
+/-! # Tier0/Term/Subst/SubstPasting — substitution composition IS pasting arithmetic (OMEGA-7 r1, B1)
+
+The file lives on the Tier0 side of the layer DAG (Init -> ComputerAlgebra -> Polygraph -> Tier0 -> Core)
+because the identification NEEDS both the kernel substitution engine (Tier0) and the Steiner pasting
+arithmetic (Polygraph), and Polygraph files may not import Tier0.  The declarations keep the
+`FX1Poly.Polygraph.Omega` namespace so shipped names stay stable (NAME-RECONCILE later).
 
 ★ **THE IDENTIFICATION, the OMEGA-5 App-anchor play one layer down.**  OMEGA-5 identified the kernel App
 rule's grade slot with the sequential graded composite `gradeCompose` by defeq (`GradedAppAnchor.lean`).
