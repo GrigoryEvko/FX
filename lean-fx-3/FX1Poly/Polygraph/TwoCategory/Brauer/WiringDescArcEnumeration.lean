@@ -52,10 +52,10 @@ exactly `d`'s arcs, gated to a well-formed involution partner), **E2** conjugato
 The recon adjudicated the r6 "near-definitional" claim as HALF-RIGHT-AND-MISLEADING: the word is BUILT from the
 read-offs, but T-ENUM has three separable pieces and crossing conjugation genuinely breaks the naive alignment.  So:
 
-  * **E2 — conjugator-correctness** (`fxBrauer_hasArcConjugatorLeg = false`): the goal
-    `permuteOfCrossingWord n (permutationToCrossingWord n order) = order` for the read-off orders is a
-    `permutationRealizerFold` bubble-carry (selection-sort) induction, currently only `decide`-validated on four
-    concrete widths (`permutationRealizer_transposition` / `_threeCycle` / `_reversal` / `_width4`).  Its own r14 round.
+  * **E2 — conjugator-correctness** (`fxBrauer_hasArcConjugatorLeg = true`, BUILT in r14): the goal
+    `permuteOfCrossingWord n (permutationToCrossingWord n order) = order` is now the general validity-gated
+    `permutationRealizerFold` bubble-carry (selection-sort) induction `permuteOfCrossingWord_permutationToCrossingWord`
+    (`Brauer/WiringDescArcConjugator.lean`), zero-axiom, superseding the four `decide` width probes.
 
   * **E3 — fold-alignment** (folded into `fxBrauer_hasArcEnumerationConjugated = false`): the six-phase fold WITH
     the `bottomPerm` / `topPerm` conjugating staircases connects exactly each enumerated arc `(i, d.partner[i])` —
@@ -429,15 +429,19 @@ gives the partition skeleton.  Fires on the adversarial-B diagram (`capArcFeetIn
 `= true`. -/
 def fxBrauer_hasArcEnumeration : Bool := true
 
-/-- **Honesty WALL marker — the conjugator-correctness leg (E2) is NOT built (the r13 residual).**  The goal
-`permuteOfCrossingWord n (permutationToCrossingWord n order) = order` for the read-off orders — that the
-`permutationToCrossingWord` staircases genuinely realize the enumeration orders — is a `permutationRealizerFold`
-bubble-carry (selection-sort) induction, currently only `decide`-validated on four concrete widths
-(`permutationRealizer_transposition` / `_threeCycle` / `_reversal` / `_width4`).  Only the structural base cases are
-shipped this round (`descendingSwapPositions_self` / `_ofLe`, `permutationToCrossingWord_zero` / `_one`).  Its own
-r14 round; NOT near-definitional (the recon adjudicated the r6 "near-definitional" claim as misleading — crossing
-conjugation genuinely breaks the naive alignment).  `= false`. -/
-def fxBrauer_hasArcConjugatorLeg : Bool := false
+/-- ★★ **Honesty marker — the conjugator-correctness leg (E2) is BUILT (r14).**  The goal
+`permuteOfCrossingWord n (permutationToCrossingWord n order) = order` — that the `permutationToCrossingWord`
+staircases genuinely realize the read-off orders — is now proven zero-axiom and structural for EVERY validity-gated
+one-line `order` (`IsPermutationOfRange`: distinct, length-`n`, `[0, n)`-bounded), as
+`permuteOfCrossingWord_permutationToCrossingWord` (`Brauer/WiringDescArcConjugator.lean`), superseding the four
+`decide`-on-concrete-width probes (`permutationRealizer_transposition` / `_threeCycle` / `_reversal` / `_width4`) and
+the r13 base cases (`descendingSwapPositions_self` / `_ofLe`, `permutationToCrossingWord_zero` / `_one`) it scaffolded.
+The `permutationRealizerFold` bubble-carry (selection-sort) induction: a loop invariant on the running permutation
+(length, distinct, `range n` membership, prefix placed), placement via the shipped `run_bubblesFromIndex`, and a
+pigeonhole-free last-slot closure keyed on `order`'s distinctness.  HONEST RESIDUAL: that the SPECIFIC extractor
+read-off orders satisfy the validity gate (the partition-to-permutation step) is T-CLOSE, so
+`fxBrauer_hasArcEnumerationConjugated` and the masters stay `false`; #2013 does not close.  `= true`. -/
+def fxBrauer_hasArcConjugatorLeg : Bool := true
 
 /-- **Honesty WALL marker — the CONJUGATED enumeration (full T-ENUM = E1 ∧ E2 ∧ E3) is NOT assembled.**  E1 (this
 round) supplies the arc LIST; but wiring it into `partnerIndexOf_readsPartner_reachable` to pin
@@ -448,22 +452,24 @@ masters `fxBrauer_hasTagCorrDisjoint` / `fxBrauer_hasTagCorrExtraction`, the rou
 flags stay honestly `false`; #2013 does NOT close.  `= false`. -/
 def fxBrauer_hasArcEnumerationConjugated : Bool := false
 
-/-- ★★★ **The BRAUER-MIDDLE r13 GRAND LEDGER — MACHINE-CHECKED.**  The r13 T-ENUM E1 marker
+/-- ★★★ **The BRAUER-MIDDLE GRAND LEDGER — MACHINE-CHECKED (r13 base, extended at r14).**  The r13 T-ENUM E1 marker
 (`fxBrauer_hasArcEnumeration`) is `true`, on top of the shipped r11→r12 markers (the fold lift, the extraction
-read-off, the partner-totality seed + fold, the wired firing); and EVERY remaining wall — the E2 conjugator leg, the
-full conjugated-enumeration node, both tag-correspondence masters (`fxBrauer_hasTagCorrDisjoint`,
-`fxBrauer_hasTagCorrExtraction`), the extractor-totality roundtrip nodes, and the master completeness flags — is
-`false`.  A `rfl`-conjunction the kernel checks over the shipped markers: r13 shipped the arc-enumeration soundness
-half of T-ENUM, but the conjugator-correctness (E2) and fold-alignment (E3) are unbuilt, so the two-source master
-assembly is not wired, no master flip is fabricated, and #2013 does NOT close. -/
+read-off, the partner-totality seed + fold, the wired firing); and at r14 the E2 conjugator leg
+(`fxBrauer_hasArcConjugatorLeg`) ALSO flips `true` (the general validity-gated roundtrip
+`permuteOfCrossingWord_permutationToCrossingWord`, `Brauer/WiringDescArcConjugator.lean`; see `fxBrauer_r14Ledger`).
+EVERY remaining wall — the full conjugated-enumeration node (E3 / T-CONNECT), both tag-correspondence masters
+(`fxBrauer_hasTagCorrDisjoint`, `fxBrauer_hasTagCorrExtraction`), the extractor-totality roundtrip nodes, and the
+master completeness flags — stays `false`.  A `rfl`-conjunction the kernel checks over the shipped markers: E1 + E2
+are built, but fold-alignment (E3) and the read-off-order validity wiring (T-CLOSE) are unbuilt, so the two-source
+master assembly is not wired, no master flip is fabricated, and #2013 does NOT close. -/
 theorem fxBrauer_r13Ledger :
     (fxBrauer_hasBoundedBoundaryFoldLift = true
       ∧ fxBrauer_hasPartnerReadOff = true
       ∧ fxBrauer_hasBoundaryPartneredFold = true
       ∧ fxBrauer_hasReadOffWiredFiring = true
-      ∧ fxBrauer_hasArcEnumeration = true)
-    ∧ (fxBrauer_hasArcConjugatorLeg = false
-      ∧ fxBrauer_hasArcEnumerationConjugated = false)
+      ∧ fxBrauer_hasArcEnumeration = true
+      ∧ fxBrauer_hasArcConjugatorLeg = true)
+    ∧ (fxBrauer_hasArcEnumerationConjugated = false)
     ∧ (fxBrauer_hasTagCorrDisjoint = false
       ∧ fxBrauer_hasTagCorrExtraction = false)
     ∧ (fxBrauer_hasExt5CorrectedRoundtripProof = false
@@ -471,7 +477,7 @@ theorem fxBrauer_r13Ledger :
     ∧ (fxBrauer_hasBrauerV2FullCompleteness = false
       ∧ fxBrauer_hasBrauerCompleteness = false
       ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) :=
-  ⟨⟨rfl, rfl, rfl, rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
+  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
 
 /-- ★★ **Honesty marker — BRAUER-MIDDLE r13 did NOT close #2013.**  The round shipped the ENUMERATION half (E1) of
 T-ENUM — the four `filterMap` soundness lemmas, the `cupArcTops` `− bottomCount` exactness, the involution-gated cap
@@ -481,5 +487,41 @@ not built, so the read-off is not wired to a specific `d`, both tag-corresponden
 flags stay `false`, and #2013 does not close — every residual a ROUTE / totality gap, never a truth gap
 (Lehrer–Zhang arXiv:1207.5889 Thm 2.6 guarantees the underlying completeness).  `= false`. -/
 def fxBrauer_hasBrauerMiddleR13Complete : Bool := false
+
+/-- ★★★ **The BRAUER-MIDDLE r14 LEDGER — MACHINE-CHECKED (T-ENUM E2 landed).**  Extends the r13 grand ledger with the
+E2 conjugator-correctness flip: `fxBrauer_hasArcConjugatorLeg = true`, justified by the general validity-gated
+roundtrip `permuteOfCrossingWord_permutationToCrossingWord` (`Brauer/WiringDescArcConjugator.lean`), zero-axiom.  E1
+(`fxBrauer_hasArcEnumeration`) and the r11→r12 markers remain `true`; and EVERY remaining wall stays `false` — the
+CONJUGATED enumeration node (E1 ∧ E2 ∧ E3, blocked on E3 fold-alignment + the read-off-order validity wiring T-CLOSE),
+both tag-correspondence masters, the extractor-totality roundtrip nodes, and the completeness flags.  A `rfl`-conjunction
+over the shipped markers.  The remaining chain to the masters: **E3** (route the actual boundary feet through the
+`bottomPerm` / `topPerm` conjugators, the standing union-find `stepWiring` long-pole) **→ T-CLOSE** (the extractor
+read-off orders satisfy `IsPermutationOfRange`, closing E2 end-to-end on the specific `d`) **→ the master flips**.  So
+#2013 does NOT close this round. -/
+theorem fxBrauer_r14Ledger :
+    (fxBrauer_hasBoundedBoundaryFoldLift = true
+      ∧ fxBrauer_hasPartnerReadOff = true
+      ∧ fxBrauer_hasBoundaryPartneredFold = true
+      ∧ fxBrauer_hasReadOffWiredFiring = true
+      ∧ fxBrauer_hasArcEnumeration = true
+      ∧ fxBrauer_hasArcConjugatorLeg = true)
+    ∧ (fxBrauer_hasArcEnumerationConjugated = false)
+    ∧ (fxBrauer_hasTagCorrDisjoint = false
+      ∧ fxBrauer_hasTagCorrExtraction = false)
+    ∧ (fxBrauer_hasExt5CorrectedRoundtripProof = false
+      ∧ fxBrauer_hasExt5TotalExtractorRoundtrip = false)
+    ∧ (fxBrauer_hasBrauerV2FullCompleteness = false
+      ∧ fxBrauer_hasBrauerCompleteness = false
+      ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) :=
+  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
+
+/-- ★★ **Honesty marker — BRAUER-MIDDLE r14 did NOT close #2013.**  The round landed T-ENUM's conjugator-correctness
+leg (E2): the general validity-gated selection-sort roundtrip `permuteOfCrossingWord_permutationToCrossingWord`
+(`Brauer/WiringDescArcConjugator.lean`), zero-axiom and structural, superseding the four `decide` width probes.  But
+fold-alignment (E3 / T-CONNECT) and the read-off-order validity wiring (T-CLOSE) remain named, not built, so the
+read-off is still not wired to a specific `d`, both tag-correspondence masters and the completeness flags stay
+`false`, and #2013 does not close — every residual a ROUTE / totality gap, never a truth gap (Lehrer–Zhang
+arXiv:1207.5889 Thm 2.6 guarantees the underlying completeness).  `= false`. -/
+def fxBrauer_hasBrauerMiddleR14Complete : Bool := false
 
 end FX1Poly.Polygraph

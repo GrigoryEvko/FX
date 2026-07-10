@@ -48,5 +48,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasArcEnumerationConjugated
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_r13Ledger
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR13Complete
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_r14Ledger
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR14Complete
 
 end FX1PolyAudit
