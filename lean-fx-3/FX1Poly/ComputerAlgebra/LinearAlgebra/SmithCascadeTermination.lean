@@ -35,9 +35,44 @@ diagonals, see `SmithNormalForm`'s refuted `SmithCascadeReDiagonalizesStatement`
     the cascade's next-pivot bound `found ≤ residue < pivot`.  Structural over the scans, with the
     update-step guards navigated propext-cleanly (`natBeqZeroFalseOfNe`, `Nat.decLt`).
 
-The cascade-recursion ASSEMBLY that consumes this — the fuel-adequacy induction threading min-abs
-through `smithCascadeSweep` — is the r9 wall (the shared r3/r6 elimination-correctness node
-`SmithReduceFullDriverStatement`, uninhabited).
+**H2-SMITH r9 ships the clear-word LIFT + the search COMPANIONS** — the infrastructure the
+fuel-adequacy induction threads, every one a FUNCTION-CORRECTNESS fact about a definite word on ONE
+matrix (never a sweep over arbitrary window-diagonal inputs, so immune to the r5/r6 refutation shape):
+
+  * **The ops-list lift** (`smithClearRowRightStepsLandsAt` / `smithClearColumnBelowStepsLandsAt`, over
+    the `PreservesColumn`/`PreservesRow` word locality and the new `addColumnMultipleEntryOffTargetCol`
+    atom): reading a cross entry after the WHOLE clear word equals the SINGLE-op landing, DECOUPLING the
+    FIXED coefficient source from the THREADED work matrix (the r8 counterexample's transient growth
+    elsewhere leaves the pivot-row/column landings intact — machine-checked in the truth probes).
+  * **The whole-word strict descent**
+    (`smithClear{RowRight,ColumnBelow}StepsCrossEntryStrictlyDecreases`, over the ROW-op single-clear
+    mirror `smithSingleColumnBelowClearResidueLands`): each cross residue lands STRICTLY below a
+    positive nonnegative pivot's magnitude — the per-clear descent the fuel recursion rides.
+  * **The search companions** — `smithMinorEntryLeAbsSum` (the fixed fuel seed `measure ≤ smithMinorAbsSum`),
+    `smithFindMinAbsInMinorFoundNonzero` (the moved pivot is positive), `smithFindMinAbsInMinorNoneAllZero`
+    (a `none` search means the minor is all zero — the cross-clear base case).
+  * **The cross-clear segment characterization** (`smithCrossIsClearOfFindNone` +
+    `smithCrossNotClearWitness`, over the segment pointwise/`false`-witness Bool-fold lemmas and the
+    propext-clean window bridge `natAddSubOfLe` / `natLtAddSubOfLt`): a `none` search means the cross is
+    ALREADY clear (the fuel-adequacy base case), and a `false` cross exhibits a nonzero cross residue in
+    one of the two segments (the loop step's next-pivot witness).  This is r9's discharge of joint (b).
+
+**The r10 residual (DESIGN-LOCKED, NOT shipped): the fuel-adequacy induction
+`smithCascadeReachesCrossClear`** — a strong induction on `smithCascadeSweep`'s inner fuel that threads
+the PIVOT MAGNITUDE (measure = the found min-abs pivot's `natAbs`; NEVER the abs-sum — the fuel is the
+STATIC budget `smithMinorAbsSum`, read ONCE at cascade entry, so the r8 transient abs-sum growth is
+IRRELEVANT).  With joint (b) now shipped (the segment characterization above), the recursive step bottoms
+on the ONE still-missing joint: (a) the move/sign pivot-slot POSITIVITY bridge — a swap-entry formula for
+`smithMoveToPivotOps` (NOT yet shipped: how `swapRows`/`swapColumns` transport `(pivotIndex, pivotIndex)`
+onto `matrix.entryAt foundRow foundCol`, needing new `listReplaceAt` read helpers plus a found-in-range
+scan companion) carrying `foundEntry.natAbs > 0` and nonnegativity onto the pivot slot after the two swaps
+and the sign pass — plus the ASSEMBLY itself (the `false`-branch bound `cascadeMeasure afterRowClear ≤ f`
+via `smithCrossNotClearWitness` → `smithClear{RowRight,ColumnBelow}StepsCrossEntryStrictlyDecreases` →
+`smithFindMinAbsInMinorBoundsWitness`, with the residue witness placed strictly below `pivotMag ≤ f + 1`).
+Even a COMPLETE `smithCascadeReachesCrossClear` delivers ONLY the cross-clear conjunct of obligation (a);
+the sub-block-stays-diagonal + gcd-divides-folded-operands (iv) + chain conjuncts feeding
+`SmithNormalForm`'s `repairWindowDiagHolds` / `repairChainHolds` remain the r10+ wall — so those two
+surviving repair hypotheses stay UNCLOSED (no flip; `SmithReduceFullDriverStatement` uninhabited).
 
 ## Zero-axiom
 
@@ -1231,5 +1266,209 @@ theorem smithFindMinAbsInMinorNoneAllZero (matrix : IntMatrix)
           witRowGe witRowLt witColGe witColLt
           (fun isZero => absurd (isZero ▸ isPositive) (Nat.lt_irrefl 0)) with
       | ⟨_, _, findSome, _⟩ => nomatch (findNone.symm.trans findSome)
+
+/-! ## The cross-clear segment characterization (H2-SMITH r9) — the fuel-adequacy base/loop bridge
+
+The fuel-adequacy recursion's base case (`fuel = 0`, and the `none` search) needs `smithCrossIsClear
+= true` from "the pivot minor is all zero" (the shipped `smithFindMinAbsInMinorNoneAllZero`); its loop
+step needs the converse — a `false` cross exhibits a nonzero cross residue to feed as the next-pivot
+witness.  Both are structural Bool-fold facts over `smithRowSegmentAllZero` / `smithColSegmentAllZero`,
+refutation-immune (a statement about ONE matrix's cross, never a sweep over arbitrary window-diagonal
+inputs).  The window-range bridge is the propext-clean hand-proved `natAddSubOfLe` (Init's
+`Nat.add_sub_cancel'` is propext-dirty), so the whole family stays zero-axiom. -/
+
+/-- **`k + (n - k) = n` for `k ≤ n`** — the hand-proved, propext-clean replacement for Init's
+`Nat.add_sub_cancel'` (which drags `propext`).  Structural on `k`: the `succ`/`succ` arm reduces the
+subtraction with `Nat.succ_sub_succ` (`succ - succ` is NOT definitionally `sub`), then rides
+`Nat.succ_add` and the recursion. -/
+theorem natAddSubOfLe : ∀ (offset upper : Nat), offset ≤ upper → offset + (upper - offset) = upper
+  | 0, upper, _ => Nat.zero_add upper
+  | offset + 1, 0, isLe => absurd isLe (Nat.not_succ_le_zero offset)
+  | offset + 1, upperPredecessor + 1, isLe =>
+      (congrArg (fun difference => (offset + 1) + difference)
+          (Nat.succ_sub_succ upperPredecessor offset)).trans
+        ((Nat.succ_add offset (upperPredecessor - offset)).trans
+          (congrArg Nat.succ
+            (natAddSubOfLe offset upperPredecessor (Nat.le_of_succ_le_succ isLe))))
+
+/-- **A position below `upper` sits inside the `[offset, offset + (upper - offset))` window** — the
+window-membership bridge: from `offset ≤ target` and `target < upper`, `target < offset + (upper -
+offset)`, propext-clean through `natAddSubOfLe`.  Feeds the shipped scan lemmas whose ranges are the
+literal `pivotIndex + (dim - pivotIndex)` window bounds. -/
+theorem natLtAddSubOfLt (offset target upper : Nat)
+    (isGe : offset ≤ target) (isLt : target < upper) :
+    target < offset + (upper - offset) :=
+  Eq.mp (congrArg (target < ·)
+      (natAddSubOfLe offset upper (Nat.le_trans isGe (Nat.le_of_lt isLt))).symm) isLt
+
+/-- **Row segment all-zero from pointwise zero** — if every entry of the scanned row window has
+magnitude zero, the segment-all-zero flag is `true`.  Structural on the column count; the head entry
+rewrites the `== 0` guard to `true` (`congrArg`), the tail rides the recursion. -/
+theorem smithRowSegmentAllZeroOfPointwiseZero (matrix : IntMatrix) (rowIndex : Nat) :
+    ∀ (colCount colStart : Nat),
+      (∀ col, colStart ≤ col → col < colStart + colCount →
+        (matrix.entryAt rowIndex col).natAbs = 0) →
+      smithRowSegmentAllZero matrix rowIndex colCount colStart = true
+  | 0, _, _ => rfl
+  | colCount + 1, colStart, allZero =>
+      have headZero : (matrix.entryAt rowIndex colStart).natAbs = 0 :=
+        allZero colStart (Nat.le_refl colStart)
+          (Nat.lt_of_lt_of_le (Nat.lt_succ_self colStart)
+            (Nat.add_le_add_left (Nat.succ_le_succ (Nat.zero_le colCount)) colStart))
+      have restTrue : smithRowSegmentAllZero matrix rowIndex colCount (colStart + 1) = true :=
+        smithRowSegmentAllZeroOfPointwiseZero matrix rowIndex colCount (colStart + 1)
+          (fun col colGe colLt =>
+            allZero col (Nat.le_of_succ_le colGe)
+              (Eq.mp (congrArg (col < ·) (Nat.succ_add colStart colCount)) colLt))
+      (congrArg
+          (fun headEntry =>
+            (headEntry == 0) && smithRowSegmentAllZero matrix rowIndex colCount (colStart + 1))
+          headZero).trans restTrue
+
+/-- **Column segment all-zero from pointwise zero** — the row mirror of the above, over
+`smithColSegmentAllZero`. -/
+theorem smithColSegmentAllZeroOfPointwiseZero (matrix : IntMatrix) (colIndex : Nat) :
+    ∀ (rowCount rowStart : Nat),
+      (∀ row, rowStart ≤ row → row < rowStart + rowCount →
+        (matrix.entryAt row colIndex).natAbs = 0) →
+      smithColSegmentAllZero matrix colIndex rowCount rowStart = true
+  | 0, _, _ => rfl
+  | rowCount + 1, rowStart, allZero =>
+      have headZero : (matrix.entryAt rowStart colIndex).natAbs = 0 :=
+        allZero rowStart (Nat.le_refl rowStart)
+          (Nat.lt_of_lt_of_le (Nat.lt_succ_self rowStart)
+            (Nat.add_le_add_left (Nat.succ_le_succ (Nat.zero_le rowCount)) rowStart))
+      have restTrue : smithColSegmentAllZero matrix colIndex rowCount (rowStart + 1) = true :=
+        smithColSegmentAllZeroOfPointwiseZero matrix colIndex rowCount (rowStart + 1)
+          (fun row rowGe rowLt =>
+            allZero row (Nat.le_of_succ_le rowGe)
+              (Eq.mp (congrArg (row < ·) (Nat.succ_add rowStart rowCount)) rowLt))
+      (congrArg
+          (fun headEntry =>
+            (headEntry == 0) && smithColSegmentAllZero matrix colIndex rowCount (rowStart + 1))
+          headZero).trans restTrue
+
+/-- **A `none` search means the cross is clear** — the base case of the fuel-adequacy recursion:
+when `smithFindMinAbsInMinor` returns `none` the whole pivot minor is zero
+(`smithFindMinAbsInMinorNoneAllZero`), so in particular each cross segment is pointwise zero and
+`smithCrossIsClear = true`.  The window bridge `natLtAddSubOfLt` lands each segment position inside
+the minor's scan window. -/
+theorem smithCrossIsClearOfFindNone (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (findNone : smithFindMinAbsInMinor matrix pivotIndex height width = none) :
+    smithCrossIsClear matrix pivotIndex height width = true := by
+  have rowTrue :
+      smithRowSegmentAllZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) = true :=
+    smithRowSegmentAllZeroOfPointwiseZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1)
+      (fun col colGe colLt =>
+        have colLtWidth : col < width :=
+          Eq.mp (congrArg (col < ·) (natAddSubOfLe (pivotIndex + 1) width pivotColInRange)) colLt
+        smithFindMinAbsInMinorNoneAllZero matrix pivotIndex height width pivotIndex col findNone
+          (Nat.le_refl pivotIndex)
+          (natLtAddSubOfLt pivotIndex pivotIndex height (Nat.le_refl pivotIndex) pivotRowInRange)
+          (Nat.le_of_succ_le colGe)
+          (natLtAddSubOfLt pivotIndex col width (Nat.le_of_succ_le colGe) colLtWidth))
+  have colTrue :
+      smithColSegmentAllZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1) = true :=
+    smithColSegmentAllZeroOfPointwiseZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1)
+      (fun row rowGe rowLt =>
+        have rowLtHeight : row < height :=
+          Eq.mp (congrArg (row < ·) (natAddSubOfLe (pivotIndex + 1) height pivotRowInRange)) rowLt
+        smithFindMinAbsInMinorNoneAllZero matrix pivotIndex height width row pivotIndex findNone
+          (Nat.le_of_succ_le rowGe)
+          (natLtAddSubOfLt pivotIndex row height (Nat.le_of_succ_le rowGe) rowLtHeight)
+          (Nat.le_refl pivotIndex)
+          (natLtAddSubOfLt pivotIndex pivotIndex width (Nat.le_refl pivotIndex) pivotColInRange))
+  show (smithRowSegmentAllZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) &&
+      smithColSegmentAllZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1)) = true
+  rw [rowTrue, colTrue]
+  rfl
+
+/-- **A `false` row segment exhibits a nonzero column** — the converse of
+`smithRowSegmentAllZeroOfPointwiseZero`: a `false` flag means some scanned position is nonzero.
+Structural on the column count; the head `== 0` guard splits into "this column is the witness"
+(`natNeZeroOfBeqZeroFalse`) or "recurse on the tail". -/
+theorem smithRowSegmentNotAllZeroWitness (matrix : IntMatrix) (rowIndex : Nat) :
+    ∀ (colCount colStart : Nat),
+      smithRowSegmentAllZero matrix rowIndex colCount colStart = false →
+      ∃ col, colStart ≤ col ∧ col < colStart + colCount ∧ (matrix.entryAt rowIndex col).natAbs ≠ 0 := by
+  intro colCount
+  induction colCount with
+  | zero => intro colStart segFalse; exact Bool.noConfusion segFalse
+  | succ colCount ih =>
+      intro colStart segFalse
+      have segUnfold :
+          (((matrix.entryAt rowIndex colStart).natAbs == 0) &&
+            smithRowSegmentAllZero matrix rowIndex colCount (colStart + 1)) = false := segFalse
+      cases hGuard : (matrix.entryAt rowIndex colStart).natAbs == 0 with
+      | false =>
+          exact ⟨colStart, Nat.le_refl colStart,
+            Nat.lt_of_lt_of_le (Nat.lt_succ_self colStart)
+              (Nat.add_le_add_left (Nat.succ_le_succ (Nat.zero_le colCount)) colStart),
+            natNeZeroOfBeqZeroFalse _ hGuard⟩
+      | true =>
+          rw [hGuard] at segUnfold
+          have restFalse : smithRowSegmentAllZero matrix rowIndex colCount (colStart + 1) = false :=
+            segUnfold
+          match ih (colStart + 1) restFalse with
+          | ⟨col, colGe, colLt, nonzero⟩ =>
+              exact ⟨col, Nat.le_of_succ_le colGe,
+                Eq.mp (congrArg (col < ·) (Nat.succ_add colStart colCount)) colLt, nonzero⟩
+
+/-- **A `false` column segment exhibits a nonzero row** — the row mirror of the above. -/
+theorem smithColSegmentNotAllZeroWitness (matrix : IntMatrix) (colIndex : Nat) :
+    ∀ (rowCount rowStart : Nat),
+      smithColSegmentAllZero matrix colIndex rowCount rowStart = false →
+      ∃ row, rowStart ≤ row ∧ row < rowStart + rowCount ∧ (matrix.entryAt row colIndex).natAbs ≠ 0 := by
+  intro rowCount
+  induction rowCount with
+  | zero => intro rowStart segFalse; exact Bool.noConfusion segFalse
+  | succ rowCount ih =>
+      intro rowStart segFalse
+      have segUnfold :
+          (((matrix.entryAt rowStart colIndex).natAbs == 0) &&
+            smithColSegmentAllZero matrix colIndex rowCount (rowStart + 1)) = false := segFalse
+      cases hGuard : (matrix.entryAt rowStart colIndex).natAbs == 0 with
+      | false =>
+          exact ⟨rowStart, Nat.le_refl rowStart,
+            Nat.lt_of_lt_of_le (Nat.lt_succ_self rowStart)
+              (Nat.add_le_add_left (Nat.succ_le_succ (Nat.zero_le rowCount)) rowStart),
+            natNeZeroOfBeqZeroFalse _ hGuard⟩
+      | true =>
+          rw [hGuard] at segUnfold
+          have restFalse : smithColSegmentAllZero matrix colIndex rowCount (rowStart + 1) = false :=
+            segUnfold
+          match ih (rowStart + 1) restFalse with
+          | ⟨row, rowGe, rowLt, nonzero⟩ =>
+              exact ⟨row, Nat.le_of_succ_le rowGe,
+                Eq.mp (congrArg (row < ·) (Nat.succ_add rowStart rowCount)) rowLt, nonzero⟩
+
+/-- **A `false` cross exhibits a nonzero cross residue** — the loop step's witness source: when
+`smithCrossIsClear = false`, either the pivot's row segment or its column segment carries a nonzero
+entry (the segment `false` decomposed off the `&&`).  The disjunct positions are the literal segment
+windows; the fuel-adequacy recursion lands them in the minor via `natLtAddSubOfLt` and bounds the
+next measure through `smithFindMinAbsInMinorBoundsWitness`. -/
+theorem smithCrossNotClearWitness (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (crossFalse : smithCrossIsClear matrix pivotIndex height width = false) :
+    (∃ col, pivotIndex + 1 ≤ col ∧ col < (pivotIndex + 1) + (width - (pivotIndex + 1)) ∧
+        (matrix.entryAt pivotIndex col).natAbs ≠ 0)
+      ∨ (∃ row, pivotIndex + 1 ≤ row ∧ row < (pivotIndex + 1) + (height - (pivotIndex + 1)) ∧
+        (matrix.entryAt row pivotIndex).natAbs ≠ 0) := by
+  have crossUnfold :
+      (smithRowSegmentAllZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) &&
+        smithColSegmentAllZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1))
+          = false := crossFalse
+  cases hRow :
+      smithRowSegmentAllZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) with
+  | false =>
+      exact Or.inl (smithRowSegmentNotAllZeroWitness matrix pivotIndex (width - (pivotIndex + 1))
+        (pivotIndex + 1) hRow)
+  | true =>
+      rw [hRow] at crossUnfold
+      have colFalse :
+          smithColSegmentAllZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1)
+            = false := crossUnfold
+      exact Or.inr (smithColSegmentNotAllZeroWitness matrix pivotIndex (height - (pivotIndex + 1))
+        (pivotIndex + 1) colFalse)
 
 end FX1Poly.ComputerAlgebra
