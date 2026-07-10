@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.Amalgam.PushoutNormalForm
+import FX1Poly.Polygraph.TwoCategory.Amalgam.ReconstructedDecisionGen
 
 /-! # Polygraph/TwoCategory/Amalgam/ReverseCompletenessLeg — the reverse-completeness leg, driven by the
 per-component decider (WP-AMALG-2 r3, B3)
@@ -48,14 +49,15 @@ open FX1Poly.Polygraph
 
 /-! ## The LIVE reverse-completeness leg for the single-gap (right-image) fragment -/
 
-/-- ★★ **The LIVE routing (`Bool`).**  Run the shipped TOTAL reconstructed decider `monadReconstructedDecision` on
-a reconstructed monad pair; `true` iff it certifies them convertible.  The Bool observability of the per-component
-decider feeding the pushout. -/
+/-- ★★ **The LIVE routing (`Bool`).**  Run the GENERIC-PRIMARY reconstructed decider `monadReconstructedDecisionGen`
+(the bespoke-free re-founding — its running term routes through the born-generic native decider, NOT the bespoke
+`monadSaturatedTwoCellDecision`) on a reconstructed monad pair; `true` iff it certifies them convertible.  The Bool
+observability of the per-component decider feeding the pushout. -/
 def pushoutRightImageDecidesConv
     {sourceMode targetMode : Fin monadComputad.modeCount}
     {sourcePath targetPath : ModalityPath monadComputad.toModeGraph sourceMode targetMode}
     (cellAlpha cellBeta : RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath) : Bool :=
-  match monadReconstructedDecision cellAlpha cellBeta with
+  match monadReconstructedDecisionGen cellAlpha cellBeta with
   | isTrue _ => true
   | isFalse _ => false
 
@@ -76,7 +78,7 @@ theorem pushoutRightImageConvOfDecided
       (mapCellAlong (inclusionRightTwoReal involutionComputad monadComputad involutionMonadSameModes) cellBeta) := by
   simp only [pushoutRightImageDecidesConv] at certified
   revert certified
-  cases monadReconstructedDecision cellAlpha cellBeta with
+  cases monadReconstructedDecisionGen cellAlpha cellBeta with
   | isTrue conv => intro _; exact pushoutRightImageCompletenessLift conv
   | isFalse _ => intro certified; exact Bool.noConfusion certified
 
@@ -87,7 +89,7 @@ theorem pushoutRightImageConvOfDecided
 theorem pushoutRightImageDecidesConv_assoc :
     pushoutRightImageDecidesConv reconAssocLeftCell reconAssocRightCell = true := by
   simp only [pushoutRightImageDecidesConv]
-  cases monadReconstructedDecision reconAssocLeftCell reconAssocRightCell with
+  cases monadReconstructedDecisionGen reconAssocLeftCell reconAssocRightCell with
   | isTrue _ => rfl
   | isFalse hn => exact absurd reconAssocReflectsTrue hn
 
@@ -95,7 +97,7 @@ theorem pushoutRightImageDecidesConv_assoc :
 theorem pushoutRightImageDecidesConv_leftUnit :
     pushoutRightImageDecidesConv reconLeftUnitCell reconIdTCell = true := by
   simp only [pushoutRightImageDecidesConv]
-  cases monadReconstructedDecision reconLeftUnitCell reconIdTCell with
+  cases monadReconstructedDecisionGen reconLeftUnitCell reconIdTCell with
   | isTrue _ => rfl
   | isFalse hn => exact absurd reconLeftUnitReflectsTrue hn
 
@@ -104,7 +106,7 @@ are non-convertible (`reconFacesReflectFalse`), so the router returns `false`.  
 theorem pushoutRightImageDecidesConv_faces :
     pushoutRightImageDecidesConv reconFaceDeltaOne reconFaceDeltaZero = false := by
   simp only [pushoutRightImageDecidesConv]
-  cases monadReconstructedDecision reconFaceDeltaOne reconFaceDeltaZero with
+  cases monadReconstructedDecisionGen reconFaceDeltaOne reconFaceDeltaZero with
   | isTrue conv => exact absurd conv reconFacesReflectFalse
   | isFalse _ => rfl
 
@@ -131,8 +133,11 @@ theorem pushoutAssocRightImagesConvViaDecider :
 /-! ## Honesty markers -/
 
 /-- ★★ **Honesty marker — the single-gap reverse-completeness leg is LIVE off the per-component decider
-(WP-AMALG-2 r3, B3).**  `= true`: `pushoutRightImageDecidesConv` (the router) + `pushoutRightImageConvOfDecided`
-(the extractor) assemble the shipped TOTAL reconstructed decider `monadReconstructedDecision` with the B2 base-case
+(WP-AMALG-2 r3, B3; re-founded bespoke-free at B5).**  `= true`: `pushoutRightImageDecidesConv` (the router) +
+`pushoutRightImageConvOfDecided` (the extractor) assemble the GENERIC-PRIMARY reconstructed decider
+`monadReconstructedDecisionGen` (the bespoke-free re-founding — its running term routes through the born-generic
+native `decideSaturatedConvOverMonadNative`, NOT the bespoke `monadSaturatedTwoCellDecision`, machine-checked by the
+constant-closure walk in the audit twin) with the B2 base-case
 lift `pushoutRightImageCompletenessLift` into a proof-carrying reverse-completeness leg for the single-gap
 (right-image) fragment — the per-component decider's positive verdicts transport to pushout convertibilities.  It
 FIRES non-vacuously on the two associativity foldings and the left-unit law
