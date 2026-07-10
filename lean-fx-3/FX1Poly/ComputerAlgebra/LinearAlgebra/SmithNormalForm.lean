@@ -397,6 +397,107 @@ def smithReduceTotalSweep : Nat → IntMatrix → Nat → Nat → Nat → List E
 def smithReduceTotal (matrix : IntMatrix) (height width : Nat) : SmithReductionCertificate :=
   { operations := smithReduceTotalSweep (Nat.min height width) matrix 0 height width }
 
+/-! ## The divisibility-repair pass + the augmented driver (H2-SMITH r4, B1)
+
+`smithReduceTotal` clears each pivot's CROSS, reaching a nonnegative DIAGONAL — but not the
+invariant-factor CHAIN `d_p | d_q` that Smith normal form demands: a coprime diagonal like
+`diag(2, 3)` is left in place (off-diagonal-clear, nonnegative, yet `2 ∤ 3`), so
+`SmithReduceTotalDriverStatement` is REFUTABLE (`smithReduceTotalIsNotFullyReducing`, footer).  This
+pass runs a SEPARATE TOP-DOWN full-settle sweep on the already-diagonal output: at each position `p`,
+while some later diagonal entry `d_q` (`q > p`) is not divisible by `d_p`, FOLD row `q` into pivot row
+`p` (one row transvection, so the coprime pair `(d_p, d_q)` now shares the pivot row) and re-fire the
+shipped `smithCascadeSweep` at `p` — landing `gcd(d_p, d_q)` at the pivot and pushing `lcm` down.  A
+final diagonal sign sweep repairs the transient negatives the Euclid clears leave behind.
+
+TOP-DOWN (settle `d_p` against EVERY later entry before advancing), not bottom-up: once `d_p` divides
+all later entries it stays so (later settles only combine those entries by gcd/lcm, both divisible by
+`d_p`).  SEPARATE post-pass, not interleaved: `smithReduceTotal` stays byte-identical, so its five
+driver-produced battery theorems stay green by defeq.  The entire repair REUSES `smithCascadeSweep`
+verbatim — NO new elimination arm.  STRUCTURAL fuel throughout (no `WellFounded.fix`): the outer
+sweeps ride the pivot budget `Nat.min height width`, the per-position fold loop rides the minor
+magnitude sum `smithMinorAbsSum` recomputed at position entry (each genuine fold strictly drops the
+pivot magnitude — `gcd(d_p, d_q) < d_p` when `d_p ∤ d_q` — so the fold count is bounded by that
+per-position pivot, NOT by the whole-matrix sum, which the pushed-down `lcm` can exceed).  Correctness
+is the untrusted producer's — CHECKED per input by the B4 driver-produced battery. -/
+
+/-- Does the pivot diagonal entry `pivotEntry` divide the later diagonal entry `laterEntry` over ZZ?
+`0` divides only `0`; otherwise the magnitude remainder of `laterEntry` by `|pivotEntry|` vanishes. -/
+def smithPivotDividesEntry (pivotEntry laterEntry : Int) : Bool :=
+  if pivotEntry.natAbs == 0 then laterEntry.natAbs == 0
+  else intMagnitudeRemainder pivotEntry.natAbs laterEntry == 0
+
+/-- Scan the `scanCount` later diagonal positions from `scanStart` for the first whose entry the pivot
+does not divide (the target of the next fold), or `none` when the pivot already divides all of them.
+Structural on the count. -/
+def smithFindNonDividingLaterDiagonal (matrix : IntMatrix) (pivotIndex : Nat) :
+    Nat → Nat → Option Nat
+  | 0, _ => none
+  | scanCount + 1, scanStart =>
+      if smithPivotDividesEntry (matrix.diagonalEntryAt pivotIndex)
+          (matrix.diagonalEntryAt scanStart) then
+        smithFindNonDividingLaterDiagonal matrix pivotIndex scanCount (scanStart + 1)
+      else some scanStart
+
+/-- One position's divisibility repair: while a later diagonal entry is not divided by the pivot, fold
+that entry's row into the pivot row (`addRowMultiple foundPos pivotIndex 1`) and re-fire the shipped
+Euclid cascade at the pivot, then loop on the reduced matrix with one less fuel.  Structural on
+`fuel`. -/
+def smithRepairPositionSweep : Nat → IntMatrix → Nat → Nat → Nat → List ElementaryOperation
+  | 0, _, _, _, _ => []
+  | fuel + 1, matrix, pivotIndex, height, width =>
+      match smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+      | none => []
+      | some foundPos =>
+          let foldOps :=
+            [ ElementaryOperation.rowOperation
+                (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+          let afterFold := matrix.applyOperations foldOps
+          let clearOps :=
+            smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+              afterFold pivotIndex height width
+          let afterClear := afterFold.applyOperations clearOps
+          foldOps ++ clearOps ++ smithRepairPositionSweep fuel afterClear pivotIndex height width
+
+/-- The top-down divisibility-repair sweep: at each pivot run the position repair (fuelled by the minor
+magnitude sum), thread the reduced matrix, and recurse on the next pivot.  Structural on `outerFuel`
+(the pivot budget). -/
+def smithDivisibilityRepairSweep : Nat → IntMatrix → Nat → Nat → Nat → List ElementaryOperation
+  | 0, _, _, _, _ => []
+  | outerFuel + 1, matrix, pivotIndex, height, width =>
+      if pivotIndex + 1 ≤ Nat.min height width then
+        let positionOps :=
+          smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width
+        let afterPosition := matrix.applyOperations positionOps
+        positionOps ++
+          smithDivisibilityRepairSweep outerFuel afterPosition (pivotIndex + 1) height width
+      else []
+
+/-- The final diagonal sign sweep: negate each negative diagonal pivot so the repaired diagonal is
+nonnegative (the Euclid clears leave transient negatives).  Structural on `fuel` (the pivot budget). -/
+def smithDiagonalSignSweep : Nat → IntMatrix → Nat → Nat → Nat → List ElementaryOperation
+  | 0, _, _, _, _ => []
+  | fuel + 1, matrix, pivotIndex, height, width =>
+      if pivotIndex + 1 ≤ Nat.min height width then
+        let signOps := smithSignNormalizeOps matrix pivotIndex
+        signOps ++
+          smithDiagonalSignSweep fuel (matrix.applyOperations signOps) (pivotIndex + 1) height width
+      else []
+
+/-- The augmented total driver: the cross-clearing `smithReduceTotal`, then the top-down
+divisibility-repair sweep, then the final sign sweep — the full classical Smith reduction.  Each phase
+is fuelled by the pivot budget `Nat.min height width` (the repair's per-position inner fuel is the
+minor magnitude sum, recomputed at position entry).  The r4 driver whose B4 battery lands the coprime
+diagonals `smithReduceTotal` stalls on. -/
+def smithReduceFull (matrix : IntMatrix) (height width : Nat) : SmithReductionCertificate :=
+  let diagOps := (smithReduceTotal matrix height width).operations
+  let afterDiag := matrix.applyOperations diagOps
+  let repairOps := smithDivisibilityRepairSweep (Nat.min height width) afterDiag 0 height width
+  let afterRepair := afterDiag.applyOperations repairOps
+  let signOps := smithDiagonalSignSweep (Nat.min height width) afterRepair 0 height width
+  { operations := diagOps ++ repairOps ++ signOps }
+
 /-! ## Non-vacuity (B4)
 
 Concrete SNF certificates, produced-then-checked.  The `diagonalDividesSuccessor` witnesses are
@@ -1073,5 +1174,302 @@ the settled pivot row/column fixed), and (ii) the whole-minor divisibility repai
 def SmithReduceTotalDriverStatement : Prop :=
   ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
     (smithReduceTotal matrix height width).reducesToSmithForm matrix height width
+
+/-! ## The crosses-stay-zero locality core (H2-SMITH r4, B2)
+
+The augmented driver's totality induction (B3) needs to know that repairing position `p` — the fold
+`addRowMultiple foundPos pivotIndex 1` (`foundPos > pivotIndex`) plus the re-fired cascade — leaves
+every ALREADY-SETTLED pivot `settled < p` fixed.  The fold is a ROW transvection whose TARGET is the
+pivot row `p`; it modifies only that row.  So every settled pivot's WHOLE ROW (index `settled ≠ p`) —
+its diagonal entry `d_settled` and its cross's row-part — is untouched.  That is the load-bearing new
+lemma below (`addRowMultiplePreservesEntryOffTargetRow`), resting on the atomic list locality
+`listGetWithDefaultModifyAtNe` (reading at an index the modify skipped is unchanged).
+
+This closes the fold's ROW half of crosses-stay-zero UNCONDITIONALLY (no diagonal hypothesis).  The
+remaining half — that the fold leaves the settled COLUMN entry `(p, settled)` zero — is semantic: it
+holds because `(foundPos, settled) = 0` in the diagonal the repair runs on (`foundPos > p > settled`),
+so it rides the INV-DIAG invariant of the induction, named in the B3 residual footer. -/
+
+/-- Atomic list locality: reading at an index the modify did not touch returns the original entry —
+`listModifyAt` only rewrites `position`, so a read at any `index ≠ position` is unchanged.  Structural
+on the list. -/
+theorem listGetWithDefaultModifyAtNe {Entry : Type} (defaultEntry : Entry)
+    (transform : Entry → Entry) :
+    ∀ (entries : List Entry) (position index : Nat), index ≠ position →
+      listGetWithDefault defaultEntry (listModifyAt transform entries position) index
+        = listGetWithDefault defaultEntry entries index
+  | [], 0, _, _ => rfl
+  | [], _ + 1, _, _ => rfl
+  | _ :: _, 0, 0, indexIsNotPosition => absurd rfl indexIsNotPosition
+  | _ :: _, 0, _ + 1, _ => rfl
+  | _ :: _, _ + 1, 0, _ => rfl
+  | _ :: remainingEntries, position + 1, index + 1, indexIsNotPosition =>
+      listGetWithDefaultModifyAtNe defaultEntry transform remainingEntries position index
+        (fun successorsAgree => indexIsNotPosition (congrArg (· + 1) successorsAgree))
+
+/-- **The repair transvection's row locality (the crosses-stay-zero core)** — the fold
+`addRowMultiple sourceIndex targetIndex coefficient` modifies ONLY the target row, so every entry in a
+row other than the target is untouched.  With `targetIndex := pivotIndex` and a settled pivot
+`rowIndex := settled < pivotIndex` (`settled ≠ pivotIndex`), this says the repair fold leaves every
+settled pivot's whole row — its diagonal entry and its cross's row-part — fixed.  The proof navigates
+`addRowMultiple`'s three guards; the live branch rewrites the read row by `listGetWithDefaultModifyAtNe`
+at the off-target index. -/
+theorem addRowMultiplePreservesEntryOffTargetRow (matrix : IntMatrix)
+    (sourceIndex targetIndex : Nat) (coefficient : Int) (rowIndex colIndex : Nat)
+    (isOffTarget : rowIndex ≠ targetIndex) :
+    (matrix.addRowMultiple sourceIndex targetIndex coefficient).entryAt rowIndex colIndex
+      = matrix.entryAt rowIndex colIndex := by
+  unfold IntMatrix.addRowMultiple
+  split
+  · rfl
+  · split
+    · split
+      · show listGetWithDefault 0
+            (listGetWithDefault [] (listModifyAt _ matrix.rows targetIndex) rowIndex) colIndex = _
+        exact congrArg (fun readRow => listGetWithDefault 0 readRow colIndex)
+          (listGetWithDefaultModifyAtNe [] _ matrix.rows targetIndex rowIndex isOffTarget)
+      · rfl
+    · rfl
+
+/-! ## The r4 refutation + driver-produced battery + the augmented totality target (B4/B3)
+
+`smithReduceTotalIsNotFullyReducing` proves `SmithReduceTotalDriverStatement` FALSE — the cross-only
+total driver leaves the coprime diagonal `diag(2, 3)` unrepaired, so its `diagonalDividesSuccessor 0`
+would need `dividesExactly 2 3`, refuted by pushing the `∃`-witness through `natAbs`
+(`intNatAbsMul`) to `NatDivides 2 3` and collapsing the counting remainder
+(`natDividesRemainderIsZero`, which computes to `1 ≠ 0`).  This mirrors the r1→r3 honesty move
+(`smithReduceIsNotTotal` refuted the one-shot driver) one rung up: r3's cross-only driver is not
+CHAIN-total.
+
+The battery reduces the three MANDATED coprime probes plus a multi-invariant `3 × 3` BY THE AUGMENTED
+DRIVER `smithReduceFull`, each closed against its literal Smith normal form by defeq (`smithReduceFull`
+computes to the literal; corroborated live by the prototype `#eval` regression), with hand-built
+divisibility witnesses and `decide` on the LITERAL.  The full-driver regression members re-close the
+already-Smith / rank-deficient inputs against `smithReduceFull` (the repair + sign passes are no-ops on
+them), and every r1/r2/r3 battery theorem stays green untouched (`smithReduceTotal` is byte-identical).
+
+`SmithReduceFullDriverStatement` names the augmented driver's total-correctness goal — the honest B3
+node whose inhabitant is the r5 pole (footer). -/
+
+/-- **The cross-only total driver is not CHAIN-reducing** — `SmithReduceTotalDriverStatement` is FALSE:
+`[[2, 0], [0, 3]]` is rectangular and `smithReduceTotal` leaves it as `diag(2, 3)` (off-diagonal-clear,
+nonnegative — the cross is already zero, so the driver is a no-op), but Smith normal form needs
+`2 | 3`.  The refutation reads off `diagonalDividesSuccessor 0`'s witness `⟨factor, (3 : Int) = 2 *
+factor⟩`, pushes it through `natAbs` (`intNatAbsMul`) to `NatDivides 2 3`, and collapses the counting
+remainder (`natDividesRemainderIsZero`, computing to `1 ≠ 0`).  This is why the corrected B3 target
+names the AUGMENTED driver (`SmithReduceFullDriverStatement`). -/
+theorem smithReduceTotalIsNotFullyReducing : ¬ SmithReduceTotalDriverStatement := fun isTotal =>
+  match (isTotal { rows := [[2, 0], [0, 3]] } 2 2
+      ⟨rfl, ⟨rfl, ⟨rfl, True.intro⟩⟩⟩).diagonalDividesSuccessor 0 (by decide) with
+  | ⟨factor, threeEqTwoFactor⟩ =>
+      have dividesNat : NatDivides 2 3 :=
+        ⟨factor.natAbs, (congrArg Int.natAbs threeEqTwoFactor).trans (intNatAbsMul 2 factor)⟩
+      absurd (natDividesRemainderIsZero (by decide) dividesNat) (by decide)
+
+/-- **Coprime `diag(2, 3)`, augmented-driver-produced** — `smithReduceFull` repairs `diag(2, 3)` (which
+the cross-only driver leaves untouched) to `diag(1, 6)`: the fold injects `3` into the pivot row, the
+re-fired cascade Euclid-clears `(2, 3)` to `gcd = 1` and pushes `lcm = 6` down.  Chain `1 | 6` is
+`(6 : Int) = 1 * 6`. -/
+theorem smithReducedCoprimeTwoThreeByDriver :
+    (({ rows := [[2, 0], [0, 3]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[2, 0], [0, 3]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[1, 0], [0, 6]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0], [0, 6]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨6, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **Coprime `diag(6, 10)`, augmented-driver-produced** — reduces to `diag(2, 30)` (`gcd(6, 10) = 2`,
+`lcm = 30`).  Chain `2 | 30` is `(30 : Int) = 2 * 15`. -/
+theorem smithReducedCoprimeSixTenByDriver :
+    (({ rows := [[6, 0], [0, 10]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[6, 0], [0, 10]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 30]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 30]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨15, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **Coprime `diag(4, 6)`, augmented-driver-produced** — reduces to `diag(2, 12)` (`gcd(4, 6) = 2`,
+`lcm = 12`).  Chain `2 | 12` is `(12 : Int) = 2 * 6`. -/
+theorem smithReducedCoprimeFourSixByDriver :
+    (({ rows := [[4, 0], [0, 6]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[4, 0], [0, 6]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 12]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 12]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨6, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **Multi-invariant `diag(4, 6, 9)`, augmented-driver-produced** — the `3 × 3` stress case exercising
+a MULTI-FOLD settle and sub-block re-diagonalization: settling position 0 folds BOTH `d_1 = 6` and
+`d_2 = 9` into the pivot (`4 ∤ 9`), landing `gcd(4, 6, 9) = 1` at the pivot and re-diagonalizing the
+sub-block to `diag(6, 36)`.  Result `diag(1, 6, 36)`; chains `1 | 6` (`6 = 1 * 6`) and `6 | 36`
+(`36 = 6 * 6`). -/
+theorem smithReducedCoprimeChainByFullDriver :
+    (({ rows := [[4, 0, 0], [0, 6, 0], [0, 0, 9]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[4, 0, 0], [0, 6, 0], [0, 0, 9]] } 3 3).operations).IsSmithNormalFormWithin
+      3 3 :=
+  show ({ rows := [[1, 0, 0], [0, 6, 0], [0, 0, 36]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 6, 0], [0, 0, 36]] } : IntMatrix).entryAt rowIndex colIndex = 0 :=
+        by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨6, rfl⟩
+      | 1, _ => ⟨6, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
+/-- **Regression: already-divisible `diag(2, 4)`, augmented-driver-produced** — `smithReduceFull` is a
+no-op on an already-Smith diagonal (the repair finds no non-dividing later entry, the sign sweep no-ops
+on nonnegatives), leaving `diag(2, 4)`.  Chain `2 | 4` is `(4 : Int) = 2 * 2`. -/
+theorem smithReducedAlreadyDivisibleByFullDriver :
+    (({ rows := [[2, 0], [0, 4]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[2, 0], [0, 4]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 4]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 4]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨2, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **Regression: Euclidean-row `[[6, 4], [0, 0]]`, augmented-driver-produced** — `smithReduceFull`
+reduces it to `diag(2, 0)` (the cross-clear phase already lands it; repair and sign no-op).  Chain
+`2 | 0` is `(0 : Int) = 2 * 0`. -/
+theorem smithReducedEuclideanRowByFullDriver :
+    (({ rows := [[6, 4], [0, 0]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[6, 4], [0, 0]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **Regression: non-square `[[1, 0, 0], [0, 2, 0]]`, augmented-driver-produced** — `smithReduceFull`
+leaves the already-Smith `2 × 3` `diag(1, 2)`-with-free-column in place. -/
+theorem smithReducedWideByFullDriver :
+    (({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[1, 0, 0], [0, 2, 0]] } 2 3).operations).IsSmithNormalFormWithin 2 3 :=
+  show ({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨2, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **Regression: signed `diag(-2, -6)`, augmented-driver-produced** — `smithReduceFull` normalises the
+negative pivots to `diag(2, 6)` (the sign phase negates each negative diagonal; the already-divisible
+chain needs no repair).  Chain `2 | 6` is `(6 : Int) = 2 * 3`. -/
+theorem smithReducedSignedByFullDriver :
+    (({ rows := [[-2, 0], [0, -6]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[-2, 0], [0, -6]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 6]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 6]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨3, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **The augmented totality target (H2-SMITH r4, B3)** — that the augmented driver `smithReduceFull`
+emits a Smith-reducing word for every rectangular integer matrix.  This is the honest B3 NODE; its
+inhabitant is the THREE-LEVEL structural induction
+
+  * OUTER `smithDivisibilityRepairSweep`, structural on the pivot budget `Nat.min height width`;
+  * MIDDLE `smithRepairPositionSweep`, structural on the per-position minor magnitude sum (each genuine
+    fold strictly drops the pivot magnitude, `gcd(d_p, d_q).natAbs < d_p.natAbs` when `d_p ∤ d_q`, via
+    the shipped `intGcdDividesLeft` + `Nat.le.intro` pattern — the r5 lemma
+    `smithRepairDecreasesPivotSize`);
+  * INNER `smithCascadeSweep` (SHIPPED), structural on `smithMinorAbsSum`, riding
+    `smithRotationDecreasesPivotSize`,
+
+carried by the invariants INV-DIAG (window stays diagonal), INV-CHAIN-PREFIX (`d_i | d_q` for all
+`i < p`, `q > i`), and INV-RECT (`applyOperationsPreservesRectangular`, shipped).  It is NOT inhabited
+this round — the honest r5 pole.  The EXACT remaining obligations are:
+
+  (a) [HIGH, shared with the r3 pole] `smithCascadeSweep` RE-DIAGONALIZES after a fold — clearing the
+      pivot cross AND leaving the sub-block `≥ p+1` diagonal with `gcd` at the pivot (empirically true
+      on every probe incl. `3 × 3`, but a general proof is the deep elimination-correctness lemma r3
+      also deferred);
+  (b) [the semantic COLUMN half of crosses-stay-zero] the fold leaves the settled column entry
+      `(p, settled) = 0` — it does because `(foundPos, settled) = 0` in the diagonal INV-DIAG supplies
+      (`foundPos > p > settled`); its ROW half is the shipped B2 lemma
+      `addRowMultiplePreservesEntryOffTargetRow`;
+  (c) [MIDDLE-level top-down monotonicity] once `d_p` divides every later entry it stays so under later
+      settles (later gcd/lcm combinations of multiples of `d_p` remain multiples of `d_p`) — the
+      single-pass-soundness fact.
+
+The B4 battery sidesteps all three by defeq on the literal reductions; B2 discharges (b)'s row half and
+the descent measure of (a)/(middle) is the shipped `smithRotationDecreasesPivotSize`. -/
+def SmithReduceFullDriverStatement : Prop :=
+  ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
+    (smithReduceFull matrix height width).reducesToSmithForm matrix height width
 
 end FX1Poly.ComputerAlgebra
