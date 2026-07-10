@@ -28,4 +28,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedWhiskerRight_gradeOf
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedVcomp_gradeOf_assoc
 
+-- GradedCellComposition.lean — B3: the refusal slice
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeGuarded
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeGuarded_refuses
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeGuarded_admits
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeAtCollisionRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeAtCollisionRow_ctAsync_refuses
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeAtCollisionRow_freeLocus_fallsThrough
+
 end FX1PolyAudit

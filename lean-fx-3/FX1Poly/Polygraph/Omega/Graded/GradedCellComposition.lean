@@ -219,4 +219,85 @@ theorem gradedVcomp_gradeOf_assoc {computad : OmegaComputad} {dim : Nat} {R : Or
   exact gradeCompose_assoc lawful firstScale secondScale
     (gradeOf leftCell) (gradeOf middleCell) (gradeOf rightCell)
 
+/-! ## The refusal slice (B3) — the enriched functor is a genuine CHECKER
+
+The functor is NOT a total map: `gradedComposeGuarded` forms the annotated composite ONLY when the
+composite grade passes the shipped `enrichedCheckOnGrades` against a budget, returning `none` when the
+grades do not compose (over budget).  `gradedComposeAtCollisionRow` additionally consults a §6.8
+`CollisionRow`: at a NON-FREE locus (every §6.8 row) the composite is REFUSED regardless of budget.  The
+grade refusal is machine-checked; the collision refusal READS the row's `isFreeLocus` flag (the checker's
+data-driven content), the underlying amalgam-collision theorem staying the jam. -/
+
+/-- **The guarded lockstep composite** — the enriched functor as a checker.  Form the annotated composite
+`gradedVcomp` only when its grade `gradeCompose binderGrade (gradeOf firstCell) (gradeOf secondCell)`
+passes `enrichedCheckOnGrades` against `budget`; otherwise REFUSE (`none`).  Full-enum Bool match (no
+wildcard) — propext-free. -/
+def gradedComposeGuarded {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (binderGrade : R.Carrier) (budget : GradeVectorOver R)
+    (firstCell secondCell : GradedCell computad (dim + 1) R) :
+    Option (GradedCell computad (dim + 1) R) :=
+  match enrichedCheckOnGrades
+      (gradeCompose binderGrade (gradeOf firstCell) (gradeOf secondCell)) budget with
+  | true  => some (gradedVcomp binderGrade firstCell secondCell)
+  | false => none
+
+/-- **The grade refusal**: when the composite grade fails the budget check, the guarded composite is
+`none` — grades that do NOT compose block the annotated composite. -/
+theorem gradedComposeGuarded_refuses {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (binderGrade : R.Carrier) (budget : GradeVectorOver R)
+    (firstCell secondCell : GradedCell computad (dim + 1) R)
+    (refuted : enrichedCheckOnGrades
+      (gradeCompose binderGrade (gradeOf firstCell) (gradeOf secondCell)) budget = false) :
+    gradedComposeGuarded binderGrade budget firstCell secondCell = none := by
+  dsimp only [gradedComposeGuarded]
+  rw [refuted]
+
+/-- **The grade admission**: when the composite grade passes the budget check, the guarded composite is
+the annotated `gradedVcomp`. -/
+theorem gradedComposeGuarded_admits {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (binderGrade : R.Carrier) (budget : GradeVectorOver R)
+    (firstCell secondCell : GradedCell computad (dim + 1) R)
+    (admitted : enrichedCheckOnGrades
+      (gradeCompose binderGrade (gradeOf firstCell) (gradeOf secondCell)) budget = true) :
+    gradedComposeGuarded binderGrade budget firstCell secondCell =
+      some (gradedVcomp binderGrade firstCell secondCell) := by
+  dsimp only [gradedComposeGuarded]
+  rw [admitted]
+
+/-- **The collision-row guarded composite** — the checker consults a §6.8 `CollisionRow` FIRST: a
+NON-FREE locus REFUSES composition outright (`none`); a free locus falls through to the grade guard.
+Two-constructor Bool match — propext-free. -/
+def gradedComposeAtCollisionRow {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (row : CollisionRow) (binderGrade : R.Carrier) (budget : GradeVectorOver R)
+    (firstCell secondCell : GradedCell computad (dim + 1) R) :
+    Option (GradedCell computad (dim + 1) R) :=
+  match row.isFreeLocus with
+  | false => none
+  | true  => gradedComposeGuarded binderGrade budget firstCell secondCell
+
+/-- ★ **The §6.8 row `E044` (CT × Async) exercised as a genuine composition refusal.**  The sharpest,
+contradictory collision (`collisionCtAsync.isFreeLocus = false`) BLOCKS the annotated composite for ANY
+binder grade, budget, and cells — the checker refuses at the non-free locus regardless of whether the
+grades themselves would compose.  `rfl` (the row's `isFreeLocus` field is the literal `false`).  HONESTY:
+this reads the catalog DATA; the theorem "CT×Async cannot amalgamate" stays the jam
+(`fxOmega5_collisionNonFreeLinkReached = false`). -/
+theorem gradedComposeAtCollisionRow_ctAsync_refuses {computad : OmegaComputad} {dim : Nat}
+    {R : OrderedGradeSemiring} (binderGrade : R.Carrier) (budget : GradeVectorOver R)
+    (firstCell secondCell : GradedCell computad (dim + 1) R) :
+    gradedComposeAtCollisionRow collisionCtAsync binderGrade budget firstCell secondCell = none :=
+  rfl
+
+/-- **A free locus would fall through to the grade guard.**  If a row were free (`isFreeLocus = true`) the
+collision-row composite equals the plain grade-guarded composite.  Composed with
+`sixEightCatalog_allNonFree` (every §6.8 row is NON-free), this shows NO §6.8 row falls through — every
+catalog collision refuses. -/
+theorem gradedComposeAtCollisionRow_freeLocus_fallsThrough {computad : OmegaComputad} {dim : Nat}
+    {R : OrderedGradeSemiring} (row : CollisionRow) (binderGrade : R.Carrier)
+    (budget : GradeVectorOver R) (firstCell secondCell : GradedCell computad (dim + 1) R)
+    (isFree : row.isFreeLocus = true) :
+    gradedComposeAtCollisionRow row binderGrade budget firstCell secondCell =
+      gradedComposeGuarded binderGrade budget firstCell secondCell := by
+  dsimp only [gradedComposeAtCollisionRow]
+  rw [isFree]
+
 end FX1Poly.Polygraph.Omega.Graded
