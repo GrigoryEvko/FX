@@ -5,6 +5,9 @@ import FX1Poly.Polygraph.TwoCategory.Amalgam.DispatchSaturated
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordVcompGen
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDeltaGen
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
+-- `one_le_cellSize` (the conv-FREE fuel lemma used by `monadNormalizeCellFueledGen`) lives in `MonadWordProblem`;
+-- imported directly here now that MONAD-R7 r2 S5 dropped the interim decider's transitive `MonadWordProblem` edge.
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
 
 /-! # WalkingMonad/MonadNormalizeGen — the born-generic normalize + the bespoke-free native decider
 (POLY-TAB r6 monad re-founding, WAVE 2, Brick C — the completeness flip)
@@ -273,7 +276,7 @@ def decideSaturatedConvOverMonadNative :
     DecidableSaturatedConvForRel monadModeSignature MonadLawRel :=
   monadSaturatedGenDecisionModulo monadSaturatedCanonicalizationGenNative
 
-/-! ## Regression: the native decider = the interim decider = the old bespoke decider on the lane pairs -/
+/-! ## Regression: the native decider decides the lane pairs (native / interim / old continuity in Table/LedgerR1) -/
 
 /-- The native decider decides the size-3 associativity pair `t.t.t ⇒ t` (both fold `[0,0,0]`) to `true`. -/
 def monadNativeDecidesTrue_assoc : Bool :=
@@ -295,21 +298,18 @@ theorem monadNativeDecidesTrue_assoc_holds : monadNativeDecidesTrue_assoc = true
 /-- The native decider returns `false` on the separating faces pair (by `rfl`) — the genuine `isFalse` separation. -/
 theorem monadNativeDecidesFalse_faces_holds : monadNativeDecidesFalse_faces = false := rfl
 
-/-- ★ **Regression: native = interim = old bespoke on BOTH lane pairs.**  All three deciders branch on the SAME
-`monadMonotoneMapOf cellA = monadMonotoneMapOf cellB` comparison, so the native verdict equals the interim generic
-verdict AND the old bespoke verdict on the associativity pair (all `true`) and the separating faces pair (all
-`false`, incl. the `isFalse` branch) — by `rfl`. -/
+/-- ★ **Regression: the native decider decides BOTH lane pairs correctly.**  The native decider folds each cell's
+`monadMonotoneMapOf` and compares: the size-3 associativity pair `t.t.t ⇒ t` (both fold `[0,0,0]`) is decided
+`isTrue` (`monadNativeDecidesTrue_assoc`), and the separating size-1 faces pair `t ⇒ t.t` (maps `[1]` vs `[0]`) is
+decided `isFalse` (`monadNativeDecidesFalse_faces`) — by `rfl`.  (At r6 the interim generic decider
+`decideSaturatedConvOverMonadInterim` and the old bespoke decider `monadSaturatedTwoCellDecision` branched on the
+SAME `monadMonotoneMapOf` comparison and agreed on both pairs; that native / interim / old continuity — with the
+interim decider retired in MONAD-R7 r2 S5 — is recorded historically in `Table/LedgerR1`.) -/
 def monadNativeAgreesOnRegression : Bool :=
-  (monadNativeDecidesTrue_assoc == monadOldVerdict monadAssocLeftCell monadAssocRightCell)
-    && (monadNativeDecidesFalse_faces
-        == monadOldVerdict
-            (RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadT monadUnitTwoCell)
-            (RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadT monadUnitTwoCell))
-    && (monadNativeDecidesTrue_assoc == monadGenDecidesTrue_assoc)
-    && (monadNativeDecidesFalse_faces == monadGenDecidesFalse_faces)
+  (monadNativeDecidesTrue_assoc == true) && (monadNativeDecidesFalse_faces == false)
 
-/-- Regression value: the native decider agrees with the interim generic AND the old bespoke decider on both lane
-pairs (by `rfl`). -/
+/-- Regression value: the native decider decides the associativity pair `isTrue` and the separating faces pair
+`isFalse` (by `rfl`). -/
 theorem monadNativeAgreesOnRegression_holds : monadNativeAgreesOnRegression = true := rfl
 
 /-! ## Honesty markers -/
@@ -327,9 +327,10 @@ the completeness field `convOfMapEqGen` of `monadSaturatedCanonicalizationGenNat
 born-generic `monadMonotoneMapOf_mapEqOfConvGen`; the decision assembly `monadSaturatedGenDecisionModulo` yields the
 terminal `decideSaturatedConvOverMonadNative`, decided BOTH ways born-generic.  Its ENTIRE transitive
 constant-closure is free of `MonadSaturatedTwoCellConv` (the exhaustive `includeStdlib := true` meta-walk in the
-audit twin certifies it).  Reproduces the shipped bespoke + interim verdicts on both lane regression pairs
-(`monadNativeAgreesOnRegression_holds`, incl. the separating `isFalse` faces pair).  This is what
-`fxMonad_hasGenericNativeDecider` (`MonadSaturatedDecisionGen`) now flips to `true` on.  `= true`. -/
+audit twin certifies it).  Decides both lane regression pairs correctly (`monadNativeAgreesOnRegression_holds` —
+the associativity pair `isTrue`, the separating faces pair `isFalse`); the historical native / interim / old
+verdict continuity is recorded in `Table/LedgerR1` (the r7-r2 section, the interim decider retired MONAD-R7 r2 S5).
+This is what `fxMonad_hasGenericNativeDecider` (`MonadSaturatedDecisionGen`) now flips to `true` on.  `= true`. -/
 def fxMonad_hasGenericNativeDeciderComplete : Bool := true
 
 end FX1Poly.Polygraph.Amalgam

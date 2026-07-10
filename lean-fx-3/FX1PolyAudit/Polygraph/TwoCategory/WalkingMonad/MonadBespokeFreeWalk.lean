@@ -18,11 +18,11 @@ build-failing commands that walk the constant closure (`collectDependencies`, `D
     NEEDLE-DETECTOR CONTROL: proves the walk is not vacuously passing — it CAN find the needle when present).
 
 ★ **The walk is EXHAUSTIVE (`includeStdlib := true`).**  It does NOT prune internal names, because a structure-field
-body (e.g. an interim canonicalization's completeness field) is lifted by Lean into an INTERNAL auxiliary def, and a
+body (e.g. a canonicalization's completeness field) is lifted by Lean into an INTERNAL auxiliary def, and a
 pruning walk (`includeStdlib := false`) would silently DROP that auxiliary — hiding a bespoke reference behind it and
-turning the gate UNSOUND.  The needle-detector controls below (both a positive control on the bespoke deciders AND a
-positive control on the interim decider, whose completeness rides the bespoke) confirm the exhaustive walk detects
-the needle exactly when present. -/
+turning the gate UNSOUND.  The needle-detector controls below (positive controls on the bespoke deciders
+`monadMonotoneMapOf_mapEqOfConv` / `monadSaturatedTwoCellDecision`) confirm the exhaustive walk detects the needle
+exactly when present. -/
 
 namespace FX1PolyAudit
 
@@ -96,19 +96,16 @@ This is the wave-2 flip: the `false → true` of `fxMonad_hasGenericNativeDecide
 #assert_constant_depends_on FX1Poly.Polygraph.monadSaturatedTwoCellDecision
   needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
 
-/-! ## The HONEST wave-1 residual: the INTERIM decider STILL depends on the bespoke (via its completeness field)
+/-! ## The interim needle-detector controls were RETIRED with the interim decider (MONAD-R7 r2, S5)
 
-The interim canonicalization's completeness field transports the bespoke normalize (`monadConvOfMapEq_ofNormalize`
-via `monadSaturated_to_generic`), so both it and the interim decider DO depend on `MonadSaturatedTwoCellConv` —
-recorded here as `depends_on` (NOT `free_of`).  This is the honest wave-1 statement: the SOUNDNESS half of the
-decider is born-generic (the `free_of` block above), the COMPLETENESS half is the named residual (the born-generic
-`monadNormalizeGen`, wave-2).  When completeness lands, the completeness field is swapped and these become `free_of`
-for the bespoke-free `decideSaturatedConvOverMonadNative`.  (These controls also re-prove that the exhaustive walk
-sees through the structure-field internal auxiliary the pruning walk would have dropped.) -/
-
-#assert_constant_depends_on FX1Poly.Polygraph.Amalgam.monadSaturatedCanonicalizationGenViaBridge
-  needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
-#assert_constant_depends_on FX1Poly.Polygraph.Amalgam.decideSaturatedConvOverMonadInterim
-  needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
+At r6 two additional needle-detector controls recorded the HONEST wave-1 residual: the INTERIM decider
+(`monadSaturatedCanonicalizationGenViaBridge` / `decideSaturatedConvOverMonadInterim`, whose completeness field
+transported the bespoke normalize `monadConvOfMapEq_ofNormalize` through `monadSaturated_to_generic`) DID depend on
+`MonadSaturatedTwoCellConv` — a `depends_on` (NOT `free_of`) statement, and a second confirmation that the
+exhaustive walk sees through a structure-field internal auxiliary that a pruning walk would drop.  MONAD-R7 r2 (S5)
+RETIRED the interim decider (superseded by the fully bespoke-free `decideSaturatedConvOverMonadNative`), so those two
+`depends_on` controls are gone with it.  The BESPOKE needle-detector controls above (`monadMonotoneMapOf_mapEqOfConv`
+/ `monadSaturatedTwoCellDecision`) remain and still positively confirm the exhaustive walk finds
+`MonadSaturatedTwoCellConv` whenever present — so the native `free_of` gates are not vacuously passing. -/
 
 end FX1PolyAudit

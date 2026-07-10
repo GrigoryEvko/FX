@@ -1,20 +1,21 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
 
-/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen — zero-axiom gate (generic decider, INTERIM)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen — zero-axiom gate (generic decider markers)
 
-Per-declaration zero-axiom gate for the INTERIM generic decider (POLY-TAB r6 S4, honest partial): the interim
-canonicalization, the working generic decider, and the regression continuity witnesses.  Must be free of `propext`,
-`Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`.  (These are zero-AXIOM but NOT bespoke-free — the
-completeness residual is recorded by the constant meta-walk in `MonadBespokeFreeWalk`.) -/
+Per-declaration zero-axiom gate for the surviving generic-decider markers.  Must be free of `propext`,
+`Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`.
+
+MONAD-R7 r2 (S5) RETIRED the INTERIM decider (`monadSaturatedCanonicalizationGenViaBridge` /
+`decideSaturatedConvOverMonadInterim` + its `monadGenDecidesTrue_assoc` / `monadGenDecidesFalse_faces` /
+`monadGenAgreesOldOnRegression` regression witnesses), so their per-declaration `#assert_no_axioms` gates are gone
+with them; the interim milestone is now recorded historically (the `fxMonad_hasGenericNativeDeciderInterim` marker
+and `Table/LedgerR1`).  The fully bespoke-free native decider `decideSaturatedConvOverMonadNative` and its
+completeness/soundness legs are gated in `WalkingMonad/MonadNormalizeGen`'s audit twin and the bespoke-free
+meta-walk `MonadBespokeFreeWalk`. -/
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadSaturatedCanonicalizationGenViaBridge
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.decideSaturatedConvOverMonadInterim
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadGenDecidesTrue_assoc_holds
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadGenDecidesFalse_faces_holds
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadGenAgreesOldOnRegression_holds
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxMonad_hasGenericNativeDeciderInterim
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxMonad_hasGenericNativeDecider
 
