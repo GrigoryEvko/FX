@@ -97,5 +97,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationsAppend
 #assert_no_axioms FX1Poly.ComputerAlgebra.natGcdLtLeftOfNotDivides
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairDecreasesPivotSize
+#assert_no_axioms FX1Poly.ComputerAlgebra.IsWindowDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithChainPrefix
+#assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultModifyAtEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultAddScaledEntries
+#assert_no_axioms FX1Poly.ComputerAlgebra.addRowMultipleEntryOnTargetRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.foldPreservesSettledColumnZero
 
 end FX1PolyAudit

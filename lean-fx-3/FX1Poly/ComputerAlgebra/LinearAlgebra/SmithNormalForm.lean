@@ -1545,4 +1545,148 @@ theorem smithRepairDecreasesPivotSize (pivotEntry laterEntry : Int)
       pivotDoesNotDivide
         (intDividesOfNatAbsDivides (intDividesOfNatDividesNatAbs natDivides)))
 
+/-! ## The invariant bundle + the column half of crosses-stay-zero (B1)
+
+The three-level induction carries two invariants the recon pins as load-bearing (INV-RECT is the
+shipped `applyOperationsPreservesRectangular`; INV-NONNEG-PREFIX is established by the final sign
+sweep, not carried):
+
+  * **INV-DIAG** `IsWindowDiagonal matrix windowStart height width` — the window `≥ windowStart` is
+    off-diagonal-zero.  Held only at PHASE BOUNDARIES (mid-cascade transvections break it), never
+    per-cascade-step.
+  * **INV-CHAIN-PREFIX** `SmithChainPrefix matrix pivotIndex height width` — every settled prefix
+    entry `d_i` (`i < pivotIndex`) divides every later diagonal `d_q` (`i ≤ q`).  The TRUE (c)
+    invariant: the naive "settled values frozen" reading is false (the working position drops), but
+    the settled PREFIX chain is genuinely preserved.
+
+`foldPreservesSettledColumnZero` discharges the COLUMN half of crosses-stay-zero the r4 footer left
+semantic (its ROW half is the shipped `addRowMultiplePreservesEntryOffTargetRow`): the repair fold
+`addRowMultiple foundPos pivotIndex 1` leaves the settled column entry `(pivotIndex, settled) = 0`
+because it reads `old(pivotIndex, settled) + 1 * old(foundPos, settled)`, and INV-DIAG zeroes both
+off-diagonal summands (`pivotIndex ≠ settled`, `foundPos ≠ settled`, both in the window).  It rides
+the new ON-target-row entry formula `addRowMultipleEntryOnTargetRow` (the sibling of the shipped
+OFF-target lemma) over the pointwise scaled-add read `listGetWithDefaultAddScaledEntries` and the
+at-modify-index read `listGetWithDefaultModifyAtEq`. -/
+
+/-- **INV-DIAG as a Lean Prop** — the window of rows/columns at or beyond `windowStart` (and below
+`height`/`width`) is off-diagonal-zero.  A PHASE-BOUNDARY invariant of the repair induction (not a
+per-cascade-step one). -/
+def IsWindowDiagonal (matrix : IntMatrix) (windowStart height width : Nat) : Prop :=
+  ∀ rowIndex colIndex, windowStart ≤ rowIndex → rowIndex < height →
+    windowStart ≤ colIndex → colIndex < width → rowIndex ≠ colIndex →
+    matrix.entryAt rowIndex colIndex = 0
+
+/-- **INV-CHAIN-PREFIX as a Lean Prop** — every settled prefix diagonal `d_earlier`
+(`earlier < pivotIndex`) divides every later diagonal `d_later` (`earlier ≤ later`) in the window.
+The true top-down monotonicity invariant (the settled prefix's divisibility chain, not the raw
+values, is what survives later settles). -/
+def SmithChainPrefix (matrix : IntMatrix) (pivotIndex height width : Nat) : Prop :=
+  ∀ earlierIndex, earlierIndex < pivotIndex →
+    ∀ laterIndex, earlierIndex ≤ laterIndex → laterIndex < Nat.min height width →
+      dividesExactly (matrix.diagonalEntryAt earlierIndex) (matrix.diagonalEntryAt laterIndex)
+
+/-- Atomic list locality (AT the modified index) — reading `position` of a `listModifyAt transform`
+returns the transformed original entry, when `position` is in range.  The at-index sibling of
+`listGetWithDefaultModifyAtNe`.  Structural on the list. -/
+theorem listGetWithDefaultModifyAtEq {Entry : Type} (defaultEntry : Entry)
+    (transform : Entry → Entry) :
+    ∀ (entries : List Entry) (position : Nat), position < entries.length →
+      listGetWithDefault defaultEntry (listModifyAt transform entries position) position
+        = transform (listGetWithDefault defaultEntry entries position)
+  | [], _, isInRange => Nat.noConfusion (natEqZeroOfLeZero isInRange)
+  | _ :: _, 0, _ => rfl
+  | _ :: remainingEntries, position + 1, isInRange =>
+      listGetWithDefaultModifyAtEq defaultEntry transform remainingEntries position
+        (natLeOfSuccLeSucc isInRange)
+
+/-- Pointwise read of a scaled-add row — reading `index` of `addScaledEntries coefficient sourceRow
+targetRow` is `targetRow[index] + coefficient * sourceRow[index]`, when the rows agree in length and
+`index` is in range (rectangularity supplies the length equality).  Structural on both rows with the
+index. -/
+theorem listGetWithDefaultAddScaledEntries (coefficient : Int) :
+    ∀ (sourceRow targetRow : IntRow) (index : Nat),
+      sourceRow.length = targetRow.length → index < targetRow.length →
+      listGetWithDefault 0 (addScaledEntries coefficient sourceRow targetRow) index
+        = listGetWithDefault 0 targetRow index
+            + coefficient * listGetWithDefault 0 sourceRow index
+  | [], [], _, _, isInRange => Nat.noConfusion (natEqZeroOfLeZero isInRange)
+  | [], _ :: _, _, lengthsAgree, _ => nomatch lengthsAgree
+  | _ :: _, [], _, lengthsAgree, _ => nomatch lengthsAgree
+  | _ :: _, _ :: _, 0, _, _ => rfl
+  | _ :: sourceRemaining, _ :: targetRemaining, index + 1, lengthsAgree, isInRange =>
+      listGetWithDefaultAddScaledEntries coefficient sourceRemaining targetRemaining index
+        (Nat.succ.inj lengthsAgree) (natLeOfSuccLeSucc isInRange)
+
+/-- **The ON-target-row entry formula** — the sibling of the shipped
+`addRowMultiplePreservesEntryOffTargetRow`: reading the TARGET row after `addRowMultiple sourceIndex
+targetIndex coefficient` gives `old(target, col) + coefficient * old(source, col)`, for distinct
+in-range rows and an in-range column (rectangularity supplies the equal row lengths).  Navigates
+`addRowMultiple`'s three guards, reads the modified target row by `listGetWithDefaultModifyAtEq`, then
+pointwise by `listGetWithDefaultAddScaledEntries`. -/
+theorem addRowMultipleEntryOnTargetRow {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (sourceIndex targetIndex colIndex : Nat) (coefficient : Int)
+    (isDistinct : sourceIndex ≠ targetIndex)
+    (isSourceInRange : sourceIndex < height) (isTargetInRange : targetIndex < height)
+    (isColInRange : colIndex < width) :
+    (matrix.addRowMultiple sourceIndex targetIndex coefficient).entryAt targetIndex colIndex
+      = matrix.entryAt targetIndex colIndex
+          + coefficient * matrix.entryAt sourceIndex colIndex := by
+  obtain ⟨rowCount, rowWidths⟩ := isRect
+  have targetInRows : targetIndex < matrix.rows.length :=
+    Eq.mp (congrArg (targetIndex < ·) rowCount.symm) isTargetInRange
+  have sourceInRows : sourceIndex < matrix.rows.length :=
+    Eq.mp (congrArg (sourceIndex < ·) rowCount.symm) isSourceInRange
+  have sourceHasWidth :
+      (listGetWithDefault [] matrix.rows sourceIndex).length = width :=
+    listGetWithDefaultHasWidth matrix.rows sourceIndex rowWidths sourceInRows
+  have targetHasWidth :
+      (listGetWithDefault [] matrix.rows targetIndex).length = width :=
+    listGetWithDefaultHasWidth matrix.rows targetIndex rowWidths targetInRows
+  unfold IntMatrix.addRowMultiple
+  rw [if_neg isDistinct, if_pos sourceInRows, if_pos targetInRows]
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (listModifyAt
+          (fun targetRow =>
+            addScaledEntries coefficient (listGetWithDefault [] matrix.rows sourceIndex) targetRow)
+          matrix.rows targetIndex) targetIndex) colIndex = _
+  rw [listGetWithDefaultModifyAtEq [] _ matrix.rows targetIndex targetInRows]
+  exact listGetWithDefaultAddScaledEntries coefficient
+    (listGetWithDefault [] matrix.rows sourceIndex)
+    (listGetWithDefault [] matrix.rows targetIndex) colIndex
+    (sourceHasWidth.trans targetHasWidth.symm)
+    (Eq.mp (congrArg (colIndex < ·) targetHasWidth.symm) isColInRange)
+
+/-- **The COLUMN half of crosses-stay-zero** — the repair fold `addRowMultiple foundPos pivotIndex 1`
+leaves the settled column entry `(pivotIndex, settled) = 0`.  The new target-row entry reads
+`old(pivotIndex, settled) + 1 * old(foundPos, settled)`, and INV-DIAG zeroes both off-diagonal
+summands (`pivotIndex ≠ settled` since `settled < pivotIndex`; `foundPos ≠ settled` since
+`settled < pivotIndex < foundPos`).  Discharges the r4 footer's semantic (b)-column obligation; its
+ROW half is the shipped `addRowMultiplePreservesEntryOffTargetRow`. -/
+theorem foldPreservesSettledColumnZero {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex foundPos settled : Nat)
+    (isDiag : IsWindowDiagonal matrix 0 height width)
+    (settledBelowPivot : settled < pivotIndex) (pivotBelowFound : pivotIndex < foundPos)
+    (foundInWindow : foundPos < height) (pivotInWindow : pivotIndex < height)
+    (settledInWidth : settled < width) :
+    (matrix.addRowMultiple foundPos pivotIndex 1).entryAt pivotIndex settled = 0 :=
+  have foundNePivot : foundPos ≠ pivotIndex := fun foundEqPivot =>
+    Nat.lt_irrefl pivotIndex (Eq.mp (congrArg (pivotIndex < ·) foundEqPivot) pivotBelowFound)
+  have pivotEntryIsZero : matrix.entryAt pivotIndex settled = 0 :=
+    isDiag pivotIndex settled (Nat.zero_le pivotIndex) pivotInWindow (Nat.zero_le settled)
+      settledInWidth (fun pivotEqSettled =>
+        Nat.lt_irrefl settled (Eq.mp (congrArg (settled < ·) pivotEqSettled) settledBelowPivot))
+  have settledBelowFound : settled < foundPos := Nat.lt_trans settledBelowPivot pivotBelowFound
+  have foundEntryIsZero : matrix.entryAt foundPos settled = 0 :=
+    isDiag foundPos settled (Nat.zero_le foundPos) foundInWindow (Nat.zero_le settled)
+      settledInWidth (fun foundEqSettled =>
+        Nat.lt_irrefl settled (Eq.mp (congrArg (settled < ·) foundEqSettled) settledBelowFound))
+  (addRowMultipleEntryOnTargetRow matrix isRect foundPos pivotIndex settled 1 foundNePivot
+    foundInWindow pivotInWindow settledInWidth).trans
+    ((congrArg (· + 1 * matrix.entryAt foundPos settled) pivotEntryIsZero).trans
+      ((congrArg (fun laterEntry => (0 : Int) + 1 * laterEntry) foundEntryIsZero).trans
+        ((intZeroAdd (1 * 0)).trans (intOneMul 0))))
+
 end FX1Poly.ComputerAlgebra
