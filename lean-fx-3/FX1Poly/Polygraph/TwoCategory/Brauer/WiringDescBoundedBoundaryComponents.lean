@@ -4,6 +4,9 @@ import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryReads
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescReachable
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEvents
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescPortReconnection
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescBrauerReadback
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
+import FX1Poly.Polygraph.TwoCategory.Frobenius.SpiderSuffixCongruence
 
 /-! # BRAUER-MIDDLE r6 B1 (partial) — the T-DISJOINT invariant `boundedBoundaryComponents`, its seed base case,
 and non-vacuity (the forest-cardinality "no over-connection" core of R3-A-TAGCORR)
@@ -960,6 +963,297 @@ theorem crossingJoin_transposition_view (state : WireState) (forest : isUnionFin
    fun nodeX xBelow => crossingJoin_nfSucc_oldBBC state forest fresh in0 in1 nodeX in0Below xBelow,
    crossingJoin_nf_nfSuccBBC state forest fresh in0 in1 in0Below in1Below⟩
 
+/-! ## B1 — THE CROSSING preservation: assemble the transposition view over the read classification
+
+The crossing preserves the open-wire length (removes two, inserts two) and its two window slots read the fresh
+outputs; every other slot reads the SAME old node at the SAME index.  The connectivity is the shipped window
+transposition (`crossingJoin_transposition_view`).  So the crossing's `boundedBoundaryComponents` preservation is a
+PULLBACK along the window transposition `crossingReindexBBC` — a bijective relabel that swaps the two window boundary
+indices — with the base invariant refuting the pulled-back triple.  No pigeonhole, no cardinality count (the novel
+leg with no Frobenius analog: the shipped two-join transposition view did the connectivity work in r8). -/
+
+/-- The **window transposition** on boundary indices: swap the crossing's two window boundary slots `bottomCount +
+position` and `bottomCount + (position + 1)`, fixing everything else.  The pullback map along which the crossing's
+same-component view is the base view. -/
+private def crossingReindexBBC (bottomCount position index : Nat) : Nat :=
+  if index = bottomCount + position then bottomCount + (position + 1)
+  else if index = bottomCount + (position + 1) then bottomCount + position
+  else index
+
+/-- The two window boundary indices are distinct (`bottomCount + (position + 1) ≠ bottomCount + position`). -/
+private theorem windowIndex_neBBC (bottomCount position : Nat) :
+    bottomCount + (position + 1) ≠ bottomCount + position := by
+  intro heq
+  exact Nat.succ_ne_self (bottomCount + position) ((Nat.add_assoc bottomCount position 1).trans heq)
+
+/-- The reindex sends the left window index to the right window index. -/
+private theorem crossingReindexBBC_leftPort (bottomCount position : Nat) :
+    crossingReindexBBC bottomCount position (bottomCount + position) = bottomCount + (position + 1) := by
+  show (if bottomCount + position = bottomCount + position then bottomCount + (position + 1)
+        else if bottomCount + position = bottomCount + (position + 1) then bottomCount + position
+        else bottomCount + position) = bottomCount + (position + 1)
+  rw [if_pos rfl]
+
+/-- The reindex sends the right window index to the left window index. -/
+private theorem crossingReindexBBC_rightPort (bottomCount position : Nat) :
+    crossingReindexBBC bottomCount position (bottomCount + (position + 1)) = bottomCount + position := by
+  show (if bottomCount + (position + 1) = bottomCount + position then bottomCount + (position + 1)
+        else if bottomCount + (position + 1) = bottomCount + (position + 1) then bottomCount + position
+        else bottomCount + (position + 1)) = bottomCount + position
+  rw [if_neg (windowIndex_neBBC bottomCount position), if_pos rfl]
+
+/-- The reindex fixes every non-window index. -/
+private theorem crossingReindexBBC_other (bottomCount position index : Nat)
+    (neLeft : index ≠ bottomCount + position) (neRight : index ≠ bottomCount + (position + 1)) :
+    crossingReindexBBC bottomCount position index = index := by
+  show (if index = bottomCount + position then bottomCount + (position + 1)
+        else if index = bottomCount + (position + 1) then bottomCount + position
+        else index) = index
+  rw [if_neg neLeft, if_neg neRight]
+
+/-- The reindex is an involution (it swaps the two window indices and fixes the rest). -/
+private theorem crossingReindexBBC_involutive (bottomCount position index : Nat) :
+    crossingReindexBBC bottomCount position (crossingReindexBBC bottomCount position index) = index := by
+  cases Nat.decEq index (bottomCount + position) with
+  | isTrue hLeft =>
+      rw [hLeft, crossingReindexBBC_leftPort, crossingReindexBBC_rightPort]
+  | isFalse hNotLeft =>
+      cases Nat.decEq index (bottomCount + (position + 1)) with
+      | isTrue hRight => rw [hRight, crossingReindexBBC_rightPort, crossingReindexBBC_leftPort]
+      | isFalse hNotRight =>
+          rw [crossingReindexBBC_other bottomCount position index hNotLeft hNotRight,
+            crossingReindexBBC_other bottomCount position index hNotLeft hNotRight]
+
+/-- The reindex is injective (it is its own inverse). -/
+private theorem crossingReindexBBC_inj (bottomCount position firstIndex secondIndex : Nat)
+    (imagesEq : crossingReindexBBC bottomCount position firstIndex
+        = crossingReindexBBC bottomCount position secondIndex) :
+    firstIndex = secondIndex :=
+  (crossingReindexBBC_involutive bottomCount position firstIndex).symm.trans
+    ((congrArg (crossingReindexBBC bottomCount position) imagesEq).trans
+      (crossingReindexBBC_involutive bottomCount position secondIndex))
+
+/-- The reindex sends distinct indices to distinct images. -/
+private theorem crossingReindexBBC_ne (bottomCount position firstIndex secondIndex : Nat)
+    (distinct : firstIndex ≠ secondIndex) :
+    crossingReindexBBC bottomCount position firstIndex ≠ crossingReindexBBC bottomCount position secondIndex :=
+  fun imagesEq => distinct (crossingReindexBBC_inj bottomCount position firstIndex secondIndex imagesEq)
+
+/-- The reindex preserves the boundary range (window indices map to window indices, which are in range when the
+window is in range; everything else is fixed). -/
+private theorem crossingReindexBBC_lt (bottomCount : Nat) (state : WireState) (position index : Nat)
+    (windowInRange : position + 2 ≤ state.openWires.length)
+    (indexRange : index < bottomCount + state.openWires.length) :
+    crossingReindexBBC bottomCount position index < bottomCount + state.openWires.length := by
+  cases Nat.decEq index (bottomCount + position) with
+  | isTrue hLeft =>
+      rw [hLeft, crossingReindexBBC_leftPort]
+      exact Nat.add_lt_add_left
+        (Nat.lt_of_lt_of_le (Nat.lt_add_one (position + 1)) windowInRange) bottomCount
+  | isFalse hNotLeft =>
+      cases Nat.decEq index (bottomCount + (position + 1)) with
+      | isTrue hRight =>
+          rw [hRight, crossingReindexBBC_rightPort]
+          exact Nat.add_lt_add_left
+            (Nat.lt_of_lt_of_le (Nat.lt_of_lt_of_le (Nat.lt_add_one position)
+              (Nat.le_succ (position + 1))) windowInRange) bottomCount
+      | isFalse hNotRight =>
+          rw [crossingReindexBBC_other bottomCount position index hNotLeft hNotRight]
+          exact indexRange
+
+/-- ★ **The post-crossing boundary read classification.**  Every in-range post-crossing boundary index either reads
+the LEFT fresh output (`= bottomCount + position`, value `nextFresh`), the RIGHT fresh output
+(`= bottomCount + (position + 1)`, value `nextFresh + 1`), or an OLD node at the SAME index (the crossing preserves
+length, so past-window reads are unshifted).  Stated through the shipped four-zone open-wire classifier
+`stepWiringOpenRead_below` / `_fresh` / `_past`. -/
+private theorem crossingReadClassBBC (bottomCount : Nat) (state : WireState) (position : Nat)
+    (windowInRange : position + 2 ≤ state.openWires.length)
+    (index : Nat) (indexRange : index < bottomCount + state.openWires.length) :
+    (index = bottomCount + position
+        ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepWiring state position crossingWiring)) index
+            = state.nextFresh)
+    ∨ (index = bottomCount + (position + 1)
+        ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepWiring state position crossingWiring)) index
+            = state.nextFresh + 1)
+    ∨ (index ≠ bottomCount + position ∧ index ≠ bottomCount + (position + 1)
+        ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepWiring state position crossingWiring)) index
+            = natListGetAt (matchingBoundaryNodes bottomCount state) index) := by
+  obtain ⟨rightLen, fitsRaw⟩ := Nat.le.dest windowInRange
+  have fitsC : state.openWires.length = position + crossingWiring.inputCount + rightLen := fitsRaw.symm
+  cases Nat.lt_or_ge index bottomCount with
+  | inl belowBottom =>
+      refine Or.inr (Or.inr ⟨?_, ?_, ?_⟩)
+      · exact Nat.ne_of_lt (Nat.lt_of_lt_of_le belowBottom (Nat.le_add_right bottomCount position))
+      · exact Nat.ne_of_lt (Nat.lt_of_lt_of_le belowBottom (Nat.le_add_right bottomCount (position + 1)))
+      · exact matchingBoundaryNodes_getAt_bottomAgrees bottomCount (stepWiring state position crossingWiring)
+          state index belowBottom
+  | inr atLeastBottom =>
+      obtain ⟨wireOffset, rfl⟩ := Nat.le.dest atLeastBottom
+      have wireOffsetLt : wireOffset < state.openWires.length := Nat.lt_of_add_lt_add_left indexRange
+      cases Nat.lt_or_ge wireOffset position with
+      | inl belowWindow =>
+          refine Or.inr (Or.inr ⟨?_, ?_, ?_⟩)
+          · exact Nat.ne_of_lt (Nat.add_lt_add_left belowWindow bottomCount)
+          · exact Nat.ne_of_lt (Nat.add_lt_add_left
+              (Nat.lt_trans belowWindow (Nat.lt_add_one position)) bottomCount)
+          · rw [matchingBoundaryNodes_getAt_top bottomCount (stepWiring state position crossingWiring) wireOffset,
+              matchingBoundaryNodes_getAt_top bottomCount state wireOffset,
+              stepWiringOpenRead_below state position rightLen wireOffset crossingWiring fitsC belowWindow]
+      | inr atLeastWindow =>
+          cases Nat.lt_or_ge wireOffset (position + 2) with
+          | inl belowPlus2 =>
+              cases Nat.lt_or_ge wireOffset (position + 1) with
+              | inl belowPlus1 =>
+                  have wireOffsetEq : wireOffset = position :=
+                    Nat.le_antisymm (Nat.le_of_lt_succ belowPlus1) atLeastWindow
+                  subst wireOffset
+                  refine Or.inl ⟨rfl, ?_⟩
+                  rw [matchingBoundaryNodes_getAt_top bottomCount (stepWiring state position crossingWiring) position]
+                  show natListGetAt (stepWiring state position crossingWiring).openWires (position + 0)
+                      = state.nextFresh
+                  rw [stepWiringOpenRead_fresh state position rightLen 0 crossingWiring fitsC (by decide),
+                    Nat.zero_add]
+              | inr atLeastPlus1 =>
+                  have wireOffsetEq : wireOffset = position + 1 :=
+                    Nat.le_antisymm (Nat.le_of_lt_succ belowPlus2) atLeastPlus1
+                  subst wireOffset
+                  refine Or.inr (Or.inl ⟨rfl, ?_⟩)
+                  rw [matchingBoundaryNodes_getAt_top bottomCount (stepWiring state position crossingWiring)
+                      (position + 1),
+                    stepWiringOpenRead_fresh state position rightLen 1 crossingWiring fitsC (by decide),
+                    Nat.add_comm 1 state.nextFresh]
+          | inr atLeastPlus2 =>
+              obtain ⟨offset, rfl⟩ := Nat.le.dest atLeastPlus2
+              have posLtHere : position < position + 2 + offset :=
+                Nat.lt_of_lt_of_le (Nat.lt_add_one position)
+                  (Nat.le_trans (Nat.le_succ (position + 1)) (Nat.le_add_right (position + 2) offset))
+              have posSuccLtHere : position + 1 < position + 2 + offset :=
+                Nat.lt_of_lt_of_le (Nat.lt_add_one (position + 1)) (Nat.le_add_right (position + 2) offset)
+              have offsetLt : offset < rightLen := by
+                have hlt : position + 2 + offset < position + 2 + rightLen := by
+                  rw [fitsRaw]; exact wireOffsetLt
+                exact Nat.lt_of_add_lt_add_left hlt
+              refine Or.inr (Or.inr ⟨?_, ?_, ?_⟩)
+              · exact Ne.symm (Nat.ne_of_lt (Nat.add_lt_add_left posLtHere bottomCount))
+              · exact Ne.symm (Nat.ne_of_lt (Nat.add_lt_add_left posSuccLtHere bottomCount))
+              · rw [matchingBoundaryNodes_getAt_top bottomCount (stepWiring state position crossingWiring)
+                    (position + 2 + offset),
+                  matchingBoundaryNodes_getAt_top bottomCount state (position + 2 + offset)]
+                exact stepWiringOpenRead_past state position rightLen offset crossingWiring fitsC offsetLt
+
+/-- ★ **The crossing same-component PULLBACK.**  For distinct in-range boundary indices, the post-crossing
+same-component view equals the base same-component view of the reindexed pair (`crossingReindexBBC`, the window
+transposition).  Every combination of the two indices' read classes (fresh left / fresh right / old) is discharged
+by the matching leg of the shipped `crossingJoin_transposition_view`: two OLD reads are unchanged, a LEFT fresh read
+transposes to the SECOND window strand, a RIGHT fresh read to the FIRST, and the two fresh reads share iff the two
+strands did. -/
+private theorem matchingSameComponent_stepCrossing_reindexBBC (bottomCount : Nat) (state : WireState)
+    (position : Nat) (fresh : WiringDescStateFresh state) (forest : isUnionFindForest state.links)
+    (nfPos : 0 < state.nextFresh) (bottomLe : bottomCount ≤ state.nextFresh)
+    (windowInRange : position + 2 ≤ state.openWires.length)
+    (firstIndex secondIndex : Nat) (distinct : firstIndex ≠ secondIndex)
+    (firstRange : firstIndex < bottomCount + state.openWires.length)
+    (secondRange : secondIndex < bottomCount + state.openWires.length) :
+    matchingSameComponent bottomCount (stepWiring state position crossingWiring) firstIndex secondIndex
+      = matchingSameComponent bottomCount state
+          (crossingReindexBBC bottomCount position firstIndex)
+          (crossingReindexBBC bottomCount position secondIndex) := by
+  have in0Below : natListGetAt state.openWires position < state.nextFresh :=
+    natListGetAt_lt state.nextFresh nfPos state.openWires position fresh.1
+  have in1Below : natListGetAt state.openWires (position + 1) < state.nextFresh :=
+    natListGetAt_lt state.nextFresh nfPos state.openWires (position + 1) fresh.1
+  obtain ⟨oldOld, nfOld, nfSuccOld, nfNfSucc⟩ :=
+    crossingJoin_transposition_view state forest fresh
+      (natListGetAt state.openWires position) (natListGetAt state.openWires (position + 1)) in0Below in1Below
+  have topL := matchingBoundaryNodes_getAt_top bottomCount state position
+  have topR := matchingBoundaryNodes_getAt_top bottomCount state (position + 1)
+  have nfBoundF : natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex < state.nextFresh :=
+    boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos firstIndex
+  have nfBoundS : natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex < state.nextFresh :=
+    boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos secondIndex
+  have classFirst := crossingReadClassBBC bottomCount state position windowInRange firstIndex firstRange
+  have classSecond := crossingReadClassBBC bottomCount state position windowInRange secondIndex secondRange
+  show isSameComponent (stepWiring state position crossingWiring).links
+        (natListGetAt (matchingBoundaryNodes bottomCount (stepWiring state position crossingWiring)) firstIndex)
+        (natListGetAt (matchingBoundaryNodes bottomCount (stepWiring state position crossingWiring)) secondIndex)
+      = isSameComponent state.links
+        (natListGetAt (matchingBoundaryNodes bottomCount state)
+          (crossingReindexBBC bottomCount position firstIndex))
+        (natListGetAt (matchingBoundaryNodes bottomCount state)
+          (crossingReindexBBC bottomCount position secondIndex))
+  rw [stepWiring_crossing_links state position fresh nfPos forest windowInRange]
+  rcases classFirst with ⟨hiF, hrF⟩ | ⟨hiF, hrF⟩ | ⟨hneLF, hneRF, hrF⟩
+  · rcases classSecond with ⟨hiS, _⟩ | ⟨hiS, hrS⟩ | ⟨hneLS, hneRS, hrS⟩
+    · exact absurd (hiF.trans hiS.symm) distinct
+    · rw [hrF, hrS, hiF, crossingReindexBBC_leftPort, hiS, crossingReindexBBC_rightPort, topR, topL]
+      exact nfNfSucc
+    · rw [hrF, hrS, hiF, crossingReindexBBC_leftPort, topR,
+        crossingReindexBBC_other bottomCount position secondIndex hneLS hneRS]
+      exact nfOld _ nfBoundS
+  · rcases classSecond with ⟨hiS, hrS⟩ | ⟨hiS, _⟩ | ⟨hneLS, hneRS, hrS⟩
+    · rw [hrF, hrS, hiF, crossingReindexBBC_rightPort, hiS, crossingReindexBBC_leftPort, topL, topR,
+        isSameComponent_symm _ (state.nextFresh + 1) state.nextFresh, nfNfSucc,
+        isSameComponent_symm state.links (natListGetAt state.openWires (position + 1))
+          (natListGetAt state.openWires position)]
+    · exact absurd (hiF.trans hiS.symm) distinct
+    · rw [hrF, hrS, hiF, crossingReindexBBC_rightPort, topL,
+        crossingReindexBBC_other bottomCount position secondIndex hneLS hneRS]
+      exact nfSuccOld _ nfBoundS
+  · rcases classSecond with ⟨hiS, hrS⟩ | ⟨hiS, hrS⟩ | ⟨hneLS, hneRS, hrS⟩
+    · rw [hrF, hrS, crossingReindexBBC_other bottomCount position firstIndex hneLF hneRF, hiS,
+        crossingReindexBBC_leftPort, topR,
+        isSameComponent_symm _ (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+          state.nextFresh,
+        nfOld (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex) nfBoundF,
+        isSameComponent_symm state.links (natListGetAt state.openWires (position + 1))
+          (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)]
+    · rw [hrF, hrS, crossingReindexBBC_other bottomCount position firstIndex hneLF hneRF, hiS,
+        crossingReindexBBC_rightPort, topL,
+        isSameComponent_symm _ (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+          (state.nextFresh + 1),
+        nfSuccOld (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex) nfBoundF,
+        isSameComponent_symm state.links (natListGetAt state.openWires position)
+          (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)]
+    · rw [hrF, hrS, crossingReindexBBC_other bottomCount position firstIndex hneLF hneRF,
+        crossingReindexBBC_other bottomCount position secondIndex hneLS hneRS]
+      exact oldOld _ _ nfBoundF nfBoundS
+
+/-- ★ **THE CROSSING preservation.**  `boundedBoundaryComponents` survives an in-range `stepWiring _ _ crossingWiring`.
+The crossing preserves the open-wire length, so its boundary range is unchanged; each post-crossing same-component
+view pulls back along the window transposition `crossingReindexBBC` to the base view
+(`matchingSameComponent_stepCrossing_reindexBBC`, riding the shipped `crossingJoin_transposition_view`).  A would-be
+violating post-crossing triple therefore maps under the injective, range-preserving transposition to a violating
+BASE triple, refuted by the base invariant — a pure bijective relabel, no pigeonhole (the connectivity crux was the
+shipped transposition view).  Requires the four reachable-state conditions (fresh / forest / positive counter /
+bottom-fits) plus the crossing window in range (`position + 2 ≤ openWires.length`). -/
+theorem boundedBoundaryComponents_stepCrossing (bottomCount : Nat) (state : WireState) (position : Nat)
+    (fresh : WiringDescStateFresh state) (forest : isUnionFindForest state.links)
+    (nfPos : 0 < state.nextFresh) (bottomLe : bottomCount ≤ state.nextFresh)
+    (windowInRange : position + 2 ≤ state.openWires.length)
+    (bounded : boundedBoundaryComponents bottomCount state) :
+    boundedBoundaryComponents bottomCount (stepWiring state position crossingWiring) := by
+  intro firstIndex secondIndex thirdIndex firstBelow secondBelow thirdBelow
+    firstNeSecond firstNeThird secondNeThird sameConjunction
+  obtain ⟨sameFirstSecond, sameFirstThird⟩ := sameConjunction
+  have lenEq : (stepWiring state position crossingWiring).openWires.length = state.openWires.length := by
+    obtain ⟨rightLen, fitsRaw⟩ := Nat.le.dest windowInRange
+    rw [stepWiring_openWires_length_fits state position rightLen crossingWiring fitsRaw.symm]
+    exact fitsRaw
+  rw [lenEq] at firstBelow secondBelow thirdBelow
+  rw [matchingSameComponent_stepCrossing_reindexBBC bottomCount state position fresh forest nfPos bottomLe
+      windowInRange firstIndex secondIndex firstNeSecond firstBelow secondBelow] at sameFirstSecond
+  rw [matchingSameComponent_stepCrossing_reindexBBC bottomCount state position fresh forest nfPos bottomLe
+      windowInRange firstIndex thirdIndex firstNeThird firstBelow thirdBelow] at sameFirstThird
+  exact bounded (crossingReindexBBC bottomCount position firstIndex)
+    (crossingReindexBBC bottomCount position secondIndex) (crossingReindexBBC bottomCount position thirdIndex)
+    (crossingReindexBBC_lt bottomCount state position firstIndex windowInRange firstBelow)
+    (crossingReindexBBC_lt bottomCount state position secondIndex windowInRange secondBelow)
+    (crossingReindexBBC_lt bottomCount state position thirdIndex windowInRange thirdBelow)
+    (crossingReindexBBC_ne bottomCount position firstIndex secondIndex firstNeSecond)
+    (crossingReindexBBC_ne bottomCount position firstIndex thirdIndex firstNeThird)
+    (crossingReindexBBC_ne bottomCount position secondIndex thirdIndex secondNeThird)
+    ⟨sameFirstSecond, sameFirstThird⟩
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the T-DISJOINT invariant, its seed, and non-vacuity are SHIPPED (r6 B1 partial).**
@@ -1005,20 +1299,32 @@ is the novel two-join transposition connectivity with no Frobenius analog — a 
 pure union-find (fresh-endpoint invisibility + same-component congruence).  `= true`. -/
 def fxBrauer_hasCrossingTranspositionView : Bool := true
 
-/-- **Honesty marker — the FULL T-DISJOINT leg (`R3-A-TAGCORR` long pole) is NOT closed.**  SHIPPED this round: THE
-CAP preservation (`boundedBoundaryComponents_stepCap`, `fxBrauer_hasCapPreservation`), THE CUP preservation
-(`boundedBoundaryComponents_stepCup`, `fxBrauer_hasCupPreservation`), and THE CROSSING transposition on the
-same-component view (`crossingJoin_transposition_view`, `fxBrauer_hasCrossingTranspositionView`).  Still UNBUILT: the
-CROSSING per-atom `boundedBoundaryComponents` PRESERVATION (assembling the shipped transposition view over the
-crossing boundary-read classification — window slots read the fresh outputs, other slots read old nodes at the SAME
-index since the crossing preserves length — and transporting a would-be violating triple back through the window
-transposition `tau` to a base triple; the read kit `stepWiring_crossing_links` / `stepWiringOpenRead_*` is currently
-PRIVATE), the `stepWiring _ _ capWiring = stepCap` / `stepWiring _ _ cupWiring = stepCup` bridges (conditional on the
-window in range + freshness), the `processBrauer` FOLD lift (ride `brauerStateConditions_processBrauer`, dispatching
-on the generator kind with a per-atom window-in-range predicate), and the EXTRACTION consequence (cardinality +
-T-CONNECT => `partnerIndexOf` reads the `d`-partner).  So T-DISJOINT stays open, the roundtrip flags and masters stay
-`false`, and #2013 does not close — a ROUTE / totality gap, never a truth gap (Lehrer-Zhang arXiv:1207.5889 Thm 2.6).
-`= false`. -/
+/-- ★ **Honesty marker — THE CROSSING per-atom preservation is SHIPPED (r9 B1, the headline).**
+`boundedBoundaryComponents_stepCrossing`: `boundedBoundaryComponents` survives an in-range
+`stepWiring _ _ crossingWiring`.  The crossing preserves the open-wire length (so its boundary range is unchanged),
+its two window slots read the fresh outputs and every other slot reads the SAME old node at the SAME index
+(`crossingReadClassBBC`, over the un-privated four-zone open-wire classifier `stepWiringOpenRead_below` / `_fresh` /
+`_past` and the crossing link update `stepWiring_crossing_links`).  Each post-crossing same-component view therefore
+PULLS BACK along the window transposition `crossingReindexBBC` to the base view
+(`matchingSameComponent_stepCrossing_reindexBBC`, discharged leg-by-leg from the shipped
+`crossingJoin_transposition_view`); a would-be violating post-crossing triple maps under the injective,
+range-preserving transposition to a violating BASE triple, refuted by the base invariant.  A pure bijective relabel,
+no pigeonhole — the novel leg with no Frobenius analog (the connectivity crux was the shipped transposition view).
+Zero-axiom.  Requires the four reachable-state conditions + the crossing window in range
+(`position + 2 ≤ openWires.length`).  `= true`. -/
+def fxBrauer_hasCrossingPreservation : Bool := true
+
+/-- **Honesty marker — the FULL T-DISJOINT leg (`R3-A-TAGCORR` long pole) is NOT closed.**  SHIPPED: THE CAP
+preservation (`boundedBoundaryComponents_stepCap`, `fxBrauer_hasCapPreservation`), THE CUP preservation
+(`boundedBoundaryComponents_stepCup`, `fxBrauer_hasCupPreservation`), THE CROSSING transposition on the
+same-component view (`crossingJoin_transposition_view`, `fxBrauer_hasCrossingTranspositionView`), and now (r9 B1) THE
+CROSSING per-atom preservation (`boundedBoundaryComponents_stepCrossing`, `fxBrauer_hasCrossingPreservation`) — so all
+THREE per-atom preservations (cup / cap / crossing) stand.  Still UNBUILT: the `stepWiring _ _ capWiring = stepCap` /
+`stepWiring _ _ cupWiring = stepCup` bridges (conditional on the window in range + freshness), the `processBrauer`
+FOLD lift (ride `brauerStateConditions_processBrauer`, dispatching on the generator kind with a per-atom
+window-in-range predicate `WellFormedBrauerWord`), and the EXTRACTION consequence (cardinality + T-CONNECT =>
+`partnerIndexOf` reads the `d`-partner).  So T-DISJOINT stays open, the roundtrip flags and masters stay `false`, and
+#2013 does not close — a ROUTE / totality gap, never a truth gap (Lehrer-Zhang arXiv:1207.5889 Thm 2.6).  `= false`. -/
 def fxBrauer_hasTagCorrDisjoint : Bool := false
 
 end FX1Poly.Polygraph

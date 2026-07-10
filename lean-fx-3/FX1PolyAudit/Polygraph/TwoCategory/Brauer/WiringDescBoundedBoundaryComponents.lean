@@ -24,10 +24,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.boundedBoundaryComponents_stepCap
 #assert_no_axioms FX1Poly.Polygraph.boundedBoundaryComponents_stepCup
 #assert_no_axioms FX1Poly.Polygraph.crossingJoin_transposition_view
+#assert_no_axioms FX1Poly.Polygraph.boundedBoundaryComponents_stepCrossing
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBoundedBoundaryComponentsSeed
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCapPreservation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCupPreservation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingTranspositionView
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingPreservation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasTagCorrDisjoint
 
 end FX1PolyAudit
