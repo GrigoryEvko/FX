@@ -578,6 +578,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDeltaGen
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadBespokeFreeWalk
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordMultGen
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCasesGen
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadVcompMultGen
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSaturatedConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingModel
