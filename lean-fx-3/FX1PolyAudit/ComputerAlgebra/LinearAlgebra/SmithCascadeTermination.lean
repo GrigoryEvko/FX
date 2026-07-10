@@ -71,4 +71,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.swapColumnsEntryAtFirst
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithMoveToPivotEntryOnPivot
 
+/- H2-SMITH r10 — the found-in-range scan companion (joint (i)) + the negation-magnitude micro-atom. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithScanRowMinAbsResultInRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithScanMinorMinAbsResultInRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithFindMinAbsInMinorFoundInRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.intNegNatAbs
+
 end FX1PolyAudit

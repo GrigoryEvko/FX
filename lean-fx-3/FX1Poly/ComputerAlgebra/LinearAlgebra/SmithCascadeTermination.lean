@@ -1632,4 +1632,162 @@ theorem smithMoveToPivotEntryOnPivot {height width : Nat} (matrix : IntMatrix)
       pivotIndex isPivotRowInRange isPivotColInRange isFoundColInRange]
   exact swapRowsEntryAtFirst matrix pivotIndex foundRow foundCol pivotInRows foundInRows
 
+/-! ## The found-in-range scan companion (H2-SMITH r10, B1) — joint (i)
+
+The fuel-adequacy recursion moves the found min-abs entry into the pivot slot via
+`smithMoveToPivotEntryOnPivot`, whose in-range hypotheses (`foundRow < height`, `foundCol < width`)
+demand a scan companion certifying the found position sits in the pivot window.  This section threads
+a GENERIC position predicate through the row/minor scans — a structural mirror of the shipped
+`smithScanMinorMinAbsResultNonzero` — then instantiates it at the window-membership predicate.  Each
+is a FUNCTION-CORRECTNESS fact about the definite scan on ONE matrix, refutation-immune. -/
+
+/-- **Concrete truth probe for the found-in-range companion** — on `[[0, 6], [4, 0]]` at pivot `0`
+the whole-minor min-abs search lands the intervening `4` at `(1, 0)` (NOT the pivot `(0, 0) = 0`),
+a position genuinely inside `[0, 2) × [0, 2)`.  Anonymous, so it carries no axiom footprint. -/
+example :
+    smithFindMinAbsInMinor ({ rows := [[0, 6], [4, 0]] } : IntMatrix) 0 2 2 = some (1, 0) := by decide
+
+/-- **Row scan keeps a window predicate** — if every scanned column position `(rowIndex, col)` in
+`[colStart, colStart + colCount)` satisfies `property`, and an incoming `some` best does too, then the
+row-scan result (when `some`) satisfies `property`.  Structural on the column count; the update either
+keeps `best` (invariant carried) or takes the current position (in the scanned window).  The generic
+mirror of `smithScanRowMinAbsResultNonzero`. -/
+theorem smithScanRowMinAbsResultInRange (matrix : IntMatrix) (rowIndex : Nat)
+    (property : Nat → Nat → Prop) :
+    ∀ (colCount colStart : Nat) (best : Option (Nat × Nat)) (foundRow foundCol : Nat),
+      (∀ col, colStart ≤ col → col < colStart + colCount → property rowIndex col) →
+      (∀ bestRow bestCol, best = some (bestRow, bestCol) → property bestRow bestCol) →
+      smithScanRowMinAbs matrix rowIndex colCount colStart best = some (foundRow, foundCol) →
+      property foundRow foundCol := by
+  intro colCount
+  induction colCount with
+  | zero =>
+      intro colStart best foundRow foundCol _ bestInRange scanEq
+      exact bestInRange foundRow foundCol scanEq
+  | succ colCount ih =>
+      intro colStart best foundRow foundCol colInRange bestInRange scanEq
+      have headProperty : property rowIndex colStart :=
+        colInRange colStart (Nat.le_refl colStart)
+          (Nat.lt_of_lt_of_le (Nat.lt_succ_self colStart)
+            (Nat.add_le_add_left (Nat.succ_le_succ (Nat.zero_le colCount)) colStart))
+      have tailInRange : ∀ col, colStart + 1 ≤ col → col < (colStart + 1) + colCount →
+          property rowIndex col :=
+        fun col colGe colLt =>
+          colInRange col (Nat.le_of_succ_le colGe)
+            (Eq.mp (congrArg (col < ·) (Nat.succ_add colStart colCount)) colLt)
+      cases best with
+      | none =>
+          refine ih (colStart + 1)
+            (if (matrix.entryAt rowIndex colStart).natAbs == 0 then none
+             else some (rowIndex, colStart)) foundRow foundCol tailInRange ?_ scanEq
+          intro updRow updCol updEq
+          cases hGuard : (matrix.entryAt rowIndex colStart).natAbs == 0 with
+          | true =>
+              rw [if_pos hGuard] at updEq
+              contradiction
+          | false =>
+              rw [if_neg (fun isTrue => Bool.noConfusion (isTrue.symm.trans hGuard))] at updEq
+              injection updEq with pairEq
+              injection pairEq with rowEq colEq
+              subst rowEq; subst colEq
+              exact headProperty
+      | some bestPair =>
+          obtain ⟨bestRow, bestCol⟩ := bestPair
+          have bestPairInRange : property bestRow bestCol := bestInRange bestRow bestCol rfl
+          refine ih (colStart + 1)
+            (if (matrix.entryAt rowIndex colStart).natAbs == 0 then some (bestRow, bestCol)
+             else if (matrix.entryAt rowIndex colStart).natAbs < (matrix.entryAt bestRow bestCol).natAbs
+                  then some (rowIndex, colStart) else some (bestRow, bestCol))
+            foundRow foundCol tailInRange ?_ scanEq
+          intro updRow updCol updEq
+          cases hGuard : (matrix.entryAt rowIndex colStart).natAbs == 0 with
+          | true =>
+              rw [if_pos hGuard] at updEq
+              injection updEq with pairEq
+              injection pairEq with rowEq colEq
+              subst rowEq; subst colEq
+              exact bestPairInRange
+          | false =>
+              rw [if_neg (fun isTrue => Bool.noConfusion (isTrue.symm.trans hGuard))] at updEq
+              cases Nat.decLt (matrix.entryAt rowIndex colStart).natAbs
+                  (matrix.entryAt bestRow bestCol).natAbs with
+              | isTrue takesCurrent =>
+                  rw [if_pos takesCurrent] at updEq
+                  injection updEq with pairEq
+                  injection pairEq with rowEq colEq
+                  subst rowEq; subst colEq
+                  exact headProperty
+              | isFalse keepsBest =>
+                  rw [if_neg keepsBest] at updEq
+                  injection updEq with pairEq
+                  injection pairEq with rowEq colEq
+                  subst rowEq; subst colEq
+                  exact bestPairInRange
+
+/-- **Minor scan keeps a window predicate** — if every scanned position `(row, col)` in the rectangle
+`[rowStart, rowStart + rowCount) × [colStart, colStart + colCount)` satisfies `property`, and an
+incoming `some` best does too, then the folded minor scan result (when `some`) satisfies `property`.
+Structural on the row count, lifting the row-scan companion through each folded row.  The generic
+mirror of `smithScanMinorMinAbsResultNonzero`. -/
+theorem smithScanMinorMinAbsResultInRange (matrix : IntMatrix) (colStart colCount : Nat)
+    (property : Nat → Nat → Prop) :
+    ∀ (rowCount rowStart : Nat) (best : Option (Nat × Nat)) (foundRow foundCol : Nat),
+      (∀ row col, rowStart ≤ row → row < rowStart + rowCount →
+        colStart ≤ col → col < colStart + colCount → property row col) →
+      (∀ bestRow bestCol, best = some (bestRow, bestCol) → property bestRow bestCol) →
+      smithScanMinorMinAbs matrix colStart colCount rowCount rowStart best = some (foundRow, foundCol) →
+      property foundRow foundCol := by
+  intro rowCount
+  induction rowCount with
+  | zero =>
+      intro rowStart best foundRow foundCol _ bestInRange scanEq
+      exact bestInRange foundRow foundCol scanEq
+  | succ rowCount ih =>
+      intro rowStart best foundRow foundCol cellInRange bestInRange scanEq
+      refine ih (rowStart + 1) (smithScanRowMinAbs matrix rowStart colCount colStart best)
+        foundRow foundCol ?_ ?_ scanEq
+      · intro row col rowGe rowLt colGe colLt
+        exact cellInRange row col (Nat.le_of_succ_le rowGe)
+          (Eq.mp (congrArg (row < ·) (Nat.succ_add rowStart rowCount)) rowLt) colGe colLt
+      · intro innerRow innerCol innerEq
+        exact smithScanRowMinAbsResultInRange matrix rowStart property colCount colStart best
+          innerRow innerCol
+          (fun col colGe colLt =>
+            cellInRange rowStart col (Nat.le_refl rowStart)
+              (Nat.lt_of_lt_of_le (Nat.lt_succ_self rowStart)
+                (Nat.add_le_add_left (Nat.succ_le_succ (Nat.zero_le rowCount)) rowStart))
+              colGe colLt)
+          bestInRange innerEq
+
+/-- **The search returns an in-range position** — `smithFindMinAbsInMinor` reports a `some` position
+inside the pivot window `[pivotIndex, height) × [pivotIndex, width)`.  The window-membership
+instantiation of `smithScanMinorMinAbsResultInRange`, converting the raw scan bounds
+`pivotIndex + (dim - pivotIndex)` to `< dim` via the propext-clean `smithNatAddSubOfLe`
+(`pivotIndex ≤ dim` from the pivot-in-range hypotheses).  This feeds `smithMoveToPivotEntryOnPivot`'s
+in-range hypotheses in the fuel-adequacy recursion — joint (i). -/
+theorem smithFindMinAbsInMinorFoundInRange (matrix : IntMatrix)
+    (pivotIndex height width foundRow foundCol : Nat)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (findEq : smithFindMinAbsInMinor matrix pivotIndex height width = some (foundRow, foundCol)) :
+    pivotIndex ≤ foundRow ∧ foundRow < height ∧ pivotIndex ≤ foundCol ∧ foundCol < width :=
+  smithScanMinorMinAbsResultInRange matrix pivotIndex (width - pivotIndex)
+    (fun row col => pivotIndex ≤ row ∧ row < height ∧ pivotIndex ≤ col ∧ col < width)
+    (height - pivotIndex) pivotIndex none foundRow foundCol
+    (fun row col rowGe rowLt colGe colLt =>
+      ⟨rowGe,
+        Eq.mp (congrArg (row < ·)
+          (smithNatAddSubOfLe pivotIndex height (Nat.le_of_lt pivotRowInRange))) rowLt,
+        colGe,
+        Eq.mp (congrArg (col < ·)
+          (smithNatAddSubOfLe pivotIndex width (Nat.le_of_lt pivotColInRange))) colLt⟩)
+    (fun _ _ noneEq => nomatch noneEq)
+    findEq
+
+/-- **Negation preserves magnitude** — `(-value).natAbs = value.natAbs` for any `Int`.  The `ofNat`
+arm rides the shipped `intNegOfNatNatAbs`; the `negSucc` arm is `rfl` (`-(negSucc m) = ofNat (m+1)`).
+The micro-atom the sign-phase magnitude bridge needs (`|-x| = |x|`). -/
+theorem intNegNatAbs : ∀ value : Int, (-value).natAbs = value.natAbs
+  | .ofNat magnitude => intNegOfNatNatAbs magnitude
+  | .negSucc _ => rfl
+
 end FX1Poly.ComputerAlgebra
