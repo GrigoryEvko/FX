@@ -129,4 +129,81 @@ node.  `fxAmalg_hasDispatchTheorem` is HONESTLY HELD `false` (the plain-`TwoCell
 Gratzer convergence, not the shipped free decision) — no fabricated flip. -/
 def fxAmalg_hasDispatchLedger : Bool := true
 
+/-! ## The WP-AMALG-2 r3 section — the reverse-completeness / pushout-NF grind (#2043)
+
+r2 (`RealLawDispatch.lean`) narrowed #2043's wall to reverse-completeness / pushout normal form.  r3 grinds that
+wall: it REFUTES the naive NF, gives the CORRECT (gap-indexed) NF with its base-case soundness, lands the
+single-gap reverse-completeness leg LIVE off the per-component decider, and writes the `SaturatedOver` sign-off
+residual.  #2043 does NOT close — the advance is honest and additive; every held marker is named.
+
+### The r3 bricks SHIPPED (each machine-checked zero-axiom, gated in the audit twin)
+
+  * **B1 — THE s-PREFIX NF REFUTATION** (`SPrefixRefutation.lean`, `fxAmalg_sPrefixNormalFormRefuted = true`).  The
+    recon's candidate "commute all involution atoms to a prefix" is machine-checked FALSE.  The exact non-commuting
+    word `crossPairTSWord = t·s` factors with the involution block NON-initial (`crossPairTSWord_blockDecompose =
+    [(false,[t]),(true,[s])]`), its `s`-to-front reordering `s·t` is a DIFFERENT word (`crossPairTSWord_ne_STWord`,
+    so the move is not boundary-preserving), and `t·s` admits NO `s`-prefix split
+    (`crossPairTSWord_not_sPrefixForm`) — the free monoid on `{s,t}` does not commute; `crossComponentWhiskerCommute`
+    only re-nests DISJOINT whiskers.  A genuine pushout 2-cell realizes the `t·s` boundary
+    (`crossPairTSIdentityCell`), so the refutation is non-vacuous.  A refutation is a full deliverable.
+
+  * **B2 — THE GAP-INDEXED NF + BASE-CASE SOUNDNESS** (`PushoutNormalForm.lean`,
+    `fxAmalg_pushoutNormalFormGapIndexed = true`).  The correct NF coordinate is gap-indexed — s-walls (fixed
+    positions) + per-gap monad content — realized by `pushoutWallBlocks` / `pushoutGapBlocks` computing on the
+    witness word `s·t·s·t·t` to two walls `[[s],[s]]` and two gaps `[[t],[t,t]]` (`rfl`).  The BASE-CASE NF
+    soundness (single-gap = pure right-image cell converts to its transported monad EZ normal form) SHIPS via
+    `pushoutRightImageCompletenessLift` (the shipped unconditional `pushoutPreservesConvRight` specialised to
+    `MonadLawRelReconstructed`), non-vacuous on the associativity and left-unit gap collapses
+    (`pushoutAssocGapConv` / `pushoutLeftUnitGapConv`).
+
+  * **B3 — THE SINGLE-GAP REVERSE-COMPLETENESS LEG, LIVE** (`ReverseCompletenessLeg.lean`,
+    `fxAmalg_hasRightImageReverseCompleteness = true`).  The router `pushoutRightImageDecidesConv` runs the shipped
+    TOTAL reconstructed decider `monadReconstructedDecision`; the extractor `pushoutRightImageConvOfDecided`
+    transports its positive verdict, via B2's lift, to a pushout convertibility of the right-images.  It FIRES on
+    the two associativity foldings and the left-unit law (`_assoc` / `_leftUnit`, `= true`), yields the actual conv
+    (`pushoutAssocRightImagesConvViaDecider`), and DECLINES the separating monad faces (`_faces`, `= false`).  The
+    per-component decider feeding the pushout, proof-carrying, over the REAL law relation.
+
+  * **B4 — THE SATURATEDOVER SIGN-OFF RESIDUAL** (`SaturatedOver.lean`,
+    `fxAmalg_saturatedOverSignOffStaysGated = true`).  The `SaturatedOver → MonadSaturatedConv` deletion pin stays
+    GATED on (1) the user erosion decision (retiring `MonadLawRel` / `monadSaturated_iff_generic` voids the
+    migration fact), (2) the `DeciderReseat` `MonadWordProblem` import, (3) the `SaturatedRelationFamily.
+    monadRelationFamily` member.  r3 does NOT discharge it: the B3 leg runs `monadReconstructedDecision`, which
+    still runs the bespoke decider internally, so the bespoke import is not dropped; the migration-iff is
+    INDEPENDENT of the dispatch.  r3 only reinforces that step (1)'s erosion is safe.
+
+### The surviving r3 jams (each: EXACT goal + NAMED node — all HONEST, no fabricated flip)
+
+  * **JAM — the multi-gap NF splice.**  Goal: assemble per-gap normal forms across a shared s-wall into one
+    boundary NF (the SPLICE lemma: adjacent gap-cells across a wall compose to the gap-EZ of the concatenation).
+    NAMED node: `fxAmalg_pushoutNormalFormSpliceStaysWalled` (`PushoutNormalForm.lean`); crux rides the CONSUME-only
+    `WalkingMonad/MonadNormalizeVcomp.wordMul_vcomp` + the shipped `crossComponentWhiskerCommute`.
+
+  * **JAM — the isFalse reflection (conservativity).**  Goal: a TWO-SIDED right-image decider needs "pushout
+    non-conv of images ⟹ monad non-conv of pre-images" (the Nelson-Oppen / Baader-Tinelli purification for the
+    wire-creating generators, OR reconstructed `convOfMapEq` + fold-preservation-under-`mapCellAlong`).  NAMED
+    node: `fxAmalg_fullReverseCompletenessStaysWalled` (`ReverseCompletenessLeg.lean`).  The single-gap leg is
+    ONE-SIDED (isTrue completeness only).
+
+  * **JAM — the LEFT real coprojection.**  Goal: the left-image fragment with real 2-generators.  NAMED node:
+    `inclusionLeftTwoReal` does not exist (the r1 jam, unchanged) — only the thin `inclusionLeftTwo` ships.
+
+  * **HELD (no flip) — the full saturated / general dispatch.**  `fxAmalg_hasFullSaturatedPushoutDispatch`
+    (`DispatchSaturated.lean`) STAYS `false`; `fxAmalg_hasGeneralPushoutDispatch` (`PushoutBundle.lean`) STAYS
+    `false`; `fxAmalg_realLawCompletenessStaysWalled` (`RealLawDispatch.lean`) STAYS `true`.  #2043 remains OPEN. -/
+
+/-- ★ **The r3 bricks B1–B4 SHIPPED.**  `= true`: the s-prefix NF refutation (`fxAmalg_sPrefixNormalFormRefuted`),
+the gap-indexed NF + base-case soundness (`fxAmalg_pushoutNormalFormGapIndexed`), the single-gap reverse-
+completeness leg LIVE off the per-component decider (`fxAmalg_hasRightImageReverseCompleteness`), and the
+`SaturatedOver` sign-off residual (`fxAmalg_saturatedOverSignOffStaysGated`) — each machine-checked zero-axiom. -/
+def fxAmalg_r3BricksShipped : Bool := true
+
+/-- ★ **Every surviving r3 jam is RECORDED with its exact goal + NAMED node; #2043 does NOT close.**  `= true`:
+the multi-gap NF splice (node `fxAmalg_pushoutNormalFormSpliceStaysWalled`), the isFalse reflection / conservativity
+(node `fxAmalg_fullReverseCompletenessStaysWalled`), the LEFT real coprojection (node: `inclusionLeftTwoReal` does
+not exist), and the HELD full-dispatch markers (`fxAmalg_hasFullSaturatedPushoutDispatch` /
+`fxAmalg_hasGeneralPushoutDispatch` stay `false`, `fxAmalg_realLawCompletenessStaysWalled` stays `true`) — see the
+r3 section docstring for each exact goal.  No jam is hidden and none is falsely flipped. -/
+def fxAmalg_r3JamsRecorded : Bool := true
+
 end FX1Poly.Polygraph.Amalgam

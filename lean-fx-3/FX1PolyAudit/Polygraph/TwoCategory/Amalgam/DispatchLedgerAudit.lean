@@ -16,5 +16,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_snNonModularCaveat
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_r1JamsRecorded
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasDispatchLedger
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_r3BricksShipped
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_r3JamsRecorded
 
 end FX1PolyAudit
