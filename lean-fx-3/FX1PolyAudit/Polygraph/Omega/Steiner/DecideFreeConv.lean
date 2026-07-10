@@ -13,7 +13,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.Omega.decideFreeConvSound
 #assert_no_axioms FX1Poly.Polygraph.Omega.not_conv_of_linearize_ne
-#assert_no_axioms FX1Poly.Polygraph.Omega.demoComputad
+#assert_no_axioms FX1Poly.Polygraph.Omega.steinerDemoComputad
 #assert_no_axioms FX1Poly.Polygraph.Omega.demoValuation
 #assert_no_axioms FX1Poly.Polygraph.Omega.demoZeroCell
 #assert_no_axioms FX1Poly.Polygraph.Omega.demoOneCell

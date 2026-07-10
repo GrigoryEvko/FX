@@ -49,12 +49,12 @@ theorem not_conv_of_linearize_ne {computad : OmegaComputad} (valuation : Computa
 /-! ## The demo computad and valuation (non-vacuity) -/
 
 /-- A demo omega-computad: two modes, two generator labels at every dimension. -/
-def demoComputad : OmegaComputad where
+def steinerDemoComputad : OmegaComputad where
   modeCarrier := Bool
   genLabel := fun _ => Bool
 
 /-- A demo valuation into a length-3 ambient basis; distinguishes the two dimension-3 generators. -/
-def demoValuation : ComputadValuation demoComputad where
+def demoValuation : ComputadValuation steinerDemoComputad where
   ambientDim := 3
   modeValue := fun _ => ⟨[0, 0, 1]⟩
   genValue := fun labelDim label =>
@@ -66,19 +66,19 @@ def demoValuation : ComputadValuation demoComputad where
 /-! ## A concrete dimension-3 free cell (the tower) -/
 
 /-- A demo 0-cell. -/
-def demoZeroCell : CellExpr demoComputad 0 := CellExpr.ofMode false
+def demoZeroCell : CellExpr steinerDemoComputad 0 := CellExpr.ofMode false
 
 /-- A demo 1-generator. -/
-def demoOneCell : CellExpr demoComputad 1 := CellExpr.gen true demoZeroCell demoZeroCell
+def demoOneCell : CellExpr steinerDemoComputad 1 := CellExpr.gen true demoZeroCell demoZeroCell
 
 /-- A demo 2-generator. -/
-def demoTwoCell : CellExpr demoComputad 2 := CellExpr.gen true demoOneCell demoOneCell
+def demoTwoCell : CellExpr steinerDemoComputad 2 := CellExpr.gen true demoOneCell demoOneCell
 
 /-- ★ A demo dimension-3 generator (label `true`) — world-first-(c) substrate, inhabited. -/
-def cellThreeA : CellExpr demoComputad 3 := CellExpr.gen true demoTwoCell demoTwoCell
+def cellThreeA : CellExpr steinerDemoComputad 3 := CellExpr.gen true demoTwoCell demoTwoCell
 
 /-- A second demo dimension-3 generator (label `false`) — structurally distinct from `cellThreeA`. -/
-def cellThreeB : CellExpr demoComputad 3 := CellExpr.gen false demoTwoCell demoTwoCell
+def cellThreeB : CellExpr steinerDemoComputad 3 := CellExpr.gen false demoTwoCell demoTwoCell
 
 /-! ## The non-vacuity facts -/
 
@@ -111,7 +111,7 @@ theorem demo_distinct_tables :
 
 /-- ★ **Two non-conv dim-3 cells are provably NON-convertible** — distinct tables refute conv. -/
 theorem demo_cellsThree_not_conv :
-    ¬ SaturatedConvOver demoComputad (StrictAxiomRel demoComputad) cellThreeA cellThreeB :=
+    ¬ SaturatedConvOver steinerDemoComputad (StrictAxiomRel steinerDemoComputad) cellThreeA cellThreeB :=
   not_conv_of_linearize_ne demoValuation demo_distinct_tables
 
 /-! ## The non-vacuity evals -/
