@@ -52,6 +52,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerDimTwoHasNoTorsion
 #assert_no_axioms FX1Poly.Polygraph.Homology.WalkerDegreeTwoHomologyIsZeroStatement
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerDegreeTwoHomologyIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.monadCriticalPairOverlapCell
+#assert_no_axioms FX1Poly.Polygraph.Homology.allMonadCriticalPairs
+#assert_no_axioms FX1Poly.Polygraph.Homology.monadCriticalPairCountIsFive
+#assert_no_axioms FX1Poly.Polygraph.Homology.allMonadCriticalPairsExhaustive
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerHomologyLedgerIsComplete
 
 end FX1PolyAudit
