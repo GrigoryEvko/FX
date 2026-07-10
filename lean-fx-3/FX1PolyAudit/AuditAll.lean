@@ -952,6 +952,8 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.DesignLock
 import FX1PolyAudit.Polygraph.Omega.Steiner.Integration
 import FX1PolyAudit.Polygraph.Omega.Steiner.AgreementBattery
 import FX1PolyAudit.Polygraph.Omega.Steiner.Reconstruct
+import FX1PolyAudit.Polygraph.Omega.SuspensionAudit
+import FX1PolyAudit.Polygraph.Omega.CeilingLiftAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
