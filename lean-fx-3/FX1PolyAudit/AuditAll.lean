@@ -195,6 +195,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallBlockScaffold
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutLayoutFactorization
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallBlockRefutationLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestLayout
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutVcompSeam
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
