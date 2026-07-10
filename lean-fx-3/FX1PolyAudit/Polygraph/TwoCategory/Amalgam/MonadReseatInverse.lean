@@ -85,6 +85,7 @@ namespace FX1PolyAudit
 -- The honesty markers
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasBackwardReseatTransport
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasReseatedDeciderBothVerdicts
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasRoundTripNodesDischarged
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasReseatedReconstructionDecider
 
 end FX1PolyAudit

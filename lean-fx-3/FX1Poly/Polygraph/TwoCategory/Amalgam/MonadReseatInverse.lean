@@ -926,28 +926,43 @@ demonstrated LIVE on concrete real reconstructed cells: isFalse on the two separ
 foldings (`reconAssocDecidesTrue`, routed through the backward transport `reseatConvBackward`).  `= true`. -/
 def fxAmalgInverse_hasReseatedDeciderBothVerdicts : Bool := true
 
-/-- ★ **Honesty marker (`false`) — the UNCONDITIONAL two-sided reseated decider still needs the cell round-trip.**
-`fxAmalg_hasReconstructionDecoderReseat` (`DeciderReseat.lean`) named the residual for the FULL two-sided decider:
-after the FORWARD transport (r4, isFalse leg literal) the isTrue leg needs the inverse functor + the round-trip.
-MODE-ADMIT-INV r1 SHIPS the inverse functor and the BACKWARD conv transport (`reseatConvBackward`), and assembles
-the decider CONDITIONAL on the reflection (`monadReconstructedDecisionViaReflection`); it does NOT discharge the
-UNCONDITIONAL isTrue leg, whose sole residual is the cell round-trip `reseatCellInv (reseatCell a) = a`.
+/-- ★★ **Honesty marker (`true`, MODE-ADMIT-INV r2) — BOTH round-trip nodes are DISCHARGED, zero-axiom.**  The r1
+marker named the round-trip as a "genuine WALL on TWO nodes"; r2 CLOSES both, downgrading the wall to bounded cast
+labor:
 
-The round-trip is a genuine, precisely-located WALL (NOT mere cast labor), on TWO nodes:
-  (1) the PATH leg `reseatPathInv (reseatPath path) = path` is awkward because `path` lives over the FIXED `Fin 1`
-      endpoints `⟨0⟩ ⟨0⟩` (non-variable inductive-family indices), so structural recursion is unavailable and the
-      `cons` case must `subst` the middle mode (breaking the well-founded measure — the `rest`/`rest✝` split);
-  (2) the GEN leg `reseatGenInv (reseatGen g) = g` is the hard node: for a GENERIC reconstructed generator `g` at an
-      arbitrary boundary, the forward `reseatGen g` is a STUCK `castMonadTwoCell` (the boundary is only
-      PROPOSITIONALLY `(nil point, monadT)` via the interpreter witnesses, so the `Eq.rec` cast does NOT collapse
-      and `reseatGenInv` cannot pattern-match the `eta`/`mu` constructor through it), so `reseatGenInv (reseatGen g)`
-      does not reduce — recovering `g` needs codomain-uniqueness reasoning that the forward DELIBERATELY avoided
-      (`monadTwoCellAtUnit_isEta` read the codomain instead of the stuck matcher).
+  * **PATH leg** `reseatPathInv (reseatPath path) = path` (`reseatPathInv_reseatPath`) — the FIXED-index obstruction
+    (`path` over `⟨0⟩ ⟨0⟩`, structural recursion unavailable) is dissolved by the standard fixed-index
+    generalization: recurse on the LENGTH `fuel` (`reseatPathInv_reseatPath_fueled`), pinning the `cons` middle mode
+    with `reconModalityTargetZero` / `reconModalityUnique` so the `subst` never disturbs the `Nat`-fuel measure.
+  * **GEN leg** `reseatGenInv (reseatGen g) = g` (`reseatGenInv_reseatGen`) — the STUCK `castMonadTwoCell` is
+    unstuck by the recon-side naturality `reseatGenInv_castMonadTwoCell` / `_val` (`cases` the two boundary
+    equalities), which READS the reconstructed 2-generator index off through the otherwise-stuck cast:
+    `reseatGenInvReseatGen_val` shows the round-trip PRESERVES the `Fin 2` index (a homogeneous equality, no `HEq`),
+    and `Subtype.ext` (proof-irrelevant subtype) upgrades it to the full boundary-cast equation.
 
-Both verdicts nevertheless ship LIVE on real recon cells (isFalse roundtrip-free, isTrue via the backward
-transport), so the reseated decider is DEMONSTRATED complete on concrete pairs; only the GENERAL unconditional
-isTrue leg stays behind the round-trip wall.  `= false` (the unconditional flip of
-`fxAmalg_hasReconstructionDecoderReseat` remains the r2 scope). -/
+Both nodes are `Eq.rec` / no `HEq`, STRUCTURAL, per-declaration `#assert_no_axioms`-gated.  `= true`. -/
+def fxAmalgInverse_hasRoundTripNodesDischarged : Bool := true
+
+/-- ★ **Honesty marker (`false`) — the UNCONDITIONAL two-sided reseated decider still needs the cell round-trip
+ASSEMBLY (no longer a wall — bounded cast labor over the two discharged nodes).**  `fxAmalg_hasReconstructionDecoderReseat`
+(`DeciderReseat.lean`) named the residual for the FULL two-sided decider: after the FORWARD transport (r4, isFalse
+leg literal) the isTrue leg needs the inverse functor + the round-trip.  r1 shipped the inverse functor and the
+BACKWARD conv transport (`reseatConvBackward`) and assembled the decider CONDITIONAL on the reflection
+(`monadReconstructedDecisionViaReflection`).  r2 DISCHARGES both round-trip NODES
+(`fxAmalgInverse_hasRoundTripNodesDischarged`: `reseatPathInv_reseatPath`, `reseatGenInv_reseatGen`) plus the
+saturated-conv cast-strip tool (`saturatedConvOver_castBoundaryStrip`).
+
+What remains to FLIP this marker (and inhabit `reflect` unconditionally) is the CELL round-trip
+`reseatCellInv (reseatCell cell) = castBoundary .. cell` — the structural functoriality assembling the two node
+results over the whole `RawTwoCellExpr` grammar (`gen` via `reseatGenInv_reseatGen`, `id` via `castBoundaryId`,
+the whisker cases reconciling `reseatCell`'s forward `reseatPath_composePath` cast with `reseatCellInv`'s
+`reseatPathInv_composePath` cast through the `ReseatCastKit` algebra) — followed by `reseatConvBackward` +
+`saturatedConvOver_castBoundaryStrip` to inhabit `reflect`, then `monadReconstructedDecisionViaReflection` applied
+to it.  This is bounded, all-`Eq.rec` cast-assembly LABOR over generic `Fin 1` endpoints (mode-pinned as in the
+nodes), NOT a mathematical wall.  Both decider verdicts remain LIVE on real recon cells (isFalse roundtrip-free,
+isTrue via the backward transport), so completeness is DEMONSTRATED on concrete pairs; only the GENERAL
+unconditional isTrue leg awaits the cell-round-trip assembly.  `= false` (unconditional flip of
+`fxAmalg_hasReconstructionDecoderReseat` remains the residual). -/
 def fxAmalgInverse_hasReseatedReconstructionDecider : Bool := false
 
 end FX1Poly.Polygraph.Amalgam
