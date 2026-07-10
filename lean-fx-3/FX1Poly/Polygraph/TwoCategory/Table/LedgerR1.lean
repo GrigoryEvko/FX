@@ -498,7 +498,7 @@ SHIPPED — the bespoke-free bridge `WalkingMonad/MonadSaturatedSkeletonReps`:
     downstream roofs stay green.
 
 SEVERED — `WalkingKZ/KZMonadOrderModel` re-points onto the bridge (dropping `MonadWhiskerEmbedding`) and is now
-provably conv-decoupled: its build closure collapses 121 → 17 jobs with NO monad-conv chain file present.  Its order
+provably conv-decoupled: its build closure collapses 22 → 17 jobs (the r3 verifier corrected the original 121 figure) with NO monad-conv chain file present.  Its order
 model (`mapLE` poset + the three KZ monotonicity closures) needed only the embed stratum + the `MonotoneMap` base —
 pure CAT-A, no bespoke reflection.
 
@@ -623,7 +623,7 @@ theorem hasMonadInterimDeciderRetired_holds : fxTab_hasMonadInterimDeciderRetire
 Round C built the bespoke-free `WalkingMonad/MonadSaturatedSkeletonReps` bridge (the ordinal-sum embed stratum —
 `ascendingPrepend` / `shiftPrepend` / `embedLocalMap` + characterizations + `embedRegionSplit` — relocated VERBATIM
 from `MonadWhiskerEmbedding`, importing only the bespoke-free `MonotoneMap`) and re-pointed `WalkingKZ/
-KZMonadOrderModel` onto it, conv-decoupled (closure 121 → 17 jobs, no monad-conv file).  `KZOrderCompleteness`'s
+KZMonadOrderModel` onto it, conv-decoupled (closure 22 → 17 jobs; the 121 figure originally recorded here was refuted by the r3 verifier — the real collapse drops 6 modules incl. MonadSaturatedConv).  `KZOrderCompleteness`'s
 vestigial `MonadWordProblem` import is dropped (0 / 7 refs).  ZERO FX1Poly file deleted (the pinned Δ island stays;
 the deep lower-stratum relocation that would free `IdempotentSaturatedReps` is BANKED for the next layer, and #2229
 is SEQUENCED, not folded).  `= true`. -/
