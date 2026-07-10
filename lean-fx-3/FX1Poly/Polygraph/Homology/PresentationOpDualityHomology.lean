@@ -602,6 +602,20 @@ ZZ/3}`.  The generic `opPresentationBoundaryEntryIsNegated` is stated over an AR
 (genuine generic content: op negates the polygraphic boundary); the homology READ-OFFS are per-walker,
 via each dual's own kernel-checked certificate landing on its base walker's Smith normal form.
 
+**The `8` computed walkers, by name** (every one either COMPUTED here/upstream or the sole one WALLED):
+walking monad (`H2 = 0`), walking comonad (`H2 = 0`), walking KZ (`= monad`, `H2 = 0`), walking co-KZ
+(`= comonad`, `H2 = 0`), walking involution (`H1 = ZZ/2`), cyclic-order-three (`H1 = ZZ/3`), idempotent
+semigroup (`H1 = 0`), idempotent-semigroup comonad (`H1 = 0`, `H2 = 0`).  Residual `1`: the walking
+ADJUNCTION (walled).
+
+**The idempotent framing (the deliberate choice `#2138` delegated).**  The two idempotent census slots
+are filled by the SINGLE-RULE idempotent-SEMIGROUP `⟨e | ee ⟹ e⟩` and its op-dual — NOT by the
+`IdempotentLawRel` idempotent MONAD (`monad + eta▷t ~ t◁eta`).  This is honest under either reading: the
+idempotent-semigroup gives the genuinely NEW `H1 = 0` UNIT datum; the idempotent-monad's abelianization,
+were it counted instead, is a DUPLICATE of the walking monad (`H2 = 0`, no new invariant).  So the
+idempotent slot is COMPUTED under both framings, never a gap — the `8 of 9` close has no unaccounted
+decided walker.
+
 ### The wall (the sole residual — NAMED, with what would un-wall it)
 
   * **The walking ADJUNCTION** — its 2-cell word problem is NOT convergent at head
