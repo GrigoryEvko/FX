@@ -578,14 +578,30 @@ mixed-diagram firings `boundedBoundaryComponentsCheck_{crossing,capThenCup}` (re
 triple-check).  `= true`. -/
 def fxBrauer_hasBoundedBoundaryComponentsSeed : Bool := true
 
-/-- **Honesty marker — the FULL T-DISJOINT leg (`R3-A-TAGCORR` long pole) is NOT closed.**  The three per-atom
-PRESERVATION steps (`boundedBoundaryComponents` survives `stepWiring` at `cupWiring` / `capWiring` / `crossingWiring`
-— the crossing case the novel leg with no Frobenius analog), the `processBrauer` FOLD lift, and the EXTRACTION
-consequence (cardinality + T-CONNECT => `partnerIndexOf` reads the `d`-partner) are UNBUILT this round.  They carry
-the general-position `natListInsertAt` / `natListRemoveManyAt` boundary-index arithmetic, the threaded freshness
-invariant, and the two-join crossing bookkeeping via `isSameComponent_unionFindJoin`.  So T-DISJOINT stays open, the
-roundtrip flags and masters stay `false`, and #2013 does not close — a ROUTE / totality gap, never a truth gap
-(Lehrer-Zhang arXiv:1207.5889 Thm 2.6).  `= false`. -/
+/-- ★ **Honesty marker — THE CAP preservation is SHIPPED (r7 B1, the crux).**
+`boundedBoundaryComponents_stepCap`: `boundedBoundaryComponents` survives an in-range `stepCap` — the post-cap
+boundary view factors through the shipped total cap reindex `capBoundaryReindex` (its range transport
+`capBoundaryReindex_lt_ofNewRange`, the join-legs-as-boundary-reads `stepCap_links_eq_unionFindJoin_boundaryReads`),
+and the new single-join pigeonhole `noThreeSharingAfterJoin` rejects any three distinct post-cap boundary indices
+sharing a component: each index is forced by the before-invariant (through the merged port) into `leftPort`'s or
+`rightPort`'s class, and 3-into-2 produces a forbidden before-triple.  Zero-axiom (the reindex-injectivity uses
+`Nat.succ.inj`, NOT the `propext`-leaking `Nat.add_right_cancel`).  Requires the window in range
+(`position + 2 <= openWires.length`) + the forest invariant.  `= true`. -/
+def fxBrauer_hasCapPreservation : Bool := true
+
+/-- **Honesty marker — the FULL T-DISJOINT leg (`R3-A-TAGCORR` long pole) is NOT closed.**  THE CAP preservation is
+now SHIPPED (`boundedBoundaryComponents_stepCap`, see `fxBrauer_hasCapPreservation`).  Still UNBUILT this round: the
+CUP + CROSSING per-atom preservation (cup: the confined FRESH join `unionFindJoin links nextFresh (nextFresh+1)`, the
+reads reindex UP by two past the window — the natural `index - 2` reindex hits the `propext` subtraction wall
+[`Nat.sub_add_cancel` leaks], so an ADDITIVE recover-witness `index = oldIdx + 2` is required; crossing: the novel
+two-join transposition with no Frobenius analog), the `stepWiring _ _ capWiring = stepCap` bridge (conditional on the
+window in range: `natListRemoveManyAt _ _ 2 = natListRemoveTwoAt` + `natListInsertAt _ _ [] = id` + the single-arc
+`stepWiringArcs` fold), the `processBrauer` FOLD lift (ride `brauerStateConditions_processBrauer` +
+`processBrauer_wireListDistinct`, dispatching on the generator kind with a per-atom window-in-range predicate), and
+the EXTRACTION consequence (cardinality + T-CONNECT => `partnerIndexOf` reads the `d`-partner, a
+`findPartnerScan`-uniqueness lemma).  So T-DISJOINT stays open, the roundtrip flags and masters stay `false`, and
+#2013 does not close — a ROUTE / totality gap, never a truth gap (Lehrer-Zhang arXiv:1207.5889 Thm 2.6).
+`= false`. -/
 def fxBrauer_hasTagCorrDisjoint : Bool := false
 
 end FX1Poly.Polygraph

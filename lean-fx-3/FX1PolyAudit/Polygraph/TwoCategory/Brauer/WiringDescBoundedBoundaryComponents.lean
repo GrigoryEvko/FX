@@ -23,6 +23,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.boundedBoundaryComponentsCheck_capThenCup
 #assert_no_axioms FX1Poly.Polygraph.boundedBoundaryComponents_stepCap
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBoundedBoundaryComponentsSeed
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCapPreservation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasTagCorrDisjoint
 
 end FX1PolyAudit
