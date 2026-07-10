@@ -3,6 +3,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingGodement
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryReads
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescReachable
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEvents
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescPortReconnection
 
 /-! # BRAUER-MIDDLE r6 B1 (partial) — the T-DISJOINT invariant `boundedBoundaryComponents`, its seed base case,
 and non-vacuity (the forest-cardinality "no over-connection" core of R3-A-TAGCORR)
@@ -808,6 +809,157 @@ theorem boundedBoundaryComponents_stepCup (bottomCount : Nat) (state : WireState
           (hidxS.trans ((congrArg (capBoundaryReindex bottomCount position) heq).trans hidxT.symm))
         exact bounded preF preS preT preFrange preSrange preTrange preFneS preFneT preSneT ⟨sfs, sft⟩
 
+/-! ## B2 — THE CROSSING preservation: the two-join transposition transport
+
+`stepWiring _ _ crossingWiring` fires two joins, `join (join links in0 (nextFresh+1)) in1 nextFresh`, whose SECOND
+endpoints (`nextFresh+1`, `nextFresh`) are FRESH.  So the crossing is invisible to two OLD boundary reads, and the
+two window slots read the fresh outputs which reconnect (transposed) to the OLD window strands `in0`, `in1`.  The
+after-view is the before-view precomposed with the window transposition `tau` — a bijective relabel, not a
+cardinality count.  These node-level lemmas compute the crossing's same-component view on every read pair; the
+transposition-transport and the preservation ride them. -/
+
+/-- A fresh pair `nextFresh`, `nextFresh + 1` is never already connected (both out of support, distinct). -/
+private theorem sameComponent_freshPairBBC (state : WireState) (fresh : WiringDescStateFresh state) :
+    isSameComponent state.links state.nextFresh (state.nextFresh + 1) = false :=
+  isSameComponent_freshPair_eq_false state.nextFresh state.links
+    (fun edge edgeMem => (fresh.2 edge edgeMem).1) state.nextFresh (Nat.le_refl state.nextFresh)
+
+/-- Same-component left congruence: joined heads see the same neighbours. -/
+private theorem isSameComponent_congrLeftBBC (links : List (Nat × Nat)) (nodeA nodeB nodeC : Nat)
+    (sameAB : isSameComponent links nodeA nodeB = true) :
+    isSameComponent links nodeA nodeC = isSameComponent links nodeB nodeC := by
+  show (unionFindRootOf links nodeA == unionFindRootOf links nodeC)
+    = (unionFindRootOf links nodeB == unionFindRootOf links nodeC)
+  rw [of_decide_eq_true sameAB]
+
+/-- Same-component right congruence. -/
+private theorem isSameComponent_congrRightBBC (links : List (Nat × Nat)) (nodeA nodeB nodeC : Nat)
+    (sameBC : isSameComponent links nodeB nodeC = true) :
+    isSameComponent links nodeA nodeB = isSameComponent links nodeA nodeC := by
+  show (unionFindRootOf links nodeA == unionFindRootOf links nodeB)
+    = (unionFindRootOf links nodeA == unionFindRootOf links nodeC)
+  rw [of_decide_eq_true sameBC]
+
+/-- The fresh LEFT input `nextFresh` is disconnected, under the FIRST crossing join `join links in0 (nextFresh+1)`,
+from every old node. -/
+private theorem crossing_nf_disc_J1_BBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (in0 oldNode : Nat) (oldBelow : oldNode < state.nextFresh) :
+    isSameComponent (unionFindJoin state.links in0 (state.nextFresh + 1)) state.nextFresh oldNode = false := by
+  rw [isSameComponent_unionFindJoin_eq_ofSecondDisconnected state.links forest in0 (state.nextFresh + 1)
+      state.nextFresh oldNode
+      ((isSameComponent_symm state.links (state.nextFresh + 1) state.nextFresh).trans
+        (sameComponent_freshPairBBC state fresh))
+      (sameComponent_nextFreshSucc_old_falseBBC state fresh oldNode oldBelow)]
+  exact sameComponent_nextFresh_old_falseBBC state fresh oldNode oldBelow
+
+/-- ★ **The crossing is invisible to two OLD boundary nodes** — both joins' fresh second endpoints are disconnected
+from either old probe (two applications of the second-endpoint converse). -/
+private theorem crossingJoin_oldOldBBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (in0 in1 nodeX nodeY : Nat)
+    (xBelow : nodeX < state.nextFresh) (yBelow : nodeY < state.nextFresh) :
+    isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+        nodeX nodeY
+      = isSameComponent state.links nodeX nodeY := by
+  rw [isSameComponent_unionFindJoin_eq_ofSecondDisconnected (unionFindJoin state.links in0 (state.nextFresh + 1))
+      (isUnionFindForest_unionFindJoin state.links in0 (state.nextFresh + 1) forest) in1 state.nextFresh nodeX nodeY
+      (crossing_nf_disc_J1_BBC state forest fresh in0 nodeX xBelow)
+      (crossing_nf_disc_J1_BBC state forest fresh in0 nodeY yBelow),
+    isSameComponent_unionFindJoin_eq_ofSecondDisconnected state.links forest in0 (state.nextFresh + 1) nodeX nodeY
+      (sameComponent_nextFreshSucc_old_falseBBC state fresh nodeX xBelow)
+      (sameComponent_nextFreshSucc_old_falseBBC state fresh nodeY yBelow)]
+
+/-- The crossing joins its LEFT fresh output `nextFresh` to the SECOND window strand `in1`. -/
+private theorem crossing_nf_join_in1_BBC (state : WireState) (forest : isUnionFindForest state.links)
+    (in0 in1 : Nat) :
+    isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+        in1 state.nextFresh = true :=
+  isSameComponent_unionFindJoin_joined (unionFindJoin state.links in0 (state.nextFresh + 1))
+    (isUnionFindForest_unionFindJoin state.links in0 (state.nextFresh + 1) forest) in1 state.nextFresh
+
+/-- The crossing joins its RIGHT fresh output `nextFresh + 1` to the FIRST window strand `in0` (survives the outer
+join by monotonicity). -/
+private theorem crossing_nfSucc_join_in0_BBC (state : WireState) (forest : isUnionFindForest state.links)
+    (in0 in1 : Nat) :
+    isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+        in0 (state.nextFresh + 1) = true :=
+  isSameComponent_unionFindJoin_ofBase (unionFindJoin state.links in0 (state.nextFresh + 1))
+    (isUnionFindForest_unionFindJoin state.links in0 (state.nextFresh + 1) forest) in1 state.nextFresh
+    in0 (state.nextFresh + 1)
+    (isSameComponent_unionFindJoin_joined state.links forest in0 (state.nextFresh + 1))
+
+/-- ★ The crossing's LEFT window read (`nextFresh`) shares a component with an old node iff the SECOND window
+strand `in1` did before — the transposition on window slot 0. -/
+private theorem crossingJoin_nf_oldBBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (in0 in1 oldNode : Nat)
+    (in1Below : in1 < state.nextFresh) (oldBelow : oldNode < state.nextFresh) :
+    isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+        state.nextFresh oldNode
+      = isSameComponent state.links in1 oldNode := by
+  rw [isSameComponent_congrLeftBBC (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1
+        state.nextFresh) state.nextFresh in1 oldNode
+      ((isSameComponent_symm _ state.nextFresh in1).trans (crossing_nf_join_in1_BBC state forest in0 in1))]
+  exact crossingJoin_oldOldBBC state forest fresh in0 in1 in1 oldNode in1Below oldBelow
+
+/-- ★ The crossing's RIGHT window read (`nextFresh + 1`) shares a component with an old node iff the FIRST window
+strand `in0` did before — the transposition on window slot 1. -/
+private theorem crossingJoin_nfSucc_oldBBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (in0 in1 oldNode : Nat)
+    (in0Below : in0 < state.nextFresh) (oldBelow : oldNode < state.nextFresh) :
+    isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+        (state.nextFresh + 1) oldNode
+      = isSameComponent state.links in0 oldNode := by
+  rw [isSameComponent_congrLeftBBC (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1
+        state.nextFresh) (state.nextFresh + 1) in0 oldNode
+      ((isSameComponent_symm _ (state.nextFresh + 1) in0).trans (crossing_nfSucc_join_in0_BBC state forest in0 in1))]
+  exact crossingJoin_oldOldBBC state forest fresh in0 in1 in0 oldNode in0Below oldBelow
+
+/-- ★ The crossing's two window reads (`nextFresh`, `nextFresh + 1`) share a component iff the two window strands
+`in1`, `in0` did before. -/
+private theorem crossingJoin_nf_nfSuccBBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (in0 in1 : Nat)
+    (in0Below : in0 < state.nextFresh) (in1Below : in1 < state.nextFresh) :
+    isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+        state.nextFresh (state.nextFresh + 1)
+      = isSameComponent state.links in1 in0 := by
+  rw [isSameComponent_congrLeftBBC (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1
+        state.nextFresh) state.nextFresh in1 (state.nextFresh + 1)
+      ((isSameComponent_symm _ state.nextFresh in1).trans (crossing_nf_join_in1_BBC state forest in0 in1)),
+    isSameComponent_congrRightBBC (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1
+        state.nextFresh) in1 (state.nextFresh + 1) in0
+      ((isSameComponent_symm _ (state.nextFresh + 1) in0).trans (crossing_nfSucc_join_in0_BBC state forest in0 in1))]
+  exact crossingJoin_oldOldBBC state forest fresh in0 in1 in1 in0 in1Below in0Below
+
+/-- ★ **THE CROSSING transposition on the same-component view.**  For the crossing's two-join link update
+`unionFindJoin (unionFindJoin links in0 (nextFresh + 1)) in1 nextFresh` (both joins carrying a FRESH second
+endpoint), the same-component view is the window transposition of the base view: (1) two OLD nodes are unchanged;
+(2) the LEFT fresh output `nextFresh` reads the SECOND window strand `in1`'s class; (3) the RIGHT fresh output
+`nextFresh + 1` reads the FIRST window strand `in0`'s class; (4) the two fresh outputs share iff the two window
+strands did.  This is the connectivity crux of the crossing's `boundedBoundaryComponents` preservation — a bijective
+relabel (no cardinality count, no Frobenius analog).  Zero-axiom (pure union-find; the fresh endpoints make each
+join invisible to old nodes via the second-endpoint converse). -/
+theorem crossingJoin_transposition_view (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (in0 in1 : Nat)
+    (in0Below : in0 < state.nextFresh) (in1Below : in1 < state.nextFresh) :
+    (∀ nodeX nodeY, nodeX < state.nextFresh → nodeY < state.nextFresh →
+        isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+            nodeX nodeY
+          = isSameComponent state.links nodeX nodeY)
+    ∧ (∀ nodeX, nodeX < state.nextFresh →
+        isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+            state.nextFresh nodeX
+          = isSameComponent state.links in1 nodeX)
+    ∧ (∀ nodeX, nodeX < state.nextFresh →
+        isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+            (state.nextFresh + 1) nodeX
+          = isSameComponent state.links in0 nodeX)
+    ∧ isSameComponent (unionFindJoin (unionFindJoin state.links in0 (state.nextFresh + 1)) in1 state.nextFresh)
+          state.nextFresh (state.nextFresh + 1)
+        = isSameComponent state.links in1 in0 :=
+  ⟨fun nodeX nodeY xBelow yBelow => crossingJoin_oldOldBBC state forest fresh in0 in1 nodeX nodeY xBelow yBelow,
+   fun nodeX xBelow => crossingJoin_nf_oldBBC state forest fresh in0 in1 nodeX in1Below xBelow,
+   fun nodeX xBelow => crossingJoin_nfSucc_oldBBC state forest fresh in0 in1 nodeX in0Below xBelow,
+   crossingJoin_nf_nfSuccBBC state forest fresh in0 in1 in0Below in1Below⟩
+
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the T-DISJOINT invariant, its seed, and non-vacuity are SHIPPED (r6 B1 partial).**
@@ -831,18 +983,41 @@ sharing a component: each index is forced by the before-invariant (through the m
 (`position + 2 <= openWires.length`) + the forest invariant.  `= true`. -/
 def fxBrauer_hasCapPreservation : Bool := true
 
-/-- **Honesty marker — the FULL T-DISJOINT leg (`R3-A-TAGCORR` long pole) is NOT closed.**  THE CAP preservation is
-now SHIPPED (`boundedBoundaryComponents_stepCap`, see `fxBrauer_hasCapPreservation`).  Still UNBUILT this round: the
-CUP + CROSSING per-atom preservation (cup: the confined FRESH join `unionFindJoin links nextFresh (nextFresh+1)`, the
-reads reindex UP by two past the window — the natural `index - 2` reindex hits the `propext` subtraction wall
-[`Nat.sub_add_cancel` leaks], so an ADDITIVE recover-witness `index = oldIdx + 2` is required; crossing: the novel
-two-join transposition with no Frobenius analog), the `stepWiring _ _ capWiring = stepCap` bridge (conditional on the
-window in range: `natListRemoveManyAt _ _ 2 = natListRemoveTwoAt` + `natListInsertAt _ _ [] = id` + the single-arc
-`stepWiringArcs` fold), the `processBrauer` FOLD lift (ride `brauerStateConditions_processBrauer` +
-`processBrauer_wireListDistinct`, dispatching on the generator kind with a per-atom window-in-range predicate), and
-the EXTRACTION consequence (cardinality + T-CONNECT => `partnerIndexOf` reads the `d`-partner, a
-`findPartnerScan`-uniqueness lemma).  So T-DISJOINT stays open, the roundtrip flags and masters stay `false`, and
-#2013 does not close — a ROUTE / totality gap, never a truth gap (Lehrer-Zhang arXiv:1207.5889 Thm 2.6).
+/-- ★ **Honesty marker — THE CUP preservation is SHIPPED (r8 B1).**  `boundedBoundaryComponents_stepCup`:
+`boundedBoundaryComponents` survives an in-range `stepCup`.  The cup splices two FRESH legs `nextFresh`,
+`nextFresh + 1` and joins them; both endpoints being fresh, the join is invisible to old boundary reads
+(`cupJoin_inert_oldBBC`) and the fresh pair forms its own two-element component (`cupJoin_nextFresh{,Succ}_old_falseBBC`).
+The read classification `cupReadClassBBC` sends every post-cup boundary index to a fresh leg or an old node reindexed
+by the cap's ADDITIVE up-shift `capBoundaryReindex` (NO `index - 2` subtraction — the `propext` wall the r7 marker
+flagged is avoided).  An index reading a fresh leg forces every co-component index to read a fresh leg too, and only
+two indices do (a pigeonhole); the all-old case transports the star to the base invariant.  Zero-axiom.  Requires
+the four reachable-state conditions + the cup window in range (`position <= openWires.length`).  `= true`. -/
+def fxBrauer_hasCupPreservation : Bool := true
+
+/-- ★ **Honesty marker — THE CROSSING transposition on the same-component view is SHIPPED (r8 B2, the connectivity
+crux).**  `crossingJoin_transposition_view`: for the crossing's two-join link update
+`unionFindJoin (unionFindJoin links in0 (nextFresh + 1)) in1 nextFresh` (both joins carrying a FRESH second endpoint),
+the same-component view is the window TRANSPOSITION of the base view — two old nodes unchanged
+(`crossingJoin_oldOldBBC`, two applications of the second-endpoint converse), the LEFT fresh output reading the SECOND
+window strand's class (`crossingJoin_nf_oldBBC`), the RIGHT fresh output the FIRST strand's class
+(`crossingJoin_nfSucc_oldBBC`), the two outputs sharing iff the two strands did (`crossingJoin_nf_nfSuccBBC`).  This
+is the novel two-join transposition connectivity with no Frobenius analog — a bijective relabel, proved zero-axiom by
+pure union-find (fresh-endpoint invisibility + same-component congruence).  `= true`. -/
+def fxBrauer_hasCrossingTranspositionView : Bool := true
+
+/-- **Honesty marker — the FULL T-DISJOINT leg (`R3-A-TAGCORR` long pole) is NOT closed.**  SHIPPED this round: THE
+CAP preservation (`boundedBoundaryComponents_stepCap`, `fxBrauer_hasCapPreservation`), THE CUP preservation
+(`boundedBoundaryComponents_stepCup`, `fxBrauer_hasCupPreservation`), and THE CROSSING transposition on the
+same-component view (`crossingJoin_transposition_view`, `fxBrauer_hasCrossingTranspositionView`).  Still UNBUILT: the
+CROSSING per-atom `boundedBoundaryComponents` PRESERVATION (assembling the shipped transposition view over the
+crossing boundary-read classification — window slots read the fresh outputs, other slots read old nodes at the SAME
+index since the crossing preserves length — and transporting a would-be violating triple back through the window
+transposition `tau` to a base triple; the read kit `stepWiring_crossing_links` / `stepWiringOpenRead_*` is currently
+PRIVATE), the `stepWiring _ _ capWiring = stepCap` / `stepWiring _ _ cupWiring = stepCup` bridges (conditional on the
+window in range + freshness), the `processBrauer` FOLD lift (ride `brauerStateConditions_processBrauer`, dispatching
+on the generator kind with a per-atom window-in-range predicate), and the EXTRACTION consequence (cardinality +
+T-CONNECT => `partnerIndexOf` reads the `d`-partner).  So T-DISJOINT stays open, the roundtrip flags and masters stay
+`false`, and #2013 does not close — a ROUTE / totality gap, never a truth gap (Lehrer-Zhang arXiv:1207.5889 Thm 2.6).
 `= false`. -/
 def fxBrauer_hasTagCorrDisjoint : Bool := false
 
