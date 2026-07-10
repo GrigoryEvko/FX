@@ -1864,4 +1864,222 @@ def SmithCascadeReDiagonalizesStatement : Prop :=
               (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
                 matrix pivotIndex height width)).diagonalEntryAt laterIndex))
 
+/-! ## The CORRECTED r6 poles + their truth probes (H2-SMITH r6, B1)
+
+The r5 refutation of `SmithCascadeReDiagonalizesStatement` (above) demanded the corrected pole be
+stated over the POST-FOLD window shape, and it warned of the R1 trap: a naive "the pivot gcd divides
+ALL later diagonal entries" clause REPEATS the r5 mistake.  On `diag(6, 10, 15)` one fold + cascade at
+pivot 0 lands `gcd(6, 10) = 2` at the pivot and pushes `lcm = 30` down, leaving `diag(2, 30, 15)` — and
+`2 ∤ 15`.  So the atomic per-fold guarantee CANNOT say "divides all later"; it says "divides the two
+folded operands `d_p`, `d_q`" only.  The two corrected poles, stated at two granularities:
+
+  * **POLE-A** `SmithCascadeReDiagonalizesPostFoldStatement` — the DIRECT correction of the refuted
+    cascade decl: after folding the non-dividing `foundPos` row into the pivot row and re-firing
+    `smithCascadeSweep`, the pivot cross is clear, the sub-block `≥ pivotIndex + 1` is window-diagonal,
+    and the landed pivot divides BOTH folded operands (the WEAKENED clause — never "all later").
+  * **POLE-B** `SmithRepairChainDiagonalizesStatement` — the ASSEMBLY-facing end-to-end pole: the whole
+    `smithDivisibilityRepairSweep` takes a window-diagonal input to a window-diagonal output whose
+    FULL prefix chain divides (`SmithChainPrefix`).  Sign-blind (`dividesExactly` survives the transient
+    negatives the Euclid clears leave; nonnegativity is the sign phase's exclusive job — POLE-B does NOT
+    claim it, the r5 R4 caution).
+
+Neither is inhabited this round (their inhabitant is the deep Gaussian-elimination correctness pole,
+still the named r7 wall).  What ships here is the r6 forward-statement discipline: BEFORE any proof
+work, each pole is machine-checked to HOLD on both adversarial inputs — `diag(2, 3)` (the r5 refutation
+input) and `diag(6, 10, 15)` (the R1-trap input) — as kernel-checked, zero-axiom truth probes.  The
+statements HELD on every probe; had any probe failed, the pole would be re-stated, not proved.  The
+`smithCascadePostFoldDividesAllFailsOnSixTenFifteen` probe kernel-checks the R1 trap itself (`2 ∤ 15`),
+so the reason the clause is WEAKENED is a machine-checked fact, not a claim. -/
+
+/-- **POLE-A — the corrected post-fold cascade re-diagonalization (WEAKENED divides clause)** — the
+direct correction of the refuted `SmithCascadeReDiagonalizesStatement`: on a window-diagonal `matrix`
+with a later diagonal `foundPos` the pivot does NOT divide, folding row `foundPos` into the pivot row
+(`addRowMultiple foundPos pivotIndex 1`) and re-firing the Euclid cascade at the pivot (a) clears the
+pivot cross, (b) leaves the sub-block `≥ pivotIndex + 1` window-diagonal, and (c) lands a pivot that
+divides the two folded operands `d_p` and `d_q` — and ONLY those two (the R1-trap-safe clause; the
+cascade need NOT make the pivot divide entries beyond `foundPos`, as `diag(6, 10, 15)` witnesses).
+Truth-probed on `diag(2, 3)` and `diag(6, 10, 15)` below; NOT inhabited (the r7 elimination pole). -/
+def SmithCascadeReDiagonalizesPostFoldStatement : Prop :=
+  ∀ (matrix : IntMatrix) (pivotIndex foundPos height width : Nat),
+    matrix.IsRectangular height width →
+    IsWindowDiagonal matrix pivotIndex height width →
+    pivotIndex < foundPos → foundPos < Nat.min height width →
+    ¬ dividesExactly (matrix.diagonalEntryAt pivotIndex) (matrix.diagonalEntryAt foundPos) →
+    let folded := matrix.addRowMultiple foundPos pivotIndex 1
+    let cascaded := folded.applyOperations
+        (smithCascadeSweep (smithMinorAbsSum folded pivotIndex height width)
+          folded pivotIndex height width)
+    smithCrossIsClear cascaded pivotIndex height width = true
+      ∧ IsWindowDiagonal cascaded (pivotIndex + 1) height width
+      ∧ dividesExactly (cascaded.diagonalEntryAt pivotIndex) (matrix.diagonalEntryAt pivotIndex)
+      ∧ dividesExactly (cascaded.diagonalEntryAt pivotIndex) (matrix.diagonalEntryAt foundPos)
+
+/-- **POLE-B — the end-to-end repair-sweep chain diagonalization (sign-blind)** — the assembly-facing
+corrected pole: the whole top-down `smithDivisibilityRepairSweep` takes a window-diagonal `matrix` to a
+window-diagonal `repaired` whose FULL settled prefix chain divides (`SmithChainPrefix` — every earlier
+diagonal divides every later one across the whole `Nat.min height width` window).  This is the clean
+"divides all" chain POLE-A cannot state per fold: it holds only END-TO-END, after the fold loop has
+settled every position.  Deliberately sign-BLIND — the repair output carries transient negatives
+(`diag(1, 30, -30)` on `diag(6, 10, 15)`), so `dividesExactly` (which ignores sign) is used, NOT
+nonnegativity (the sign phase's exclusive job).  POLE-B composes with `smithReduceFullApplied` toward
+`SmithReduceFullDriverStatement`.  Truth-probed on `diag(2, 3)` and `diag(6, 10, 15)` below; NOT
+inhabited (rides the same r7 cascade pole as POLE-A). -/
+def SmithRepairChainDiagonalizesStatement : Prop :=
+  ∀ (matrix : IntMatrix) (height width : Nat),
+    matrix.IsRectangular height width →
+    IsWindowDiagonal matrix 0 height width →
+    let repaired := matrix.applyOperations
+        (smithDivisibilityRepairSweep (Nat.min height width) matrix 0 height width)
+    IsWindowDiagonal repaired 0 height width
+      ∧ SmithChainPrefix repaired (Nat.min height width) height width
+
+/-- **Truth probe A1 — POLE-A holds on `diag(2, 3)` (the r5 refutation input)** — folding row 1 into the
+pivot row gives `[[2, 3], [0, 3]]`; the re-fired cascade Euclid-clears `(2, 3)` to `gcd = 1` at the
+pivot and pushes `lcm = 6` down, reaching `[[1, 0], [0, -6]]`.  The pivot cross is clear, the `1 × 1`
+sub-block is (vacuously) window-diagonal, and `gcd = 1` divides both `d_p = 2` and `d_q = 3`.  Each
+clause closes on the LITERAL cascade output by defeq (`decide` on the Bool, the decidable-window map on
+the sub-block, hand-built witnesses `⟨2, rfl⟩` / `⟨3, rfl⟩` for the divisibilities). -/
+theorem smithCascadePostFoldHoldsOnCoprimeTwoThree :
+    let folded := ({ rows := [[2, 0], [0, 3]] } : IntMatrix).addRowMultiple 1 0 1
+    let cascaded := folded.applyOperations
+        (smithCascadeSweep (smithMinorAbsSum folded 0 2 2) folded 0 2 2)
+    smithCrossIsClear cascaded 0 2 2 = true
+      ∧ IsWindowDiagonal cascaded 1 2 2
+      ∧ dividesExactly (cascaded.diagonalEntryAt 0)
+          (({ rows := [[2, 0], [0, 3]] } : IntMatrix).diagonalEntryAt 0)
+      ∧ dividesExactly (cascaded.diagonalEntryAt 0)
+          (({ rows := [[2, 0], [0, 3]] } : IntMatrix).diagonalEntryAt 1) :=
+  ⟨by decide,
+   show IsWindowDiagonal ({ rows := [[1, 0], [0, -6]] } : IntMatrix) 1 2 2 from
+     fun rowIndex colIndex oneLeRow rowLt2 oneLeCol colLt2 rowNeCol =>
+       (by decide : ∀ rr, rr < 2 → ∀ cc, cc < 2 → 1 ≤ rr → 1 ≤ cc → rr ≠ cc →
+           ({ rows := [[1, 0], [0, -6]] } : IntMatrix).entryAt rr cc = 0)
+         rowIndex rowLt2 colIndex colLt2 oneLeRow oneLeCol rowNeCol,
+   ⟨2, rfl⟩,
+   ⟨3, rfl⟩⟩
+
+/-- **Truth probe A2 — POLE-A holds on `diag(6, 10, 15)` (the R1-trap input)** — folding row 1 into the
+pivot row gives `[[6, 10, 0], [0, 10, 0], [0, 0, 15]]`; one cascade lands `gcd(6, 10) = 2` at the pivot
+and pushes `lcm = 30` down, reaching `[[2, 0, 0], [0, 30, 0], [0, 0, 15]]`.  The pivot cross is clear,
+the `2 × 2` sub-block is window-diagonal, and the landed `2` divides both folded operands `d_p = 6`
+(`⟨3, rfl⟩`) and `d_q = 10` (`⟨5, rfl⟩`).  Crucially `2 ∤ 15` here (the untouched `d_2`), which is why
+POLE-A's clause is WEAKENED to the two folded operands — see
+`smithCascadePostFoldDividesAllFailsOnSixTenFifteen`. -/
+theorem smithCascadePostFoldHoldsOnSixTenFifteen :
+    let folded := ({ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 15]] } : IntMatrix).addRowMultiple 1 0 1
+    let cascaded := folded.applyOperations
+        (smithCascadeSweep (smithMinorAbsSum folded 0 3 3) folded 0 3 3)
+    smithCrossIsClear cascaded 0 3 3 = true
+      ∧ IsWindowDiagonal cascaded 1 3 3
+      ∧ dividesExactly (cascaded.diagonalEntryAt 0)
+          (({ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 15]] } : IntMatrix).diagonalEntryAt 0)
+      ∧ dividesExactly (cascaded.diagonalEntryAt 0)
+          (({ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 15]] } : IntMatrix).diagonalEntryAt 1) :=
+  ⟨by decide,
+   show IsWindowDiagonal ({ rows := [[2, 0, 0], [0, 30, 0], [0, 0, 15]] } : IntMatrix) 1 3 3 from
+     fun rowIndex colIndex oneLeRow rowLt3 oneLeCol colLt3 rowNeCol =>
+       (by decide : ∀ rr, rr < 3 → ∀ cc, cc < 3 → 1 ≤ rr → 1 ≤ cc → rr ≠ cc →
+           ({ rows := [[2, 0, 0], [0, 30, 0], [0, 0, 15]] } : IntMatrix).entryAt rr cc = 0)
+         rowIndex rowLt3 colIndex colLt3 oneLeRow oneLeCol rowNeCol,
+   ⟨3, rfl⟩,
+   ⟨5, rfl⟩⟩
+
+/-- **The R1 guard — "divides ALL later" is FALSE on `diag(6, 10, 15)`** — the post-fold cascade's
+landed pivot `2` does NOT divide the untouched third diagonal `15`.  This kernel-checks the exact trap
+the r5 caution names: had POLE-A demanded the pivot divide every later entry, it would be REFUTED here.
+Refutes `dividesExactly 2 15` by pushing the `∃`-witness through `natAbs` (`intNatAbsMul`) to
+`NatDivides 2 15` and collapsing the counting remainder (`natDividesRemainderIsZero`, computing to
+`1 ≠ 0`) — the same shape as the r4 refutation `smithReduceTotalIsNotFullyReducing`. -/
+theorem smithCascadePostFoldDividesAllFailsOnSixTenFifteen :
+    let folded := ({ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 15]] } : IntMatrix).addRowMultiple 1 0 1
+    let cascaded := folded.applyOperations
+        (smithCascadeSweep (smithMinorAbsSum folded 0 3 3) folded 0 3 3)
+    ¬ dividesExactly (cascaded.diagonalEntryAt 0) (cascaded.diagonalEntryAt 2) :=
+  fun ⟨factor, fifteenEqTwoFactor⟩ =>
+    have dividesNat : NatDivides 2 15 :=
+      ⟨factor.natAbs,
+        (congrArg Int.natAbs fifteenEqTwoFactor).trans (intNatAbsMul 2 factor)⟩
+    absurd (natDividesRemainderIsZero (by decide) dividesNat) (by decide)
+
+/-- **Truth probe B1 — POLE-B holds on `diag(2, 3)`** — the end-to-end repair sweep reduces `diag(2, 3)`
+to `[[1, 0], [0, -6]]` (diagonal, transient negative, full chain `1 | -6`).  The window stays diagonal
+(decidable-window map), and the full prefix chain divides: `1 | 1`, `1 | -6`, `-6 | -6` (hand-built
+witnesses over the 2-position interval, impossible index pairs discharged by the shipped Nat peel
+`natLeOfSuccLeSucc` / `natEqZeroOfLeZero` idiom). -/
+theorem smithRepairChainHoldsOnCoprimeTwoThree :
+    let repaired := ({ rows := [[2, 0], [0, 3]] } : IntMatrix).applyOperations
+        (smithDivisibilityRepairSweep (Nat.min 2 2) { rows := [[2, 0], [0, 3]] } 0 2 2)
+    IsWindowDiagonal repaired 0 2 2
+      ∧ SmithChainPrefix repaired (Nat.min 2 2) 2 2 :=
+  ⟨show IsWindowDiagonal ({ rows := [[1, 0], [0, -6]] } : IntMatrix) 0 2 2 from
+     fun rowIndex colIndex _zeroLeRow rowLt2 _zeroLeCol colLt2 rowNeCol =>
+       (by decide : ∀ rr, rr < 2 → ∀ cc, cc < 2 → rr ≠ cc →
+           ({ rows := [[1, 0], [0, -6]] } : IntMatrix).entryAt rr cc = 0)
+         rowIndex rowLt2 colIndex colLt2 rowNeCol,
+   show SmithChainPrefix ({ rows := [[1, 0], [0, -6]] } : IntMatrix) 2 2 2 from
+     fun earlierIndex earlierLt laterIndex earlierLe laterLt =>
+       match earlierIndex, laterIndex, earlierLt, earlierLe, laterLt with
+       | 0, 0, _, _, _ => ⟨1, rfl⟩
+       | 0, 1, _, _, _ => ⟨-6, rfl⟩
+       | 0, _ + 2, _, _, laterLt =>
+           Nat.noConfusion
+             (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc laterLt)))
+       | 1, 0, _, earlierLe, _ => Nat.noConfusion (natEqZeroOfLeZero earlierLe)
+       | 1, 1, _, _, _ => ⟨1, rfl⟩
+       | 1, _ + 2, _, _, laterLt =>
+           Nat.noConfusion
+             (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc laterLt)))
+       | _ + 2, _, earlierLt, _, _ =>
+           Nat.noConfusion
+             (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc earlierLt)))⟩
+
+/-- **Truth probe B2 — POLE-B holds on `diag(6, 10, 15)` (the R1-trap input, end-to-end)** — the
+end-to-end repair sweep reduces `diag(6, 10, 15)` to `[[1, 0, 0], [0, 30, 0], [0, 0, -30]]` (diagonal,
+transient negative, full chain `1 | 30 | -30`).  Where POLE-A's single fold could only land the two
+folded operands (`2 ∤ 15`), the FULL sweep settles every position: `gcd(6, 10, 15) = 1` at the pivot,
+then `diag(30, -30)` in the sub-block, giving the clean "divides all" chain POLE-B demands (`1` divides
+`30` and `-30`; `30 | -30`).  Sign-blind: the transient `-30` survives; nonnegativity is the sign
+phase's job, not POLE-B's.  The 3-position prefix chain is discharged by hand-built witnesses with the
+shipped Nat peel idiom for the impossible index pairs. -/
+theorem smithRepairChainHoldsOnSixTenFifteen :
+    let repaired := ({ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 15]] } : IntMatrix).applyOperations
+        (smithDivisibilityRepairSweep (Nat.min 3 3)
+          { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 15]] } 0 3 3)
+    IsWindowDiagonal repaired 0 3 3
+      ∧ SmithChainPrefix repaired (Nat.min 3 3) 3 3 :=
+  ⟨show IsWindowDiagonal ({ rows := [[1, 0, 0], [0, 30, 0], [0, 0, -30]] } : IntMatrix) 0 3 3 from
+     fun rowIndex colIndex _zeroLeRow rowLt3 _zeroLeCol colLt3 rowNeCol =>
+       (by decide : ∀ rr, rr < 3 → ∀ cc, cc < 3 → rr ≠ cc →
+           ({ rows := [[1, 0, 0], [0, 30, 0], [0, 0, -30]] } : IntMatrix).entryAt rr cc = 0)
+         rowIndex rowLt3 colIndex colLt3 rowNeCol,
+   show SmithChainPrefix ({ rows := [[1, 0, 0], [0, 30, 0], [0, 0, -30]] } : IntMatrix) 3 3 3 from
+     fun earlierIndex earlierLt laterIndex earlierLe laterLt =>
+       match earlierIndex, laterIndex, earlierLt, earlierLe, laterLt with
+       | 0, 0, _, _, _ => ⟨1, rfl⟩
+       | 0, 1, _, _, _ => ⟨30, rfl⟩
+       | 0, 2, _, _, _ => ⟨-30, rfl⟩
+       | 0, _ + 3, _, _, laterLt =>
+           Nat.noConfusion
+             (natEqZeroOfLeZero
+               (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc laterLt))))
+       | 1, 0, _, earlierLe, _ => Nat.noConfusion (natEqZeroOfLeZero earlierLe)
+       | 1, 1, _, _, _ => ⟨1, rfl⟩
+       | 1, 2, _, _, _ => ⟨-1, rfl⟩
+       | 1, _ + 3, _, _, laterLt =>
+           Nat.noConfusion
+             (natEqZeroOfLeZero
+               (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc laterLt))))
+       | 2, 0, _, earlierLe, _ => Nat.noConfusion (natEqZeroOfLeZero earlierLe)
+       | 2, 1, _, earlierLe, _ =>
+           Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc earlierLe))
+       | 2, 2, _, _, _ => ⟨1, rfl⟩
+       | 2, _ + 3, _, _, laterLt =>
+           Nat.noConfusion
+             (natEqZeroOfLeZero
+               (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc laterLt))))
+       | _ + 3, _, earlierLt, _, _ =>
+           Nat.noConfusion
+             (natEqZeroOfLeZero
+               (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc earlierLt))))⟩
+
 end FX1Poly.ComputerAlgebra
