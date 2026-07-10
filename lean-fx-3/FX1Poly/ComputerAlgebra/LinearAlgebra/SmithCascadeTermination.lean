@@ -29,9 +29,15 @@ diagonals, see `SmithNormalForm`'s refuted `SmithCascadeReDiagonalizesStatement`
     Composes the two above with the reconstruction; combined with the shipped
     `smithRotationDecreasesPivotSize` this is the single-step strict descent the cascade rides.
 
+  * **Minimal-magnitude search lower bound** (`smithFindMinAbsInMinorBoundsWitness` and the row/minor
+    scan lemmas beneath it): `smithFindMinAbsInMinor` returns a `some` position whose magnitude is
+    `≤` that of any nonzero entry in the pivot minor.  Feeding the parked residue as the witness gives
+    the cascade's next-pivot bound `found ≤ residue < pivot`.  Structural over the scans, with the
+    update-step guards navigated propext-cleanly (`natBeqZeroFalseOfNe`, `Nat.decLt`).
+
 The cascade-recursion ASSEMBLY that consumes this — the fuel-adequacy induction threading min-abs
 through `smithCascadeSweep` — is the r9 wall (the shared r3/r6 elimination-correctness node
-`SmithReduceFullDriverStatement`, uninhabited).  The scan lower-bound (r8b) is the sibling brick.
+`SmithReduceFullDriverStatement`, uninhabited).
 
 ## Zero-axiom
 
@@ -217,5 +223,268 @@ theorem smithSingleClearResidueLands {height width : Nat} (matrix : IntMatrix)
                   (intZeroAdd signedResidue)))))))
   (congrArg Int.natAbs (entryFormula.trans landsOnResidue)).trans
     (intMagnitudeSignedRemainderNatAbs pivot.natAbs old)
+
+/-! ## The minimal-magnitude search lower bound (the search-correctness sibling)
+
+The strict descent above shows the parked cross entry is a residue below the pivot; the cascade's
+next rotation searches the minor for a strictly smaller pivot.  For that search to make progress the
+selected minimal-magnitude entry must be a genuine LOWER BOUND — no larger than any particular
+nonzero entry present in the minor.  These lemmas discharge exactly that, at scan granularity: given
+a nonzero entry anywhere in the scanned region, `smithFindMinAbsInMinor` returns `some` position
+whose magnitude is `≤` the witness's.  Combined with the residue landing (witness := the parked
+residue) this is the r9 assembly's "found ≤ residue < pivot" step; here the search correctness stands
+alone as a function-correctness fact, refutation-immune.
+
+Each update step is characterized about the reduced `if`/`if`-chain a CONSTRUCTOR `best` produces
+(so the scan step is definitionally that same expression — a freshly written `match best with` would
+compile to a distinct match-auxiliary that is not defeq to the scan's internal one).  The `== 0`
+guard is navigated by the structural `natBeqZeroFalseOfNe` (no `LawfulBEq` reflection, which drags in
+`propext`), the `<` guard by `Nat.decLt` + `if_pos`/`if_neg`. -/
+
+/-- `magnitude == 0` is `false` for a positive `magnitude` — structural on `magnitude`, dodging the
+`propext`-tainted `LawfulBEq`-instance reflection route to `eq_of_beq`. -/
+theorem natBeqZeroFalseOfNe : ∀ magnitude : Nat, magnitude ≠ 0 → (magnitude == 0) = false
+  | 0, isNonzero => absurd rfl isNonzero
+  | _ + 1, _ => rfl
+
+/-- The row-scan update keeps a `some` best and never grows its magnitude (regardless of the current
+entry): the `== 0` branch keeps the best, the `<` branches take the strictly smaller or keep the
+best. -/
+theorem smithScanRowUpdateSomeBound (matrix : IntMatrix) (rowIndex colStart bestRow bestCol : Nat) :
+    ∃ foundRow foundCol,
+      (if (matrix.entryAt rowIndex colStart).natAbs == 0 then some (bestRow, bestCol)
+       else if (matrix.entryAt rowIndex colStart).natAbs
+              < (matrix.entryAt bestRow bestCol).natAbs then some (rowIndex, colStart)
+       else some (bestRow, bestCol)) = some (foundRow, foundCol)
+      ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt bestRow bestCol).natAbs :=
+  match (matrix.entryAt rowIndex colStart).natAbs == 0 with
+  | true => ⟨bestRow, bestCol, rfl, Nat.le_refl _⟩
+  | false =>
+      match Nat.decLt (matrix.entryAt rowIndex colStart).natAbs
+          (matrix.entryAt bestRow bestCol).natAbs with
+      | isTrue hLt =>
+          ⟨rowIndex, colStart,
+            (if_neg (fun isTrueEq => Bool.noConfusion isTrueEq)).trans (if_pos hLt),
+            Nat.le_of_lt hLt⟩
+      | isFalse hNlt =>
+          ⟨bestRow, bestCol,
+            (if_neg (fun isTrueEq => Bool.noConfusion isTrueEq)).trans (if_neg hNlt),
+            Nat.le_refl _⟩
+
+/-- The row-scan update at a nonzero entry with an empty best selects that entry — magnitude equal to
+this entry (the `== 0` branch is impossible, closed by `natBeqZeroFalseOfNe`). -/
+theorem smithScanRowUpdateNoneBound (matrix : IntMatrix) (rowIndex colStart : Nat)
+    (entryNonzero : (matrix.entryAt rowIndex colStart).natAbs ≠ 0) :
+    ∃ foundRow foundCol,
+      (if (matrix.entryAt rowIndex colStart).natAbs == 0 then none else some (rowIndex, colStart))
+        = some (foundRow, foundCol)
+      ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt rowIndex colStart).natAbs :=
+  ⟨rowIndex, colStart,
+    if_neg (fun isEqZero =>
+      Bool.noConfusion (isEqZero.symm.trans (natBeqZeroFalseOfNe _ entryNonzero))),
+    Nat.le_refl _⟩
+
+/-- The row-scan update at a nonzero entry with a `some` best keeps `some` with magnitude never
+exceeding THIS entry: the `<` branch takes the entry, the `≥` branch keeps a best already `≤` the
+entry. -/
+theorem smithScanRowUpdateSomeEntryBound (matrix : IntMatrix)
+    (rowIndex colStart bestRow bestCol : Nat)
+    (entryNonzero : (matrix.entryAt rowIndex colStart).natAbs ≠ 0) :
+    ∃ foundRow foundCol,
+      (if (matrix.entryAt rowIndex colStart).natAbs == 0 then some (bestRow, bestCol)
+       else if (matrix.entryAt rowIndex colStart).natAbs
+              < (matrix.entryAt bestRow bestCol).natAbs then some (rowIndex, colStart)
+       else some (bestRow, bestCol)) = some (foundRow, foundCol)
+      ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt rowIndex colStart).natAbs :=
+  match Nat.decLt (matrix.entryAt rowIndex colStart).natAbs
+      (matrix.entryAt bestRow bestCol).natAbs with
+  | isTrue hLt =>
+      ⟨rowIndex, colStart,
+        (if_neg (fun isEqZero =>
+          Bool.noConfusion (isEqZero.symm.trans (natBeqZeroFalseOfNe _ entryNonzero)))).trans
+          (if_pos hLt),
+        Nat.le_refl _⟩
+  | isFalse hNlt =>
+      ⟨bestRow, bestCol,
+        (if_neg (fun isEqZero =>
+          Bool.noConfusion (isEqZero.symm.trans (natBeqZeroFalseOfNe _ entryNonzero)))).trans
+          (if_neg hNlt),
+        (Nat.lt_or_ge (matrix.entryAt rowIndex colStart).natAbs
+            (matrix.entryAt bestRow bestCol).natAbs).elim (fun hLt => absurd hLt hNlt) id⟩
+
+/-- **Row scan preserves a `some` bound** — scanning any column window from a `some` best returns a
+`some` position whose magnitude is `≤` the incoming best's.  Structural on the column count, threading
+`smithScanRowUpdateSomeBound` through the recursion. -/
+theorem smithScanRowMinAbsPreservesSomeBound (matrix : IntMatrix) (rowIndex : Nat) :
+    ∀ (colCount colStart bestRow bestCol : Nat),
+      ∃ foundRow foundCol,
+        smithScanRowMinAbs matrix rowIndex colCount colStart (some (bestRow, bestCol))
+          = some (foundRow, foundCol)
+        ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt bestRow bestCol).natAbs
+  | 0, _, bestRow, bestCol => ⟨bestRow, bestCol, rfl, Nat.le_refl _⟩
+  | colCount + 1, colStart, bestRow, bestCol =>
+      match smithScanRowUpdateSomeBound matrix rowIndex colStart bestRow bestCol with
+      | ⟨updRow, updCol, updEq, updLe⟩ =>
+          match smithScanRowMinAbsPreservesSomeBound matrix rowIndex colCount (colStart + 1)
+              updRow updCol with
+          | ⟨foundRow, foundCol, foundEq, foundLe⟩ =>
+              ⟨foundRow, foundCol,
+                (congrArg (smithScanRowMinAbs matrix rowIndex colCount (colStart + 1)) updEq).trans
+                  foundEq,
+                Nat.le_trans foundLe updLe⟩
+
+/-- **Row scan lower bound at a witness** — if a nonzero entry sits at `witnessCol` within the scanned
+window, the scan returns `some` position whose magnitude is `≤` the witness's.  Structural on the
+column count; at the witness column (`Nat.le.dest` diff `0`) the update selects a magnitude `≤` the
+witness and `PreservesSomeBound` carries it to the end; past it (diff `+1`) the recursion advances one
+column with the guaranteed-`some` updated best. -/
+theorem smithScanRowMinAbsBoundsWitness (matrix : IntMatrix) (rowIndex : Nat) :
+    ∀ (colCount colStart witnessCol : Nat) (best : Option (Nat × Nat)),
+      colStart ≤ witnessCol → witnessCol < colStart + colCount →
+      (matrix.entryAt rowIndex witnessCol).natAbs ≠ 0 →
+      ∃ foundRow foundCol,
+        smithScanRowMinAbs matrix rowIndex colCount colStart best = some (foundRow, foundCol)
+        ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt rowIndex witnessCol).natAbs
+  | 0, colStart, witnessCol, _, witColGe, witColLt, _ =>
+      absurd (Nat.lt_of_lt_of_le witColLt witColGe) (Nat.lt_irrefl witnessCol)
+  | colCount + 1, colStart, witnessCol, none, witColGe, witColLt, witNonzero =>
+      match Nat.le.dest witColGe with
+      | ⟨0, colEq⟩ =>
+          have entryNonzeroHere : (matrix.entryAt rowIndex colStart).natAbs ≠ 0 :=
+            fun isZero => witNonzero
+              ((congrArg (fun col => (matrix.entryAt rowIndex col).natAbs) colEq).symm.trans isZero)
+          match smithScanRowUpdateNoneBound matrix rowIndex colStart entryNonzeroHere with
+          | ⟨updRow, updCol, updEq, updLe⟩ =>
+              match smithScanRowMinAbsPreservesSomeBound matrix rowIndex colCount (colStart + 1)
+                  updRow updCol with
+              | ⟨foundRow, foundCol, foundEq, foundLe⟩ =>
+                  ⟨foundRow, foundCol,
+                    (congrArg (smithScanRowMinAbs matrix rowIndex colCount (colStart + 1))
+                        updEq).trans foundEq,
+                    Nat.le_trans (Nat.le_trans foundLe updLe)
+                      (Nat.le_of_eq
+                        (congrArg (fun col => (matrix.entryAt rowIndex col).natAbs) colEq))⟩
+      | ⟨diff + 1, colEq⟩ =>
+          smithScanRowMinAbsBoundsWitness matrix rowIndex colCount (colStart + 1) witnessCol
+            (if (matrix.entryAt rowIndex colStart).natAbs == 0 then none
+             else some (rowIndex, colStart))
+            (Nat.le.intro ((Nat.succ_add colStart diff).trans colEq))
+            (Eq.mp (congrArg (witnessCol < ·) (Nat.succ_add colStart colCount).symm) witColLt)
+            witNonzero
+  | colCount + 1, colStart, witnessCol, some (bestRow, bestCol),
+      witColGe, witColLt, witNonzero =>
+      match Nat.le.dest witColGe with
+      | ⟨0, colEq⟩ =>
+          have entryNonzeroHere : (matrix.entryAt rowIndex colStart).natAbs ≠ 0 :=
+            fun isZero => witNonzero
+              ((congrArg (fun col => (matrix.entryAt rowIndex col).natAbs) colEq).symm.trans isZero)
+          match smithScanRowUpdateSomeEntryBound matrix rowIndex colStart bestRow bestCol
+              entryNonzeroHere with
+          | ⟨updRow, updCol, updEq, updLe⟩ =>
+              match smithScanRowMinAbsPreservesSomeBound matrix rowIndex colCount (colStart + 1)
+                  updRow updCol with
+              | ⟨foundRow, foundCol, foundEq, foundLe⟩ =>
+                  ⟨foundRow, foundCol,
+                    (congrArg (smithScanRowMinAbs matrix rowIndex colCount (colStart + 1))
+                        updEq).trans foundEq,
+                    Nat.le_trans (Nat.le_trans foundLe updLe)
+                      (Nat.le_of_eq
+                        (congrArg (fun col => (matrix.entryAt rowIndex col).natAbs) colEq))⟩
+      | ⟨diff + 1, colEq⟩ =>
+          smithScanRowMinAbsBoundsWitness matrix rowIndex colCount (colStart + 1) witnessCol
+            (if (matrix.entryAt rowIndex colStart).natAbs == 0 then some (bestRow, bestCol)
+             else if (matrix.entryAt rowIndex colStart).natAbs
+                    < (matrix.entryAt bestRow bestCol).natAbs then some (rowIndex, colStart)
+             else some (bestRow, bestCol))
+            (Nat.le.intro ((Nat.succ_add colStart diff).trans colEq))
+            (Eq.mp (congrArg (witnessCol < ·) (Nat.succ_add colStart colCount).symm) witColLt)
+            witNonzero
+
+/-- **Minor scan preserves a `some` bound** — the row-folded minor scan keeps a `some` best and never
+grows its magnitude.  Structural on the row count, lifting the row-scan `PreservesSomeBound` through
+each folded row. -/
+theorem smithScanMinorMinAbsPreservesSomeBound (matrix : IntMatrix) (colStart colCount : Nat) :
+    ∀ (rowCount rowStart bestRow bestCol : Nat),
+      ∃ foundRow foundCol,
+        smithScanMinorMinAbs matrix colStart colCount rowCount rowStart (some (bestRow, bestCol))
+          = some (foundRow, foundCol)
+        ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt bestRow bestCol).natAbs
+  | 0, _, bestRow, bestCol => ⟨bestRow, bestCol, rfl, Nat.le_refl _⟩
+  | rowCount + 1, rowStart, bestRow, bestCol =>
+      match smithScanRowMinAbsPreservesSomeBound matrix rowStart colCount colStart bestRow
+          bestCol with
+      | ⟨innerRow, innerCol, innerEq, innerLe⟩ =>
+          match smithScanMinorMinAbsPreservesSomeBound matrix colStart colCount rowCount
+              (rowStart + 1) innerRow innerCol with
+          | ⟨foundRow, foundCol, foundEq, foundLe⟩ =>
+              ⟨foundRow, foundCol,
+                (congrArg (smithScanMinorMinAbs matrix colStart colCount rowCount (rowStart + 1))
+                    innerEq).trans foundEq,
+                Nat.le_trans foundLe innerLe⟩
+
+/-- **Minor scan lower bound at a witness** — if a nonzero entry sits at `(witnessRow, witnessCol)`
+within the scanned rectangle, the minor scan returns `some` position whose magnitude is `≤` the
+witness's.  Structural on the row count; at the witness row the inner row-scan bounds by the witness
+(row `BoundsWitness`) and `PreservesSomeBound` carries it; past it the recursion advances one row with
+the folded-through best. -/
+theorem smithScanMinorMinAbsBoundsWitness (matrix : IntMatrix) (colStart colCount : Nat) :
+    ∀ (rowCount rowStart witnessRow witnessCol : Nat) (best : Option (Nat × Nat)),
+      rowStart ≤ witnessRow → witnessRow < rowStart + rowCount →
+      colStart ≤ witnessCol → witnessCol < colStart + colCount →
+      (matrix.entryAt witnessRow witnessCol).natAbs ≠ 0 →
+      ∃ foundRow foundCol,
+        smithScanMinorMinAbs matrix colStart colCount rowCount rowStart best
+          = some (foundRow, foundCol)
+        ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt witnessRow witnessCol).natAbs
+  | 0, rowStart, witnessRow, _, _, witRowGe, witRowLt, _, _, _ =>
+      absurd (Nat.lt_of_lt_of_le witRowLt witRowGe) (Nat.lt_irrefl witnessRow)
+  | rowCount + 1, rowStart, witnessRow, witnessCol, best,
+      witRowGe, witRowLt, witColGe, witColLt, witNonzero =>
+      match Nat.le.dest witRowGe with
+      | ⟨0, rowEq⟩ =>
+          have witnessNonzeroAtRowStart : (matrix.entryAt rowStart witnessCol).natAbs ≠ 0 :=
+            fun isZero => witNonzero
+              ((congrArg (fun row => (matrix.entryAt row witnessCol).natAbs) rowEq).symm.trans
+                isZero)
+          match smithScanRowMinAbsBoundsWitness matrix rowStart colCount colStart witnessCol best
+              witColGe witColLt witnessNonzeroAtRowStart with
+          | ⟨innerRow, innerCol, innerEq, innerLe⟩ =>
+              match smithScanMinorMinAbsPreservesSomeBound matrix colStart colCount rowCount
+                  (rowStart + 1) innerRow innerCol with
+              | ⟨foundRow, foundCol, foundEq, foundLe⟩ =>
+                  ⟨foundRow, foundCol,
+                    (congrArg
+                        (smithScanMinorMinAbs matrix colStart colCount rowCount (rowStart + 1))
+                        innerEq).trans foundEq,
+                    Nat.le_trans (Nat.le_trans foundLe innerLe)
+                      (Nat.le_of_eq
+                        (congrArg (fun row => (matrix.entryAt row witnessCol).natAbs) rowEq))⟩
+      | ⟨diff + 1, rowEq⟩ =>
+          smithScanMinorMinAbsBoundsWitness matrix colStart colCount rowCount (rowStart + 1)
+            witnessRow witnessCol
+            (smithScanRowMinAbs matrix rowStart colCount colStart best)
+            (Nat.le.intro ((Nat.succ_add rowStart diff).trans rowEq))
+            (Eq.mp (congrArg (witnessRow < ·) (Nat.succ_add rowStart rowCount).symm) witRowLt)
+            witColGe witColLt witNonzero
+
+/-- **The search lower bound** — `smithFindMinAbsInMinor` returns `some` position whose magnitude is
+`≤` that of any nonzero entry in the pivot minor.  The pivot-minor wrapper of the minor scan bound;
+the window ranges are stated as the literal scan parameters (`pivotIndex + (dim - pivotIndex)`) so this
+is a pure specialization — the r9 cascade supplies the residue as the witness and reads off
+`found ≤ residue`, which the shipped `smithRotationDecreasesPivotSize` places strictly below the
+pivot. -/
+theorem smithFindMinAbsInMinorBoundsWitness (matrix : IntMatrix)
+    (pivotIndex height width witnessRow witnessCol : Nat)
+    (witRowGe : pivotIndex ≤ witnessRow)
+    (witRowLt : witnessRow < pivotIndex + (height - pivotIndex))
+    (witColGe : pivotIndex ≤ witnessCol)
+    (witColLt : witnessCol < pivotIndex + (width - pivotIndex))
+    (witNonzero : (matrix.entryAt witnessRow witnessCol).natAbs ≠ 0) :
+    ∃ foundRow foundCol,
+      smithFindMinAbsInMinor matrix pivotIndex height width = some (foundRow, foundCol)
+      ∧ (matrix.entryAt foundRow foundCol).natAbs ≤ (matrix.entryAt witnessRow witnessCol).natAbs :=
+  smithScanMinorMinAbsBoundsWitness matrix pivotIndex (width - pivotIndex)
+    (height - pivotIndex) pivotIndex witnessRow witnessCol none
+    witRowGe witRowLt witColGe witColLt witNonzero
 
 end FX1Poly.ComputerAlgebra
