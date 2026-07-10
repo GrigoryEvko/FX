@@ -29,4 +29,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_generalFamilialityDecidable
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_staircaseClosureCriteriaRecorded
 
+-- OMEGA-7 r3 — the kernel-tuple round complete + the staircase closed (B4)
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_r3KernelTupleRoundComplete
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_substitutionPastingStaircaseClosed
+
 end FX1PolyAudit

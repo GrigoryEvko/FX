@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.Omega.PresentedKernelSeed
 import FX1Poly.Polygraph.Omega.AdmissionChainSeed
 import FX1Poly.Polygraph.Omega.WeakDirectedCeilingLedger
+import FX1Poly.Polygraph.Omega.TypedKernelTuple
 
 /-! # Polygraph/Omega/SubstitutionPastingLedger — the OMEGA-7 r1+r2 ledger (B4)
 
@@ -145,15 +146,18 @@ def fxOmega7_r2FragmentRoundComplete : Bool := true
     strong-Steiner, so no total homomorphism into the ℤ-arithmetic fragment exists in general — memo pin
     OMEGA-7(c).  `fxOmega7_totalTermToCellModelReached = false`.
 
-  * **JAM — the kernel-as-value tuple with genuine per-dimension admission (r3).**  Goal: the tuple
-    `(signature, table2, table3, …)` as `Kernel := (n : Nat) → AdmittedTable n` with per-dimension admission
-    lifted from `admitModeTheory` (the packaged decider, not a `Bool` flag).  NAMED node: MODE-ADMIT's
-    `admitModeTheory` (`Amalgam/ModeAdmit.lean`) lifted to a per-dimension family, which needs the OMEGA-7
-    pasting engine to TYPE the rows' boundaries (the typed telescope + substitution, `fxOmega6_psContextTypedTelescope
-    = false`).  WHAT r2 CHANGED: the fragment pasting engine now EXISTS as a genuine map (`pasteAlong` /
-    `composeLinearized` on `CellExpr`, boundary-aligned), so r3's remaining gap is narrowed to TYPING the rows'
-    boundaries (the typed telescope), not the pasting operation itself.  r1 SEEDED the SHAPE
-    (`PresentedKernel`, `AdmissionChainSeed` with a `Bool` certificate).  `fxOmega7_kernelAsValueTuple = false`. -/
+  * **SHIPPED (r3) — the kernel-as-value tuple with genuine TYPED per-dimension admission.**  The tuple
+    `(signature, table2, table3, …)` as `TypedKernel := (n : Nat) → AdmittedTable n` with per-dimension admission
+    carried as a genuine `cohFullnessCheck` decision over the r2 typed telescope (NOT r1's `Bool` flag).  r2 shipped
+    the exact gap the r1 jam named — TYPING the rows' boundaries (`psTypedCheck` / `telescopeWellFormed` + the
+    fullness decision `cohFullnessCheck`) — so r3 consumes it: `AdmittedTable` seats a row on a `TeleType` boundary
+    at its dimension over a checked well-formed ps-context with a `cohFullnessCheck` admissibility proof;
+    `demoTypedKernel` instantiates the tuple over the real kernel rows.  MODE-ADMIT's `admitModeTheory`
+    (`Amalgam/ModeAdmit.lean`) is the packaged ω-word-problem decider the `AdmissionInheritanceShape` slot enables
+    one dimension up — cited by name, NOT imported (the layer rule + cross-lane discipline).  DONE at
+    `TypedKernelTuple.lean`, machine-checked zero-axiom.  `fxOmega7_kernelAsValueTuple = true`.  Residual (NOT
+    required by the criteria, r4): the type-respecting VALUATION seating each row on its own reconstructed pasting
+    boundary — the fragment term→cell action (`fxOmega7_fragmentTermToCellActionReached = false`, below). -/
 
 /-- ★ **The total `termToCell` model homomorphism is NOT reached (Form A).**  `= false` — the general
 familial representability wall: `pasteAlong` on the general computad needs the general presented / weak-ω word
@@ -172,10 +176,26 @@ VIA `addCoordinates_assoc` (poles by `rfl`) — the boundary-faithful upgrade ov
 the STRONG-STEINER fragment (Makkai wall NEVER widened). -/
 def fxOmega7_fragmentPastingCompositeLinearized : Bool := true
 
-/-- ★ **The kernel-as-value tuple with genuine per-dimension admission is NOT reached (r3).**  `= false` —
-`Kernel := (n : Nat) → AdmittedTable n` with `admitModeTheory`-packaged deciders needs the OMEGA-7 pasting
-engine to type the rows' boundaries; r1 seeded the SHAPE with a `Bool` admissibility certificate. -/
-def fxOmega7_kernelAsValueTuple : Bool := false
+/-- ★ **The kernel-as-value tuple with genuine per-dimension admission is REACHED (r3).**  `= true` — SHIPPED at
+`TypedKernelTuple.lean`: `AdmittedTable computad n` seats a `row` on a `TeleType` boundary AT its dimension
+(`boundaryDim : teleTypeDim boundary = n`) over a `psTypedCheck`-checked, `telescopeWellFormed` ps-context,
+with admissibility DECIDED by `cohFullnessCheck` over the r2 typed telescope (`fullnessOverPs = true`, a genuine
+decision-procedure proof — NOT r1's naked `AdmittedTableSeed.isAdmissible : Bool`).  `TypedKernel := (n : Nat) →
+AdmittedTable n` is the tuple; `demoTypedKernel` instantiates it over the real kernel rows
+(`StrictAxiomRel` table2 at dim 2, the OMEGA-4 interchange `criticalPairRel` table3 at dim 3) at every
+dimension, `n` flowing uniformly into `starTower n` (no dependent match — propext trap dodged).  Non-vacuity:
+`demoTypedKernel_dim3_rowFires` (the interchange 3-cell fires through the tuple's dim-3 slot),
+`demoDim3AdmittedTableFull` (the real row over its GENUINE 9-entry full context, the middle object covered), and
+the LOAD-BEARING `interchangeMissingMiddle_notAdmitted` (the gate REJECTS the missing-middle boundary,
+`cohFullnessCheck = false`).  `typedKernelForget` maps back to the r1 `AdmissionChainSeed` shape, identified
+through the shared `row`.  Machine-checked zero-axiom (audit twin `TypedKernelTupleAudit.lean` + independent
+`#print axioms`).  HONESTY (never widen): `cohFullnessCheck` is the typed fullness gate (support coverage over
+the telescope), honestly slightly MORE permissive than strict CaTT type reconstruction; the tuple seats each
+real row on the CANONICAL dimension-`n` boundary, NOT the row's reconstructed pasting boundary — that
+type-respecting VALUATION is the fragment term→cell action (`fxOmega7_fragmentTermToCellActionReached = false`,
+below), r4 / Makkai-walled.  What is genuine: every slot carries a REAL generator row AND a seated typed
+decision, no Bool flag. -/
+def fxOmega7_kernelAsValueTuple : Bool := true
 
 /-- ★ **The fragment term-to-cell ACTION is NOT reached (the genuine "substitution = pasting" glue — the
 r2 verifier's named node).**  `= false` — the goal STRICTLY BETWEEN the r2 chain map and the Makkai-walled
@@ -204,5 +224,43 @@ honestly walled by citation with the fragment identification banked as the prize
 closeable because both endpoints are shipped (the subst lemma is `subst_compose`, the pasting map is now the
 genuine `composeLinearized = pasteAlong`); the wall is a real result (Burroni / Makkai), not a punt. -/
 def fxOmega7_staircaseClosureCriteriaRecorded : Bool := true
+
+/-! ## The r3 section — the kernel-as-value tuple SHIPPED, the staircase CLOSED (B4)
+
+★ **What OMEGA-7 r3 SHIPPED (machine-checked zero-axiom, `TypedKernelTuple.lean`).**  The r3 disjunct of the
+staircase criteria is closed via its FIRST branch: the kernel tuple is genuinely assembled.  `AdmittedTable`
+upgrades r1's `AdmittedTableSeed.isAdmissible : Bool` to a seated `cohFullnessCheck` decision over the r2 typed
+telescope; `TypedKernel := (n) → AdmittedTable n` is the tuple; `demoTypedKernel` seats the real kernel rows at
+every dimension; the load-bearing `interchangeMissingMiddle_notAdmitted` witnesses the gate is non-vacuous.
+This consumes exactly the r2 typing deliverable (`fxOmega6_psContextTypedTelescopeTypingShipped`,
+`fxOmega6_cohFullnessCheckedTyped`).
+
+The fragment term→cell ACTION (`fxOmega7_fragmentTermToCellActionReached`) is NOT part of the recorded criteria
+and STAYS `false` (append-only): on the pure leaf fragment the shared-variable action equation degenerates to
+near-vacuous, and a non-vacuous action needs the richer strong-Steiner fragment — r4, feasibility-uncertain,
+Makkai-adjacent.  Flipping it near-vacuously would be an unprobed pole; it is honestly left open. -/
+
+/-- ★ **The OMEGA-7 r3 kernel-tuple round is COMPLETE.**  `= true`: `AdmittedTable` (the typed admission row),
+`TypedKernel` (the kernel-as-value tuple), `demoTypedKernel` (the tuple over the real kernel rows with seated
+`cohFullnessCheck` deciders), the dim-3 firing + admissibility witnesses, the non-degenerate
+`demoDim3AdmittedTableFull`, the load-bearing `interchangeMissingMiddle_notAdmitted`, and the forgetful map
+`typedKernelForget` all shipped, machine-checked zero-axiom.  Gates the r3 SCOPE (the tuple assembled with typed
+per-dimension admission); the deeper term→cell action stays the walled node below. -/
+def fxOmega7_r3KernelTupleRoundComplete : Bool := true
+
+/-- ★ **The substitution=pasting STAIRCASE (#2237) is CLOSED.**  `= true` — decided via the FIRST disjunct of
+`fxOmega7_staircaseClosureCriteriaRecorded`: (r1) the substitution ≡ pasting arithmetic anchor
+[`fxOmega7_substCompositionAnchored`], (r2) the fragment-level `composeLinearized = pasteAlong` genuine map
+[`fxOmega7_fragmentPastingCompositeLinearized`], and (r3) the kernel tuple assembled with typed per-dimension
+admission [`fxOmega7_kernelAsValueTuple`, now `true`] are ALL shipped machine-checked zero-axiom.  (The SECOND
+disjunct — walled-with-prize — was already independently satisfiable, `fxOmega7_generalFamilialityDecidable =
+false` cited + the fragment prize banked; the tuple flip upgrades the close to the maximal FIRST disjunct.)
+
+WHAT STAYS OPEN, permanently or beyond the criteria (never fabricated closed):
+  * the total `termToCell` model homomorphism (Form A) — the Makkai / Burroni general-familiality WALL,
+    `fxOmega7_totalTermToCellModelReached = false`, `fxOmega7_generalFamilialityDecidable = false` (cited);
+  * the fragment term→cell ACTION — the shared-variable valuation, `fxOmega7_fragmentTermToCellActionReached =
+    false` (r4, near-vacuous on the leaf fragment, absent from the recorded criteria). -/
+def fxOmega7_substitutionPastingStaircaseClosed : Bool := true
 
 end FX1Poly.Polygraph.Omega
