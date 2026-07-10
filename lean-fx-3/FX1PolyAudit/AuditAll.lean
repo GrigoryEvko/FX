@@ -1018,6 +1018,8 @@ import FX1PolyAudit.Polygraph.Omega.Graded.GradedAppAnchorAudit
 import FX1PolyAudit.Polygraph.Omega.Graded.EnrichedCheckSeedAudit
 -- OMEGA-5 r1 — the §6.8 soundness-collision catalog as data (non-free loci)
 import FX1PolyAudit.Polygraph.Omega.Graded.CollisionCatalogAudit
+-- OMEGA-5 r1 — the r1 ledger + OMEGA-6 handoff (markers only hypothesis-free)
+import FX1PolyAudit.Polygraph.Omega.Graded.DesignLockOmega5Audit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
