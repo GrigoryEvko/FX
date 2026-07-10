@@ -645,6 +645,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCompletenessParity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDisjointFarCommutation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringInterleavedWindowSort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcArity
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSwapDispatch
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSwapPeel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
