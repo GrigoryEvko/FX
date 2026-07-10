@@ -945,6 +945,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusReadback
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusFoldInstance
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusFusionNF
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusFoldLegs
+import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusConnectivityInduction
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusResumeLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ThinWalkerMigration
 import FX1PolyAudit.Polygraph.TwoCategory.Table.StrategyRegistry
@@ -953,6 +954,7 @@ import FX1PolyAudit.Polygraph.Omega.CarrierAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceAudit
 import FX1PolyAudit.Polygraph.Omega.DesignLockAudit
 import FX1PolyAudit.Polygraph.Omega.Steiner.CoordinateArithmetic
+import FX1PolyAudit.Polygraph.Omega.Steiner.ChainCell
 import FX1PolyAudit.Polygraph.Omega.Steiner.StrongSteiner
 import FX1PolyAudit.Polygraph.Omega.Steiner.Linearize
 import FX1PolyAudit.Polygraph.Omega.Steiner.Soundness
