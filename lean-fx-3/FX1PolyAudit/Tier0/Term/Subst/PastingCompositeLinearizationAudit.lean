@@ -1,28 +1,28 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Subst.SubstCellPasting
+import FX1Poly.Tier0.Term.Subst.PastingCompositeLinearization
 
-/-! # FX1PolyAudit.Tier0.Term.Subst.SubstCellPastingAudit — zero-axiom gate for the OMEGA-7 r2 cell leg
+/-! # FX1PolyAudit.Tier0.Term.Subst.PastingCompositeLinearizationAudit — zero-axiom gate for the OMEGA-7 r2 cell leg
 (OMEGA-7 r2, B1-B3).
 
 Per-declaration `#assert_no_axioms` on the fragment pasting composite (`pasteAlong` + its two boundary-alignment
-lemmas), the substitution-realization action (`substCell`), the genuine-map identification
-(`substCell_eq_pasteAlong` = the rfl-anchor `linearizeFull_vcomp_composeAtFull`), the pasting associativity
-discharged via `addCoordinates_assoc` (`substCell_assoc`), the paired kernel anchor
-(`substCellEqPasteAlong_is_substCompose_assoc`), and the two non-vacuity witnesses.  This audit twin is what
-the Polygraph-side ledger marker `fxOmega7_fragmentSubstCellEqPasteAlongReached` flips against (the ledger
+lemmas), the substitution-realization action (`composeLinearized`), the genuine-map identification
+(`linearizeFull_pasteAlong_eq_composeLinearized` = the rfl-anchor `linearizeFull_vcomp_composeAtFull`), the pasting associativity
+discharged via `addCoordinates_assoc` (`linearizeFull_pasteAlong_assoc`), the paired kernel anchor
+(`substComposeAssoc_and_pastingAssoc`), and the two non-vacuity witnesses.  This audit twin is what
+the Polygraph-side ledger marker `fxOmega7_fragmentPastingCompositeLinearized` flips against (the ledger
 cannot import Tier0). -/
 
 namespace FX1PolyAudit
 
--- SubstCellPasting.lean
+-- PastingCompositeLinearization.lean
 #assert_no_axioms FX1Poly.Polygraph.Omega.pasteAlong
 #assert_no_axioms FX1Poly.Polygraph.Omega.boundarySource_pasteAlong
 #assert_no_axioms FX1Poly.Polygraph.Omega.boundaryTarget_pasteAlong
-#assert_no_axioms FX1Poly.Polygraph.Omega.substCell
-#assert_no_axioms FX1Poly.Polygraph.Omega.substCell_eq_pasteAlong
-#assert_no_axioms FX1Poly.Polygraph.Omega.substCell_assoc
-#assert_no_axioms FX1Poly.Polygraph.Omega.substCellEqPasteAlong_is_substCompose_assoc
-#assert_no_axioms FX1Poly.Polygraph.Omega.substCellEqPasteAlong_nonVacuity
-#assert_no_axioms FX1Poly.Polygraph.Omega.substCell_assoc_nonVacuity
+#assert_no_axioms FX1Poly.Polygraph.Omega.composeLinearized
+#assert_no_axioms FX1Poly.Polygraph.Omega.linearizeFull_pasteAlong_eq_composeLinearized
+#assert_no_axioms FX1Poly.Polygraph.Omega.linearizeFull_pasteAlong_assoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.substComposeAssoc_and_pastingAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.composeLinearized_nonVacuity
+#assert_no_axioms FX1Poly.Polygraph.Omega.pasteAlongAssoc_nonVacuity
 
 end FX1PolyAudit
