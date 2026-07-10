@@ -1039,6 +1039,7 @@ import FX1PolyAudit.Polygraph.Homology.PresentationOpDualityHomology
 import FX1PolyAudit.Polygraph.Homology.PolygraphHomologyFinitenessInvariant
 import FX1PolyAudit.Polygraph.Homology.SquierNoGoInterface
 import FX1PolyAudit.Polygraph.Homology.PeriodicTowerChainComplex
+import FX1PolyAudit.Polygraph.Homology.FreeGroupReducedWord
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
