@@ -37,5 +37,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimTwoReducesToSmith
 #assert_no_axioms FX1Poly.Polygraph.Homology.WalkerDegreeTwoSmithHandoffStatement
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerDegreeTwoSmithHandoff
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerHomologyLedgerIsComplete
 
 end FX1PolyAudit

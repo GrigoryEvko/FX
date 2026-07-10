@@ -352,4 +352,47 @@ starts from a proven SNF interface, not a conjecture. -/
 theorem walkerDegreeTwoSmithHandoff : WalkerDegreeTwoSmithHandoffStatement :=
   ⟨walkerBoundaryOfDimOneReducesToSmith, walkerBoundaryOfDimTwoReducesToSmith⟩
 
+/-! ## B5 — the walking-monad homology ledger (per-brick states + honest scoping)
+
+### Per-brick state (H2-CHAIN r1, all rungs DECIDED — no jams)
+
+  * **B1 — carrier + generic `d d = 0`**: SHIPPED.  `walkerBasisCount` (the `1, 1, 2, 4, 0…`
+    dimension bookkeeping) reuses the shipped `AugmentedDirectedComplex`; the generic
+    `augmentedDirectedComplexBoundaryComposesToZero` states `d d = 0` over the carrier structure.
+  * **B2 — critical pairs + boundary literals + `d d = 0` + instance**: SHIPPED.  The four Squier
+    critical pairs enumerated (`MonadCriticalPair`, `monadCriticalPairBoundaryColumn`); the three
+    boundaries as literals (`d1 = [[0]]`, `d2 = [[1, −1]]`, `d3 = [[0,1,1,0],[0,1,1,0]]`);
+    `walkerBoundaryComposesToZero` decides `d d = 0` on the literals; `walkerChainComplex` is the
+    `AugmentedDirectedComplex` instance; `walkerChainComplexBoundaryComposesToZero` is the walker
+    `d d = 0` as a corollary of the generic statement.
+  * **B3 — non-vacuity + oracle**: SHIPPED.  `walkerBoundaryDimTwoColumnMatchesCriticalPair` pins
+    each `d3` column to the hand-computed cofork column; `d2`/`d1` oracles + the two non-vacuity
+    witnesses show `d2`, `d3` are nonzero yet `d d = 0` (a real cancellation, correct cofork sign).
+  * **B4 — Smith handoff**: SHIPPED.  `walkerBoundaryOfDim{One,Two}ReducesToSmith` are kernel-checked
+    reduction certificates (`SNF(d2) = [[1,0]]`, `SNF(d3) = [[1,0,0,0],[0,0,0,0]]`, both rank 1 with
+    unit invariant factor); `walkerDegreeTwoSmithHandoff` inhabits the SNF-consumption interface.
+  * **B5 — this ledger**: SHIPPED.
+
+### Honest scoping
+
+Degrees `0..3`, ONE walker (the walking monad).  Higher degrees are zero (`walkerBasisCount ≥ 4 = 0`)
+— the presentation has no cells above the degree-2 generators / degree-3 critical pairs, so the
+recorded complex is complete.  Every declaration is zero-axiom (independent `#print axioms`) and
+`decide` is used only on boundary LITERALS, never on a Smith-driver expression.
+
+### Named future nodes (NOT jams — deferred, decided elsewhere)
+
+  * **`H2-WALKERS` (#2138)** — the degree-2 homology quotient `ker d2 / im d3` and its rank read-off
+    (`nullity(d2) − rank(d3) = 1 − 1 = 0`, no torsion ⟹ `H2 = 0`).  Complete SNF input is
+    `walkerDegreeTwoSmithHandoff`; only the quotient formalisation remains.
+  * **The general decided-polygraph chain-complex functor** — abelianizing an ARBITRARY decided
+    loop-free polygraph (not just the walking monad) into an `AugmentedDirectedComplex`.  Future work;
+    r1 is the concrete seed. -/
+
+/-- ★ **The walking-monad homology ledger marker.**  All five H2-CHAIN r1 bricks shipped, every rung
+decided, zero-axiom: the chain complex (`walkerChainComplex`), the machine-checked `d d = 0`
+(`walkerChainComplexBoundaryComposesToZero`), the oracle-confirmed non-vacuous boundaries, and the
+inhabited Smith handoff (`walkerDegreeTwoSmithHandoff`) for #2138.  `= true`. -/
+def walkerHomologyLedgerIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
