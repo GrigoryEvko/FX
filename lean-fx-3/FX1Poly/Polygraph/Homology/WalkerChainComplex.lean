@@ -52,12 +52,13 @@ open FX1Poly.Polygraph.Steiner
 
 /-- The per-dimension basis counts of the walking-monad chain complex: `C0 = ZZ` (the object
 `point`), `C1 = ZZ` (the endo 1-generator `t`), `C2 = ZZ^2` (the 2-generators `eta`, `mu`),
-`C3 = ZZ^4` (the four Squier critical pairs), and nothing above degree 3. -/
+`C3 = ZZ^5` (the FIVE Squier critical pairs — corrected in r2, see the systematic overlap sweep),
+and nothing above degree 3. -/
 def walkerBasisCount : Nat → Nat
   | 0 => 1
   | 1 => 1
   | 2 => 2
-  | 3 => 4
+  | 3 => 5
   | _ + 4 => 0
 
 /-- **The generic `d d = 0` theorem, stated over the augmented-directed-complex carrier.**  For ANY
@@ -88,21 +89,25 @@ rule:
   * `R2 : mu ∘ (t ◁ eta) ⟹ id_t`   (removes one `eta`, one `mu`)
   * `R3 : mu ∘ (mu ▷ t) ⟹ mu ∘ (t ◁ mu)`   (associativity — preserves generator counts)
 
-★ **ENUMERATION REFUTED (r1 adversarial verification) — this list is INCOMPLETE.**  The claim
-"exactly FOUR critical branchings" is FALSE: the complete Knuth–Bendix overlap set has **FIVE**
-members — the enumeration below MISSES the `R2`–`R3` ROOT overlap at `mu(mu(t, t), eta)` (both the
-right-unit rule and associativity fire at the root; the associativity redex's compound argument is on
-the LEFT, so exactly one such root-unit overlap exists).  Consequences: `walkerBasisCount 3 = 4` and
-the `2 x 4` degree-3 boundary below describe an incomplete `C3`; the corrected complex has `C3 = Z^5`
-and a `2 x 5` boundary.  The verifier's damage assessment: the missing column is an assoc/unit cofork
-abelianizing into the SAME `ker d2` span `(1,1)`, so `dd = 0` and the `H2 = 0` read-off SURVIVE the
-correction unchanged.  The r2 round adds the fifth constructor + column, widens the count, and
-re-runs the oracle/SNF.  Until then this file is a valid abstract dd=0 complex, NOT the walking
-monad's. -/
+★ **ENUMERATION CORRECTED (r2) — now COMPLETE at FIVE (history retained).**  The r1 list claimed
+"exactly FOUR critical branchings"; that claim was REFUTED by adversarial verification and is FALSE.
+The complete Knuth–Bendix overlap set has **FIVE** members — the r1 list MISSED the `R2`–`R3` ROOT
+overlap at `mu(mu(t, t), eta)` (both the right-unit rule and associativity fire at the root; the
+associativity redex's compound argument is on the LEFT, so exactly one such root-unit overlap
+exists).  **The r1 undercount was a PROSE miscount** — the prose reasoned only about eta-sharing and
+`R3`-inner overlaps and never checked the `(outer R2, position ε, inner R3)` cell.  r2 replaces the
+prose with the SYSTEMATIC 14-cell overlap sweep (every ordered rule pair × every non-variable
+position of the outer lhs; 5 genuine after excluding the 3 trivial root-self overlaps and
+de-duplicating the 2 symmetric distinct-rule root overlaps) — encoded as DATA in B5
+(`allMonadCriticalPairs` + `monadCriticalPairCountIsFive`), so completeness is kernel-checked, never
+prose-counted again.  The fifth constructor is `rootUnitAssoc` (index 4); `C3 = Z^5`, `d3` is `2 x 5`.
+The verifier's r1 damage assessment held: the fifth column is an assoc/unit cofork abelianizing into
+the SAME `ker d2` span `(1,1)`, so `dd = 0` and the `H2 = 0` read-off survived the correction
+unchanged.  This file is now the walking monad's genuine polygraphic chain complex. -/
 
-/-- The Squier critical pairs of the walking-monad presentation — **INCOMPLETE as shipped (four of
-FIVE)**: the `R2`–`R3` root overlap `mu(mu(t, t), eta)` is missing; see the refutation note above.
-The r2 round extends this inductive. -/
+/-- The Squier critical pairs of the walking-monad presentation — **COMPLETE at FIVE (r2)**: the
+four r1 constructors keep their names and meaning; `rootUnitAssoc` adds the `R2`–`R3` root overlap
+`mu(mu(t, t), eta)` the r1 prose miscount missed (see the corrected note above). -/
 inductive MonadCriticalPair
   /-- (a) `R1`–`R2` overlap at `mu(eta, eta) : id ⇒ t` — both legs reduce to `eta`. -/
   | unitUnit
@@ -112,6 +117,9 @@ inductive MonadCriticalPair
   | rightUnitAssoc
   /-- (d) `R3`–`R3` overlap at `mu(mu(mu, t), t)` — the pentagon; both legs preserve counts. -/
   | pentagon
+  /-- (e) `R2`–`R3` ROOT overlap at `mu(mu(t, t), eta)` — the fifth pair the r1 prose miscount
+  missed; right-unit leg `→ mu(t, t)` `(0,1)` vs associativity leg `→ mu(t, mu(t, eta))` `(1,2)`. -/
+  | rootUnitAssoc
 
 /-- **The abelianized boundary column of each critical pair**, as the generator-count difference
 `[w1] − [w2] = (#eta, #mu)` of its two rewriting legs (the immediate COFORK, not "difference of
@@ -120,7 +128,8 @@ valleys" — the cofork reading is the one that yields the KNOWN-correct `H2 = 0
   * (a) unit-unit: `R1→(1,0)` vs `R2→(1,0)` ⟹ `(0, 0)`;
   * (b) left-unit-assoc: `R3→(1,2)` vs `R1→(0,1)` ⟹ `(1, 1)`;
   * (c) right-unit-assoc: `R3→(1,2)` vs `R2→(0,1)` ⟹ `(1, 1)`;
-  * (d) pentagon: `R3`-outer→`(0,3)` vs `R3`-inner→`(0,3)` ⟹ `(0, 0)`.
+  * (d) pentagon: `R3`-outer→`(0,3)` vs `R3`-inner→`(0,3)` ⟹ `(0, 0)`;
+  * (e) root-unit-assoc: assoc leg `R3→(1,2)` vs right-unit leg `R2→(0,1)` ⟹ `(1, 1)`.
 
 The `(#eta, #mu)` component order is the row order of `d3` (row 0 = `eta`, row 1 = `mu`). -/
 def monadCriticalPairBoundaryColumn : MonadCriticalPair → Int × Int
@@ -128,6 +137,7 @@ def monadCriticalPairBoundaryColumn : MonadCriticalPair → Int × Int
   | .leftUnitAssoc => (1, 1)
   | .rightUnitAssoc => (1, 1)
   | .pentagon => (0, 0)
+  | .rootUnitAssoc => (1, 1)
 
 /-! ### The three boundary matrices as literals (derivation documented)
 
@@ -138,10 +148,10 @@ vertical composition / identities are free (add parts).  Boundary sign `d(cell) 
     `1 × 1` matrix `[[0]]` (independently confirmed by `Steiner/ComputadLoopFree`).
   * **`d2 : C2 → C1`** — rows `= [t]`, columns `= (eta, mu)`: `d2(eta) = 1·[t] − 0 = 1`,
     `d2(mu) = 1·[t] − 2·[t] = −1`, so the `1 × 2` matrix `[[1, −1]]`.
-  * **`d3 : C3 → C2`** — rows `= (eta, mu)`, columns `= (a, b, c, d)` from
-    `monadCriticalPairBoundaryColumn`: `[[0, 1, 1, 0], [0, 1, 1, 0]]` (`2 × 4`).
+  * **`d3 : C3 → C2`** — rows `= (eta, mu)`, columns `= (a, b, c, d, e)` from
+    `monadCriticalPairBoundaryColumn`: `[[0, 1, 1, 0, 1], [0, 1, 1, 0, 1]]` (`2 × 5`, r2-corrected).
 
-`d4 : C4 → C3` is the empty map `C4 = 0`, recorded at the `4 × 0` shape (four empty rows) so the
+`d4 : C4 → C3` is the empty map `C4 = 0`, recorded at the `5 × 0` shape (five empty rows) so the
 carrier's rectangularity obligation holds; degrees `≥ 4` are the `0 × 0` empty matrix. -/
 
 /-- `d1 : C1 → C0`, the `1 × 1` loop boundary `[[0]]`. -/
@@ -150,18 +160,19 @@ def walkerBoundaryOfDimZero : IntMatrix := ⟨[[0]]⟩
 /-- `d2 : C2 → C1`, the `1 × 2` boundary `[[1, −1]]` (columns `eta`, `mu`). -/
 def walkerBoundaryOfDimOne : IntMatrix := ⟨[[1, -1]]⟩
 
-/-- `d3 : C3 → C2`, the `2 × 4` boundary `[[0, 1, 1, 0], [0, 1, 1, 0]]` (rows `eta`, `mu`; columns
-the four critical pairs `a`, `b`, `c`, `d`). -/
-def walkerBoundaryOfDimTwo : IntMatrix := ⟨[[0, 1, 1, 0], [0, 1, 1, 0]]⟩
+/-- `d3 : C3 → C2`, the `2 × 5` boundary `[[0, 1, 1, 0, 1], [0, 1, 1, 0, 1]]` (rows `eta`, `mu`;
+columns the five critical pairs `a`, `b`, `c`, `d`, `e` — r2-corrected with the fifth
+`rootUnitAssoc` column `(1, 1)`). -/
+def walkerBoundaryOfDimTwo : IntMatrix := ⟨[[0, 1, 1, 0, 1], [0, 1, 1, 0, 1]]⟩
 
 /-- The dimension-indexed boundary map: `d_{dim+1} : C_{dim+1} → C_dim` as a
-`walkerBasisCount dim × walkerBasisCount (dim+1)` integer matrix.  `d4` is the `4 × 0` zero map (four
-empty rows), everything above is the `0 × 0` empty matrix. -/
+`walkerBasisCount dim × walkerBasisCount (dim+1)` integer matrix.  `d4` is the `5 × 0` zero map (five
+empty rows, r2-widened to match `C3 = Z^5`), everything above is the `0 × 0` empty matrix. -/
 def walkerBoundaryMatrix : Nat → IntMatrix
   | 0 => walkerBoundaryOfDimZero
   | 1 => walkerBoundaryOfDimOne
   | 2 => walkerBoundaryOfDimTwo
-  | 3 => ⟨[[], [], [], []]⟩
+  | 3 => ⟨[[], [], [], [], []]⟩
   | _ + 4 => ⟨[]⟩
 
 /-- **`d d = 0`, DECIDED on the boundary literals.**  The only non-vacuous compositions are
@@ -185,9 +196,11 @@ theorem walkerBoundaryComposesToZero :
   | 1, 0, 1, _, _ => rfl
   | 1, 0, 2, _, _ => rfl
   | 1, 0, 3, _, _ => rfl
-  | 1, 0, _ + 4, _, colBound =>
+  | 1, 0, 4, _, _ => rfl
+  | 1, 0, _ + 5, _, colBound =>
       Nat.noConfusion (natEqZeroOfLeZero
-        (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc colBound)))))
+        (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+          (natLeOfSuccLeSucc (natLeOfSuccLeSucc colBound))))))
   | 1, _ + 1, _, rowBound, _ =>
       Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc rowBound))
   | _ + 2, _, colIndex, _, colBound => absurd colBound (Nat.not_lt_zero colIndex)
@@ -205,7 +218,7 @@ def walkerChainComplex : AugmentedDirectedComplex where
     | 0 => ⟨rfl, rfl, True.intro⟩
     | 1 => ⟨rfl, rfl, True.intro⟩
     | 2 => ⟨rfl, rfl, rfl, True.intro⟩
-    | 3 => ⟨rfl, rfl, rfl, rfl, rfl, True.intro⟩
+    | 3 => ⟨rfl, rfl, rfl, rfl, rfl, rfl, True.intro⟩
     | _ + 4 => ⟨rfl, True.intro⟩
   augmentationHasWidth := rfl
   boundaryComposesToZero := walkerBoundaryComposesToZero
@@ -236,12 +249,13 @@ the `d d = 0` is a GENUINE cancellation (both `d2` and `d3` are nonzero, yet `d2
 trivial all-zero-boundary complex — and in particular the cofork sign (recon risk: "cofork vs
 valley") is correct, since a mis-signed `d3` would make `d2·d3 ≠ 0` and break `walkerBoundaryComposesToZero`. -/
 
-/-- The column index of each critical pair in `d3` (`a, b, c, d ↦ 0, 1, 2, 3`). -/
+/-- The column index of each critical pair in `d3` (`a, b, c, d, e ↦ 0, 1, 2, 3, 4`). -/
 def monadCriticalPairIndex : MonadCriticalPair → Nat
   | .unitUnit => 0
   | .leftUnitAssoc => 1
   | .rightUnitAssoc => 2
   | .pentagon => 3
+  | .rootUnitAssoc => 4
 
 /-- ★ **THE ORACLE.**  Each `d3` column (read off the literal matrix at the pair's index, rows
 `eta`/`mu`) equals the hand-computed abelianized cofork column `monadCriticalPairBoundaryColumn` —
@@ -256,6 +270,7 @@ theorem walkerBoundaryDimTwoColumnMatchesCriticalPair :
   | .leftUnitAssoc => rfl
   | .rightUnitAssoc => rfl
   | .pentagon => rfl
+  | .rootUnitAssoc => rfl
 
 /-- Oracle for `d2`: `d2(eta) = 1`, `d2(mu) = −1` (the recon `[[1, −1]]`). -/
 theorem walkerBoundaryDimOneMatchesOracle :
@@ -293,14 +308,15 @@ work-in-progress Smith driver: the hand certificates suffice for the read-off TO
 any driver coupling.
 
   * `SNF(d2) = [[1, 0]]` (rank 1, invariant factor 1) — one column transvection `col1 += col0`.
-  * `SNF(d3) = [[1, 0, 0, 0], [0, 0, 0, 0]]` (rank 1, invariant factor 1) — `swap(col0, col1)`,
-    `col2 −= col0`, `row1 −= row0`.
+  * `SNF(d3) = [[1, 0, 0, 0, 0], [0, 0, 0, 0, 0]]` (`2 × 5`, r2-corrected; rank 1, invariant factor 1,
+    four free columns) — `swap(col0, col1)`, `col2 −= col0`, `col4 −= col0`, `row1 −= row0`.
 
-**Homology read-off (the #2138 step, documented):** `C2 = ZZ^2`, so `nullity(d2) = 2 − rank(d2) = 1`;
-`rank(d3) = 1` with unit invariant factor (no torsion); hence the degree-2 homology has
-free rank `nullity(d2) − rank(d3) = 0` and no torsion, i.e. `H2(walking monad) = 0` — matching the
-homological triviality of `Δ₊`.  Formalising the quotient and this rank read-off is #2138's remaining
-work; the two certificates below are its complete SNF input. -/
+**Homology read-off (the B3 step, now shipped in r2):** `C2 = ZZ^2`, so `nullity(d2) = 2 − rank(d2)
+= 1`; `rank(d3) = 1` with unit invariant factor (no torsion); hence the degree-2 homology has free
+rank `nullity(d2) − rank(d3) = 0` and no torsion, i.e. `H2(walking monad) = 0` — matching the
+homological triviality of `Δ₊`.  r2 ships the rank/torsion arithmetic as the kernel-checked headline
+`walkerDegreeTwoHomologyIsZero` (B3); formalising the `ker d2 / im d3` quotient remains #2138's work,
+seeded by the complete SNF input below. -/
 
 /-- The reduction certificate taking `d2 = [[1, −1]]` to its Smith normal form `[[1, 0]]` (one
 column transvection `col1 += 1·col0`). -/
@@ -322,24 +338,27 @@ theorem walkerBoundaryOfDimOneReducesToSmith :
     diagonalDividesSuccessor := fun position isPositionBelow =>
       Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow)) }
 
-/-- The reduction certificate taking `d3 = [[0, 1, 1, 0], [0, 1, 1, 0]]` to its Smith normal form
-`[[1, 0, 0, 0], [0, 0, 0, 0]]` (`swap(col0, col1)`; `col2 −= col0`; `row1 −= row0`). -/
+/-- The reduction certificate taking `d3 = [[0, 1, 1, 0, 1], [0, 1, 1, 0, 1]]` to its Smith normal
+form `[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0]]` (`swap(col0, col1)`; `col2 −= col0`; `col4 −= col0`;
+`row1 −= row0` — the r2 fifth column adds the `col4 −= col0` transvection). -/
 def walkerBoundaryOfDimTwoSmithCertificate : IntMatrix.SmithReductionCertificate :=
   { operations :=
       [ ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 0 1)
       , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 2 (-1))
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 4 (-1))
       , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 0 1 (-1)) ] }
 
-/-- **`d3` reduces to `[[1, 0, 0, 0], [0, 0, 0, 0]]`** — kernel-checked Smith normal form within the
-`2 × 4` window; rank 1, invariant factor 1 (no torsion), three free columns.  The chain `1 | 0` is
-the witness `⟨0, rfl⟩`. -/
+/-- **`d3` reduces to `[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0]]`** — kernel-checked Smith normal form
+within the `2 × 5` window; rank 1, invariant factor 1 (no torsion), four free columns.  The chain
+`1 | 0` is the witness `⟨0, rfl⟩`; the diagonal window is `min 2 5 = 2` positions (unchanged from
+r1's `min 2 4 = 2`, so the `diagonalDividesSuccessor` peel is unchanged). -/
 theorem walkerBoundaryOfDimTwoReducesToSmith :
-    walkerBoundaryOfDimTwoSmithCertificate.reducesToSmithForm walkerBoundaryOfDimTwo 2 4 :=
-  show (⟨[[1, 0, 0, 0], [0, 0, 0, 0]]⟩ : IntMatrix).IsSmithNormalFormWithin 2 4 from
+    walkerBoundaryOfDimTwoSmithCertificate.reducesToSmithForm walkerBoundaryOfDimTwo 2 5 :=
+  show (⟨[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0]]⟩ : IntMatrix).IsSmithNormalFormWithin 2 5 from
   { offDiagonalVanishes := by
-      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 4 →
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 5 →
           rowIndex ≠ colIndex →
-          (⟨[[1, 0, 0, 0], [0, 0, 0, 0]]⟩ : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+          (⟨[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0]]⟩ : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
       exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
         offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
     diagonalIsNonnegative := by decide
@@ -355,7 +374,7 @@ complete SNF INPUT #2138 reads homology off (`H2 free-rank = nullity(d2) − ran
 torsion ⟹ `H2 = 0`).  Seeded as the interface `Prop`; the quotient and rank read-off are #2138's. -/
 def WalkerDegreeTwoSmithHandoffStatement : Prop :=
   walkerBoundaryOfDimOneSmithCertificate.reducesToSmithForm walkerBoundaryOfDimOne 1 2 ∧
-  walkerBoundaryOfDimTwoSmithCertificate.reducesToSmithForm walkerBoundaryOfDimTwo 2 4
+  walkerBoundaryOfDimTwoSmithCertificate.reducesToSmithForm walkerBoundaryOfDimTwo 2 5
 
 /-- ★ **The handoff is INHABITED** — both boundary Smith reductions are kernel-checked, so #2138
 starts from a proven SNF interface, not a conjecture. -/
