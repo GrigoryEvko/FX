@@ -923,6 +923,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.InvariantFoldInstances
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ThinWalkerMigration
 import FX1PolyAudit.Polygraph.TwoCategory.Table.StrategyRegistry
 import FX1PolyAudit.Polygraph.TwoCategory.Table.LedgerR1
+import FX1PolyAudit.Polygraph.Omega.CarrierAudit
+import FX1PolyAudit.Polygraph.Omega.CongruenceAudit
+import FX1PolyAudit.Polygraph.Omega.DesignLockAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
