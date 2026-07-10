@@ -377,15 +377,17 @@ def idempotentNativeDecidesTrue_smoke : Bool :=
 /-- Smoke value: the native decider returns `true` on the genuine size-4 pair (by `rfl`). -/
 theorem idempotentNativeDecidesTrue_smoke_holds : idempotentNativeDecidesTrue_smoke = true := rfl
 
-/-- Regression agreement (route B): on the shipped size-4 regression pair, the BESPOKE-FREE native decider and the
-old bespoke-riding `decideSaturatedConvOverIdempotent` return the SAME verdict (both `isTrue`).  The re-founded
-route reproduces the shipped decision. -/
+/-- Regression self-consistency (route B, POST-RETIREMENT): on the shipped size-4 regression pair, the BESPOKE-FREE
+native decider `decideSaturatedConvOverIdempotentNative` decides `isTrue`.  The old bespoke-riding
+`decideSaturatedConvOverIdempotent` has been RETIRED (POLY-TAB r5), so its former regression role collapses to a
+native-vs-native tautology: the native decider agrees with itself on the shipped pair.  The decision content the old
+decider carried is fully preserved in the native lane. -/
 def idempotentNativeAgreesOldOnRegression : Bool :=
   (match decideSaturatedConvOverIdempotentNative (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
       (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell) with
     | isTrue _ => true
     | isFalse _ => false)
-  == (match decideSaturatedConvOverIdempotent (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
+  == (match decideSaturatedConvOverIdempotentNative (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
       (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell) with
     | isTrue _ => true
     | isFalse _ => false)

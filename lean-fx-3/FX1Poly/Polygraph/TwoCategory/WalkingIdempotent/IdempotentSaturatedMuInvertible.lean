@@ -1,4 +1,5 @@
-import FX1Poly.Polygraph.TwoCategory.Amalgam.SaturatedComponentDecider
+import FX1Poly.Polygraph.TwoCategory.WalkingIdempotent.IdempotentLawRelation
+import FX1Poly.Polygraph.TwoCategory.WalkingIdempotent.IdempotentSaturatedReps
 
 /-! # WalkingIdempotent/IdempotentSaturatedMuInvertible — the mu-invertibility crux, GENERIC-NATIVE
 
