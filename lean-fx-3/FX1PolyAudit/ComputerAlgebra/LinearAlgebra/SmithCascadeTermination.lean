@@ -32,4 +32,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithScanMinorMinAbsBoundsWitness
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithFindMinAbsInMinorBoundsWitness
 
+/- H2-SMITH r9 — the clear-word lift + cross-clear fuel adequacy. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.addColumnMultipleEntryOffTargetCol
+
 end FX1PolyAudit

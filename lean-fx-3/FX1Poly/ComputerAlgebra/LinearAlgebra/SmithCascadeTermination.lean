@@ -514,4 +514,48 @@ theorem smithFindMinAbsInMinorBoundsWitness (matrix : IntMatrix)
     (height - pivotIndex) pivotIndex witnessRow witnessCol none
     witRowGe witRowLt witColGe witColLt witNonzero
 
+/-! ## The clear-word lift (H2-SMITH r9) — the ops-list decoupling the coefficient source from the
+    threaded work matrix
+
+`smithClearRowRightSteps coeffMatrix pivotIndex stepCount startCol` bakes every coefficient off a
+FIXED `coeffMatrix` (the recursion advances only the column, never the matrix), yet `applyOperations`
+fires the emitted column word SEQUENTIALLY over a THREADED work matrix.  The lift below decouples the
+two: reading the pivot row at any target column after the whole row-right word equals the single-op
+landing value on the work matrix, with the coefficient read off `coeffMatrix`.  Its column mirror
+(`smithClearColumnBelowSteps`, row ops) rides the SHIPPED row atoms.  Each is a statement about the
+DEFINITE word one matrix produces — no sweep over arbitrary window-diagonal inputs — so the whole
+family is immune to the r5/r6 refutation shape. -/
+
+/-- **The column OFF-target entry formula** — the column mirror of the shipped
+`addRowMultiplePreservesEntryOffTargetRow`: reading a column OTHER than the target after
+`addColumnMultiple sourceIndex targetIndex coefficient` is unchanged (the op maps every row but
+rewrites only the target column within each).  Cases the `addColumnMultiple` distinctness guard
+(identity when `sourceIndex = targetIndex`), reads the mapped in-range row by
+`listGetWithDefaultMapAllRows`, then navigates the `addScaledEntryWithinRow` source-in-range guard —
+the live branch reads the off-target column via `listGetWithDefaultModifyAtNe`, the dead branch leaves
+the row untouched. -/
+theorem addColumnMultipleEntryOffTargetCol {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (sourceIndex targetIndex rowIndex colIndex : Nat) (coefficient : Int)
+    (isOffTarget : colIndex ≠ targetIndex)
+    (isRowInRange : rowIndex < height) :
+    (matrix.addColumnMultiple sourceIndex targetIndex coefficient).entryAt rowIndex colIndex
+      = matrix.entryAt rowIndex colIndex := by
+  obtain ⟨rowCount, _⟩ := isRect
+  have rowInRows : rowIndex < matrix.rows.length :=
+    Eq.mp (congrArg (rowIndex < ·) rowCount.symm) isRowInRange
+  unfold IntMatrix.addColumnMultiple
+  split
+  · rfl
+  · show listGetWithDefault 0
+        (listGetWithDefault []
+          (mapAllRows (fun row => addScaledEntryWithinRow row sourceIndex targetIndex coefficient)
+            matrix.rows) rowIndex) colIndex = _
+    rw [listGetWithDefaultMapAllRows _ matrix.rows rowIndex rowInRows]
+    unfold IntMatrix.addScaledEntryWithinRow
+    split
+    · exact listGetWithDefaultModifyAtNe 0 _ (listGetWithDefault [] matrix.rows rowIndex)
+        targetIndex colIndex isOffTarget
+    · rfl
+
 end FX1Poly.ComputerAlgebra
