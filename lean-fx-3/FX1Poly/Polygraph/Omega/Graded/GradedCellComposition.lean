@@ -300,4 +300,92 @@ theorem gradedComposeAtCollisionRow_freeLocus_fallsThrough {computad : OmegaComp
   dsimp only [gradedComposeAtCollisionRow]
   rw [isFree]
 
+/-! ## Non-vacuity on REAL cells + REAL kernel grades (B4)
+
+The slice is exercised on genuine `CellExpr` cells over `demoComputad`, decorated with a genuine
+kernel-derived grade — the App grade of the ω-scaling redex `(λx. (g x) x) z`
+(`usageOmegaScalingRedex_typedViaGradeCompose`, `GradedAppAnchor.lean`), which is `gradeCompose ω [0,1]
+[1,0] = [ω,1]`.  The lockstep composite computes both a cell and a grade; the refusal fires on real cells
+(over-budget → `none`), the admission passes (within-budget → `some`), and the §6.8 collision blocks a
+within-budget real composite. -/
+
+/-- A concrete dim-2 cell over `demoComputad`: the double identity on the base object. -/
+def demoCellTwo : CellExpr demoComputad 2 :=
+  CellExpr.id (CellExpr.id (CellExpr.ofMode ()))
+
+/-- A real dim-2 cell decorated with the **kernel App grade of the ω-scaling redex** — the SAME grade
+`gradeCompose ω [z↦0, g↦1] (single 2 0 1)` that types `(λx. (g x) x) z` in
+`usageOmegaScalingRedex_typedViaGradeCompose`.  Not a synthetic decoration: the grade is derived from a
+real `HasGradeOver` derivation. -/
+def demoGradedCellOmegaOne : GradedCell demoComputad 2 fxUsageSemiring :=
+  (demoCellTwo,
+    gradeCompose UsageGrade.omega
+      (GradeVectorOver.cons UsageGrade.zero (GradeVectorOver.cons UsageGrade.one GradeVectorOver.nil))
+      (GradeVectorOver.single fxUsageSemiring 2 0 UsageGrade.one))
+
+/-- The decorated cell's grade IS the kernel App composite `[ω, 1]` (the once-occurring argument `z`
+scaled to `ω`).  `rfl` — ties the real cell to the real typed term's grade. -/
+theorem demoGradedCellOmegaOne_gradeIsKernelApp :
+    gradeOf demoGradedCellOmegaOne =
+      GradeVectorOver.cons UsageGrade.omega (GradeVectorOver.cons UsageGrade.one GradeVectorOver.nil) :=
+  rfl
+
+/-- **The reindexed associativity holds on the REAL kernel App grade `[ω, 1]`** (all three vectors the
+kernel-derived App grade) — non-vacuity of `gradeCompose_assoc` at a genuine grade, not just a toy
+singleton. -/
+theorem gradeCompose_assoc_onKernelAppGrade :
+    gradeCompose (R := fxUsageSemiring) (fxUsageSemiring.mul UsageGrade.omega UsageGrade.one)
+        (gradeCompose UsageGrade.omega (gradeOf demoGradedCellOmegaOne) (gradeOf demoGradedCellOmegaOne))
+        (gradeOf demoGradedCellOmegaOne) =
+      gradeCompose UsageGrade.omega (gradeOf demoGradedCellOmegaOne)
+        (gradeCompose UsageGrade.one (gradeOf demoGradedCellOmegaOne) (gradeOf demoGradedCellOmegaOne)) :=
+  gradeCompose_assoc fxUsageSemiring_isLawful UsageGrade.omega UsageGrade.one
+    (gradeOf demoGradedCellOmegaOne) (gradeOf demoGradedCellOmegaOne) (gradeOf demoGradedCellOmegaOne)
+
+/-- A real dim-2 cell decorated with the linear grade `[1]` — the operand of the refusal demos. -/
+def demoGradedLinearTwo : GradedCell demoComputad 2 fxUsageSemiring :=
+  (demoCellTwo, GradeVectorOver.cons UsageGrade.one GradeVectorOver.nil)
+
+/-- The lockstep composite of two real `[1]`-graded cells produces the composite CELL `vcomp c c`. -/
+theorem demoGradedVcompTwo_cellComputes :
+    (gradedVcomp (R := fxUsageSemiring) (dim := 1) UsageGrade.one
+        demoGradedLinearTwo demoGradedLinearTwo).underlyingCell =
+      CellExpr.vcomp demoCellTwo demoCellTwo :=
+  rfl
+
+/-- The lockstep composite of two real `[1]`-graded cells produces the composite GRADE `[ω]`
+(`gradeCompose 1 [1] [1] = [1 + 1·1] = [ω]`) — the §7.7 saturation, on real cells. -/
+theorem demoGradedVcompTwo_gradeComputes :
+    gradeOf (gradedVcomp (R := fxUsageSemiring) (dim := 1) UsageGrade.one
+        demoGradedLinearTwo demoGradedLinearTwo) =
+      GradeVectorOver.cons UsageGrade.omega GradeVectorOver.nil :=
+  rfl
+
+/-- **The refusal FIRES on real cells**: the guarded composite of two real `[1]`-graded cells against
+budget `[1]` is `none` — the composite grade `[ω]` exceeds `[1]`, so the annotated composite is blocked.
+`rfl`. -/
+theorem gradedComposeGuarded_overBudget_refuses :
+    gradedComposeGuarded (R := fxUsageSemiring) (dim := 1) UsageGrade.one
+        (GradeVectorOver.cons UsageGrade.one GradeVectorOver.nil)
+        demoGradedLinearTwo demoGradedLinearTwo = none :=
+  rfl
+
+/-- **The admission passes on real cells**: against the wider budget `[ω]`, the same composite is
+admitted as the annotated `gradedVcomp`.  `rfl`. -/
+theorem gradedComposeGuarded_withinBudget_admits :
+    gradedComposeGuarded (R := fxUsageSemiring) (dim := 1) UsageGrade.one
+        (GradeVectorOver.cons UsageGrade.omega GradeVectorOver.nil)
+        demoGradedLinearTwo demoGradedLinearTwo =
+      some (gradedVcomp UsageGrade.one demoGradedLinearTwo demoGradedLinearTwo) :=
+  rfl
+
+/-- **The §6.8 collision blocks a WITHIN-budget real composite**: even against budget `[ω]` (which the
+grade guard alone would admit), the `E044` (CT × Async) non-free locus refuses the real composite —
+`none`.  `rfl`.  The collision is decisive over the grade budget. -/
+theorem gradedComposeAtCollisionRow_ctAsync_refusesOnRealCells :
+    gradedComposeAtCollisionRow (R := fxUsageSemiring) (dim := 1) collisionCtAsync UsageGrade.one
+        (GradeVectorOver.cons UsageGrade.omega GradeVectorOver.nil)
+        demoGradedLinearTwo demoGradedLinearTwo = none :=
+  rfl
+
 end FX1Poly.Polygraph.Omega.Graded

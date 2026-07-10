@@ -36,4 +36,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeAtCollisionRow_ctAsync_refuses
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeAtCollisionRow_freeLocus_fallsThrough
 
+-- GradedCellComposition.lean — B4: non-vacuity on real cells + real kernel grades
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.demoCellTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.demoGradedCellOmegaOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.demoGradedCellOmegaOne_gradeIsKernelApp
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradeCompose_assoc_onKernelAppGrade
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.demoGradedLinearTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.demoGradedVcompTwo_cellComputes
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.demoGradedVcompTwo_gradeComputes
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeGuarded_overBudget_refuses
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeGuarded_withinBudget_admits
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedComposeAtCollisionRow_ctAsync_refusesOnRealCells
+
 end FX1PolyAudit
