@@ -1105,6 +1105,8 @@ import FX1PolyAudit.Polygraph.Omega.IdempotentSemigroupDemonstratorAudit
 import FX1PolyAudit.Polygraph.Omega.CyclicThreeDemonstratorAudit
 -- WP-SQUIER r2 — the family round: the #2082 family census (four-of-nine coherent presentations, one walled)
 import FX1PolyAudit.Polygraph.Omega.SquierFamilyCensusAudit
+-- WP-SQUIER r3 — the op-dual round: the Omega-lane op transport + walking comonad + idempotent comonad
+import FX1PolyAudit.Polygraph.Omega.PresentationOpDualityWithIdAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)

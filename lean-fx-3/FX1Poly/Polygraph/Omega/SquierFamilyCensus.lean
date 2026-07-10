@@ -2,6 +2,7 @@ import FX1Poly.Polygraph.Omega.InvolutionSquierBasis
 import FX1Poly.Polygraph.Omega.MonadCoherentPresentation
 import FX1Poly.Polygraph.Omega.CyclicThreeDemonstrator
 import FX1Poly.Polygraph.Omega.IdempotentSemigroupDemonstrator
+import FX1Poly.Polygraph.Omega.PresentationOpDualityWithId
 
 /-! # Polygraph/Omega/SquierFamilyCensus — the WP-SQUIER family census (the #2082 state, WP-SQUIER r2)
 
@@ -214,5 +215,145 @@ nine shipped, four op-dual-reachable-but-unshipped, one (the adjunction) genuine
 needs the walled adjunction resolved or PERMANENTLY walled, and the four op-dual reachables shipped or
 waived.  Set `true` only when the whole decided-9 is decided or honestly walled. -/
 def fxOmega4_squierCapstoneClosedR2 : Bool := false
+
+/-! ## The r3 op-dual round — the two genuine op-transports shipped (WP-SQUIER r3, #2082)
+
+★ **The op-dual round advances the census: the walking comonad and the idempotent comonad now have GENUINE
+Omega-lane coherent presentations, transported generically from their shipped duals**
+(`PresentationOpDualityWithId.lean`).  The r2 marker `fxOmega4_squierFamilyOpDualReachableUnshippedR2` recorded
+that the four op-dual reachables were UNSHIPPED at r2; r3 SHIPS the two GENUINE ones (comonad, idempotent
+comonad).  The other two (KZ, co-KZ) are FREE-RIDERS — not op-transports at all but the SAME presentation with
+the directed rewrite order forgotten:
+
+  * **walking KZ = monad (order forgotten).**  KZ's rewrite rules ARE the monad's; the KZ directed preorder
+    (`KZTwoCellLE`, no `symm`) is extra structure the Squier-coherent fragment forgets.  So KZ's coherent
+    presentation is ALREADY `monadWalkerCoherentPresentation` — reachable by forgetting the order, not by op.
+  * **walking co-KZ = comonad (order forgotten).**  co-KZ = op(KZ) = op(monad) = comonad at the presentation
+    level; ships IFF the comonad ships (same presentation).
+
+So the honest count after r3 is SIX GENUINE Omega-lane coherent presentations (four r2 + comonad + idempotent
+comonad), and EIGHT of nine presentation-covered when the two free-riders (KZ rides monad, co-KZ rides comonad)
+are counted — matching the Homology lane's `walkersWithComputedHomologyCountAfterOpDuality = 8`, NAMED here,
+not imported.  The sole residual is the walking adjunction (walled, below).
+
+## The honest scope — PRESENTATION transport, NOT convergence transport
+
+The r3 transport ships the coherent-presentation DATA (critical-pair rows, generating 3-cells, peak / valley
+joins, per-pair resolutions, the least-congruence UP — every one a `SaturatedConvOverWithId` derivation
+transported through `op`), NEVER convergence.  The reversed rules `t => t.t`, `e => e.e` are NON-TERMINATING
+(identities grow), so the op-dual rewriting systems are NOT convergent.  The transport takes ZERO termination /
+convergence input — exactly the H2-WALKERS precedent (there the HOMOLOGY transported under op-duality's
+unimodular negation while convergence did not need to; here the coherent-presentation DATA transports while
+convergence does not need to).  Recorded by `fxOmega4_squierOpDualPresentationNotConvergenceR3`. -/
+
+/-- ★ **The two-genuine-op-duals statement (the r3 grounded census extension).**  A `Prop` conjunction of the
+two GENUINE op-dual Omega-lane coherent presentations: the walking comonad (= op(monad), five pairs) and the
+idempotent comonad (= op(idempotent semigroup), one pair), each transported generically from its shipped dual
+through `opCriticalPairResolved`. -/
+def SquierFamilyTwoGenuineOpDualsCoherentlyPresentedStatement : Prop :=
+  ComonadWalkerCoherentPresentationStatement ∧
+  IdempotentComonadWalkerCoherentPresentationStatement
+
+/-- ★★ **THE GROUNDED TWO-GENUINE-OP-DUALS CENSUS (r3).**  Both genuine op-dual Omega-lane coherent
+presentations assembled into ONE machine-checked datum — so the r3 op-dual advance is proof-carrying, not a
+bare marker.  Each conjunct is the already-verified op-transported coherent presentation of its walker
+(`comonadWalkerCoherentPresentation`, `idempotentComonadWalkerCoherentPresentation`). -/
+theorem squierFamilyTwoGenuineOpDualsCoherentlyPresented :
+    SquierFamilyTwoGenuineOpDualsCoherentlyPresentedStatement :=
+  ⟨comonadWalkerCoherentPresentation, idempotentComonadWalkerCoherentPresentation⟩
+
+/-- ★ **The six-genuine-of-nine statement (r3).**  The four r2 shipped presentations conjoined with the two
+r3 genuine op-duals — the machine-checked content behind the six-genuine count. -/
+def SquierFamilySixWalkersCoherentlyPresentedStatement : Prop :=
+  SquierFamilyFourWalkersCoherentlyPresentedStatement ∧
+  SquierFamilyTwoGenuineOpDualsCoherentlyPresentedStatement
+
+/-- ★★ **THE GROUNDED SIX-GENUINE-OF-NINE CENSUS (r3).**  The four r2 shipped presentations AND the two r3
+genuine op-duals, assembled into ONE machine-checked conjunction — so the six-genuine count is proof-carrying.
+KZ and co-KZ additionally ride the monad / comonad presentations (free-riders, same presentation data), so
+eight of nine are presentation-covered; the walking adjunction remains the sole walled residual. -/
+theorem squierFamilySixWalkersCoherentlyPresented :
+    SquierFamilySixWalkersCoherentlyPresentedStatement :=
+  ⟨squierFamilyFourWalkersCoherentlyPresented, squierFamilyTwoGenuineOpDualsCoherentlyPresented⟩
+
+/-- The six walkers with a GENUINE Omega-lane coherent presentation after r3 (four r2 shipped + the two r3
+op-duals), enumerated. -/
+def allSquierFamilyGenuinelyPresentedWalkersAfterR3 : List SquierFamilyWalker :=
+  [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
+    .walkingComonad, .idempotentComonad]
+
+/-- ★ **The genuine-presentation count is exactly SIX after r3** — kernel-checked (`rfl`). -/
+theorem squierFamilyGenuinelyPresentedWalkerCountIsSixAfterR3 :
+    allSquierFamilyGenuinelyPresentedWalkersAfterR3.length = 6 := rfl
+
+/-! ## The r3 census markers -/
+
+/-- ★ **THE TWO GENUINE OP-DUALS SHIP IN THE CENSUS (r3).**  `= true` records that the walking comonad and
+the idempotent comonad now have GENUINE Omega-lane coherent presentations
+(`squierFamilyTwoGenuineOpDualsCoherentlyPresented`), machine-checked — a genuine advance over the r2 state
+`fxOmega4_squierFamilyOpDualReachableUnshippedR2` (which recorded them as reachable-but-unshipped at r2). -/
+def fxOmega4_squierFamilyTwoGenuineOpDualsShippedInCensusR3 : Bool := true
+
+/-- ★ **EIGHT OF NINE PRESENTATION-COVERED (r3).**  `= true` records that eight of the decided-9 walkers are
+presentation-covered after r3: SIX with a genuine Omega-lane coherent presentation
+(`squierFamilyGenuinelyPresentedWalkerCountIsSixAfterR3`) plus TWO free-riders (KZ rides the monad
+presentation, co-KZ rides the comonad presentation — same presentation data with the directed order
+forgotten).  Matches the Homology lane's `walkersWithComputedHomologyCountAfterOpDuality = 8`, NAMED not
+imported.  The sole residual is the walled walking adjunction. -/
+def fxOmega4_squierFamilyPresentationCoveredEightOfNineR3 : Bool := true
+
+/-- ★ **THE FREE-RIDER CAVEAT (honest).**  `= true` records that KZ and co-KZ are NOT independent op-transports:
+KZ = monad and co-KZ = comonad at the presentation level (the directed KZ / co-KZ order is extra structure the
+Squier-coherent fragment forgets), so only TWO of the four op-dual reachables (comonad, idempotent comonad) are
+GENUINE op-transports; KZ / co-KZ ride the monad / comonad presentations.  Do not overclaim four independent
+op-transports. -/
+def fxOmega4_squierKZRidesMonadCoKZRidesComonadR3 : Bool := true
+
+/-! ## The #2082 endgame ledger after r3 (B4 — what the capstone still owes)
+
+★ **The capstone's presentation-census leg is complete (8 of 9 presentation-covered + 1 walled); its DEEP leg
+is the OMEGA-5 remainder.**  After r3 the WP-SQUIER capstone (`fxOmega4_squierCapstoneClosedR3 = false`) still
+owes exactly two walls — NEITHER closed by r3, both explicitly the OMEGA-5 handoff:
+
+  1. **The adjunction wall (JAM).**  The sole non-census residual.  Goal: the walking adjunction
+     `<L, R | eta : id => R.L, eps : L.R => id | triangles>` exhibited as a convergent Squier presentation with
+     its critical pairs joined.  FALSE at this scope: the adjunction rewriting is NON-CONVERGENT — the
+     Schanuel-Street zig-zag critical branching does not confluently join (the snake `eta` / `eps` triangle
+     overlaps regenerate).  Blocking node: the Schanuel-Street confluence node (the zig-zag critical pair with
+     no convergent completion).  The adjunction is essentially SELF-DUAL (op swaps `L <-> R`, `eta <-> eps` to
+     an adjunction of the same walking shape), so op-duality yields NOTHING for it — it is walled either way.
+     Recorded by `fxOmega4_squierCapstoneRemainingAdjunctionWallR3`.
+  2. **The full-homotopy-basis wall (OMEGA-5 handoff).**  EVERY shipped and op-dual walker ships fragment scope
+     only (`*FullHomotopyBasisReached = false` uniformly).  The full basis (every parallel 2-path pair
+     3-cell-homotopic) needs the five normalizer obligations named in `CyclicThreeDemonstrator` /
+     `IdempotentSemigroupDemonstrator`: (1) `TwoPath` NF-directed syntax; (2) a STRUCTURAL-FUEL `twoPathSize`
+     measure (the load-bearing wall — must avoid `WellFounded.fix`, whose `propext` / `Quot.sound` leak is the
+     Init-only wall); (3) completeness of the generating 3-cells (count certificate load-bearing at cyclic-3);
+     (4) the ORTHOGONALITY 3-cells (UNSHIPPED — the concrete missing datum, the disjoint-redex commutation
+     squares); (5) Newman-at-dim-3.  Recorded by `fxOmega4_squierCapstoneRemainingFullBasisNormalizerR3`.
+
+Honest capstone state after r3: *"8 of 9 presentation-covered (6 genuine + 2 free-riders) + 1 permanently-open
+adjunction; full homotopy basis + adjunction confluence remain open."*  The capstone is NOT closed. -/
+
+/-- ★ **REMAINING WALL — the adjunction (r3).**  `= true` records that the walking adjunction is still the sole
+non-census residual after r3: NON-CONVERGENT (Schanuel-Street zig-zag), and SELF-DUAL so op-duality yields
+nothing.  Closes only by a decision / refutation of the adjunction confluence, or by accepting it as
+permanently walled.  Blocking node: the Schanuel-Street confluence node. -/
+def fxOmega4_squierCapstoneRemainingAdjunctionWallR3 : Bool := true
+
+/-- ★ **REMAINING WALL — the full homotopy basis normalizer (r3, OMEGA-5 handoff).**  `= true` records that the
+full homotopy basis for EVERY walker (shipped and op-dual) is still unreached: it needs the five normalizer
+obligations (NF-directed 2-path syntax, structural-fuel `twoPathSize` avoiding `WellFounded.fix`, generating
+3-cell completeness, the UNSHIPPED orthogonality 3-cells, Newman-at-dim-3).  The concrete missing datum is the
+orthogonality 3-cells; the load-bearing wall is the structural-fuel measure. -/
+def fxOmega4_squierCapstoneRemainingFullBasisNormalizerR3 : Bool := true
+
+/-- ★ **THE WP-SQUIER CAPSTONE IS STILL NOT CLOSED (honest, r3).**  `= false` records that the capstone is NOT
+closed after the r3 op-dual round: 8 of 9 are presentation-covered (six genuine Omega-lane presentations + KZ /
+co-KZ free-riders), but the walking adjunction is walled (self-dual, op yields nothing) and EVERY walker's full
+homotopy basis is unreached (the normalizer machine — obligations 1-5, orthogonality UNSHIPPED, structural-fuel
+wall — is the OMEGA-5 remainder).  Set `true` only when the adjunction is decided or permanently walled AND the
+full basis is reached. -/
+def fxOmega4_squierCapstoneClosedR3 : Bool := false
 
 end FX1Poly.Polygraph.Omega

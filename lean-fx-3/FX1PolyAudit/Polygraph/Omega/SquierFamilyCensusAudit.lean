@@ -32,4 +32,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_multiObjectWalkersOutsideDecidedNineR2
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierCapstoneClosedR2
 
+-- the r3 op-dual round: the two-genuine-op-duals and six-of-nine grounded census extensions
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyTwoGenuineOpDualsCoherentlyPresentedStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyTwoGenuineOpDualsCoherentlyPresented
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilySixWalkersCoherentlyPresentedStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilySixWalkersCoherentlyPresented
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyGenuinelyPresentedWalkersAfterR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyGenuinelyPresentedWalkerCountIsSixAfterR3
+
+-- the r3 census markers and the #2082 endgame ledger
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierFamilyTwoGenuineOpDualsShippedInCensusR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierFamilyPresentationCoveredEightOfNineR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierKZRidesMonadCoKZRidesComonadR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierCapstoneRemainingAdjunctionWallR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierCapstoneRemainingFullBasisNormalizerR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierCapstoneClosedR3
+
 end FX1PolyAudit
