@@ -167,27 +167,28 @@ old wires, any post-cap interleaving pulls back to an OLD interleaving the old n
 `= true`. -/
 def fxString_hasCapNonCrossingLoopBranch : Bool := true
 
-/-- **OPEN (honest, LOCALIZED) — the JOIN-branch CAP non-crossing owes the ported perfect-matching CENSUS + the
-survivor combo analysis.**  `stringNonCrossing_stepCap` in the JOIN branch (a DISTINCT-component window: `links` gains
-one merge edge `(rootLeft, rootRight)`) is the string port of the shipped `arcNonCrossing_stepCapArc`
-(`ArcNonCrossingCapMain`), which needs two ingredients over the bare `WireState`, neither yet ported:
+/-- **★ ESTABLISHED (FC-5 P2) — the JOIN-branch CAP non-crossing is CLOSED by CONSUMING the shipped census.**  The
+survivor combo analysis is now SHIPPED as `stringNonCrossing_stepCap` (in the sibling `StringCapNonCrossingJoin`), the
+string port of `arcNonCrossing_stepCapArc` (`ArcNonCrossingCapMain`), proved UNIFORMLY over both branches (`stepCap`'s
+links are always the direct `unionFindJoin`, `stepCap_links_eq_unionFindJoin`):
 
-  * **the boundary CENSUS** `StringBoundaryCensus` — every union-find component carries at most TWO open-wire ends (the
-    perfect-matching structure of a planar cup/cap diagram).  As of FC-5 P1 this census is SHIPPED over the bare
-    `WireState` in `StringBoundaryCensus` (statement + seed + cup + cap preservation + the whole-fold transport
-    `stringBoundaryCensus_fromCell`, all zero-axiom).  It is LOAD-BEARING: the four join-dispatch combos where two
-    survivors reach the SAME consumed window end are refuted precisely because that end's component would then carry
-    three boundary ends;
-  * **the survivor combo analysis** — the join-dispatch (`sameComponent_unionFindJoin_dispatch`, available over the
-    byte-identical `isUnionFindForest` via the shipped `stringForest_toUnionFindForest` bridge) times the two paired
-    components gives nine combos; the five surviving ones each exhibit an OLD crossing quadruple (from the six tokens
-    `{A',B',C',D', capLeft, capRight}` by a position split), which the OLD non-crossing forbids.
+  * **the boundary CENSUS** `StringBoundaryCensus` — every union-find component carries at most TWO open-wire ends — is
+    SHIPPED over the bare `WireState` (FC-5 P1: statement + seed + cup + cap preservation + the whole-fold transport
+    `stringBoundaryCensus_fromCell`, all zero-axiom).  It is LOAD-BEARING: the four join-dispatch combos where BOTH
+    arcs are non-free are refuted precisely because both arcs' endpoints reach the LEFT consumed window slot, so that
+    slot's component would then carry three boundary ends (`stringNonCrossingCensusRefute`);
+  * **the survivor combo analysis** — the join-dispatch (`sameComponent_unionFindJoin_dispatch`, over the
+    byte-identical forest via `stringForest_toUnionFindForest`) times the two arcs gives nine combos; the five
+    surviving ones each exhibit an OLD crossing quadruple (from the six indices `{a,b,c,d, position, position+1}` by an
+    off-window position split, `capRemap_offWindow`), which the OLD non-crossing forbids.
 
-So with the CENSUS now SHIPPED (FC-5 P1), the sole remaining residual of `stringNonCrossing_stepCap` (join branch) is
-the survivor combo analysis — the string port of `ArcNonCrossingCapMain`; `fxString_hasNoLoopsTheorem` (in
-`StringFussCatalan`) stays `false`, honestly (and additionally owes the `capPin` label-tracking, which the census does
-NOT unlock — see `fxString_hasBoundaryCensusUnlocksBothResiduals`).  `= false`. -/
-def fxString_hasCapNonCrossingJoinBranch : Bool := false
+So the JOIN-branch cap non-crossing preservation is CLOSED, zero-axiom, and together with the shipped
+`stringNonCrossing_stepCap_loopBranch` gives the FULL cap non-crossing fold leg.  NOTE (still honest): this unlocks the
+FC-1 `preserves.orient` (cap survivor) obligation, NOT the FC-1 `capPin` obligation — capPin needs the SEPARATE
+label-boundary-tracking (`StringJointInvariant` / the string port of `ArcBoundaryTracking`, FC-4 P3), which the census
+does not give (see `fxString_hasBoundaryCensusUnlocksBothResiduals`).  So `fxString_hasNoLoopsTheorem` (in
+`StringFussCatalan`) still awaits the orient survivor read (FC-4 P2) + capPin (FC-4 P3).  `= true`. -/
+def fxString_hasCapNonCrossingJoinBranch : Bool := true
 
 /-! ## Non-vacuity — the general loop-freedom reduction discharges on THREE real cells (incl. the cross-level cell) -/
 
