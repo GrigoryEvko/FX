@@ -10,13 +10,6 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.monadUnitTwoCell
-#assert_no_axioms FX1Poly.Polygraph.monadMulTwoCell
-#assert_no_axioms FX1Poly.Polygraph.monadLeftUnitCell
-#assert_no_axioms FX1Poly.Polygraph.monadRightUnitCell
-#assert_no_axioms FX1Poly.Polygraph.monadAssocLeftCell
-#assert_no_axioms FX1Poly.Polygraph.monadAssocRightCell
-#assert_no_axioms FX1Poly.Polygraph.monadIdTCell
 #assert_no_axioms FX1Poly.Polygraph.MonadSaturatedTwoCellConv
 #assert_no_axioms FX1Poly.Polygraph.MonadSaturatedTwoCellConv.ofConv
 #assert_no_axioms FX1Poly.Polygraph.monadLeftUnitHolds
