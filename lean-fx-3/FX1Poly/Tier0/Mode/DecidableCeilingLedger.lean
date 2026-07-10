@@ -8,7 +8,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
 import FX1Poly.Tier0.Mode.TierBThinDecision
 import FX1Poly.Tier0.Mode.ExhibitedConvergentDecision
-import FX1Poly.Tier0.Mode.SemiThueReduction
+import FX1Poly.Polygraph.Rewriting.SemiThueReduction
 
 /-! # DecidableCeilingLedger — the honest boundary of the 2-cell word problem (CEIL rung map)
 

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Mode.SemiThueReduction
+import FX1Poly.Polygraph.Rewriting.SemiThueReduction
 
-/-! # FX1PolyAudit/Tier0/Mode/SemiThueReduction — zero-axiom gate (WP-CEIL-UNDEC Burroni bridge)
+/-! # FX1PolyAudit/Polygraph/Rewriting/SemiThueReduction — zero-axiom gate (WP-CEIL-UNDEC Burroni bridge)
 
 Per-declaration zero-axiom gate for the mechanized semi-Thue ⟷ one-object-2-polygraph reduction: the clean
 local list-append helpers, the semi-Thue system + Thue congruence + whisker congruences, the one-object

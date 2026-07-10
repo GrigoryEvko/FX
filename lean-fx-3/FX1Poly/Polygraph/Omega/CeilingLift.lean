@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Mode.SemiThueReduction
+import FX1Poly.Polygraph.Rewriting.SemiThueReduction
 
 /-! # Polygraph/Omega/CeilingLift — the undecidability ceiling lifted by suspension (OMEGA-3 r1, B4)
 

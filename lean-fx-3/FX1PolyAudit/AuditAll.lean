@@ -767,7 +767,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TwoCellWordProblemDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SaturationDecisionSmoke
 import FX1PolyAudit.Tier0.Mode.TierBThinDecision
 import FX1PolyAudit.Tier0.Mode.ExhibitedConvergentDecision
-import FX1PolyAudit.Tier0.Mode.SemiThueReduction
+import FX1PolyAudit.Polygraph.Rewriting.SemiThueReduction
 import FX1PolyAudit.Tier0.Mode.DecidableCeilingLedger
 import FX1PolyAudit.Tier0.Mode.Ceiling.UndecidabilityReduction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing

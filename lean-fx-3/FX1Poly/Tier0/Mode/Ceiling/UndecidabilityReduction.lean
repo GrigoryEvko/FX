@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Mode.SemiThueReduction
+import FX1Poly.Polygraph.Rewriting.SemiThueReduction
 
 /-! # Tier0/Mode/Ceiling/UndecidabilityReduction — the ceiling: the decidability REDUCTION
 
