@@ -2035,6 +2035,251 @@ theorem smithReduceFullDiagonalNonneg :
   exact signSweepDiagonalNonnegReached (Nat.min height width) _ 0 height width position
     afterRepairRect (natZeroLe position) positionBelowShifted positionBelowHeight positionBelow
 
+/-! ## The sign phase PRESERVES window-diagonality and the divisibility chain (H2-SMITH r7, B4)
+
+The sign sweep only negates rows, so it cannot break either of the two remaining invariants:
+
+  * **window-diagonality** — a `negateRow` letter sends an off-diagonal zero to `-0 = 0` and leaves
+    every other row fixed, so every off-diagonal window entry stays zero.  `signSweepPreservesZeroEntry`
+    threads that through the fuel recursion; `smithSignSweepPreservesWindowDiagonal` reads it off at each
+    window position.
+
+  * **the divisibility chain** — the sweep sends each diagonal `d` to `±d`, and `a ∣ b` is stable under
+    independently flipping the signs of `a` and `b` (the quotient absorbs the sign,
+    `dividesExactlyTransportsUnderSign`).  `signSweepDiagonalIsSignedInput` is the signed-value
+    reachability (each reached diagonal ends `±` its input value), and `smithSignSweepPreservesChain`
+    transports the whole prefix chain through it.
+
+Composed with `smithReduceFullApplied` these two lemmas REDUCE the driver's `windowDiagHolds` and
+`chainHolds` obligations to the SAME two invariants on `afterRepair` (the min-abs-pre-sorted repair
+output) — the corrected POLE-B.  This is the r7 3->2 reduction: `nonnegHolds` is closed outright, and
+the two survivors are exactly the repair-output window-diagonality and chain, assembled by
+`smithReduceFullDriverOfRepairInvariants` below. -/
+
+/-- **A `negateRow` letter preserves a zero entry** — a zero at `(targetRow, colIndex)` stays zero after
+negating any row: off the negated row it is untouched (`negateRowPreservesEntryOffRow`), on it the zero
+negates to `-0 = 0` (`negateRowEntry` + `intNegZero`).  Needs the negated row in range. -/
+theorem negateRowPreservesZeroEntry (matrix : IntMatrix)
+    (rowIndex targetRow colIndex : Nat) (isInRange : rowIndex < matrix.rows.length)
+    (isZero : matrix.entryAt targetRow colIndex = 0) :
+    (matrix.negateRow rowIndex).entryAt targetRow colIndex = 0 := by
+  cases Nat.decEq targetRow rowIndex with
+  | isTrue rowsAgree =>
+      rw [rowsAgree, negateRowEntry matrix rowIndex colIndex isInRange]
+      rw [rowsAgree] at isZero
+      rw [isZero]
+      exact intNegZero
+  | isFalse rowsDiffer =>
+      rw [negateRowPreservesEntryOffRow matrix rowIndex targetRow colIndex rowsDiffer]
+      exact isZero
+
+/-- **The per-pivot sign word preserves a zero entry** — either empty (nothing changes) or the single
+`negateRow pivotIndex`, which preserves zeros (`negateRowPreservesZeroEntry`). -/
+theorem signNormalizeOpsPreserveZeroEntry (matrix : IntMatrix)
+    (pivotIndex targetRow colIndex : Nat) (isInRange : pivotIndex < matrix.rows.length)
+    (isZero : matrix.entryAt targetRow colIndex = 0) :
+    (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex)).entryAt targetRow colIndex = 0 := by
+  show (matrix.applyOperations
+      (if matrix.entryAt pivotIndex pivotIndex < 0 then
+        [ElementaryOperation.rowOperation (ElementaryRowOperation.negateRow pivotIndex)]
+      else [])).entryAt targetRow colIndex = 0
+  cases Int.decLt (matrix.entryAt pivotIndex pivotIndex) 0 with
+  | isTrue isNegative =>
+      rw [if_pos isNegative]
+      show (matrix.negateRow pivotIndex).entryAt targetRow colIndex = 0
+      exact negateRowPreservesZeroEntry matrix pivotIndex targetRow colIndex isInRange isZero
+  | isFalse isNonNegative =>
+      rw [if_neg isNonNegative]
+      exact isZero
+
+/-- **The sign sweep preserves a zero entry** — threaded through the fuel recursion, riding
+`signNormalizeOpsPreserveZeroEntry` (the reached pivot is in range because the guard puts it below
+`Nat.min height width ≤ height = rows.length`) and `applyOperationsPreservesRectangular`. -/
+theorem signSweepPreservesZeroEntry :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width targetRow colIndex : Nat),
+      matrix.IsRectangular height width →
+      matrix.entryAt targetRow colIndex = 0 →
+      (matrix.applyOperations
+          (smithDiagonalSignSweep fuel matrix pivotIndex height width)).entryAt targetRow colIndex = 0 := by
+  intro fuel
+  induction fuel with
+  | zero => intro matrix pivotIndex height width targetRow colIndex _ isZero; exact isZero
+  | succ fuel ih =>
+      intro matrix pivotIndex height width targetRow colIndex isRect isZero
+      show (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithSignNormalizeOps matrix pivotIndex ++
+              smithDiagonalSignSweep fuel
+                (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                (pivotIndex + 1) height width
+          else [])).entryAt targetRow colIndex = 0
+      cases Nat.decLe (pivotIndex + 1) (Nat.min height width) with
+      | isFalse guardFails =>
+          rw [if_neg guardFails]
+          exact isZero
+      | isTrue guardHolds =>
+          rw [if_pos guardHolds, applyOperationsAppend]
+          have pivotInRange : pivotIndex < matrix.rows.length :=
+            isRect.1.symm ▸ natLeTrans guardHolds (natMinLeLeft height width)
+          exact ih (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+            (pivotIndex + 1) height width targetRow colIndex
+            (applyOperationsPreservesRectangular (smithSignNormalizeOps matrix pivotIndex) matrix isRect)
+            (signNormalizeOpsPreserveZeroEntry matrix pivotIndex targetRow colIndex pivotInRange isZero)
+
+/-- **The sign sweep preserves window-diagonality (S2)** — every off-diagonal window entry of a
+rectangular window-diagonal input stays zero after the sign sweep.  Direct from
+`signSweepPreservesZeroEntry` at each window position. -/
+theorem smithSignSweepPreservesWindowDiagonal (fuel : Nat) (matrix : IntMatrix)
+    (pivotIndex height width : Nat) (isRect : matrix.IsRectangular height width)
+    (isWindowDiag : IsWindowDiagonal matrix 0 height width) :
+    IsWindowDiagonal
+      (matrix.applyOperations (smithDiagonalSignSweep fuel matrix pivotIndex height width))
+      0 height width :=
+  fun rowIndex colIndex zeroLeRow rowBelowHeight zeroLeCol colBelowWidth rowNeCol =>
+    signSweepPreservesZeroEntry fuel matrix pivotIndex height width rowIndex colIndex isRect
+      (isWindowDiag rowIndex colIndex zeroLeRow rowBelowHeight zeroLeCol colBelowWidth rowNeCol)
+
+/-- **The per-pivot sign word leaves the pivot diagonal at `±` its input** — untouched on the empty
+branch, negated on the flip branch (`negateRowEntry`).  Needs the pivot row in range. -/
+theorem signNormalizeOpsEntryOnPivotIsSignedInput (matrix : IntMatrix) (pivotIndex : Nat)
+    (isInRange : pivotIndex < matrix.rows.length) :
+    (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex)).entryAt pivotIndex pivotIndex
+        = matrix.entryAt pivotIndex pivotIndex
+      ∨ (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex)).entryAt pivotIndex pivotIndex
+        = -(matrix.entryAt pivotIndex pivotIndex) := by
+  cases Int.decLt (matrix.entryAt pivotIndex pivotIndex) 0 with
+  | isTrue isNegative =>
+      refine Or.inr ?_
+      rw [show smithSignNormalizeOps matrix pivotIndex
+            = [ElementaryOperation.rowOperation (ElementaryRowOperation.negateRow pivotIndex)]
+          from if_pos isNegative]
+      exact negateRowEntry matrix pivotIndex pivotIndex isInRange
+  | isFalse isNonNegative =>
+      refine Or.inl ?_
+      rw [show smithSignNormalizeOps matrix pivotIndex = [] from if_neg isNonNegative]
+      rfl
+
+/-- **Sign-sweep signed-value reachability** — the diagonal the sweep reaches ends at exactly `±` its
+input value: the reached pivot is settled to `±` its (locality-frozen) value
+(`signNormalizeOpsEntryOnPivotIsSignedInput`), the strictly-later target rides the recursion after the
+per-pivot word left it unchanged (`signNormalizeOpsPreserveEntryOffPivot`).  Structural on the outer
+fuel, the sign-carrying twin of `signSweepDiagonalNonnegReached`. -/
+theorem signSweepDiagonalIsSignedInput :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width targetPos : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex ≤ targetPos → targetPos < pivotIndex + fuel →
+      targetPos < height → targetPos < Nat.min height width →
+      (matrix.applyOperations
+          (smithDiagonalSignSweep fuel matrix pivotIndex height width)).entryAt targetPos targetPos
+          = matrix.entryAt targetPos targetPos
+        ∨ (matrix.applyOperations
+          (smithDiagonalSignSweep fuel matrix pivotIndex height width)).entryAt targetPos targetPos
+          = -(matrix.entryAt targetPos targetPos) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width targetPos _ pivotLe targetLt _ _
+      exact (natSuccNeverLeSelf (natLeTrans targetLt pivotLe)).elim
+  | succ fuel ih =>
+      intro matrix pivotIndex height width targetPos isRect pivotLe targetLt targetLtHeight targetLtMin
+      have guardHolds : pivotIndex + 1 ≤ Nat.min height width :=
+        natLeTrans (natSuccLeSuccOfLe pivotLe) targetLtMin
+      show (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithSignNormalizeOps matrix pivotIndex ++
+              smithDiagonalSignSweep fuel
+                (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                (pivotIndex + 1) height width
+          else [])).entryAt targetPos targetPos = matrix.entryAt targetPos targetPos
+        ∨ (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithSignNormalizeOps matrix pivotIndex ++
+              smithDiagonalSignSweep fuel
+                (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                (pivotIndex + 1) height width
+          else [])).entryAt targetPos targetPos = -(matrix.entryAt targetPos targetPos)
+      rw [if_pos guardHolds, applyOperationsAppend]
+      cases Nat.le.dest pivotLe with
+      | intro difference gapEquation =>
+          cases difference with
+          | zero =>
+              have targetIsPivot : targetPos = pivotIndex := gapEquation.symm
+              rw [targetIsPivot,
+                signSweepFixesBelowPivot fuel
+                  (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                  (pivotIndex + 1) height width pivotIndex (Nat.lt_succ_self pivotIndex)]
+              have pivotInRange : pivotIndex < matrix.rows.length :=
+                isRect.1.symm ▸ (targetIsPivot ▸ targetLtHeight)
+              exact signNormalizeOpsEntryOnPivotIsSignedInput matrix pivotIndex pivotInRange
+          | succ predecessor =>
+              have oneLeGap : 1 ≤ predecessor + 1 :=
+                natSuccLeSuccOfLe (natZeroLe predecessor)
+              have pivotBelowTarget : pivotIndex + 1 ≤ targetPos :=
+                gapEquation ▸ natAddLeAddLeft oneLeGap pivotIndex
+              have targetNePivot : targetPos ≠ pivotIndex :=
+                fun rowsAgree => natSuccNeverLeSelf (rowsAgree ▸ pivotBelowTarget)
+              have offPivot :
+                  (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex)).entryAt targetPos targetPos
+                    = matrix.entryAt targetPos targetPos :=
+                signNormalizeOpsPreserveEntryOffPivot matrix pivotIndex targetPos targetPos targetNePivot
+              have addSwap : pivotIndex + 1 + fuel = pivotIndex + (fuel + 1) :=
+                Nat.succ_add pivotIndex fuel
+              have recBound : targetPos < pivotIndex + 1 + fuel :=
+                addSwap.symm ▸ targetLt
+              have recResult :=
+                ih (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                  (pivotIndex + 1) height width targetPos
+                  (applyOperationsPreservesRectangular (smithSignNormalizeOps matrix pivotIndex) matrix isRect)
+                  pivotBelowTarget recBound targetLtHeight targetLtMin
+              rw [offPivot] at recResult
+              exact recResult
+
+/-- **Divisibility is stable under independent sign flips** — if `left ∣ right`, then `±left ∣ ±right`
+for either sign choice: the exact quotient absorbs the sign through `intMulNeg` / `intNegMul` /
+`intNegNeg`.  The algebraic core that carries the chain through the sign sweep. -/
+theorem dividesExactlyTransportsUnderSign {leftValue rightValue leftSigned rightSigned : Int}
+    (isDivides : dividesExactly leftValue rightValue)
+    (leftIsSigned : leftSigned = leftValue ∨ leftSigned = -leftValue)
+    (rightIsSigned : rightSigned = rightValue ∨ rightSigned = -rightValue) :
+    dividesExactly leftSigned rightSigned := by
+  match isDivides with
+  | ⟨factor, factorEquation⟩ =>
+      cases leftIsSigned with
+      | inl leftSame =>
+          cases rightIsSigned with
+          | inl rightSame =>
+              exact ⟨factor, by rw [rightSame, factorEquation, leftSame]⟩
+          | inr rightFlip =>
+              exact ⟨-factor, by rw [rightFlip, factorEquation, leftSame, intMulNeg]⟩
+      | inr leftFlip =>
+          cases rightIsSigned with
+          | inl rightSame =>
+              exact ⟨-factor, by rw [rightSame, factorEquation, leftFlip, intNegMul, intMulNeg, intNegNeg]⟩
+          | inr rightFlip =>
+              exact ⟨factor, by rw [rightFlip, factorEquation, leftFlip, intNegMul]⟩
+
+/-- **The sign sweep preserves the divisibility chain (S3)** — the whole prefix chain of a rectangular
+input survives the sign sweep: each diagonal ends `±` its input (`signSweepDiagonalIsSignedInput`) and
+divisibility is sign-stable (`dividesExactlyTransportsUnderSign`).  Fixed at the driver's fuel
+`Nat.min height width` and pivot start `0`. -/
+theorem smithSignSweepPreservesChain (matrix : IntMatrix) (height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (isChain : SmithChainPrefix matrix (Nat.min height width) height width) :
+    SmithChainPrefix
+      (matrix.applyOperations (smithDiagonalSignSweep (Nat.min height width) matrix 0 height width))
+      (Nat.min height width) height width :=
+  fun earlierIndex earlierBelowMin laterIndex earlierLeLater laterBelowMin =>
+    dividesExactlyTransportsUnderSign
+      (isChain earlierIndex earlierBelowMin laterIndex earlierLeLater laterBelowMin)
+      (signSweepDiagonalIsSignedInput (Nat.min height width) matrix 0 height width earlierIndex isRect
+        (natZeroLe earlierIndex)
+        ((Nat.zero_add (Nat.min height width)).symm ▸ earlierBelowMin)
+        (natLeTrans earlierBelowMin (natMinLeLeft height width)) earlierBelowMin)
+      (signSweepDiagonalIsSignedInput (Nat.min height width) matrix 0 height width laterIndex isRect
+        (natZeroLe laterIndex)
+        ((Nat.zero_add (Nat.min height width)).symm ▸ laterBelowMin)
+        (natLeTrans laterBelowMin (natMinLeLeft height width)) laterBelowMin)
+
 /-! ## The named wall: cascade re-diagonalization = the r6 elimination-correctness pole (B3)
 
 `SmithReduceFullDriverStatement` stays UNINHABITED this round.  The r5 decomposition ships every
@@ -2481,6 +2726,62 @@ theorem smithReduceFullDriverOfInvariants
       (windowDiagHolds matrix height width isRect)
       (nonnegHolds matrix height width isRect)
       (chainHolds matrix height width isRect)
+
+/-- **The r7 3->2 reduction of the driver totality** — `SmithReduceFullDriverStatement` follows from
+just TWO invariant obligations, both on the min-abs-pre-sorted repair output `afterRepair`: that
+`afterRepair` is window-diagonal at 0, and that its full prefix chain divides.  The third obligation
+(`nonnegHolds`) is discharged internally by `smithReduceFullDiagonalNonneg`, and the sign phase carries
+window-diagonality and the chain from `afterRepair` to the full-driver output
+(`smithSignSweepPreservesWindowDiagonal` / `smithSignSweepPreservesChain` composed with
+`smithReduceFullApplied`).  This is strictly stronger than `smithReduceFullDriverOfInvariants`: the r7
+sign-phase closure removes one of its three hypotheses outright and pushes the other two off the raw
+driver output onto `afterRepair` — the corrected POLE-B, over the ACTUAL repair input (no refuted
+sortedness precondition).  The two survivors bottom out in the shared cascade re-diagonalization core
+(`SmithReduceFullDriverStatement` still UNINHABITED — those two are the r8/r9 wall). -/
+theorem smithReduceFullDriverOfRepairInvariants
+    (repairWindowDiagHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      IsWindowDiagonal
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweep (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        0 height width)
+    (repairChainHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      SmithChainPrefix
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweep (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        (Nat.min height width) height width) :
+    SmithReduceFullDriverStatement :=
+  smithReduceFullDriverOfInvariants
+    (fun matrix height width isRect => by
+      have afterDiagRect :
+          (matrix.applyOperations (smithReduceTotal matrix height width).operations).IsRectangular height width :=
+        applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect
+      have afterRepairRect :
+          ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+            (smithDivisibilityRepairSweep (Nat.min height width)
+              (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+              0 height width)).IsRectangular height width :=
+        applyOperationsPreservesRectangular _ _ afterDiagRect
+      rw [smithReduceFullApplied matrix height width]
+      exact smithSignSweepPreservesWindowDiagonal (Nat.min height width) _ 0 height width
+        afterRepairRect (repairWindowDiagHolds matrix height width isRect))
+    smithReduceFullDiagonalNonneg
+    (fun matrix height width isRect => by
+      have afterDiagRect :
+          (matrix.applyOperations (smithReduceTotal matrix height width).operations).IsRectangular height width :=
+        applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect
+      have afterRepairRect :
+          ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+            (smithDivisibilityRepairSweep (Nat.min height width)
+              (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+              0 height width)).IsRectangular height width :=
+        applyOperationsPreservesRectangular _ _ afterDiagRect
+      rw [smithReduceFullApplied matrix height width]
+      exact smithSignSweepPreservesChain _ height width
+        afterRepairRect (repairChainHolds matrix height width isRect))
 
 /-! ## The r7 truth probes: the two r6 breakers flow through the driver (H2-SMITH r7, B1)
 
