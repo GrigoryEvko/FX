@@ -322,4 +322,85 @@ theorem fragmentTermToCell_subst_eq_pasteAlong_witness :
           (pasteAlong (cellOf (towerSubst 1)) (fragmentTermToCell (omegaSuccTower 2))) :=
   fragmentTermToCell_subst_eq_pasteAlong 1 2
 
+/-! ## THE TUPLE RE-SEAT — the de-degenerated admission rows (r4 JOB 4, SteinerChainCell granularity)
+
+★ **The r3 disclosed weakness, de-degenerated at chain granularity.**  `demoTypedKernel`
+(`TypedKernelTuple.lean`) seats every row via `admittedTableAtDim` on the SINGLETON `PsContextRow.start` +
+`starTower n` — a FABRICATED boundary uniform across the family, NOT the row's own reconstructed pasting
+boundary (`SubstitutionPastingLedger.lean:192-197`).  This section ships the additive de-degeneration at the
+granularity the whole staircase lives at (relative-to-valuation): an `ActionAdmittedRow` is a fragment
+`(substIndex, towerDepth)` pair seated on its ACTION-RECONSTRUCTED pasting boundary
+`linearizeFull (pasteAlong (cellOf sigma) (fragmentTermToCell t))` — a genuine `SteinerChainCell` that VARIES
+with the row — and its admissibility certificate is the action equation itself: the reconstructed boundary
+EQUALS the subst-image boundary (`admissibleViaAction`, = `fragmentTermToCell_subst_eq_pasteAlong`).  The row
+now sits on its OWN reconstructed boundary, not a uniform singleton.
+
+**Honest wall (stated, NEVER widened):** a full reseat at `AdmittedTable`'s native `TeleType` granularity
+(`PsContextTyped.lean`) needs a cell -> `TeleType` bridge (`SteinerChainCell` / `CellExpr` -> de-Bruijn-level
+typed boundary) — the Makkai-adjacent reconstruction the r3 note already flags.  That bridge does not exist
+cheaply; JOB 4 ships the reseat at `SteinerChainCell` granularity and leaves the `TeleType` bridge as the
+documented residual.  (`demoDim3AdmittedTableFull` already demonstrates a non-degenerate `TeleType` seat for
+the specific dim-3 row, so the tuple is not vacuous even before this reseat.) -/
+
+/-- An **action-admitted row** — a fragment row identified by the tower substitution index (the context
+`sigma = towerSubst substIndex`) and the term depth (`t = omegaSuccTower towerDepth`).  Seated on its own
+reconstructed pasting boundary (below), NOT a fabricated singleton. -/
+structure ActionAdmittedRow where
+  /-- The tower substitution index — the context `sigma = towerSubst substIndex`. -/
+  substIndex : Nat
+  /-- The term depth — the fragment term `t = omegaSuccTower towerDepth`. -/
+  towerDepth : Nat
+
+/-- The **reconstructed pasting boundary** the row is seated on — the action's OWN pasting composite of the
+substitution cell with the term cell, realized (`linearizeFull (pasteAlong (cellOf sigma) (ftc t))`).  A
+genuine `SteinerChainCell` that VARIES with the row (unlike the uniform-singleton demo seating). -/
+def ActionAdmittedRow.reconstructedBoundary (row : ActionAdmittedRow) : SteinerChainCell :=
+  linearizeFull towerValuation
+    (pasteAlong (cellOf (towerSubst row.substIndex)) (fragmentTermToCell (omegaSuccTower row.towerDepth)))
+
+/-- The **subst-image boundary** — the kernel-substituted term, realized (`linearizeFull (ftc (t.subst
+sigma))`).  What a faithful (non-fabricated) seating must land on. -/
+def ActionAdmittedRow.substImageBoundary (row : ActionAdmittedRow) : SteinerChainCell :=
+  linearizeFull towerValuation
+    (fragmentTermToCell (RawTerm.subst (towerSubst row.substIndex) (omegaSuccTower row.towerDepth)))
+
+/-- ★ **THE ADMISSIBILITY CERTIFICATE — the seating is genuine.**  The reconstructed pasting boundary EQUALS
+the subst-image boundary — the row genuinely sits on its OWN reconstructed boundary, not a fabricated
+singleton.  This is the `fullnessOverPs`-analog for the action reseat: the certificate IS the action equation
+`fragmentTermToCell_subst_eq_pasteAlong`. -/
+theorem ActionAdmittedRow.admissibleViaAction (row : ActionAdmittedRow) :
+    row.substImageBoundary = row.reconstructedBoundary :=
+  fragmentTermToCell_subst_eq_pasteAlong row.substIndex row.towerDepth
+
+/-- ★ **The action-seated admission FAMILY** — the de-degenerated `(n : Nat) -> AdmittedRow`.  Each
+dimension index `n` gets the row `sigma = towerSubst 1`, `t = omegaSuccTower n`, seated on its
+action-reconstructed pasting boundary (top row `[1 + n]`), so the seating genuinely VARIES with `n` — unlike
+`demoTypedKernel`'s uniform `starTower n` singleton. -/
+def actionAdmittedTable : Nat → ActionAdmittedRow :=
+  fun dimensionIndex => { substIndex := 1, towerDepth := dimensionIndex }
+
+/-- Every row of the family is admissible via the action (the certificate holds uniformly). -/
+theorem actionAdmittedTable_admissible (dimensionIndex : Nat) :
+    (actionAdmittedTable dimensionIndex).substImageBoundary
+      = (actionAdmittedTable dimensionIndex).reconstructedBoundary :=
+  (actionAdmittedTable dimensionIndex).admissibleViaAction
+
+/-- Non-degeneracy of the SEATING (dimension 0): the reconstructed boundary's top row is `[1]`. -/
+example : (actionAdmittedTable 0).reconstructedBoundary.top = [1] := rfl
+
+/-- Non-degeneracy of the SEATING (dimension 1): the reconstructed boundary's top row is `[2]` — the
+seating genuinely MOVES with the dimension index (not a fixed singleton). -/
+example : (actionAdmittedTable 1).reconstructedBoundary.top = [2] := rfl
+
+/-- ★ The seating is genuinely de-degenerated: two distinct dimensions seat on DISTINCT reconstructed
+boundaries (`decide (... = ...) = false`) — the demo tuple's uniform-singleton degeneracy is broken. -/
+example : decide ((actionAdmittedTable 0).reconstructedBoundary
+    = (actionAdmittedTable 1).reconstructedBoundary) = false := rfl
+
+/-- Non-degeneracy of the CERTIFICATE (dimension 2): the row seated at dimension 2 has its reconstructed
+boundary equal to its subst-image boundary — the action-admissibility fires on a concrete non-degenerate row
+(both `⟨[([0],[0])], [3]⟩`). -/
+example : (actionAdmittedTable 2).substImageBoundary = (actionAdmittedTable 2).reconstructedBoundary :=
+  (actionAdmittedTable 2).admissibleViaAction
+
 end FX1Poly.Polygraph.Omega

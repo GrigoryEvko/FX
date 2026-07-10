@@ -36,4 +36,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fragmentTermToCell_subst_eq_pasteAlong
 #assert_no_axioms FX1Poly.Polygraph.Omega.fragmentTermToCell_subst_eq_pasteAlong_witness
 
+-- FragmentTermCellAction.lean — the tuple re-seat: the de-degenerated action-admitted rows (r4 JOB 4)
+#assert_no_axioms FX1Poly.Polygraph.Omega.ActionAdmittedRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.ActionAdmittedRow.reconstructedBoundary
+#assert_no_axioms FX1Poly.Polygraph.Omega.ActionAdmittedRow.substImageBoundary
+#assert_no_axioms FX1Poly.Polygraph.Omega.ActionAdmittedRow.admissibleViaAction
+#assert_no_axioms FX1Poly.Polygraph.Omega.actionAdmittedTable
+#assert_no_axioms FX1Poly.Polygraph.Omega.actionAdmittedTable_admissible
+
 end FX1PolyAudit
