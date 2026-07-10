@@ -344,4 +344,119 @@ theorem smithExampleCyclicTwo :
   diagonalDividesSuccessor := fun position isPositionBelow =>
     Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow))
 
+/-! ## The Euclid cascade + sign/swap pass (H2-SMITH r2, B1/B2)
+
+The r1 driver clears a pivot's row and column by ONE magnitude-quotient transvection, which only
+zeroes an entry the pivot already divides.  When it does not (e.g. `[[6, 4], [0, 0]]`: pivot `6`,
+row entry `4`, `6 ∤ 4`), the coefficient `intPivotQuotient 6 4 = 0` and the `4` survives — not
+Smith-normal.  The gcd cascade replaces the one-shot clear with a Euclidean ROTATION loop: park the
+remainder `r = entry − (entry / pivot) · pivot` at the pivot by a transvection, swap it into the
+pivot slot, and repeat.  The measure the loop rides is the pivot's `euclideanSize` (`Int.natAbs`):
+one rotation drops it to the counting remainder, and
+
+  `smithRotationDecreasesPivotSize` : `intMagnitudeRemainder pivot.natAbs entry < pivot.natAbs`
+
+is the STRICT, SUBTRACTION-FREE descent (the remainder bound `natDivModCountingRemainderIsBounded`
+read through `intMagnitudeRemainderAsCounting`; no `Nat.sub` in the measure).  The pass structure
+(Job 2) is INTERLEAVED per pivot — pivot search + swap, sign-normalise (`negateRow` on a negative
+pivot), Euclid cascade, exact clear, divisibility-repair — so the exact clear always sees a
+nonnegative pivot (`intMagnitudeDivisionExact` reconstructs against `Int.ofNat pivot.natAbs`).
+
+The three r1 failures below are closed AS KERNEL-CHECKED CERTIFICATES: each ships the explicit
+unimodular reduction word and its produced-then-checked Smith normal form, closed against the
+literal by defeq (the `applyOperations` word computes to the literal, checked propext-cleanly by
+`decide` on the literal with hand-built divisibility witnesses).  Totalising the DRIVER to emit
+these words for every input is the named residual `SmithReduceTotalStatement` (r3). -/
+
+/-- **The Euclidean rotation's strict descent** — the parked remainder's magnitude sits strictly
+below the pivot's, subtraction-free: the counting-divider remainder bound
+(`natDivModCountingRemainderIsBounded`) read at the magnitude remainder through
+`intMagnitudeRemainderAsCounting`.  This is the well-founded measure the cascade's fuel rides. -/
+theorem smithRotationDecreasesPivotSize (pivot entry : Int)
+    (isPivotPositive : 0 < pivot.natAbs) :
+    intMagnitudeRemainder pivot.natAbs entry < pivot.natAbs :=
+  Eq.mp
+    (congrArg (· < pivot.natAbs)
+        (intMagnitudeRemainderAsCounting pivot.natAbs entry)).symm
+    (natDivModCountingRemainderIsBounded entry.natAbs pivot.natAbs isPivotPositive)
+
+/-- **The Euclidean-row failure closed** — `[[6, 4], [0, 0]]` (pivot `6` does not divide the row
+entry `4`) reduces to `diag(2, 0)` by two column transvections realising Euclid on `(6, 4)`
+(`gcd = 2`).  The r1 one-shot clear left the `4`; the cascade word lands in Smith normal form. -/
+theorem smithReducedEuclideanRow :
+    (({ rows := [[6, 4], [0, 0]] } : IntMatrix).applyOperations
+        [ ElementaryOperation.columnOperation
+            (ElementaryColumnOperation.addColumnMultiple 1 0 (-1))
+        , ElementaryOperation.columnOperation
+            (ElementaryColumnOperation.addColumnMultiple 0 1 (-2)) ]).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **The signed-diagonal failure closed** — `diag(-2, -6)` (already off-diagonal-clear but with
+NEGATIVE pivots, so `diagonalIsNonnegative` fails) normalises to `diag(2, 6)` by one `negateRow` per
+row.  The chain `2 | 6` is the hand-built witness `(6 : Int) = 2 * 3`.  The sign pass makes the
+nonnegative-diagonal invariant HOLD. -/
+theorem smithReducedSignedDiagonal :
+    (({ rows := [[-2, 0], [0, -6]] } : IntMatrix).applyOperations
+        [ ElementaryOperation.rowOperation (ElementaryRowOperation.negateRow 0)
+        , ElementaryOperation.rowOperation (ElementaryRowOperation.negateRow 1) ]).IsSmithNormalFormWithin
+      2 2 :=
+  show ({ rows := [[2, 0], [0, 6]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 6]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨3, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **The rank-deficient pivot-search failure closed** — `[[2, 4, 6], [1, 2, 3], [3, 6, 9]]` (rank
+one: rows `2·`, `1·`, `3·` the vector `[1, 2, 3]`) reduces to `diag(1, 0, 0)`.  The r1 driver, with
+no pivot search, kept the non-dividing `2` at the pivot and mangled the column; the pass swaps the
+unit entry `1` into the pivot, clears, and lands in Smith normal form.  Chains `1 | 0` and `0 | 0`
+are the witnesses `⟨0, rfl⟩`. -/
+theorem smithReducedRankDeficient :
+    (({ rows := [[2, 4, 6], [1, 2, 3], [3, 6, 9]] } : IntMatrix).applyOperations
+        [ ElementaryOperation.rowOperation (ElementaryRowOperation.swapRows 0 1)
+        , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 0 1 (-2))
+        , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 0 2 (-3))
+        , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 1 (-2))
+        , ElementaryOperation.columnOperation
+            (ElementaryColumnOperation.addColumnMultiple 0 2 (-3)) ]).IsSmithNormalFormWithin 3 3 :=
+  show ({ rows := [[1, 0, 0], [0, 0, 0], [0, 0, 0]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 0, 0], [0, 0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by
+        decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | 1, _ => ⟨0, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
 end FX1Poly.ComputerAlgebra

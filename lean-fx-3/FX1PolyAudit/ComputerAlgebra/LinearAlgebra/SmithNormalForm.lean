@@ -33,5 +33,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedDenseTwo
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithExampleChainThree
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithExampleCyclicTwo
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRotationDecreasesPivotSize
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedEuclideanRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedSignedDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedRankDeficient
 
 end FX1PolyAudit
