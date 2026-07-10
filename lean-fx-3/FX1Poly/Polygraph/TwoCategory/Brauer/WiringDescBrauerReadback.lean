@@ -243,7 +243,7 @@ private theorem natListGetAt_range (count index : Nat) (indexBelow : index < cou
   rangeLoopGetBelow count [] index indexBelow
 
 /-- The two-wide slice at an in-range position reads off the two consecutive open wires. -/
-private theorem natListSliceAt_two (wires : List Nat) (position : Nat)
+theorem natListSliceAt_two (wires : List Nat) (position : Nat)
     (hle : position + 2 ≤ wires.length) :
     natListSliceAt wires position 2 = [natListGetAt wires position, natListGetAt wires (position + 1)] := by
   induction position generalizing wires with
@@ -390,7 +390,7 @@ private theorem stepWiringArcs_crossing_eq (a b c d : Nat) (links : List (Nat ×
 
 /-- ★ The crossing-step link update: the two-join `join (join L a d) b c` on the two consumed wires `a`, `b`
 (`a = openWires[position]`, `b = openWires[position+1]`) and the two fresh legs `c = nextFresh`, `d = nextFresh + 1`. -/
-private theorem stepWiring_crossing_links (state : WireState) (position : Nat)
+theorem stepWiring_crossing_links (state : WireState) (position : Nat)
     (fresh : WiringDescStateFresh state) (nfPos : 0 < state.nextFresh)
     (forest : isUnionFindForest state.links) (hrange : position + 2 ≤ state.openWires.length) :
     (stepWiring state position crossingWiring).links
