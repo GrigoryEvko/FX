@@ -15,5 +15,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.opCellRel
 #assert_no_axioms FX1Poly.Polygraph.Table.opCellRel_ofCells
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_hasOpInvolution
+#assert_no_axioms FX1Poly.Polygraph.Table.godementCommute
+#assert_no_axioms FX1Poly.Polygraph.Table.opCell_hcomp_conv
+#assert_no_axioms FX1Poly.Polygraph.Table.opCell_castBoundary
+#assert_no_axioms FX1Poly.Polygraph.Table.opStep_toFull
+#assert_no_axioms FX1Poly.Polygraph.Table.opConv_toFull
+#assert_no_axioms FX1Poly.Polygraph.Table.opConvFull
+#assert_no_axioms FX1Poly.Polygraph.Table.opDualityForwardCongruence
+#assert_no_axioms FX1Poly.Polygraph.Table.forwardOpDuality
+#assert_no_axioms FX1Poly.Polygraph.Table.opDualityBackwardCongruence
+#assert_no_axioms FX1Poly.Polygraph.Table.backwardOpDuality
+#assert_no_axioms FX1Poly.Polygraph.Table.opDuality_iff
+#assert_no_axioms FX1Poly.Polygraph.Table.decideSaturatedConvUnderOp
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_hasOpDecisionTransport
 
 end FX1PolyAudit

@@ -107,6 +107,277 @@ theorem opCellRel_ofCells {sig : ModeSignature} (baseRel : CellRel sig)
   unfold opCellRel
   rw [opCell_involutive, opCell_involutive]
 
+/-! ## The 2-cell coherence transported through `op` — the Godement commute
+
+The single genuine coherence `op` must respect is the middle-four INTERCHANGE (Godement) law: `op` sends the
+upper-right Godement (`hcomp`) to the upper-LEFT ordering, and the two are convertible.  Everything else in the
+completed convertibility (`TwoCellConvFull`) transports either by the same constructor or a left/right swap. -/
+
+/-- ★ The **Godement commute**: the two orderings of independent whiskers of `cellU` (over `modeA -> modeB`) and
+`cellV` (over `modeB -> modeC`) are convertible — `(oneCellP <| cellV) . (cellU |> oneCellS)` (upper-left) equals
+`(cellU |> oneCellR) . (oneCellQ <| cellV)` (upper-right).  Derived from the shipped middle-four
+`TwoCellStep.interchange` instantiated with identities, plus cast-FREE `vcompId` / `whiskerId` cleanups. -/
+theorem godementCommute {sig : ModeSignature}
+    {modeA modeB modeC : sig.graph.Mode}
+    {oneCellP oneCellQ : ModalityPath sig.graph modeA modeB}
+    {oneCellR oneCellS : ModalityPath sig.graph modeB modeC}
+    (cellU : RawTwoCellExpr sig oneCellP oneCellQ)
+    (cellV : RawTwoCellExpr sig oneCellR oneCellS) :
+    TwoCellConvFull sig
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerLeft oneCellP cellV)
+        (RawTwoCellExpr.whiskerRight oneCellS cellU))
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight oneCellR cellU)
+        (RawTwoCellExpr.whiskerLeft oneCellQ cellV)) := by
+  have stepInterchange :
+      TwoCellConvFull sig
+        (RawTwoCellExpr.hcomp
+          (RawTwoCellExpr.vcomp (RawTwoCellExpr.id oneCellP) cellU)
+          (RawTwoCellExpr.vcomp cellV (RawTwoCellExpr.id oneCellS)))
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.hcomp (RawTwoCellExpr.id oneCellP) cellV)
+          (RawTwoCellExpr.hcomp cellU (RawTwoCellExpr.id oneCellS))) :=
+    TwoCellConvFull.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.interchange (RawTwoCellExpr.id oneCellP) cellU cellV (RawTwoCellExpr.id oneCellS)))
+  have cleanupLeft :
+      TwoCellConvFull sig
+        (RawTwoCellExpr.hcomp
+          (RawTwoCellExpr.vcomp (RawTwoCellExpr.id oneCellP) cellU)
+          (RawTwoCellExpr.vcomp cellV (RawTwoCellExpr.id oneCellS)))
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight oneCellR cellU)
+          (RawTwoCellExpr.whiskerLeft oneCellQ cellV)) := by
+    apply TwoCellConvFull.trans
+      (TwoCellConvFull.vcompCongrLeft _
+        (TwoCellConvFull.whiskerRightCongr oneCellR
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdLeft cellU)))))
+    exact TwoCellConvFull.vcompCongrRight _
+      (TwoCellConvFull.whiskerLeftCongr oneCellQ
+        (TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdRight cellV))))
+  have cleanupRight :
+      TwoCellConvFull sig
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.hcomp (RawTwoCellExpr.id oneCellP) cellV)
+          (RawTwoCellExpr.hcomp cellU (RawTwoCellExpr.id oneCellS)))
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerLeft oneCellP cellV)
+          (RawTwoCellExpr.whiskerRight oneCellS cellU)) := by
+    apply TwoCellConvFull.trans
+      (TwoCellConvFull.vcompCongrLeft _
+        (TwoCellConvFull.trans
+          (TwoCellConvFull.vcompCongrLeft _
+            (TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.whiskerRightId oneCellP oneCellR))))
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+            (TwoCellStep.vcompIdLeft (RawTwoCellExpr.whiskerLeft oneCellP cellV))))))
+    exact TwoCellConvFull.vcompCongrRight _
+      (TwoCellConvFull.trans
+        (TwoCellConvFull.vcompCongrRight _
+          (TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.whiskerLeftId oneCellQ oneCellS))))
+        (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+          (TwoCellStep.vcompIdRight (RawTwoCellExpr.whiskerRight oneCellS cellU)))))
+  exact TwoCellConvFull.trans (TwoCellConvFull.symm cleanupRight)
+    (TwoCellConvFull.trans (TwoCellConvFull.symm stepInterchange) cleanupLeft)
+
+/-- `op` commutes (up to conv) with horizontal composition: `op` sends the upper-right Godement `hcomp` to the
+upper-left ordering, which the Godement commute reconciles. -/
+theorem opCell_hcomp_conv {sig : ModeSignature}
+    {modeA modeB modeC : sig.graph.Mode}
+    {oneCellFDom oneCellFCod : ModalityPath sig.graph modeA modeB}
+    {oneCellGDom oneCellGCod : ModalityPath sig.graph modeB modeC}
+    (cellX : RawTwoCellExpr sig oneCellFDom oneCellFCod)
+    (cellY : RawTwoCellExpr sig oneCellGDom oneCellGCod) :
+    TwoCellConvFull (opSignature sig)
+      (opCell (RawTwoCellExpr.hcomp cellX cellY))
+      (RawTwoCellExpr.hcomp (opCell cellX) (opCell cellY)) :=
+  godementCommute (opCell cellX) (opCell cellY)
+
+/-- `op` commutes with the boundary cast (the boundaries swap) — the `Eq.rec` transport commutation the
+whisker-functoriality cases of the completed-convertibility transport ride on. -/
+theorem opCell_castBoundary {sig : ModeSignature} {sourceMode targetMode : sig.graph.Mode}
+    {sourcePath sourcePath' targetPath targetPath' : ModalityPath sig.graph sourceMode targetMode}
+    (hsource : sourcePath = sourcePath') (htarget : targetPath = targetPath')
+    (cell : RawTwoCellExpr sig sourcePath targetPath) :
+    opCell (RawTwoCellExpr.castBoundary hsource htarget cell)
+      = RawTwoCellExpr.castBoundary (signature := opSignature sig) htarget hsource (opCell cell) := by
+  cases hsource; cases htarget; rfl
+
+/-! ## The completed-convertibility transport under `op` -/
+
+/-- Transport a single 3-cell rewrite through `op` into the completed convertibility of the `op` signature.
+Eleven cases are same-ctor or a left/right swap; the `interchange` case is the Godement commute (`opCell_hcomp_conv`)
+plus the `op` signature's own interchange step. -/
+theorem opStep_toFull {sig : ModeSignature}
+    {sourceMode targetMode : sig.graph.Mode}
+    {sourcePath targetPath : ModalityPath sig.graph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr sig sourcePath targetPath}
+    (step : TwoCellStep sig cellA cellB) :
+    TwoCellConvFull (opSignature sig) (opCell cellA) (opCell cellB) := by
+  induction step with
+  | vcompIdLeft cellAlpha =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdRight (opCell cellAlpha)))
+  | vcompIdRight cellAlpha =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdLeft (opCell cellAlpha)))
+  | vcompAssoc cellAlpha cellBeta cellGamma =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.symm (TwoCellConv.ofStep
+        (TwoCellStep.vcompAssoc (opCell cellGamma) (opCell cellBeta) (opCell cellAlpha))))
+  | whiskerLeftId oneCell path =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.whiskerLeftId (signature := opSignature sig) oneCell path))
+  | whiskerRightId path oneCell =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.whiskerRightId (signature := opSignature sig) path oneCell))
+  | whiskerLeftVcomp oneCell cellBeta cellGamma =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.whiskerLeftVcomp (signature := opSignature sig) oneCell (opCell cellGamma) (opCell cellBeta)))
+  | whiskerRightVcomp oneCell cellAlpha cellBeta =>
+      exact TwoCellConvFull.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.whiskerRightVcomp (signature := opSignature sig) oneCell (opCell cellBeta) (opCell cellAlpha)))
+  | vcompCongrLeft cellBeta _ ih =>
+      exact TwoCellConvFull.vcompCongrRight (opCell cellBeta) ih
+  | vcompCongrRight cellAlpha _ ih =>
+      exact TwoCellConvFull.vcompCongrLeft (opCell cellAlpha) ih
+  | whiskerLeftCongr oneCell _ ih =>
+      exact TwoCellConvFull.whiskerLeftCongr (signature := opSignature sig) oneCell ih
+  | whiskerRightCongr oneCell _ ih =>
+      exact TwoCellConvFull.whiskerRightCongr (signature := opSignature sig) oneCell ih
+  | interchange cellAlpha cellAlphaUpper cellBeta cellBetaUpper =>
+      refine TwoCellConvFull.trans (opCell_hcomp_conv _ _) ?_
+      refine TwoCellConvFull.trans
+        (TwoCellConvFull.ofConv (TwoCellConv.ofStep
+          (TwoCellStep.interchange (opCell cellAlphaUpper) (opCell cellAlpha)
+            (opCell cellBetaUpper) (opCell cellBeta)))) ?_
+      exact TwoCellConvFull.trans
+        (TwoCellConvFull.vcompCongrLeft _
+          (TwoCellConvFull.symm (opCell_hcomp_conv cellAlphaUpper cellBetaUpper)))
+        (TwoCellConvFull.vcompCongrRight _
+          (TwoCellConvFull.symm (opCell_hcomp_conv cellAlpha cellBeta)))
+
+/-- Transport a convertibility through `op` (structural closure: `ofStep` through `opStep_toFull`). -/
+theorem opConv_toFull {sig : ModeSignature}
+    {sourceMode targetMode : sig.graph.Mode}
+    {sourcePath targetPath : ModalityPath sig.graph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr sig sourcePath targetPath}
+    (conv : TwoCellConv sig cellA cellB) :
+    TwoCellConvFull (opSignature sig) (opCell cellA) (opCell cellB) := by
+  induction conv with
+  | ofStep step => exact opStep_toFull step
+  | refl cell => exact TwoCellConvFull.refl (opCell cell)
+  | symm _ ih => exact TwoCellConvFull.symm ih
+  | trans _ _ ihLeft ihRight => exact TwoCellConvFull.trans ihLeft ihRight
+
+/-- ★ Transport the COMPLETED free-strict-2-category convertibility through `op`.  The four whisker-functoriality
+cases map to the same ctor via `opCell_castBoundary`; the two vcomp congruences SWAP left/right; the whiskerings
+and `refl`/`symm`/`trans` map to the same ctor; `ofConv` recurses through `opConv_toFull`. -/
+theorem opConvFull {sig : ModeSignature}
+    {sourceMode targetMode : sig.graph.Mode}
+    {sourcePath targetPath : ModalityPath sig.graph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr sig sourcePath targetPath}
+    (convFull : TwoCellConvFull sig cellA cellB) :
+    TwoCellConvFull (opSignature sig) (opCell cellA) (opCell cellB) := by
+  induction convFull with
+  | ofConv conv => exact opConv_toFull conv
+  | whiskerLeftUnit body => exact TwoCellConvFull.whiskerLeftUnit (opCell body)
+  | whiskerRightUnit body =>
+      rw [opCell_castBoundary]; exact TwoCellConvFull.whiskerRightUnit (opCell body)
+  | whiskerLeftComp oneCellOuter oneCellInner body =>
+      rw [opCell_castBoundary]
+      exact TwoCellConvFull.whiskerLeftComp (signature := opSignature sig) oneCellOuter oneCellInner (opCell body)
+  | whiskerRightComp oneCellInner oneCellOuter body =>
+      rw [opCell_castBoundary]
+      exact TwoCellConvFull.whiskerRightComp (signature := opSignature sig) oneCellInner oneCellOuter (opCell body)
+  | whiskerExchange leftWhisker rightWhisker body =>
+      rw [opCell_castBoundary]
+      exact TwoCellConvFull.whiskerExchange (signature := opSignature sig) leftWhisker rightWhisker (opCell body)
+  | vcompCongrLeft cellBeta _ ih => exact TwoCellConvFull.vcompCongrRight (opCell cellBeta) ih
+  | vcompCongrRight cellAlpha _ ih => exact TwoCellConvFull.vcompCongrLeft (opCell cellAlpha) ih
+  | whiskerLeftCongr oneCell _ ih => exact TwoCellConvFull.whiskerLeftCongr (signature := opSignature sig) oneCell ih
+  | whiskerRightCongr oneCell _ ih => exact TwoCellConvFull.whiskerRightCongr (signature := opSignature sig) oneCell ih
+  | refl cell => exact TwoCellConvFull.refl (opCell cell)
+  | symm _ ih => exact TwoCellConvFull.symm ih
+  | trans _ _ ihLeft ihRight => exact TwoCellConvFull.trans ihLeft ihRight
+
+/-! ## The saturated-convertibility transport + the Decidable transport -/
+
+/-- The forward congruence: the base saturated congruence maps into the `op`'d saturated conv (via the universal
+property `recInto`).  The two vcomp congruences SWAP; `ofRelation` rides the row bridge; `ofFull` rides
+`opConvFull`. -/
+def opDualityForwardCongruence {sig : ModeSignature} (baseRel : CellRel sig) :
+    IsSaturatedCongruence sig baseRel
+      (fun cellA cellB => SaturatedConvOver (opSignature sig) (opCellRel baseRel)
+        (opCell cellA) (opCell cellB)) where
+  ofFull full := SaturatedConvOver.ofFull (opConvFull full)
+  ofRelation row := SaturatedConvOver.ofRelation ((opCellRel_ofCells baseRel _ _).mpr row)
+  vcompCongrLeft {_ _ _ _ _ _ _ cellBeta} ih := SaturatedConvOver.vcompCongrRight (opCell cellBeta) ih
+  vcompCongrRight {_ _ _ _ _ cellAlpha _ _} ih := SaturatedConvOver.vcompCongrLeft (opCell cellAlpha) ih
+  whiskerLeftCongr {_ _ _ oneCell _ _ _ _} ih := SaturatedConvOver.whiskerLeftCongr (signature := opSignature sig) oneCell ih
+  whiskerRightCongr {_ _ _ _ _ oneCell _ _} ih := SaturatedConvOver.whiskerRightCongr (signature := opSignature sig) oneCell ih
+  refl cell := SaturatedConvOver.refl (opCell cell)
+  symm ih := SaturatedConvOver.symm ih
+  trans ihLeft ihRight := SaturatedConvOver.trans ihLeft ihRight
+
+/-- ★ **Forward duality transport** — the base saturated conv maps into the `op`'d saturated conv over
+`opCellRel baseRel`. -/
+theorem forwardOpDuality {sig : ModeSignature} {baseRel : CellRel sig}
+    {sourceMode targetMode : sig.graph.Mode}
+    {sourcePath targetPath : ModalityPath sig.graph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr sig sourcePath targetPath}
+    (conv : SaturatedConvOver sig baseRel cellA cellB) :
+    SaturatedConvOver (opSignature sig) (opCellRel baseRel) (opCell cellA) (opCell cellB) :=
+  SaturatedConvOver.recInto (opDualityForwardCongruence baseRel) conv
+
+/-- The backward congruence: the `op`'d saturated conv maps back into the base saturated congruence (via
+`recInto`).  `ofRelation` is DEFINITIONAL here (`opCellRel baseRel x y` unfolds to `baseRel (opCell x)(opCell y)`);
+`ofFull` rides `opConvFull` at the `op` signature (landing at `sig` since `op` is a definitional involution). -/
+def opDualityBackwardCongruence {sig : ModeSignature} (baseRel : CellRel sig) :
+    IsSaturatedCongruence (opSignature sig) (opCellRel baseRel)
+      (fun cellX cellY => SaturatedConvOver sig baseRel (opCell cellX) (opCell cellY)) where
+  ofFull full := SaturatedConvOver.ofFull (opConvFull full)
+  ofRelation row := SaturatedConvOver.ofRelation row
+  vcompCongrLeft {_ _ _ _ _ _ _ cellBeta} ih := SaturatedConvOver.vcompCongrRight (opCell cellBeta) ih
+  vcompCongrRight {_ _ _ _ _ cellAlpha _ _} ih := SaturatedConvOver.vcompCongrLeft (opCell cellAlpha) ih
+  whiskerLeftCongr {_ _ _ oneCell _ _ _ _} ih := SaturatedConvOver.whiskerLeftCongr (signature := sig) oneCell ih
+  whiskerRightCongr {_ _ _ _ _ oneCell _ _} ih := SaturatedConvOver.whiskerRightCongr (signature := sig) oneCell ih
+  refl cell := SaturatedConvOver.refl (opCell cell)
+  symm ih := SaturatedConvOver.symm ih
+  trans ihLeft ihRight := SaturatedConvOver.trans ihLeft ihRight
+
+/-- ★ **Backward duality transport** — the `op`'d saturated conv maps back to the base saturated conv on the
+`op`'d cells. -/
+theorem backwardOpDuality {sig : ModeSignature} {baseRel : CellRel sig}
+    {sourceMode targetMode : sig.graph.Mode}
+    {sourcePath targetPath : ModalityPath sig.graph sourceMode targetMode}
+    {cellX cellY : RawTwoCellExpr (opSignature sig) sourcePath targetPath}
+    (conv : SaturatedConvOver (opSignature sig) (opCellRel baseRel) cellX cellY) :
+    SaturatedConvOver sig baseRel (opCell cellX) (opCell cellY) :=
+  SaturatedConvOver.recInto (opDualityBackwardCongruence baseRel) conv
+
+/-- ★ **The duality iff (decision-oriented)** — the base saturated conv on the `op`'d cells is logically the
+`op`'d saturated conv.  Backward is `backwardOpDuality` directly; forward is `forwardOpDuality` closed by the
+`opCell` involutivity. -/
+theorem opDuality_iff {sig : ModeSignature} (baseRel : CellRel sig)
+    {sourceMode targetMode : sig.graph.Mode}
+    {sourcePath targetPath : ModalityPath sig.graph sourceMode targetMode}
+    (cellX cellY : RawTwoCellExpr (opSignature sig) sourcePath targetPath) :
+    SaturatedConvOver sig baseRel (opCell cellX) (opCell cellY)
+      ↔ SaturatedConvOver (opSignature sig) (opCellRel baseRel) cellX cellY := by
+  constructor
+  · intro convBase
+    have transported := forwardOpDuality convBase
+    have involuteX : opCell (opCell cellX) = cellX := opCell_involutive cellX
+    have involuteY : opCell (opCell cellY) = cellY := opCell_involutive cellY
+    exact involuteX ▸ involuteY ▸ transported
+  · intro convOp
+    exact backwardOpDuality convOp
+
+/-- ★ **The generic, walker-agnostic Decidable transport** — a decider for the base saturated conv yields a
+decider for the `op`'d saturated conv (`opCellRel baseRel`) by deciding the base conv on the `op`'d cells and
+routing both verdicts through `opDuality_iff`.  This is the machine every decided-dual walker (comonad,
+idempotent comonad, co-KZ) instantiates: the SHIPPED dual's decider decides the dual through the iff. -/
+def decideSaturatedConvUnderOp {sig : ModeSignature} {baseRel : CellRel sig}
+    (decideBase : DecidableSaturatedConvForRel sig baseRel) :
+    DecidableSaturatedConvForRel (opSignature sig) (opCellRel baseRel) :=
+  fun cellX cellY =>
+    match decideBase (opCell cellX) (opCell cellY) with
+    | isTrue convBase => isTrue ((opDuality_iff baseRel cellX cellY).mp convBase)
+    | isFalse notConvBase => isFalse (fun convOp => notConvBase ((opDuality_iff baseRel cellX cellY).mpr convOp))
+
 /-! ## Honesty marker -/
 
 /-- ★ **Honesty marker — the `op` INVOLUTION on the presentation carrier SHIPS (WALKER-DUALITY B1).**  The
@@ -116,5 +387,14 @@ reversal `RawTwoCellExpr` lacked, with structural `opCell_involutive`), and the 
 co-monad / idempotent-comonad / co-KZ presentation is the `op` of its shipped dual; the Conv-iff decision
 transport and the three decided-dual instances are the follow-on bricks.  `= true`. -/
 def fxTab_hasOpInvolution : Bool := true
+
+/-- ★ **Honesty marker — the Conv-iff DECISION TRANSPORT under `op` SHIPS (WALKER-DUALITY B2).**  The completed
+free-strict-2-category convertibility transports through `op` constructor-by-constructor (`opConvFull`), the one
+genuine coherence being the middle-four INTERCHANGE, discharged by the Godement commute (`godementCommute`, from
+the shipped `TwoCellStep.interchange` + cast-free identity cleanups).  Lifted to `SaturatedConvOver` via the
+universal property (`forwardOpDuality` / `backwardOpDuality` through `recInto`), giving the walker-agnostic iff
+(`opDuality_iff`) and hence the generic `Decidable` transport (`decideSaturatedConvUnderOp`): any shipped decider
+decides the `op`-dual through the iff.  Zero-axiom, STRUCTURAL.  `= true`. -/
+def fxTab_hasOpDecisionTransport : Bool := true
 
 end FX1Poly.Polygraph.Table
