@@ -2254,4 +2254,72 @@ theorem smithReduceFullDriverOfInvariants
       (nonnegHolds matrix height width isRect)
       (chainHolds matrix height width isRect)
 
+/-! ## The r7 truth probes: the two r6 breakers flow through the driver (H2-SMITH r7, B1)
+
+The r5/r6 rounds refuted standalone poles (POLE-A / POLE-B) by finding window-diagonal inputs on
+which the arbitrary-input sweep is wrong.  The r7 strategy proves the three B4 invariant hypotheses
+as REACHABILITY invariants along the driver's own recursion, never over arbitrary inputs.  Before any
+proof work the two named r6 breakers are machine-checked to flow THROUGH the augmented driver to a
+clean nonnegative Smith normal form — confirming that the driver, along its own min-abs-pre-sorted
+path, lands all three invariants (off-diagonal-clear, nonnegative diagonal, dividing chain) on exactly
+the inputs the free-standing poles failed.  Each is closed against its literal driver output by defeq
+(the driver computes to the literal), with hand-built chain witnesses and `decide` on the LITERAL. -/
+
+set_option maxRecDepth 16384 in
+/-- **Truth probe — the POLE-A breaker `diag(6, 4, 9)` through the driver.**  The r6 POLE-A refutation
+found that the re-fired cascade lands the INTERVENING `4` at `(1, 1)` on the pivot; here the AUGMENTED
+driver's min-abs pre-sort settles that `4` first and reduces `diag(6, 4, 9)` to the clean Smith normal
+form `diag(1, 6, 36)`.  All three B4 invariants (off-diagonal-clear, nonnegative diagonal, dividing
+chain `1 | 6 | 36`) hold on the exact input the free-standing POLE-A failed. -/
+theorem smithReducedInterveningSmallByFullDriver :
+    (({ rows := [[6, 0, 0], [0, 4, 0], [0, 0, 9]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[6, 0, 0], [0, 4, 0], [0, 0, 9]] } 3 3).operations).IsSmithNormalFormWithin
+      3 3 :=
+  show ({ rows := [[1, 0, 0], [0, 6, 0], [0, 0, 36]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 6, 0], [0, 0, 36]] } : IntMatrix).entryAt rowIndex colIndex = 0 :=
+        by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨6, rfl⟩
+      | 1, _ => ⟨6, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
+set_option maxRecDepth 16384 in
+/-- **Truth probe — the POLE-B breaker `diag(30, 20, 12)` through the driver.**  The r6 POLE-B
+refutation found that a fold whose cascade lands off-pivot leaves off-diagonal residue (`60` at
+`(2, 1)`) the repair sweep never clears; here the AUGMENTED driver's min-abs pre-sort (the precondition
+POLE-B omitted) settles the `12` first and reduces `diag(30, 20, 12)` to the clean Smith normal form
+`diag(2, 60, 60)`.  All three B4 invariants hold — off-diagonal-clear, nonnegative diagonal, dividing
+chain `2 | 60 | 60` — on the exact input the free-standing POLE-B failed. -/
+theorem smithReducedPresortBreakerByFullDriver :
+    (({ rows := [[30, 0, 0], [0, 20, 0], [0, 0, 12]] } : IntMatrix).applyOperations
+        (smithReduceFull { rows := [[30, 0, 0], [0, 20, 0], [0, 0, 12]] } 3 3).operations).IsSmithNormalFormWithin
+      3 3 :=
+  show ({ rows := [[2, 0, 0], [0, 60, 0], [0, 0, 60]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0, 0], [0, 60, 0], [0, 0, 60]] } : IntMatrix).entryAt rowIndex colIndex = 0 :=
+        by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨30, rfl⟩
+      | 1, _ => ⟨1, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
 end FX1Poly.ComputerAlgebra

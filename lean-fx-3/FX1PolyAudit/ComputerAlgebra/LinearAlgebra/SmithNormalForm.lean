@@ -127,5 +127,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.diagonalDividesSuccessorOfChainPrefix
 #assert_no_axioms FX1Poly.ComputerAlgebra.isSmithNormalFormOfWindowDiagonalChainNonneg
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverOfInvariants
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedInterveningSmallByFullDriver
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedPresortBreakerByFullDriver
 
 end FX1PolyAudit
