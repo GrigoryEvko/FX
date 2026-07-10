@@ -185,6 +185,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMultiGapSplice
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMultiGapFactorization
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallCountInvariance
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWireChangeLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutShiftedGapSplice
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
