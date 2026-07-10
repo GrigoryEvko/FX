@@ -1,4 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingIdempotent.IdempotentSaturatedLadder
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCasesReps
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ChainReadbackConv
 
 /-! # WalkingIdempotent/IdempotentSaturatedGeneralBricks — the general-width bricks, GENERIC-NATIVE
 

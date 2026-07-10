@@ -1,5 +1,4 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadCanonicalWord
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerRightMult
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCell
 import FX1Poly.Polygraph.TwoCategory.WalkingIdempotent.IdempotentMonadSeed
 
