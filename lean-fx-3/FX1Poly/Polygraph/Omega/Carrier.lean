@@ -165,6 +165,107 @@ def IsGlobularCarrier (computad : OmegaComputad) : Prop :=
     boundarySource (boundarySource cell) = boundarySource (boundaryTarget cell) ∧
     boundaryTarget (boundaryTarget cell) = boundaryTarget (boundarySource cell)
 
+/-! ## Globularity DISCHARGED on the well-formed sub-carrier (OMEGA-1 r2, B3)
+
+`IsGlobularCarrier` does NOT hold for the whole free carrier: the `gen` constructor admits generators whose
+declared source/target `(dim+1)`-cells have DIFFERENT `dim`-boundaries (a non-parallel generator), and `vcomp`
+admits non-composable pairs (`boundaryTarget left ≠ boundarySource right`).  Those are the exact two failing
+constructor cases — NOT a mutual-index / positivity wall, so the forecast stratified-carriers fallback is not
+needed.  The honest landing is an EXTRINSIC well-formedness predicate `IsGlobularCell` (parallel generators +
+composable vcomps, propagated structurally) under which globularity is PROVEN by plain structural induction.
+The `id` and whisker legs are FREE or follow the inductive hypothesis; only `gen` (parallelism) and `vcomp`
+(composability) consume the predicate. -/
+
+/-- Whether two same-dimension cells are **parallel** (share both boundaries) — vacuous at dimension 0 (modes
+have no boundary).  The `gen` obligation for globularity: a generator's declared source and target must be
+parallel. -/
+def IsParallelPair {computad : OmegaComputad} :
+    {dim : Nat} → CellExpr computad dim → CellExpr computad dim → Prop
+  | 0, _, _ => True
+  | _ + 1, source, target =>
+      boundarySource source = boundarySource target ∧ boundaryTarget source = boundaryTarget target
+
+/-- Whether two `(dim+1)`-cells are **composable** for a vertical composite: the first's target boundary is the
+second's source boundary. -/
+def IsComposablePair {computad : OmegaComputad} {dim : Nat}
+    (left right : CellExpr computad (dim + 1)) : Prop :=
+  boundaryTarget left = boundarySource right
+
+/-- The **well-formed (globular) cell** predicate — a `GlobularComputad`-style refinement carried on the CELL
+(the untyped carrier's generators are free, so parallelism / composability are per-cell facts, not computad
+facts).  Every generator is parallel, every vertical composite is composable, and both propagate into subcells.
+Structural recursion, constant `Prop` motive — propext-free. -/
+def IsGlobularCell {computad : OmegaComputad} :
+    {dim : Nat} → CellExpr computad dim → Prop
+  | _, .ofMode _ => True
+  | _, .gen _ source target => IsGlobularCell source ∧ IsGlobularCell target ∧ IsParallelPair source target
+  | _, .id cell => IsGlobularCell cell
+  | _, .vcomp left right => IsGlobularCell left ∧ IsGlobularCell right ∧ IsComposablePair left right
+  | _, .whiskerLeft whiskeringCell cell => IsGlobularCell whiskeringCell ∧ IsGlobularCell cell
+  | _, .whiskerRight cell whiskeringCell => IsGlobularCell cell ∧ IsGlobularCell whiskeringCell
+
+/-- The **globularity legs** of a cell — `True` below dimension 2 (no `ss`/`tt` boundary to compare), the two
+globularity equations `ss = ts` and `tt = st` at dimension `+2`.  Full `Nat` enumeration — propext-free. -/
+def GlobularLegs {computad : OmegaComputad} :
+    {dim : Nat} → CellExpr computad dim → Prop
+  | 0, _ => True
+  | 1, _ => True
+  | _ + 2, cell =>
+      boundarySource (boundarySource cell) = boundarySource (boundaryTarget cell) ∧
+      boundaryTarget (boundaryTarget cell) = boundaryTarget (boundarySource cell)
+
+/-- ★ **Globularity holds on the well-formed sub-carrier.**  Every `IsGlobularCell` cell satisfies its
+`GlobularLegs` (globularity `ss = ts`, `tt = st` at dimension `+2`) — by plain structural induction: `id` and
+the "outer" whisker leg are `rfl`, the "inner" whisker leg is the inductive hypothesis, `gen` fires the
+generator-parallelism conjunct, and `vcomp` chains the two subcell hypotheses across the composability
+conjunct.  No propext / positivity wall; the two constructor obligations (`gen`-parallel, `vcomp`-composable)
+are exactly the `IsGlobularCell` fields. -/
+theorem globularLegs_of_isGlobularCell {computad : OmegaComputad} {dim : Nat}
+    (cell : CellExpr computad dim) : IsGlobularCell cell → GlobularLegs cell := by
+  induction cell with
+  | ofMode _ => intro _; exact True.intro
+  | @gen ctorDim _ _ _ _ _ =>
+      intro hwf
+      cases ctorDim with
+      | zero => exact True.intro
+      | succ _ =>
+          obtain ⟨_, _, hpar⟩ := hwf
+          exact ⟨hpar.1, hpar.2.symm⟩
+  | @id ctorDim _ _ =>
+      intro _
+      cases ctorDim with
+      | zero => exact True.intro
+      | succ _ => exact ⟨rfl, rfl⟩
+  | @vcomp ctorDim _ _ ihLeft ihRight =>
+      intro hwf
+      cases ctorDim with
+      | zero => exact True.intro
+      | succ _ =>
+          obtain ⟨hwfLeft, hwfRight, hcomp⟩ := hwf
+          obtain ⟨legsLeftSource, legsLeftTarget⟩ := ihLeft hwfLeft
+          obtain ⟨legsRightSource, legsRightTarget⟩ := ihRight hwfRight
+          exact ⟨legsLeftSource.trans ((congrArg boundarySource hcomp).trans legsRightSource),
+            legsRightTarget.trans ((congrArg boundaryTarget hcomp.symm).trans legsLeftTarget)⟩
+  | @whiskerLeft _ _ _ _ ihInner =>
+      intro hwf
+      obtain ⟨_, hwfInner⟩ := hwf
+      obtain ⟨_, legsInnerTarget⟩ := ihInner hwfInner
+      exact ⟨rfl, legsInnerTarget⟩
+  | @whiskerRight _ _ _ ihInner _ =>
+      intro hwf
+      obtain ⟨hwfInner, _⟩ := hwf
+      obtain ⟨legsInnerSource, _⟩ := ihInner hwfInner
+      exact ⟨legsInnerSource, rfl⟩
+
+/-- Hence the extrinsic `IsGlobularCarrier` predicate holds once quantified over WELL-FORMED cells: a computad
+whose every `(dim+2)`-cell is `IsGlobularCell` is globular.  This is the honest true form of `IsGlobularCarrier`
+(the bare universally-quantified version is refuted by non-parallel generators / non-composable vcomps). -/
+theorem isGlobularCarrier_onWellFormed {computad : OmegaComputad} {dim : Nat}
+    (cell : CellExpr computad (dim + 2)) (hwf : IsGlobularCell cell) :
+    boundarySource (boundarySource cell) = boundarySource (boundaryTarget cell) ∧
+    boundaryTarget (boundaryTarget cell) = boundaryTarget (boundarySource cell) :=
+  globularLegs_of_isGlobularCell cell hwf
+
 /-! ## Structural equality — the flat-skeleton route (propext-clean)
 
 A structural equality on the `Nat`-indexed `CellExpr` cannot pair-match the two cells directly: the offset

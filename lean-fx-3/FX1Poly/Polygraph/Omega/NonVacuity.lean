@@ -124,4 +124,22 @@ theorem threeCell_distinct : cellBeq demoModeBeq demoGenBeq threeCellGen threeCe
 /-- Structural equality accepts a `CellExpr 3` against itself. -/
 theorem threeCell_reflexive : cellBeq demoModeBeq demoGenBeq threeCellVcomp threeCellVcomp = true := rfl
 
+/-! ## Non-vacuity 5 — the well-formedness predicate is inhabited and discharges globularity (B3) -/
+
+/-- The generating 1-cell is well-formed: its declared mode boundaries are trivially parallel. -/
+theorem oneCellGen_isGlobular : IsGlobularCell oneCellGen := ⟨True.intro, True.intro, True.intro⟩
+
+/-- The generating 2-cell is well-formed: its boundary 1-cells are globular and parallel to themselves. -/
+theorem twoCellGen_isGlobular : IsGlobularCell twoCellGen :=
+  ⟨oneCellGen_isGlobular, oneCellGen_isGlobular, rfl, rfl⟩
+
+/-- The generating 3-cell is well-formed — `IsGlobularCell` is non-vacuous at dimension 3. -/
+theorem threeCellGen_isGlobular : IsGlobularCell threeCellGen :=
+  ⟨twoCellGen_isGlobular, twoCellGen_isGlobular, rfl, rfl⟩
+
+/-- ★ Globularity discharges on the concrete well-formed 3-cell: its `GlobularLegs` (the `ss = ts`, `tt = st`
+equations) are inhabited via `globularLegs_of_isGlobularCell` — the B3 theorem is non-vacuous. -/
+theorem threeCellGen_globularLegs : GlobularLegs threeCellGen :=
+  globularLegs_of_isGlobularCell threeCellGen threeCellGen_isGlobular
+
 end FX1Poly.Polygraph.Omega

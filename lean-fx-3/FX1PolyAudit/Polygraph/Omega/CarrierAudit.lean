@@ -22,6 +22,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.boundarySource
 #assert_no_axioms FX1Poly.Polygraph.Omega.boundaryTarget
 #assert_no_axioms FX1Poly.Polygraph.Omega.IsGlobularCarrier
+#assert_no_axioms FX1Poly.Polygraph.Omega.IsParallelPair
+#assert_no_axioms FX1Poly.Polygraph.Omega.IsComposablePair
+#assert_no_axioms FX1Poly.Polygraph.Omega.IsGlobularCell
+#assert_no_axioms FX1Poly.Polygraph.Omega.GlobularLegs
+#assert_no_axioms FX1Poly.Polygraph.Omega.globularLegs_of_isGlobularCell
+#assert_no_axioms FX1Poly.Polygraph.Omega.isGlobularCarrier_onWellFormed
 #assert_no_axioms FX1Poly.Polygraph.Omega.CellSkeleton
 #assert_no_axioms FX1Poly.Polygraph.Omega.toSkeleton
 #assert_no_axioms FX1Poly.Polygraph.Omega.skeletonBeq
@@ -46,5 +52,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.interchange_sides_distinct
 #assert_no_axioms FX1Poly.Polygraph.Omega.threeCell_distinct
 #assert_no_axioms FX1Poly.Polygraph.Omega.threeCell_reflexive
+#assert_no_axioms FX1Poly.Polygraph.Omega.oneCellGen_isGlobular
+#assert_no_axioms FX1Poly.Polygraph.Omega.twoCellGen_isGlobular
+#assert_no_axioms FX1Poly.Polygraph.Omega.threeCellGen_isGlobular
+#assert_no_axioms FX1Poly.Polygraph.Omega.threeCellGen_globularLegs
 
 end FX1PolyAudit
