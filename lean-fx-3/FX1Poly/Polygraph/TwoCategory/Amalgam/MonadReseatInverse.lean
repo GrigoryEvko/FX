@@ -858,6 +858,34 @@ theorem reseatGenInvReseatGen_val : {sourceMode targetMode : Fin 1} →
   | ⟨0, _⟩, ⟨_ + 1, isLt⟩, _, _, _ =>
       absurd (Nat.lt_of_succ_lt_succ isLt) (Nat.not_lt_zero _)
 
+/-- Transporting a reconstructed generator across boundary-path equalities leaves its `Fin 2` index untouched
+(the index type is boundary-independent).  `cases` both equalities then `rfl`. -/
+theorem reconTwoCell_doubleTransport_val {sourceMode targetMode : Fin 1}
+    {sourcePath sourcePath' targetPath targetPath' :
+      ModalityPath monadComputad.toModeGraph sourceMode targetMode}
+    (hsource : sourcePath = sourcePath') (htarget : targetPath = targetPath')
+    (g : monadComputad.ReconstructedTwoCell sourcePath targetPath) :
+    (hsource ▸ htarget ▸ g).val = g.val := by
+  cases hsource; cases htarget; rfl
+
+/-- ★★ **The GEN round-trip (full)** — `reseatGenInv (reseatGen g)` is the boundary-cast of `g` back onto the
+`reseatPathInv (reseatPath ..)` image boundary.  The r1 marker's hard node, CLOSED: since the round-trip preserves
+the `Fin 2` index (`reseatGenInvReseatGen_val`) and both sides are proof-irrelevant subtypes at the SAME boundary,
+`Subtype.ext` upgrades the index equality to the full generator equality (the transport on the RHS leaves the
+index fixed by `reconTwoCell_doubleTransport_val`).  All `Eq.rec` / no `HEq`. -/
+theorem reseatGenInv_reseatGen
+    {sourcePath targetPath : ModalityPath monadComputad.toModeGraph
+      (⟨0, by decide⟩ : Fin 1) (⟨0, by decide⟩ : Fin 1)}
+    (g : monadComputad.ReconstructedTwoCell sourcePath targetPath) :
+    reseatGenInv (reseatGen g)
+      = ((reseatPathInv_reseatPath sourcePath).symm ▸
+          (reseatPathInv_reseatPath targetPath).symm ▸ g
+          : monadComputad.ReconstructedTwoCell (reseatPathInv (reseatPath sourcePath))
+              (reseatPathInv (reseatPath targetPath))) :=
+  Subtype.ext (by
+    rw [reconTwoCell_doubleTransport_val]
+    exact reseatGenInvReseatGen_val g)
+
 /-- **Stripping a shared boundary cast off a saturated convertibility** — the inverse of
 `SaturatedConvOver.castBoundaryCongr`.  Fully generic (`sourcePath'` / `targetPath'` are FRESH variables, so
 `cases` on the boundary equalities is unobstructed — unlike at the round-trip call site, where the cast target is

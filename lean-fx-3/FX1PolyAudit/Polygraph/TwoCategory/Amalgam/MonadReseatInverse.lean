@@ -78,6 +78,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatGenInv_castMonadTwoCell
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatGenInv_castMonadTwoCell_val
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatGenInvReseatGen_val
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconTwoCell_doubleTransport_val
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatGenInv_reseatGen
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.saturatedConvOver_castBoundaryStrip
 
 -- The honesty markers
