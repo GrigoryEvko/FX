@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedConv
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDeltaReps
 
 /-! # WalkingIdempotent/IdempotentMonadSeed — the walking IDEMPOTENT monad: the monad seed plus one equation
 
