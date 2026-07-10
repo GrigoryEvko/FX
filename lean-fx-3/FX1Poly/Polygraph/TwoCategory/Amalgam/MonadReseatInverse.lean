@@ -735,6 +735,68 @@ def monadReconstructedDecisionViaReflection
     | isFalse hbespoke =>
         isFalse (monadReconRefutes (fun hgen => hbespoke ((monadSaturated_iff_generic _ _).mpr hgen)))
 
+/-! ## B6 — the round-trip nodes: the PATH leg `reseatPathInv (reseatPath path) = path`
+
+The reseated decider `monadReconstructedDecisionViaReflection` (B5) is CONDITIONAL on the reflection, which is
+`reseatConvBackward` (B4) COMPOSED with the CELL round-trip `reseatCellInv (reseatCell cell) = cell`.  The cell
+round-trip factors through the PATH round-trip `reseatPathInv (reseatPath path) = path` (this section) and the GEN
+round-trip (below).  The path leg reconstructs a reconstructed `t`-power from its length: the wall the r1 marker
+named is that `path` lives over the FIXED `Fin 1` endpoints `⟨0⟩ ⟨0⟩` (non-variable inductive-family indices), so
+structural recursion on `path` is unavailable — the `cons` case must pin the (free) middle mode to `⟨0⟩`, which
+`subst` cannot do inside a structural recursion on `path`.  The fix (the standard fixed-index generalization): the
+recursion is on the LENGTH `fuel` (a `Nat`, structurally decreasing), with `path` carried as data and the middle
+mode pinned per step.  All `Eq.rec` / no `HEq`, STRUCTURAL, propext-free. -/
+
+/-- **Middle-mode pin** — a reconstructed 1-generator at source `⟨0⟩` forces its target mode to `⟨0⟩` (the sole
+`Fin 1` inhabitant), read off the stored endpoint witness by `Prod.snd` congruence.  Propext-free (subtype +
+`Fin`-value decomposition, NOT `Fin.cases`). -/
+theorem reconModalityTargetZero {middleMode : Fin 1}
+    (modality : monadComputad.Modality (⟨0, by decide⟩ : Fin 1) middleMode) :
+    middleMode = (⟨0, by decide⟩ : Fin 1) :=
+  match modality with
+  | ⟨⟨0, _⟩, hproof⟩ => (congrArg Prod.snd hproof).symm
+  | ⟨⟨_ + 1, isLt⟩, _⟩ => False.elim (Nat.not_lt_zero _ (Nat.lt_of_succ_lt_succ isLt))
+
+/-- **Generator uniqueness at `⟨0⟩ ⟨0⟩`** — the reconstructed 1-cell family `Modality ⟨0⟩ ⟨0⟩` is a subsingleton
+(one index `⟨0⟩`, proof-irrelevant property), so every inhabitant IS the canonical `⟨⟨0⟩, rfl⟩`.  Propext-free. -/
+theorem reconModalityUnique
+    (modality : monadComputad.Modality (⟨0, by decide⟩ : Fin 1) (⟨0, by decide⟩ : Fin 1)) :
+    modality = ⟨⟨0, by decide⟩, rfl⟩ :=
+  match modality with
+  | ⟨⟨0, _⟩, _⟩ => rfl
+  | ⟨⟨_ + 1, isLt⟩, _⟩ => False.elim (Nat.not_lt_zero _ (Nat.lt_of_succ_lt_succ isLt))
+
+/-- **The PATH round-trip, fuelled by length** — `reseatPathInv (reseatPath path) = path` for a reconstructed
+`t`-power over the FIXED `⟨0⟩ ⟨0⟩` endpoints.  Structural recursion on the `Nat` fuel (the length), so the middle
+mode `subst` in the `cons` case never disturbs the recursion measure (the fixed-index generalization the r1
+marker's wall requires).  Every arm `Eq.rec` / propext-free. -/
+theorem reseatPathInv_reseatPath_fueled :
+    (fuel : Nat) →
+    (path : ModalityPath monadComputad.toModeGraph (⟨0, by decide⟩ : Fin 1) (⟨0, by decide⟩ : Fin 1)) →
+    path.length = fuel →
+    reseatPathInv (reseatPath path) = path
+  | 0, ModalityPath.nil _, _ => rfl
+  | 0, ModalityPath.cons _ _, hlen => Nat.noConfusion hlen
+  | _ + 1, ModalityPath.nil _, hlen => Nat.noConfusion hlen
+  | fuel + 1, ModalityPath.cons modality rest, hlen => by
+      have hmiddle := reconModalityTargetZero modality
+      subst hmiddle
+      have hrest : rest.length = fuel := Nat.succ.inj hlen
+      have ih := reseatPathInv_reseatPath_fueled fuel rest hrest
+      show ModalityPath.cons
+            (⟨⟨0, by decide⟩, rfl⟩ :
+              monadComputad.Modality (⟨0, by decide⟩ : Fin 1) (⟨0, by decide⟩ : Fin 1))
+            (reseatPathInv (reseatPath rest)) = ModalityPath.cons modality rest
+      rw [ih, reconModalityUnique modality]
+
+/-- ★★ **The PATH round-trip** — `reseatPathInv (reseatPath path) = path` on the mono-mode fibre.  The inverse
+1-cell functor is a genuine section of the forward 1-cell functor on the reconstructed `t`-powers; instantiates
+the length-fuelled recursion at the actual length.  First of the two round-trip nodes the r1 marker walled. -/
+theorem reseatPathInv_reseatPath
+    (path : ModalityPath monadComputad.toModeGraph (⟨0, by decide⟩ : Fin 1) (⟨0, by decide⟩ : Fin 1)) :
+    reseatPathInv (reseatPath path) = path :=
+  reseatPathInv_reseatPath_fueled path.length path rfl
+
 /-! ## Honesty markers -/
 
 /-- ★★ **Honesty marker (`true`) — the INVERSE reseat functor + the BACKWARD conv transport SHIP (MODE-ADMIT-INV

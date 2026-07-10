@@ -68,6 +68,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reconLeftUnitDecidesTrue
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.monadReconstructedDecisionViaReflection
 
+-- B6: the round-trip nodes — the PATH leg (fixed-index generalization via length fuel)
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconModalityTargetZero
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconModalityUnique
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatPathInv_reseatPath_fueled
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatPathInv_reseatPath
+
 -- The honesty markers
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasBackwardReseatTransport
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasReseatedDeciderBothVerdicts
