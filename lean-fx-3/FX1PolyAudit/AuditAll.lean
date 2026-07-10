@@ -993,6 +993,7 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.SuspensionChainShift
 import FX1PolyAudit.Polygraph.Omega.DesignLockOmega3WithIdAudit
 -- OMEGA-4 r1 — the Squier ascent: dim-3 critical-pair row family
 import FX1PolyAudit.Polygraph.Omega.CriticalPairRowAudit
+import FX1PolyAudit.Polygraph.Omega.InvolutionDemonstratorAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
