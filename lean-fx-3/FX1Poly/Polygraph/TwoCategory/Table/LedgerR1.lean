@@ -119,6 +119,45 @@ is semantic re-proving, not the mechanical re-pointing the wave was scoped for).
     WalkingString) + `Amalgam/`; a lane-wide migration + decider rebuilds (semantic re-proving) is required before
     any deletion, and the ledger leans KEEP.
 
+### r3 OUTCOME (POLY-TAB-3 re-pointing arc, #2228) — the idempotent item STILL DEFERRED, ZERO deletions
+
+The r2 idempotent bullet named "a POLY-TAB-3 additive re-pointing arc must land green FIRST".  r3 ran that arc and
+found it CANNOT reach a deletion: the idempotent retirement is not a re-point but a normalizer re-founding (the
+RE-PROVES class), exactly as r2 warned.
+
+  * **Phase-1 banked (verified independently):** the generic decider `decideSaturatedConvOverIdempotent` and the
+    bridge `idempotentSaturated_iff_generic` (both directions, plus `idempotentIsCongruence`) are shipped and raw
+    `#print axioms`-clean — zero-axiom on the kernel, not merely the fuel-based `#assert_no_axioms` gate.  A private
+    hand-rolled `decidableOfIff` helper was NOT added: the transport pattern already ships twice
+    (`decideSaturatedConvOverIdempotent`, `SaturatedRelationFamily.decider`); a third copy would be bloat.  All the
+    iff can buy is banked already.
+  * **The blocker (precise):** BOTH routes to the generic decider are bespoke-rooted.
+    `decideSaturatedConvOverIdempotent` (`SaturatedComponentDecider`:167) matches on `decideIdempotentConv`, and
+    `idempotentRelationFamily.walkerDecider` (`SaturatedRelationFamily`:130) IS `decideIdempotentConv` =
+    `idempotentSaturatedWordProblemModuloPosetality idempotentLocalPosetality`, and `idempotentLocalPosetality`
+    (`IdempotentMonadFullNormalizer`:506) is the closed term built by the bespoke `normalizeFull` (the six-case
+    cast-heavy NF induction) via `idempotentThinness_ofNormalize`.  The generic carrier `SaturatedConvOver
+    monadModeSignature IdempotentLawRel` has NO independent proof of local posetality.  So deleting the inductive
+    requires re-founding `idempotentLocalPosetality` / `normalizeFull` / `repFull` / `toNF` DIRECTLY over the
+    generic carrier — the whole six-file normalizer lane.
+  * **Residual consumers (NONZERO — DO NOT DELETE):** 15 ref-files / 280 ref-lines.  Load-bearing RE-PROVES core:
+    `IdempotentMonad{Decision,MuInvertible,Normalizer,GeneralNormalizer,RightWhisker,FullNormalizer}` (~216 lines)
+    plus the two iff inductions + `idempotentIsCongruence` in `Amalgam/SaturatedComponentDecider`.  The light
+    consumers (`IdempotentMonadModel`, `Amalgam/SaturatedRelationFamily`, `Table/ThinWalkerMigration`) CAN be
+    re-pointed born-generic and their `rfl` regressions survive (checked), but doing so neither drives the GLOBAL
+    ref count to zero nor preserves meaning — it collapses the idempotent family member to the involution's trivial
+    `Iff.rfl` shape and voids the very migration fact `idempotentWalker_iff_generic` states — so they are left on
+    the bespoke type, un-churned.
+  * **Verdict:** NOT-READY / NOT-DELETED.  The retirement's whole cost is the FullNormalizer port (`normalizeFull`,
+    75 ref-lines, cast-heavy six-case NF induction), a semantic re-founding well beyond an additive re-point.
+    Banked to a dedicated idempotent-normalizer-port arc; nothing deleted, nothing churned.
+  * **Monad-lane wave shape (POLY-TAB-4 estimate, NOT started):** `MonadSaturatedTwoCellConv` (35 consumers, five
+    lanes) has the SAME shape but WORSE — its decision `monadSaturatedTwoCellDecision` is the Delta monotone-map
+    model, so a born-generic re-founding must re-express the whole simplicial-completeness leg over `SaturatedConvOver
+    monadModeSignature MonadLawRel`, and it is the shared substrate the idempotent lane imports.  The idempotent
+    normalizer port is the strictly smaller prerequisite; the monad lane inherits its playbook and stays
+    KEPT-as-exemplar pending it.
+
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
   * `StringSaturatedTwoCellConv` (WalkingAdjunction / adjoint string) — no generic instance shipped; POLY-TAB-2.
