@@ -17,5 +17,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_multiGeneratorBookkeepingOpenR2
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_omega3CompleteReassessedR2
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_omegaFourSquierAscentHandoffRecordedR2
+-- OMEGA-3 r3 map-IN update
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_generalWhiskeredMapInShippedR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_multiGeneratorDimOneNonAbelianWallR3
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_mapInResidualLedgerR3
 
 end FX1PolyAudit

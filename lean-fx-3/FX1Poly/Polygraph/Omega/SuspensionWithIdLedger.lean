@@ -138,4 +138,57 @@ dimension-raising maps `suspendCell` / `suspendPreservesStrictConvWithId` / `pol
 `linearizeFull_suspend`, and the open interface `bridgeDimTwoHoldsWithId`.  `= true` (recorded). -/
 def fxOmega3_omegaFourSquierAscentHandoffRecordedR2 : Bool := true
 
+/-! ## The OMEGA-3 r3 map-IN update — the surviving family re-assessed (B3/B4)
+
+The r3 map-IN round LANDS the general varying-whisker reconstruct (the r2 open owe (1) restricted to the
+varying-whisker congruence axis), CORRECTS the multi-generator framing, and records the honest residual.  The
+r2 `...OpenR2` markers above are the historical round-2 snapshots (round-stamped, permanently true "as of r2");
+these fresh `...R3` markers are the round-3 truth.  Nothing above is edited or deleted. -/
+
+/-- ★ **r3 FLIP — the general VARYING-whisker map-IN reconstruct is SHIPPED.**  The r2 wall
+`fxOmega3_generalWhiskeredMapInOpenR2` (the `←` reconstruct on the fragment where the WHISKERING 1-cell
+varies) is CLOSED on the crown atom-word fragment by `whiskeredVaryingWhisker_conv_iff_linearizeFull_eq` (+
+the right dual `whiskeredVaryingWhiskerRight_conv_iff_linearizeFull_eq`), `Steiner/VaryingWhiskerReconstruct`:
+the SOURCE pole reads the whisker off (`linearizeFull_bsCoord_eq` + `boundarySource_atomWord` +
+`addCoordinates_zeroVector_right/left`, the degenerate interior boundary cancels), `atomWord_conv_of_linearize_eq`
+reconstructs the whisker convertibility, and the r2 whiskering-1-cell congruences
+(`whiskerLeftWhiskerCongr` / `whiskerRightWhiskerCongr`) re-whisker; the TOP row gives the interior.  The `→`
+(chain soundness `linearizeFull_eq_of_saturatedConvWithId`) was already shipped.  `= true`. -/
+def fxOmega3_generalWhiskeredMapInShippedR3 : Bool := true
+
+/-- ★ **JAM (recon-corrected framing) — the multi-generator wall is a DIM-1 NON-ABELIAN wall, NOT
+bookkeeping.**  `= true` records the wall is present and NAMES the node honestly.  The r2 marker
+`fxOmega3_multiGeneratorBookkeepingOpenR2` framed the ambient-width >= 2 gap as "absolute-index arithmetic
+bookkeeping"; the recon self-attack CORRECTS this.  At cell-dimension 1 the free monoid on >= 2 generators is
+NON-abelian, while `linearize` / `linearizeFull` are ABELIAN (composition is `addCoordinates`, which commutes),
+so the invariant CONFLATES `vcomp g1 g2` with `vcomp g2 g1` (equal table `[1,1]`) though they are NOT
+free-strict convertible at dim 1 (`StrictAxiomRel` has assoc + units + whisker + interchange but NO dim-1
+commutativity), and the poles are degenerate at dim 1 so `linearizeFull` does not rescue it.  Named node: the
+missing INJECTIVE NON-ABELIAN invariant (equivalently, dim-1 non-commutativity of `StrictAxiomRel`) — an
+invariant-side wall distinct from the (dissolved) id-congruence gap AND from the FORM-A ceiling.  The escape
+is cell-dimension >= 2, where Eckmann-Hilton makes the endo-on-identity atoms commute (`vcomp_linearize_comm`
+shipped arithmetically, conv-form owed) so the abelian table CAN be complete there with a multi-hot
+reconstruct — a sizable dim >= 2 lift, deferred.  `= true` (the dim-1 wall is present). -/
+def fxOmega3_multiGeneratorDimOneNonAbelianWallR3 : Bool := true
+
+/-- ★ **B4 — the OMEGA staircase residual after the map-IN round.**  With the varying-whisker reconstruct
+shipped (r3, above), the surviving map-IN owes are exactly TWO NAMED nodes, both cited, plus one permanent
+cited ceiling:
+
+  * (ii) the full dim-2 bridge conv leg `bridgeDimTwoHoldsWithId` (`BridgeDimTwoWithId.lean`) — a BUDGET wall:
+    the sizable `TwoCellConv -> SaturatedConvOverWithId` induction over the real dim-2 carrier + the
+    `realizePathCellSig (composePath ..)` convertibility coherence.  The KEY STEP (`vcompIdLeft`) is already
+    discharged (`crownJam_dischargedWithId`); this is mechanical-but-large, the OMEGA-4 handoff, NOT a
+    soundness / Form-A wall.  Recorded by `fxOmega_bridgeDimTwoHoldsWithIdConvLegOpenR2`.
+  * (iii) the dim-1 multi-generator NON-ABELIAN invariant wall
+    (`fxOmega3_multiGeneratorDimOneNonAbelianWallR3`) — a genuine invariant-side ceiling (dim >= 2 landable
+    via Eckmann-Hilton; dim-1 permanently walled).
+  * the permanent cited FORM-A undecidability ceiling (`CeilingLift.lean`,
+    `fxOmega_ceilingLiftUndecidableInstanceMechanized`, Post-Markov / Burroni).
+
+Hence `fxOmega_omega3Complete` / `fxOmega3_omega3CompleteReassessedR2` STAY `false` honestly: the general
+map-IN reconstruct does NOT fully land, because owe (iii) at dim 1 is genuinely FALSE (an incompleteness of
+the abelian invariant on a non-abelian object), not merely open.  `= true` (the residual is recorded). -/
+def fxOmega3_mapInResidualLedgerR3 : Bool := true
+
 end FX1Poly.Polygraph.Omega
