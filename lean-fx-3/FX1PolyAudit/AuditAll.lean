@@ -629,6 +629,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringJointInvariant
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringLabelWordTracking
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapPinWordChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringOrientationCapPreserves
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringNoLoopsAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity

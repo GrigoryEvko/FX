@@ -287,27 +287,21 @@ prerequisite ("strengthening the fold invariant to carry label-boundary-tracking
 now SHIPPED as the projection.  `= true`. -/
 def fxString_hasCapPinLabelReadProjection : Bool := true
 
-/-- **OPEN (honest, LOCALIZED) — the headline no-loops flip owes exactly TWO fold-preservation residuals on top of
-the joint invariant.**  With the connectivity bundle folding end-to-end and the `capPin` label-read projection
-shipped, `fxString_hasNoLoopsTheorem` (in `StringFussCatalan`) stays `false` for exactly two reasons, both
-fold-PRESERVATION of an added field:
+/-- **★★ ESTABLISHED — the headline no-loops flip is CLOSED; both fold-preservation residuals are DISCHARGED.**  The
+two residuals this docstring named on top of the joint invariant are both shipped (STRING-JOINT r2):
 
-  * **the CAP-orient survivor P4** (`stringOrientationDiscipline_stepCap`) — adding `StringOrientationDiscipline` to
-    the joint invariant needs the cap case of its preservation: after `stepCap` merges two DISTINCT arcs at the
-    window, the two survivors read a cup word.  This is the MERGE-dual of the shipped 16-region cup-orient
-    (`stringOrientationDiscipline_stepCup`); its zero-axiom proof is the join-branch component surgery
-    (`sameComponent_unionFindJoin_dispatch`) plus the survivor-nesting colour read, consuming the joint invariant's
-    non-crossing + census fields — a genuinely multi-round arc (the colour word case analysis on the exposed pair);
-  * **the label-WORD chaining** — adding `labels = pathLabels boundaryWord` to the joint invariant (the hypothesis of
-    `stringCapWindow_notCupWord`) needs a WORD-level boundary chain `boundaryWord = leftContext · generatorDom ·
-    rightContext` per head atom (the word analog of the length-only `SpineBoundaryChained`) plus the proof that
-    `advanceLabels` tracks `pathLabels` of the evolving boundary word — the string port of the whole
-    `ArcBoundaryTracking` file.
+  * **the CAP-orient survivor P4** (`stringOrientationDiscipline_stepCap`, `StringOrientationCapPreserves`, WALL 1) —
+    the MERGE-dual of the shipped 16-region cup-orient, CLOSED via the join-branch survivor dispatch
+    (`sameComponent_unionFindJoin_dispatch`) with the interleaving sub-cases refuted by non-crossing and the nested
+    sub-cases read by the three finite-`WireLabel` colour deductions, fed the window cap word;
+  * **the label-WORD chaining** (`SpineBoundaryWordChained` + `stringAdvanceLabels_tracksWordChain`, WALL 2) — the
+    word analog of the length-only `SpineBoundaryChained`, threaded so `stringCapWindow_isCapWord` supplies the cap
+    word at each reachable cap.
 
-Both consume the SHIPPED joint invariant; neither is missing input other than its own fold-preservation.  So the
-frontier is now: (1) `stringOrientationDiscipline_stepCap` and (2) the `advanceLabels`-tracks-`pathLabels` word chain
-— everything ELSE (the connectivity bundle, the chirality refutation, the seed, the census/non-crossing/forest
-substrate, and the capPin label-read projection) is SHIPPED zero-axiom.  `= false`. -/
-def fxString_hasNoLoopsFlipFromJointInvariant : Bool := false
+The assembly (`StringNoLoopsAssembly.stringMatchingOf_loops_zero`) glues them: it threads the joint invariant + the
+orientation discipline (labels `pathLabels boundaryWord`) through the fold, producing `CapsDistinctAlongFold`
+unconditionally, and FC-0's reduction closes loop-freedom.  All the substrate this file shipped
+(connectivity bundle, chirality refutation, seed, capPin label-read projection) feeds directly in.  `= true`. -/
+def fxString_hasNoLoopsFlipFromJointInvariant : Bool := true
 
 end FX1Poly.Polygraph

@@ -293,25 +293,23 @@ residual is now LOCALIZED to the two named per-step obligations — the same "as
 shipped soundness capstones.  `= true`. -/
 def fxString_hasNoLoopsAssembledModuloTwoResiduals : Bool := true
 
-/-- **OPEN — the UNCONDITIONAL no-loops flip stays a multi-round port; the two per-step residuals resist in-session.**
-`stringMatchingOf_loops_zero_ofDisciplinePreserved` owes exactly two per-step obligations, both TRUE (they hold for
-the shipped single-parity walking adjunction, colour-blind, over the enriched `ArcWireState`) but each a genuine
-multi-round zero-axiom re-derivation over the label-refined BARE `WireState`:
+/-- **★★ ESTABLISHED — the discipline fold invariance is CLOSED; both per-step residuals are DISCHARGED.**  The FC-1
+conditional `stringMatchingOf_loops_zero_ofDisciplinePreserved` owed two per-step obligations; both are now shipped
+zero-axiom (STRING-JOINT r2), so the discipline is a genuine fold invariant:
 
-  * `preserves` (the discipline is a fold invariant) — the string port of `ArcDisciplineFold`.  A cup preserves it
-    by splicing a FRESH 2-end component whose ordered labels are the cup's cod word (needs the freshness invariant +
-    the `natListInsertAt`/`natListGetAt` index-shift lemmas, none of which exist over the bare `WireState`); a cap
-    preserves it by merging two DISTINCT arcs whose two survivors nest — and the surviving pair reads a cup word
-    ONLY because of PLANARITY (the `ArcNonCrossingFold` non-crossing invariant), the genuinely new mathematics in
-    the `(G,H)`/`(H,G)` subcase.
-  * `capPin` (a cap window reads its `generatorDom`) — the string port of `ArcBoundaryTracking`, label-valued: the
-    companion `advanceLabels` fold must be shown to track the intermediate 1-cell, so a cap's window equals its
-    `generatorDom` cap word.
+  * `preserves` — the CUP case is the shipped 16-region `stringOrientationDiscipline_stepCup` (fresh 2-end splice,
+    index-shift kit, cod word a cup word); the CAP case is the merge-dual `stringOrientationDiscipline_stepCap`
+    (`StringOrientationCapPreserves`, WALL 1) — the survivors nest by PLANARITY, their cup word read by the finite
+    `WireLabel` colour deductions in the `(G,H)`/`(H,G)` subcases;
+  * `capPin` — DISCHARGED universal-over-REACHABLE by the reachable-`capPin` word fold
+    (`StringCapPinWordChain.stringCapPinAlongFold_ofWordChain`, WALL 2): `advanceLabels` TRACKS `pathLabels` of the
+    evolving boundary word (`stringAdvanceLabels_tracksWordChain`) over the `SpineBoundaryWordChained` chain, so a
+    cap's window equals its `generatorDom` cap word — NOT the FALSE universal-over-disciplined form.
 
-So `fxString_hasNoLoopsTheorem` (in `StringFussCatalan`) stays `false`, HONESTLY: the invariant, the refutation, the
-seed, and the assembly are shipped; the two per-step residuals (index-shift + planarity + boundary-tracking) are the
-exact remaining site, each mapped to its shipped adjunction analog.  This is a genuine finding — the flip is a
-multi-round arc, not a one-shot induction.  `= false`. -/
-def fxString_hasOrientationDisciplineFoldInvariance : Bool := false
+The assembly `StringNoLoopsAssembly.stringMatchingOf_loops_zero` glues them into the UNCONDITIONAL no-loops theorem
+(the SUPERSEDING route — the FC-1 conditional's `capPin` was unprovable universally).  So
+`fxString_hasNoLoopsTheorem` is now `true`.  The invariant, refutation, seed, and assembly from THIS file all feed in.
+`= true`. -/
+def fxString_hasOrientationDisciplineFoldInvariance : Bool := true
 
 end FX1Poly.Polygraph

@@ -342,19 +342,17 @@ cup-created same-component pair (window word a cup word `{F·G, G·H}`) is never
 `{G·F, H·G}`) deletes.  `= true`. -/
 def fxString_hasLoopClosureChiralityObstruction : Bool := true
 
-/-- **OPEN — the UNCONDITIONAL no-loops theorem `∀ cell, (matchingOf cell).loops = 0` stays a multi-node arc.**  The
-reduction (`stringMatchingOf_loops_zero_ofCapsDistinct`) owes exactly one residual: `CapsDistinctAlongFold` for
-EVERY cell — the union-find STRAND invariant threaded through the fold (a cap never fires on a same-component
-window).  Discharging it is the string port of the adjunction's `ArcOpenEndsDiscipline` / `ArcLoopFreedom` (which
-proves the analogous fact for the single-parity walking adjunction).  The port is NON-trivial: the string has caps
-at BOTH region parities (`counitLower` at a tip window `[G,F]`, `counitUpper` at a base window `[H,G]`), so the
-adjunction's single-parity cap-window pin does not transfer — the discipline must refute a same-component window at
-BOTH parities using the boundary LABEL to distinguish the two cap shapes, exactly the colour-refined open-ends
-discipline the FC-1 phase will build.  The boundary-chain substrate it starts from
-(`RawTwoCellExpr.spineBoundaryChained_spine`) is already polymorphically available; the union-find strand invariant
-is not.  So this stays `false`, honestly, with the reduction + chirality obstruction shipped and the exact remaining
-site named.  `= false`. -/
-def fxString_hasNoLoopsTheorem : Bool := false
+/-- **★★ ESTABLISHED — the UNCONDITIONAL no-loops theorem `∀ cup/cap cell, (matchingOf cell).loops = 0` is CLOSED.**
+The `CapsDistinctAlongFold` residual this reduction owes is DISCHARGED for EVERY cup/cap string cell by the
+STRING-JOINT r2 assembly (`StringNoLoopsAssembly.stringMatchingOf_loops_zero`, zero-axiom, downstream): the union-find
+STRAND invariant is threaded through the fold as the colour-refined orientation discipline
+(`StringOrientationDiscipline`), preserved by both cup (the shipped 16-region case) and cap (the merge-dual
+`stringOrientationDiscipline_stepCap`, WALL 1), with the cap window's cap word supplied by the reachable-`capPin`
+boundary-word fold (WALL 2).  The two-parity obstruction is handled exactly as anticipated: ONE `orient` predicate
+refutes BOTH cap shapes `[G,F]` / `[H,G]` via the boundary LABEL (`stringBothCapWords_notCupWord`).  This closes
+ingredient N2 (loop-freedom / acyclicity) for the string carrier; FC completeness and the #2020 word-problem DECISION
+stay open (the matching/staircase route).  `= true`. -/
+def fxString_hasNoLoopsTheorem : Bool := true
 
 /-! ## N3 — the Fuss–Catalan number fingerprint
 
