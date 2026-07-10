@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.DesignLockOmega4
+import FX1Poly.Polygraph.Omega.SquierAscentLedger
 
-/-! # FX1PolyAudit.Polygraph.Omega.DesignLockOmega4Audit — zero-axiom gate for the OMEGA-4 Squier-ascent
+/-! # FX1PolyAudit.Polygraph.Omega.SquierAscentLedgerAudit — zero-axiom gate for the OMEGA-4 Squier-ascent
 ledger + OMEGA-5 handoff (B4).
 
 Per-declaration `#assert_no_axioms` on every hypothesis-free ledger marker: the three shipped-piece markers
@@ -11,7 +11,7 @@ coherence, saturated-walker non-convergence, OmegacE data upgrade), the honest c
 
 namespace FX1PolyAudit
 
--- DesignLockOmega4.lean
+-- SquierAscentLedger.lean
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_criticalPairRowFamilyShippedR1
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_involutionDemonstratorShippedR1
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_kernelRereadingShippedR1

@@ -3,7 +3,7 @@ import FX1Poly.Polygraph.Omega.Graded.GradedAppAnchor
 import FX1Poly.Polygraph.Omega.Graded.EnrichedCheckSeed
 import FX1Poly.Polygraph.Omega.Graded.CollisionCatalog
 
-/-! # Polygraph/Omega/Graded/DesignLockOmega5 — the OMEGA-5 r1 ledger + the OMEGA-6 handoff (B5)
+/-! # Polygraph/Omega/Graded/GradedCompositionLedger — the OMEGA-5 r1 ledger + the OMEGA-6 handoff (B5)
 
 The honest r1 ledger: what the graded rung SHIPPED (each machine-checked zero-axiom), the hypothesis-free
 r1 re-assessment, every surviving jam named with its EXACT goal and NAMED blocking node, and the OMEGA-6

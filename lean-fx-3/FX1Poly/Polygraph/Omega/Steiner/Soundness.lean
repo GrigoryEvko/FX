@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.Omega.DesignLock
+import FX1Poly.Polygraph.Omega.CarrierArchitectureLedger
 import FX1Poly.Polygraph.Omega.Steiner.Linearize
 
 /-! # Polygraph/Omega/Steiner/Soundness — the CROWN soundness fold (OMEGA-2 r1, B4)

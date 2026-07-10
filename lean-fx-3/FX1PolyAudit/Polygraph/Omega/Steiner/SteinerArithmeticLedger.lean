@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.Steiner.DesignLock
+import FX1Poly.Polygraph.Omega.Steiner.SteinerArithmeticLedger
 
-/-! # FX1PolyAudit/Polygraph/Omega/Steiner/DesignLock — zero-axiom gate (OMEGA-2 crown lock)
+/-! # FX1PolyAudit/Polygraph/Omega/Steiner/SteinerArithmeticLedger — zero-axiom gate (OMEGA-2 crown lock)
 
 Per-declaration `#assert_no_axioms` on the crown-brick classifier and every honesty marker (the five
 shipped bricks, the r1-complete marker, and the two OPEN residuals for r2/r3), plus the namespace

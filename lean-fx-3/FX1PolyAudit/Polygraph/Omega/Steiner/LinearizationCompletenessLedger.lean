@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.Steiner.DesignLockOmega25
+import FX1Poly.Polygraph.Omega.Steiner.LinearizationCompletenessLedger
 
-/-! # FX1PolyAudit/Polygraph/Omega/Steiner/DesignLockOmega25 — zero-axiom gate (OMEGA-2.5 r1, B5)
+/-! # FX1PolyAudit/Polygraph/Omega/Steiner/LinearizationCompletenessLedger — zero-axiom gate (OMEGA-2.5 r1, B5)
 
 Per-declaration `#assert_no_axioms` on the completeness scope + ledger: the atom-word boundary
 degeneracy, the pole-determination regression, the chain-table crown iff on `IsAtomWord`, and the honesty

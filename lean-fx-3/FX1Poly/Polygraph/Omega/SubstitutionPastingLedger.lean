@@ -1,11 +1,11 @@
 import FX1Poly.Polygraph.Omega.PresentedKernelSeed
 import FX1Poly.Polygraph.Omega.AdmissionChainSeed
-import FX1Poly.Polygraph.Omega.DesignLockOmega6
+import FX1Poly.Polygraph.Omega.WeakDirectedCeilingLedger
 
-/-! # Polygraph/Omega/DesignLockOmega7 — the OMEGA-7 r1 ledger (B4)
+/-! # Polygraph/Omega/SubstitutionPastingLedger — the OMEGA-7 r1 ledger (B4)
 
 ★ **THE GRAND-RUNG r1 LEDGER — "substitution = pasting", the honest scoreboard.**  Mirrors
-`DesignLockOmega5` / `DesignLockOmega6`: it gates on what compiles (it imports the Polygraph-side OMEGA-7
+`GradedCompositionLedger` / `WeakDirectedCeilingLedger`: it gates on what compiles (it imports the Polygraph-side OMEGA-7
 r1 pieces — `PresentedKernelSeed`, `AdmissionChainSeed` — plus the OMEGA-6 wall ledger it inherits; the B1
 identification `SubstPasting` lives at `Tier0/Term/Subst/` because it imports the kernel substitution
 engine and the layer DAG forbids Polygraph -> Tier0, so its gate is its audit twin, not this import),

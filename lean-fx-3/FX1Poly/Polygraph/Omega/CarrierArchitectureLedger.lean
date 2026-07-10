@@ -1,7 +1,7 @@
 import FX1Poly.Polygraph.Omega.BridgeDimTwo
 import FX1Poly.Polygraph.Omega.CollapseDimOne
 
-/-! # Polygraph/Omega/DesignLock — the OMEGA-1 architecture design lock (r1)
+/-! # Polygraph/Omega/CarrierArchitectureLedger — the OMEGA-1 architecture design lock (r1)
 
 The decision record for the dimension-indexed carrier, mirroring `Table/DesignLock.lean`.  It cites the shipped
 r1 pieces (`Omega/Carrier.lean`, `Omega/Congruence.lean`, `Omega/StrictAxioms.lean`, `Omega/BridgeDimTwo.lean`,

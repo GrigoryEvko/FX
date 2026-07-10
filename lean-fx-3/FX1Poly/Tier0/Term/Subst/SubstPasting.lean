@@ -22,7 +22,7 @@ This is the PICKED r1 form (recon Form B — the arithmetic shadow): the substit
 pasting-composition LAW are the same associative operation, byte-for-byte where possible.  It defers Form A
 (a total `termToCell` model homomorphism) to the Makkai wall — arbitrary lambda-terms are not strong-Steiner,
 so no total homomorphism into the integer-arithmetic fragment exists in general (memo pin OMEGA-7(c); see the
-r1 ledger `DesignLockOmega7.lean`).
+r1 ledger `SubstitutionPastingLedger.lean`).
 
 ## What ships here (each machine-checked zero-axiom)
 
@@ -154,7 +154,7 @@ the RIGHT conjunct is `addCoordinates_assoc` carried through the `linearize` hom
 (`linearize_vcomp_assoc`).  The genuine kernel workhorse `RawTerm.subst_compose` is the term-side instance;
 its polygraph pasting shadow is `addCoordinates_assoc`; `linearize` is the composition homomorphism that
 connects them.  (Form A — a total `termToCell` model homomorphism — is the deferred Makkai wall; see
-`DesignLockOmega7.lean`.) -/
+`SubstitutionPastingLedger.lean`.) -/
 theorem substLemma_is_pastingAssoc
     {scopeA scopeB scopeC scopeD : Nat}
     (firstSubstitution : RawTermSubst scopeA scopeB)

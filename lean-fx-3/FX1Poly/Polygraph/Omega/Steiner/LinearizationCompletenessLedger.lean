@@ -1,7 +1,7 @@
 import FX1Poly.Polygraph.Omega.Steiner.SoundnessFull
 import FX1Poly.Polygraph.Omega.Steiner.Reconstruct
 
-/-! # Polygraph/Omega/Steiner/DesignLockOmega25 — the OMEGA-2.5 completeness scope + ledger (r1, B5)
+/-! # Polygraph/Omega/Steiner/LinearizationCompletenessLedger — the OMEGA-2.5 completeness scope + ledger (r1, B5)
 
 The design record for the boundary-faithful full-chain table, mirroring `Steiner/DesignLock.lean`.  It
 cites the shipped r1 pieces (`ChainCell`, `LinearizeFull`, `WhiskerFix`, `SoundnessFull`) and settles the

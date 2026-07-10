@@ -3,7 +3,7 @@ import FX1Poly.Polygraph.Omega.EckmannHiltonWithId
 import FX1Poly.Polygraph.Omega.SuspensionWithId
 import FX1Poly.Polygraph.Omega.Steiner.SuspensionChainShift
 
-/-! # Polygraph/Omega/DesignLockOmega3WithId — the OMEGA-3 r2 ledger + OMEGA-4 handoff (B5)
+/-! # Polygraph/Omega/SuspensionWithIdLedger — the OMEGA-3 r2 ledger + OMEGA-4 handoff (B5)
 
 The honest ledger of the OMEGA-3 r2 idCongr additive sibling and its cascade, plus the OMEGA-4 (Squier
 ascent) handoff spec.  Every shipped piece is cited; every surviving wall is named with its exact goal state

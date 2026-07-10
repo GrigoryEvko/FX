@@ -3,7 +3,7 @@ import FX1Poly.Polygraph.Omega.Steiner.DecideFreeConv
 import FX1Poly.Polygraph.Omega.Steiner.Integration
 import FX1Poly.Polygraph.Omega.Steiner.AgreementBattery
 
-/-! # Polygraph/Omega/Steiner/DesignLock — the OMEGA-2 CROWN design lock (r1)
+/-! # Polygraph/Omega/Steiner/SteinerArithmeticLedger — the OMEGA-2 CROWN design lock (r1)
 
 The decision record for the Steiner arithmetic crown, mirroring `Omega/DesignLock.lean` and
 `Table/DesignLock.lean`.  It cites the shipped r1 pieces (`CoordinateArithmetic`, `StrongSteiner`,

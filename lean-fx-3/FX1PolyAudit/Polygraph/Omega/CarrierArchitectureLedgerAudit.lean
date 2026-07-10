@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.DesignLock
+import FX1Poly.Polygraph.Omega.CarrierArchitectureLedger
 
-/-! # FX1PolyAudit.Polygraph.Omega.DesignLockAudit — zero-axiom gate for the OMEGA-1 r1 design lock + the
+/-! # FX1PolyAudit.Polygraph.Omega.CarrierArchitectureLedgerAudit — zero-axiom gate for the OMEGA-1 r1 design lock + the
 n=2 bridge / n=1 collapse STATEMENTS.
 
 Per-declaration `#assert_no_axioms` on the design-lock classifier and markers, and on the forward-declared

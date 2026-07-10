@@ -2,7 +2,7 @@ import FX1Poly.Polygraph.TwoCategory.Amalgam.DispatchMap
 import FX1Poly.Polygraph.TwoCategory.Amalgam.Modularity
 import FX1Poly.Polygraph.TwoCategory.Amalgam.DecisionTransfer
 
-/-! # Polygraph/TwoCategory/Amalgam/DispatchLedgerR1 — the WP-AMALG-2 r1 ledger (B4)
+/-! # Polygraph/TwoCategory/Amalgam/DispatchLedger — the WP-AMALG-2 r1 ledger (B4)
 
 The honest r1 ledger for the WAVE-4 dispatch theorem: what each brick SHIPPED (machine-checked zero-axiom), the
 SN-non-modularity caveat, and every surviving jam with its EXACT goal and NAMED blocking node.  Pure docstring +
@@ -127,6 +127,6 @@ def fxAmalg_r1JamsRecorded : Bool := true
 zero-axiom), the SN-non-modularity caveat, and every surviving jam named with its exact goal and NAMED blocking
 node.  `fxAmalg_hasDispatchTheorem` is HONESTLY HELD `false` (the plain-`TwoCellConv` interface is the deferred
 Gratzer convergence, not the shipped free decision) — no fabricated flip. -/
-def fxAmalg_hasDispatchLedgerR1 : Bool := true
+def fxAmalg_hasDispatchLedger : Bool := true
 
 end FX1Poly.Polygraph.Amalgam

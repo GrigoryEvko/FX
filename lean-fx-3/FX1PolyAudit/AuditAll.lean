@@ -172,7 +172,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.EndgameDemo
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchMap
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Modularity
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DecisionTransfer
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerAudit
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealLawDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
@@ -589,6 +589,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadDeltaDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCanonicalWord
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCountsRoundTrip
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCell
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCasesReps
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCases
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordMultiplicativity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerRightMult

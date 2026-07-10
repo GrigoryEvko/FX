@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.DesignLockOmega4R2
+import FX1Poly.Polygraph.Omega.CertificateFunctorLedger
 
-/-! # FX1PolyAudit.Polygraph.Omega.DesignLockOmega4R2Audit — zero-axiom gate for the OMEGA-4 r2 ledger +
+/-! # FX1PolyAudit.Polygraph.Omega.CertificateFunctorLedgerAudit — zero-axiom gate for the OMEGA-4 r2 ledger +
 refined OMEGA-5 handoff (B4).
 
 Per-declaration `#assert_no_axioms` on every hypothesis-free ledger marker: the two r2 shipped-piece
@@ -11,7 +11,7 @@ coherence, OmegacE data upgrade — none reached), and the refined OMEGA-5 hando
 
 namespace FX1PolyAudit
 
--- DesignLockOmega4R2.lean
+-- CertificateFunctorLedger.lean
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_certificateFunctorResidualDischargedR2
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_involutionBasisFragmentAdvancedR2
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierAscentCompleteR2

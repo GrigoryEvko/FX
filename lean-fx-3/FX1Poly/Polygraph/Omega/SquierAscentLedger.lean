@@ -2,7 +2,7 @@ import FX1Poly.Polygraph.Omega.CriticalPairRow
 import FX1Poly.Polygraph.Omega.InvolutionDemonstrator
 import FX1Poly.Polygraph.Omega.KernelDiamondReading
 
-/-! # Polygraph/Omega/DesignLockOmega4 — the OMEGA-4 (Squier ascent) ledger + OMEGA-5 handoff (B4)
+/-! # Polygraph/Omega/SquierAscentLedger — the OMEGA-4 (Squier ascent) ledger + OMEGA-5 handoff (B4)
 
 The honest ledger of the OMEGA-4 r1 Squier ascent: every shipped piece cited, every surviving wall named
 with its exact goal state and the named node that blocks it, and the OMEGA-5 (graded round) handoff spec.

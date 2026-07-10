@@ -1,8 +1,8 @@
 import FX1Poly.Polygraph.Omega.CertificateFunctor
 import FX1Poly.Polygraph.Omega.InvolutionSquierBasis
-import FX1Poly.Polygraph.Omega.DesignLockOmega4
+import FX1Poly.Polygraph.Omega.SquierAscentLedger
 
-/-! # Polygraph/Omega/DesignLockOmega4R2 — the OMEGA-4 r2 ledger + refined OMEGA-5 handoff (B4)
+/-! # Polygraph/Omega/CertificateFunctorLedger — the OMEGA-4 r2 ledger + refined OMEGA-5 handoff (B4)
 
 The honest r2 ledger: what the 110-percent grind SHIPPED over r1, the r2 re-assessment
 (hypothesis-free), every surviving jam named with its exact goal and blocking node, and the refined

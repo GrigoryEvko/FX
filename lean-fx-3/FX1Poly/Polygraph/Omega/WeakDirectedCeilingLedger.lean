@@ -2,9 +2,9 @@ import FX1Poly.Polygraph.Omega.PsContext
 import FX1Poly.Polygraph.Omega.CohSeed
 import FX1Poly.Polygraph.Omega.InvertibilitySeed
 
-/-! # Polygraph/Omega/DesignLockOmega6 — the OMEGA-6 ceiling ledger + the OMEGA-7 handoff (B4)
+/-! # Polygraph/Omega/WeakDirectedCeilingLedger — the OMEGA-6 ceiling ledger + the OMEGA-7 handoff (B4)
 
-The honest r1 ledger for the weak/directed rung, mirroring `DesignLockOmega4R2.lean`.  It gates on what
+The honest r1 ledger for the weak/directed rung, mirroring `CertificateFunctorLedger.lean`.  It gates on what
 compiles (it imports every OMEGA-6 r1 piece — `PsContext`, `CohSeed`, `InvertibilitySeed`), records the
 checking-vs-deciding line as hypothesis-free `Bool` markers, names the two PERMANENT walls (Makkai weak-ω
 coherence equality, Burroni general presented word problem) by CITATION rather than axiomatization, marks the

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.DesignLockOmega7
+import FX1Poly.Polygraph.Omega.SubstitutionPastingLedger
 
-/-! # FX1PolyAudit.Polygraph.Omega.DesignLockOmega7Audit — zero-axiom gate for the OMEGA-7 r1 ledger
+/-! # FX1PolyAudit.Polygraph.Omega.SubstitutionPastingLedgerAudit — zero-axiom gate for the OMEGA-7 r1 ledger
 (OMEGA-7 r1, B4).
 
 Per-declaration `#assert_no_axioms` on the four shipped-piece markers (anchor / pasting arithmetic / tuple
@@ -11,7 +11,7 @@ the staircase-closure criteria marker. -/
 
 namespace FX1PolyAudit
 
--- DesignLockOmega7.lean
+-- SubstitutionPastingLedger.lean
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_substCompositionAnchored
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_pastingArithmeticShipped
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_presentedKernelTupleSeeded

@@ -41,7 +41,7 @@ transfer DOES ship (`fxAmalg_hasComposableFragmentDispatch = true`, this file's 
 
 ## The OMEGA-5 cell-side handoff
 
-`Omega/Graded/DesignLockOmega5.lean`'s jam `fxOmega5_enrichedFunctorCellSideReached = false` names its blocking
+`Omega/Graded/GradedCompositionLedger.lean`'s jam `fxOmega5_enrichedFunctorCellSideReached = false` names its blocking
 node as `fxAmalg_hasDispatchTheorem` (the FULL decidability).  But the OMEGA-5 cell-side functor `check (a *_k b) =
 check a ⊗_k check b` needs only the SOUNDNESS functor — the amalgamated-product object
 `(pushoutShared, SaturatedConvOverPushout)`, the arrow `⊗_k = mapCellAlong`, and the composition law

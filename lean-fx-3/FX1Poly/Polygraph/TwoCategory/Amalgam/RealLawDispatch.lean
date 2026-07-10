@@ -5,7 +5,7 @@ import FX1Poly.Polygraph.TwoCategory.Amalgam.ConvFullFunctorDispatch
 /-! # Polygraph/TwoCategory/Amalgam/RealLawDispatch — the REAL-law pushout dispatch, SOUNDNESS half
 (WP-AMALG-2 r2, the 110-percent grind: #2043)
 
-r1 (`Modularity.lean` / `DispatchLedgerR1.lean`) shipped modularity + a live combined decider ONLY for the
+r1 (`Modularity.lean` / `DispatchLedger.lean`) shipped modularity + a live combined decider ONLY for the
 provably-EMPTY law fragment (`fxAmalg_hasComposableFragmentDispatch`, `fxAmalg_hasModularityDisjointScope`): the
 crossing-law relation was `emptyCellRel`, so every `ofRelation` was `False.elim`.  r8 (`PushoutBundle.lean`) shipped
 the arity-fold reflection and the UNCONDITIONAL `isFalse` on the specific interleaving pair — but still over the

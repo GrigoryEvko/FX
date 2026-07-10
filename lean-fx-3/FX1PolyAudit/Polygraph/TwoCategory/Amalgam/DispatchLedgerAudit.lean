@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.TwoCategory.Amalgam.DispatchLedgerR1
+import FX1Poly.Polygraph.TwoCategory.Amalgam.DispatchLedger
 
-/-! # FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerR1 — zero-axiom gate for the WP-AMALG-2 r1 ledger
+/-! # FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerAudit — zero-axiom gate for the WP-AMALG-2 r1 ledger
 (B4)
 
 Per-declaration zero-axiom gate: the four ledger markers (r1 bricks shipped, the SN-non-modularity caveat, the
@@ -15,6 +15,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_r1BricksShipped
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_snNonModularCaveat
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_r1JamsRecorded
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasDispatchLedgerR1
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasDispatchLedger
 
 end FX1PolyAudit

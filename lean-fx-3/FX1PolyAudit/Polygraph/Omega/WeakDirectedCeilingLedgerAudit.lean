@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Omega.DesignLockOmega6
+import FX1Poly.Polygraph.Omega.WeakDirectedCeilingLedger
 
-/-! # FX1PolyAudit.Polygraph.Omega.DesignLockOmega6Audit — zero-axiom gate for the OMEGA-6 ceiling ledger
+/-! # FX1PolyAudit.Polygraph.Omega.WeakDirectedCeilingLedgerAudit — zero-axiom gate for the OMEGA-6 ceiling ledger
 (OMEGA-6 r1, B4).
 
 Per-declaration `#assert_no_axioms` on the six checking-vs-deciding markers (ps-check / coh-admission /
@@ -12,7 +12,7 @@ marker. -/
 
 namespace FX1PolyAudit
 
--- DesignLockOmega6.lean
+-- WeakDirectedCeilingLedger.lean
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_psContextCheckDecidable
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_cohCellCheckable
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_freeStrictWordProblemDecidable

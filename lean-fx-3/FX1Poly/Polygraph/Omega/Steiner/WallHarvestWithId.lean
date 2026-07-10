@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.Omega.Steiner.SoundnessWithId
-import FX1Poly.Polygraph.Omega.Steiner.DesignLockOmega25
+import FX1Poly.Polygraph.Omega.Steiner.LinearizationCompletenessLedger
 import FX1Poly.Polygraph.Omega.Steiner.Reconstruct
 
 /-! # Polygraph/Omega/Steiner/WallHarvestWithId — conservativity + whiskered completeness (OMEGA-3 r2, B3)
