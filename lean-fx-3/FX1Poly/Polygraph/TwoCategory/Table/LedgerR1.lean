@@ -158,6 +158,38 @@ RE-PROVES class), exactly as r2 warned.
     normalizer port is the strictly smaller prerequisite; the monad lane inherits its playbook and stays
     KEPT-as-exemplar pending it.
 
+### r4 OUTCOME (POLY-TAB r4 re-founding, #2228) — the idempotent normalizer PORT SHIPPED; deletion UNBLOCKED, GATED
+
+r4 ran the "dedicated idempotent-normalizer-port arc" the r3 verdict banked.  Route B (re-prove; the recon found NO
+hard node — build-only moves, ctor-for-ctor to `SaturatedConvOver`) SHIPPED, additive, green, zero-axiom.
+
+  * **The generic-native NF stack (5 NEW files under `WalkingIdempotent/IdempotentSaturated*`):** `MuInvertible`
+    (moves + mu-iso crux), `Ladder` (fold/grow), `GeneralBricks` (`whiskerLeftCanonGen` + `gadgetSplitRightGen`),
+    `RightWhisker` (grow-half + `whiskerRightCanonGen`), `Normalizer` (`normalizeFullGen` + local posetality +
+    the decider).  Each conv theorem re-proved DIRECTLY over `SaturatedConvOver monadModeSignature IdempotentLawRel`;
+    the conv-FREE representatives (`repFull`/`repNF`/`growTower`/`canonThroughT`/…) are REUSED from the bespoke lane.
+  * **The r3 blocker is RESOLVED:** `idempotentLocalPosetalityGeneric` (thinness over the generic carrier via
+    `idempotentGenericThinness_ofNormalize repFull repFull_boundary normalizeFullGen`) and the born-generic decider
+    `decideSaturatedConvOverIdempotentNative` are CLOSED TERMS whose ENTIRE transitive definition-dependency closure
+    contains NO `IdempotentMonadSaturatedTwoCellConv` (verified by a transitive-const-dep meta-walk, by per-decl
+    `#assert_no_axioms` audit twins, and by independent `#print axioms`).  The generic carrier now HAS an independent
+    proof of local posetality — exactly what r3 said it lacked (r3 blocker text, above).  Regression: the native
+    decider AGREES with the old `decideSaturatedConvOverIdempotent` on the shipped size-4 pair
+    (`idempotentNativeAgreesOldOnRegression_holds`, `rfl`).
+  * **Physical deletion of `IdempotentMonadSaturatedConv.lean` (the bespoke inductive): UNBLOCKED at the proof level,
+    but GATED on the migration-fact-erosion decision — NOT FORCED.**  Every path to zero refs on
+    `IdempotentMonadSaturatedTwoCellConv` runs through re-pointing `idempotentRelationFamily` /
+    `idempotentWalker_iff_generic` born-generic, which VOIDS the migration facts those state (an iff INHERENTLY about
+    the bespoke inductive; collapses to the involution's trivial `Iff.rfl`).  That is the same semantic-content
+    erosion r3 flagged (LedgerR1:146-150) and the recon reserved for explicit user sign-off ("decide WITH the user").
+    Per never-delete-without-confirm, r4 does NOT force it.  The exact deletion endgame awaiting the green-light:
+    (1) relocate `IdempotentLawRel` to a bespoke-free home (imports `SaturatedOver` + the monad/idempotent Seed, not
+    the bespoke conv lane); (2) retire the two iso inductions + `idempotentIsCongruence` +
+    `decideSaturatedConvOverIdempotent` in `Amalgam/SaturatedComponentDecider`; (3) re-point the three light consumers
+    (`IdempotentMonadModel`, `Amalgam/SaturatedRelationFamily`, `Table/ThinWalkerMigration`) born-generic (the
+    erosion); (4) `/bin/rm` `IdempotentMonadSaturatedConv.lean` + the now-dead bespoke normalizer/model/decision
+    files, audit twins + AuditAll lines in lockstep.
+
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
   * `StringSaturatedTwoCellConv` (WalkingAdjunction / adjoint string) — no generic instance shipped; POLY-TAB-2.
