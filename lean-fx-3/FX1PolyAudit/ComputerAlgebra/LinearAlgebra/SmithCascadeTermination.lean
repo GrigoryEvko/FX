@@ -34,5 +34,7 @@ namespace FX1PolyAudit
 
 /- H2-SMITH r9 — the clear-word lift + cross-clear fuel adequacy. -/
 #assert_no_axioms FX1Poly.ComputerAlgebra.addColumnMultipleEntryOffTargetCol
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearRowRightStepsPreservesColumn
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearRowRightStepsLandsAt
 
 end FX1PolyAudit
