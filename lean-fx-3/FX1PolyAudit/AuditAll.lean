@@ -984,6 +984,8 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.SoundnessWithId
 import FX1PolyAudit.Polygraph.Omega.SuspensionWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.Steiner.WallHarvestWithId
 import FX1PolyAudit.Polygraph.Omega.BridgeDimTwoWithIdAudit
+import FX1PolyAudit.Polygraph.Omega.EckmannHiltonWithIdAudit
+import FX1PolyAudit.Polygraph.Omega.Steiner.SuspensionChainShift
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
