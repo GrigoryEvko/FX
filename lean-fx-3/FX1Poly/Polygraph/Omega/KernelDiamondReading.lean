@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.Omega.CriticalPairRow
-import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
+import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
 /-! # Polygraph/Omega/KernelDiamondReading — the kernel confluence certificate as dim-3 content
 (OMEGA-4 r1, B3)

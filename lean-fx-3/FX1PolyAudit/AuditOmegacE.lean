@@ -1,25 +1,25 @@
-import FX1PolyAudit.Polygraph.OmegacE.AbsorptionConfluence
-import FX1PolyAudit.Polygraph.OmegacE.AbsorptionLocalConfluence
-import FX1PolyAudit.Polygraph.OmegacE.AbsorptionReducer
-import FX1PolyAudit.Polygraph.OmegacE.AbsorptionSystem
-import FX1PolyAudit.Polygraph.OmegacE.Confluence
-import FX1PolyAudit.Polygraph.OmegacE.EmptySystem
-import FX1PolyAudit.Polygraph.OmegacE.IdempotentConfluence
-import FX1PolyAudit.Polygraph.OmegacE.IdempotentReducer
-import FX1PolyAudit.Polygraph.OmegacE.IdempotentSystem
-import FX1PolyAudit.Polygraph.OmegacE.OmegacEFiniteType
-import FX1PolyAudit.Polygraph.OmegacE.ReducerNormalizer
-import FX1PolyAudit.Polygraph.OmegacE.Rewrite
-import FX1PolyAudit.Polygraph.OmegacE.SortingConfluence
-import FX1PolyAudit.Polygraph.OmegacE.SortingReducer
-import FX1PolyAudit.Polygraph.OmegacE.SortingSystem
-import FX1PolyAudit.Polygraph.OmegacE.SortingTermination
-import FX1PolyAudit.Polygraph.OmegacE.TranspositionConfluence
-import FX1PolyAudit.Polygraph.OmegacE.TranspositionReducer
-import FX1PolyAudit.Polygraph.OmegacE.TranspositionSystem
-import FX1PolyAudit.Polygraph.OmegacE.WordFreeMonoid
-import FX1PolyAudit.Polygraph.OmegacE.WordFreeMonoidUniversal
-import FX1PolyAudit.Polygraph.OmegacE.WordProblem
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.AbsorptionConfluence
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.AbsorptionLocalConfluence
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.AbsorptionReducer
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.AbsorptionSystem
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.Confluence
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.EmptySystem
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.IdempotentConfluence
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.IdempotentReducer
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.IdempotentSystem
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.OmegacEFiniteType
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.ReducerNormalizer
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.Rewrite
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.SortingConfluence
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.SortingReducer
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.SortingSystem
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.SortingTermination
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.TranspositionConfluence
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.TranspositionReducer
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.TranspositionSystem
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.WordFreeMonoid
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.WordFreeMonoidUniversal
+import FX1PolyAudit.Polygraph.Rewriting.WordSystems.WordProblem
 
 /-! # FX1PolyAudit.AuditOmegacE — aggregator over the per-kernel-module audit shards
 
