@@ -851,4 +851,180 @@ example :
           ElementaryOperation.rowOperation)).rows
       = [[3, 0, 0], [1, 5, 0], [2, 0, 9]] := by decide
 
+/-! ## The whole-word-equals-single-op bridge (the strict descent for the whole cross clear)
+
+Instantiating the lift with `coeffMatrix := workMatrix := matrix` collapses the whole clear word's
+landed cross entry onto the SINGLE-op landed value at the same position (both are `old + coeff *
+pivot` with the coefficient read off `matrix` itself).  That reuses the shipped single-op residue and
+strict-descent theorems VERBATIM — no re-derivation of the `intMagnitudeReconstructs` arithmetic — to
+place the whole-word cross residue strictly below a positive pivot's magnitude.  This is the per-clear
+strict descent the fuel-adequacy recursion rides. -/
+
+/-- **Row-right whole word = single op, at a cross column** — with the coefficient source and work
+matrix both `matrix`, the whole `smithClearRowRightSteps` word lands the pivot-row cross entry exactly
+where the ONE `addColumnMultiple` at that column lands it.  `smithClearRowRightStepsLandsAt` (self
+coefficients) trans the shipped `addColumnMultipleEntryOnTargetCol`. -/
+theorem smithClearRowRightStepsCrossEntryEqSingle {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex stepCount startCol targetCol : Nat)
+    (pivotBelowStart : pivotIndex < startCol)
+    (targetGe : startCol ≤ targetCol) (targetLt : targetCol < startCol + stepCount)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (allColsInRange : startCol + stepCount ≤ width) :
+    (matrix.applyOperations
+        ((smithClearRowRightSteps matrix pivotIndex stepCount startCol).map
+          ElementaryOperation.columnOperation)).entryAt pivotIndex targetCol
+      = (matrix.addColumnMultiple pivotIndex targetCol
+          (-(intPivotQuotient (matrix.entryAt pivotIndex pivotIndex)
+              (matrix.entryAt pivotIndex targetCol)))).entryAt pivotIndex targetCol :=
+  (smithClearRowRightStepsLandsAt matrix pivotIndex height width stepCount startCol targetCol matrix
+      isRect pivotBelowStart targetGe targetLt pivotRowInRange allColsInRange).trans
+    (addColumnMultipleEntryOnTargetCol matrix isRect pivotIndex targetCol pivotIndex
+      (-(intPivotQuotient (matrix.entryAt pivotIndex pivotIndex)
+          (matrix.entryAt pivotIndex targetCol)))
+      (Nat.ne_of_lt (Nat.lt_of_lt_of_le pivotBelowStart targetGe)) pivotRowInRange pivotColInRange
+      (Nat.lt_of_lt_of_le targetLt allColsInRange)).symm
+
+/-- **Column-below whole word = single op, at a cross row** — the row mirror of the above, over the
+shipped `addRowMultipleEntryOnTargetRow`. -/
+theorem smithClearColumnBelowStepsCrossEntryEqSingle {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex stepCount startRow targetRow : Nat)
+    (pivotBelowStart : pivotIndex < startRow)
+    (targetGe : startRow ≤ targetRow) (targetLt : targetRow < startRow + stepCount)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (allRowsInRange : startRow + stepCount ≤ height) :
+    (matrix.applyOperations
+        ((smithClearColumnBelowSteps matrix pivotIndex stepCount startRow).map
+          ElementaryOperation.rowOperation)).entryAt targetRow pivotIndex
+      = (matrix.addRowMultiple pivotIndex targetRow
+          (-(intPivotQuotient (matrix.entryAt pivotIndex pivotIndex)
+              (matrix.entryAt targetRow pivotIndex)))).entryAt targetRow pivotIndex :=
+  (smithClearColumnBelowStepsLandsAt matrix pivotIndex height width stepCount startRow targetRow
+      matrix isRect pivotBelowStart targetGe targetLt pivotColInRange allRowsInRange).trans
+    (addRowMultipleEntryOnTargetRow matrix isRect pivotIndex targetRow pivotIndex
+      (-(intPivotQuotient (matrix.entryAt pivotIndex pivotIndex)
+          (matrix.entryAt targetRow pivotIndex)))
+      (Nat.ne_of_lt (Nat.lt_of_lt_of_le pivotBelowStart targetGe)) pivotRowInRange
+      (Nat.lt_of_lt_of_le targetLt allRowsInRange) pivotColInRange).symm
+
+/-- **The single COLUMN-BELOW clear residue landing** — the ROW-op mirror of the shipped
+`smithSingleClearResidueLands`: firing `addRowMultiple pivotIndex rowIndex (-(intPivotQuotient pivot
+old))` at a nonnegative pivot lands the pivot-column cross entry `(rowIndex, pivotIndex)` with magnitude
+exactly `intMagnitudeRemainder pivot.natAbs old`.  The entry formula is the shipped
+`addRowMultipleEntryOnTargetRow` (giving `old + coeff * pivot`); the signed-residue arithmetic
+(`intNegMul`, the nonnegative-pivot bridge, `intMagnitudeReconstructs`, `intMagnitudeSignedRemainderNatAbs`)
+is byte-identical to the shipped column-op residue landing (it operates on `old`/`pivot` abstractly). -/
+theorem smithSingleColumnBelowClearResidueLands {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex rowIndex : Nat)
+    (isDistinct : pivotIndex ≠ rowIndex)
+    (isPivotRowInRange : pivotIndex < height)
+    (isTargetRowInRange : rowIndex < height)
+    (isPivotColInRange : pivotIndex < width)
+    (isPivotNonneg : (0 : Int) ≤ matrix.entryAt pivotIndex pivotIndex) :
+    ((matrix.addRowMultiple pivotIndex rowIndex
+        (-(intPivotQuotient (matrix.entryAt pivotIndex pivotIndex)
+            (matrix.entryAt rowIndex pivotIndex)))).entryAt rowIndex pivotIndex).natAbs
+      = intMagnitudeRemainder (matrix.entryAt pivotIndex pivotIndex).natAbs
+          (matrix.entryAt rowIndex pivotIndex) :=
+  let pivot := matrix.entryAt pivotIndex pivotIndex
+  let old := matrix.entryAt rowIndex pivotIndex
+  let productTerm := intMagnitudeQuotient pivot.natAbs old * Int.ofNat pivot.natAbs
+  let signedResidue := intMagnitudeSignedRemainder pivot.natAbs old
+  have entryFormula :
+      (matrix.addRowMultiple pivotIndex rowIndex (-(intPivotQuotient pivot old))).entryAt
+          rowIndex pivotIndex
+        = old + (-(intPivotQuotient pivot old)) * pivot :=
+    addRowMultipleEntryOnTargetRow matrix isRect pivotIndex rowIndex pivotIndex
+      (-(intPivotQuotient pivot old)) isDistinct isPivotRowInRange isTargetRowInRange isPivotColInRange
+  have pivotIsOfNat : pivot = Int.ofNat pivot.natAbs :=
+    (intOfNatNatAbsOfNonNeg isPivotNonneg).symm
+  have reconstruction : old = productTerm + signedResidue :=
+    intMagnitudeReconstructs pivot.natAbs old
+  have landsOnResidue : old + (-(intPivotQuotient pivot old)) * pivot = signedResidue :=
+    (congrArg (old + ·) (intNegMul (intPivotQuotient pivot old) pivot)).trans
+      ((congrArg (fun scale => old + -(intMagnitudeQuotient pivot.natAbs old * scale))
+            pivotIsOfNat).trans
+        ((congrArg (· + -productTerm) reconstruction).trans
+          ((intAddAssoc productTerm signedResidue (-productTerm)).trans
+            ((congrArg (productTerm + ·) (intAddComm signedResidue (-productTerm))).trans
+              ((intAddAssoc productTerm (-productTerm) signedResidue).symm.trans
+                ((congrArg (· + signedResidue) (intAddRightNeg productTerm)).trans
+                  (intZeroAdd signedResidue)))))))
+  (congrArg Int.natAbs (entryFormula.trans landsOnResidue)).trans
+    (intMagnitudeSignedRemainderNatAbs pivot.natAbs old)
+
+/-- **The single COLUMN-BELOW rotation strict descent** — the ROW-op mirror of the shipped
+`smithSingleClearStrictlyDecreasesPivot`: for a positive nonnegative pivot, one column-below clear row
+op lands the pivot-column cross entry with magnitude STRICTLY below the pivot's.  The residue landing
+rewritten into the shipped remainder bound `smithRotationDecreasesPivotSize`. -/
+theorem smithSingleColumnBelowClearStrictlyDecreasesPivot {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex rowIndex : Nat)
+    (isDistinct : pivotIndex ≠ rowIndex)
+    (isPivotRowInRange : pivotIndex < height)
+    (isTargetRowInRange : rowIndex < height)
+    (isPivotColInRange : pivotIndex < width)
+    (isPivotNonneg : (0 : Int) ≤ matrix.entryAt pivotIndex pivotIndex)
+    (isPivotPositive : 0 < (matrix.entryAt pivotIndex pivotIndex).natAbs) :
+    ((matrix.addRowMultiple pivotIndex rowIndex
+        (-(intPivotQuotient (matrix.entryAt pivotIndex pivotIndex)
+            (matrix.entryAt rowIndex pivotIndex)))).entryAt rowIndex pivotIndex).natAbs
+      < (matrix.entryAt pivotIndex pivotIndex).natAbs :=
+  Eq.mpr
+    (congrArg (· < (matrix.entryAt pivotIndex pivotIndex).natAbs)
+      (smithSingleColumnBelowClearResidueLands matrix isRect pivotIndex rowIndex isDistinct
+        isPivotRowInRange isTargetRowInRange isPivotColInRange isPivotNonneg))
+    (smithRotationDecreasesPivotSize (matrix.entryAt pivotIndex pivotIndex)
+      (matrix.entryAt rowIndex pivotIndex) isPivotPositive)
+
+/-- **Row-right cross residue strictly below a positive pivot** — reading any cleared pivot-row cross
+column after the whole word lands a magnitude STRICTLY below the (nonnegative, positive) pivot's.  The
+whole-word=single-op bridge rewritten into the shipped single-op strict descent
+`smithSingleClearStrictlyDecreasesPivot`.  The per-clear strict descent the cascade fuel adequacy
+rides. -/
+theorem smithClearRowRightStepsCrossEntryStrictlyDecreases {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex stepCount startCol targetCol : Nat)
+    (pivotBelowStart : pivotIndex < startCol)
+    (targetGe : startCol ≤ targetCol) (targetLt : targetCol < startCol + stepCount)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (allColsInRange : startCol + stepCount ≤ width)
+    (isPivotNonneg : (0 : Int) ≤ matrix.entryAt pivotIndex pivotIndex)
+    (isPivotPositive : 0 < (matrix.entryAt pivotIndex pivotIndex).natAbs) :
+    ((matrix.applyOperations
+        ((smithClearRowRightSteps matrix pivotIndex stepCount startCol).map
+          ElementaryOperation.columnOperation)).entryAt pivotIndex targetCol).natAbs
+      < (matrix.entryAt pivotIndex pivotIndex).natAbs :=
+  Eq.mpr
+    (congrArg (fun value => value.natAbs < (matrix.entryAt pivotIndex pivotIndex).natAbs)
+      (smithClearRowRightStepsCrossEntryEqSingle matrix isRect pivotIndex stepCount startCol targetCol
+        pivotBelowStart targetGe targetLt pivotRowInRange pivotColInRange allColsInRange))
+    (smithSingleClearStrictlyDecreasesPivot matrix isRect pivotIndex targetCol
+      (Nat.ne_of_lt (Nat.lt_of_lt_of_le pivotBelowStart targetGe)) pivotRowInRange pivotColInRange
+      (Nat.lt_of_lt_of_le targetLt allColsInRange) isPivotNonneg isPivotPositive)
+
+/-- **Column-below cross residue strictly below a positive pivot** — the row mirror. -/
+theorem smithClearColumnBelowStepsCrossEntryStrictlyDecreases {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex stepCount startRow targetRow : Nat)
+    (pivotBelowStart : pivotIndex < startRow)
+    (targetGe : startRow ≤ targetRow) (targetLt : targetRow < startRow + stepCount)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (allRowsInRange : startRow + stepCount ≤ height)
+    (isPivotNonneg : (0 : Int) ≤ matrix.entryAt pivotIndex pivotIndex)
+    (isPivotPositive : 0 < (matrix.entryAt pivotIndex pivotIndex).natAbs) :
+    ((matrix.applyOperations
+        ((smithClearColumnBelowSteps matrix pivotIndex stepCount startRow).map
+          ElementaryOperation.rowOperation)).entryAt targetRow pivotIndex).natAbs
+      < (matrix.entryAt pivotIndex pivotIndex).natAbs :=
+  Eq.mpr
+    (congrArg (fun value => value.natAbs < (matrix.entryAt pivotIndex pivotIndex).natAbs)
+      (smithClearColumnBelowStepsCrossEntryEqSingle matrix isRect pivotIndex stepCount startRow
+        targetRow pivotBelowStart targetGe targetLt pivotRowInRange pivotColInRange allRowsInRange))
+    (smithSingleColumnBelowClearStrictlyDecreasesPivot matrix isRect pivotIndex targetRow
+      (Nat.ne_of_lt (Nat.lt_of_lt_of_le pivotBelowStart targetGe)) pivotRowInRange
+      (Nat.lt_of_lt_of_le targetLt allRowsInRange) pivotColInRange isPivotNonneg isPivotPositive)
+
 end FX1Poly.ComputerAlgebra
