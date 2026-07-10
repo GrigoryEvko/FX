@@ -785,4 +785,51 @@ def fxTab_hasMonadCasesLeafSplitR5 : Bool := true
 /-- The r7-r5 cases-leaf-split marker computes to `true`, machine-checked. -/
 theorem hasMonadCasesLeafSplitR5_holds : fxTab_hasMonadCasesLeafSplitR5 = true := by decide
 
+/-! ## WALKER-DUALITY (#2024) — the co- direction: `op` transports every decided walker to its dual
+
+The `op` (2-cell reversal) axis, orthogonal to the migration campaign above: it does NOT retire anything, it
+DOUBLES the decided-walker census by transporting each shipped decider to its `op`-dual through one generic iff.
+Shipped in `Table/PresentationOpDuality.lean` + `Table/WalkerDualityInstances.lean` (+ audit twins, `AuditAll`
+lines).  Every brick landed; the honest caveats are named below (NO residual proof jam).
+
+  * **B0 — the renames.**  `DesignLock.lean -> TableArchitectureLock.lean` (the five locked architectural
+    decisions) and `LedgerR1.lean -> TableRetirementLedger.lean` (THIS file — the retirement/migration campaign),
+    both source + audit twin git-mv'd, every import + docstring module-path repointed, the audit twins' own header
+    paths repointed with the `#assert_no_axioms` DECL refs left unchanged (the DispatchLedgerAudit coherence rule).
+
+  * **B1 — the `op` involution on the carrier.**  `opSignature` (same graph, transposed 2-cell family) is a
+    DEFINITIONAL involution (`opSignature_involutive = rfl`); `opCell` (the cell reversal `RawTwoCellExpr` lacked:
+    boundary swap, `vcomp` ORDER-flip, whiskerings commute) with structural `opCell_involutive`; `opCellRel` (the
+    law-relation `op`) with the row bridge `opCellRel_ofCells`.
+
+  * **B2 — the Conv-iff DECISION TRANSPORT (walker-agnostic).**  The completed convertibility `TwoCellConvFull`
+    transports through `op` constructor-by-constructor (`opConvFull`, 13 ctors): the four `castBoundary`
+    whisker-functoriality cases via `opCell_castBoundary`, the two `vcomp` congruences SWAP left/right, and the
+    single genuine coherence — the middle-four INTERCHANGE — is DISSOLVED by the Godement commute
+    (`godementCommute`: the upper-left ~ upper-right Godement, derived from the shipped `TwoCellStep.interchange`
+    with identities + cast-FREE `vcompId` / `whiskerId` cleanups).  Lifted to `SaturatedConvOver` via the universal
+    property (`forwardOpDuality` / `backwardOpDuality` through `recInto`), giving `opDuality_iff` and hence the
+    generic `Decidable` transport `decideSaturatedConvUnderOp`.
+
+  * **B3 — the three decided DUAL walkers (census DOUBLES).**  Walking COMONAD =
+    `decideSaturatedConvUnderOp decideSaturatedConvOverMonadNative` (BOTH verdicts on real dual words:
+    co-associativity `isTrue`, separating co-faces `isFalse`, by `rfl`); idempotent COMONAD =
+    `decideSaturatedConvUnderOp decideSaturatedConvOverIdempotentNative` (`isTrue`, the underlying decider is
+    locally posetal); co-KZ = the DIRECTED KZ order REVERSED (`coKZTwoCellLE a b := KZTwoCellLE b a`, decided by
+    `decideKZLETotal b a`; BOTH verdicts: reversed generator `isTrue`, forward strict direction `isFalse`).
+
+  * **NAMED HONEST CAVEATS (no proof jam — framing notes).**  (1) co-KZ is the `op` of a PREORDER (order reversal,
+    a pure argument swap), NOT the symmetric-`SaturatedConvOver`-carrier involution `op` acts on — `KZTwoCellLE` is
+    directed (no `symm`).  This matches the directed caveat of `fxTab_hasKZWalkerMigration = false`; it is honest to
+    call co-KZ a preorder dual, not a carrier-involution dual.  (2) The forward `→` leg of `opDuality_iff` closes by
+    the `opCell` involutivity `▸`-transport (a definitional-signature `▸`, not a fresh axiom); the backward `←` leg
+    is `backwardOpDuality` directly.  No `sorry`, no residual sort — every declaration in both duality files is
+    independently `#print axioms`-clean.
+
+Raw Lean 4 + Init; the section is a docstring record plus one machine-checked marker.  `= true`. -/
+def fxTab_hasWalkerDualityLedger : Bool := true
+
+/-- The WALKER-DUALITY ledger marker computes to `true`, machine-checked. -/
+theorem hasWalkerDualityLedger_holds : fxTab_hasWalkerDualityLedger = true := by decide
+
 end FX1Poly.Polygraph.Table
