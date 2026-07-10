@@ -1046,6 +1046,8 @@ import FX1PolyAudit.Polygraph.Omega.DesignLockOmega6Audit
 import FX1PolyAudit.Polygraph.Omega.SubstPastingAudit
 -- OMEGA-7 r1 — the presented kernel = (signature, table2, table3) tuple seed (B2)
 import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
+-- OMEGA-7 r1 — the per-dimension admission chain seed (kernel-as-value shape, B3)
+import FX1PolyAudit.Polygraph.Omega.AdmissionChainSeedAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
