@@ -13,5 +13,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR1Residual
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR1Residual_isOpen
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR1_decisionShipped
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR2Shipped
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR2Shipped_holds
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR2_wallsAtSeedMerge
 
 end FX1PolyAudit

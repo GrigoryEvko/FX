@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.Table.FrobeniusFoldInstance
 import FX1Poly.Polygraph.TwoCategory.Table.FrobeniusFusionNF
+import FX1Poly.Polygraph.TwoCategory.Table.FrobeniusFoldLegs
 
 /-! # Polygraph/TwoCategory/Table/FrobeniusResumeLedger — the FROB-RESUME r1 (#2017) per-brick honest ledger
 + the POLY-TAB migration hook
@@ -82,7 +83,8 @@ namespace FX1Poly.Polygraph.Table
 open FX1Poly.Polygraph
   (fxTab_hasFrobeniusReadbackInvariant fxTab_hasDeepDiagramFoldLegs fxTab_hasDeepDiagramFoldInstance
     fxTab_hasCarrierASpiderFusion fxTab_hasGeneralAritySpiderRealization
-    fxFrob_hasSpiderConvDecision fxFrob_hasConnectedSpiderNF fxFrob_hasSpiderFusionNF)
+    fxFrob_hasSpiderConvDecision fxFrob_hasConnectedSpiderNF fxFrob_hasSpiderFusionNF
+    fxTab_hasFoldLegShiftAlgebra)
 
 /-! ## The FROB-RESUME r1 aggregate verdict -/
 
@@ -125,5 +127,73 @@ realization (`fxFrob_hasSpiderFusionNF`), an unbuilt comb-free induction, not a 
 theorem fxTab_frobResumeR1_decisionShipped :
     fxFrob_hasSpiderConvDecision = true ∧ fxFrob_hasSpiderFusionNF = false :=
   ⟨rfl, rfl⟩
+
+/-! ## FROB-RESUME r2 (#2017, the final 2-round-cap round) — what shipped, the sharpened walls, the verdict
+
+The r2 recon re-confirmed against source that the SPIDER pad congruences ship gate-free
+(`spiderConv_relation_inWiderBoundary` right pad, `spiderConv_relation_inWiderBoundary_leftOffset` left pad, both
+WITHOUT a `0 < bottomCount` premise) and that `SpiderConv.whisker` itself is gate-free — the fold-instance blocker
+is NOT a partition gap.  r2 SHIPPED (`Table/FrobeniusFoldLegs.lean`, `fxTab_hasFoldLegShiftAlgebra = true`):
+
+  * The **shift algebra** `shiftBrauerWord_zero` / `shiftBrauerWord_add` — the two `whiskerLeft` readback-word
+    normalisation atoms the EASY structural arms of `fullPreserves` (`whiskerLeftUnit` = shift-0, `whiskerLeftComp`
+    = shift-add) reduce to.
+  * The **connectivity -> partition reduction** `spiderPartition_of_allConnected` — a wire state whose boundary
+    ports are ALL pairwise same-component reads back to the fully-connected partition
+    `⟨n, openWires.length, replicate (n + openWires.length) 0⟩`, fired non-vacuously through the functorial path on
+    the connected `2 ⇒ 2` canonical spider (`extraSpider22_via_connectivityReduction`).
+
+### The two residuals stay open, walls SHARPENED (not flipped)
+
+  * **B1 realization** (`fxTab_hasGeneralAritySpiderRealization` = `fxFrob_hasSpiderFusionNF` = `false`).  The r2
+    reduction SHARPENS the surviving node from "the whole realization" to a pure CONNECTIVITY statement:
+    `spiderPartition_of_allConnected` reduces `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate
+    (m+n) 0⟩` to "the `mergeToOne`/`fanToN` union-find fold connects every boundary port + leaves `n` open wires".
+    The EXACT surviving node is the NON-INJECTIVE seed-merge simulation: `stepWiring (brauerSeed (m+2)) 0 multWiring`
+    merge-simulates `brauerSeed (m+1)` under the collapse `{0,1}↦0`, a COLLAPSE the shipped injective-rename pad
+    simulations (`processBrauer_{left,right}PadWireSim`, which assume injective + pad-avoiding renames) do not cover.
+    BEQUEST: build the connectivity induction over the canonical fold (the shipped join algebra
+    `isSameComponent_unionFindJoin` / `_ofBase` / `_joined` / `_lift` is the toolkit), then feed
+    `spiderPartition_of_allConnected`.
+
+  * **B2/B3 full fold instance** (`fxTab_hasDeepDiagramFoldInstance = false`).  Of the SIX `rowConvInvariant_foldEq`
+    legs: `refl`/`symm`/`trans` free, `rowsPreserve` ships, `whiskerLeftCongr`/`whiskerRightCongr` route through the
+    shipped gate-free pad congruences MODULO a `BrauerWordInRange` readback lemma (an in-range induction — `whiskerLeft`
+    arm rides `brauerWordInRange_shift`, `whiskerRight` arm `brauerWordInRange_rightExtend`, `vcomp` arm needs the
+    readback-boundary-preservation + in-range append).  The two GENUINELY-blocked legs are `vcompCongrLeft` (common
+    suffix) and `vcompCongrRight` (common prefix): both route through `spiderConv_suffixCongruence` /
+    `spiderConv_relation_afterPrefix`, and BOTH demand `0 < bottomCount` (the `nfPos : 0 < nextFresh` of
+    `brauerStateConditions_seed`), GENUINELY FALSE at the `η : id ⇒ t` cell (bottomCount 0, `brauerSeed 0` has
+    `nextFresh 0`).  Plus `fullPreserves`' `ofConv` arm — a `TwoCellConvFull`->`SpiderConv` translation dispatch.
+    BEQUEST: a bottomCount-0 special case (or `SpiderConv.whisker`-only re-routing that never touches the reachable
+    interchange stack) for the two `vcomp` legs, the `BrauerWordInRange` readback lemma, and the 13-arm `fullPreserves`.
+
+### The #2017 verdict — the arc WALLS (no r3)
+
+`fxFrob_hasSpiderConvDecision = true` was already shipped hypothesis-free in r1 (the decidable extraspecial /
+corelation word problem, no `S_n` comb — the ZX-cornerstone content of #2017).  The remaining "spider-fusion normal
+form" content is the B1 realization, whose surviving node r2 sharpened but did not land (the non-injective
+seed-merge simulation is a genuine union-find build, not an assembly of shipped pieces).  Under the 2-round cap
+#2017 therefore WALLS at the seed-merge simulation with the connectivity-reduction bequest above — NO r3. -/
+
+/-- ★ **The FROB-RESUME r2 shipped verdict.**  The shift algebra + the connectivity->partition reduction ship
+(`fxTab_hasFoldLegShiftAlgebra`), stacked on the r1 shipped bricks.  `= true`. -/
+def fxTab_frobResumeR2Shipped : Bool :=
+  fxTab_hasFoldLegShiftAlgebra
+    && fxTab_hasFrobeniusReadbackInvariant
+    && fxFrob_hasSpiderConvDecision
+
+/-- The r2 shipped verdict computes to `true`. -/
+theorem fxTab_frobResumeR2Shipped_holds : fxTab_frobResumeR2Shipped = true := rfl
+
+/-- ★ **The #2017 final-round verdict — the arc WALLS at the seed-merge simulation (no r3).**  The DECISION is
+shipped hypothesis-free (`fxFrob_hasSpiderConvDecision = true`); the spider-fusion NF realization stays open
+(`fxFrob_hasSpiderFusionNF = false`), its surviving node the non-injective seed-merge simulation the r2 connectivity
+reduction sharpened to.  Both `false` residuals are recorded honestly — no fabricated flip. -/
+theorem fxTab_frobResumeR2_wallsAtSeedMerge :
+    fxFrob_hasSpiderConvDecision = true
+      ∧ fxFrob_hasSpiderFusionNF = false
+      ∧ fxTab_hasDeepDiagramFoldInstance = false :=
+  ⟨rfl, rfl, rfl⟩
 
 end FX1Poly.Polygraph.Table
