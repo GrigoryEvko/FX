@@ -404,6 +404,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerCompleteness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerSlides
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerReadback
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerReadbackProof
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingComplete
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlide
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideSoundness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideExtract
