@@ -190,6 +190,47 @@ hard node — build-only moves, ctor-for-ctor to `SaturatedConvOver`) SHIPPED, a
     erosion); (4) `/bin/rm` `IdempotentMonadSaturatedConv.lean` + the now-dead bespoke normalizer/model/decision
     files, audit twins + AuditAll lines in lockstep.
 
+### r5 OUTCOME (POLY-TAB r5 retirement, EXECUTED, #2228) — the walking-idempotent bespoke lane RETIRED, ~2360 LOC removed, zero-axiom preserved
+
+The r4 gate (migration-fact erosion) is RELEASED under standing user authorization ("delete everything migrated").
+What the retired scaffolding proved, preserved here as HISTORY (proven prior to deletion; the deciding content
+survives in the r4 native lane):
+
+  (1) `idempotentSaturated_iff_generic` (`Amalgam/SaturatedComponentDecider`) identified the bespoke
+      `IdempotentMonadSaturatedTwoCellConv` with `SaturatedConvOver monadModeSignature IdempotentLawRel` in BOTH
+      directions — forward by induction flattening the `ofMonad` nesting (`idempotentSaturated_to_generic`, via the
+      `monadSaturated_to_genericIdempotent` helper), backward by the universal property `SaturatedConvOver.recInto`
+      through `idempotentIsCongruence` — machine-checked `#print axioms`-clean.
+  (2) `idempotentWalker_iff_generic` (`Table/ThinWalkerMigration` P3) re-exposed that iso at the Table layer as a
+      genuine retirement bridge.
+  (3) `decideSaturatedConvOverIdempotent` transported `decideIdempotentConv` (built by the six-case `normalizeFull`
+      NF induction over `idempotentLocalPosetality`) across the iso — the FIRST real-relation
+      `DecidableSaturatedConvForRel` over a NON-EMPTY law relation.
+  (4) `idempotentRouteAgreement_holds` / `idempotentRelationFamily_decider_eq_shipped` witnessed bespoke = generic
+      route agreement on the size-4 pair `mu . (eta |> t)` vs `mu . (t <| eta)`, both `isTrue` (locally posetal,
+      Lack, *A 2-Categories Companion*, section 1.5).
+
+Post-retirement these collapse: `idempotentWalker_iff_generic` becomes `Iff.rfl` (born generic, the involution
+shape); `idempotentRelationFamily` is BORN GENERIC (`walkerConv = SaturatedConvOver monadModeSignature
+IdempotentLawRel`, `walkerIffGeneric = fun _ _ => Iff.rfl`, `walkerDecider = decideSaturatedConvOverIdempotentNative`),
+exactly the `involutionRelationFamily` shape.  The DECISION CONTENT is fully preserved in the r4 native lane:
+`IdempotentSaturated{MuInvertible,Ladder,GeneralBricks,RightWhisker,Normalizer}` reprove every conv-producing
+theorem directly over the generic carrier (`*Gen` twins), and the conv-FREE skeleton
+(`repFull`/`repNF`/`growTower`/`canonThroughT`/`mulThenUnitRightWhisker`/`godementUnitMul` + the boundary / Nat /
+path lemmas) was RELOCATED verbatim (no re-proof) into the two NEW bespoke-free homes
+`WalkingIdempotent/IdempotentLawRelation.lean` (`IdempotentLawRel` + `idempotenceRowConv`) and
+`WalkingIdempotent/IdempotentSaturatedReps.lean` (the skeleton), imported by the native head
+`IdempotentSaturatedMuInvertible`.
+
+RETIRED (FX1Poly + FX1PolyAudit twins + their AuditAll import lines): `IdempotentMonadSaturatedConv`,
+`IdempotentMonadModel`, `IdempotentMonadDecision`, `IdempotentMonadMuInvertible`, `IdempotentMonadNormalizer`,
+`IdempotentMonadGeneralNormalizer`, `IdempotentMonadRightWhisker`, `IdempotentMonadFullNormalizer` (the 8 old-chain
+files) + `Amalgam/SaturatedComponentDecider` (the hinge).  KEPT: `IdempotentMonadSeed`, the five native
+`IdempotentSaturated*` files, `Amalgam/SaturatedOver` (substrate), and the two new port-in homes.  The native
+regression `idempotentNativeAgreesOldOnRegression` is repointed native-vs-native (`decideSaturatedConvOverIdempotent`
+-> `decideSaturatedConvOverIdempotentNative`).  `fxTab_hasThinClassWalkerMigrations` stays `true` (the idempotent
+migration is now the identity migration, as the involution's).  `= true`.
+
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
   * `StringSaturatedTwoCellConv` (WalkingAdjunction / adjoint string) — no generic instance shipped; POLY-TAB-2.
