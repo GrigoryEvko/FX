@@ -915,6 +915,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
 import FX1PolyAudit.Polygraph.TwoCategory.Table.DesignLock
 import FX1PolyAudit.Polygraph.TwoCategory.Table.Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.InvariantFoldInstances
+import FX1PolyAudit.Polygraph.TwoCategory.Table.ThinWalkerMigration
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
