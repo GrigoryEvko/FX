@@ -1472,4 +1472,77 @@ def SmithReduceFullDriverStatement : Prop :=
   ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
     (smithReduceFull matrix height width).reducesToSmithForm matrix height width
 
+/-! ## The r5 totality decomposition — substrate append + the middle-level descent measure (B1/B2)
+
+The recon's build-FIRST substrate prerequisite and the one clean, self-contained descent lemma the
+three-level induction rides.  `smithReduceFull` composes its three phases as `diagOps ++ repairOps ++
+signOps` (and each phase composes its own sub-words), so every phase-boundary step needs to split
+`applyOperations` across a `++` — the missing `applyOperationsAppend` below (only
+`applyOperationsPreservesRectangular` previously spoke about `applyOperations`).  The MIDDLE-level
+fold loop (`smithRepairPositionSweep`) rides `smithRepairDecreasesPivotSize`: each genuine fold lands
+`gcd(d_p, d_q)` at the pivot, whose magnitude drops strictly below `d_p`'s exactly when `d_p ∤ d_q`
+(if `d_p | d_q` the gcd IS `|d_p|` and no fold fires).  Pure Number-layer over the shipped
+`natGcdDividesLeft` / `natGcdDividesRight` and the `Int`/`Nat` `natAbs` divisibility bridges — no
+matrix machinery, no propext traps. -/
+
+/-- **`applyOperations` distributes over word concatenation** — firing `leadingWord ++ trailingWord`
+equals firing `leadingWord` then `trailingWord`.  The build-FIRST composition substrate every phase
+boundary of `smithReduceFull` consumes; a 2-arm structural induction on `leadingWord` over the
+`applyOperations` cons equation. -/
+theorem applyOperationsAppend :
+    ∀ (leadingWord trailingWord : List ElementaryOperation) (matrix : IntMatrix),
+      matrix.applyOperations (leadingWord ++ trailingWord)
+        = (matrix.applyOperations leadingWord).applyOperations trailingWord
+  | [], _, _ => rfl
+  | operation :: remainingOperations, trailingWord, matrix =>
+      applyOperationsAppend remainingOperations trailingWord (matrix.applyOperation operation)
+
+/-- **The Nat gcd sits strictly below a non-dividing left argument** — when `leftValue > 0` and
+`leftValue ∤ rightValue`, `natGcd leftValue rightValue < leftValue`.  The gcd divides `leftValue`
+(`natGcdDividesLeft`, cofactor `≥ 1` since `leftValue > 0`) giving `gcd ≤ leftValue`; equality would
+make `leftValue = gcd` divide `rightValue` (`natGcdDividesRight`), contradicting the hypothesis, so
+`gcd ≠ leftValue`.  `Nat.lt_of_le_of_ne` closes. -/
+theorem natGcdLtLeftOfNotDivides (leftValue rightValue : Nat)
+    (isLeftPositive : 0 < leftValue)
+    (leftDoesNotDivide : ¬ NatDivides leftValue rightValue) :
+    natGcd leftValue rightValue < leftValue :=
+  match natGcdDividesLeft leftValue rightValue with
+  | ⟨cofactor, leftEquation⟩ =>
+      match cofactor, leftEquation with
+      | 0, leftEquation =>
+          have leftIsZero : leftValue = 0 :=
+            leftEquation.trans (Nat.mul_zero (natGcd leftValue rightValue))
+          absurd (Eq.mp (congrArg (0 < ·) leftIsZero) isLeftPositive) (Nat.lt_irrefl 0)
+      | cofactorPredecessor + 1, leftEquation =>
+          have gcdPlusReaches :
+              natGcd leftValue rightValue
+                + natGcd leftValue rightValue * cofactorPredecessor = leftValue :=
+            (Nat.add_comm (natGcd leftValue rightValue)
+                (natGcd leftValue rightValue * cofactorPredecessor)).trans
+              ((Nat.mul_succ (natGcd leftValue rightValue) cofactorPredecessor).symm.trans
+                leftEquation.symm)
+          have gcdLeLeft : natGcd leftValue rightValue ≤ leftValue :=
+            Nat.le.intro gcdPlusReaches
+          have gcdNeLeft : natGcd leftValue rightValue ≠ leftValue := fun gcdEqLeft =>
+            leftDoesNotDivide
+              (Eq.mp (congrArg (fun divisor => NatDivides divisor rightValue) gcdEqLeft)
+                (natGcdDividesRight leftValue rightValue))
+          Nat.lt_of_le_of_ne gcdLeLeft gcdNeLeft
+
+/-- **The middle-level fold descent measure** — when the nonzero pivot `pivotEntry` does not divide a
+later diagonal entry `laterEntry`, the fold's landed `gcd(pivotEntry, laterEntry)` has strictly
+smaller magnitude than the pivot.  This is the strict measure the `smithRepairPositionSweep` fold
+loop rides (the sibling of the shipped inner `smithRotationDecreasesPivotSize`), lifting
+`natGcdLtLeftOfNotDivides` through the `natAbs`/`intGcd` bridges (`(intGcd a b).natAbs =
+natGcd a.natAbs b.natAbs` definitionally; `IntDivides` descends to `NatDivides` of the magnitudes via
+`intDividesOfNatDividesNatAbs`/`intDividesOfNatAbsDivides`). -/
+theorem smithRepairDecreasesPivotSize (pivotEntry laterEntry : Int)
+    (isPivotPositive : 0 < pivotEntry.natAbs)
+    (pivotDoesNotDivide : ¬ IntDivides pivotEntry laterEntry) :
+    (intGcd pivotEntry laterEntry).natAbs < pivotEntry.natAbs :=
+  natGcdLtLeftOfNotDivides pivotEntry.natAbs laterEntry.natAbs isPivotPositive
+    (fun natDivides =>
+      pivotDoesNotDivide
+        (intDividesOfNatAbsDivides (intDividesOfNatDividesNatAbs natDivides)))
+
 end FX1Poly.ComputerAlgebra

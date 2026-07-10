@@ -94,5 +94,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedWideByFullDriver
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReducedSignedByFullDriver
 #assert_no_axioms FX1Poly.ComputerAlgebra.SmithReduceFullDriverStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationsAppend
+#assert_no_axioms FX1Poly.ComputerAlgebra.natGcdLtLeftOfNotDivides
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairDecreasesPivotSize
 
 end FX1PolyAudit
