@@ -149,4 +149,222 @@ theorem dimZeroBoundaryIsMode {graph : ModeGraph} (mode : graph.Mode) :
     (CellExpr.ofMode (computad := computadOfGraph graph) mode) =
       CellExpr.ofMode mode := rfl
 
+/-! ## The refutation of the UNCONDITIONAL collapse — the honest headline (OMEGA-1 r2, B1)
+
+`dimOneCollapsesToPath` (every `CellExpr 1` convertible to a realised path) is FALSE for the
+extrinsic-boundary carrier: `gen ⟨s, t, mod⟩ (ofMode a) (ofMode b)` admits a DECLARED boundary
+`(ofMode a, ofMode b)` disagreeing with the label modes `(s, t)`, and no such ill-boundaried atom is
+convertible to any realised path.  The proof is the OMEGA analogue of the OMEGA-2 invariant fold: a
+gen-atom collector fed through `SaturatedConvOver.recInto`.
+
+The collector is an ACCUMULATOR (difference-list): `vcomp`-associativity and the two `id`-units then hold
+DEFINITIONALLY on the gen-atom list (no `List.append`, hence no `append_assoc` `propext` leak), and the
+invariant is carried in the acc-GENERALISED form `∀ acc, skeletonGenAcc a acc = skeletonGenAcc b acc` so the
+one-hole congruence fields discharge append-free.  Off dimension 1 the invariant is `True` (the whisker /
+interchange rows only fire at dimension `+2`), so `recInto`'s dimension-generic fold stays clean. -/
+
+/-- Collect the gen-atoms of a cell SKELETON, accumulator (difference-list) style: `vcomp` threads the
+accumulator so associativity and the `id`-units hold on the nose, and no `List.append` appears (no
+`append_assoc` `propext` leak).  Full six-constructor match — propext-free. -/
+def skeletonGenAcc {computad : OmegaComputad} :
+    CellSkeleton computad → List (CellSkeleton computad) → List (CellSkeleton computad)
+  | .modeLeaf _, acc => acc
+  | .genNode labelDim label source target, acc =>
+      CellSkeleton.genNode labelDim label source target :: acc
+  | .idNode _, acc => acc
+  | .vcompNode left right, acc => skeletonGenAcc left (skeletonGenAcc right acc)
+  | .whiskerLeftNode _ cell, acc => skeletonGenAcc cell acc
+  | .whiskerRightNode cell _, acc => skeletonGenAcc cell acc
+
+/-- The ordered gen-atom list of a 1-cell (the accumulator seeded empty). -/
+def oneCellGenList {computad : OmegaComputad} (cell : CellExpr computad 1) :
+    List (CellSkeleton computad) :=
+  skeletonGenAcc (toSkeleton cell) []
+
+/-- The gen-atom-list invariant relation, acc-GENERALISED at dimension 1 (so congruence is append-free) and
+`True` off dimension 1 (the whisker / interchange rows only fire at dimension `+2`).  Full `Nat` enumeration
+(`0` / `1` / `_ + 2`), no wildcard — propext-free. -/
+def dimOneGenListInvariant (computad : OmegaComputad) : CellRelOver computad :=
+  fun {dim} =>
+    match dim with
+    | 1 => fun cellAlpha cellBeta =>
+        ∀ (acc : List (CellSkeleton computad)),
+          skeletonGenAcc (toSkeleton cellAlpha) acc = skeletonGenAcc (toSkeleton cellBeta) acc
+    | 0 => fun _ _ => True
+    | _ + 2 => fun _ _ => True
+
+/-- The invariant is trivially `True` on any dimension-`(dim+2)` pair (the `_ + 2` branch). -/
+theorem dimOneGenListInvariant_trivial_succSucc {computad : OmegaComputad} {dim : Nat}
+    (cellAlpha cellBeta : CellExpr computad (dim + 2)) :
+    dimOneGenListInvariant computad cellAlpha cellBeta := True.intro
+
+/-- Vertical associativity preserves the gen-atom list — definitionally at dimension 1 (the accumulator makes
+associativity `rfl`), trivially above. -/
+theorem dimOneGenListInvariant_vcompAssoc {computad : OmegaComputad} {dim : Nat}
+    (cellA cellB cellC : CellExpr computad (dim + 1)) :
+    dimOneGenListInvariant computad
+      (CellExpr.vcomp (CellExpr.vcomp cellA cellB) cellC)
+      (CellExpr.vcomp cellA (CellExpr.vcomp cellB cellC)) := by
+  cases dim with
+  | zero => intro _; rfl
+  | succ _ => exact True.intro
+
+/-- The left unit preserves the gen-atom list — the `id` factor contributes nothing to the accumulator. -/
+theorem dimOneGenListInvariant_vcompUnitLeft {computad : OmegaComputad} {dim : Nat}
+    (cellA : CellExpr computad (dim + 1)) :
+    dimOneGenListInvariant computad
+      (CellExpr.vcomp (CellExpr.id (boundarySource cellA)) cellA) cellA := by
+  cases dim with
+  | zero => intro _; rfl
+  | succ _ => exact True.intro
+
+/-- The right unit preserves the gen-atom list. -/
+theorem dimOneGenListInvariant_vcompUnitRight {computad : OmegaComputad} {dim : Nat}
+    (cellA : CellExpr computad (dim + 1)) :
+    dimOneGenListInvariant computad
+      (CellExpr.vcomp cellA (CellExpr.id (boundaryTarget cellA))) cellA := by
+  cases dim with
+  | zero => intro _; rfl
+  | succ _ => exact True.intro
+
+/-- The gen-atom-list invariant is an absorbing saturated congruence over the strict laws — the invariant fold
+`recInto` runs on.  The one-hole congruence fields discharge append-free (the accumulator threads through), the
+strict-law rows preserve it (`ofRelation`), and refl / symm / trans lift pointwise in the accumulator. -/
+theorem dimOneGenListInvariant_isSaturatedCongruence (computad : OmegaComputad) :
+    IsSaturatedCongruence computad (StrictAxiomRel computad) (dimOneGenListInvariant computad) where
+  ofRelation := by
+    intro _ _ _ row
+    cases row with
+    | vcompAssoc cellA cellB cellC => exact dimOneGenListInvariant_vcompAssoc cellA cellB cellC
+    | vcompUnitLeft cellA => exact dimOneGenListInvariant_vcompUnitLeft cellA
+    | vcompUnitRight cellA => exact dimOneGenListInvariant_vcompUnitRight cellA
+    | whiskerLeftUnit _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+    | whiskerRightUnit _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+    | whiskerLeftFunctorial _ _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+    | whiskerRightFunctorial _ _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+    | interchange _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+  vcompCongrLeft := by
+    intro dim _ _ cellBeta hyp
+    cases dim with
+    | zero => intro acc; exact hyp (skeletonGenAcc (toSkeleton cellBeta) acc)
+    | succ _ => exact True.intro
+  vcompCongrRight := by
+    intro dim cellAlpha _ _ hyp
+    cases dim with
+    | zero => intro acc; exact congrArg (skeletonGenAcc (toSkeleton cellAlpha)) (hyp acc)
+    | succ _ => exact True.intro
+  whiskerLeftCongr := by
+    intro _ _ _ _ _; exact dimOneGenListInvariant_trivial_succSucc _ _
+  whiskerRightCongr := by
+    intro _ _ _ _ _; exact dimOneGenListInvariant_trivial_succSucc _ _
+  refl := by
+    intro dim _
+    cases dim with
+    | zero => exact True.intro
+    | succ k =>
+        cases k with
+        | zero => intro _; rfl
+        | succ _ => exact True.intro
+  symm := by
+    intro dim _ _ hyp
+    cases dim with
+    | zero => exact True.intro
+    | succ k =>
+        cases k with
+        | zero => intro acc; exact (hyp acc).symm
+        | succ _ => exact True.intro
+  trans := by
+    intro dim _ _ _ hyp1 hyp2
+    cases dim with
+    | zero => exact True.intro
+    | succ k =>
+        cases k with
+        | zero => intro acc; exact (hyp1 acc).trans (hyp2 acc)
+        | succ _ => exact True.intro
+
+/-- The gen-atom list is a `SaturatedConvOver StrictAxiomRel` invariant at dimension 1 (the acc-generalised
+form), via the invariant fold. -/
+theorem oneCellGenAcc_of_conv {computad : OmegaComputad} {cellAlpha cellBeta : CellExpr computad 1}
+    (conv : SaturatedConvOver computad (StrictAxiomRel computad) cellAlpha cellBeta) :
+    ∀ (acc : List (CellSkeleton computad)),
+      skeletonGenAcc (toSkeleton cellAlpha) acc = skeletonGenAcc (toSkeleton cellBeta) acc :=
+  SaturatedConvOver.recInto (dimOneGenListInvariant_isSaturatedCongruence computad) conv
+
+/-! ## The refuting witness — a graph whose junk `gen` cell has no path preimage -/
+
+/-- The refuting mode graph: two modes (`Bool`), a modality between every ordered pair.  Rich enough to build
+an ill-boundaried `gen` 1-cell. -/
+def refutingGraph : ModeGraph where
+  Mode := Bool
+  Modality := fun _ _ => Unit
+
+/-- The computad of the refuting graph. -/
+abbrev refutingComputad : OmegaComputad := computadOfGraph refutingGraph
+
+/-- The **junk 1-cell**: a `false ⟶ true` generator whose DECLARED source / target boundaries are both `true`
+(disagreeing with the label's source mode `false`).  A legal `CellExpr .. 1` with NO realised-path preimage. -/
+def junkCell : CellExpr refutingComputad 1 :=
+  CellExpr.gen (dim := 0)
+    (⟨false, true, ()⟩ : graphGenLabel refutingGraph 1)
+    (CellExpr.ofMode true) (CellExpr.ofMode true)
+
+/-- The mode a skeleton denotes when it is a `modeLeaf` (`none` otherwise) — a propext-free discriminator. -/
+def skeletonModeValue : CellSkeleton refutingComputad → Option Bool
+  | .modeLeaf mode => some mode
+  | .genNode _ _ _ _ => none
+  | .idNode _ => none
+  | .vcompNode _ _ => none
+  | .whiskerLeftNode _ _ => none
+  | .whiskerRightNode _ _ => none
+
+/-- Whether a gen-atom skeleton's DECLARED source mode matches its label's source mode (as an `Eq` of
+`Option Bool`, so realised atoms discharge by `rfl` — no `beq_self`).  Non-gen / off-dimension nodes are
+vacuously canonical.  Full-enumeration match — propext-free. -/
+def genAtomSourceCanonicalProp : CellSkeleton refutingComputad → Prop
+  | .genNode 1 label source _ => skeletonModeValue source = some label.1
+  | .genNode 0 _ _ _ => True
+  | .genNode (_ + 2) _ _ _ => True
+  | .modeLeaf _ => True
+  | .idNode _ => True
+  | .vcompNode _ _ => True
+  | .whiskerLeftNode _ _ => True
+  | .whiskerRightNode _ _ => True
+
+/-- Every gen-atom in a list is source-canonical. -/
+def allSourceCanonicalProp : List (CellSkeleton refutingComputad) → Prop
+  | [] => True
+  | atom :: rest => genAtomSourceCanonicalProp atom ∧ allSourceCanonicalProp rest
+
+/-- Every realised path's gen-atoms are source-canonical: each atom's declared source is `ofMode s` for its
+label's source mode `s`, so canonicity is `some s = some s` (`rfl`).  By induction on the path. -/
+theorem realizePathCell_allSourceCanonical {sourceMode targetMode : refutingGraph.Mode}
+    (path : ModalityPath refutingGraph sourceMode targetMode) :
+    allSourceCanonicalProp (oneCellGenList (realizePathCell path)) := by
+  induction path with
+  | nil _ => exact True.intro
+  | cons _ _ ih => exact ⟨rfl, ih⟩
+
+/-- The junk cell's single gen-atom is NOT source-canonical: its declared source is `ofMode true`, its label
+source is `false`, so canonicity would force `some true = some false`. -/
+theorem junkCell_not_allSourceCanonical :
+    ¬ allSourceCanonicalProp (oneCellGenList junkCell) := by
+  intro hcanon
+  exact Bool.noConfusion (Option.some.inj hcanon.1)
+
+/-- ★ **The unconditional dim-1 collapse is REFUTED.**  `dimOneCollapsesToPath refutingGraph` would make the
+junk cell convertible to some realised path; the gen-atom-list invariant then forces their gen-atom lists
+equal, so the junk cell's non-canonical atom would appear in a realised path (all of whose atoms are canonical)
+— contradiction.  This is the honest status of `dimOneCollapsesToPath`: it holds only on the boundary-canonical
+(`GlobularComputad`) sub-carrier, and the substantive UNCONDITIONAL content is the homomorphism / closure
+lemmas above. -/
+theorem dimOneCollapse_not_unconditional : ¬ dimOneCollapsesToPath refutingGraph := by
+  intro hcollapse
+  obtain ⟨_, _, path, hconv⟩ := hcollapse junkCell
+  have hlist : oneCellGenList junkCell = oneCellGenList (realizePathCell path) :=
+    oneCellGenAcc_of_conv hconv []
+  have hcanon : allSourceCanonicalProp (oneCellGenList (realizePathCell path)) :=
+    realizePathCell_allSourceCanonical path
+  rw [← hlist] at hcanon
+  exact junkCell_not_allSourceCanonical hcanon
+
 end FX1Poly.Polygraph.Omega

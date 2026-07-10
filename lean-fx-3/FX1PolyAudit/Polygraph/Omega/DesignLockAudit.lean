@@ -30,5 +30,27 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.realizePathCell
 #assert_no_axioms FX1Poly.Polygraph.Omega.dimOneCollapsesToPath
 #assert_no_axioms FX1Poly.Polygraph.Omega.dimZeroBoundaryIsMode
+#assert_no_axioms FX1Poly.Polygraph.Omega.realizePathCell_boundarySource
+#assert_no_axioms FX1Poly.Polygraph.Omega.realizePath_composePath_conv
+#assert_no_axioms FX1Poly.Polygraph.Omega.oneCellCollapse_vcompClosed
+
+-- CollapseDimOne.lean — the dim-1 collapse refutation (OMEGA-1 r2, B1)
+#assert_no_axioms FX1Poly.Polygraph.Omega.skeletonGenAcc
+#assert_no_axioms FX1Poly.Polygraph.Omega.oneCellGenList
+#assert_no_axioms FX1Poly.Polygraph.Omega.dimOneGenListInvariant
+#assert_no_axioms FX1Poly.Polygraph.Omega.dimOneGenListInvariant_trivial_succSucc
+#assert_no_axioms FX1Poly.Polygraph.Omega.dimOneGenListInvariant_vcompAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.dimOneGenListInvariant_vcompUnitLeft
+#assert_no_axioms FX1Poly.Polygraph.Omega.dimOneGenListInvariant_vcompUnitRight
+#assert_no_axioms FX1Poly.Polygraph.Omega.dimOneGenListInvariant_isSaturatedCongruence
+#assert_no_axioms FX1Poly.Polygraph.Omega.oneCellGenAcc_of_conv
+#assert_no_axioms FX1Poly.Polygraph.Omega.refutingGraph
+#assert_no_axioms FX1Poly.Polygraph.Omega.junkCell
+#assert_no_axioms FX1Poly.Polygraph.Omega.skeletonModeValue
+#assert_no_axioms FX1Poly.Polygraph.Omega.genAtomSourceCanonicalProp
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSourceCanonicalProp
+#assert_no_axioms FX1Poly.Polygraph.Omega.realizePathCell_allSourceCanonical
+#assert_no_axioms FX1Poly.Polygraph.Omega.junkCell_not_allSourceCanonical
+#assert_no_axioms FX1Poly.Polygraph.Omega.dimOneCollapse_not_unconditional
 
 end FX1PolyAudit
