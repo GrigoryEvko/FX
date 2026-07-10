@@ -669,6 +669,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingTraceAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSigmaBundle
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingCoreSwapInRange
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineBoundaryChain
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineBoundaryWordChain
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineBoundaryGodement
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineArityDiscipline
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryDiscipline
