@@ -159,6 +159,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchSaturated
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ConvFullFunctor
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ConvFullFunctorDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealCoprojection
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealCoprojectionLeft
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DeciderReseat
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMonotoneReflection
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutBundle
