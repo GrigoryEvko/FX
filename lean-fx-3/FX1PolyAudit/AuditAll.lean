@@ -1003,6 +1003,8 @@ import FX1PolyAudit.Polygraph.Omega.KernelDiamondReadingAudit
 import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4Audit
 -- OMEGA-4 r2 — the Squier ascent: the abstract certificate -> dim-3 cell functor
 import FX1PolyAudit.Polygraph.Omega.CertificateFunctorAudit
+-- OMEGA-4 r2 — the Squier ascent: the walking-involution homotopy-basis fragment
+import FX1PolyAudit.Polygraph.Omega.InvolutionSquierBasisAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
