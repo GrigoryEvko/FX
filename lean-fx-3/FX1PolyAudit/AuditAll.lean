@@ -429,6 +429,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCorrectedFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCorrectedLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldPhasesLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldR5Ledger
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryComponents
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
