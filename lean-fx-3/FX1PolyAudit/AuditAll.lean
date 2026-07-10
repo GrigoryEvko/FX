@@ -1010,6 +1010,8 @@ import FX1PolyAudit.Polygraph.Omega.CertificateFunctorAudit
 import FX1PolyAudit.Polygraph.Omega.InvolutionSquierBasisAudit
 -- OMEGA-4 r2 — the Squier ascent: the r2 ledger + refined OMEGA-5 handoff
 import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4R2Audit
+-- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
+import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
