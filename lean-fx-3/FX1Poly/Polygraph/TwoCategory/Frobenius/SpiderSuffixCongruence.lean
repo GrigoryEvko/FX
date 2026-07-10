@@ -286,7 +286,7 @@ theorem stepWiringArcs_viewInvariant (bottomCount : Nat) (stateS stateT : WireSt
 /-! ## The generic four-zone post-step boundary-read classifier -/
 
 /-- The below-window post-step open-wire read is the untouched original read. -/
-private theorem stepWiringOpenRead_below (state : WireState) (position rightLen wireOffset : Nat)
+theorem stepWiringOpenRead_below (state : WireState) (position rightLen wireOffset : Nat)
     (desc : WiringDesc) (fits : state.openWires.length = position + desc.inputCount + rightLen)
     (below : wireOffset < position) :
     natListGetAt (stepWiring state position desc).openWires wireOffset
@@ -302,7 +302,7 @@ private theorem stepWiringOpenRead_below (state : WireState) (position rightLen 
     natListGetAt_removeManyAt_below state.openWires position desc.inputCount wireOffset below]
 
 /-- The in-fresh-block post-step open-wire read is the fresh leg at that offset. -/
-private theorem stepWiringOpenRead_fresh (state : WireState) (position rightLen offset : Nat)
+theorem stepWiringOpenRead_fresh (state : WireState) (position rightLen offset : Nat)
     (desc : WiringDesc) (fits : state.openWires.length = position + desc.inputCount + rightLen)
     (offsetLt : offset < desc.outputCount) :
     natListGetAt (stepWiring state position desc).openWires (position + offset)
@@ -320,7 +320,7 @@ private theorem stepWiringOpenRead_fresh (state : WireState) (position rightLen 
     natListGetAtRangeMapAddLocal state.nextFresh desc.outputCount offset offsetLt]
 
 /-- The past-block post-step open-wire read is the original read shifted by the net width `outputCount - inputCount`. -/
-private theorem stepWiringOpenRead_past (state : WireState) (position rightLen offset : Nat)
+theorem stepWiringOpenRead_past (state : WireState) (position rightLen offset : Nat)
     (desc : WiringDesc) (fits : state.openWires.length = position + desc.inputCount + rightLen)
     (offsetLt : offset < rightLen) :
     natListGetAt (stepWiring state position desc).openWires (position + desc.outputCount + offset)
