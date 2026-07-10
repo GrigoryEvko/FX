@@ -186,7 +186,9 @@ decider lives at the PLAIN `DecidableTwoCellConvFor` = `Decidable (TwoCellConv �
 the deferred Gratzer convergence (`fxMode_hasConvergentThreeCellSystem = false`); the shipped `decideTwoCellConvFull`
 decides the strictly LARGER `TwoCellConvFull` and does NOT transfer to plain `TwoCellConv`.  So the arrow is NOT
 hypothesis-free inhabitable and the flip is HELD — honest.  The achievable transfer is the SATURATED one
-(`fxAmalg_hasDecisionTransfer` / `fxAmalg_hasComposableFragmentDispatch`).  `= false`. -/
-def fxAmalg_dispatchTheoremStaysWalled : Bool := false
+(`fxAmalg_hasDecisionTransfer` / `fxAmalg_hasComposableFragmentDispatch`).  `= true` — the wall STANDS
+(the r1 verifier caught the original `:= false` as a telling-word polarity violation: the name asserts
+"stays walled", so the honest value while the wall stands is `true`). -/
+def fxAmalg_dispatchTheoremStaysWalled : Bool := true
 
 end FX1Poly.Polygraph.Amalgam
