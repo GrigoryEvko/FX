@@ -358,4 +358,29 @@ generic level: the walker decisions and the free interface spoke different word 
 common shape the decisions actually inhabit.  Additive — the walker lanes are untouched.  `= true`. -/
 def fxAmalg_hasSaturatedConvOver : Bool := true
 
+/-- ★ **Honesty marker (WP-AMALG-2 r3, B4) — the `SaturatedOver` sign-off STAYS GATED; r3 completeness does NOT
+discharge it.**  `= true` (the gate is honestly held).  This file's `import …WalkingMonad.MonadSaturatedConv`
+(line 2) is a DELETION pin, not a proof gap: it exists SOLELY to state the INT-SIG-ALIGN #2079 exemplar
+`MonadLawRel` (`:276`) + `monadSaturated_iff_generic` (`:342`) over the BESPOKE `monadModeSignature`.  Discharging
+the gate (dropping that import) requires THREE things, none hypothesis-free this round:
+
+  1. **the user erosion decision (the literal sign-off)** — relocating/retiring `MonadLawRel` +
+     `monadSaturated_iff_generic` VOIDS the migration fact (the iff is inherently about the bespoke inductive;
+     re-pointing born-generic collapses it to a vacuous `Iff.rfl`).  Per never-delete-without-confirm this is
+     reserved for explicit user green-light.
+  2. **the `DeciderReseat` sibling pin** — still imports `WalkingMonad/MonadWordProblem` to feed the bespoke total
+     decider that `monadReconstructedDecision` runs internally.
+  3. **the `SaturatedRelationFamily.monadRelationFamily` sibling pin** — the separating member of the relation
+     family.
+
+★ **What r3 (this round) advances — and what it does NOT.**  The B3 reverse-completeness leg
+(`ReverseCompletenessLeg.lean`) is LIVE off `monadReconstructedDecision`, but that decider STILL runs the bespoke
+`monadSaturatedTwoCellDecision` internally (transitively `import MonadWordProblem`), so r3 does NOT drop the
+`DeciderReseat` bespoke import and does NOT touch the `SaturatedOver` migration-iff (which is INDEPENDENT of the
+dispatch — `MonadLawRel` is DECORATIVE for the amalgam, an INT-SIG-ALIGN exhibit, not load-bearing for any
+decision).  So the sign-off stays gated on (1) + (2) + (3); r3 only reinforces that step (1)'s erosion is SAFE (the
+amalgam's real content runs over the RECONSTRUCTED / generic relation).  Named node: the `SaturatedOver` migration-
+iff deletion pin.  No fabricated flip.  `= true`. -/
+def fxAmalg_saturatedOverSignOffStaysGated : Bool := true
+
 end FX1Poly.Polygraph.Amalgam

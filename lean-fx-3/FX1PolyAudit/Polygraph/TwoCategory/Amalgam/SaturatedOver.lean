@@ -29,5 +29,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.generic_to_monadSaturated
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.monadSaturated_iff_generic
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasSaturatedConvOver
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_saturatedOverSignOffStaysGated
 
 end FX1PolyAudit
