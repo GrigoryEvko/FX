@@ -2173,4 +2173,51 @@ theorem intGcdInvariantUnderAddScaledLeft (leftValue rightValue multiplier : Int
       (natDividesNatAbsOfIntDivides forwardDivides)
       (natDividesNatAbsOfIntDivides backwardDivides))
 
+/-! ## The SNF convergence bridges + glue (H2-SMITH r6, B3)
+
+The pole is the r7 wall (`SmithReduceFullDriverStatement` stays UNINHABITED — cf. the refuted
+`SmithCascadeReDiagonalizesStatement` footer and the corrected POLE-A/POLE-B above), so B3 ships the
+honest per-piece partials with EXACT goals: the last-mile connectors from the pole invariants
+(`IsWindowDiagonal`, `SmithChainPrefix`) to the `IsSmithNormalFormWithin` fields, and the convergence
+glue that assembles all three fields.  These are the recon §4 "direct bridges": the assembly parts that
+DO NOT need the cascade pole, proven here; what remains is exactly the three invariant obligations the
+glue's hypotheses name (window-diagonality + chain from the repair sweep = POLE-B; nonnegativity from
+the sign sweep).  All propext-clean structural glue over core `Nat` order. -/
+
+/-- **Bridge 1** — `IsWindowDiagonal` at window-start 0 IS `offDiagonalVanishes`: drop the vacuous
+`0 ≤ rowIndex` / `0 ≤ colIndex` lower bounds. -/
+theorem offDiagonalVanishesOfWindowDiagonalAtZero (matrix : IntMatrix) (height width : Nat)
+    (isDiag : IsWindowDiagonal matrix 0 height width) :
+    ∀ rowIndex colIndex, rowIndex < height → colIndex < width → rowIndex ≠ colIndex →
+      matrix.entryAt rowIndex colIndex = 0 :=
+  fun rowIndex colIndex rowLtHeight colLtWidth rowNeCol =>
+    isDiag rowIndex colIndex (Nat.zero_le rowIndex) rowLtHeight (Nat.zero_le colIndex) colLtWidth
+      rowNeCol
+
+/-- **Bridge 2** — the full-window `SmithChainPrefix` gives `diagonalDividesSuccessor`: the successor
+`position + 1` is one step later, still inside the window (`position < position + 1 < Nat.min height
+width`), so the prefix chain covers the adjacent pair. -/
+theorem diagonalDividesSuccessorOfChainPrefix (matrix : IntMatrix) (height width : Nat)
+    (chain : SmithChainPrefix matrix (Nat.min height width) height width) :
+    ∀ position, position + 1 < Nat.min height width →
+      dividesExactly (matrix.diagonalEntryAt position) (matrix.diagonalEntryAt (position + 1)) :=
+  fun position positionSuccBelowMin =>
+    chain position (Nat.lt_trans (Nat.lt_succ_self position) positionSuccBelowMin) (position + 1)
+      (Nat.le_succ position) positionSuccBelowMin
+
+/-- **The SNF convergence glue** — the three settled invariants assemble the Smith-normal-form
+certificate: a matrix window-diagonal at 0, with a nonnegative diagonal, whose full prefix chain
+divides, IS in Smith normal form within the window.  This makes the r7 remaining goals EXACT — the
+three hypotheses are precisely what the three augmented-driver phases must deliver: window-diagonality
+and the divisibility chain from the repair sweep (POLE-B), nonnegativity from the sign sweep.  Feeds
+the two bridges into the `IsSmithNormalFormWithin` structure. -/
+theorem isSmithNormalFormOfWindowDiagonalChainNonneg (matrix : IntMatrix) (height width : Nat)
+    (isDiag : IsWindowDiagonal matrix 0 height width)
+    (isNonneg : ∀ position, position < Nat.min height width → 0 ≤ matrix.diagonalEntryAt position)
+    (chain : SmithChainPrefix matrix (Nat.min height width) height width) :
+    matrix.IsSmithNormalFormWithin height width :=
+  { offDiagonalVanishes := offDiagonalVanishesOfWindowDiagonalAtZero matrix height width isDiag
+    diagonalIsNonnegative := isNonneg
+    diagonalDividesSuccessor := diagonalDividesSuccessorOfChainPrefix matrix height width chain }
+
 end FX1Poly.ComputerAlgebra

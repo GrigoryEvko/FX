@@ -123,5 +123,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intDividesNegated
 #assert_no_axioms FX1Poly.ComputerAlgebra.intDividesRightOfDividesFold
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGcdInvariantUnderAddScaledLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.offDiagonalVanishesOfWindowDiagonalAtZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.diagonalDividesSuccessorOfChainPrefix
+#assert_no_axioms FX1Poly.ComputerAlgebra.isSmithNormalFormOfWindowDiagonalChainNonneg
 
 end FX1PolyAudit
