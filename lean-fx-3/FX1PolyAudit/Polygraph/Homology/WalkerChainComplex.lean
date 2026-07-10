@@ -37,6 +37,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimTwoReducesToSmith
 #assert_no_axioms FX1Poly.Polygraph.Homology.WalkerDegreeTwoSmithHandoffStatement
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerDegreeTwoSmithHandoff
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerSmithNormalFormOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerSmithNormalFormOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerDimOneCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerDimTwoCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.smithRankWithin
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerRankOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerRankOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerNullityOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerNullityOfDimOneValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerDegreeTwoHomologyFreeRank
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerDegreeTwoHomologyFreeRankIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.hasNoSmithTorsionWithin
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerDimTwoHasNoTorsion
+#assert_no_axioms FX1Poly.Polygraph.Homology.WalkerDegreeTwoHomologyIsZeroStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerDegreeTwoHomologyIsZero
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerHomologyLedgerIsComplete
 
 end FX1PolyAudit

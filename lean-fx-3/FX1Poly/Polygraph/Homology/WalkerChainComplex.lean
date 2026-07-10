@@ -381,6 +381,108 @@ starts from a proven SNF interface, not a conjecture. -/
 theorem walkerDegreeTwoSmithHandoff : WalkerDegreeTwoSmithHandoffStatement :=
   ⟨walkerBoundaryOfDimOneReducesToSmith, walkerBoundaryOfDimTwoReducesToSmith⟩
 
+/-! ## B3 — THE H2 READ-OFF: `H2(walking monad) = 0` (THE FIRST MECHANIZED WALKER HOMOLOGY)
+
+r1 shipped the complex + `d d = 0` and deferred the rank arithmetic to #2138.  r2 corrects the
+enumeration (B1/B2) and then ships the degree-2 homology rank/torsion arithmetic HERE, decided on the
+LITERAL Smith normal forms — the very matrices the two reduction certificates land on (bridged by
+`walker{DimOne,DimTwo}CertificateProducesSmithNormalForm`, `rfl`, so the rank is read off the ACTUAL
+reduced boundary, not a disconnected literal).  Never `decide` on a Smith-driver expression (the
+`Nat.min`/`Nat.sub` taint); every read-off closes by `rfl` on `Nat`/`Int` literals or by explicit
+constructors.
+
+**The arithmetic:** `rank(d2) = rank(d3) = 1` (one nonzero diagonal entry each);
+`nullity(d2) = C2 − rank(d2) = 2 − 1 = 1`; `H2 free-rank = nullity(d2) − rank(d3) = 1 − 1 = 0`; the
+sole within-rank invariant factor is the unit `1`, so there is no torsion.  Hence
+`H2(walking monad) = 0`, matching the homological triviality of `Δ₊`.  This is the FIRST mechanized
+homology group of a walker; **#2138 opens with `walkerDegreeTwoHomologyIsZero` as its first row**, its
+remaining work the `ker d2 / im d3` quotient formalisation.
+
+The full degree-2 homology `ker d2 / im d3` as a quotient module is NOT formalised here (that is
+#2138); r2 ships the rank/torsion INVARIANTS that pin `H2 = 0` for a free finitely-generated abelian
+group — free-rank `0` and no torsion is the complete invariant of the trivial group. -/
+
+/-- The Smith normal form of `d2` — the literal `[[1, 0]]` the certificate
+`walkerBoundaryOfDimOneSmithCertificate` lands on. -/
+def walkerSmithNormalFormOfDimOne : IntMatrix := ⟨[[1, 0]]⟩
+
+/-- The Smith normal form of `d3` — the literal `[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0]]` (`2 × 5`,
+r2-corrected) the certificate `walkerBoundaryOfDimTwoSmithCertificate` lands on. -/
+def walkerSmithNormalFormOfDimTwo : IntMatrix := ⟨[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0]]⟩
+
+/-- **The `d2` certificate produces `walkerSmithNormalFormOfDimOne`** — `rfl`, so the rank read-off
+below is the rank of the ACTUAL reduced boundary (the honest bridge from the driver-typed
+`applyOperations` to the literal SNF, exactly the defeq the shipped `ReducesToSmith` `show` relies
+on). -/
+theorem walkerDimOneCertificateProducesSmithNormalForm :
+    walkerBoundaryOfDimOne.applyOperations walkerBoundaryOfDimOneSmithCertificate.operations
+      = walkerSmithNormalFormOfDimOne := rfl
+
+/-- **The `d3` certificate produces `walkerSmithNormalFormOfDimTwo`** — `rfl`, bridging the 2×5
+reduced boundary to the literal SNF the rank read-off consumes. -/
+theorem walkerDimTwoCertificateProducesSmithNormalForm :
+    walkerBoundaryOfDimTwo.applyOperations walkerBoundaryOfDimTwoSmithCertificate.operations
+      = walkerSmithNormalFormOfDimTwo := rfl
+
+/-- **The Smith rank within a diagonal window**: the number of nonzero diagonal entries among the
+first `windowSize` positions of a matrix already in Smith normal form (invariant factors are ordered
+so the nonzero ones come first, hence this count IS the rank).  Structural on `windowSize`; the
+`if diag = 0` uses `Int` decidable equality, evaluated only on literal SNF matrices. -/
+def smithRankWithin (matrix : IntMatrix) : Nat → Nat
+  | 0 => 0
+  | windowSize + 1 =>
+      (if matrix.diagonalEntryAt windowSize = 0 then 0 else 1) + smithRankWithin matrix windowSize
+
+/-- `rank(d2) = 1` — one nonzero diagonal entry in the `1 × 2` SNF window. -/
+theorem walkerRankOfDimOne : smithRankWithin walkerSmithNormalFormOfDimOne 1 = 1 := rfl
+
+/-- `rank(d3) = 1` — one nonzero diagonal entry in the `2 × 5` SNF diagonal window (`min 2 5 = 2`
+positions: `diag 0 = 1` nonzero, `diag 1 = 0`). -/
+theorem walkerRankOfDimTwo : smithRankWithin walkerSmithNormalFormOfDimTwo 2 = 1 := rfl
+
+/-- `nullity(d2) = C2 − rank(d2) = 2 − 1 = 1` — the free rank of `ker d2` (the degree-2 cycles). -/
+def walkerNullityOfDimOne : Nat :=
+  walkerBasisCount 2 - smithRankWithin walkerSmithNormalFormOfDimOne 1
+
+/-- `nullity(d2) = 1`, by `rfl` on the `Nat` literals. -/
+theorem walkerNullityOfDimOneValue : walkerNullityOfDimOne = 1 := rfl
+
+/-- **The degree-2 homology free rank**: `nullity(d2) − rank(d3) = 1 − 1 = 0` — the free rank of
+`ker d2 / im d3`. -/
+def walkerDegreeTwoHomologyFreeRank : Nat :=
+  walkerNullityOfDimOne - smithRankWithin walkerSmithNormalFormOfDimTwo 2
+
+/-- **The degree-2 homology free rank is `0`**, by `rfl` on the `Nat` literals. -/
+theorem walkerDegreeTwoHomologyFreeRankIsZero : walkerDegreeTwoHomologyFreeRank = 0 := rfl
+
+/-- **No Smith torsion within a diagonal window**: every diagonal invariant factor among the first
+`windowSize` positions is `0` (past the rank) or the unit `1` (within the rank) — so no invariant
+factor exceeds `1`, hence the homology has no `ZZ / d` torsion summand.  Read off the literal SNF
+diagonal by explicit constructors (no `decide`). -/
+def hasNoSmithTorsionWithin (matrix : IntMatrix) : Nat → Prop
+  | 0 => True
+  | windowSize + 1 =>
+      hasNoSmithTorsionWithin matrix windowSize ∧
+      (matrix.diagonalEntryAt windowSize = 0 ∨ matrix.diagonalEntryAt windowSize = 1)
+
+/-- **`d3` has no Smith torsion** within its `2 × 5` diagonal window: `diag 0 = 1` (unit), `diag 1 = 0`
+(past the rank).  Explicit constructors, propext-clean. -/
+theorem walkerDimTwoHasNoTorsion : hasNoSmithTorsionWithin walkerSmithNormalFormOfDimTwo 2 :=
+  ⟨⟨True.intro, Or.inr rfl⟩, Or.inl rfl⟩
+
+/-- ★ **`H2(walking monad) = 0`, as free-rank `0` AND no torsion** — the complete invariant of the
+trivial group for a finitely-generated abelian homology group. -/
+def WalkerDegreeTwoHomologyIsZeroStatement : Prop :=
+  walkerDegreeTwoHomologyFreeRank = 0 ∧ hasNoSmithTorsionWithin walkerSmithNormalFormOfDimTwo 2
+
+/-- ★★ **THE FIRST MECHANIZED WALKER HOMOLOGY.**  `H2(walking monad) = 0`: the degree-2 homology of
+the DECIDED walking-monad polygraph has free rank `0` (`nullity(d2) − rank(d3) = 1 − 1`) and no
+torsion, read off the kernel-checked Smith normal forms of the corrected `2 × 5` complex.  Matches the
+homological triviality of `Δ₊`.  **#2138 (H2-WALKERS) opens with this theorem as its first row**; its
+remaining work is the `ker d2 / im d3` quotient module, seeded by `walkerDegreeTwoSmithHandoff`. -/
+theorem walkerDegreeTwoHomologyIsZero : WalkerDegreeTwoHomologyIsZeroStatement :=
+  ⟨walkerDegreeTwoHomologyFreeRankIsZero, walkerDimTwoHasNoTorsion⟩
+
 /-! ## B5 — the walking-monad homology ledger (per-brick states + honest scoping)
 
 ### Per-brick state (H2-CHAIN r1, all rungs DECIDED — no jams)
