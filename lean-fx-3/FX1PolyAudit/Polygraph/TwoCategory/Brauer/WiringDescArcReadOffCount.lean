@@ -84,4 +84,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.expandCupTopPairs_length
 #assert_no_axioms FX1Poly.Polygraph.cupArcTwiceThroughSumsToTop
 
+-- ★ BRAUER r17 (T-CLOSE top side): the TOP read-off width-length / boundedness / distinctness, the general top
+-- IsPermutationOfRange, the permInverse lift, and the universal top E2 roundtrip.
+#assert_no_axioms FX1Poly.Polygraph.topReadOffOrderLength
+#assert_no_axioms FX1Poly.Polygraph.memberBoundedTopReadOff
+#assert_no_axioms FX1Poly.Polygraph.topReadOffOrderBounded
+#assert_no_axioms FX1Poly.Polygraph.cupArcTops_distinct
+#assert_no_axioms FX1Poly.Polygraph.throughStrandTops_distinct
+#assert_no_axioms FX1Poly.Polygraph.topReadOffOrder_distinct
+#assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_isPermutationOfRange
+#assert_no_axioms FX1Poly.Polygraph.readOffTopOrderInverse_isPermutationOfRange
+#assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_realizesRoundtrip
+
 end FX1PolyAudit

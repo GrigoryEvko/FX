@@ -1520,6 +1520,321 @@ theorem cupArcTwiceThroughSumsToTop (bottomCount topCount : Nat) (partner : List
   rw [cupArcTopIndices_length_eq_count, throughStrandTops_length_eq_count]
   exact pairing ▸ partition
 
+/-! ## Section 21 — the TOP read-off width-length identity (`hasWidthLength`) -/
+
+/-- ★★★ **The top read-off width-length identity (`hasWidthLength`).**  For every well-formed involution partner over
+`bottomCount + topCount` ports, `(throughStrandTops ++ cupArcTops).length = topCount` — the ∗-dual counting field the
+general `IsPermutationOfRange` was missing on the top side.  From the through count, the ∗-dual doubling
+(`expandCupTopPairs_length`), the append length, and the ∗-dual crux. -/
+theorem topReadOffOrderLength (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner).length = topCount := by
+  rw [appendLengthCount]
+  show (throughStrandTops bottomCount topCount partner).length
+    + (expandCupTopPairs bottomCount partner (cupArcTopIndices bottomCount topCount partner)).length = topCount
+  rw [expandCupTopPairs_length bottomCount partner (cupArcTopIndices bottomCount topCount partner),
+    Nat.add_comm (throughStrandTops bottomCount topCount partner).length
+      ((cupArcTopIndices bottomCount topCount partner).length
+        + (cupArcTopIndices bottomCount topCount partner).length)]
+  exact cupArcTwiceThroughSumsToTop bottomCount topCount partner wf
+
+/-! ## Section 22 — the TOP read-off boundedness (`isBounded`) -/
+
+private theorem mem_expandCupTopPairsCount (bottomCount : Nat) (partner : List Nat) : (feet : List Nat) → (value : Nat) →
+    value ∈ expandCupTopPairs bottomCount partner feet →
+    ∃ topIdx, topIdx ∈ feet ∧ (value = topIdx ∨ value = natListGetAt partner (bottomCount + topIdx) - bottomCount)
+  | [], _, memNil => nomatch memNil
+  | topIndex :: rest, value, mem => by
+      have memReduced : value ∈ topIndex :: (natListGetAt partner (bottomCount + topIndex) - bottomCount)
+          :: expandCupTopPairs bottomCount partner rest := mem
+      cases memReduced with
+      | head => exact ⟨topIndex, List.Mem.head rest, Or.inl rfl⟩
+      | tail _ memTail =>
+          cases memTail with
+          | head => exact ⟨topIndex, List.Mem.head rest, Or.inr rfl⟩
+          | tail _ memRest =>
+              obtain ⟨topIdx, topIdxMem, topIdxEq⟩ := mem_expandCupTopPairsCount bottomCount partner rest value memRest
+              exact ⟨topIdx, List.Mem.tail topIndex topIdxMem, topIdxEq⟩
+
+/-- Every member of the top read-off order is a top port (0-based, `< topCount`) — through tops by through soundness,
+cup top legs by cup soundness (smaller foot and its partner top).  Uses the involution gate for the larger-leg bound. -/
+theorem memberBoundedTopReadOff (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) (value : Nat)
+    (mem : value ∈ throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner) :
+    value < topCount := by
+  cases memAppendCount value (throughStrandTops bottomCount topCount partner)
+      (cupArcTops bottomCount topCount partner) mem with
+  | inl memThrough =>
+      exact (throughStrandTops_mem_sound bottomCount topCount partner value memThrough).1
+  | inr memCup =>
+      obtain ⟨topIdx, topIdxMem, topIdxEq⟩ :=
+        mem_expandCupTopPairsCount bottomCount partner (cupArcTopIndices bottomCount topCount partner) value memCup
+      have topSound := cupArcTopIndices_mem_sound bottomCount topCount partner topIdx topIdxMem
+      cases topIdxEq with
+      | inl valueEq => rw [valueEq]; exact topSound.1
+      | inr valueEqShift =>
+          rw [valueEqShift]
+          have subExact : bottomCount + (natListGetAt partner (bottomCount + topIdx) - bottomCount)
+              = natListGetAt partner (bottomCount + topIdx) :=
+            cupArcTop_sub_exact bottomCount topCount partner topIdx topIdxMem
+          have portLt : bottomCount + topIdx < bottomCount + topCount := Nat.add_lt_add_left topSound.1 bottomCount
+          have partnerLt : natListGetAt partner (bottomCount + topIdx) < bottomCount + topCount :=
+            wf.mapsInRange (bottomCount + topIdx) portLt
+          have step : bottomCount + (natListGetAt partner (bottomCount + topIdx) - bottomCount)
+              < bottomCount + topCount := by rw [subExact]; exact partnerLt
+          exact natLtOfAddLtAddLeftTop bottomCount _ topCount step
+
+/-- ★ **The top read-off boundedness (`isBounded`).**  At every in-range position the top read-off order reads a
+0-based top port.  From the width-length identity (so the index is in range) and member-boundedness. -/
+theorem topReadOffOrderBounded (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) (index : Nat) (indexBelow : index < topCount) :
+    natListGetAt (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner) index
+      < topCount := by
+  have indexInRange : index
+      < (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner).length := by
+    rw [topReadOffOrderLength bottomCount topCount partner wf]; exact indexBelow
+  exact memberBoundedTopReadOff bottomCount topCount partner wf _
+    (getAtMemCount (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner)
+      index indexInRange)
+
+/-! ## Section 23 — the TOP read-off distinctness (`isDistinct`): interleaved cup tops, distinct throughs, disjoint -/
+
+/-- ★★ **The cup-top interleave is distinct.**  `expandCupTopPairs partner feet = [t0, partnerTopShift t0, t1, …]` is
+distinct when `feet` is a distinct list of smaller cup tops: the top indices are distinct (input distinct), their
+partner tops are distinct (involution injective at the offset ports), and no top equals a partner top (a smaller top
+cannot be a larger top).  The ∗-dual of `expandBottomFeetPairsDistinctCount`. -/
+private theorem expandCupTopPairsDistinctCount (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) : (feet : List Nat) →
+    isDistinctList feet = true →
+    (∀ topIdx, topIdx ∈ feet → topIdx < topCount ∧ bottomCount ≤ natListGetAt partner (bottomCount + topIdx)
+      ∧ bottomCount + topIdx < natListGetAt partner (bottomCount + topIdx)) →
+    isDistinctList (expandCupTopPairs bottomCount partner feet) = true
+  | [], _, _ => rfl
+  | index :: rest, feetDistinct, feetSmaller => by
+      have splitDist : isDistinctList (index :: rest) = (not (memBool index rest) && isDistinctList rest) := rfl
+      rw [splitDist] at feetDistinct
+      have indexNotRest : memBool index rest = false :=
+        eqFalseOfNotTrueCount _ (boolAndLeftCount _ _ feetDistinct)
+      have distRest : isDistinctList rest = true := boolAndRightCount _ _ feetDistinct
+      have indexSmaller := feetSmaller index (List.Mem.head rest)
+      have restSmaller : ∀ topIdx, topIdx ∈ rest → topIdx < topCount
+          ∧ bottomCount ≤ natListGetAt partner (bottomCount + topIdx)
+          ∧ bottomCount + topIdx < natListGetAt partner (bottomCount + topIdx) :=
+        fun topIdx topIdxMem => feetSmaller topIdx (List.Mem.tail index topIdxMem)
+      have distTail : isDistinctList (expandCupTopPairs bottomCount partner rest) = true :=
+        expandCupTopPairsDistinctCount bottomCount topCount partner wf rest distRest restSmaller
+      have portIndexLt : bottomCount + index < bottomCount + topCount := Nat.add_lt_add_left indexSmaller.1 bottomCount
+      have bottomAddShiftIndex : bottomCount + (natListGetAt partner (bottomCount + index) - bottomCount)
+          = natListGetAt partner (bottomCount + index) :=
+        addSubCancelTop bottomCount (natListGetAt partner (bottomCount + index)) indexSmaller.2.1
+      have selfInvIndex :
+          natListGetAt partner (natListGetAt partner (bottomCount + index)) = bottomCount + index :=
+        wf.isSelfInverse (bottomCount + index) portIndexLt
+      have shiftIndexNotTail :
+          memBool (natListGetAt partner (bottomCount + index) - bottomCount)
+            (expandCupTopPairs bottomCount partner rest) = false := by
+        cases hmem : memBool (natListGetAt partner (bottomCount + index) - bottomCount)
+            (expandCupTopPairs bottomCount partner rest) with
+        | false => rfl
+        | true =>
+            obtain ⟨collision, collisionMem, collisionEq⟩ := mem_expandCupTopPairsCount bottomCount partner rest
+              (natListGetAt partner (bottomCount + index) - bottomCount) (memBoolMemCount _ _ hmem)
+            have collisionSmaller := restSmaller collision collisionMem
+            have portCollisionLt : bottomCount + collision < bottomCount + topCount :=
+              Nat.add_lt_add_left collisionSmaller.1 bottomCount
+            cases collisionEq with
+            | inl shiftEqCollision =>
+                have portCollisionEq : bottomCount + collision = natListGetAt partner (bottomCount + index) :=
+                  (congrArg (bottomCount + ·) shiftEqCollision.symm).trans bottomAddShiftIndex
+                have partnerCollisionEqIndexPort :
+                    natListGetAt partner (bottomCount + collision) = bottomCount + index :=
+                  (congrArg (natListGetAt partner) portCollisionEq).trans selfInvIndex
+                have indexLtCollision : index < collision := by
+                  have step : bottomCount + index < bottomCount + collision := by
+                    rw [portCollisionEq]; exact indexSmaller.2.2
+                  exact natLtOfAddLtAddLeftTop bottomCount index collision step
+                have collisionLtIndex : collision < index := by
+                  have step : bottomCount + collision < bottomCount + index := by
+                    have raw := collisionSmaller.2.2
+                    rw [partnerCollisionEqIndexPort] at raw
+                    exact raw
+                  exact natLtOfAddLtAddLeftTop bottomCount collision index step
+                exact absurd (Nat.lt_trans indexLtCollision collisionLtIndex) (Nat.lt_irrefl index)
+            | inr shiftEqPartnerCollision =>
+                have collisionSub : bottomCount + (natListGetAt partner (bottomCount + collision) - bottomCount)
+                    = natListGetAt partner (bottomCount + collision) :=
+                  addSubCancelTop bottomCount (natListGetAt partner (bottomCount + collision)) collisionSmaller.2.1
+                have portsEq :
+                    natListGetAt partner (bottomCount + index) = natListGetAt partner (bottomCount + collision) :=
+                  (bottomAddShiftIndex.symm.trans (congrArg (bottomCount + ·) shiftEqPartnerCollision)).trans collisionSub
+                have portIndexEqCollision : bottomCount + index = bottomCount + collision :=
+                  involutionInjectiveCount (bottomCount + topCount) partner wf (bottomCount + index)
+                    (bottomCount + collision) portIndexLt portCollisionLt portsEq
+                have indexMemRest : memBool index rest = true := by
+                  rw [natAddLeftCancelTop bottomCount index collision portIndexEqCollision]
+                  exact memBoolOfMemCount rest collision collisionMem
+                rw [indexNotRest] at indexMemRest; exact Bool.noConfusion indexMemRest
+      have indexNotConsTail :
+          memBool index ((natListGetAt partner (bottomCount + index) - bottomCount)
+            :: expandCupTopPairs bottomCount partner rest) = false := by
+        show (Nat.beq (natListGetAt partner (bottomCount + index) - bottomCount) index
+          || memBool index (expandCupTopPairs bottomCount partner rest)) = false
+        have shiftIndexNeIndex : Nat.beq (natListGetAt partner (bottomCount + index) - bottomCount) index = false :=
+          natBeqFalseOfNeCount (natListGetAt partner (bottomCount + index) - bottomCount) index (by
+            intro equal
+            have step : bottomCount + index
+                < bottomCount + (natListGetAt partner (bottomCount + index) - bottomCount) := by
+              rw [bottomAddShiftIndex]; exact indexSmaller.2.2
+            have indexLtShift : index < natListGetAt partner (bottomCount + index) - bottomCount :=
+              natLtOfAddLtAddLeftTop bottomCount index _ step
+            rw [equal] at indexLtShift
+            exact Nat.lt_irrefl index indexLtShift)
+        rw [shiftIndexNeIndex, Bool.false_or]
+        cases hmem : memBool index (expandCupTopPairs bottomCount partner rest) with
+        | false => rfl
+        | true =>
+            obtain ⟨collision, collisionMem, collisionEq⟩ := mem_expandCupTopPairsCount bottomCount partner rest index
+              (memBoolMemCount _ _ hmem)
+            have collisionSmaller := restSmaller collision collisionMem
+            have portCollisionLt : bottomCount + collision < bottomCount + topCount :=
+              Nat.add_lt_add_left collisionSmaller.1 bottomCount
+            cases collisionEq with
+            | inl indexEqCollision =>
+                have indexMemRest : memBool index rest = true := by
+                  rw [indexEqCollision]; exact memBoolOfMemCount rest collision collisionMem
+                rw [indexNotRest] at indexMemRest; exact Bool.noConfusion indexMemRest
+            | inr indexEqPartnerCollision =>
+                have collisionSub : bottomCount + (natListGetAt partner (bottomCount + collision) - bottomCount)
+                    = natListGetAt partner (bottomCount + collision) :=
+                  addSubCancelTop bottomCount (natListGetAt partner (bottomCount + collision)) collisionSmaller.2.1
+                have portCollisionPartnerEq : natListGetAt partner (bottomCount + collision) = bottomCount + index :=
+                  collisionSub.symm.trans (congrArg (bottomCount + ·) indexEqPartnerCollision.symm)
+                have collisionLtIndex : collision < index := by
+                  have step : bottomCount + collision < bottomCount + index := by
+                    rw [← portCollisionPartnerEq]; exact collisionSmaller.2.2
+                  exact natLtOfAddLtAddLeftTop bottomCount collision index step
+                have partnerIndexPortEq : natListGetAt partner (bottomCount + index) = bottomCount + collision :=
+                  (congrArg (natListGetAt partner) portCollisionPartnerEq).symm.trans
+                    (wf.isSelfInverse (bottomCount + collision) portCollisionLt)
+                have indexLtCollision : index < collision := by
+                  have step : bottomCount + index < bottomCount + collision := by
+                    rw [← partnerIndexPortEq]; exact indexSmaller.2.2
+                  exact natLtOfAddLtAddLeftTop bottomCount index collision step
+                exact absurd (Nat.lt_trans collisionLtIndex indexLtCollision) (Nat.lt_irrefl collision)
+      have distConsTail :
+          isDistinctList ((natListGetAt partner (bottomCount + index) - bottomCount)
+            :: expandCupTopPairs bottomCount partner rest) = true := by
+        show (not (memBool (natListGetAt partner (bottomCount + index) - bottomCount)
+            (expandCupTopPairs bottomCount partner rest))
+          && isDistinctList (expandCupTopPairs bottomCount partner rest)) = true
+        rw [shiftIndexNotTail]
+        show isDistinctList (expandCupTopPairs bottomCount partner rest) = true
+        exact distTail
+      show (not (memBool index ((natListGetAt partner (bottomCount + index) - bottomCount)
+          :: expandCupTopPairs bottomCount partner rest))
+        && isDistinctList ((natListGetAt partner (bottomCount + index) - bottomCount)
+          :: expandCupTopPairs bottomCount partner rest)) = true
+      rw [indexNotConsTail]
+      show isDistinctList ((natListGetAt partner (bottomCount + index) - bottomCount)
+        :: expandCupTopPairs bottomCount partner rest) = true
+      exact distConsTail
+
+/-- ★★ **The cup-top order is distinct.** -/
+theorem cupArcTops_distinct (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    isDistinctList (cupArcTops bottomCount topCount partner) = true :=
+  expandCupTopPairsDistinctCount bottomCount topCount partner wf (cupArcTopIndices bottomCount topCount partner)
+    (filterMapGuardIdentityDistinctCount (cupSmallerGuard bottomCount partner) (List.range topCount)
+      (isDistinctListRangeCount topCount))
+    (fun topIdx topIdxMem => cupArcTopIndices_mem_sound bottomCount topCount partner topIdx topIdxMem)
+
+/-- The through-top order is distinct (filterMap-identity of the distinct range). -/
+theorem throughStrandTops_distinct (bottomCount topCount : Nat) (partner : List Nat) :
+    isDistinctList (throughStrandTops bottomCount topCount partner) = true :=
+  filterMapGuardIdentityDistinctCount (throughTopGuard bottomCount partner) (List.range topCount)
+    (isDistinctListRangeCount topCount)
+
+/-- A cup top leg's partner is a TOP port (`bottomCount ≤ partner`).  The smaller foot by cup soundness; the larger
+foot's partner is the smaller foot's port (involution), which is a top port. -/
+private theorem cupTopLegPartnerGe (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) (value : Nat)
+    (mem : value ∈ cupArcTops bottomCount topCount partner) :
+    bottomCount ≤ natListGetAt partner (bottomCount + value) := by
+  obtain ⟨topIdx, topIdxMem, topIdxEq⟩ :=
+    mem_expandCupTopPairsCount bottomCount partner (cupArcTopIndices bottomCount topCount partner) value mem
+  have topSound := cupArcTopIndices_mem_sound bottomCount topCount partner topIdx topIdxMem
+  cases topIdxEq with
+  | inl valueEqTopIdx => rw [valueEqTopIdx]; exact topSound.2.1
+  | inr valueEqShift =>
+      have subExact : bottomCount + (natListGetAt partner (bottomCount + topIdx) - bottomCount)
+          = natListGetAt partner (bottomCount + topIdx) :=
+        cupArcTop_sub_exact bottomCount topCount partner topIdx topIdxMem
+      have portTopIdxLt : bottomCount + topIdx < bottomCount + topCount := Nat.add_lt_add_left topSound.1 bottomCount
+      have selfInv : natListGetAt partner (natListGetAt partner (bottomCount + topIdx)) = bottomCount + topIdx :=
+        wf.isSelfInverse (bottomCount + topIdx) portTopIdxLt
+      rw [valueEqShift, subExact, selfInv]
+      exact Nat.le_add_right bottomCount topIdx
+
+private theorem topReadOffDisjoint (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) (value : Nat)
+    (memThrough : memBool value (throughStrandTops bottomCount topCount partner) = true) :
+    memBool value (cupArcTops bottomCount topCount partner) = false := by
+  cases hmem : memBool value (cupArcTops bottomCount topCount partner) with
+  | false => rfl
+  | true =>
+      have throughSound :=
+        throughStrandTops_mem_sound bottomCount topCount partner value (memBoolMemCount _ value memThrough)
+      have partnerGe : bottomCount ≤ natListGetAt partner (bottomCount + value) :=
+        cupTopLegPartnerGe bottomCount topCount partner wf value (memBoolMemCount _ value hmem)
+      exact absurd (Nat.lt_of_lt_of_le throughSound.2 partnerGe) (Nat.lt_irrefl _)
+
+/-- ★★★ **The top read-off distinctness (`isDistinct`).**  `throughStrandTops ++ cupArcTops` is distinct: the through
+tops are distinct, the cup-top interleave is distinct, and the two are disjoint (a cup top leg's partner is a top
+port, so it is never a through top). -/
+theorem topReadOffOrder_distinct (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    isDistinctList (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner) = true :=
+  appendDistinctCount (throughStrandTops bottomCount topCount partner) (cupArcTops bottomCount topCount partner)
+    (throughStrandTops_distinct bottomCount topCount partner)
+    (cupArcTops_distinct bottomCount topCount partner wf)
+    (topReadOffDisjoint bottomCount topCount partner wf)
+
+/-! ## Section 24 — the general TOP read-off `IsPermutationOfRange` (T-CLOSE top side) + the `permInverse` lift -/
+
+/-- ★★★ **The general top read-off order is a range-permutation.**  For every well-formed boundary involution over
+`bottomCount + topCount` ports, `throughStrandTops ++ cupArcTops` satisfies `IsPermutationOfRange topCount` — distinct,
+length `topCount`, `[0, topCount)`-bounded.  Promotes the r15 `by decide` top truth-probes
+(`readOffTopOrder_isPermutationOfRange_adversarialB` / `_freshMixed`) to the general theorem: the ∗-dual counting
+residual the r15/r16 honesty walls named is CLOSED on the top side. -/
+theorem readOffTopOrder_isPermutationOfRange (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    IsPermutationOfRange topCount
+      (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner) where
+  hasWidthLength := topReadOffOrderLength bottomCount topCount partner wf
+  isDistinct := topReadOffOrder_distinct bottomCount topCount partner wf
+  isBounded := topReadOffOrderBounded bottomCount topCount partner wf
+
+/-- ★★★ **The inverted top read-off order is a range-permutation.**  The corrected extractor feeds
+`permInverse (throughStrandTops ++ cupArcTops)` into the top staircase (the r3 cup-side inversion pin); by r15's
+`isPermutationOfRange_permInverse` the inverse is also a range-permutation. -/
+theorem readOffTopOrderInverse_isPermutationOfRange (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    IsPermutationOfRange topCount
+      (permInverse (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner)) :=
+  isPermutationOfRange_permInverse topCount _ (readOffTopOrder_isPermutationOfRange bottomCount topCount partner wf)
+
+/-- ★★★ **The general top read-off E2 roundtrip.**  The `permutationToCrossingWord` staircase realizes the top read-off
+order `throughStrandTops ++ cupArcTops` for EVERY well-formed boundary involution — the shipped conjugator roundtrip
+`permuteOfCrossingWord_permutationToCrossingWord` fed the general top range-permutation witness. -/
+theorem readOffTopOrder_realizesRoundtrip (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    permuteOfCrossingWord topCount
+        (permutationToCrossingWord topCount
+          (throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner))
+      = throughStrandTops bottomCount topCount partner ++ cupArcTops bottomCount topCount partner :=
+  permuteOfCrossingWord_permutationToCrossingWord topCount _
+    (readOffTopOrder_isPermutationOfRange bottomCount topCount partner wf)
+
 /-! ## Honesty markers + the r16 ledger -/
 
 /-- ★★★ **Honesty marker — the BOTTOM read-off order is a range-permutation for EVERY well-formed involution (r16).**
