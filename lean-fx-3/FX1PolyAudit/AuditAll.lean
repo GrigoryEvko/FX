@@ -1052,6 +1052,8 @@ import FX1PolyAudit.Polygraph.Omega.BridgeDimTwoWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.EckmannHiltonWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.Steiner.SuspensionChainShift
 import FX1PolyAudit.Polygraph.Omega.SuspensionWithIdLedgerAudit
+-- OMEGA-3 r3 — the varying-whisker map-IN reconstruct
+import FX1PolyAudit.Polygraph.Omega.Steiner.VaryingWhiskerReconstruct
 -- OMEGA-4 r1 — the Squier ascent: dim-3 critical-pair row family
 import FX1PolyAudit.Polygraph.Omega.CriticalPairRowAudit
 import FX1PolyAudit.Polygraph.Omega.InvolutionDemonstratorAudit
