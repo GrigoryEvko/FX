@@ -26,8 +26,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reconFaces_arityMapsDiffer
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.pushoutRightImageFaces_notConv
 
+-- the reseat fold-preservation mirror + reconstructed completeness + the FULL reflection
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatPath_length
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.arityFold_foldl_reseatCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.arityMonotoneMapOf_reseatCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reconstructed_convOfArityEq
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.pushoutRightImageConvReflect
+
 -- the honesty markers
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasRightImageArityReflection
-#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_fullRightImageReflectionStaysWalled
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasFullRightImageReflection
 
 end FX1PolyAudit

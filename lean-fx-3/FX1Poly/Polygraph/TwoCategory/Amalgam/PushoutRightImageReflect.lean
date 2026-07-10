@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.Amalgam.RealLawDispatch
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeGen
 
 /-! # Polygraph/TwoCategory/Amalgam/PushoutRightImageReflect — the isFalse REFLECTION (conservativity) for
 right-images, via the arity fold
@@ -220,6 +221,123 @@ theorem pushoutRightImageFaces_notConv :
 -- The two reconstructed monad faces separate under the arity fold: expect `true`.
 #eval decide (arityMonotoneMapOf reconFaceDeltaOne ≠ arityMonotoneMapOf reconFaceDeltaZero)
 
+/-! ## The reseat fold-preservation mirror (needed for reconstructed completeness) -/
+
+/-- `reseatPath` preserves path length — it COUNTS length (`nil` to `nil point`, `cons` to `cons t`), so length is
+unchanged.  The reseat mirror of `mapPath_length`. -/
+theorem reseatPath_length {sourceMode targetMode : Fin 1} :
+    (path : ModalityPath monadComputad.toModeGraph sourceMode targetMode) →
+    (reseatPath path).length = path.length
+  | .nil _ => rfl
+  | .cons _ rest => congrArg (· + 1) (reseatPath_length rest)
+
+/-- ★★ **The joint spine-fold recursion for `reseatCell`** — the reseat mirror of `arityFold_foldl_mapCellAlong`.
+`reseatCell` has the identical `gen` (via `reseatGen`) / `id` / `vcomp` / whisker+`castBoundary` shape as
+`mapCellAlong`, so the same joint recursion applies, with `reseatPath` (length-preserving) replacing `mapPath`. -/
+theorem arityFold_foldl_reseatCell {overallSource overallTarget : Fin 1} :
+    {localSource localTarget : Fin 1} →
+    (leftAcc : ModalityPath monadComputad.toModeGraph overallSource localSource) →
+    (rightAcc : ModalityPath monadComputad.toModeGraph localTarget overallTarget) →
+    {localDom localCod : ModalityPath monadComputad.toModeGraph localSource localTarget} →
+    (cell : RawTwoCellExpr monadComputad.toModeSignature localDom localCod) →
+    (restTarget : List (SpineAtom monadModeSignature MonadMode.point MonadMode.point)) →
+    (restSource : List (SpineAtom monadComputad.toModeSignature overallSource overallTarget)) →
+    (∀ state, restTarget.foldl arityFoldStepAtom state = restSource.foldl arityFoldStepAtom state) →
+    ∀ state, ((reseatCell cell).spineDiff (reseatPath leftAcc) (reseatPath rightAcc) restTarget).foldl
+                arityFoldStepAtom state
+          = (cell.spineDiff leftAcc rightAcc restSource).foldl arityFoldStepAtom state
+  | _, _, leftAcc, rightAcc, _, _, .gen g, restTarget, restSource, contHyp => by
+      intro state
+      let atomTarget : SpineAtom monadModeSignature MonadMode.point MonadMode.point :=
+        ⟨_, _, reseatPath leftAcc, _, _, reseatGen g, reseatPath rightAcc⟩
+      let atomSource : SpineAtom monadComputad.toModeSignature overallSource overallTarget :=
+        ⟨_, _, leftAcc, _, _, g, rightAcc⟩
+      show restTarget.foldl arityFoldStepAtom (arityFoldStepAtom state atomTarget)
+          = restSource.foldl arityFoldStepAtom (arityFoldStepAtom state atomSource)
+      rw [arityFoldStepAtom_congr state atomTarget atomSource
+            (reseatPath_length leftAcc) (reseatPath_length _) (reseatPath_length _)]
+      exact contHyp _
+  | _, _, _leftAcc, _rightAcc, _, _, .id _path, _restTarget, _restSource, contHyp => by
+      intro state; exact contHyp state
+  | _, _, leftAcc, rightAcc, _, _, .vcomp cellAlpha cellBeta, restTarget, restSource, contHyp => by
+      intro state
+      exact arityFold_foldl_reseatCell leftAcc rightAcc cellAlpha
+        ((reseatCell cellBeta).spineDiff (reseatPath leftAcc) (reseatPath rightAcc) restTarget)
+        (cellBeta.spineDiff leftAcc rightAcc restSource)
+        (arityFold_foldl_reseatCell leftAcc rightAcc cellBeta restTarget restSource contHyp)
+        state
+  | _, _, leftAcc, rightAcc, _, _, .whiskerLeft oneCell body, restTarget, restSource, contHyp => by
+      intro state
+      show ((RawTwoCellExpr.castBoundary _ _
+              (RawTwoCellExpr.whiskerLeft (reseatPath oneCell) (reseatCell body))).spineDiff
+              (reseatPath leftAcc) (reseatPath rightAcc) restTarget).foldl arityFoldStepAtom state
+          = (body.spineDiff (composePath leftAcc oneCell) rightAcc restSource).foldl arityFoldStepAtom state
+      rw [RawTwoCellExpr.castBoundary_spineDiff]
+      have recursiveStep := arityFold_foldl_reseatCell (composePath leftAcc oneCell) rightAcc body
+        restTarget restSource contHyp state
+      rw [reseatPath_composePath leftAcc oneCell] at recursiveStep
+      exact recursiveStep
+  | _, _, leftAcc, rightAcc, _, _, .whiskerRight oneCell body, restTarget, restSource, contHyp => by
+      intro state
+      show ((RawTwoCellExpr.castBoundary _ _
+              (RawTwoCellExpr.whiskerRight (reseatPath oneCell) (reseatCell body))).spineDiff
+              (reseatPath leftAcc) (reseatPath rightAcc) restTarget).foldl arityFoldStepAtom state
+          = (body.spineDiff leftAcc (composePath oneCell rightAcc) restSource).foldl arityFoldStepAtom state
+      rw [RawTwoCellExpr.castBoundary_spineDiff]
+      have recursiveStep := arityFold_foldl_reseatCell leftAcc (composePath oneCell rightAcc) body
+        restTarget restSource contHyp state
+      rw [reseatPath_composePath oneCell rightAcc] at recursiveStep
+      exact recursiveStep
+
+/-- ★★ **The arity fold is PRESERVED by `reseatCell` (fold-preservation mirror, corollary A').**  The reseat
+analogue of `arityMonotoneMapOf_mapCellAlong`.  Assembles the reseat joint recursion with `reseatPath_length` on the
+source boundary. -/
+theorem arityMonotoneMapOf_reseatCell {sourceMode targetMode : Fin 1}
+    {sourcePath targetPath : ModalityPath monadComputad.toModeGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath) :
+    arityMonotoneMapOf (reseatCell cell) = arityMonotoneMapOf cell := by
+  have coreEq := arityFold_foldl_reseatCell
+    (identityPath sourceMode) (identityPath targetMode) cell [] [] (fun _ => rfl)
+  show ((reseatCell cell).spine.foldl arityFoldStepAtom
+      ((reseatPath sourcePath).length, idMap (reseatPath sourcePath).length)).2
+    = (cell.spine.foldl arityFoldStepAtom (sourcePath.length, idMap sourcePath.length)).2
+  rw [reseatPath_length sourcePath]
+  exact congrArg Prod.snd (coreEq (sourcePath.length, idMap sourcePath.length))
+
+/-! ## The reconstructed completeness + the FULL isFalse reflection -/
+
+/-- ★★ **Reconstructed completeness — equal reconstructed arity folds imply reconstructed convertibility.**  Route:
+the reseat fold-preservation mirror carries the reconstructed fold equality onto the `reseatCell`-images
+(`arityMonotoneMapOf_reseatCell`, which over `monadModeSignature` IS `monadMonotoneMapOf` by
+`arityMonotoneMapOf_eq_monadMonotoneMapOf`); the born-generic native canonicalization's completeness
+(`monadSaturatedCanonicalizationGenNative.convOfMapEqGen`, bespoke-free) yields a bespoke convertibility of the
+images; the reconstructed-signature reflection `reseatReflect` transports it back to the originals. -/
+theorem reconstructed_convOfArityEq {sourceMode targetMode : Fin 1}
+    {sourcePath targetPath : ModalityPath monadComputad.toModeGraph sourceMode targetMode}
+    (cellAlpha cellBeta : RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath)
+    (arityEqual : arityMonotoneMapOf cellAlpha = arityMonotoneMapOf cellBeta) :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed cellAlpha cellBeta := by
+  have foldReseat : monadMonotoneMapOf (reseatCell cellAlpha) = monadMonotoneMapOf (reseatCell cellBeta) := by
+    rw [← arityMonotoneMapOf_eq_monadMonotoneMapOf, ← arityMonotoneMapOf_eq_monadMonotoneMapOf,
+        arityMonotoneMapOf_reseatCell, arityMonotoneMapOf_reseatCell]
+    exact arityEqual
+  exact reseatReflect (monadSaturatedCanonicalizationGenNative.convOfMapEqGen foldReseat)
+
+/-- ★★★ **THE FULL isFalse REFLECTION (conservativity) FOR RIGHT-IMAGES.**  A pushout convertibility of two
+right-coprojection images reflects to a genuine RECONSTRUCTED convertibility of their pre-images: the arity-fold
+reflection `pushoutRightImage_arityFoldEq` forces equal reconstructed folds, and the reconstructed completeness
+`reconstructed_convOfArityEq` recovers the convertibility.  This is the CONVERSE of the B2-forward lift
+`pushoutRightImageCompletenessLift` — together they give the two-sided biconditional for right-images. -/
+theorem pushoutRightImageConvReflect
+    {sourceMode targetMode : monadComputad.toModeSignature.graph.Mode}
+    {sourcePath targetPath : ModalityPath monadComputad.toModeSignature.graph sourceMode targetMode}
+    {cellAlpha cellBeta : RawTwoCellExpr monadComputad.toModeSignature sourcePath targetPath}
+    (conv : SaturatedConvOver involutionMonadPushout.toModeSignature crossPairRealPushoutRel
+      (mapCellAlong (inclusionRightTwoReal involutionComputad monadComputad involutionMonadSameModes) cellAlpha)
+      (mapCellAlong (inclusionRightTwoReal involutionComputad monadComputad involutionMonadSameModes) cellBeta)) :
+    SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed cellAlpha cellBeta :=
+  reconstructed_convOfArityEq cellAlpha cellBeta (pushoutRightImage_arityFoldEq conv)
+
 /-! ## Honesty markers -/
 
 /-- ★★ **Honesty marker — the RIGHT-IMAGE conservativity (isFalse reflection, semantic half) SHIPS.**  `= true`:
@@ -233,17 +351,16 @@ conservativity the recon named — obtained via the arity fold, NOT the 12-const
 `= true`. -/
 def fxAmalg_hasRightImageArityReflection : Bool := true
 
-/-- **Honesty marker — the FULL isFalse reflection (pushout conv ⟹ reconstructed CONV, not just equal folds)
-STAYS WALLED on ONE named residual.**  `= true` (the wall is honestly held).  The semantic half ships: a pushout
-conv of right-images forces equal reconstructed arity folds (`pushoutRightImage_arityFoldEq`).  Upgrading the
-EQUAL-FOLDS conclusion to a genuine reconstructed `SaturatedConvOver monadComputad.toModeSignature
-MonadLawRelReconstructed cellAlpha cellBeta` needs the reconstructed COMPLETENESS
-`arityMonotoneMapOf cellAlpha = arityMonotoneMapOf cellBeta ⟹ reconstructed conv` — which routes through the
-born-generic native normalize over `monadModeSignature` and hence needs the fold-preservation MIRROR
-`arityMonotoneMapOf (reseatCell cell) = arityMonotoneMapOf cell` (the `reseatCell` analogue of the shipped
-`arityMonotoneMapOf_mapCellAlong`; `reseatCell` has the identical gen/id/vcomp/whisker+castBoundary shape, so the
-same joint-recursion template applies).  Named node: the reseat fold-preservation mirror + the native
-`convOfMapEqGen` bridge.  No fabricated flip.  `= true`. -/
-def fxAmalg_fullRightImageReflectionStaysWalled : Bool := true
+/-- ★★★ **Honesty marker — the FULL isFalse reflection (pushout conv ⟹ reconstructed CONV) SHIPS.**  `= true`:
+`pushoutRightImageConvReflect` upgrades the equal-folds conclusion to a genuine reconstructed
+`SaturatedConvOver monadComputad.toModeSignature MonadLawRelReconstructed cellAlpha cellBeta`.  The reseat
+fold-preservation MIRROR `arityMonotoneMapOf_reseatCell` (the `reseatCell` analogue of the shipped
+`arityMonotoneMapOf_mapCellAlong`, same joint-recursion template — `reseatCell` has the identical
+gen/id/vcomp/whisker+castBoundary shape) carries the reconstructed fold equality onto the `reseatCell`-images; the
+born-generic native canonicalization's completeness (`monadSaturatedCanonicalizationGenNative.convOfMapEqGen`,
+bespoke-free) yields the bespoke convertibility; the reconstructed reflection `reseatReflect` transports it back
+(`reconstructed_convOfArityEq`).  This is the CONVERSE of the B2-forward lift `pushoutRightImageCompletenessLift` —
+the two combine into the two-sided right-image biconditional.  `= true`. -/
+def fxAmalg_hasFullRightImageReflection : Bool := true
 
 end FX1Poly.Polygraph.Amalgam
