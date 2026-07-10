@@ -57,4 +57,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.bottomReadOffOrder_distinct
 #assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_isPermutationOfRange
 
+-- the general bottom E2 roundtrip + the honesty markers + the r16 ledger
+#assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_realizesRoundtrip
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffBottomOrderPermutation
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffBottomOrderRoundtrip
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffTopOrderPermutation
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_r16Ledger
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR16Complete
+
 end FX1PolyAudit
