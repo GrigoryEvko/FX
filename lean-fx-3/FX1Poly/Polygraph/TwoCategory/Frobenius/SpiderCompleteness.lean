@@ -364,15 +364,25 @@ realization is machine-checked on a demonstrated `(m, n)` family (`canonicalSpid
 `spiderFusion_frobLeftLhs_toCanonical`) — the ZX/hypergraph spider theorem, connected fragment.  `= true`. -/
 def fxFrob_hasConnectedSpiderNF : Bool := true
 
-/-- **Honesty marker — the GENERAL multi-block spider-fusion readback is the r8 target.**  `canonicalSpiderOf`
-realizes the CONNECTED (single-block) spider.  A partition with MULTIPLE blocks needs a per-block realization plus a
-routing permutation that gathers each block's scattered ports (crossings).  That routing is a FORWARD computation
-(decidable per instance, NOT the `S_n` word-canonicalization comb — the DECISION `fxFrob_hasSpiderConvDecision` is
-already unconditional and needs no readback), but the general realization theorem
-`extraSpiderDiagramOf n (canonicalReadback D) = D` is an induction over block-routing not yet built.  The
-general-arity CONNECTED realization (`extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate (m+n) 0⟩` for
-all `m`, `n`) is likewise a comb-free induction, ledgered.  `= false`. -/
-def fxFrob_hasSpiderFusionNF : Bool := false
+/-- ★ **Honesty marker — the GENERAL-arity CONNECTED spider-fusion normal-form realization SHIPS (FROB-SEED-MERGE
+r1, #2250, closing #2017's realization node).**  `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n,
+replicate (m+n) 0⟩` for ALL `m`, `n` — the Fauser connected NF's realization at EVERY arity, generalizing the
+demonstrated `(m, n)` family of `fxFrob_hasConnectedSpiderNF`.  Machine-checked as `extraSpiderDiagramOf_canonicalSpider`
+(`Table/FrobeniusConnectivityInduction.lean`): the `mergeToOne`/`fanToN` union-find fold connects every boundary port
+(`canonicalSpiderConnectivity`) and leaves exactly `n` open wires (`canonicalSpider_finalOpenLength`), fed into the
+shipped connectivity->partition reduction `spiderPartition_of_allConnected`.  Zero-axiom, comb-free, structural — the
+DIRECT connectivity fold the r2 recon reduced the surviving node to (NOT the non-injective seed-merge simulation).  The
+still-open GENERAL MULTI-BLOCK routing realization is spun out to `fxFrob_hasMultiBlockSpiderRealization`.  `= true`. -/
+def fxFrob_hasSpiderFusionNF : Bool := true
+
+/-- **Honesty marker — the general MULTI-BLOCK spider-fusion routing realization is the r8 target.**  A boundary
+partition with MULTIPLE blocks needs a per-block realization PLUS a routing permutation that gathers each block's
+scattered ports (crossings).  That routing is a FORWARD computation (decidable per instance, NOT the `S_n`
+word-canonicalization comb — the DECISION `fxFrob_hasSpiderConvDecision` is already unconditional and needs no
+readback), but the general multi-block realization theorem `extraSpiderDiagramOf n (canonicalReadback D) = D` is an
+induction over block-routing not yet built.  Off the corelation DECISION path (unconditional) and off the CONNECTED
+realization (`fxFrob_hasSpiderFusionNF`, now shipped).  `= false`. -/
+def fxFrob_hasMultiBlockSpiderRealization : Bool := false
 
 /-- **Honesty marker — the SPECIAL (`Cospan(FinSet)`, closed-count) word problem stays walled.**  `SpiderConv` decides
 the EXTRASPECIAL / corelation classes (`extraSpiderDiagramOf`, partition only).  The full SPECIAL invariant

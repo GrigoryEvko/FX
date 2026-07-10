@@ -44,6 +44,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderConvDecision
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasConnectedSpiderNF
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderFusionNF
+#assert_no_axioms FX1Poly.Polygraph.fxFrob_hasMultiBlockSpiderRealization
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpecialFrobeniusDecision
 #assert_no_axioms FX1Poly.Polygraph.fxFrob_hasSpiderCompleteness
 

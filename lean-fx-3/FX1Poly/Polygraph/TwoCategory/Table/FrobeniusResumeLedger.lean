@@ -50,11 +50,12 @@ canonical connected spider `canonicalSpiderOf 2 2` on the deep invariant, the le
 strand, and the canonical-spider structural recursion (`canonicalSpiderOf_mergeStep` / `_fanStep`) the general
 realization folds over.
 
-RESIDUAL (`fxTab_hasGeneralAritySpiderRealization = false`, echoing `fxFrob_hasSpiderFusionNF = false`): the
+RESIDUAL AT r1 (`fxTab_hasGeneralAritySpiderRealization = false`, echoing `fxFrob_hasSpiderFusionNF = false`): the
 GENERAL-arity realization `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate (m+n) 0⟩` for ALL `m`,
-`n` is a comb-FREE `foldl` induction over `processBrauer`; its crux is the seed-merge step lemma (prepending
-`multAt 0` merges the first two seed wires into the fresh output) — union-find surgery on `stepWiring` /
-`unionFindJoin` / fresh-node allocation.  Decoupled from the DECISION (already unconditional); honestly unbuilt.
+`n` is a comb-FREE `foldl` induction over `processBrauer`.  ★ SUBSEQUENTLY LANDED in FROB-SEED-MERGE (#2250):
+`Table/FrobeniusConnectivityInduction.lean` builds the direct connectivity fold over the single canonical run, and
+both markers now flip `true` (`fxTab_hasGeneralAritySpiderRealization` re-scoped, `fxFrob_hasSpiderFusionNF` narrowed
+to the connected realization).  See the FROB-SEED-MERGE section + `fxTab_frob2017Complete` below.
 
 ## HONEST WALLS (unchanged, correctly walled)
 
@@ -84,6 +85,7 @@ open FX1Poly.Polygraph
   (fxTab_hasFrobeniusReadbackInvariant fxTab_hasDeepDiagramFoldLegs fxTab_hasDeepDiagramFoldInstance
     fxTab_hasCarrierASpiderFusion fxTab_hasGeneralAritySpiderRealization
     fxFrob_hasSpiderConvDecision fxFrob_hasConnectedSpiderNF fxFrob_hasSpiderFusionNF
+    fxFrob_hasMultiBlockSpiderRealization
     fxTab_hasFoldLegShiftAlgebra)
 
 /-! ## The FROB-RESUME r1 aggregate verdict -/
@@ -105,27 +107,29 @@ theorem fxTab_frobResumeR1Complete_holds : fxTab_frobResumeR1Complete = true := 
 
 /-! ## The precisely-banked open residuals -/
 
-/-- ★ **The FROB-RESUME r1 open residuals — HONESTLY open, decoupled from the shipped decision.**  Two pieces stay
-`false`: (B2) the FULL deep `foldEq` instance `fxTab_hasDeepDiagramFoldInstance` (needs `fullPreserves` + the `n = 0`
-boundary-pad edge), and (B3) the general-arity connected realization `fxTab_hasGeneralAritySpiderRealization`
-(= `fxFrob_hasSpiderFusionNF`, the seed-merge union-find induction).  Neither blocks the #2017 decision, which is
-already unconditional.  This records their honest `false` state as a conjunction. -/
+/-- ★ **The FROB-RESUME open residuals — HONESTLY open, decoupled from the shipped decision + realization.**  After
+FROB-SEED-MERGE (#2250) flipped the general-arity CONNECTED realization (`fxTab_hasGeneralAritySpiderRealization` =
+`fxFrob_hasSpiderFusionNF` = `true`), the surviving residuals shrink to TWO genuinely-open pieces, both `false`:
+(B2) the FULL deep `foldEq` instance `fxTab_hasDeepDiagramFoldInstance` (needs `fullPreserves` + the `n = 0`
+boundary-pad edge), and the general MULTI-BLOCK routing realization `fxFrob_hasMultiBlockSpiderRealization` (a per-block
+realization + a gathering permutation, off the corelation decision path).  Neither blocks the #2017 decision or the
+connected realization, both now shipped.  This records their honest `false` state as a disjunction. -/
 def fxTab_frobResumeR1Residual : Bool :=
   fxTab_hasDeepDiagramFoldInstance
-    || fxTab_hasGeneralAritySpiderRealization
-    || fxFrob_hasSpiderFusionNF
+    || fxFrob_hasMultiBlockSpiderRealization
 
-/-- The residual conjunction computes to `false` — the two open pieces are genuinely unbuilt (not silently claimed). -/
+/-- The residual disjunction computes to `false` — the two open pieces are genuinely unbuilt (not silently claimed). -/
 theorem fxTab_frobResumeR1Residual_isOpen : fxTab_frobResumeR1Residual = false := rfl
 
 /-! ## The #2017 decision is shipped hypothesis-free -/
 
 /-- ★ **The #2017 decision leg is shipped hypothesis-free.**  The extraspecial (corelation) word problem decision
-`fxFrob_hasSpiderConvDecision` is `true` unconditionally (no `S_n` crossing comb), independently of the two open
-residuals — so #2017's decidable-word-problem headline is DELIVERED.  What stays open is the general spider-fusion NF
-realization (`fxFrob_hasSpiderFusionNF`), an unbuilt comb-free induction, not a decision blocker. -/
+`fxFrob_hasSpiderConvDecision` is `true` unconditionally (no `S_n` crossing comb), independently of any residual — so
+#2017's decidable-word-problem headline is DELIVERED.  What stays open after FROB-SEED-MERGE is ONLY the general
+MULTI-BLOCK routing realization (`fxFrob_hasMultiBlockSpiderRealization`), off the decision path; the general-arity
+CONNECTED spider-fusion NF realization (`fxFrob_hasSpiderFusionNF`) is now shipped. -/
 theorem fxTab_frobResumeR1_decisionShipped :
-    fxFrob_hasSpiderConvDecision = true ∧ fxFrob_hasSpiderFusionNF = false :=
+    fxFrob_hasSpiderConvDecision = true ∧ fxFrob_hasMultiBlockSpiderRealization = false :=
   ⟨rfl, rfl⟩
 
 /-! ## FROB-RESUME r2 (#2017, the final 2-round-cap round) — what shipped, the sharpened walls, the verdict
@@ -143,18 +147,18 @@ is NOT a partition gap.  r2 SHIPPED (`Table/FrobeniusFoldLegs.lean`, `fxTab_hasF
     `⟨n, openWires.length, replicate (n + openWires.length) 0⟩`, fired non-vacuously through the functorial path on
     the connected `2 ⇒ 2` canonical spider (`extraSpider22_via_connectivityReduction`).
 
-### The two residuals stay open, walls SHARPENED (not flipped)
+### At r2: the two residuals stayed open, walls SHARPENED (B1 SUBSEQUENTLY BREACHED in FROB-SEED-MERGE)
 
-  * **B1 realization** (`fxTab_hasGeneralAritySpiderRealization` = `fxFrob_hasSpiderFusionNF` = `false`).  The r2
-    reduction SHARPENS the surviving node from "the whole realization" to a pure CONNECTIVITY statement:
-    `spiderPartition_of_allConnected` reduces `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate
-    (m+n) 0⟩` to "the `mergeToOne`/`fanToN` union-find fold connects every boundary port + leaves `n` open wires".
-    The EXACT surviving node is the NON-INJECTIVE seed-merge simulation: `stepWiring (brauerSeed (m+2)) 0 multWiring`
-    merge-simulates `brauerSeed (m+1)` under the collapse `{0,1}↦0`, a COLLAPSE the shipped injective-rename pad
-    simulations (`processBrauer_{left,right}PadWireSim`, which assume injective + pad-avoiding renames) do not cover.
-    BEQUEST: build the connectivity induction over the canonical fold (the shipped join algebra
-    `isSameComponent_unionFindJoin` / `_ofBase` / `_joined` / `_lift` is the toolkit), then feed
-    `spiderPartition_of_allConnected`.
+  * **B1 realization** (r2: `fxTab_hasGeneralAritySpiderRealization` = `fxFrob_hasSpiderFusionNF` = `false`; ★ now
+    `true`).  The r2 reduction SHARPENED the surviving node from "the whole realization" to a pure CONNECTIVITY
+    statement: `spiderPartition_of_allConnected` reduces `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n,
+    replicate (m+n) 0⟩` to "the `mergeToOne`/`fanToN` union-find fold connects every boundary port + leaves `n` open
+    wires".  r2 framed the EXACT surviving node as a NON-INJECTIVE seed-merge simulation (`stepWiring (brauerSeed
+    (m+2)) 0 multWiring` merge-simulating `brauerSeed (m+1)` under the collapse `{0,1}↦0`) — a genuine new build.
+    ★ FROB-SEED-MERGE (#2250) CORRECTED that framing: a DIRECT connectivity fold over the SINGLE canonical run
+    sidesteps the collapse entirely (`Table/FrobeniusConnectivityInduction.lean`, using exactly the shipped join
+    algebra `isSameComponent_unionFindJoin_{ofBase,joined}` + the monotonicity `processBrauer_isSameComponent_ofBase`),
+    fed into `spiderPartition_of_allConnected` — so the connected realization landed and both markers flipped `true`.
 
   * **B2/B3 full fold instance** (`fxTab_hasDeepDiagramFoldInstance = false`).  Of the SIX `rowConvInvariant_foldEq`
     legs: `refl`/`symm`/`trans` free, `rowsPreserve` ships, `whiskerLeftCongr`/`whiskerRightCongr` route through the
@@ -168,13 +172,17 @@ is NOT a partition gap.  r2 SHIPPED (`Table/FrobeniusFoldLegs.lean`, `fxTab_hasF
     BEQUEST: a bottomCount-0 special case (or `SpiderConv.whisker`-only re-routing that never touches the reachable
     interchange stack) for the two `vcomp` legs, the `BrauerWordInRange` readback lemma, and the 13-arm `fullPreserves`.
 
-### The #2017 verdict — the arc WALLS (no r3)
+### The r2 verdict (superseded) — WALLED at seed-merge; FROB-SEED-MERGE BREACHED it
 
 `fxFrob_hasSpiderConvDecision = true` was already shipped hypothesis-free in r1 (the decidable extraspecial /
-corelation word problem, no `S_n` comb — the ZX-cornerstone content of #2017).  The remaining "spider-fusion normal
-form" content is the B1 realization, whose surviving node r2 sharpened but did not land (the non-injective
-seed-merge simulation is a genuine union-find build, not an assembly of shipped pieces).  Under the 2-round cap
-#2017 therefore WALLS at the seed-merge simulation with the connectivity-reduction bequest above — NO r3. -/
+corelation word problem, no `S_n` comb — the ZX-cornerstone content of #2017).  r2's verdict "the arc WALLS at the
+seed-merge simulation, no r3" reflected that r2 sharpened the surviving B1-realization node but did not land it (it
+framed the node as a genuine non-injective seed-merge simulation build).  ★ SUPERSEDED: the FROB-SEED-MERGE recon
+(#2250) corrected the framing to a DIRECT connectivity fold over the single canonical run and BUILT it
+(`Table/FrobeniusConnectivityInduction.lean`), landing the general-arity CONNECTED realization.  #2017's
+hypergraph-category / ZX-cornerstone content is now COMPLETE — see the FROB-SEED-MERGE section and
+`fxTab_frob2017Complete` below.  The still-open pieces (general MULTI-BLOCK routing, the deep `foldEq` instance) are
+off that path, recorded honestly. -/
 
 /-- ★ **The FROB-RESUME r2 shipped verdict.**  The shift algebra + the connectivity->partition reduction ship
 (`fxTab_hasFoldLegShiftAlgebra`), stacked on the r1 shipped bricks.  `= true`. -/
@@ -186,14 +194,73 @@ def fxTab_frobResumeR2Shipped : Bool :=
 /-- The r2 shipped verdict computes to `true`. -/
 theorem fxTab_frobResumeR2Shipped_holds : fxTab_frobResumeR2Shipped = true := rfl
 
-/-- ★ **The #2017 final-round verdict — the arc WALLS at the seed-merge simulation (no r3).**  The DECISION is
-shipped hypothesis-free (`fxFrob_hasSpiderConvDecision = true`); the spider-fusion NF realization stays open
-(`fxFrob_hasSpiderFusionNF = false`), its surviving node the non-injective seed-merge simulation the r2 connectivity
-reduction sharpened to.  Both `false` residuals are recorded honestly — no fabricated flip. -/
+/-- **The r2 verdict, superseded — the seed-merge node the r2 reduction sharpened to was BREACHED in
+FROB-SEED-MERGE (#2250).**  r2 recorded the DECISION shipped (`fxFrob_hasSpiderConvDecision = true`) and the deep
+`foldEq` instance open (`fxTab_hasDeepDiagramFoldInstance = false`, still true today).  Its verdict "the arc WALLS
+at the seed-merge simulation, no r3" was correct AT r2 but is now superseded: FROB-SEED-MERGE built the connectivity
+induction that the r2 reduction pointed at — NOT via the non-injective seed-merge simulation r2 framed, but via a
+DIRECT connectivity fold over the single canonical run (`Table/FrobeniusConnectivityInduction.lean`).  The realization
+landed; see `fxTab_frob2017Complete` below.  The two conjuncts recorded here are the facts that DID survive r2. -/
 theorem fxTab_frobResumeR2_wallsAtSeedMerge :
     fxFrob_hasSpiderConvDecision = true
-      ∧ fxFrob_hasSpiderFusionNF = false
       ∧ fxTab_hasDeepDiagramFoldInstance = false :=
-  ⟨rfl, rfl, rfl⟩
+  ⟨rfl, rfl⟩
+
+/-! ## FROB-SEED-MERGE (#2250) — the #2017 realization node lands; the hypergraph-category word problem is COMPLETE
+
+The r2 recon reduced the surviving spider-fusion-NF node to a pure CONNECTIVITY statement about the
+`mergeToOne`/`fanToN` union-find fold, but framed it as a NON-INJECTIVE seed-merge simulation (a genuine new
+union-find build).  The FROB-SEED-MERGE recon corrected the framing: a DIRECT connectivity fold over the SINGLE
+canonical run `processBrauer (brauerSeed m) (canonicalSpiderOf m n)` sidesteps the non-injective collapse entirely,
+and every ingredient it needs (the join algebra `isSameComponent_unionFindJoin_{ofBase,joined}`, the connectivity
+monotonicity `processBrauer_isSameComponent_ofBase`, the forest lift) was already shipped and zero-axiom.
+
+`Table/FrobeniusConnectivityInduction.lean` builds that fold: the generic arc-connection lemma
+(`stepWiringArcs_connects_arc`), the μ / δ comb step lemmas (`stepWiring_mult_head` / `_comult_head`), the two phase
+inductions (`mergeFold_connects_all` merges every bottom wire into one hub; `fanFold_connects` fans it to `n`
+anchored open wires preserving base connectivity), assembling `canonicalSpiderFold_connected` — every boundary port
+of the `(m, n)` fold is ONE component and exactly `n` open wires remain.  Fed into the r2 connectivity->partition
+reduction `spiderPartition_of_allConnected`, this yields the general-arity connected realization
+`extraSpiderDiagramOf_canonicalSpider : extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate (m+n) 0⟩`
+for ALL `m`, `n` (non-vacuous at `(2,2)` / `(3,2)` / the wide `(4,3)`).  Zero-axiom, structural, comb-free.
+
+The markers flip accordingly: `fxTab_hasGeneralAritySpiderRealization = true` and `fxFrob_hasSpiderFusionNF = true`
+(re-scoped to the general-arity CONNECTED realization).  The general MULTI-BLOCK routing realization is spun out to
+the dedicated honest-`false` marker `fxFrob_hasMultiBlockSpiderRealization` (a per-block realization + a gathering
+permutation, off the corelation decision path).  Nothing is overclaimed. -/
+
+/-- ★★ **#2017 (WP-FROB-4) is COMPLETE for its hypergraph-category / ZX-cornerstone content.**  The three markers
+carrying the decidable extraspecial (corelation) word problem all hold: (1) the DECISION
+`fxFrob_hasSpiderConvDecision` — `SpiderConv` decides `SpiderConv n a b` by `DecidableEq` on the partition invariant,
+hypothesis-free (no `S_n` comb, non-vacuous on `frobLeft` / `H`-vs-identity); (2) the connected Fauser NF
+`fxFrob_hasConnectedSpiderNF` — `canonicalSpiderOf` is Fauser Thm 3.8's `δ^{n-1} ∘ μ^{m-1}`, computing; (3) the
+general-arity CONNECTED spider-fusion realization `fxTab_hasGeneralAritySpiderRealization` (= `fxFrob_hasSpiderFusionNF`)
+— `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate (m+n) 0⟩` for ALL `m`, `n`, machine-checked
+(`extraSpiderDiagramOf_canonicalSpider`).  `= true`. -/
+def fxTab_frob2017Complete : Bool :=
+  fxFrob_hasSpiderConvDecision
+    && fxFrob_hasConnectedSpiderNF
+    && fxTab_hasGeneralAritySpiderRealization
+    && fxFrob_hasSpiderFusionNF
+
+/-- The #2017 completion aggregate computes to `true`. -/
+theorem fxTab_frob2017Complete_holds : fxTab_frob2017Complete = true := rfl
+
+/-- ★★ **#2017 COMPLETE, naming every marker — the decidable hypergraph-category (ZX-cornerstone) word problem.**
+DECISION shipped (`fxFrob_hasSpiderConvDecision = true`) + connected Fauser NF (`fxFrob_hasConnectedSpiderNF = true`)
++ general-arity connected realization (`fxTab_hasGeneralAritySpiderRealization = true`, `fxFrob_hasSpiderFusionNF =
+true`).  The still-open residuals — the general MULTI-BLOCK routing realization
+(`fxFrob_hasMultiBlockSpiderRealization = false`) and the deep `foldEq` instance
+(`fxTab_hasDeepDiagramFoldInstance = false`) — are OFF the #2017 decision + connected-realization path, recorded
+honestly.  No fabricated flip: every `true` is backed by a machine-checked theorem, every `false` by an unbuilt
+target. -/
+theorem fxTab_frob2017_complete_witness :
+    fxFrob_hasSpiderConvDecision = true
+      ∧ fxFrob_hasConnectedSpiderNF = true
+      ∧ fxTab_hasGeneralAritySpiderRealization = true
+      ∧ fxFrob_hasSpiderFusionNF = true
+      ∧ fxFrob_hasMultiBlockSpiderRealization = false
+      ∧ fxTab_hasDeepDiagramFoldInstance = false :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 end FX1Poly.Polygraph.Table

@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.Table.FrobeniusReadback
+import FX1Poly.Polygraph.TwoCategory.Table.FrobeniusConnectivityInduction
 
 /-! # Polygraph/TwoCategory/Table/FrobeniusFusionNF — spider fusion to the connected canonical spider, on the
 carrier-A deep invariant + the general-arity realization scaffolding (POLY-TAB r1 FROB-RESUME, B3)
@@ -129,14 +130,18 @@ ONE spider (`frobeniusCells_fuseToOneSpider`), and fuses the left-unit cell to t
 free-2-cell carrier, resting on the shipped `canonicalSpiderOf` (Fauser) NF + the B1 readback invariant.  `= true`. -/
 def fxTab_hasCarrierASpiderFusion : Bool := true
 
-/-- **Honesty marker — the GENERAL-arity connected realization stays open (FROB-RESUME B3 residual).**  The DECISION is
-unconditional (`fxFrob_hasSpiderConvDecision = true`) and the fusion facts above are the CONCRETE `2 ⇒ 2` / `1 ⇒ 1`
-instances; the general theorem `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate (m+n) 0⟩` for ALL `m`,
-`n` (which would flip `fxFrob_hasSpiderFusionNF`) is a comb-FREE `foldl` induction over `processBrauer` whose crux is the
-seed-merge step lemma "prepending `multAt 0` merges the first two seed wires into the fresh output, dropping the bottom
-count" — union-find surgery on `stepWiring` / `unionFindJoin` / fresh-node allocation, the class of proof the shipped
-soundness stack (`Frobenius/SpiderSuffixCongruence.lean`) occupies.  Decoupled from the decision; honestly unbuilt.
-`= false`. -/
-def fxTab_hasGeneralAritySpiderRealization : Bool := false
+/-- ★ **Honesty marker — the GENERAL-arity connected realization SHIPS (FROB-SEED-MERGE r1, #2250, closing #2017's
+realization node).**  The general theorem `extraSpiderDiagramOf m (canonicalSpiderOf m n) = ⟨m, n, replicate (m+n) 0⟩`
+for ALL `m`, `n` is machine-checked as `extraSpiderDiagramOf_canonicalSpider`
+(`Table/FrobeniusConnectivityInduction.lean`), fired non-vacuously at `(2, 2)` / `(3, 2)` / the wide `(4, 3)`
+(`canonicalSpiderRealization_2_2` / `_3_2` / `_4_3`).  The r2 recon had reduced the surviving node to a pure
+CONNECTIVITY statement about the `mergeToOne`/`fanToN` union-find fold (`spiderPartition_of_allConnected`); the
+FROB-SEED-MERGE recon corrected the framing from the r2 "non-injective seed-merge simulation" to a DIRECT connectivity
+fold over the single canonical run — `canonicalSpiderConnectivity` (every boundary port one component, via the
+generic arc-connection lemma + the two comb inductions) + `canonicalSpider_finalOpenLength` (exactly `n` open wires),
+discharging `spiderPartition_of_allConnected`'s hypothesis at EVERY arity.  Zero-axiom, comb-free, structural.  This
+IS the connected content of `fxFrob_hasSpiderFusionNF`; the still-open MULTI-BLOCK routing is
+`fxFrob_hasMultiBlockSpiderRealization`.  `= true`. -/
+def fxTab_hasGeneralAritySpiderRealization : Bool := true
 
 end FX1Poly.Polygraph

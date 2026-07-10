@@ -16,5 +16,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR2Shipped
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR2Shipped_holds
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frobResumeR2_wallsAtSeedMerge
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frob2017Complete
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frob2017Complete_holds
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_frob2017_complete_witness
 
 end FX1PolyAudit
