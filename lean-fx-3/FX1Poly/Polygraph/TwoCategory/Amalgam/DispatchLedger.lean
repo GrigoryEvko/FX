@@ -206,4 +206,89 @@ not exist), and the HELD full-dispatch markers (`fxAmalg_hasFullSaturatedPushout
 r3 section docstring for each exact goal.  No jam is hidden and none is falsely flipped. -/
 def fxAmalg_r3JamsRecorded : Bool := true
 
+/-! ## The WP-AMALG-2 r5 section — the multi-gap FACTORIZATION grind (#2043, the last-node round)
+
+Between r3 and r5 the r4 round shipped (no r4 ledger section): the TWO-SIDED right-image (single-gap) decider
+`pushoutRightImageTwoSidedDecision` (`PushoutRightImageDecision.lean`, `fxAmalg_hasRightImageTwoSidedDecision =
+true`), assembled from the B2-forward lift `pushoutRightImageCompletenessLift` (isTrue) and the FULL isFalse
+reflection `pushoutRightImageConvReflect` (`PushoutRightImageReflect.lean`, `fxAmalg_hasFullRightImageReflection =
+true`), routed off the bespoke-free reconstructed decider `monadReconstructedDecisionGen`
+(`ReconstructedDecisionGen.lean`).  r5 grinds the last node — the multi-gap FACTORIZATION — as far as it honestly
+goes, and pins the exact residual that keeps #2043 OPEN.
+
+### The r5 bricks SHIPPED (each machine-checked zero-axiom, independent `#print axioms`, gated in the audit twin)
+
+  * **B1 — THE ARBITRARY-ARITY FORWARD SPLICE (fixed wire count)** (`PushoutMultiGapFactorization.lean`,
+    `fxAmalg_hasMultiGapEndoSpliceGeneral = true`).  `multiGapEndoSplice` splices an ARBITRARY LIST of
+    fixed-boundary gap-fills (`EndoGapFill`) into ONE boundary convertibility `endoGapFoldSource fills ≈
+    wallGapCanonicalForm fills`, structurally over the list by the shipped `SaturatedConvOver` congruences +
+    `trans`, over ANY signature and base relation.  This GENERALIZES the hard-coded three-gap, two-`s`-wall
+    `threeGapSpliceConv` (r4) from THREE gaps to n: `threeGapSpliceConv`'s three-fold construction is the
+    three-element instance of the fold.  Non-vacuous on the genuine two-`s`-wall, three-`t`-gap word
+    (`multiGapForwardSpliceWitness`).  The FIXED-wire-count (endo-gap) scope is the honest one: a pushout 2-cell has
+    NO `s`-generator 2-cells (involution thin), so when every gap is an endomorphism (`t^k ⇒ t^k`) the wire count
+    is preserved and the `s`-walls sit at fixed positions — pure wall-inert congruence closure.
+
+  * **B2 — THE r4 TWO-SIDED DECISION FED THROUGH THE SPLICE** (`PushoutMultiGapFactorization.lean`,
+    `fxAmalg_hasMultiGapEndoSpliceGeneral = true`).  `decidedLeftUnitRightImageConv` RUNS
+    `pushoutRightImageTwoSidedDecision` on the reconstructed left-unit pair and takes its `isTrue` verdict (the
+    `isFalse` branch discharged by `pushoutRightImageCompletenessLift reconLeftUnitReflectsTrue`); whiskered into
+    the three wall positions it yields three `EndoGapFill`s, and `multiGapEndoSplice` assembles them into ONE
+    whole-cell pushout convertibility (`decidedMultiGapSpliceWitness`) — the r4 single-gap two-sided decision fed
+    through the arbitrary-arity forward splice.
+
+### The surviving r5 jam (EXACT goal + NAMED node — HONEST, no fabricated flip)
+
+  * **JAM — the WIRE-CHANGING (non-endo) factorization.**  Goal: FACTOR an ARBITRARY interleaved pushout cell into
+    wall/gap-whiskered form, so its whole boundary has one canonical NF (the input a full arbitrary-word
+    `Decidable` needs).  For WIRE-CHANGING cells (a gap `t^a ⇒ t^b`, `a ≠ b`, from a genuine `eta`/`mu` firing) the
+    wire count is NOT preserved, the `s`-walls SHIFT dom-to-cod, the cell is NOT endo, and the fixed-boundary
+    splice does not apply.  NAMED nodes — TWO residuals, neither authorable in the Amalgam lane:
+      (i) the purification / convex-block projection — `fxAmalg_hasFullSaturatedPushoutDispatch`
+        (`DispatchSaturated.lean`) residual (iii): the monad unit/mult WIRE-CREATING generators break the projection
+        (Nelson-Oppen / Baader-Tinelli sound only for word-preserving / left-connected presentations);
+      (ii) the gap-flush signature transport — the reconstructed-signature RESEAT of the CONSUME-only
+        `WalkingMonad/MonadWordVcomp.wordMul_vcomp` (`:473`, valued in the BESPOKE `MonadSaturatedTwoCellConv` over
+        `monadModeSignature`); the transported object `wordMul_vcomp` over `monadComputad.toModeSignature` /
+        `MonadLawRelReconstructed` does NOT yet exist and is a monad-lane object the Amalgam lane may only CONSUME.
+    Pinned in `PushoutMultiGapFactorization.fxAmalg_arbitraryCellFactorizationStaysWalled = true`.
+
+### B3 did NOT fire — the walls did NOT fall (HELD, no flip)
+
+The CLOSE (B3) is conditional on B1 + B2 producing a full arbitrary-word `Decidable`.  They do not: the fixed-wire
+splice + the r4 two-sided decision handle only the disjoint / fixed-wall fragment; the wire-changing factorization
+is genuinely walled (above).  So NO marker is flipped:
+`fxAmalg_hasFullSaturatedPushoutDispatch` (`DispatchSaturated.lean`) STAYS `false`;
+`fxAmalg_hasGeneralPushoutDispatch` (`PushoutBundle.lean`) STAYS `false`;
+`fxAmalg_multiGapFactorizationStaysWalled` (`PushoutMultiGapSplice.lean`) STAYS `true`;
+`fxAmalg_pushoutNormalFormSpliceStaysWalled` (`PushoutNormalForm.lean`) STAYS `true`.
+Their statements and docstrings are UNCHANGED — the walls they name are still held (the arbitrary-cell factorization
+remains open); r5 advanced the FORWARD assembly to arbitrary arity WITHOUT dissolving those walls.  #2043 remains
+OPEN.  No fabricated flip.
+
+### The WP-AMALG-3 handoff (what the shared-generator round inherits)
+
+WP-AMALG-3 (shared / real-generator scope) inherits the wire-changing factorization as its opening obligation,
+decomposed into the two named nodes: (i) the purification / convex-block projection for wire-creating generators
+(residual (iii)); and (ii) the gap-flush signature transport `wordMul_vcomp`-over-reconstructed (a WalkingMonad-lane
+deliverable to be authored there or in the monad lane, then CONSUMED here).  It also still inherits the r1/r3 LEFT
+real coprojection jam (`inclusionLeftTwoReal` does not exist).  The fixed-wire forward machinery
+(`multiGapEndoSplice`) and the r4 two-sided single-gap decision are the SHIPPED ingredients it reuses once
+factorization lands. -/
+
+/-- ★ **The r5 bricks B1–B2 SHIPPED.**  `= true`: the arbitrary-arity forward splice at fixed wire count
+(`fxAmalg_hasMultiGapEndoSpliceGeneral`, `multiGapEndoSplice` generalizing `threeGapSpliceConv` from three gaps to
+n) and the r4 two-sided decision fed through it (`decidedMultiGapSpliceWitness`) — each machine-checked zero-axiom,
+independent `#print axioms`-clean. -/
+def fxAmalg_r5BricksShipped : Bool := true
+
+/-- ★ **The surviving r5 jam is RECORDED with its exact goal + NAMED nodes; #2043 does NOT close.**  `= true`: the
+wire-changing (non-endo) factorization is walled on TWO named nodes — (i) the purification / convex-block projection
+(`fxAmalg_hasFullSaturatedPushoutDispatch` residual (iii)) and (ii) the gap-flush signature transport (the
+reconstructed reseat of `WalkingMonad/MonadWordVcomp.wordMul_vcomp`, which does not yet exist).  B3 did NOT fire (the
+walls did not fall): `fxAmalg_hasFullSaturatedPushoutDispatch` / `fxAmalg_hasGeneralPushoutDispatch` STAY `false`,
+`fxAmalg_multiGapFactorizationStaysWalled` / `fxAmalg_pushoutNormalFormSpliceStaysWalled` STAY `true` (statements
+unchanged).  The WP-AMALG-3 handoff is stated.  No jam is hidden and none is falsely flipped. -/
+def fxAmalg_r5JamsRecorded : Bool := true
+
 end FX1Poly.Polygraph.Amalgam
