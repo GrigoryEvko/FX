@@ -1807,6 +1807,234 @@ theorem smithSignNormalizeOpsNonneg (matrix : IntMatrix) (pivotIndex : Nat)
     smithSignNormalizeOps matrix pivotIndex = [] :=
   if_neg isNonneg
 
+/-! ## The sign-phase closure: `nonnegHolds` discharged as a driver postcondition (H2-SMITH r7, B3)
+
+The final sign sweep is the ONE phase immune to the r5/r6 re-diagonalization refutation: it emits only
+`negateRow` letters, never a search/swap/fold, so it cannot strand residue at an intervening or later
+position.  Its correctness is therefore unconditional — the diagonal of the sign-swept output is
+nonnegative for EVERY rectangular input — and that is proved here as a reachability invariant along the
+sweep's own fuel recursion (never as a false universal pole over window-diagonal inputs).
+
+The chain: `negateRowPreservesEntryOffRow` (a `negateRow` letter fixes every off-target row) lifts to
+`signNormalizeOpsPreserveEntryOffPivot` (the per-pivot sign word fixes every non-pivot entry) and
+`signNormalizeOpsEntryOnPivotNonneg` (after the per-pivot sign word the pivot entry is `|old pivot|`,
+hence nonnegative — `intZeroLeNegOfLessThanZero` on the negated branch, `intZeroLeOfNotLessThanZero` on
+the untouched branch).  Threaded through the sweep these give `signSweepFixesBelowPivot` (locality: the
+sweep from a later pivot fixes any already-settled diagonal) and the reachability
+`signSweepDiagonalNonnegReached` (the sweep reaching a pivot lands its diagonal nonnegative and freezes
+it).  `smithReduceFullDiagonalNonneg` then reads that off the driver's applied output via
+`smithReduceFullApplied` — the exact shape of `smithReduceFullDriverOfInvariants`'s `nonnegHolds`
+hypothesis, so ONE of the three B4 obligations is now closed. -/
+
+/-- **Nonnegative-or-not splits an Int** — a value not below zero is at or above zero; totality plus the
+weak-bound split, both propext-clean (Init's `Int.not_lt` is dirty). -/
+theorem intZeroLeOfNotLessThanZero {value : Int} (isNotNegative : ¬ (value < 0)) :
+    (0 : Int) ≤ value :=
+  match intLessEqualTotal value 0 with
+  | .inr isNonNegative => isNonNegative
+  | .inl isBelowZero =>
+      match intLtOrEqOfLe isBelowZero with
+      | .inl isNegative => absurd isNegative isNotNegative
+      | .inr isZero => intLessEqualOfEqLeft isZero.symm (intLessEqualRefl value)
+
+/-- **A negative value negates to a nonnegative one** — `value < 0` weakens to `value ≤ 0`, and negating
+flips it to `0 ≤ -value` (propext-clean, through the repo negation-order kit). -/
+theorem intZeroLeNegOfLessThanZero {value : Int} (isNegative : value < 0) :
+    (0 : Int) ≤ -value :=
+  intLessEqualOfEqLeft intNegZero.symm
+    (intNegLeNegOfLe (intLessEqualOfLessThan isNegative))
+
+/-- **`Nat.min` sits below its left argument** — case the decidable guard of the `if`-defined `Nat.min`
+and close with reflexivity or totality (Init's `Nat.min_le_left` is propext-dirty). -/
+theorem natMinLeLeft (leftValue rightValue : Nat) :
+    Nat.min leftValue rightValue ≤ leftValue := by
+  show (if leftValue ≤ rightValue then leftValue else rightValue) ≤ leftValue
+  cases Nat.decLe leftValue rightValue with
+  | isTrue isLe =>
+      rw [if_pos isLe]
+      exact Nat.le.refl
+  | isFalse isNotLe =>
+      rw [if_neg isNotLe]
+      match natLeTotal leftValue rightValue with
+      | .inl isLe => exact absurd isLe isNotLe
+      | .inr isGe => exact isGe
+
+/-- **A `negateRow` letter fixes every off-target row** — reading `(targetRow, colIndex)` after negating
+`rowIndex ≠ targetRow` is unchanged, since `listModifyAt` only rewrites its target index
+(`listGetWithDefaultModifyAtNe`).  The sign-phase mirror of the transvection row-locality lemma. -/
+theorem negateRowPreservesEntryOffRow (matrix : IntMatrix)
+    (rowIndex targetRow colIndex : Nat) (isDifferentRow : targetRow ≠ rowIndex) :
+    (matrix.negateRow rowIndex).entryAt targetRow colIndex
+      = matrix.entryAt targetRow colIndex :=
+  congrArg (fun rowEntries => listGetWithDefault 0 rowEntries colIndex)
+    (listGetWithDefaultModifyAtNe [] (fun row => row.map (fun entry => -entry))
+      matrix.rows rowIndex targetRow isDifferentRow)
+
+/-- **The per-pivot sign word fixes every non-pivot entry** — `smithSignNormalizeOps` is either empty or
+the single `negateRow pivotIndex`, so any entry in a row other than the pivot survives its application
+(`negateRowPreservesEntryOffRow`). -/
+theorem signNormalizeOpsPreserveEntryOffPivot (matrix : IntMatrix)
+    (pivotIndex targetRow colIndex : Nat) (isDifferent : targetRow ≠ pivotIndex) :
+    (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex)).entryAt targetRow colIndex
+      = matrix.entryAt targetRow colIndex := by
+  show (matrix.applyOperations
+      (if matrix.entryAt pivotIndex pivotIndex < 0 then
+        [ElementaryOperation.rowOperation (ElementaryRowOperation.negateRow pivotIndex)]
+      else [])).entryAt targetRow colIndex = _
+  cases Int.decLt (matrix.entryAt pivotIndex pivotIndex) 0 with
+  | isTrue isNegative =>
+      rw [if_pos isNegative]
+      show (matrix.negateRow pivotIndex).entryAt targetRow colIndex = _
+      exact negateRowPreservesEntryOffRow matrix pivotIndex targetRow colIndex isDifferent
+  | isFalse isNonNegative =>
+      rw [if_neg isNonNegative]
+      rfl
+
+/-- **After the per-pivot sign word the pivot entry is nonnegative** — the negated branch flips a
+negative pivot to its positive magnitude (`negateRowEntry` + `intZeroLeNegOfLessThanZero`), the empty
+branch leaves an already-nonnegative pivot (`intZeroLeOfNotLessThanZero`).  Needs the pivot row in
+range for the negation-entry formula. -/
+theorem signNormalizeOpsEntryOnPivotNonneg (matrix : IntMatrix) (pivotIndex : Nat)
+    (isInRange : pivotIndex < matrix.rows.length) :
+    0 ≤ (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex)).entryAt pivotIndex pivotIndex := by
+  show 0 ≤ (matrix.applyOperations
+      (if matrix.entryAt pivotIndex pivotIndex < 0 then
+        [ElementaryOperation.rowOperation (ElementaryRowOperation.negateRow pivotIndex)]
+      else [])).entryAt pivotIndex pivotIndex
+  cases Int.decLt (matrix.entryAt pivotIndex pivotIndex) 0 with
+  | isTrue isNegative =>
+      rw [if_pos isNegative]
+      show 0 ≤ (matrix.negateRow pivotIndex).entryAt pivotIndex pivotIndex
+      rw [negateRowEntry matrix pivotIndex pivotIndex isInRange]
+      exact intZeroLeNegOfLessThanZero isNegative
+  | isFalse isNonNegative =>
+      rw [if_neg isNonNegative]
+      show 0 ≤ matrix.entryAt pivotIndex pivotIndex
+      exact intZeroLeOfNotLessThanZero isNonNegative
+
+/-- **Sign-sweep locality** — a sign sweep starting at `pivotIndex` never disturbs a diagonal entry
+strictly below `pivotIndex`: every letter it emits negates a row `≥ pivotIndex`.  Structural on the
+outer fuel, splitting the pivot-budget guard; the recursive step rides
+`signNormalizeOpsPreserveEntryOffPivot`.  This is the fact that, once a pivot's sign is settled, later
+pivots leave it alone — so the reachability freeze holds. -/
+theorem signSweepFixesBelowPivot :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width targetPos : Nat),
+      targetPos < pivotIndex →
+      (matrix.applyOperations
+          (smithDiagonalSignSweep fuel matrix pivotIndex height width)).entryAt targetPos targetPos
+        = matrix.entryAt targetPos targetPos := by
+  intro fuel
+  induction fuel with
+  | zero => intro matrix pivotIndex height width targetPos _; rfl
+  | succ fuel ih =>
+      intro matrix pivotIndex height width targetPos targetBelow
+      show (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithSignNormalizeOps matrix pivotIndex ++
+              smithDiagonalSignSweep fuel
+                (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                (pivotIndex + 1) height width
+          else [])).entryAt targetPos targetPos = matrix.entryAt targetPos targetPos
+      cases Nat.decLe (pivotIndex + 1) (Nat.min height width) with
+      | isFalse guardFails =>
+          rw [if_neg guardFails]
+          rfl
+      | isTrue guardHolds =>
+          rw [if_pos guardHolds, applyOperationsAppend]
+          rw [ih (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                (pivotIndex + 1) height width targetPos (Nat.lt_succ_of_lt targetBelow)]
+          exact signNormalizeOpsPreserveEntryOffPivot matrix pivotIndex targetPos targetPos
+            (fun rowsAgree => natSuccNeverLeSelf (rowsAgree ▸ targetBelow))
+
+/-- **Sign-sweep reachability — the diagonal it reaches lands nonnegative** — for a rectangular input,
+the sign sweep started at `pivotIndex` with enough fuel to reach `targetPos` makes
+`(swept).entryAt targetPos targetPos` nonnegative.  Structural on the outer fuel: the guard holds
+because `targetPos` is inside the window; the reached pivot is settled nonnegative
+(`signNormalizeOpsEntryOnPivotNonneg`) and frozen by locality (`signSweepFixesBelowPivot`), and the
+strictly-later target descends into the recursion (`applyOperationsPreservesRectangular` keeps the
+threaded matrix rectangular). -/
+theorem signSweepDiagonalNonnegReached :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width targetPos : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex ≤ targetPos → targetPos < pivotIndex + fuel →
+      targetPos < height → targetPos < Nat.min height width →
+      0 ≤ (matrix.applyOperations
+            (smithDiagonalSignSweep fuel matrix pivotIndex height width)).entryAt targetPos targetPos := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width targetPos _ pivotLe targetLt _ _
+      exact (natSuccNeverLeSelf (natLeTrans targetLt pivotLe)).elim
+  | succ fuel ih =>
+      intro matrix pivotIndex height width targetPos isRect pivotLe targetLt targetLtHeight targetLtMin
+      have guardHolds : pivotIndex + 1 ≤ Nat.min height width :=
+        natLeTrans (natSuccLeSuccOfLe pivotLe) targetLtMin
+      show 0 ≤ (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithSignNormalizeOps matrix pivotIndex ++
+              smithDiagonalSignSweep fuel
+                (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                (pivotIndex + 1) height width
+          else [])).entryAt targetPos targetPos
+      rw [if_pos guardHolds, applyOperationsAppend]
+      cases Nat.le.dest pivotLe with
+      | intro difference gapEquation =>
+          cases difference with
+          | zero =>
+              have targetIsPivot : targetPos = pivotIndex := gapEquation.symm
+              rw [targetIsPivot,
+                signSweepFixesBelowPivot fuel
+                  (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                  (pivotIndex + 1) height width pivotIndex (Nat.lt_succ_self pivotIndex)]
+              have pivotInRange : pivotIndex < matrix.rows.length :=
+                isRect.1.symm ▸ (targetIsPivot ▸ targetLtHeight)
+              exact signNormalizeOpsEntryOnPivotNonneg matrix pivotIndex pivotInRange
+          | succ predecessor =>
+              have oneLeGap : 1 ≤ predecessor + 1 :=
+                natSuccLeSuccOfLe (natZeroLe predecessor)
+              have pivotBelowTarget : pivotIndex + 1 ≤ targetPos :=
+                gapEquation ▸ natAddLeAddLeft oneLeGap pivotIndex
+              have addSwap : pivotIndex + 1 + fuel = pivotIndex + (fuel + 1) :=
+                Nat.succ_add pivotIndex fuel
+              have recBound : targetPos < pivotIndex + 1 + fuel :=
+                addSwap.symm ▸ targetLt
+              exact ih (matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex))
+                (pivotIndex + 1) height width targetPos
+                (applyOperationsPreservesRectangular (smithSignNormalizeOps matrix pivotIndex) matrix isRect)
+                pivotBelowTarget recBound targetLtHeight targetLtMin
+
+/-- **`nonnegHolds` for the augmented driver (H2-SMITH r7)** — the diagonal of the full-driver output is
+nonnegative at every window position, for every rectangular input.  The applied output splits off the
+sign phase (`smithReduceFullApplied`), whose input `afterRepair` stays rectangular
+(`applyOperationsPreservesRectangular`); `signSweepDiagonalNonnegReached` then delivers nonnegativity at
+each `position < Nat.min height width`.  This is exactly the `nonnegHolds` hypothesis of
+`smithReduceFullDriverOfInvariants` — the SECOND of its three B4 obligations, now closed. -/
+theorem smithReduceFullDiagonalNonneg :
+    ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      ∀ position, position < Nat.min height width →
+        0 ≤ (matrix.applyOperations
+              (smithReduceFull matrix height width).operations).diagonalEntryAt position := by
+  intro matrix height width isRect position positionBelow
+  show 0 ≤ (matrix.applyOperations
+      (smithReduceFull matrix height width).operations).entryAt position position
+  rw [smithReduceFullApplied matrix height width]
+  have afterDiagRect :
+      (matrix.applyOperations (smithReduceTotal matrix height width).operations).IsRectangular height width :=
+    applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect
+  have afterRepairRect :
+      ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+        (smithDivisibilityRepairSweep (Nat.min height width)
+          (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+          0 height width)).IsRectangular height width :=
+    applyOperationsPreservesRectangular _ _ afterDiagRect
+  have positionBelowShifted : position < 0 + Nat.min height width :=
+    (Nat.zero_add (Nat.min height width)).symm ▸ positionBelow
+  have positionBelowHeight : position < height :=
+    natLeTrans positionBelow (natMinLeLeft height width)
+  exact signSweepDiagonalNonnegReached (Nat.min height width) _ 0 height width position
+    afterRepairRect (natZeroLe position) positionBelowShifted positionBelowHeight positionBelow
+
 /-! ## The named wall: cascade re-diagonalization = the r6 elimination-correctness pole (B3)
 
 `SmithReduceFullDriverStatement` stays UNINHABITED this round.  The r5 decomposition ships every
