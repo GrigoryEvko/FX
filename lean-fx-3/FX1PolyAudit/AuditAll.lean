@@ -182,6 +182,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ReconstructedDecisionGen
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutRightImageReflect
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutRightImageDecision
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMultiGapSplice
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMultiGapFactorization
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
