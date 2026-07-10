@@ -44,4 +44,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.distinctSameMembersLengthEq
 #assert_no_axioms FX1Poly.Polygraph.capLargerFeetIndices_length_eq
 
+-- the doubling, the crux, and the bottom read-off width-length identity + boundedness
+#assert_no_axioms FX1Poly.Polygraph.expandBottomFeetPairs_length
+#assert_no_axioms FX1Poly.Polygraph.capArcFeetTwiceThroughSumsToBottom
+#assert_no_axioms FX1Poly.Polygraph.bottomReadOffOrderLength
+#assert_no_axioms FX1Poly.Polygraph.memberBoundedBottomReadOff
+#assert_no_axioms FX1Poly.Polygraph.bottomReadOffOrderBounded
+
+-- the bottom read-off distinctness + the general bottom-side IsPermutationOfRange (T-CLOSE bottom side)
+#assert_no_axioms FX1Poly.Polygraph.capArcFeet_distinct
+#assert_no_axioms FX1Poly.Polygraph.throughStrandBottoms_distinct
+#assert_no_axioms FX1Poly.Polygraph.bottomReadOffOrder_distinct
+#assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_isPermutationOfRange
+
 end FX1PolyAudit

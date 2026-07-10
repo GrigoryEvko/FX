@@ -816,4 +816,342 @@ theorem capLargerFeetIndices_length_eq (bottomCount total : Nat) (partner : List
       ((capArcFeetIndices bottomCount partner).map (natListGetAt partner)) distinctLarger distinctMap sameMembers
   rw [lengthEq, mapLengthCount]
 
+/-! ## Section 9 — the crux `2·|caps| + |through| = bottomCount` and the bottom read-off width-length identity -/
+
+private theorem appendLengthCount : (left right : List Nat) →
+    (left ++ right).length = left.length + right.length
+  | [], right => (Nat.zero_add right.length).symm
+  | head :: rest, right => by
+      show (rest ++ right).length + 1 = (rest.length + 1) + right.length
+      rw [appendLengthCount rest right]
+      exact (Nat.succ_add rest.length right.length).symm
+
+private theorem twoSuccArithCount (value : Nat) : value + value + 1 + 1 = (value + 1) + (value + 1) := by
+  rw [Nat.add_succ (value + 1) value, Nat.succ_add value value]
+
+private theorem rangeLoopLengthCount : (count : Nat) → (accumulated : List Nat) →
+    (List.range.loop count accumulated).length = count + accumulated.length
+  | 0, accumulated => (Nat.zero_add accumulated.length).symm
+  | count + 1, accumulated => by
+      show (List.range.loop count (count :: accumulated)).length = (count + 1) + accumulated.length
+      rw [rangeLoopLengthCount count (count :: accumulated)]
+      show count + (accumulated.length + 1) = (count + 1) + accumulated.length
+      rw [Nat.add_succ, Nat.succ_add]
+
+private theorem lengthRangeCount (count : Nat) : (List.range count).length = count :=
+  (rangeLoopLengthCount count []).trans (Nat.add_zero count)
+
+/-- ★★ **The doubling — `|capArcFeet| = 2·|capArcFeetIndices|`.**  Each cap arc contributes two feet, so the flat foot
+list has twice the arc-index length (in `+`-form, avoiding `Nat.mul`). -/
+theorem expandBottomFeetPairs_length (partner : List Nat) : (feet : List Nat) →
+    (expandBottomFeetPairs partner feet).length = feet.length + feet.length
+  | [] => rfl
+  | index :: rest => by
+      show (expandBottomFeetPairs partner rest).length + 1 + 1 = (rest.length + 1) + (rest.length + 1)
+      rw [expandBottomFeetPairs_length partner rest]
+      exact twoSuccArithCount rest.length
+
+/-- ★★ **The crux — `2·|capArcFeetIndices| + |throughStrandBottoms| = bottomCount`.**  Assembles the pairing bijection
+(`|larger| = |smaller|`) with the three-way partition count over `List.range bottomCount`: the smaller feet, the
+larger feet, and the through bottoms exhaust the bottom boundary, and the two cap classes have equal cardinality. -/
+theorem capArcFeetTwiceThroughSumsToBottom (bottomCount total : Nat) (partner : List Nat)
+    (bottomLe : bottomCount ≤ total) (wf : IsBoundaryInvolution total partner) :
+    (capArcFeetIndices bottomCount partner).length + (capArcFeetIndices bottomCount partner).length
+      + (throughStrandBottoms bottomCount partner).length = bottomCount := by
+  have pairing : countTrue (capLargerGuard bottomCount partner) (List.range bottomCount)
+      = countTrue (capSmallerGuard bottomCount partner) (List.range bottomCount) := by
+    rw [← capLargerFeetIndices_length_eq_count, ← capArcFeetIndices_length_eq_count]
+    exact capLargerFeetIndices_length_eq bottomCount total partner bottomLe wf
+  have partition : countTrue (capSmallerGuard bottomCount partner) (List.range bottomCount)
+      + countTrue (capLargerGuard bottomCount partner) (List.range bottomCount)
+      + countTrue (throughBottomGuard bottomCount partner) (List.range bottomCount)
+      = bottomCount :=
+    (partitionCountThree (capSmallerGuard bottomCount partner) (capLargerGuard bottomCount partner)
+      (throughBottomGuard bottomCount partner) (List.range bottomCount)
+      (fun value valueMem => partitionThree_of_involution bottomCount total partner bottomLe wf value
+        (memRangeLtCount valueMem))).trans (lengthRangeCount bottomCount)
+  rw [capArcFeetIndices_length_eq_count, throughStrandBottoms_length_eq_count]
+  exact pairing ▸ partition
+
+/-- ★★★ **The bottom read-off width-length identity (`hasWidthLength`).**  For every well-formed involution partner,
+`(capArcFeet ++ throughStrandBottoms).length = bottomCount` — the counting field the general
+`IsPermutationOfRange` was missing.  From the doubling (`expandBottomFeetPairs_length`), the append length, and the
+crux. -/
+theorem bottomReadOffOrderLength (bottomCount total : Nat) (partner : List Nat)
+    (bottomLe : bottomCount ≤ total) (wf : IsBoundaryInvolution total partner) :
+    (capArcFeet bottomCount partner ++ throughStrandBottoms bottomCount partner).length = bottomCount := by
+  rw [appendLengthCount]
+  show (expandBottomFeetPairs partner (capArcFeetIndices bottomCount partner)).length
+    + (throughStrandBottoms bottomCount partner).length = bottomCount
+  rw [expandBottomFeetPairs_length partner (capArcFeetIndices bottomCount partner)]
+  exact capArcFeetTwiceThroughSumsToBottom bottomCount total partner bottomLe wf
+
+/-! ## Section 10 — the bottom read-off boundedness (`isBounded`) -/
+
+private theorem memAppendCount (value : Nat) : (left right : List Nat) →
+    value ∈ left ++ right → value ∈ left ∨ value ∈ right
+  | [], right, mem => Or.inr mem
+  | head :: rest, right, mem => by
+      have memReduced : value ∈ head :: (rest ++ right) := mem
+      cases memReduced with
+      | head => exact Or.inl (List.Mem.head rest)
+      | tail _ memRest =>
+          cases memAppendCount value rest right memRest with
+          | inl memLeft => exact Or.inl (List.Mem.tail head memLeft)
+          | inr memRight => exact Or.inr memRight
+
+private theorem mem_expandBottomFeetPairsCount (partner : List Nat) : (feet : List Nat) → (value : Nat) →
+    value ∈ expandBottomFeetPairs partner feet →
+    ∃ foot, foot ∈ feet ∧ (value = foot ∨ value = natListGetAt partner foot)
+  | [], _, memNil => nomatch memNil
+  | index :: rest, value, mem => by
+      have memReduced : value ∈ index :: natListGetAt partner index :: expandBottomFeetPairs partner rest := mem
+      cases memReduced with
+      | head => exact ⟨index, List.Mem.head rest, Or.inl rfl⟩
+      | tail _ memTail =>
+          cases memTail with
+          | head => exact ⟨index, List.Mem.head rest, Or.inr rfl⟩
+          | tail _ memRest =>
+              obtain ⟨foot, footMem, footEq⟩ := mem_expandBottomFeetPairsCount partner rest value memRest
+              exact ⟨foot, List.Mem.tail index footMem, footEq⟩
+
+private theorem getAtMemCount : (entries : List Nat) → (index : Nat) → index < entries.length →
+    natListGetAt entries index ∈ entries
+  | [], index, indexBelow => absurd indexBelow (Nat.not_lt_zero index)
+  | _ :: _, 0, _ => List.Mem.head _
+  | head :: rest, index + 1, indexBelow =>
+      List.Mem.tail head (getAtMemCount rest index (Nat.lt_of_succ_lt_succ indexBelow))
+
+/-- Every member of the bottom read-off order is a bottom port (`< bottomCount`) — cap feet by cap soundness (foot and
+its partner), through bottoms by through soundness.  Involution-free. -/
+theorem memberBoundedBottomReadOff (bottomCount : Nat) (partner : List Nat) (value : Nat)
+    (mem : value ∈ capArcFeet bottomCount partner ++ throughStrandBottoms bottomCount partner) :
+    value < bottomCount := by
+  cases memAppendCount value (capArcFeet bottomCount partner) (throughStrandBottoms bottomCount partner) mem with
+  | inl memCap =>
+      obtain ⟨foot, footMem, footEq⟩ :=
+        mem_expandBottomFeetPairsCount partner (capArcFeetIndices bottomCount partner) value memCap
+      have footSound := capArcFeetIndices_mem_sound bottomCount partner foot footMem
+      cases footEq with
+      | inl valueEqFoot => rw [valueEqFoot]; exact footSound.1
+      | inr valueEqPartnerFoot => rw [valueEqPartnerFoot]; exact footSound.2.1
+  | inr memThrough =>
+      exact (throughStrandBottoms_mem_sound bottomCount partner value memThrough).1
+
+/-- ★ **The bottom read-off boundedness (`isBounded`).**  At every in-range position the bottom read-off order reads a
+bottom port.  From the width-length identity (so the index is in range) and member-boundedness. -/
+theorem bottomReadOffOrderBounded (bottomCount total : Nat) (partner : List Nat)
+    (bottomLe : bottomCount ≤ total) (wf : IsBoundaryInvolution total partner) (index : Nat)
+    (indexBelow : index < bottomCount) :
+    natListGetAt (capArcFeet bottomCount partner ++ throughStrandBottoms bottomCount partner) index < bottomCount := by
+  have indexInRange : index
+      < (capArcFeet bottomCount partner ++ throughStrandBottoms bottomCount partner).length := by
+    rw [bottomReadOffOrderLength bottomCount total partner bottomLe wf]; exact indexBelow
+  exact memberBoundedBottomReadOff bottomCount partner _
+    (getAtMemCount (capArcFeet bottomCount partner ++ throughStrandBottoms bottomCount partner) index indexInRange)
+
+/-! ## Section 11 — the bottom read-off distinctness (`isDistinct`): interleaved cap feet, distinct throughs, disjoint -/
+
+private theorem memBoolAppendCount (value : Nat) : (left right : List Nat) →
+    memBool value (left ++ right) = (memBool value left || memBool value right)
+  | [], _ => rfl
+  | head :: rest, right => by
+      show (Nat.beq head value || memBool value (rest ++ right))
+        = ((Nat.beq head value || memBool value rest) || memBool value right)
+      cases Nat.beq head value with
+      | true => rfl
+      | false =>
+          show memBool value (rest ++ right) = (memBool value rest || memBool value right)
+          exact memBoolAppendCount value rest right
+
+private theorem appendDistinctCount : (left right : List Nat) →
+    isDistinctList left = true → isDistinctList right = true →
+    (∀ value, memBool value left = true → memBool value right = false) →
+    isDistinctList (left ++ right) = true
+  | [], _, _, distRight, _ => distRight
+  | head :: rest, right, distLeft, distRight, disjoint => by
+      have splitDist : isDistinctList (head :: rest) = (not (memBool head rest) && isDistinctList rest) := rfl
+      rw [splitDist] at distLeft
+      have headNotRest : memBool head rest = false :=
+        eqFalseOfNotTrueCount _ (boolAndLeftCount _ _ distLeft)
+      have distRest : isDistinctList rest = true := boolAndRightCount _ _ distLeft
+      have headMemLeft : memBool head (head :: rest) = true := by
+        show (Nat.beq head head || memBool head rest) = true
+        rw [natBeqSelfCount]; rfl
+      have headNotRight : memBool head right = false := disjoint head headMemLeft
+      have disjointRest : ∀ value, memBool value rest = true → memBool value right = false := by
+        intro value valueMem
+        have valueMemLeft : memBool value (head :: rest) = true := by
+          show (Nat.beq head value || memBool value rest) = true
+          rw [valueMem, Bool.or_true]
+        exact disjoint value valueMemLeft
+      have distRestAppend : isDistinctList (rest ++ right) = true :=
+        appendDistinctCount rest right distRest distRight disjointRest
+      show (not (memBool head (rest ++ right)) && isDistinctList (rest ++ right)) = true
+      have headNotRestAppend : memBool head (rest ++ right) = false := by
+        rw [memBoolAppendCount head rest right, headNotRest, Bool.false_or, headNotRight]
+      rw [headNotRestAppend]
+      show isDistinctList (rest ++ right) = true
+      exact distRestAppend
+
+private theorem capFootPartnerLtBc (bottomCount total : Nat) (partner : List Nat) (bottomLe : bottomCount ≤ total)
+    (wf : IsBoundaryInvolution total partner) (value : Nat) (mem : value ∈ capArcFeet bottomCount partner) :
+    natListGetAt partner value < bottomCount := by
+  obtain ⟨foot, footMem, footEq⟩ :=
+    mem_expandBottomFeetPairsCount partner (capArcFeetIndices bottomCount partner) value mem
+  have footSound := capArcFeetIndices_mem_sound bottomCount partner foot footMem
+  cases footEq with
+  | inl valueEqFoot => rw [valueEqFoot]; exact footSound.2.1
+  | inr valueEqPartnerFoot =>
+      rw [valueEqPartnerFoot, wf.isSelfInverse foot (Nat.lt_of_lt_of_le footSound.1 bottomLe)]
+      exact footSound.1
+
+private theorem bottomReadOffDisjoint (bottomCount total : Nat) (partner : List Nat) (bottomLe : bottomCount ≤ total)
+    (wf : IsBoundaryInvolution total partner) (value : Nat)
+    (memCap : memBool value (capArcFeet bottomCount partner) = true) :
+    memBool value (throughStrandBottoms bottomCount partner) = false := by
+  cases hmem : memBool value (throughStrandBottoms bottomCount partner) with
+  | false => rfl
+  | true =>
+      have throughSound := throughStrandBottoms_mem_sound bottomCount partner value (memBoolMemCount _ value hmem)
+      have partnerLt : natListGetAt partner value < bottomCount :=
+        capFootPartnerLtBc bottomCount total partner bottomLe wf value (memBoolMemCount _ value memCap)
+      exact absurd (Nat.lt_of_lt_of_le partnerLt throughSound.2) (Nat.lt_irrefl _)
+
+/-- ★★ **The cap-feet interleave is distinct.**  `expandBottomFeetPairs partner feet = [f0, partner f0, f1, …]` is
+distinct when `feet` is a distinct list of smaller cap feet: the foot indices are distinct (input distinct), their
+partners are distinct (involution injective), and no foot equals a partner (a smaller foot cannot be a larger foot).
+The interleaved-pair distinctness the recon flagged as the hidden second chunk. -/
+private theorem expandBottomFeetPairsDistinctCount (bottomCount total : Nat) (partner : List Nat)
+    (bottomLe : bottomCount ≤ total) (wf : IsBoundaryInvolution total partner) : (feet : List Nat) →
+    isDistinctList feet = true →
+    (∀ foot, foot ∈ feet → foot < bottomCount ∧ natListGetAt partner foot < bottomCount
+      ∧ foot < natListGetAt partner foot) →
+    isDistinctList (expandBottomFeetPairs partner feet) = true
+  | [], _, _ => rfl
+  | index :: rest, feetDistinct, feetSmaller => by
+      have splitDist : isDistinctList (index :: rest) = (not (memBool index rest) && isDistinctList rest) := rfl
+      rw [splitDist] at feetDistinct
+      have indexNotRest : memBool index rest = false :=
+        eqFalseOfNotTrueCount _ (boolAndLeftCount _ _ feetDistinct)
+      have distRest : isDistinctList rest = true := boolAndRightCount _ _ feetDistinct
+      have indexSmaller := feetSmaller index (List.Mem.head rest)
+      have restSmaller : ∀ foot, foot ∈ rest → foot < bottomCount ∧ natListGetAt partner foot < bottomCount
+          ∧ foot < natListGetAt partner foot :=
+        fun foot footMem => feetSmaller foot (List.Mem.tail index footMem)
+      have distTail : isDistinctList (expandBottomFeetPairs partner rest) = true :=
+        expandBottomFeetPairsDistinctCount bottomCount total partner bottomLe wf rest distRest restSmaller
+      have indexLtTotal : index < total := Nat.lt_of_lt_of_le indexSmaller.1 bottomLe
+      have selfInvIndex : natListGetAt partner (natListGetAt partner index) = index := wf.isSelfInverse index indexLtTotal
+      have partnerIndexNotTail :
+          memBool (natListGetAt partner index) (expandBottomFeetPairs partner rest) = false := by
+        cases hmem : memBool (natListGetAt partner index) (expandBottomFeetPairs partner rest) with
+        | false => rfl
+        | true =>
+            obtain ⟨collision, collisionMem, collisionEq⟩ := mem_expandBottomFeetPairsCount partner rest
+              (natListGetAt partner index) (memBoolMemCount _ _ hmem)
+            have collisionSmaller := restSmaller collision collisionMem
+            have collisionLtTotal : collision < total := Nat.lt_of_lt_of_le collisionSmaller.1 bottomLe
+            cases collisionEq with
+            | inl partnerIndexEqCollision =>
+                have partnerCollisionEqIndex : natListGetAt partner collision = index := by
+                  rw [← partnerIndexEqCollision, selfInvIndex]
+                have collisionLtIndex : collision < index := by rw [← partnerCollisionEqIndex]; exact collisionSmaller.2.2
+                have indexLtCollision : index < collision := by rw [← partnerIndexEqCollision]; exact indexSmaller.2.2
+                exact absurd (Nat.lt_trans collisionLtIndex indexLtCollision) (Nat.lt_irrefl collision)
+            | inr partnerIndexEqPartnerCollision =>
+                have indexEqCollision : index = collision :=
+                  involutionInjectiveCount total partner wf index collision indexLtTotal collisionLtTotal
+                    partnerIndexEqPartnerCollision
+                have indexMemRest : memBool index rest = true := by
+                  rw [indexEqCollision]; exact memBoolOfMemCount rest collision collisionMem
+                rw [indexNotRest] at indexMemRest; exact Bool.noConfusion indexMemRest
+      have indexNotConsTail :
+          memBool index (natListGetAt partner index :: expandBottomFeetPairs partner rest) = false := by
+        show (Nat.beq (natListGetAt partner index) index
+          || memBool index (expandBottomFeetPairs partner rest)) = false
+        have partnerIndexNeIndex : Nat.beq (natListGetAt partner index) index = false :=
+          natBeqFalseOfNeCount (natListGetAt partner index) index (by
+            intro equal
+            have contra : index < index := by
+              have step := indexSmaller.2.2
+              rw [equal] at step
+              exact step
+            exact Nat.lt_irrefl index contra)
+        rw [partnerIndexNeIndex, Bool.false_or]
+        cases hmem : memBool index (expandBottomFeetPairs partner rest) with
+        | false => rfl
+        | true =>
+            obtain ⟨collision, collisionMem, collisionEq⟩ := mem_expandBottomFeetPairsCount partner rest index
+              (memBoolMemCount _ _ hmem)
+            have collisionSmaller := restSmaller collision collisionMem
+            have collisionLtTotal : collision < total := Nat.lt_of_lt_of_le collisionSmaller.1 bottomLe
+            cases collisionEq with
+            | inl indexEqCollision =>
+                have indexMemRest : memBool index rest = true := by
+                  rw [indexEqCollision]; exact memBoolOfMemCount rest collision collisionMem
+                rw [indexNotRest] at indexMemRest; exact Bool.noConfusion indexMemRest
+            | inr indexEqPartnerCollision =>
+                have collisionLtIndex : collision < index := by rw [indexEqPartnerCollision]; exact collisionSmaller.2.2
+                have partnerIndexEqCollision : natListGetAt partner index = collision := by
+                  rw [indexEqPartnerCollision, wf.isSelfInverse collision collisionLtTotal]
+                have indexLtCollision : index < collision := by
+                  rw [← partnerIndexEqCollision]; exact indexSmaller.2.2
+                exact absurd (Nat.lt_trans collisionLtIndex indexLtCollision) (Nat.lt_irrefl collision)
+      have distConsTail :
+          isDistinctList (natListGetAt partner index :: expandBottomFeetPairs partner rest) = true := by
+        show (not (memBool (natListGetAt partner index) (expandBottomFeetPairs partner rest))
+          && isDistinctList (expandBottomFeetPairs partner rest)) = true
+        rw [partnerIndexNotTail]
+        show isDistinctList (expandBottomFeetPairs partner rest) = true
+        exact distTail
+      show (not (memBool index (natListGetAt partner index :: expandBottomFeetPairs partner rest))
+        && isDistinctList (natListGetAt partner index :: expandBottomFeetPairs partner rest)) = true
+      rw [indexNotConsTail]
+      show isDistinctList (natListGetAt partner index :: expandBottomFeetPairs partner rest) = true
+      exact distConsTail
+
+/-- ★★ **The cap-feet order is distinct.** -/
+theorem capArcFeet_distinct (bottomCount total : Nat) (partner : List Nat) (bottomLe : bottomCount ≤ total)
+    (wf : IsBoundaryInvolution total partner) : isDistinctList (capArcFeet bottomCount partner) = true :=
+  expandBottomFeetPairsDistinctCount bottomCount total partner bottomLe wf (capArcFeetIndices bottomCount partner)
+    (filterMapGuardIdentityDistinctCount (capSmallerGuard bottomCount partner) (List.range bottomCount)
+      (isDistinctListRangeCount bottomCount))
+    (fun foot footMem => capArcFeetIndices_mem_sound bottomCount partner foot footMem)
+
+/-- The through-bottom order is distinct (filterMap-identity of the distinct range). -/
+theorem throughStrandBottoms_distinct (bottomCount : Nat) (partner : List Nat) :
+    isDistinctList (throughStrandBottoms bottomCount partner) = true :=
+  filterMapGuardIdentityDistinctCount (throughBottomGuard bottomCount partner) (List.range bottomCount)
+    (isDistinctListRangeCount bottomCount)
+
+/-- ★★★ **The bottom read-off distinctness (`isDistinct`).**  `capArcFeet ++ throughStrandBottoms` is distinct: the cap
+feet interleave is distinct, the through bottoms are distinct, and the two are disjoint (a cap foot's partner is a
+bottom port, so it is never a through bottom). -/
+theorem bottomReadOffOrder_distinct (bottomCount total : Nat) (partner : List Nat) (bottomLe : bottomCount ≤ total)
+    (wf : IsBoundaryInvolution total partner) :
+    isDistinctList (capArcFeet bottomCount partner ++ throughStrandBottoms bottomCount partner) = true :=
+  appendDistinctCount (capArcFeet bottomCount partner) (throughStrandBottoms bottomCount partner)
+    (capArcFeet_distinct bottomCount total partner bottomLe wf)
+    (throughStrandBottoms_distinct bottomCount partner)
+    (bottomReadOffDisjoint bottomCount total partner bottomLe wf)
+
+/-! ## Section 12 — the general bottom read-off `IsPermutationOfRange` (T-CLOSE bottom side) -/
+
+/-- ★★★ **The general bottom read-off order is a range-permutation.**  For every well-formed boundary involution over
+`bottomCount + topCount` ports, `capArcFeet ++ throughStrandBottoms` satisfies `IsPermutationOfRange bottomCount` —
+distinct, length `bottomCount`, `[0, bottomCount)`-bounded.  Promotes the r15 `by decide` truth-probes
+(`readOffBottomOrder_isPermutationOfRange_adversarialB` / `_freshMixed`) to the general theorem: the counting residual
+the r15 honesty walls named is CLOSED on the bottom side. -/
+theorem readOffBottomOrder_isPermutationOfRange (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    IsPermutationOfRange bottomCount
+      (capArcFeet bottomCount partner ++ throughStrandBottoms bottomCount partner) where
+  hasWidthLength := bottomReadOffOrderLength bottomCount (bottomCount + topCount) partner
+    (Nat.le_add_right bottomCount topCount) wf
+  isDistinct := bottomReadOffOrder_distinct bottomCount (bottomCount + topCount) partner
+    (Nat.le_add_right bottomCount topCount) wf
+  isBounded := bottomReadOffOrderBounded bottomCount (bottomCount + topCount) partner
+    (Nat.le_add_right bottomCount topCount) wf
+
 end FX1Poly.Polygraph
