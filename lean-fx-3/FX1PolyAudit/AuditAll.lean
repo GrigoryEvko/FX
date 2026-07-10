@@ -568,6 +568,7 @@ import FX1PolyAudit.Polygraph.Computad.Signature
 import FX1PolyAudit.Polygraph.Computad.PathFactorization
 import FX1PolyAudit.Polygraph.Computad.AdjunctionSeed
 import FX1PolyAudit.Polygraph.Computad.MonadSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCellSize
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadLawRelation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadDeltaModel

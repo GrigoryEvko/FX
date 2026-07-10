@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeVcomp
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadCellSize
 
 /-! # WalkingMonad — the FULL normalization, the inhabited canonicalization, and the DECIDABLE word problem
 
@@ -16,17 +17,6 @@ cell).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 namespace FX1Poly.Polygraph
 
 /-! ## The full cell-level normalization -/
-
-/-- Every free 2-cell has structural size at least one. -/
-theorem one_le_cellSize {sourceMode targetMode : MonadMode}
-    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
-    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) : 1 ≤ cell.size :=
-  match cell with
-  | .gen _ => Nat.le_refl 1
-  | .id _ => Nat.le_refl 1
-  | .vcomp cellL cellR => Nat.le_add_left 1 (cellL.size + cellR.size)
-  | .whiskerLeft _ body => Nat.le_add_left 1 body.size
-  | .whiskerRight _ body => Nat.le_add_left 1 body.size
 
 /-- ★★ **The full cell-level normalization (STRUCTURAL on a `Nat` fuel).**  Every parallel free 2-cell of the
 walking monad is `MonadSaturatedTwoCellConv`-convertible to the canonical Eilenberg–Zilber word of its own fold.

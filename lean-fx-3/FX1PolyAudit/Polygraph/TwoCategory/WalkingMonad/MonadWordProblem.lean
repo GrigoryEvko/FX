@@ -10,7 +10,6 @@ the non-vacuity witnesses.  Must be free of `propext`, `Quot.sound`, `Classical`
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.one_le_cellSize
 #assert_no_axioms FX1Poly.Polygraph.monadNormalizeCellFueled
 #assert_no_axioms FX1Poly.Polygraph.monadNormalize
 #assert_no_axioms FX1Poly.Polygraph.monadSaturatedCanonicalization

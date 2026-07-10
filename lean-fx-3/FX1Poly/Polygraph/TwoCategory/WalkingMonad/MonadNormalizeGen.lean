@@ -5,9 +5,10 @@ import FX1Poly.Polygraph.TwoCategory.Amalgam.DispatchSaturated
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordVcompGen
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDeltaGen
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
--- `one_le_cellSize` (the conv-FREE fuel lemma used by `monadNormalizeCellFueledGen`) lives in `MonadWordProblem`;
--- imported directly here now that MONAD-R7 r2 S5 dropped the interim decider's transitive `MonadWordProblem` edge.
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
+-- `one_le_cellSize` (the conv-FREE fuel lemma used by `monadNormalizeCellFueledGen`) now lives in the conv-FREE leaf
+-- `MonadCellSize`; importing it directly (instead of `MonadWordProblem`) keeps this native-decider file off the
+-- pure-bespoke Δ chain (MONAD-R7 r4 micro-relocation).
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadCellSize
 
 /-! # WalkingMonad/MonadNormalizeGen — the born-generic normalize + the bespoke-free native decider
 (POLY-TAB r6 monad re-founding, WAVE 2, Brick C — the completeness flip)
