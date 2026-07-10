@@ -1028,6 +1028,8 @@ import FX1PolyAudit.Polygraph.Omega.Graded.CollisionCatalogAudit
 import FX1PolyAudit.Polygraph.Omega.Graded.DesignLockOmega5Audit
 -- OMEGA-6 r1 — the weak/directed rung: CaTT ps-context rows + the decidable ps-checker
 import FX1PolyAudit.Polygraph.Omega.PsContextAudit
+-- OMEGA-6 r1 — the CaTT coherence rule as a checked-ps + parallel-boundary generator seed
+import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
