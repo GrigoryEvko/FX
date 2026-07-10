@@ -1,5 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescConnectivityMono
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingGodement
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryReads
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescReachable
 
 /-! # BRAUER-MIDDLE r6 B1 (partial) — the T-DISJOINT invariant `boundedBoundaryComponents`, its seed base case,
 and non-vacuity (the forest-cardinality "no over-connection" core of R3-A-TAGCORR)
@@ -258,6 +260,311 @@ theorem boundedBoundaryComponentsCheck_crossing :
 `[1, 0, 3, 2]`, one closed bottom arc and one fresh top arc) passes the bounded triple-check over `[0, 4)`. -/
 theorem boundedBoundaryComponentsCheck_capThenCup :
     boundedBoundaryComponentsCheck 2 (processBrauer (brauerSeed 2) [capAt 0, cupAt 0]) 4 = true := by decide
+
+/-! ## B1 — THE CAP preservation: the core pigeonhole over a single boundary join
+
+The crux of T-DISJOINT.  `stepCap` merges the two boundary ports at the window into one component and drops them
+from the boundary view; the shipped cap read-kit (`Brauer/`-external `MatchingBoundaryReads.lean`) supplies the
+total boundary reindex `capBoundaryReindex`, its range transport, and the join-legs-as-boundary-reads form.  The new
+content is the finite pigeonhole: after joining the two ports `leftPort`, `rightPort`, no THREE distinct boundary
+indices (each distinct from both ports) can pairwise share a component, because each such index is forced (by the
+before-invariant applied through the port) to sit with `leftPort` or `rightPort`, and 3-into-2 forces two into the
+same port's class — a forbidden triple `{ port, x, y }` at the BEFORE state. -/
+
+/-- Same-component is symmetric at the matching view (a `dsimp`-thin wrapper of `isSameComponent_symm`). -/
+private theorem matchingSameComponent_symmBBC (bottomCount : Nat) (state : WireState)
+    (firstIndex secondIndex : Nat) :
+    matchingSameComponent bottomCount state firstIndex secondIndex
+      = matchingSameComponent bottomCount state secondIndex firstIndex := by
+  show (unionFindRootOf state.links (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+        == unionFindRootOf state.links (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex))
+      = (unionFindRootOf state.links (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex)
+        == unionFindRootOf state.links (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex))
+  exact isSameComponent_symm state.links _ _
+
+/-- The flat-disjunction expansion of the after-join same-component view at BOUNDARY reads, restated in
+`matchingSameComponent` terms (the port reads are the join legs).  Every disjunct is defeq to a
+`matchingSameComponent` at the before state. -/
+private theorem matchingSameComponent_afterJoinBBC (bottomCount : Nat) (state : WireState)
+    (forest : isUnionFindForest state.links) (leftPort rightPort firstIndex secondIndex : Nat) :
+    isSameComponent
+        (unionFindJoin state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+          (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex)
+      = (matchingSameComponent bottomCount state firstIndex secondIndex
+          || (matchingSameComponent bottomCount state leftPort firstIndex
+              && matchingSameComponent bottomCount state rightPort secondIndex)
+          || (matchingSameComponent bottomCount state leftPort secondIndex
+              && matchingSameComponent bottomCount state firstIndex rightPort)) :=
+  isSameComponent_unionFindJoin state.links forest
+    (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+    (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort)
+    (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+    (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex)
+
+/-- **The port fact.**  Given a star of two after-join same-component links centred at `centerIdx`, that centre is
+connected AT THE BEFORE STATE to `leftPort` or `rightPort`.  Proof: if it were connected to neither, both bridging
+disjuncts collapse, so the after-links reduce to the before-links on the star, giving a forbidden before-triple
+`{ centerIdx, otherA, otherB }`. -/
+private theorem portOfStarBBC (bottomCount : Nat) (state : WireState)
+    (forest : isUnionFindForest state.links)
+    (bounded : boundedBoundaryComponents bottomCount state)
+    (leftPort rightPort centerIdx otherA otherB : Nat)
+    (centerRange : centerIdx < bottomCount + state.openWires.length)
+    (otherARange : otherA < bottomCount + state.openWires.length)
+    (otherBRange : otherB < bottomCount + state.openWires.length)
+    (centerNeA : centerIdx ≠ otherA) (centerNeB : centerIdx ≠ otherB) (aNeB : otherA ≠ otherB)
+    (sameCenterA : isSameComponent
+        (unionFindJoin state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+          (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) centerIdx)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) otherA) = true)
+    (sameCenterB : isSameComponent
+        (unionFindJoin state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+          (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) centerIdx)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) otherB) = true) :
+    matchingSameComponent bottomCount state leftPort centerIdx = true
+      ∨ matchingSameComponent bottomCount state rightPort centerIdx = true := by
+  cases hleft : matchingSameComponent bottomCount state leftPort centerIdx with
+  | true => exact Or.inl rfl
+  | false =>
+      cases hright : matchingSameComponent bottomCount state rightPort centerIdx with
+      | true => exact Or.inr rfl
+      | false =>
+          exfalso
+          rw [matchingSameComponent_afterJoinBBC bottomCount state forest leftPort rightPort centerIdx otherA,
+            hleft, matchingSameComponent_symmBBC bottomCount state centerIdx rightPort, hright,
+            Bool.false_and, Bool.and_false, Bool.or_false, Bool.or_false] at sameCenterA
+          rw [matchingSameComponent_afterJoinBBC bottomCount state forest leftPort rightPort centerIdx otherB,
+            hleft, matchingSameComponent_symmBBC bottomCount state centerIdx rightPort, hright,
+            Bool.false_and, Bool.and_false, Bool.or_false, Bool.or_false] at sameCenterB
+          exact bounded centerIdx otherA otherB centerRange otherARange otherBRange centerNeA centerNeB aNeB
+            ⟨sameCenterA, sameCenterB⟩
+
+/-- ★ **The core pigeonhole.**  After joining `leftPort`/`rightPort`, no three distinct boundary indices (each
+distinct from both ports) pairwise share a component.  The star at the first index is completed to a full pairwise
+triple; each index's port fact places it with `leftPort` or `rightPort`; 3-into-2 forces two into a shared port,
+yielding a forbidden before-triple `{ port, x, y }`.  Generator-independent — the single-join heart the cap consumes
+directly. -/
+private theorem noThreeSharingAfterJoin (bottomCount : Nat) (state : WireState)
+    (forest : isUnionFindForest state.links)
+    (bounded : boundedBoundaryComponents bottomCount state)
+    (leftPort rightPort firstIndex secondIndex thirdIndex : Nat)
+    (leftRange : leftPort < bottomCount + state.openWires.length)
+    (rightRange : rightPort < bottomCount + state.openWires.length)
+    (firstRange : firstIndex < bottomCount + state.openWires.length)
+    (secondRange : secondIndex < bottomCount + state.openWires.length)
+    (thirdRange : thirdIndex < bottomCount + state.openWires.length)
+    (firstNeLeft : firstIndex ≠ leftPort) (firstNeRight : firstIndex ≠ rightPort)
+    (secondNeLeft : secondIndex ≠ leftPort) (secondNeRight : secondIndex ≠ rightPort)
+    (thirdNeLeft : thirdIndex ≠ leftPort) (thirdNeRight : thirdIndex ≠ rightPort)
+    (firstNeSecond : firstIndex ≠ secondIndex) (firstNeThird : firstIndex ≠ thirdIndex)
+    (secondNeThird : secondIndex ≠ thirdIndex)
+    (sameFirstSecond : isSameComponent
+        (unionFindJoin state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+          (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex) = true)
+    (sameFirstThird : isSameComponent
+        (unionFindJoin state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+          (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) thirdIndex) = true) :
+    False := by
+  have forestJoin := isUnionFindForest_unionFindJoin state.links
+    (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+    (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort) forest
+  have sameSecondFirst : isSameComponent
+      (unionFindJoin state.links
+        (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+      (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex) = true := by
+    rw [isSameComponent_symm]; exact sameFirstSecond
+  have sameThirdFirst : isSameComponent
+      (unionFindJoin state.links
+        (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+      (natListGetAt (matchingBoundaryNodes bottomCount state) thirdIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex) = true := by
+    rw [isSameComponent_symm]; exact sameFirstThird
+  have sameSecondThird : isSameComponent
+      (unionFindJoin state.links
+        (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+      (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount state) thirdIndex) = true :=
+    isSameComponent_trans _ _ _ _ sameSecondFirst sameFirstThird
+  have sameThirdSecond : isSameComponent
+      (unionFindJoin state.links
+        (natListGetAt (matchingBoundaryNodes bottomCount state) leftPort)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) rightPort))
+      (natListGetAt (matchingBoundaryNodes bottomCount state) thirdIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex) = true := by
+    rw [isSameComponent_symm]; exact sameSecondThird
+  have portFirst := portOfStarBBC bottomCount state forest bounded leftPort rightPort firstIndex secondIndex thirdIndex
+    firstRange secondRange thirdRange firstNeSecond firstNeThird secondNeThird sameFirstSecond sameFirstThird
+  have portSecond := portOfStarBBC bottomCount state forest bounded leftPort rightPort secondIndex firstIndex thirdIndex
+    secondRange firstRange thirdRange (Ne.symm firstNeSecond) secondNeThird firstNeThird sameSecondFirst sameSecondThird
+  have portThird := portOfStarBBC bottomCount state forest bounded leftPort rightPort thirdIndex firstIndex secondIndex
+    thirdRange firstRange secondRange (Ne.symm firstNeThird) (Ne.symm secondNeThird) firstNeSecond sameThirdFirst sameThirdSecond
+  rcases portFirst with aLeft | aRight
+  · rcases portSecond with bLeft | bRight
+    · exact bounded leftPort firstIndex secondIndex leftRange firstRange secondRange
+        (Ne.symm firstNeLeft) (Ne.symm secondNeLeft) firstNeSecond ⟨aLeft, bLeft⟩
+    · rcases portThird with cLeft | cRight
+      · exact bounded leftPort firstIndex thirdIndex leftRange firstRange thirdRange
+          (Ne.symm firstNeLeft) (Ne.symm thirdNeLeft) firstNeThird ⟨aLeft, cLeft⟩
+      · exact bounded rightPort secondIndex thirdIndex rightRange secondRange thirdRange
+          (Ne.symm secondNeRight) (Ne.symm thirdNeRight) secondNeThird ⟨bRight, cRight⟩
+  · rcases portSecond with bLeft | bRight
+    · rcases portThird with cLeft | cRight
+      · exact bounded leftPort secondIndex thirdIndex leftRange secondRange thirdRange
+          (Ne.symm secondNeLeft) (Ne.symm thirdNeLeft) secondNeThird ⟨bLeft, cLeft⟩
+      · exact bounded rightPort firstIndex thirdIndex rightRange firstRange thirdRange
+          (Ne.symm firstNeRight) (Ne.symm thirdNeRight) firstNeThird ⟨aRight, cRight⟩
+    · exact bounded rightPort firstIndex secondIndex rightRange firstRange secondRange
+        (Ne.symm firstNeRight) (Ne.symm secondNeRight) firstNeSecond ⟨aRight, bRight⟩
+
+/-! ### The cap boundary-reindex avoids the two ports, and is injective -/
+
+/-- The cap reindex never hits the left port `bottomCount + position` (below the window it is strictly less; at or
+above it is at least two more). -/
+private theorem capBoundaryReindex_ne_leftPort (bottomCount position index : Nat) :
+    capBoundaryReindex bottomCount position index ≠ bottomCount + position := by
+  show (if index < bottomCount + position then index else index + 2) ≠ bottomCount + position
+  cases Nat.lt_or_ge index (bottomCount + position) with
+  | inl below => rw [if_pos below]; exact Nat.ne_of_lt below
+  | inr atLeast =>
+      rw [if_neg (Nat.not_lt.mpr atLeast)]
+      exact Ne.symm (Nat.ne_of_lt (Nat.lt_of_le_of_lt atLeast (Nat.lt_succ_of_lt (Nat.lt_add_one index))))
+
+/-- The cap reindex never hits the right port `bottomCount + (position + 1)`. -/
+private theorem capBoundaryReindex_ne_rightPort (bottomCount position index : Nat) :
+    capBoundaryReindex bottomCount position index ≠ bottomCount + (position + 1) := by
+  show (if index < bottomCount + position then index else index + 2) ≠ bottomCount + (position + 1)
+  cases Nat.lt_or_ge index (bottomCount + position) with
+  | inl below =>
+      rw [if_pos below]
+      exact Nat.ne_of_lt (Nat.lt_trans below (Nat.add_lt_add_left (Nat.lt_add_one position) bottomCount))
+  | inr atLeast =>
+      rw [if_neg (Nat.not_lt.mpr atLeast)]
+      have shifted : bottomCount + (position + 1) ≤ index + 1 :=
+        (Nat.add_assoc bottomCount position 1) ▸ Nat.add_le_add_right atLeast 1
+      exact Ne.symm (Nat.ne_of_lt (Nat.lt_of_le_of_lt shifted (Nat.lt_add_one (index + 1))))
+
+/-- The cap reindex is injective (strictly monotone across the window threshold). -/
+private theorem capBoundaryReindex_inj (bottomCount position firstIndex secondIndex : Nat)
+    (heq : capBoundaryReindex bottomCount position firstIndex
+        = capBoundaryReindex bottomCount position secondIndex) :
+    firstIndex = secondIndex := by
+  show firstIndex = secondIndex
+  have heq' : (if firstIndex < bottomCount + position then firstIndex else firstIndex + 2)
+      = (if secondIndex < bottomCount + position then secondIndex else secondIndex + 2) := heq
+  cases Nat.lt_or_ge firstIndex (bottomCount + position) with
+  | inl firstBelow =>
+      cases Nat.lt_or_ge secondIndex (bottomCount + position) with
+      | inl secondBelow => rw [if_pos firstBelow, if_pos secondBelow] at heq'; exact heq'
+      | inr secondAtLeast =>
+          rw [if_pos firstBelow, if_neg (Nat.not_lt.mpr secondAtLeast)] at heq'
+          exact (Nat.lt_irrefl firstIndex (Nat.lt_of_lt_of_le firstBelow
+            (heq'.symm ▸ Nat.le_trans secondAtLeast (Nat.le_add_right secondIndex 2)))).elim
+  | inr firstAtLeast =>
+      cases Nat.lt_or_ge secondIndex (bottomCount + position) with
+      | inl secondBelow =>
+          rw [if_neg (Nat.not_lt.mpr firstAtLeast), if_pos secondBelow] at heq'
+          exact (Nat.lt_irrefl secondIndex (Nat.lt_of_lt_of_le secondBelow
+            (heq' ▸ Nat.le_trans firstAtLeast (Nat.le_add_right firstIndex 2)))).elim
+      | inr secondAtLeast =>
+          rw [if_neg (Nat.not_lt.mpr firstAtLeast), if_neg (Nat.not_lt.mpr secondAtLeast)] at heq'
+          exact Nat.succ.inj (Nat.succ.inj heq')
+
+/-- The cap reindex sends distinct indices to distinct images. -/
+private theorem capBoundaryReindex_ne (bottomCount position firstIndex secondIndex : Nat)
+    (distinct : firstIndex ≠ secondIndex) :
+    capBoundaryReindex bottomCount position firstIndex ≠ capBoundaryReindex bottomCount position secondIndex :=
+  fun imagesEq => distinct (capBoundaryReindex_inj bottomCount position firstIndex secondIndex imagesEq)
+
+/-- The post-cap boundary same-component view factors as an after-join view over the reindexed boundary reads (the
+join legs are the two ports, the reads reindexed by `capBoundaryReindex`). -/
+private theorem matchingSameComponent_stepCap_reindex (bottomCount : Nat) (state : WireState)
+    (position firstIndex secondIndex : Nat) (windowInRange : position + 2 ≤ state.openWires.length) :
+    matchingSameComponent bottomCount (stepCap state position) firstIndex secondIndex
+      = isSameComponent
+          (unionFindJoin state.links
+            (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + position))
+            (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + (position + 1))))
+          (natListGetAt (matchingBoundaryNodes bottomCount state)
+            (capBoundaryReindex bottomCount position firstIndex))
+          (natListGetAt (matchingBoundaryNodes bottomCount state)
+            (capBoundaryReindex bottomCount position secondIndex)) := by
+  show (unionFindRootOf (stepCap state position).links
+          (natListGetAt (matchingBoundaryNodes bottomCount (stepCap state position)) firstIndex)
+        == unionFindRootOf (stepCap state position).links
+          (natListGetAt (matchingBoundaryNodes bottomCount (stepCap state position)) secondIndex))
+      = (unionFindRootOf
+          (unionFindJoin state.links
+            (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + position))
+            (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + (position + 1))))
+          (natListGetAt (matchingBoundaryNodes bottomCount state)
+            (capBoundaryReindex bottomCount position firstIndex))
+        == unionFindRootOf
+          (unionFindJoin state.links
+            (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + position))
+            (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + (position + 1))))
+          (natListGetAt (matchingBoundaryNodes bottomCount state)
+            (capBoundaryReindex bottomCount position secondIndex)))
+  rw [stepCap_links_eq_unionFindJoin_boundaryReads bottomCount state position,
+    matchingBoundaryNodes_stepCap_getAt_reindex bottomCount state position firstIndex windowInRange,
+    matchingBoundaryNodes_stepCap_getAt_reindex bottomCount state position secondIndex windowInRange]
+
+/-- ★ **THE CAP preservation.**  `boundedBoundaryComponents` survives an in-range `stepCap`: the post-cap view
+factors through the cap reindex over the single boundary join of the two window ports, and the core pigeonhole
+(`noThreeSharingAfterJoin`) rejects any three distinct post-cap boundary indices sharing a component.  Requires the
+window in range (`position + 2 ≤ openWires.length`, load-bearing per `WiringDescReachable.lean`) and the forest
+invariant. -/
+theorem boundedBoundaryComponents_stepCap (bottomCount : Nat) (state : WireState) (position : Nat)
+    (forest : isUnionFindForest state.links)
+    (windowInRange : position + 2 ≤ state.openWires.length)
+    (bounded : boundedBoundaryComponents bottomCount state) :
+    boundedBoundaryComponents bottomCount (stepCap state position) := by
+  intro firstIndex secondIndex thirdIndex firstBelow secondBelow thirdBelow
+    firstNeSecond firstNeThird secondNeThird sameConjunction
+  obtain ⟨sameFirstSecond, sameFirstThird⟩ := sameConjunction
+  rw [matchingSameComponent_stepCap_reindex bottomCount state position firstIndex secondIndex windowInRange]
+    at sameFirstSecond
+  rw [matchingSameComponent_stepCap_reindex bottomCount state position firstIndex thirdIndex windowInRange]
+    at sameFirstThird
+  have leftRange : bottomCount + position < bottomCount + state.openWires.length :=
+    Nat.add_lt_add_left (Nat.lt_of_lt_of_le (Nat.lt_succ_of_lt (Nat.lt_add_one position)) windowInRange) bottomCount
+  have rightRange : bottomCount + (position + 1) < bottomCount + state.openWires.length :=
+    Nat.add_lt_add_left (Nat.lt_of_lt_of_le (Nat.lt_add_one (position + 1)) windowInRange) bottomCount
+  exact noThreeSharingAfterJoin bottomCount state forest bounded
+    (bottomCount + position) (bottomCount + (position + 1))
+    (capBoundaryReindex bottomCount position firstIndex)
+    (capBoundaryReindex bottomCount position secondIndex)
+    (capBoundaryReindex bottomCount position thirdIndex)
+    leftRange rightRange
+    (capBoundaryReindex_lt_ofNewRange bottomCount state position firstIndex windowInRange firstBelow)
+    (capBoundaryReindex_lt_ofNewRange bottomCount state position secondIndex windowInRange secondBelow)
+    (capBoundaryReindex_lt_ofNewRange bottomCount state position thirdIndex windowInRange thirdBelow)
+    (capBoundaryReindex_ne_leftPort bottomCount position firstIndex)
+    (capBoundaryReindex_ne_rightPort bottomCount position firstIndex)
+    (capBoundaryReindex_ne_leftPort bottomCount position secondIndex)
+    (capBoundaryReindex_ne_rightPort bottomCount position secondIndex)
+    (capBoundaryReindex_ne_leftPort bottomCount position thirdIndex)
+    (capBoundaryReindex_ne_rightPort bottomCount position thirdIndex)
+    (capBoundaryReindex_ne bottomCount position firstIndex secondIndex firstNeSecond)
+    (capBoundaryReindex_ne bottomCount position firstIndex thirdIndex firstNeThird)
+    (capBoundaryReindex_ne bottomCount position secondIndex thirdIndex secondNeThird)
+    sameFirstSecond sameFirstThird
 
 /-! ## Honesty markers -/
 
