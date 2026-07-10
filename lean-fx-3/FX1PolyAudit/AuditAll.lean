@@ -449,6 +449,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryCompon
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGeneratorBridge
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPartnerReadOff
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundaryPartnered
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
