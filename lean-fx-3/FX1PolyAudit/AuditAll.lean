@@ -1092,6 +1092,8 @@ import FX1PolyAudit.Polygraph.Omega.CertificateFunctorLedgerAudit
 import FX1PolyAudit.Polygraph.Omega.MonadCoherentPresentationAudit
 -- WP-SQUIER r2 — the family round: the walking-idempotent-semigroup one-critical-pair demonstrator (half-globular)
 import FX1PolyAudit.Polygraph.Omega.IdempotentSemigroupDemonstratorAudit
+-- WP-SQUIER r2 — the family round: the walking-cyclic-3 two-critical-pair demonstrator (new-shape, 1 rule / 2 CP)
+import FX1PolyAudit.Polygraph.Omega.CyclicThreeDemonstratorAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
