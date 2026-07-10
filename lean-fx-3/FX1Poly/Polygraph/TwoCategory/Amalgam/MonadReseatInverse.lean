@@ -797,6 +797,83 @@ theorem reseatPathInv_reseatPath
     reseatPathInv (reseatPath path) = path :=
   reseatPathInv_reseatPath_fueled path.length path rfl
 
+/-! ## B7 — the GEN leg: `reseatGenInv (reseatGen g) = g` (modulo boundary cast)
+
+The GEN round-trip is the r1 marker's "hard node": for a GENERIC reconstructed generator `g`, the forward
+`reseatGen g` is a STUCK `castMonadTwoCell` (the boundary is only PROPOSITIONALLY `(nil point, monadT)` via the
+interpreter witnesses), so `reseatGenInv (reseatGen g)` does not reduce through the matcher.  The unstick is a
+NEW naturality lemma (`reseatGenInv_castMonadTwoCell` / `_val`): `reseatGenInv` commutes with the boundary cast
+(`cases` the two equalities then `rfl`).  With it, the index of the round-trip is READ OFF: since `reseatGen`
+sends a reconstructed generator of index `i` to the bespoke generator (`eta` at `0`, `mu` at `1`) and `reseatGenInv`
+sends `eta` / `mu` back to the reconstructed generators of index `0` / `1`, the composite PRESERVES the index —
+`(reseatGenInv (reseatGen g)).val = g.val` (a homogeneous `Fin 2` equality, no transport).  `Eq.rec`, no `HEq`. -/
+
+/-- **The reconstructed-side naturality of the inverse generator map through the boundary cast** —
+`reseatGenInv (castMonadTwoCell hfirst hsecond cell)` is the `reseatPathInv`-image cast of `reseatGenInv cell`.
+`cases` the two boundary equalities (`castMonadTwoCell rfl rfl` collapses), then `rfl`.  The recon-side mirror of
+`castMonadTwoCell`; the tool that unsticks the forward `reseatGen`'s stuck cast in the round-trip. -/
+theorem reseatGenInv_castMonadTwoCell
+    {firstPath firstPath' secondPath secondPath' :
+      ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (hfirst : firstPath = firstPath') (hsecond : secondPath = secondPath')
+    (cell : MonadTwoCell firstPath secondPath) :
+    reseatGenInv (castMonadTwoCell hfirst hsecond cell)
+      = (congrArg reseatPathInv hfirst) ▸ (congrArg reseatPathInv hsecond) ▸ reseatGenInv cell := by
+  cases hfirst; cases hsecond; rfl
+
+/-- **Naturality at the INDEX level** — the `Fin 2` index of `reseatGenInv` is invariant under the boundary cast
+(the transports on the reconstructed-generator subtype leave its `Fin 2` index untouched).  A homogeneous `Fin 2`
+equality, no transport in the statement; `cases` the two equalities then `rfl`.  This is the form the round-trip's
+index read-off consumes. -/
+theorem reseatGenInv_castMonadTwoCell_val
+    {firstPath firstPath' secondPath secondPath' :
+      ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (hfirst : firstPath = firstPath') (hsecond : secondPath = secondPath')
+    (cell : MonadTwoCell firstPath secondPath) :
+    (reseatGenInv (castMonadTwoCell hfirst hsecond cell)).val = (reseatGenInv cell).val := by
+  cases hfirst; cases hsecond; rfl
+
+/-- ★★ **The GEN round-trip, index level** — `(reseatGenInv (reseatGen g)).val = g.val`: the inverse generator map
+after the forward one PRESERVES the reconstructed 2-generator index.  The r1 marker's hard node, discharged: the
+modes are pinned to `⟨0⟩` (the sole `Fin 1` inhabitant) so `reseatGen` reduces to a `castMonadTwoCell` of `eta`
+(index `0`) / `mu` (index `1`); the naturality lemma reads the index off through the otherwise-stuck cast.  The
+statement is a homogeneous `Fin 2` equality (`.val` is boundary-independent), so no `HEq`; the full boundary-cast
+equation follows by `Subtype.ext`. -/
+theorem reseatGenInvReseatGen_val : {sourceMode targetMode : Fin 1} →
+    {sourcePath targetPath : ModalityPath monadComputad.toModeGraph sourceMode targetMode} →
+    (g : monadComputad.ReconstructedTwoCell sourcePath targetPath) →
+    (reseatGenInv (reseatGen g)).val = g.val
+  | ⟨0, _⟩, ⟨0, _⟩, _, _, ⟨⟨0, _⟩, hlhs, hrhs⟩ =>
+      reseatGenInv_castMonadTwoCell_val
+        (Option.some.inj (congrArg reseatInterp hlhs))
+        (Option.some.inj (congrArg reseatInterp hrhs)) MonadTwoCell.eta
+  | ⟨0, _⟩, ⟨0, _⟩, _, _, ⟨⟨1, _⟩, hlhs, hrhs⟩ =>
+      reseatGenInv_castMonadTwoCell_val
+        (Option.some.inj (congrArg reseatInterp hlhs))
+        (Option.some.inj (congrArg reseatInterp hrhs)) MonadTwoCell.mu
+  | ⟨0, _⟩, ⟨0, _⟩, _, _, ⟨⟨_ + 2, isLt⟩, _⟩ =>
+      absurd (Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ isLt)) (Nat.not_lt_zero _)
+  | ⟨_ + 1, isLt⟩, _, _, _, _ =>
+      absurd (Nat.lt_of_succ_lt_succ isLt) (Nat.not_lt_zero _)
+  | ⟨0, _⟩, ⟨_ + 1, isLt⟩, _, _, _ =>
+      absurd (Nat.lt_of_succ_lt_succ isLt) (Nat.not_lt_zero _)
+
+/-- **Stripping a shared boundary cast off a saturated convertibility** — the inverse of
+`SaturatedConvOver.castBoundaryCongr`.  Fully generic (`sourcePath'` / `targetPath'` are FRESH variables, so
+`cases` on the boundary equalities is unobstructed — unlike at the round-trip call site, where the cast target is
+`reseatPathInv (reseatPath ..)`, occurs-blocked).  The tool that discharges the reflection after the cell
+round-trip rewrites both sides onto a shared cast. -/
+theorem saturatedConvOver_castBoundaryStrip {signature : ModeSignature} {baseRel : CellRel signature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath sourcePath' targetPath targetPath' : ModalityPath signature.graph sourceMode targetMode}
+    (hsource : sourcePath = sourcePath') (htarget : targetPath = targetPath')
+    {cellAlpha cellBeta : RawTwoCellExpr signature sourcePath targetPath}
+    (conv : SaturatedConvOver signature baseRel
+      (RawTwoCellExpr.castBoundary hsource htarget cellAlpha)
+      (RawTwoCellExpr.castBoundary hsource htarget cellBeta)) :
+    SaturatedConvOver signature baseRel cellAlpha cellBeta := by
+  cases hsource; cases htarget; exact conv
+
 /-! ## Honesty markers -/
 
 /-- ★★ **Honesty marker (`true`) — the INVERSE reseat functor + the BACKWARD conv transport SHIP (MODE-ADMIT-INV

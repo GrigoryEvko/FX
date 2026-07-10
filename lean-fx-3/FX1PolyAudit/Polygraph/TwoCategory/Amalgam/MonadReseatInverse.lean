@@ -74,6 +74,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatPathInv_reseatPath_fueled
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatPathInv_reseatPath
 
+-- B7: the GEN leg — cast naturality (full + val) + the index-preserving round-trip + the cast-strip tool
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatGenInv_castMonadTwoCell
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatGenInv_castMonadTwoCell_val
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.reseatGenInvReseatGen_val
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.saturatedConvOver_castBoundaryStrip
+
 -- The honesty markers
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasBackwardReseatTransport
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalgInverse_hasReseatedDeciderBothVerdicts
