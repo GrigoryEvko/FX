@@ -86,20 +86,38 @@ declaration is `ready-for-confirmation` when it is MIGRATED-AND-BRIDGED (a shipp
 bridge transporting every downstream fact), and `not-ready` when it is CENSUS-ONLY (named but no bridge yet).
 This list stays a docstring AWAITING USER CONFIRMATION; nothing is deleted; the r1 git diff shows ZERO deletions.
 
-### READY-FOR-CONFIRMATION (migrated-and-bridged; retire only on explicit green-light)
+### READY-FOR-CONFIRMATION (migrated-and-bridged) — POLY-TAB r2 RETIREMENT WAVE outcomes recorded per item
+
+The r2 wave (task #2228) processed the four READY items one at a time.  Net: ZERO deletions, ZERO LOC removed —
+one item CONFIRMED RETIRED-BY-SUBSUMPTION (nothing existed to delete) and three DEFERRED with precise obstructions
+(each deletion would require re-pointing many structural consumers and/or re-proving a load-bearing verdict, which
+is semantic re-proving, not the mechanical re-pointing the wave was scoped for).  Deferral is honest; forcing is not.
 
   * `IdempotentMonadSaturatedTwoCellConv` (WalkingIdempotent) — bridged by `idempotentWalker_iff_generic` (P3) to
     `SaturatedConvOver monadModeSignature IdempotentLawRel`; the family decider agrees on the concrete pair
-    (`idempotentRouteAgreement_holds`).  MIGRATED-AND-BRIDGED.
+    (`idempotentRouteAgreement_holds`).  MIGRATED-AND-BRIDGED.  **r2 OUTCOME: DEFERRED** — 11 live structural
+    consumers (the whole WalkingIdempotent lane + three `Amalgam/` files, including the `Decidable` instance in
+    `IdempotentMonadDecision`) call the bespoke constructors directly; the iff bridge does not rewrite call sites,
+    and re-pointing them onto the generic requires REBUILDING the `Decidable` instance (semantic re-proving, not
+    re-pointing).  A POLY-TAB-3 additive re-pointing arc must land green FIRST.
   * The walking-involution saturated conv — BORN GENERIC (its family walker conv IS `SaturatedConvOver ...
-    emptyCellRel`, bridge `Iff.rfl`, P3); there is no bespoke inductive to delete, only the identity migration
-    to confirm as retired-by-subsumption.  MIGRATED-AND-BRIDGED.
+    emptyCellRel`, bridge `Iff.rfl`, P3); there is no bespoke inductive to delete.  **r2 OUTCOME: CONFIRMED
+    RETIRED-BY-SUBSUMPTION** — `involutionWalker_iff_generic` is literally `Iff.rfl` between two identical
+    `SaturatedConvOver ... emptyCellRel` terms; no inductive, no consumer, ZERO deletion.  The identity migration
+    is confirmed; there is nothing to remove.
   * `FrobeniusSpecialWalkerConv` (r0 `Table/WalkerMigration.lean`) — bridged by `frobeniusSpecialWalker_iff_generic`
-    (r0 T4); it is the one-law DEMO of the retirement pattern, retire-or-keep as a pedagogical exemplar (author's
-    choice).  MIGRATED-AND-BRIDGED.
+    (r0 T4); the one-law DEMO of the retirement pattern.  MIGRATED-AND-BRIDGED.  **r2 OUTCOME: DEFERRED** — its home
+    file hosts `fxTab_hasSmallestWalkerMigration` (+ `fxTab_hasBornGenericWalker`), both conjoined into
+    `fxTab_polyTabR0Complete` and asserted `= true := by decide` (`Table/Ledger.lean`); deleting the inductive +
+    bridges would either leave that marker certifying a deleted playbook (dishonest) or force re-proving the r0
+    aggregate without it (semantic re-proving).  The ledger flags it author's-choice-KEEP as the very
+    demonstration of the retirement pattern; it needs an item-specific green-light, not the blanket one.
   * `MonadSaturatedTwoCellConv` (WalkingMonad) — bridged by `monadSaturated_iff_generic` (r0); the SEPARATING
     precedent, whose family field IS the bridge (`monadRelationFamily_bridge_is_precedent`, P3).
-    MIGRATED-AND-BRIDGED (but likely KEPT as the canonical exemplar).
+    MIGRATED-AND-BRIDGED (but likely KEPT as the canonical exemplar).  **r2 OUTCOME: DEFERRED** — 35 live structural
+    consumers spanning five walker lanes (WalkingMonad, WalkingIdempotent, WalkingInvolution, WalkingKZ,
+    WalkingString) + `Amalgam/`; a lane-wide migration + decider rebuilds (semantic re-proving) is required before
+    any deletion, and the ledger leans KEEP.
 
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
