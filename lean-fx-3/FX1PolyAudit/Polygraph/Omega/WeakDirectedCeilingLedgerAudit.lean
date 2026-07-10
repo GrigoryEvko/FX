@@ -27,4 +27,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.OmegaSevenPastingShape
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_omegaSevenHandoffRecorded
 
+-- OMEGA-6 r2 section — typed telescope typing shipped / fullness typed / reverse refuted / r2 shipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_psContextTypedTelescopeTypingShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_cohFullnessCheckedTyped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_reverseDualityUnconditional
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega6_r2TypedTelescopeShipped
+
 end FX1PolyAudit
