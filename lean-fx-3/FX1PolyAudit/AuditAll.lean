@@ -170,6 +170,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.EndgameDemo
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchMap
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Modularity
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DecisionTransfer
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerR1
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
@@ -1030,6 +1031,8 @@ import FX1PolyAudit.Polygraph.Omega.Graded.DesignLockOmega5Audit
 import FX1PolyAudit.Polygraph.Omega.PsContextAudit
 -- OMEGA-6 r1 — the CaTT coherence rule as a checked-ps + parallel-boundary generator seed
 import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
+-- OMEGA-6 r1 — the coinductive-invertibility = SN-duality seed at the omega-cell carrier
+import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
