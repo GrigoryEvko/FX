@@ -141,18 +141,204 @@ theorem stringMergedCupFrame_convFull_cupLeg
   rw [RawTwoCellExpr.whiskerLeft_castBoundary] at lifted
   exact lifted
 
+/-! ## The cap half of the cast bridge: the merged cap frame IS the iterated cap leg (up to associativity casts)
+
+The align / endpoint boundary equalities are stated with the cap leg's OWN `(L·M)·L` window bracketing (so
+`castBoundary` typechecks against `stringSharedLegCapLeg` with no unification), and proved by ONE `composePath_assoc`
+transporting the `leftContext · L` prefix (the window re-bracketing is definitional at single modalities). -/
+
+/-- The align cast: the iterated cap leg's SOURCE `contextLeft · ((L·M)·L · contextRight)` equals the merged cap
+frame's SOURCE `(contextLeft · L) · ((M·L) · contextRight)` — the `leftContext · L`-prefix re-bracketing. -/
+theorem stringMergedCapAlign
+    {leftSourceMode leftTargetMode : AdjointTripleMode}
+    {contextLeftSourceMode contextRightTargetMode : AdjointTripleMode}
+    (sharedLegModality : AdjointTripleModality leftSourceMode leftTargetMode)
+    (otherLegModality : AdjointTripleModality leftTargetMode leftSourceMode)
+    (contextLeft : ModalityPath adjointTripleGraph contextLeftSourceMode leftSourceMode)
+    (contextRight : ModalityPath adjointTripleGraph leftTargetMode contextRightTargetMode) :
+    composePath contextLeft
+        (composePath
+          (composePath (composePath (singletonModalityPath sharedLegModality)
+            (singletonModalityPath otherLegModality)) (singletonModalityPath sharedLegModality)) contextRight)
+      = composePath (composePath contextLeft (singletonModalityPath sharedLegModality))
+          (composePath
+            (composePath (singletonModalityPath otherLegModality) (singletonModalityPath sharedLegModality))
+            contextRight) :=
+  (composePath_assoc contextLeft (singletonModalityPath sharedLegModality)
+    (composePath
+      (composePath (singletonModalityPath otherLegModality) (singletonModalityPath sharedLegModality))
+      contextRight)).symm
+
+/-- The endpoint cast: the iterated cap leg's TARGET `contextLeft · ((L·nil) · contextRight)` equals the merged cap
+frame's TARGET `(contextLeft · L) · (nil · contextRight)`. -/
+theorem stringMergedCapEndpoint
+    {leftSourceMode leftTargetMode : AdjointTripleMode}
+    {contextLeftSourceMode contextRightTargetMode : AdjointTripleMode}
+    (sharedLegModality : AdjointTripleModality leftSourceMode leftTargetMode)
+    (contextLeft : ModalityPath adjointTripleGraph contextLeftSourceMode leftSourceMode)
+    (contextRight : ModalityPath adjointTripleGraph leftTargetMode contextRightTargetMode) :
+    composePath contextLeft
+        (composePath
+          (composePath (singletonModalityPath sharedLegModality)
+            (ModalityPath.nil (graph := adjointTripleGraph) leftTargetMode)) contextRight)
+      = composePath (composePath contextLeft (singletonModalityPath sharedLegModality))
+          (composePath (ModalityPath.nil (graph := adjointTripleGraph) leftTargetMode) contextRight) :=
+  (composePath_assoc contextLeft (singletonModalityPath sharedLegModality)
+    (composePath (ModalityPath.nil (graph := adjointTripleGraph) leftTargetMode) contextRight)).symm
+
+/-- ★ **The cap half of THE CAST BRIDGE.**  The merged cap frame `(leftContext · L) ◁ (rightContext ▷ capGen)` is
+`TwoCellConvFull` to the iterated cap leg `stringSharedLegCapLeg` up to the align / endpoint casts: the composite
+left-whisker `leftContext · L` splits (`whiskerLeftComp`) into `leftContext ◁ (L ◁ (rightContext ▷ capGen))`, and
+the inner `L ◁ (rightContext ▷ capGen)` exchanges (`whiskerExchange`) into `rightContext ▷ (L ◁ capGen)`; the two
+casts fuse (`castBoundary_castBoundary`) into the align / endpoint casts (matched by proof irrelevance).  The string
+twin of `mergedCapFrame_convFull_castCapLeg`. -/
+theorem stringMergedCapFrame_convFull_castCapLeg
+    {leftSourceMode leftTargetMode : AdjointTripleMode}
+    {contextLeftSourceMode contextRightTargetMode : AdjointTripleMode}
+    (sharedLegModality : AdjointTripleModality leftSourceMode leftTargetMode)
+    (otherLegModality : AdjointTripleModality leftTargetMode leftSourceMode)
+    (capGen : RawTwoCellExpr adjointTripleModeSignature
+      (composePath (singletonModalityPath otherLegModality) (singletonModalityPath sharedLegModality))
+      (ModalityPath.nil (graph := adjointTripleGraph) leftTargetMode))
+    (contextLeft : ModalityPath adjointTripleGraph contextLeftSourceMode leftSourceMode)
+    (contextRight : ModalityPath adjointTripleGraph leftTargetMode contextRightTargetMode) :
+    TwoCellConvFull adjointTripleModeSignature
+      (stringMergedCapFrame sharedLegModality otherLegModality capGen contextLeft contextRight)
+      (RawTwoCellExpr.castBoundary
+        (stringMergedCapAlign sharedLegModality otherLegModality contextLeft contextRight)
+        (stringMergedCapEndpoint sharedLegModality contextLeft contextRight)
+        (stringSharedLegCapLeg sharedLegModality otherLegModality capGen contextLeft contextRight)) := by
+  have innerConv := TwoCellConvFull.whiskerLeftCongr contextLeft
+    (TwoCellConvFull.whiskerExchange (singletonModalityPath sharedLegModality) contextRight capGen)
+  rw [RawTwoCellExpr.whiskerLeft_castBoundary] at innerConv
+  have splitOuter := TwoCellConvFull.whiskerLeftComp contextLeft (singletonModalityPath sharedLegModality)
+    (RawTwoCellExpr.whiskerRight contextRight capGen)
+  have combined := splitOuter.trans
+    (TwoCellConvFull.castBoundaryCongr
+      (stringMergedCapAlign sharedLegModality otherLegModality contextLeft contextRight)
+      (stringMergedCapEndpoint sharedLegModality contextLeft contextRight)
+      innerConv)
+  rw [RawTwoCellExpr.castBoundary_castBoundary] at combined
+  exact combined
+
+/-! ## THE MERGED CAST BRIDGE — the two merged frames collapse to the identity -/
+
+/-- The merged frames' alignment cast: the merged cap frame's SOURCE `(contextLeft·L) · ((M·L)·contextRight)`
+equals the merged cup frame's TARGET `contextLeft · ((L·M)·(L·contextRight))` — the same word, re-bracketed.  One
+`composePath_assoc` on the `contextLeft·L` prefix; the window re-bracket is definitional (single modalities). -/
+theorem stringMergedFramesAlign
+    {leftSourceMode leftTargetMode : AdjointTripleMode}
+    {contextLeftSourceMode contextRightTargetMode : AdjointTripleMode}
+    (sharedLegModality : AdjointTripleModality leftSourceMode leftTargetMode)
+    (otherLegModality : AdjointTripleModality leftTargetMode leftSourceMode)
+    (contextLeft : ModalityPath adjointTripleGraph contextLeftSourceMode leftSourceMode)
+    (contextRight : ModalityPath adjointTripleGraph leftTargetMode contextRightTargetMode) :
+    composePath (composePath contextLeft (singletonModalityPath sharedLegModality))
+        (composePath
+          (composePath (singletonModalityPath otherLegModality) (singletonModalityPath sharedLegModality))
+          contextRight)
+      = composePath contextLeft
+          (composePath (composePath (singletonModalityPath sharedLegModality) (singletonModalityPath otherLegModality))
+            (composePath (singletonModalityPath sharedLegModality) contextRight)) :=
+  composePath_assoc contextLeft (singletonModalityPath sharedLegModality)
+    (composePath
+      (composePath (singletonModalityPath otherLegModality) (singletonModalityPath sharedLegModality))
+      contextRight)
+
+/-- The merged frames' endpoint cast: the merged cap frame's TARGET `(contextLeft·L) · (nil·contextRight)` equals
+the merged cup frame's SOURCE `contextLeft · (nil·(L·contextRight))` — the shared boundary. -/
+theorem stringMergedFramesEndpoint
+    {leftSourceMode leftTargetMode : AdjointTripleMode}
+    {contextLeftSourceMode contextRightTargetMode : AdjointTripleMode}
+    (sharedLegModality : AdjointTripleModality leftSourceMode leftTargetMode)
+    (contextLeft : ModalityPath adjointTripleGraph contextLeftSourceMode leftSourceMode)
+    (contextRight : ModalityPath adjointTripleGraph leftTargetMode contextRightTargetMode) :
+    composePath (composePath contextLeft (singletonModalityPath sharedLegModality))
+        (composePath (ModalityPath.nil (graph := adjointTripleGraph) leftTargetMode) contextRight)
+      = composePath contextLeft
+          (composePath (ModalityPath.nil (graph := adjointTripleGraph) leftSourceMode)
+            (composePath (singletonModalityPath sharedLegModality) contextRight)) :=
+  composePath_assoc contextLeft (singletonModalityPath sharedLegModality)
+    (composePath (ModalityPath.nil (graph := adjointTripleGraph) leftTargetMode) contextRight)
+
+/-- ★★ **THE MERGED CAST BRIDGE.**  The merged cup and cap frames — the readback `atomFrame` shapes of a shared-leg
+partner — collapse to the identity on the shared boundary: `mergedCup ⊟ castBoundary(align) mergedCap ≈ id`.  Each
+merged frame lifts to its iterated leg (`stringMergedCupFrame_convFull_cupLeg` cast-free;
+`stringMergedCapFrame_convFull_castCapLeg` with the cap cast fused into the align cast, defeq-invisible), and the
+iterated composite collapses by `stringGeneralContextFrameLegsCollapse`.  The generic string twin of
+`mergedSharedLegFramesCollapse`, taking the `triangle` so it serves both same-colour snakes. -/
+theorem stringMergedSharedLegFramesCollapse
+    {leftSourceMode leftTargetMode : AdjointTripleMode}
+    {contextLeftSourceMode contextRightTargetMode : AdjointTripleMode}
+    (sharedLegModality : AdjointTripleModality leftSourceMode leftTargetMode)
+    (otherLegModality : AdjointTripleModality leftTargetMode leftSourceMode)
+    (cupGen : RawTwoCellExpr adjointTripleModeSignature
+      (ModalityPath.nil (graph := adjointTripleGraph) leftSourceMode)
+      (composePath (singletonModalityPath sharedLegModality) (singletonModalityPath otherLegModality)))
+    (capGen : RawTwoCellExpr adjointTripleModeSignature
+      (composePath (singletonModalityPath otherLegModality) (singletonModalityPath sharedLegModality))
+      (ModalityPath.nil (graph := adjointTripleGraph) leftTargetMode))
+    (triangle : StringSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (stringSnakeCupGenLeg sharedLegModality otherLegModality cupGen)
+        (stringSnakeCapGenLeg sharedLegModality otherLegModality capGen))
+      (RawTwoCellExpr.id (signature := adjointTripleModeSignature)
+        (singletonModalityPath sharedLegModality)))
+    (contextLeft : ModalityPath adjointTripleGraph contextLeftSourceMode leftSourceMode)
+    (contextRight : ModalityPath adjointTripleGraph leftTargetMode contextRightTargetMode) :
+    StringSaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (stringMergedCupFrame sharedLegModality otherLegModality cupGen contextLeft contextRight)
+        (RawTwoCellExpr.castBoundary
+          (stringMergedFramesAlign sharedLegModality otherLegModality contextLeft contextRight)
+          (stringMergedFramesEndpoint sharedLegModality contextLeft contextRight)
+          (stringMergedCapFrame sharedLegModality otherLegModality capGen contextLeft contextRight)))
+      (RawTwoCellExpr.id (signature := adjointTripleModeSignature)
+        (composePath contextLeft
+          (composePath (ModalityPath.nil (graph := adjointTripleGraph) leftSourceMode)
+            (composePath (singletonModalityPath sharedLegModality) contextRight)))) := by
+  have capCastConv : TwoCellConvFull adjointTripleModeSignature
+      (RawTwoCellExpr.castBoundary
+        (stringMergedFramesAlign sharedLegModality otherLegModality contextLeft contextRight)
+        (stringMergedFramesEndpoint sharedLegModality contextLeft contextRight)
+        (stringMergedCapFrame sharedLegModality otherLegModality capGen contextLeft contextRight))
+      (stringSharedLegCapLeg sharedLegModality otherLegModality capGen contextLeft contextRight) := by
+    have transported := TwoCellConvFull.castBoundaryCongr
+      (stringMergedFramesAlign sharedLegModality otherLegModality contextLeft contextRight)
+      (stringMergedFramesEndpoint sharedLegModality contextLeft contextRight)
+      (stringMergedCapFrame_convFull_castCapLeg sharedLegModality otherLegModality capGen contextLeft contextRight)
+    rw [RawTwoCellExpr.castBoundary_castBoundary] at transported
+    exact transported
+  exact StringSaturatedTwoCellConv.trans
+    (StringSaturatedTwoCellConv.vcompCongrLeft
+      (RawTwoCellExpr.castBoundary
+        (stringMergedFramesAlign sharedLegModality otherLegModality contextLeft contextRight)
+        (stringMergedFramesEndpoint sharedLegModality contextLeft contextRight)
+        (stringMergedCapFrame sharedLegModality otherLegModality capGen contextLeft contextRight))
+      (StringSaturatedTwoCellConv.ofFull
+        (stringMergedCupFrame_convFull_cupLeg sharedLegModality otherLegModality cupGen contextLeft contextRight)))
+    (StringSaturatedTwoCellConv.trans
+      (StringSaturatedTwoCellConv.vcompCongrRight
+        (stringSharedLegCupLeg sharedLegModality otherLegModality cupGen contextLeft contextRight)
+        (StringSaturatedTwoCellConv.ofFull capCastConv))
+      (stringGeneralContextFrameLegsCollapse sharedLegModality otherLegModality cupGen capGen triangle
+        contextLeft contextRight))
+
 /-! ## Honesty marker -/
 
-/-- **★ ESTABLISHED (partial) — the leg-factorization extraction and merged frames are machine-checked (FC-3 r7,
-B2 stage 1).**  `stringSharedLegLegShape` EXPOSES the two leg pins (`lcCap = lcCup · L`, `rcCup = L · rcCap`) the
-`sharedLegSnakeReconnect` discards — the load-bearing novelty the merged-frame rewrite consumes.  `stringMergedCupFrame`
-/ `stringMergedCapFrame` are the single-whisker `atomFrame` shapes of a shared-leg cup / cap partner (both legs
-single modalities, so associativity is definitional).
+/-- **★ ESTABLISHED — the leg-factorization extraction, the merged `atomFrame` frames, and THE MERGED CAST BRIDGE
+are machine-checked (FC-3 r7, B2).**  `stringSharedLegLegShape` EXPOSES the two leg pins (`lcCap = lcCup · L`,
+`rcCup = L · rcCap`) the `sharedLegSnakeReconnect` discards — the load-bearing novelty the merged-frame rewrite
+consumes.  `stringMergedCupFrame` / `stringMergedCapFrame` are the single-whisker `atomFrame` shapes of a shared-leg
+partner.  `stringMergedCupFrame_convFull_cupLeg` (cast-free) and `stringMergedCapFrame_convFull_castCapLeg` (cap
+cast, `whiskerLeftComp` + `whiskerExchange`) lift each merged frame to its iterated leg, and
+`stringMergedSharedLegFramesCollapse` collapses `mergedCup ⊟ castBoundary(align) mergedCap ≈ id` — the full string
+port of `mergedSharedLegFramesCollapse`, GENERIC in the shared-leg / cup / cap generators and the triangle, so ONE
+bridge serves both same-colour snakes (`F`-snake / upper-`G`-snake).
 
-  What this marker does NOT close (gates stay `false`): the merged→iterated cast bridges
-  (`whiskerRightComp`/`whiskerLeftComp`/`whiskerExchange`), the merged-frame collapse, and the band-collapse
-  producer with its cast reconciliation.  `fxString_hasStringValleyStraightenBandCollapse` stays `false`.
-  `= true`. -/
+  What this marker does NOT close (gates stay `false`): the FINAL band-collapse producer — rewriting the readback
+  BANDS `stringReadbackBand` into the merged frames via the leg pins (a heterogeneous substitution on the atom's
+  stored contexts, plus the generator PATH-level pinning) and reconciling the goal's `castBoundary coh.symm
+  reconnect.symm` with the merged bridge's `castBoundary(align)`, together with the 2-cell MIXED-colour refutation.
+  `fxString_hasStringValleyStraightenBandCollapse` stays `false`.  `= true`. -/
 def fxString_hasStringSharedLegLegShape : Bool := true
 
 end FX1Poly.Polygraph

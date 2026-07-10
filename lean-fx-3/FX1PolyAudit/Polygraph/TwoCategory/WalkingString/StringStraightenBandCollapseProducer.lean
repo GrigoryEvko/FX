@@ -14,6 +14,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringMergedCupFrame
 #assert_no_axioms FX1Poly.Polygraph.stringMergedCapFrame
 #assert_no_axioms FX1Poly.Polygraph.stringMergedCupFrame_convFull_cupLeg
+#assert_no_axioms FX1Poly.Polygraph.stringMergedCapAlign
+#assert_no_axioms FX1Poly.Polygraph.stringMergedCapEndpoint
+#assert_no_axioms FX1Poly.Polygraph.stringMergedCapFrame_convFull_castCapLeg
+#assert_no_axioms FX1Poly.Polygraph.stringMergedFramesAlign
+#assert_no_axioms FX1Poly.Polygraph.stringMergedFramesEndpoint
+#assert_no_axioms FX1Poly.Polygraph.stringMergedSharedLegFramesCollapse
 #assert_no_axioms FX1Poly.Polygraph.fxString_hasStringSharedLegLegShape
 
 end FX1PolyAudit
