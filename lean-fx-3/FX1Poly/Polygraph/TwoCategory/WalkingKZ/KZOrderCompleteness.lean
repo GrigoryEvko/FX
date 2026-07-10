@@ -1,5 +1,4 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingKZ.KZMonadDecision
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordMultGen
 
 /-! # WalkingKZ/KZOrderCompleteness — the LOCAL covering move of the KZ order (`kzGen` in merge context)
