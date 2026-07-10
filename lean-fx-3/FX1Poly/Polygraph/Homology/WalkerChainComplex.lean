@@ -88,11 +88,21 @@ rule:
   * `R2 : mu ∘ (t ◁ eta) ⟹ id_t`   (removes one `eta`, one `mu`)
   * `R3 : mu ∘ (mu ▷ t) ⟹ mu ∘ (t ◁ mu)`   (associativity — preserves generator counts)
 
-`eta` feeds ONE `mu`-input, so there is no `eta`-sharing overlap; the root-`mu` sharing and `R3`'s
-inner-`mu` overlaps give exactly FOUR critical branchings — the classical coherent monoid
-presentation (pentagon + two unit-associativity triangles + the unit-unit pair). -/
+★ **ENUMERATION REFUTED (r1 adversarial verification) — this list is INCOMPLETE.**  The claim
+"exactly FOUR critical branchings" is FALSE: the complete Knuth–Bendix overlap set has **FIVE**
+members — the enumeration below MISSES the `R2`–`R3` ROOT overlap at `mu(mu(t, t), eta)` (both the
+right-unit rule and associativity fire at the root; the associativity redex's compound argument is on
+the LEFT, so exactly one such root-unit overlap exists).  Consequences: `walkerBasisCount 3 = 4` and
+the `2 x 4` degree-3 boundary below describe an incomplete `C3`; the corrected complex has `C3 = Z^5`
+and a `2 x 5` boundary.  The verifier's damage assessment: the missing column is an assoc/unit cofork
+abelianizing into the SAME `ker d2` span `(1,1)`, so `dd = 0` and the `H2 = 0` read-off SURVIVE the
+correction unchanged.  The r2 round adds the fifth constructor + column, widens the count, and
+re-runs the oracle/SNF.  Until then this file is a valid abstract dd=0 complex, NOT the walking
+monad's. -/
 
-/-- The four Squier critical pairs of the walking-monad presentation. -/
+/-- The Squier critical pairs of the walking-monad presentation — **INCOMPLETE as shipped (four of
+FIVE)**: the `R2`–`R3` root overlap `mu(mu(t, t), eta)` is missing; see the refutation note above.
+The r2 round extends this inductive. -/
 inductive MonadCriticalPair
   /-- (a) `R1`–`R2` overlap at `mu(eta, eta) : id ⇒ t` — both legs reduce to `eta`. -/
   | unitUnit
@@ -375,10 +385,13 @@ theorem walkerDegreeTwoSmithHandoff : WalkerDegreeTwoSmithHandoffStatement :=
 
 ### Honest scoping
 
-Degrees `0..3`, ONE walker (the walking monad).  Higher degrees are zero (`walkerBasisCount ≥ 4 = 0`)
-— the presentation has no cells above the degree-2 generators / degree-3 critical pairs, so the
-recorded complex is complete.  Every declaration is zero-axiom (independent `#print axioms`) and
-`decide` is used only on boundary LITERALS, never on a Smith-driver expression.
+Degrees `0..3`, ONE walker (the walking monad).  Higher degrees are zero (`walkerBasisCount ≥ 4 = 0`).
+★ **COMPLETENESS REFUTED (r1 adversarial verification):** the degree-3 basis is INCOMPLETE — the
+critical-pair enumeration misses the `R2`–`R3` root overlap `mu(mu(t, t), eta)` (five overlaps, not
+four; see the header note), so the recorded complex is NOT the walking monad's until the r2
+correction lands.  `dd = 0` and the `H2 = 0` read-off survive the correction (verifier damage
+assessment).  Every declaration is zero-axiom (independent `#print axioms`) and `decide` is used
+only on boundary LITERALS, never on a Smith-driver expression.
 
 ### Named future nodes (NOT jams — deferred, decided elsewhere)
 
@@ -389,10 +402,14 @@ recorded complex is complete.  Every declaration is zero-axiom (independent `#pr
     loop-free polygraph (not just the walking monad) into an `AugmentedDirectedComplex`.  Future work;
     r1 is the concrete seed. -/
 
-/-- ★ **The walking-monad homology ledger marker.**  All five H2-CHAIN r1 bricks shipped, every rung
-decided, zero-axiom: the chain complex (`walkerChainComplex`), the machine-checked `d d = 0`
-(`walkerChainComplexBoundaryComposesToZero`), the oracle-confirmed non-vacuous boundaries, and the
-inhabited Smith handoff (`walkerDegreeTwoSmithHandoff`) for #2138.  `= true`. -/
+/-- **The walking-monad homology ledger marker — the r1 COMPLETENESS claim is REFUTED.**  What
+genuinely stands, zero-axiom: an abstract `AugmentedDirectedComplex` instance with machine-checked
+`d d = 0`, oracle-confirmed non-vacuous boundaries, and an inhabited SNF handoff.  What is REFUTED:
+that this complex is the walking monad's — the degree-3 basis misses the fifth critical pair
+(`mu(mu(t, t), eta)`, the `R2`–`R3` root overlap), so `= true` here records only the MECHANICAL
+bricks; the mathematical completeness waits on the r2 fifth-column correction.  The marker keeps its
+shipped name and value for stability; read its meaning from THIS docstring (the honest-record
+convention, precedent `SmithCascadeReDiagonalizesStatement`). -/
 def walkerHomologyLedgerIsComplete : Bool := true
 
 end FX1Poly.Polygraph.Homology
