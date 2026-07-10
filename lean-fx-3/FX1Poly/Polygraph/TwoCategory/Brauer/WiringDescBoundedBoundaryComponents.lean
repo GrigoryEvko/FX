@@ -2,6 +2,7 @@ import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescConnectivityMono
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingGodement
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryReads
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescReachable
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEvents
 
 /-! # BRAUER-MIDDLE r6 B1 (partial) — the T-DISJOINT invariant `boundedBoundaryComponents`, its seed base case,
 and non-vacuity (the forest-cardinality "no over-connection" core of R3-A-TAGCORR)
@@ -565,6 +566,247 @@ theorem boundedBoundaryComponents_stepCap (bottomCount : Nat) (state : WireState
     (capBoundaryReindex_ne bottomCount position firstIndex thirdIndex firstNeThird)
     (capBoundaryReindex_ne bottomCount position secondIndex thirdIndex secondNeThird)
     sameFirstSecond sameFirstThird
+
+/-! ## B2 — THE CUP preservation: the confined FRESH join (no total reindex; a fresh-leg case split)
+
+`stepCup` splices two FRESH legs `nextFresh`, `nextFresh + 1` into the open-wire window and joins them.  Both join
+endpoints are fresh (disconnected from every old node), so the join is INVISIBLE to old boundary reads and the fresh
+pair forms its own two-element component.  The forward old->new boundary reindex is exactly the cap's
+`capBoundaryReindex` (old indices shift UP by two past the window — the two leg slots), so no `index - 2`
+subtraction is needed (the propext subtraction wall the r7 marker flagged is avoided by using the shipped ADDITIVE
+past-block read).  The preservation is a case split: an index reading a fresh leg forces every co-component index to
+read a fresh leg too, and there are only two such indices (a pigeonhole); the all-old case transports to the base
+invariant through the fresh-inert join. -/
+
+/-- Every boundary node read is below the fresh counter (range values `< bottomCount <= nextFresh`, open wires
+`< nextFresh`, past-the-end default `0 < nextFresh`). -/
+private theorem boundaryRead_lt_nextFreshBBC (bottomCount : Nat) (state : WireState)
+    (fresh : WiringDescStateFresh state) (bottomLe : bottomCount ≤ state.nextFresh)
+    (nfPos : 0 < state.nextFresh) (index : Nat) :
+    natListGetAt (matchingBoundaryNodes bottomCount state) index < state.nextFresh := by
+  cases Nat.lt_or_ge index bottomCount with
+  | inl belowBottom =>
+      show natListGetAt (List.range bottomCount ++ state.openWires) index < state.nextFresh
+      rw [natListGetAt_appendLeftBBC (List.range bottomCount) state.openWires index
+          (by rw [rangeLengthBBC]; exact belowBottom),
+        rangeGetAt_belowBBC bottomCount index belowBottom]
+      exact Nat.lt_of_lt_of_le belowBottom bottomLe
+  | inr atLeastBottom =>
+      obtain ⟨offset, rfl⟩ := Nat.le.dest atLeastBottom
+      rw [matchingBoundaryNodes_getAt_top bottomCount state offset]
+      exact natListGetAt_lt state.nextFresh nfPos state.openWires offset fresh.1
+
+/-- A base fresh node (`nextFresh`) is disconnected from every old node (`< nextFresh`): its root is itself, the old
+node's root stays below. -/
+private theorem sameComponent_nextFresh_old_falseBBC (state : WireState) (fresh : WiringDescStateFresh state)
+    (oldNode : Nat) (oldBelow : oldNode < state.nextFresh) :
+    isSameComponent state.links state.nextFresh oldNode = false := by
+  show (unionFindRootOf state.links state.nextFresh == unionFindRootOf state.links oldNode) = false
+  rw [unionFindRootOf_eq_self_ofFresh state.nextFresh state.links
+      (fun edge edgeMem => (fresh.2 edge edgeMem).1) state.nextFresh (Nat.le_refl state.nextFresh)]
+  exact decide_eq_false (fun rootEq =>
+    Nat.ne_of_lt (unionFindRootOf_lt_of_fresh state.links state.nextFresh
+      (fun edge edgeMem => (fresh.2 edge edgeMem).2) oldNode oldBelow) rootEq.symm)
+
+/-- The base fresh RIGHT leg (`nextFresh + 1`) is likewise disconnected from every old node. -/
+private theorem sameComponent_nextFreshSucc_old_falseBBC (state : WireState) (fresh : WiringDescStateFresh state)
+    (oldNode : Nat) (oldBelow : oldNode < state.nextFresh) :
+    isSameComponent state.links (state.nextFresh + 1) oldNode = false := by
+  show (unionFindRootOf state.links (state.nextFresh + 1) == unionFindRootOf state.links oldNode) = false
+  rw [unionFindRootOf_eq_self_ofFresh state.nextFresh state.links
+      (fun edge edgeMem => (fresh.2 edge edgeMem).1) (state.nextFresh + 1) (Nat.le_succ state.nextFresh)]
+  exact decide_eq_false (fun rootEq =>
+    Nat.ne_of_lt (Nat.lt_succ_of_lt (unionFindRootOf_lt_of_fresh state.links state.nextFresh
+      (fun edge edgeMem => (fresh.2 edge edgeMem).2) oldNode oldBelow)) rootEq.symm)
+
+/-- The cup's fresh join is INVISIBLE to two old nodes: joining `nextFresh`/`nextFresh + 1` leaves the
+same-component view on old probes equal to the base view (both bridging disjuncts collapse — the fresh legs are
+disconnected from either old node). -/
+private theorem cupJoin_inert_oldBBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (nodeA nodeB : Nat)
+    (aBelow : nodeA < state.nextFresh) (bBelow : nodeB < state.nextFresh) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) nodeA nodeB
+      = isSameComponent state.links nodeA nodeB := by
+  rw [isSameComponent_unionFindJoin state.links forest state.nextFresh (state.nextFresh + 1) nodeA nodeB,
+    sameComponent_nextFresh_old_falseBBC state fresh nodeA aBelow,
+    sameComponent_nextFresh_old_falseBBC state fresh nodeB bBelow]
+  cases isSameComponent state.links nodeA nodeB <;> rfl
+
+/-- The cup's fresh LEFT leg (`nextFresh`) is disconnected, under the join, from every old node. -/
+private theorem cupJoin_nextFresh_old_falseBBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (oldNode : Nat) (oldBelow : oldNode < state.nextFresh) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) state.nextFresh oldNode
+      = false := by
+  rw [isSameComponent_unionFindJoin state.links forest state.nextFresh (state.nextFresh + 1)
+      state.nextFresh oldNode,
+    sameComponent_nextFresh_old_falseBBC state fresh oldNode oldBelow,
+    sameComponent_nextFreshSucc_old_falseBBC state fresh oldNode oldBelow]
+  cases isSameComponent state.links state.nextFresh state.nextFresh <;> rfl
+
+/-- The cup's fresh RIGHT leg (`nextFresh + 1`) is disconnected, under the join, from every old node. -/
+private theorem cupJoin_nextFreshSucc_old_falseBBC (state : WireState) (forest : isUnionFindForest state.links)
+    (fresh : WiringDescStateFresh state) (oldNode : Nat) (oldBelow : oldNode < state.nextFresh) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) (state.nextFresh + 1) oldNode
+      = false := by
+  rw [isSameComponent_unionFindJoin state.links forest state.nextFresh (state.nextFresh + 1)
+      (state.nextFresh + 1) oldNode,
+    sameComponent_nextFreshSucc_old_falseBBC state fresh oldNode oldBelow,
+    sameComponent_nextFresh_old_falseBBC state fresh oldNode oldBelow]
+  cases isSameComponent state.links state.nextFresh (state.nextFresh + 1) <;> rfl
+
+/-- ★ **The post-cup boundary read classification.**  Every post-cup boundary index either reads the LEFT fresh leg
+(`= bottomCount + position`), the RIGHT fresh leg (`= bottomCount + (position + 1)`), or an OLD node whose pre-cup
+index is `capBoundaryReindex bottomCount position pre` (the same additive up-shift the cap uses).  No index-`- 2`
+subtraction — the past-block reindex is stated additively through the shipped cup read. -/
+private theorem cupReadClassBBC (bottomCount : Nat) (state : WireState) (position : Nat)
+    (positionLe : position ≤ state.openWires.length)
+    (index : Nat) (indexRange : index < bottomCount + state.openWires.length + 2) :
+    (index = bottomCount + position
+       ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepCup state position)) index = state.nextFresh)
+    ∨ (index = bottomCount + (position + 1)
+       ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepCup state position)) index = state.nextFresh + 1)
+    ∨ (∃ pre, pre < bottomCount + state.openWires.length
+        ∧ index = capBoundaryReindex bottomCount position pre
+        ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepCup state position)) index
+            = natListGetAt (matchingBoundaryNodes bottomCount state) pre) := by
+  cases Nat.lt_or_ge index (bottomCount + position) with
+  | inl belowWindow =>
+      refine Or.inr (Or.inr ⟨index, ?_, ?_, ?_⟩)
+      · exact Nat.lt_of_lt_of_le belowWindow (Nat.add_le_add_left positionLe bottomCount)
+      · show index = (if index < bottomCount + position then index else index + 2)
+        rw [if_pos belowWindow]
+      · cases Nat.lt_or_ge index bottomCount with
+        | inl belowBottom =>
+            exact matchingBoundaryNodes_getAt_bottomAgrees bottomCount (stepCup state position) state index
+              belowBottom
+        | inr atLeastBottom =>
+            obtain ⟨offset, rfl⟩ := Nat.le.dest atLeastBottom
+            exact matchingBoundaryNodes_stepCup_getAt_below bottomCount state position offset
+              (Nat.lt_of_add_lt_add_left belowWindow)
+              (Nat.lt_of_lt_of_le (Nat.lt_of_add_lt_add_left belowWindow) positionLe)
+  | inr atWindow =>
+      cases Nat.lt_or_ge index (bottomCount + position + 2) with
+      | inl belowPlus2 =>
+          cases Nat.lt_or_ge index (bottomCount + position + 1) with
+          | inl belowPlus1 =>
+              have indexEq : index = bottomCount + position :=
+                Nat.le_antisymm (Nat.le_of_lt_succ belowPlus1) atWindow
+              subst indexEq
+              exact Or.inl ⟨rfl,
+                matchingBoundaryNodes_stepCup_getAt_leftLeg bottomCount state position positionLe⟩
+          | inr atPlus1 =>
+              have indexEq : index = bottomCount + position + 1 :=
+                Nat.le_antisymm (Nat.le_of_lt_succ belowPlus2) atPlus1
+              subst indexEq
+              refine Or.inr (Or.inl ⟨?_, ?_⟩)
+              · rw [Nat.add_assoc bottomCount position 1]
+              · rw [Nat.add_assoc bottomCount position 1]
+                exact matchingBoundaryNodes_stepCup_getAt_rightLeg bottomCount state position positionLe
+      | inr atPlus2 =>
+          obtain ⟨offset, rfl⟩ := Nat.le.dest atPlus2
+          have indexAsPast : bottomCount + position + 2 + offset = bottomCount + (position + offset + 2) := by
+            rw [Nat.add_assoc bottomCount position 2, Nat.add_assoc bottomCount (position + 2) offset,
+              Nat.add_right_comm position 2 offset]
+          refine Or.inr (Or.inr ⟨bottomCount + (position + offset), ?_, ?_, ?_⟩)
+          · have hlt : bottomCount + (position + offset + 2) < bottomCount + state.openWires.length + 2 :=
+              indexAsPast ▸ indexRange
+            rw [← Nat.add_assoc bottomCount (position + offset) 2] at hlt
+            exact Nat.lt_of_add_lt_add_right hlt
+          · rw [indexAsPast]
+            show bottomCount + (position + offset + 2)
+              = (if bottomCount + (position + offset) < bottomCount + position then bottomCount + (position + offset)
+                 else bottomCount + (position + offset) + 2)
+            rw [if_neg (Nat.not_lt.mpr (Nat.add_le_add_left (Nat.le_add_right position offset) bottomCount)),
+              Nat.add_assoc bottomCount (position + offset) 2]
+          · rw [indexAsPast]
+            exact matchingBoundaryNodes_stepCup_getAt_pastBlock bottomCount state position offset positionLe
+
+/-- ★ **THE CUP preservation.**  `boundedBoundaryComponents` survives an in-range `stepCup`.  Every post-cup
+boundary index reads a fresh leg (`nextFresh` / `nextFresh + 1`) or an old node (`cupReadClassBBC`); the fresh join
+is invisible to old nodes (`cupJoin_inert_oldBBC`) and the fresh pair is disconnected from every old node
+(`cupJoin_nextFresh{,Succ}_old_falseBBC`).  An index reading a fresh leg forces every co-component index to read a
+fresh leg too, and only two indices do (a pigeonhole); the all-old case transports the star to the base invariant
+through the fresh-inert join and the injective up-shift `capBoundaryReindex`.  Requires the four reachable-state
+conditions (fresh / forest / positive counter / bottom-fits) plus the cup window in range
+(`position <= openWires.length`). -/
+theorem boundedBoundaryComponents_stepCup (bottomCount : Nat) (state : WireState) (position : Nat)
+    (fresh : WiringDescStateFresh state) (forest : isUnionFindForest state.links)
+    (nfPos : 0 < state.nextFresh) (bottomLe : bottomCount ≤ state.nextFresh)
+    (positionLe : position ≤ state.openWires.length)
+    (bounded : boundedBoundaryComponents bottomCount state) :
+    boundedBoundaryComponents bottomCount (stepCup state position) := by
+  intro firstIndex secondIndex thirdIndex firstBelow secondBelow thirdBelow
+    firstNeSecond firstNeThird secondNeThird sameConjunction
+  obtain ⟨sameFirstSecond, sameFirstThird⟩ := sameConjunction
+  rw [stepCup_openWiresLength state position, ← Nat.add_assoc bottomCount state.openWires.length 2]
+    at firstBelow secondBelow thirdBelow
+  have classFirst := cupReadClassBBC bottomCount state position positionLe firstIndex firstBelow
+  have classSecond := cupReadClassBBC bottomCount state position positionLe secondIndex secondBelow
+  have classThird := cupReadClassBBC bottomCount state position positionLe thirdIndex thirdBelow
+  have sfs : isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup state position)) firstIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup state position)) secondIndex) = true :=
+    sameFirstSecond
+  have sft : isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup state position)) firstIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup state position)) thirdIndex) = true :=
+    sameFirstThird
+  rcases classFirst with ⟨hidxF, hrF⟩ | ⟨hidxF, hrF⟩ | ⟨preF, preFrange, hidxF, hrF⟩
+  · -- first reads the LEFT fresh leg
+    rw [hrF] at sfs sft
+    rcases classSecond with ⟨hidxS, _⟩ | ⟨hidxS, _⟩ | ⟨preS, _, _, hrS⟩
+    · exact firstNeSecond (hidxF.trans hidxS.symm)
+    · rcases classThird with ⟨hidxT, _⟩ | ⟨hidxT, _⟩ | ⟨preT, _, _, hrT⟩
+      · exact firstNeThird (hidxF.trans hidxT.symm)
+      · exact secondNeThird (hidxS.trans hidxT.symm)
+      · rw [hrT, cupJoin_nextFresh_old_falseBBC state forest fresh _
+          (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preT)] at sft
+        exact Bool.noConfusion sft
+    · rw [hrS, cupJoin_nextFresh_old_falseBBC state forest fresh _
+        (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preS)] at sfs
+      exact Bool.noConfusion sfs
+  · -- first reads the RIGHT fresh leg
+    rw [hrF] at sfs sft
+    rcases classSecond with ⟨hidxS, _⟩ | ⟨hidxS, _⟩ | ⟨preS, _, _, hrS⟩
+    · rcases classThird with ⟨hidxT, _⟩ | ⟨hidxT, _⟩ | ⟨preT, _, _, hrT⟩
+      · exact secondNeThird (hidxS.trans hidxT.symm)
+      · exact firstNeThird (hidxF.trans hidxT.symm)
+      · rw [hrT, cupJoin_nextFreshSucc_old_falseBBC state forest fresh _
+          (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preT)] at sft
+        exact Bool.noConfusion sft
+    · exact firstNeSecond (hidxF.trans hidxS.symm)
+    · rw [hrS, cupJoin_nextFreshSucc_old_falseBBC state forest fresh _
+        (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preS)] at sfs
+      exact Bool.noConfusion sfs
+  · -- first reads an OLD node
+    rw [hrF] at sfs sft
+    rcases classSecond with ⟨_, hrS⟩ | ⟨_, hrS⟩ | ⟨preS, preSrange, hidxS, hrS⟩
+    · rw [hrS, isSameComponent_symm, cupJoin_nextFresh_old_falseBBC state forest fresh _
+        (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preF)] at sfs
+      exact Bool.noConfusion sfs
+    · rw [hrS, isSameComponent_symm, cupJoin_nextFreshSucc_old_falseBBC state forest fresh _
+        (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preF)] at sfs
+      exact Bool.noConfusion sfs
+    · rw [hrS, cupJoin_inert_oldBBC state forest fresh _ _
+        (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preF)
+        (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preS)] at sfs
+      rcases classThird with ⟨_, hrT⟩ | ⟨_, hrT⟩ | ⟨preT, preTrange, hidxT, hrT⟩
+      · rw [hrT, isSameComponent_symm, cupJoin_nextFresh_old_falseBBC state forest fresh _
+          (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preF)] at sft
+        exact Bool.noConfusion sft
+      · rw [hrT, isSameComponent_symm, cupJoin_nextFreshSucc_old_falseBBC state forest fresh _
+          (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preF)] at sft
+        exact Bool.noConfusion sft
+      · rw [hrT, cupJoin_inert_oldBBC state forest fresh _ _
+          (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preF)
+          (boundaryRead_lt_nextFreshBBC bottomCount state fresh bottomLe nfPos preT)] at sft
+        have preFneS : preF ≠ preS := fun heq => firstNeSecond
+          (hidxF.trans ((congrArg (capBoundaryReindex bottomCount position) heq).trans hidxS.symm))
+        have preFneT : preF ≠ preT := fun heq => firstNeThird
+          (hidxF.trans ((congrArg (capBoundaryReindex bottomCount position) heq).trans hidxT.symm))
+        have preSneT : preS ≠ preT := fun heq => secondNeThird
+          (hidxS.trans ((congrArg (capBoundaryReindex bottomCount position) heq).trans hidxT.symm))
+        exact bounded preF preS preT preFrange preSrange preTrange preFneS preFneT preSneT ⟨sfs, sft⟩
 
 /-! ## Honesty markers -/
 
