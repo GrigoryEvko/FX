@@ -1089,6 +1089,8 @@ import FX1PolyAudit.Tier0.Term.Subst.PastingCompositeLinearizationAudit
 import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
 -- OMEGA-7 r1 — the per-dimension admission chain seed (kernel-as-value shape, B3)
 import FX1PolyAudit.Polygraph.Omega.AdmissionChainSeedAudit
+-- OMEGA-7 r3 — the kernel-as-value tuple with TYPED per-dimension admission (B1+B2)
+import FX1PolyAudit.Polygraph.Omega.TypedKernelTupleAudit
 -- OMEGA-7 r1 — the grand-rung ledger + Makkai wall + staircase criteria (B4)
 import FX1PolyAudit.Polygraph.Omega.SubstitutionPastingLedgerAudit
 
