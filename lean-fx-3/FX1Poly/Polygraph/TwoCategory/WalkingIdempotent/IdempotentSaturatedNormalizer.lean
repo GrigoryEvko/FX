@@ -377,6 +377,22 @@ def idempotentNativeDecidesTrue_smoke : Bool :=
 /-- Smoke value: the native decider returns `true` on the genuine size-4 pair (by `rfl`). -/
 theorem idempotentNativeDecidesTrue_smoke_holds : idempotentNativeDecidesTrue_smoke = true := rfl
 
+/-- Regression agreement (route B): on the shipped size-4 regression pair, the BESPOKE-FREE native decider and the
+old bespoke-riding `decideSaturatedConvOverIdempotent` return the SAME verdict (both `isTrue`).  The re-founded
+route reproduces the shipped decision. -/
+def idempotentNativeAgreesOldOnRegression : Bool :=
+  (match decideSaturatedConvOverIdempotentNative (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
+      (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell) with
+    | isTrue _ => true
+    | isFalse _ => false)
+  == (match decideSaturatedConvOverIdempotent (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
+      (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell) with
+    | isTrue _ => true
+    | isFalse _ => false)
+
+/-- Regression value: the native and old deciders agree on the regression pair (by `rfl`). -/
+theorem idempotentNativeAgreesOldOnRegression_holds : idempotentNativeAgreesOldOnRegression = true := rfl
+
 /-! ## Honesty marker -/
 
 /-- ★★ **Honesty marker — the walking-idempotent-monad saturated decision RE-FOUNDED GENERIC-NATIVE (POLY-TAB r4).**
