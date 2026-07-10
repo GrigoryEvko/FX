@@ -10,15 +10,6 @@ COMPLETE soundness leg `monadMonotoneMapOf_mapEqOfConv`.  Must be free of `prope
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.mapsInto_mono
-#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_mapsInto
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_hcomp
-#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_disjointCommute
-#assert_no_axioms FX1Poly.Polygraph.composeMap_middleSwap
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_interchange
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_eqOfStep
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_eqOfConv
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_eqOfConvFull
 #assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_mapEqOfConv
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasMapEqOfConvComplete
 

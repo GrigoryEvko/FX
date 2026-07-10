@@ -86,4 +86,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_whiskerLeftCongr
 #assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_whiskerRightCongr
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasWhiskerEmbeddingAndCongruence
+
+#assert_no_axioms FX1Poly.Polygraph.mapsInto_mono
+#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_mapsInto
+#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_hcomp
+#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_disjointCommute
+#assert_no_axioms FX1Poly.Polygraph.composeMap_middleSwap
+#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_interchange
+#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_eqOfStep
+#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_eqOfConv
+#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_eqOfConvFull
 end FX1PolyAudit
