@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.Steiner.AugmentedDirectedComplex
+import FX1Poly.Polygraph.Omega.SteinerFoundation.AugmentedDirectedComplex
 
 /-! # FX1Poly/Polygraph/Steiner/CellCoordinates — cell = integer vector; source/target = d-split
     (frontiers.md §3.1, Appendix A.1)

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Steiner.LoopFreeOrder
+import FX1Poly.Polygraph.Omega.SteinerFoundation.LoopFreeOrder
 
 /-! # FX1PolyAudit/Polygraph/Steiner/LoopFreeOrder — zero-axiom gate (the canonical SN precedence)
 

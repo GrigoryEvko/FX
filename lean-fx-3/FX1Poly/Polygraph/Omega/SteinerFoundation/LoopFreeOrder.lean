@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.Steiner.AugmentedDirectedComplex
+import FX1Poly.Polygraph.Omega.SteinerFoundation.AugmentedDirectedComplex
 
 /-! # FX1Poly/Polygraph/Steiner/LoopFreeOrder — the boundary-containment order = canonical SN
     precedence (frontiers.md §3.1: retires the fib-3-floor "which LPO?" question)

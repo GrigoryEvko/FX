@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Steiner.CellCoordinates
+import FX1Poly.Polygraph.Omega.SteinerFoundation.CellCoordinates
 
 /-! # FX1PolyAudit/Polygraph/Steiner/CellCoordinates — zero-axiom gate
 

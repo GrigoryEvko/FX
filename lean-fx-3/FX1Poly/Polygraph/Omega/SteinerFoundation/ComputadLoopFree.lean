@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.Steiner.LoopFreeOrder
-import FX1Poly.Polygraph.Steiner.CellCoordinates
+import FX1Poly.Polygraph.Omega.SteinerFoundation.LoopFreeOrder
+import FX1Poly.Polygraph.Omega.SteinerFoundation.CellCoordinates
 
 /-! # FX1Poly/Polygraph/Steiner/ComputadLoopFree — the ADC-computed same-dimension order + a REAL
     inhabited loop-free instance (frontiers.md §3.1; Steiner Thm 1.2.1.23)

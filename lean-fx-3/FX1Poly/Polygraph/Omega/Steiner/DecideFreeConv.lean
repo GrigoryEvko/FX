@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.Steiner.DecidableCellEq
+import FX1Poly.Polygraph.Omega.SteinerFoundation.DecidableCellEq
 import FX1Poly.Polygraph.Omega.Steiner.Soundness
 
 /-! # Polygraph/Omega/Steiner/DecideFreeConv — the sound semi-decider + non-vacuity (OMEGA-2 r1, B5)

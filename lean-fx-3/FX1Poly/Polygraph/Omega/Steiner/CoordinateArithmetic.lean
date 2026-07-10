@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.Steiner.CellCoordinates
+import FX1Poly.Polygraph.Omega.SteinerFoundation.CellCoordinates
 import FX1Poly.ComputerAlgebra.Number.IntArithmeticCore
 import FX1Poly.ComputerAlgebra.Number.IntAddAssociativity
 

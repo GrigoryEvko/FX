@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.Steiner.CellCoordinates
+import FX1Poly.Polygraph.Omega.SteinerFoundation.CellCoordinates
 
 /-! # FX1Poly/Polygraph/Steiner/DecidableCellEq — the free-fragment word-problem decider
     (frontiers.md §3.1: "two composites are the same cell iff their integer vectors are equal")

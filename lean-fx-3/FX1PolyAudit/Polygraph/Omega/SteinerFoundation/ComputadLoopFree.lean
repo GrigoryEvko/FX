@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Steiner.ComputadLoopFree
+import FX1Poly.Polygraph.Omega.SteinerFoundation.ComputadLoopFree
 
 /-! # FX1PolyAudit/Polygraph/Steiner/ComputadLoopFree — zero-axiom gate (the inhabited loop-free
     instance)

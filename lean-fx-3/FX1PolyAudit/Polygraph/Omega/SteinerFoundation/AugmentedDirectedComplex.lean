@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Steiner.AugmentedDirectedComplex
+import FX1Poly.Polygraph.Omega.SteinerFoundation.AugmentedDirectedComplex
 
 /-! # FX1PolyAudit/Polygraph/Steiner/AugmentedDirectedComplex — zero-axiom gate
 

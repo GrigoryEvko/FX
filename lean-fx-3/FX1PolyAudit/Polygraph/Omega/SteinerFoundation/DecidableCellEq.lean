@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Steiner.DecidableCellEq
+import FX1Poly.Polygraph.Omega.SteinerFoundation.DecidableCellEq
 
 /-! # FX1PolyAudit/Polygraph/Steiner/DecidableCellEq — zero-axiom gate (THE free-fragment decider)
 

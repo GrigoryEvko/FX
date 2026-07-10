@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.Steiner.ComputadLoopFree
+import FX1Poly.Polygraph.Omega.SteinerFoundation.ComputadLoopFree
 
 /-! # Polygraph/Omega/Steiner/StrongSteiner — the admission predicate `isStrongSteiner` (OMEGA-2 r1, B1)
 

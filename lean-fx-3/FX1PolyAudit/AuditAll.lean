@@ -167,6 +167,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.MonadReseat
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.MonadReseatInverse
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ReconstructedDecision
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.EndgameDemo
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchMap
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
@@ -953,11 +954,11 @@ import FX1PolyAudit.AuditModal
 import FX1PolyAudit.AuditFX0Poly
 import FX1PolyAudit.Typed.CellRuleFibration
 import FX1PolyAudit.CapstoneSignoff
-import FX1PolyAudit.Polygraph.Steiner.AugmentedDirectedComplex
-import FX1PolyAudit.Polygraph.Steiner.CellCoordinates
-import FX1PolyAudit.Polygraph.Steiner.DecidableCellEq
-import FX1PolyAudit.Polygraph.Steiner.LoopFreeOrder
-import FX1PolyAudit.Polygraph.Steiner.ComputadLoopFree
+import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.AugmentedDirectedComplex
+import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.CellCoordinates
+import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.DecidableCellEq
+import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.LoopFreeOrder
+import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.ComputadLoopFree
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
