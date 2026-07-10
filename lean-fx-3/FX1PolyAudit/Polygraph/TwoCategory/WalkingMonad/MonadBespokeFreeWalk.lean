@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDeltaGen
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeGen
 
 /-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadBespokeFreeWalk — the transitive-constant META-WALK
 (POLY-TAB r6, the r4 gold standard for the monad lane)
@@ -71,6 +72,21 @@ elab "#assert_constant_depends_on " targetSyntax:ident " needle " needleSyntax:i
 #assert_constant_free_of FX1Poly.Polygraph.Amalgam.monadDecideSaturatedConvOverGen
   needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
 #assert_constant_free_of FX1Poly.Polygraph.Amalgam.monadSaturatedGenDecisionModulo
+  needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
+
+/-! ## WAVE 2: the born-generic normalize + the fully bespoke-free native decider are BESPOKE-FREE (exhaustive walk)
+
+The completeness port `monadNormalizeGen` (`WalkingMonad/MonadNormalizeGen`) and the terminal native decider it
+inhabits (`monadSaturatedCanonicalizationGenNative` / `decideSaturatedConvOverMonadNative`) have NO
+`MonadSaturatedTwoCellConv` anywhere in their FULL transitive constant closure — unlike the INTERIM decider (whose
+completeness field rode the bespoke normalize through `monadSaturated_to_generic`), recorded as `depends_on` below.
+This is the wave-2 flip: the `false → true` of `fxMonad_hasGenericNativeDecider`. -/
+
+#assert_constant_free_of FX1Poly.Polygraph.Amalgam.monadNormalizeGen
+  needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
+#assert_constant_free_of FX1Poly.Polygraph.Amalgam.monadSaturatedCanonicalizationGenNative
+  needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
+#assert_constant_free_of FX1Poly.Polygraph.Amalgam.decideSaturatedConvOverMonadNative
   needle FX1Poly.Polygraph.MonadSaturatedTwoCellConv
 
 /-! ## The NEEDLE-DETECTOR CONTROLS: the BESPOKE deciders DO depend on `MonadSaturatedTwoCellConv` -/

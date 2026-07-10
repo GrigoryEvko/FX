@@ -3,6 +3,7 @@ import FX1Poly.Polygraph.TwoCategory.Table.InvariantFoldInstances
 import FX1Poly.Polygraph.TwoCategory.Table.ThinWalkerMigration
 import FX1Poly.Polygraph.TwoCategory.Table.StrategyRegistry
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeGen
 
 /-! # Polygraph/TwoCategory/Table/LedgerR1 — the POLY-TAB r1 honest ledger + aggregate verdict + the grown
 deletion list (still awaiting confirmation) + the POLY-TAB-2 plan (P4 + P5)
@@ -89,11 +90,11 @@ open FX1Poly.Polygraph.Amalgam (fxMonad_hasLawRelationLeaf fxMonad_hasGenericNat
 the bespoke-free law carrier (S1, `fxMonad_hasLawRelationLeaf`), the born-generic Δ SOUNDNESS leg + decision assembly
 (S2 + S3, `fxMonad_hasGenericNativeSoundnessLeg`, exhaustive-meta-walk-certified bespoke-free), and the working
 INTERIM generic decider with born-generic soundness + regression continuity (S4,
-`fxMonad_hasGenericNativeDeciderInterim`).  It DELIBERATELY EXCLUDES `fxMonad_hasGenericNativeDecider` (which is
-`false`): the fully bespoke-free `decideSaturatedConvOverMonadNative` awaits the born-generic completeness
-`monadNormalizeGen` (the Eilenberg–Zilber word-multiplicativity chain, wave-2).  So this marker asserts exactly what
-is machine-checked: the re-founding's soundness half + assembly + working interim decider ship green and
-zero-axiom; the bespoke-free completeness is the honest named residual.  `= true`. -/
+`fxMonad_hasGenericNativeDeciderInterim`).  It DELIBERATELY EXCLUDES `fxMonad_hasGenericNativeDecider` (a WAVE-1
+snapshot: at r6 it was `false`; the WAVE-2 port lands `monadNormalizeGen` born-generic and flips it `true` — tracked
+by `fxTab_hasMonadNativeRefoundingWave2` below).  So this WAVE-1 marker asserts exactly what r6 machine-checked: the
+re-founding's soundness half + assembly + working interim decider ship green and zero-axiom; the bespoke-free
+completeness was, at r6, the honest named residual.  `= true`. -/
 def fxTab_hasMonadNativeRefounding : Bool :=
   fxMonad_hasLawRelationLeaf
     && fxMonad_hasGenericNativeSoundnessLeg
@@ -102,6 +103,60 @@ def fxTab_hasMonadNativeRefounding : Bool :=
 /-- The r6 monad-re-founding marker computes to `true` — the machine-checked born-generic soundness chain + interim
 decider are complete and green, machine-checked. -/
 theorem hasMonadNativeRefounding_holds : fxTab_hasMonadNativeRefounding = true := by decide
+
+/-! ## The POLY-TAB r6 monad-re-founding WAVE-2 marker (the COMPLETENESS FLIP; strictly factual)
+
+WAVE 2 (this round) re-founded the completeness leg — the Eilenberg–Zilber word-multiplicativity chain
+(`wordMul_vcompGen` / `wordMul_hcompGen` / whisker + gadget-absorb lemmas, ~2000 conv-producing lines) — ctor-for-ctor
+over the generic `SaturatedConvOver monadModeSignature MonadLawRel` carrier (the new `WalkingMonad/MonadWordMultGen` /
+`MonadNormalizeCasesGen` / `MonadVcompMultGen` / `MonadWordVcompGen` / `MonadNormalizeGen` files), inhabiting the
+born-generic normalize `monadNormalizeGen`.  That swaps the interim canonicalization's bespoke-transported completeness
+field for a born-generic one (`monadSaturatedCanonicalizationGenNative`), and assembles the fully bespoke-free
+`decideSaturatedConvOverMonadNative` — flipping `fxMonad_hasGenericNativeDecider` `false → true`. -/
+
+open FX1Poly.Polygraph.Amalgam (fxMonad_hasMonadNormalizeGen fxMonad_hasGenericNativeDeciderComplete
+  fxMonad_hasGenericNativeDecider)
+
+/-- ★★ **The POLY-TAB r6 monad-re-founding WAVE-2 marker (the completeness flip).**  Conjoins the WAVE-1 chain
+(`fxTab_hasMonadNativeRefounding`) with the WAVE-2 completeness flip: the born-generic normalize
+(`fxMonad_hasMonadNormalizeGen`, `monadNormalizeGen` over the generic carrier), the assembled bespoke-free native
+decider (`fxMonad_hasGenericNativeDeciderComplete`, `decideSaturatedConvOverMonadNative`), and the now-flipped decider
+marker (`fxMonad_hasGenericNativeDecider = true`).  Every conjunct is machine-checked: the completeness chain is
+zero-axiom AND exhaustively bespoke-free (the `includeStdlib := true` meta-walk certifies `monadNormalizeGen` /
+`monadSaturatedCanonicalizationGenNative` / `decideSaturatedConvOverMonadNative` have NO `MonadSaturatedTwoCellConv`
+in their full constant closure — 847 constants walked for the decider).  The native decider reproduces the interim +
+old bespoke verdicts on both lane regression pairs (`monadNativeAgreesOnRegression_holds`, incl. the separating
+`isFalse` faces pair).  `= true`. -/
+def fxTab_hasMonadNativeRefoundingWave2 : Bool :=
+  fxTab_hasMonadNativeRefounding
+    && fxMonad_hasMonadNormalizeGen
+    && fxMonad_hasGenericNativeDeciderComplete
+    && fxMonad_hasGenericNativeDecider
+
+/-- The r6 WAVE-2 monad-re-founding marker computes to `true` — the completeness flip shipped complete and green,
+machine-checked. -/
+theorem hasMonadNativeRefoundingWave2_holds : fxTab_hasMonadNativeRefoundingWave2 = true := by decide
+
+/-! ## r7 RETIREMENT PRECONDITION (monad lane; NOTHING deleted this round — the flip UNBLOCKS r7 at the proof level)
+
+The WAVE-2 flip delivers the FIRST of the two r7 conjuncts named at `r7 RETIREMENT-ROUND PREVIEW` below: the
+born-generic `monadNormalizeGen` now exists, so the RE-PROVES core of the monad lane (the whole
+Δ-normalize/decide chain) is retirable AT THE PROOF LEVEL — exactly the idempotent-r4 posture.  The deletion still
+does NOT fire, gated on the SECOND conjunct + user sign-off:
+
+  * **UNBLOCKED (WAVE 2):** the completeness port.  `monadNormalizeGen` is born-generic and exhaustively
+    bespoke-free; the bespoke Δ-normalize/decide chain is no longer the SOLE inhabitant of the completeness leg.
+  * **STILL BLOCKED — the WalkingKZ HARD BLOCKER:** `KZTwoCellLE.ofMonad : MonadSaturatedTwoCellConv a b →
+    KZTwoCellLE a b` (`WalkingKZ/KZMonadPresentation`) consumes the monad conv BOTH ways (antisymmetrization
+    RECOVERS it), needing an oriented / preorder-valued base the symmetric generic carrier does not provide
+    (`fxTab_hasKZWalkerMigration = false`).  `KZOrderCompleteness` / `KZMonadDecision` also directly consume the
+    bespoke `wordMul_hcomp` / `monadNormalize`.  So the bespoke chain STAYS LIVE regardless of the flip.
+  * **Files that reach zero LIVE monad-lane refs once consumers re-point (r7, GATED):** the bespoke Δ-normalize/
+    decide chain (`WalkingMonad/MonadNormalizeCell` / `MonadNormalizeCases` / `MonadWordMultiplicativity` /
+    `MonadWhiskerRightMult` / `MonadWhiskerNormalizeCases` / `MonadHcompMult` / `MonadVcompMult` / `MonadWordVcomp` /
+    `MonadNormalizeVcomp` / `MonadWordProblem`) once (a) the WAVE-2 `...Gen` decider is repointed into the family
+    (`Amalgam/SaturatedRelationFamily.monadRelationFamily`) and (b) the KZ `ofMonad` ctor is given its own oriented
+    base.  Both are separate GATED arcs; nothing is deleted this round (never-delete-without-confirm). -/
 
 /-! ## P4 — the DELETION LIST, GROWN with per-file readiness states (nothing deleted; awaiting confirmation)
 

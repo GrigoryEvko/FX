@@ -116,14 +116,17 @@ rides the bespoke normalize through `monadSaturated_to_generic` (the interim can
 regression pairs (`monadGenAgreesOldOnRegression_holds`, incl. the separating `isFalse` faces pair).  `= true`. -/
 def fxMonad_hasGenericNativeDeciderInterim : Bool := true
 
-/-- **RESIDUAL (honest) — the fully BESPOKE-FREE monad decider is NOT yet complete.**  The completeness field of the
-interim canonicalization transports the bespoke `monadConvOfMapEq_ofNormalize monadNormalize`, so
-`monadSaturatedCanonicalizationGenViaBridge` and `decideSaturatedConvOverMonadInterim` STILL contain
-`MonadSaturatedTwoCellConv` in their constant-closure (the constant meta-walk records this).  The wave-1 residual is
-the born-generic normalize `monadNormalizeGen` — the Eilenberg–Zilber word-multiplicativity chain (`wordMul_vcomp`,
-the vcomp/hcomp/word-multiplicativity conv-producing files) re-founded ctor-for-ctor over the generic carrier, which
-is the substantial wave-2 port.  Once it lands, `convOfMapEqGen` is swapped born-generic, the bespoke-free
-`decideSaturatedConvOverMonadNative` is assembled, and this marker flips.  `= false` (honestly). -/
-def fxMonad_hasGenericNativeDecider : Bool := false
+/-- ★★ **ESTABLISHED (WAVE 2) — the fully BESPOKE-FREE monad decider is COMPLETE.**  The wave-2 port
+(`WalkingMonad/MonadWordMultGen` / `MonadNormalizeCasesGen` / `MonadVcompMultGen` / `MonadWordVcompGen` /
+`MonadNormalizeGen`) re-founded the Eilenberg–Zilber word-multiplicativity chain (`wordMul_vcompGen` / `wordMul_hcompGen`
+/ the vcomp/hcomp/word-multiplicativity conv-producing lemmas) ctor-for-ctor over the generic carrier, inhabiting the
+born-generic normalize `monadNormalizeGen : cell → SaturatedConvOver monadModeSignature MonadLawRel cell (canon cell)`.
+That inhabits `convOfMapEqGen` born-generic in `monadSaturatedCanonicalizationGenNative` (SOUNDNESS field the
+born-generic `monadMonotoneMapOf_mapEqOfConvGen`), yielding the terminal `decideSaturatedConvOverMonadNative`
+(`WalkingMonad/MonadNormalizeGen`) — decided BOTH ways born-generic, its ENTIRE constant-closure free of
+`MonadSaturatedTwoCellConv` (the exhaustive `includeStdlib := true` meta-walk certifies it; 847 constants walked).
+It reproduces the interim + old bespoke verdicts on both lane regression pairs (`monadNativeAgreesOnRegression_holds`,
+incl. the separating `isFalse` faces pair).  `= true`. -/
+def fxMonad_hasGenericNativeDecider : Bool := true
 
 end FX1Poly.Polygraph.Amalgam
