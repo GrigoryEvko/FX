@@ -1112,6 +1112,8 @@ import FX1PolyAudit.Polygraph.Omega.CyclicThreeDemonstratorAudit
 import FX1PolyAudit.Polygraph.Omega.SquierFamilyCensusAudit
 -- WP-SQUIER r3 — the op-dual round: the Omega-lane op transport + walking comonad + idempotent comonad
 import FX1PolyAudit.Polygraph.Omega.PresentationOpDualityWithIdAudit
+-- WP-DISTLAW r1 — the walking distributive law: two-colour Squier presentation, four Beck axioms (B1)
+import FX1PolyAudit.Polygraph.Omega.WalkingDistLawPresentationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
