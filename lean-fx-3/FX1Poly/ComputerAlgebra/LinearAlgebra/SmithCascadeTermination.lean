@@ -62,28 +62,28 @@ matrix (never a sweep over arbitrary window-diagonal inputs, so immune to the r5
     holds exactly `matrix.entryAt foundRow foundCol` — the swap-entry formula that was joint (a)'s backbone
     (needs the found position in range, supplied by the caller).
 
-**The r10 residual (DESIGN-LOCKED, NOT shipped): the fuel-adequacy induction
-`smithCascadeReachesCrossClear`** — a strong induction on `smithCascadeSweep`'s inner fuel that threads
-the PIVOT MAGNITUDE (measure = the found min-abs pivot's `natAbs`; NEVER the abs-sum — the fuel is the
-STATIC budget `smithMinorAbsSum`, read ONCE at cascade entry, so the r8 transient abs-sum growth is
-IRRELEVANT).  With joints (b) and the move swap-entry bridge now shipped, what remains for the recursive
-step is the pivot-magnitude PACKAGING plus the ASSEMBLY: (i) a `smithFindMinAbsInMinorFoundInRange` scan
-companion (the found position sits in `[pivotIndex, height) × [pivotIndex, width)`, feeding
-`smithMoveToPivotEntryOnPivot`'s in-range hypotheses — a structural mirror of the shipped
-`…FoundNonzero`); (ii) the sign-phase magnitude bridge (`(afterSign pivot).natAbs = (afterMove
-pivot).natAbs`, from the shipped `signNormalizeOpsEntryOnPivotIsSignedInput` since `|-x| = |x|`, then the
-shipped `smithClearColumnBelowStepsPreservesRow` carries it through the column clear, and
-`signNormalizeOpsEntryOnPivotNonneg` gives nonnegativity) so that `pivotMag = (matrix.entryAt foundRow
-foundCol).natAbs = cascadeMeasure matrix ≤ f + 1` and is positive (`smithFindMinAbsInMinorFoundNonzero`);
-and (iii) the induction body itself — the `false`-branch bound `cascadeMeasure afterRowClear ≤ f` via
+**H2-SMITH r10 SHIPS the fuel-adequacy induction `smithCascadeReachesCrossClear`** — a strong
+induction on `smithCascadeSweep`'s inner fuel threading the PIVOT MAGNITUDE (measure = the found
+min-abs pivot's `natAbs`; NEVER the abs-sum — the fuel is the STATIC budget `smithMinorAbsSum`, read
+ONCE at cascade entry, so the r8 transient abs-sum growth is IRRELEVANT).  Its three glue joints,
+all now shipped: (i) `smithFindMinAbsInMinorFoundInRange` (the found position sits in
+`[pivotIndex, height) × [pivotIndex, width)`, feeding `smithMoveToPivotEntryOnPivot`'s in-range
+hypotheses — the generic-predicate scan companion `smithScan{Row,Minor}MinAbsResultInRange`); (ii) the
+sign-phase magnitude bridge `smithSignNormalizeOpsPreservesPivotMagnitude`
+(`|afterSign pivot| = |afterMove pivot|` from `signNormalizeOpsEntryOnPivotIsSignedInput` +
+`intNegNatAbs`, carried through the column clear by `smithClearColumnBelowStepsPreservesRow`, nonneg by
+`signNormalizeOpsEntryOnPivotNonneg`) so that `pivotMag = (matrix.entryAt foundRow foundCol).natAbs`
+`≤ f + 1` and is positive; and (iii) the induction body — the `false`-branch bound via
 `smithCrossNotClearWitness` → `smithClear{RowRight,ColumnBelow}StepsCrossEntryStrictlyDecreases`
-(+ `smithClearRowRightStepsPreservesColumn` for the column segment) → `smithFindMinAbsInMinorBoundsWitness`,
-placing the residue witness strictly below `pivotMag ≤ f + 1`.  Every joint is now a NAMED shipped lemma
-except (i) and the assembly wiring.  Even a COMPLETE `smithCascadeReachesCrossClear` delivers ONLY the
-cross-clear conjunct of obligation (a); the sub-block-stays-diagonal + gcd-divides-folded-operands (iv) +
-chain conjuncts feeding `SmithNormalForm`'s `repairWindowDiagHolds` / `repairChainHolds` remain the r10+
-wall — so those two surviving repair hypotheses stay UNCLOSED (no flip; `SmithReduceFullDriverStatement`
-uninhabited).
+(+ `smithClearRowRightStepsPreservesColumn` for the column segment) →
+`smithFindMinAbsInMinorBoundsWitness`, placing the residue witness strictly below `pivotMag ≤ f + 1`,
+hence `≤ f`, feeding the IH via the `smithCascadeSweepSucc` succ-unfolding.  The driver-path corollary
+`smithCascadeSweepSeedReachesCrossClear` discharges it at the ACTUAL seed fuel `smithMinorAbsSum` (via
+`smithMinorEntryLeAbsSum`).  **Honest scope caveat (DESIGN-LOCKED):** `smithCascadeReachesCrossClear`
+delivers ONLY the cross-clear conjunct of obligation (a); the sub-block-stays-diagonal +
+gcd-divides-folded-operands + chain conjuncts feeding `SmithNormalForm`'s `repairWindowDiagHolds` /
+`repairChainHolds` remain the r11+ wall — so those two surviving repair hypotheses stay UNCLOSED (no
+flip; `SmithReduceFullDriverStatement` uninhabited).
 
 ## Zero-axiom
 
