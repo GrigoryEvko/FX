@@ -481,6 +481,58 @@ ROUND-C CARVE-OUT (unchanged, sign-off-gated): the pinned island stays — the p
 `monadRelationFamily_bridge_is_precedent`), and `Amalgam/SaturatedOver` (the migration iffs).  The monad lane is NOT
 retired — it is the SECOND bespoke lane, still live; r7-r2 retired only the superseded interim decider.
 
+### r7-r3 OUTCOME (POLY-TAB r7 r3, MONAD-R7 Round C — the skeleton bridge SEEDED + the first survivor SEVERED, #2228)
+
+r7-r3 EXECUTES the relocation round the r7-r2 OUTCOME banked: it BUILDS the `MonadSaturated*Reps` bridge and
+re-points the first survivor onto it, bespoke-free.  Still ZERO FX1Poly file deletions — the pinned Δ island is
+untouched.
+
+SHIPPED — the bespoke-free bridge `WalkingMonad/MonadSaturatedSkeletonReps`:
+  * holds the ordinal-sum whisker-embedding stratum relocated VERBATIM from `MonadWhiskerEmbedding` (names /
+    namespace / meaning preserved): the cons-only prepend primitives `ascendingPrepend` / `shiftPrepend`, the
+    embedding `embedLocalMap` + its length + three region-wise value characterizations (`_get_left` / `_get_mid` /
+    `_get_right`), and the three-region split `embedRegionSplit`;
+  * imports ONLY the already-bespoke-free `WalkingAdjunction/MonotoneMap` — NO conv file in its closure; audit twin
+    + AuditAll line added, all 11 relocated theorems `#print axioms`-clean by independent scratch;
+  * `MonadWhiskerEmbedding` now imports the bridge (single home, no duplication); the chain is unbroken and its
+    downstream roofs stay green.
+
+SEVERED — `WalkingKZ/KZMonadOrderModel` re-points onto the bridge (dropping `MonadWhiskerEmbedding`) and is now
+provably conv-decoupled: its build closure collapses 121 → 17 jobs with NO monad-conv chain file present.  Its order
+model (`mapLE` poset + the three KZ monotonicity closures) needed only the embed stratum + the `MonotoneMap` base —
+pure CAT-A, no bespoke reflection.
+
+VESTIGIAL SEVER — `WalkingKZ/KZOrderCompleteness` drops its unused `MonadWordProblem` import (0 / 7 owned-decl refs;
+redundant with `MonadWordMultGen`) — a clean standalone green edge-drop, bridge-independent.
+
+CENSUS CORRECTIONS (the r7-r2 RE-SCOPE figures, machine-re-measured against current HEAD):
+  * "~18 bespoke decls" is a severe undercount — the actual conv-free CAT-A cut is ~75 skeleton decls across 17
+    chain files; the bridge is the dependency-closure home of that cut, SEEDED here with the shallowest
+    self-contained layer (the 14-decl embed stratum, whose entire closure is the `MonotoneMap` base alone).
+  * the `IdempotentSaturatedReps -> MonadWhiskerRightMult` edge is NOT purely vestigial: ISR uses 0 of
+    `MonadWhiskerRightMult`'s OWN decls but relies on it TRANSITIVELY for `monadTPower_add` (defined below it, in
+    `MonadWordMultiplicativity`), so the import cannot be dropped standalone — only WITH the bridge supplying
+    `monadTPower_add`.
+
+STILL NOT SEVERED (the deep-stratum wall — BANKED for the next relocation layer): `IdempotentSaturatedReps`
+consumes `monadTPower` / `monadGadget` (`MonadCanonicalWord`), `monadPath_normalForm` (`MonadNormalizeCell`),
+`monadTPower_add` (`MonadWordMultiplicativity`) + the CAT-C cells `monadUnitTwoCell` / `monadMulTwoCell`
+(`MonadSaturatedConv`).  It touches 0 of the deep map stratum DIRECTLY, but `monadPath_normalForm`'s proof
+(`path = monadTPower path.length`, via `monadPath_normalForm_ofLength`) pulls the deep normalization machinery whose
+home files carry CAT-D bespoke (`MonadSaturatedCanonicalization` et al.).  So severing ISR requires relocating the
+deep lower stratum (the monotone-map engine + `canon` / `canonCounts` / `wordFromCounts` / `monadTPower` + closure,
+~7 files) into the bridge — a single large mega-relocation, not a green-incremental drop; banked for the next layer.
+
+DELETIONS — ZERO (unchanged posture): the pinned island pins ALL 19 chain files.  `Amalgam/DeciderReseat ->
+MonadWordProblem -> MonadNormalizeVcomp -> …` pins the whole spine; `Amalgam/SaturatedOver -> MonadSaturatedConv`
+and `SaturatedRelationFamily.monadRelationFamily` pin the root.  No chain file reaches zero refs; the
+reverse-topological deletion order stays GATED behind the sign-off-gated island trio.
+
+#2229 — SEQUENCED, NOT folded in (recon Job 3): the reseated reconstructed decider is a bounded MODE-ADMIT-INV
+brick whose payoff is the UNCONDITIONAL reconstructed decider, NOT island dissolution — folding it in keeps
+`DeciderReseat`'s `monadSaturatedTwoCellDecision` edge and unlocks zero extra deletion.  Parked; the island stays
+states-labeled.
+
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
   * `StringSaturatedTwoCellConv` (WalkingAdjunction / adjoint string) — no generic instance shipped; POLY-TAB-2.
@@ -566,5 +618,18 @@ def fxTab_hasMonadInterimDeciderRetired : Bool := true
 
 /-- The r7-r2 interim-decider-retirement marker computes to `true`, machine-checked. -/
 theorem hasMonadInterimDeciderRetired_holds : fxTab_hasMonadInterimDeciderRetired = true := by decide
+
+/-- ★ **The POLY-TAB r7 r3 marker — the skeleton bridge is SEEDED + the first survivor SEVERED (#2228).**  MONAD-R7
+Round C built the bespoke-free `WalkingMonad/MonadSaturatedSkeletonReps` bridge (the ordinal-sum embed stratum —
+`ascendingPrepend` / `shiftPrepend` / `embedLocalMap` + characterizations + `embedRegionSplit` — relocated VERBATIM
+from `MonadWhiskerEmbedding`, importing only the bespoke-free `MonotoneMap`) and re-pointed `WalkingKZ/
+KZMonadOrderModel` onto it, conv-decoupled (closure 121 → 17 jobs, no monad-conv file).  `KZOrderCompleteness`'s
+vestigial `MonadWordProblem` import is dropped (0 / 7 refs).  ZERO FX1Poly file deleted (the pinned Δ island stays;
+the deep lower-stratum relocation that would free `IdempotentSaturatedReps` is BANKED for the next layer, and #2229
+is SEQUENCED, not folded).  `= true`. -/
+def fxTab_hasMonadSkeletonBridgeSeeded : Bool := true
+
+/-- The r7-r3 skeleton-bridge-seeded marker computes to `true`, machine-checked. -/
+theorem hasMonadSkeletonBridgeSeeded_holds : fxTab_hasMonadSkeletonBridgeSeeded = true := by decide
 
 end FX1Poly.Polygraph.Table
