@@ -83,4 +83,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSucc
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeReachesCrossClear
 
+/- H2-SMITH r10 — the driver-path seed corollary (B3): the cascade at its ACTUAL seed fuel
+   (smithMinorAbsSum) reaches cross-clear. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedReachesCrossClear
+
 end FX1PolyAudit

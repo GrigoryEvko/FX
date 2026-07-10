@@ -2052,4 +2052,34 @@ theorem smithCascadeReachesCrossClear :
                     (natLtAddSubOfLt pivotIndex pivotIndex width (Nat.le_refl pivotIndex) pivotColInRange)
                     rowNonzero witLtPivot
 
+/-- **The cascade at its ACTUAL seed fuel reaches cross-clear** (H2-SMITH r10, B3, driver-path) —
+`smithCascadeReachesCrossClear` discharged at `smithMinorAbsSum matrix pivotIndex height width`, the
+STATIC fuel the total driver (`smithReduceTotalSweep`) and the repair (`smithRepairPositionSweep`)
+actually seed the cascade with.  The fuel-adequacy precondition is met because any found min-abs entry
+sits in the pivot window (`smithFindMinAbsInMinorFoundInRange`) and every window entry's magnitude is
+`≤ smithMinorAbsSum` (`smithMinorEntryLeAbsSum`).  This is the driver-path postcondition — a
+function-correctness fact about the definite cascade word on ONE threaded matrix, under the delivered
+`IsRectangular` + pivot-in-range preconditions — NOT a free-standing sweep pole over arbitrary
+window-diagonal inputs (the r5/r6 refuted shape).  It delivers ONLY the cross-clear conjunct of
+obligation (a); the sub-block-diagonal + gcd-chain conjuncts feeding `SmithNormalForm`'s
+`repairWindowDiagHolds` / `repairChainHolds` stay UNCLOSED this round. -/
+theorem smithCascadeSweepSeedReachesCrossClear (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width) :
+    smithCrossIsClear
+        (matrix.applyOperations
+          (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width))
+        pivotIndex height width = true :=
+  smithCascadeReachesCrossClear (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+    height width isRect pivotRowInRange pivotColInRange
+    (fun foundRow foundCol findEq =>
+      let foundInRange := smithFindMinAbsInMinorFoundInRange matrix pivotIndex height width foundRow
+        foundCol pivotRowInRange pivotColInRange findEq
+      smithMinorEntryLeAbsSum matrix pivotIndex height width foundRow foundCol
+        foundInRange.1
+        (natLtAddSubOfLt pivotIndex foundRow height foundInRange.1 foundInRange.2.1)
+        foundInRange.2.2.1
+        (natLtAddSubOfLt pivotIndex foundCol width foundInRange.2.2.1 foundInRange.2.2.2))
+
 end FX1Poly.ComputerAlgebra
