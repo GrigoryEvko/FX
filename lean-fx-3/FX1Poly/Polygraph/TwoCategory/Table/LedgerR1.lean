@@ -533,6 +533,80 @@ brick whose payoff is the UNCONDITIONAL reconstructed decider, NOT island dissol
 `DeciderReseat`'s `monadSaturatedTwoCellDecision` edge and unlocks zero extra deletion.  Parked; the island stays
 states-labeled.
 
+### r7-r4 OUTCOME (POLY-TAB r7 r4, MONAD-R7 — the DEEP-STRATUM relocation EXECUTED; the "not green-incremental" banking REFUTED; the survivor severance WALLED at the gated `SaturatedOver` island)
+
+r7-r4 EXECUTES the deep lower-stratum mega-relocation the r7-r3 OUTCOME banked as "a single large mega-relocation,
+not a green-incremental drop".  That banking is now REFUTED: the relocation IS green per-source-file, via the r3
+"move the conv-FREE decls DOWN into a bespoke-free leaf + keep the source's bespoke imports (so downstream conv
+reachability is preserved) + have the source import the leaf" pattern.  Every step below is umbrella-green
+(`lake build FX1Poly FX1PolyAudit`), zero-axiom (independent scratch `#print axioms` + per-decl audit-twin gates),
+STRUCTURAL, ASCII-only.
+
+SHIPPED — three new bespoke-free deep leaves (~155 conv-FREE decls relocated VERBATIM, names / namespace / meaning
+preserved):
+  * `WalkingMonad/MonadCellSize` (micro-relocation): the size-floor `one_le_cellSize`, off the `MonadSeed` +
+    `FreeTwoCell/Model` base.  `WalkingMonad/MonadNormalizeGen` (the native decider file) now imports it INSTEAD of
+    `MonadWordProblem`, dropping `MonadWordProblem` from its closure (still imports `MonadNormalizeVcomp` directly, so
+    only that one chain node leaves — honest partial severance of the native-decider file).
+  * `WalkingMonad/MonadSaturatedDeltaReps` (deep leaf 1, off `MonadSeed`+`Model`+`Spine`+`MonotoneMap`+the r3 embed
+    bridge): 81 decls — the CAT-C law-composite cells (7, from `MonadSaturatedConv`), the retuned monotone-map fold
+    (14, from `MonadDeltaModel`), the whole fold ENGINE (27, from `MonadMonotoneEngine`), the map FACTORIZATION (10,
+    from `MonadMapFactorization`), the whisker-EMBEDDING fold-support (14, from `MonadWhiskerEmbedding`), and the
+    Δ-decision Godement/interchange fold-support (9, from `MonadDeltaDecision`: `mapsInto`/`hcomp`/`disjointCommute`/
+    `interchange` + the free-conv legs `eqOfStep`/`eqOfConv`/`eqOfConvFull`).
+  * `WalkingMonad/MonadSaturatedCanonReps` (deep leaf 2, imports leaf 1): 73 decls — the whole canonical-WORD
+    skeleton (34, from `MonadCanonicalWord`: `monadTPower`/`monadGadget`/`wordFromCounts`/`reconstructFrom`/
+    `countsDomainPath`), the fibre-COUNTS round-trip (25, from `MonadCountsRoundTrip`), the canon/boundary-transport
+    stratum (12, from `MonadNormalizeCell`: `countsOf_length`/`monadPath_normalForm`/`canonCounts`/`canon`/
+    `monadMonotoneMapOf_canon`/`canon_eqOfMapEq`), and the survivor-critical `monadTPower_add` + `countsDomainPath_
+    consReplicate_one` (2, from `MonadWordMultiplicativity`).
+The conv-BEARING residue STAYS with its source (each mixed source keeps its bespoke import + imports the leaf so its
+residue still resolves): `MonadSaturatedTwoCellConv` + laws (`MonadSaturatedConv`); `MonadSaturatedCanonicalization`
+struct + `monadDecideSaturatedConvViaMonotoneMap` (`MonadDeltaModel`); `monadMonotoneMapOf_mapEqOfConv`
+(`MonadDeltaDecision`); `MonadNormalizesToCanon` + `monadConvOfMapEq_ofNormalize` (`MonadNormalizeCell`); `wordMul_*`
+(`MonadWordMultiplicativity`).  Every PURE-CONV-FREE source (`MonadMonotoneEngine`/`MonadMapFactorization`/
+`MonadWhiskerEmbedding`/`MonadCanonicalWord`/`MonadCountsRoundTrip`) becomes a chain-preserving SHIM (keeps its
+bespoke import for downstream conv reachability + imports the leaf).
+
+CENSUS CORRECTIONS (the recon's JOB-1 deep census was materially incomplete, machine-re-measured):
+  * `MonadWhiskerEmbedding` is NOT already-handled — it is a PURE conv-free deep MOVE target (14 fold-support decls:
+    `embedLocalMap_composeMap`/`_nest`, `monadMonotoneMapOf_length`/`_mapsInto`/`_whiskerLeft`/`_whiskerRight` + the
+    two fold congruences) that the Δ-decision + downstream strata depend on; only its embed PRIMITIVES went to the r3
+    bridge.  Relocated (leaf 1 now imports the r3 embed bridge).
+  * `MonadNormalizeCases` is NOT pure-bespoke — it is MIXED (18 decls: 11 conv-FREE, 7 conv-bearing).  Its conv-free
+    helpers (`monadOnes`/`length_monadOnes`/`countsDomainPath_monadOnes`, `monadWhiskerLeft_castBoundary`/
+    `monadCastBoundary_castBoundary`/`_id`, the `ascendingFrom`-run counts lemmas) are consumed by the survivor lane
+    (the idempotent bricks + `MonadWordMultiplicativity`'s `*_consAppend_ones`).  These are LEFT in place this round
+    (their conv-free extraction is a further stratum); consequently the `MonadWordMultiplicativity` `*_consAppend_ones`
+    pair and `MonadNormalizeCases`-entangled helpers are NOT relocated.
+
+SEVERED — `WalkingIdempotent/IdempotentMonadSeed` re-points off `MonadSaturatedConv` onto leaf 1 (it needs only the
+CAT-C cells); its closure is now bespoke-chain-free (conv-decoupled), the one clean survivor repoint of r4.
+
+REFUTED — the recon's central r4 premise ("full proof-level severance of the survivor lane: 7 Gen files + ISR + the
+whole idempotent-native lane") is FALSE, machine-verified.  EVERY remaining survivor reaches `MonadSaturatedConv`
+through the sign-off-GATED `Amalgam/SaturatedOver` island, NOT through the repointable deep bespoke chain:
+  * the idempotent-native lane — `IdempotentSaturatedMuInvertible -> IdempotentLawRelation -> SaturatedOver ->
+    MonadSaturatedConv` (a NON-`IdempotentSaturatedReps` path: blocking ISR entirely leaves the pin intact).  So the
+    recon's "IdempotentSaturatedReps is the ONLY path, severing it frees the lane" is wrong.  The ISR repoint is
+    ALSO independently blocked: `IdempotentSaturatedGeneralBricks` consumes `monadWhiskerLeft_castBoundary` /
+    `monadCastBoundary_castBoundary` (stranded in the MIXED `MonadNormalizeCases`) transitively through ISR's dropped
+    imports.
+  * all 7 Gen files — `MonadLawRelation -> SaturatedOver -> MonadSaturatedConv` and `DispatchSaturated ->
+    SaturatedDispatch -> SaturatedOver -> MonadSaturatedConv`; blocking their bespoke `MonadNormalizeVcomp` /
+    `MonadDeltaDecision` imports does NOT remove the pin (they are born-generic over the amalgam dispatch, which
+    routes through `SaturatedOver`).
+Consequence: the survivor lane CANNOT be conv-decoupled in r4 — it universally routes through the gated
+`SaturatedOver` migration-iff pin.  The deep bridges are built and ready, but the severance payoff is walled behind
+the SAME gated island (`SaturatedOver`) that pins the chain for deletion; it does not dissolve until `SaturatedOver`
+is signed off.
+
+DELETIONS — ZERO (unchanged posture, now with a tightened reason): the pinned island pins ALL 19 chain files, and
+the pin is BROADER than the r7-r3 "trio" — `SaturatedOver` reaches the whole generic + idempotent survivor lane via
+`MonadLawRelation` / `DispatchSaturated` / `IdempotentLawRelation`, so no chain file reaches zero refs.  The
+reverse-topological deletion order stays GATED behind `SaturatedOver` (migration iffs), `DeciderReseat` (P3 native
+reseat, #2229), and `monadRelationFamily` (the separating member).
+
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
   * `StringSaturatedTwoCellConv` (WalkingAdjunction / adjoint string) — no generic instance shipped; POLY-TAB-2.
@@ -631,5 +705,24 @@ def fxTab_hasMonadSkeletonBridgeSeeded : Bool := true
 
 /-- The r7-r3 skeleton-bridge-seeded marker computes to `true`, machine-checked. -/
 theorem hasMonadSkeletonBridgeSeeded_holds : fxTab_hasMonadSkeletonBridgeSeeded = true := by decide
+
+/-- ★ **The POLY-TAB r7 r4 marker — the DEEP-stratum mega-relocation is EXECUTED, the "not green-incremental"
+banking REFUTED, the survivor severance WALLED at the gated `SaturatedOver` island (#2228).**  MONAD-R7 r4
+relocated ~155 conv-FREE decls VERBATIM into three new bespoke-free leaves (`WalkingMonad/MonadCellSize`,
+`MonadSaturatedDeltaReps` = 81, `MonadSaturatedCanonReps` = 73), each step umbrella-green and zero-axiom — proving
+the deep relocation IS green per-source-file (move the conv-free decls down + keep the source's bespoke imports for
+downstream conv reachability), which the r7-r3 OUTCOME had banked as impossible.  Two census corrections landed:
+`MonadWhiskerEmbedding` is a PURE conv-free deep MOVE target (not already-handled), and `MonadNormalizeCases` is
+MIXED (11 conv-free helpers the survivor lane needs, not pure-bespoke).  `IdempotentMonadSeed` re-points onto leaf 1
+(conv-decoupled — the one clean survivor repoint).  But the recon's "severance frees the survivor lane" premise is
+machine-REFUTED: every remaining survivor (`IdempotentSaturatedReps` + the idempotent-native lane + all 7 Gen files)
+routes to `MonadSaturatedConv` through the sign-off-GATED `Amalgam/SaturatedOver` island (`MonadLawRelation` /
+`DispatchSaturated` / `IdempotentLawRelation` -> `SaturatedOver`), NOT through the repointable deep chain — so the
+lane cannot be conv-decoupled in r4.  ZERO FX1Poly file deleted (the pinned Δ island stays, pin now shown broader
+than the r7-r3 trio).  `= true`. -/
+def fxTab_hasMonadDeepBridgeRelocated : Bool := true
+
+/-- The r7-r4 deep-bridge-relocated marker computes to `true`, machine-checked. -/
+theorem hasMonadDeepBridgeRelocated_holds : fxTab_hasMonadDeepBridgeRelocated = true := by decide
 
 end FX1Poly.Polygraph.Table

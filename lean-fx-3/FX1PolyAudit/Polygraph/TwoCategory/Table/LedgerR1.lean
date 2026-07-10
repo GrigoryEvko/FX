@@ -17,5 +17,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.hasMonadInterimDeciderRetired_holds
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_hasMonadSkeletonBridgeSeeded
 #assert_no_axioms FX1Poly.Polygraph.Table.hasMonadSkeletonBridgeSeeded_holds
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_hasMonadDeepBridgeRelocated
+#assert_no_axioms FX1Poly.Polygraph.Table.hasMonadDeepBridgeRelocated_holds
 
 end FX1PolyAudit
