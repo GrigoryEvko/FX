@@ -42,8 +42,9 @@ pushout's `baseRelPushout` to be the disjoint union of the retagged component la
 pushout.toModeSignature` along the coprojection — which does NOT exist (`Pushout.lean`'s coprojections act on
 modes + 1-generators only).  Even with it, the cross-component block dispatch needs the disjoint-support Godement
 block-commutation (`fxMode_hasArcBlockCommuteProof = false`, the SAME open residual `DispatchLocallyThin` names).
-So the real-relation non-vacuity lives at the COMPONENT decider (`SaturatedComponentDecider.lean`, piece 2a); at
-the PUSHOUT only the thin fragment closes, and `fxAmalg_hasSaturatedDispatchTheorem = false`.
+So the real-relation non-vacuity lives at the native idempotent COMPONENT decider
+(`IdempotentSaturatedNormalizer.lean`, piece 2a); at the PUSHOUT only the thin fragment closes, and
+`fxAmalg_hasSaturatedDispatchTheorem = false`.
 
 Raw Lean 4 + Init.  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
@@ -137,8 +138,8 @@ relations, needing a cell-functor `RawTwoCellExpr comp_i.toModeSignature -> RawT
 along the coprojection, which does NOT exist (the coprojections act on modes + 1-generators only); (2) the
 cross-component block dispatch needs the disjoint-support Godement block-commutation
 (`fxMode_hasArcBlockCommuteProof = false`, the same open residual `DispatchLocallyThin` names).  So the
-real-relation non-vacuity lives at the COMPONENT decider (`decideSaturatedConvOverIdempotent`, piece 2a); at the
-PUSHOUT only the thin fragment closes.  `= false`. -/
+real-relation non-vacuity lives at the COMPONENT decider (`decideSaturatedConvOverIdempotentNative`, piece 2a); at
+the PUSHOUT only the thin fragment closes.  `= false`. -/
 def fxAmalg_hasSaturatedDispatchTheorem : Bool := false
 
 end FX1Poly.Polygraph.Amalgam

@@ -1,4 +1,5 @@
-import FX1Poly.Polygraph.TwoCategory.Amalgam.SaturatedComponentDecider
+import FX1Poly.Polygraph.TwoCategory.WalkingIdempotent.IdempotentLawRelation
+import FX1Poly.Polygraph.TwoCategory.WalkingIdempotent.IdempotentSaturatedNormalizer
 import FX1Poly.Polygraph.TwoCategory.Amalgam.ComposableFragmentDispatch
 
 /-! # Polygraph/TwoCategory/Amalgam/SaturatedRelationFamily — the parametric relation-family library
@@ -119,26 +120,32 @@ def SaturatedRelationFamily.decider (fam : SaturatedRelationFamily) :
 
 /-! ## P3 — regression instance ONE: the walking idempotent monad (named target) -/
 
-/-- The **walking-idempotent-monad relation family** — the four idempotent laws (`IdempotentLawRel`), the
-walker conv (`IdempotentMonadSaturatedTwoCellConv`), its bridge (`idempotentSaturated_iff_generic`), and its total
-zero-axiom decision (`decideIdempotentConv`).  A genuine NON-EMPTY-relation family member. -/
+/-- The **walking-idempotent-monad relation family** — BORN GENERIC (POLY-TAB r5): the four idempotent laws
+(`IdempotentLawRel`), the walker conv IS the generic carrier `SaturatedConvOver monadModeSignature IdempotentLawRel`
+itself (so the bridge is `Iff.rfl`), and its decider is the BESPOKE-FREE native
+`decideSaturatedConvOverIdempotentNative` (local posetality proved directly over the generic carrier).  The bespoke
+`IdempotentMonadSaturatedTwoCellConv` lane is RETIRED; this member now has the involution's identity-migration shape,
+a genuine NON-EMPTY-relation family member decided natively. -/
 def idempotentRelationFamily : SaturatedRelationFamily where
   signature := monadModeSignature
   baseRel := IdempotentLawRel
-  walkerConv := fun cellAlpha cellBeta => IdempotentMonadSaturatedTwoCellConv cellAlpha cellBeta
-  walkerIffGeneric := idempotentSaturated_iff_generic
-  walkerDecider := decideIdempotentConv
+  walkerConv := fun cellAlpha cellBeta =>
+    SaturatedConvOver monadModeSignature IdempotentLawRel cellAlpha cellBeta
+  walkerIffGeneric := fun _ _ => Iff.rfl
+  walkerDecider := decideSaturatedConvOverIdempotentNative
 
 /-- ★ **Regression ONE (full-hom definitional agreement).**  On EVERY parallel pair the idempotent family's
-derived decider IS the shipped `decideSaturatedConvOverIdempotent` — the same verdict-transport over the same
-walker decision, `Prop`-payloads coinciding by proof irrelevance.  Universally quantified over the whole hom set,
-so this is full-hom agreement (not merely per named pair).  The parametric library reproduces the shipped decider
-exactly. -/
+derived decider IS the BESPOKE-FREE native `decideSaturatedConvOverIdempotentNative` — the born-generic family's
+`walkerDecider` field, carried across the `Iff.rfl` bridge to identity.  Universally quantified over the whole hom
+set, so this is full-hom agreement (not merely per named pair).  Post-retirement (POLY-TAB r5) the library
+reproduces the SHIPPED native decider exactly (the old bespoke-riding `decideSaturatedConvOverIdempotent` was
+retired; its decision content is preserved natively). -/
 theorem idempotentRelationFamily_decider_eq_shipped
     {sourceMode targetMode : monadModeSignature.graph.Mode}
     {sourcePath targetPath : ModalityPath monadModeSignature.graph sourceMode targetMode}
     (cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
-    idempotentRelationFamily.decider cellAlpha cellBeta = decideSaturatedConvOverIdempotent cellAlpha cellBeta :=
+    idempotentRelationFamily.decider cellAlpha cellBeta
+      = decideSaturatedConvOverIdempotentNative cellAlpha cellBeta :=
   rfl
 
 /-! ## P4 — regression instance TWO: the walking involution (named target) -/
@@ -200,7 +207,7 @@ The two named targets (idempotent, involution) are TOTAL always-`isTrue` decider
 so isFalse can only come from the monad member (Delta monotone-map).  Each smoke reuses a shipped pair. -/
 
 /-- The idempotent family decider on the shipped size-4 pair `mu . (eta |> t)` vs `mu . (t <| eta)` — expect
-`true` (idempotent hom is posetal, always convertible).  Agrees with `idempotentGenericDecidesTrue_smoke`. -/
+`true` (idempotent hom is posetal, always convertible).  Agrees with `idempotentNativeDecidesTrue_smoke`. -/
 def idempotentFamilyDecidesTrue_smoke : Bool :=
   match idempotentRelationFamily.decider (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
       (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell) with

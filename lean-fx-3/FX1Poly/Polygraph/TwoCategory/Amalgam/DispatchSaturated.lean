@@ -1,6 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.Amalgam.MapCell
 import FX1Poly.Polygraph.TwoCategory.Amalgam.SaturatedDispatch
-import FX1Poly.Polygraph.TwoCategory.Amalgam.SaturatedComponentDecider
 import FX1Poly.Polygraph.TwoCategory.Amalgam.DispatchLocallyThin
 
 /-! # Polygraph/TwoCategory/Amalgam/DispatchSaturated — the pushout base relation, the cross-component commutation,
@@ -44,7 +43,7 @@ lifts to a pushout convertibility.  COMPLETENESS (every pushout derivation proje
 derivations — the Nelson-Oppen / Baader-Tinelli purification) stays open, and so does a REAL-relation both-ways
 decision, for three named walls: (i) a genuine-generator coprojection `onTwoCell` needs `interpretWordFrom_map`
 (`MapCell.lean`, `fxAmalg_hasRealGeneratorCoprojection = false`); (ii) the only shipped real saturated decider
-(`decideSaturatedConvOverIdempotent`) lives over the BESPOKE `monadModeSignature`, not the RECONSTRUCTED
+(`decideSaturatedConvOverIdempotentNative`) lives over the BESPOKE `monadModeSignature`, not the RECONSTRUCTED
 `monadComputad.toModeSignature`, so it cannot be wired into a computad pushout without the reconstruction
 faithfulness iso (`fxMode_hasDecidableTwoCellEquality`); (iii) the purification/projection completeness itself.
 
@@ -340,7 +339,7 @@ def fxAmalg_hasSaturatedPushoutBaseRelation : Bool := true
 wall).**  `fxAmalg_hasSaturatedDispatchTheorem` (`SaturatedDispatch.lean`) stays `false`.  For a REAL-relation
 pushout the residuals are: (i) a genuine-generator coprojection `onTwoCell` needs `interpretWordFrom_map` (the
 dependent seed-transport of the interpreter — `fxAmalg_hasRealGeneratorCoprojection = false`); (ii) the only
-shipped real saturated decider `decideSaturatedConvOverIdempotent` lives over the BESPOKE `monadModeSignature`,
+shipped real saturated decider `decideSaturatedConvOverIdempotentNative` lives over the BESPOKE `monadModeSignature`,
 not the RECONSTRUCTED `monadComputad.toModeSignature`, so it needs the reconstruction-faithfulness iso
 (`fxMode_hasDecidableTwoCellEquality`, coupled to fib-3) before it can serve as a computad-pushout component
 decider; (iii) COMPLETENESS — every pushout derivation must project back to per-component derivations
