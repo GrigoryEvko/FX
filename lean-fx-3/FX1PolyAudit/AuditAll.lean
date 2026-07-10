@@ -978,6 +978,8 @@ import FX1PolyAudit.Polygraph.Omega.CeilingLiftAudit
 -- OMEGA-3 r2 — the idCongr additive sibling + soundness cascade + wall harvest + conv-form EH
 import FX1PolyAudit.Polygraph.Omega.CongruenceWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceWithIdNonVacuityAudit
+import FX1PolyAudit.Polygraph.Omega.Steiner.SoundnessWithId
+import FX1PolyAudit.Polygraph.Omega.SuspensionWithIdAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
