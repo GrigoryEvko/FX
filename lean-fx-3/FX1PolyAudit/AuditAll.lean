@@ -1048,6 +1048,8 @@ import FX1PolyAudit.Polygraph.Omega.SubstPastingAudit
 import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
 -- OMEGA-7 r1 — the per-dimension admission chain seed (kernel-as-value shape, B3)
 import FX1PolyAudit.Polygraph.Omega.AdmissionChainSeedAudit
+-- OMEGA-7 r1 — the grand-rung ledger + Makkai wall + staircase criteria (B4)
+import FX1PolyAudit.Polygraph.Omega.DesignLockOmega7Audit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
