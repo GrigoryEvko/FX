@@ -374,6 +374,59 @@ so KZ migration needs an ORIENTED / preorder-valued base relation the symmetric 
 — the exact idempotent-r4 posture (deletion UNBLOCKED at the proof level only after the port, and separately GATED on
 KZ), reserved for explicit user sign-off per never-delete-without-confirm.
 
+### r7 OUTCOME (POLY-TAB r7 r1 — the KZ REBASE, EXECUTED, #2228) — the WalkingKZ hard blocker SEVERED at the proof level; ZERO deletions
+
+r7-r1 executes the recon's Round A: it re-points the `WalkingKZ` lane's SINGLE bespoke-monad-conv dependency — the
+`KZTwoCellLE.ofMonad` field — off the bespoke `MonadSaturatedTwoCellConv` and onto the born-generic
+`MonadSaturatedConvGen := SaturatedConvOver monadModeSignature MonadLawRel` (`WalkingMonad/MonadLawRelation`), using
+the WAVE-2 generic legs r6 landed.  NOTHING is deleted (the bespoke chain stays live for the reasons in the r7
+PREVIEW); this is the proof-level severance the retirement needs — the exact idempotent-r4 posture.
+
+What the WalkingKZ scaffolding consumed BEFORE the rebase (preserved as HISTORY):
+  (1) `KZTwoCellLE.ofMonad : MonadSaturatedTwoCellConv a b → KZTwoCellLE a b` (`KZMonadPresentation`) is the ONLY
+      structural entry of a monad EQUALITY of 2-cells into the directed KZ order; it STORED the monad conv, and
+      `KZTwoCellEq` (`<=` both ways) antisymmetrizes the KZ preorder back onto the walking-monad convertibility.
+  (2) PRODUCERS feeding `ofMonad`: `kzLeftUnitEq` (`.leftUnit` + `.symm`, `KZMonadPresentation`) and the covering
+      assembly (`kzCoveringRightContext` / `kzAtomicCovering` / `kzAtomicCoveringSuffix`, `KZOrderCompleteness`) via
+      the shipped `wordMul_hcomp` word-splitting equalities + their `.symm`.
+  (3) CONSUMER folding the stored conv: `kzLE_sound`'s `ofMonad` case via `monadMonotoneMapOf_mapEqOfConv`, and
+      `kzLE_ofMapEq` / `kzEq_iff_mapEq` building `ofMonad (monadConvOfMapEq_ofNormalize monadNormalize …)`.
+
+The rebase identities (each bespoke KZ site ↔ its shipped Gen twin — the machine-checked composition that lets the
+DIRECTED order transport bespoke→generic; the directed carrier merely STORES and FOLDS a monad conv once, so the
+evidence swaps uniformly, NO provenance inversion, unlike the idempotent-r3 blocker):
+  * `ofMonad` field type          `MonadSaturatedTwoCellConv`        →  `MonadSaturatedConvGen`
+  * `kzLeftUnitEq`                 `.leftUnit` / `.symm`              →  `monadLeftUnitRowGen` / `SaturatedConvOver.symm`
+  * covering producers            `wordMul_hcomp` / `.symm`          →  `wordMul_hcompGen` / `SaturatedConvOver.symm`
+  * `kzLE_ofMapEq`/`kzEq_iff_mapEq`  `monadConvOfMapEq_ofNormalize monadNormalize`  →  `monadConvOfMapEqGen_ofNormalizeGen monadNormalizeGen`
+  * `kzLE_sound` ofMonad case      `monadMonotoneMapOf_mapEqOfConv`  →  `monadMonotoneMapOf_mapEqOfConvGen`
+
+DECISION CONTINUITY (the KZ verdicts are conv-INDEPENDENT — the deciders compare `monadMonotoneMapOf` folds, only
+the PROOFS switched carrier — so they survive UNCHANGED): `decideKZEq`, `decideKZEq_yes_assoc`, `decideKZEq_no_faces`,
+`kz_strict`, `kzBaseCovering_isStrict`, `kzOrderCompletenessWitness`, `decideKZLETotal` all hold verbatim
+post-rebase (the green build is the continuity tie).
+
+The KZ WALKER-MIGRATION marker STAYS `false` (honest): the rebase re-points the `ofMonad` SYMMETRIC monad-law field
+onto the generic carrier, but `KZTwoCellLE` itself is a DIRECTED preorder whose `kzGen` generator is a genuine
+NATIVE generator (NOT a bespoke-conv migration target); the generic `SaturatedConvOver` is symmetric and cannot
+model the directed order, so the full walker-onto-generic migration remains POLY-TAB-2 design work.  The proof-level
+severance actually achieved is recorded by the NEW marker `fxTab_hasKZMonadConvGenericRepoint = true`
+(`Table/ThinWalkerMigration`).
+
+STILL NOT DELETABLE (the r7 states-labeled leftovers — the r5-Step-2 skeleton relocation is the prerequisite): the
+bespoke Δ-normalize/decide chain (`MonadWordProblem` / `MonadHcompMult` / `MonadNormalizeCell` (MIXED) /
+`MonadWhiskerRightMult` / `MonadNormalizeVcomp` / `MonadNormalizeCases` / `MonadVcompMult` / `MonadWordVcomp` /
+`MonadWordMultiplicativity` / `MonadWhiskerNormalizeCases` / `MonadSaturatedConv`) stays live: 7 of these carry the
+conv-FREE Δ SKELETON (`monadMonotoneMapOf` / `wordFromCounts` / `reconstructFrom` / `canon` / `canonCounts` / the
+whisker embedding) co-mingled with bespoke conv, and that skeleton is imported by KEPT files (all 5 `…Gen` files via
+`MonadNormalizeVcomp`; `WalkingIdempotent/IdempotentSaturatedReps` via `MonadNormalizeCell` + `MonadWhiskerRightMult`;
+`Amalgam/DeciderReseat` via `MonadWordProblem`), so no chain file reaches zero refs until a bespoke-free
+`MonadSaturated*Reps` relocation home lands.  The `Amalgam/SaturatedOver` monad migration iffs
+(`monadSaturated_iff_generic` / `monadSaturatedIsCongruence`) and `Amalgam/SaturatedRelationFamily.monadRelationFamily`
+(the SEPARATING family member, `walkerConv = MonadSaturatedTwoCellConv`) stay bespoke-rooted — collapsing to `Iff.rfl`
+/ born-generic only at Round C, which VOIDS the `monadRelationFamily_bridge_is_precedent` migration fact (the same
+meaning-erosion the r5 idempotent gate reserved for explicit sign-off).  Those re-points are DEFERRED, not forced.
+
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
   * `StringSaturatedTwoCellConv` (WalkingAdjunction / adjoint string) — no generic instance shipped; POLY-TAB-2.
