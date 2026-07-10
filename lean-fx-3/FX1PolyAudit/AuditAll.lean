@@ -1034,6 +1034,8 @@ import FX1PolyAudit.Polygraph.Omega.PsContextAudit
 import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
 -- OMEGA-6 r1 — the coinductive-invertibility = SN-duality seed at the omega-cell carrier
 import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
+-- OMEGA-6 r1 — the ceiling ledger + the OMEGA-7 handoff (markers only hypothesis-free)
+import FX1PolyAudit.Polygraph.Omega.DesignLockOmega6Audit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
