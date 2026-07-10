@@ -920,6 +920,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
 import FX1PolyAudit.Polygraph.TwoCategory.Table.DesignLock
 import FX1PolyAudit.Polygraph.TwoCategory.Table.Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.InvariantFoldInstances
+import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusReadback
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ThinWalkerMigration
 import FX1PolyAudit.Polygraph.TwoCategory.Table.StrategyRegistry
 import FX1PolyAudit.Polygraph.TwoCategory.Table.LedgerR1
