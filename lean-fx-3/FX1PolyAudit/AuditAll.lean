@@ -173,6 +173,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchMap
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Modularity
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DecisionTransfer
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerR1
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealLawDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
@@ -1041,6 +1042,8 @@ import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
 import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
 -- OMEGA-6 r1 — the ceiling ledger + the OMEGA-7 handoff (markers only hypothesis-free)
 import FX1PolyAudit.Polygraph.Omega.DesignLockOmega6Audit
+-- OMEGA-7 r1 — substitution composition IS pasting arithmetic (the App-anchor play, B1)
+import FX1PolyAudit.Polygraph.Omega.SubstPastingAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
