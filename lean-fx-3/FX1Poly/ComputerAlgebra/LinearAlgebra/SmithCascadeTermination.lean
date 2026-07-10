@@ -224,6 +224,33 @@ theorem smithSingleClearResidueLands {height width : Nat} (matrix : IntMatrix)
   (congrArg Int.natAbs (entryFormula.trans landsOnResidue)).trans
     (intMagnitudeSignedRemainderNatAbs pivot.natAbs old)
 
+/-- **The single-rotation strict descent** — for a POSITIVE pivot, one row-right clear column op
+lands the cross entry with magnitude STRICTLY below the pivot's.  The composition the cascade's fuel
+adequacy rides: the residue landing (`smithSingleClearResidueLands`, magnitude `=`
+`intMagnitudeRemainder`) rewritten into the shipped remainder bound
+(`smithRotationDecreasesPivotSize`, `<` the pivot).  This is the r8 endpoint of the per-rotation
+measure decrease; the RECURSION over it (that the cascade halts at a cross-clear state within its
+min-abs fuel) is the r9 assembly. -/
+theorem smithSingleClearStrictlyDecreasesPivot {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex colIndex : Nat)
+    (isDistinct : pivotIndex ≠ colIndex)
+    (isPivotRowInRange : pivotIndex < height)
+    (isPivotColInRange : pivotIndex < width)
+    (isTargetColInRange : colIndex < width)
+    (isPivotNonneg : (0 : Int) ≤ matrix.entryAt pivotIndex pivotIndex)
+    (isPivotPositive : 0 < (matrix.entryAt pivotIndex pivotIndex).natAbs) :
+    ((matrix.addColumnMultiple pivotIndex colIndex
+        (-(intPivotQuotient (matrix.entryAt pivotIndex pivotIndex)
+            (matrix.entryAt pivotIndex colIndex)))).entryAt pivotIndex colIndex).natAbs
+      < (matrix.entryAt pivotIndex pivotIndex).natAbs :=
+  Eq.mpr
+    (congrArg (· < (matrix.entryAt pivotIndex pivotIndex).natAbs)
+      (smithSingleClearResidueLands matrix isRect pivotIndex colIndex isDistinct isPivotRowInRange
+        isPivotColInRange isTargetColInRange isPivotNonneg))
+    (smithRotationDecreasesPivotSize (matrix.entryAt pivotIndex pivotIndex)
+      (matrix.entryAt pivotIndex colIndex) isPivotPositive)
+
 /-! ## The minimal-magnitude search lower bound (the search-correctness sibling)
 
 The strict descent above shows the parked cross entry is a residue below the pivot; the cascade's

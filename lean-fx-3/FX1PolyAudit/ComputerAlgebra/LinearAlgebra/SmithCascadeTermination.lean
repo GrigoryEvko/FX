@@ -21,6 +21,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultMapAllRows
 #assert_no_axioms FX1Poly.ComputerAlgebra.addColumnMultipleEntryOnTargetCol
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithSingleClearResidueLands
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSingleClearStrictlyDecreasesPivot
 #assert_no_axioms FX1Poly.ComputerAlgebra.natBeqZeroFalseOfNe
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithScanRowUpdateSomeBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithScanRowUpdateNoneBound
