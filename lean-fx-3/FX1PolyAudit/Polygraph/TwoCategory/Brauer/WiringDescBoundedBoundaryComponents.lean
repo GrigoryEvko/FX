@@ -25,6 +25,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.boundedBoundaryComponents_stepCup
 #assert_no_axioms FX1Poly.Polygraph.crossingJoin_transposition_view
 #assert_no_axioms FX1Poly.Polygraph.boundedBoundaryComponents_stepCrossing
+
+-- reusable node-level infrastructure exposed for the r12 partner-totality fold
+#assert_no_axioms FX1Poly.Polygraph.capBoundaryReindex_ne_leftPort
+#assert_no_axioms FX1Poly.Polygraph.capBoundaryReindex_ne_rightPort
+#assert_no_axioms FX1Poly.Polygraph.capBoundaryReindex_ne
+#assert_no_axioms FX1Poly.Polygraph.boundaryRead_lt_nextFreshBBC
+#assert_no_axioms FX1Poly.Polygraph.cupJoin_inert_oldBBC
+#assert_no_axioms FX1Poly.Polygraph.cupReadClassBBC
+#assert_no_axioms FX1Poly.Polygraph.crossingReindexBBC
+#assert_no_axioms FX1Poly.Polygraph.crossingReindexBBC_involutive
+#assert_no_axioms FX1Poly.Polygraph.crossingReindexBBC_lt
+#assert_no_axioms FX1Poly.Polygraph.matchingSameComponent_stepCrossing_reindexBBC
+
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBoundedBoundaryComponentsSeed
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCapPreservation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCupPreservation

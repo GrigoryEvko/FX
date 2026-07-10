@@ -442,7 +442,7 @@ private theorem noThreeSharingAfterJoin (bottomCount : Nat) (state : WireState)
 
 /-- The cap reindex never hits the left port `bottomCount + position` (below the window it is strictly less; at or
 above it is at least two more). -/
-private theorem capBoundaryReindex_ne_leftPort (bottomCount position index : Nat) :
+theorem capBoundaryReindex_ne_leftPort (bottomCount position index : Nat) :
     capBoundaryReindex bottomCount position index ≠ bottomCount + position := by
   show (if index < bottomCount + position then index else index + 2) ≠ bottomCount + position
   cases Nat.lt_or_ge index (bottomCount + position) with
@@ -452,7 +452,7 @@ private theorem capBoundaryReindex_ne_leftPort (bottomCount position index : Nat
       exact Ne.symm (Nat.ne_of_lt (Nat.lt_of_le_of_lt atLeast (Nat.lt_succ_of_lt (Nat.lt_add_one index))))
 
 /-- The cap reindex never hits the right port `bottomCount + (position + 1)`. -/
-private theorem capBoundaryReindex_ne_rightPort (bottomCount position index : Nat) :
+theorem capBoundaryReindex_ne_rightPort (bottomCount position index : Nat) :
     capBoundaryReindex bottomCount position index ≠ bottomCount + (position + 1) := by
   show (if index < bottomCount + position then index else index + 2) ≠ bottomCount + (position + 1)
   cases Nat.lt_or_ge index (bottomCount + position) with
@@ -492,7 +492,7 @@ private theorem capBoundaryReindex_inj (bottomCount position firstIndex secondIn
           exact Nat.succ.inj (Nat.succ.inj heq')
 
 /-- The cap reindex sends distinct indices to distinct images. -/
-private theorem capBoundaryReindex_ne (bottomCount position firstIndex secondIndex : Nat)
+theorem capBoundaryReindex_ne (bottomCount position firstIndex secondIndex : Nat)
     (distinct : firstIndex ≠ secondIndex) :
     capBoundaryReindex bottomCount position firstIndex ≠ capBoundaryReindex bottomCount position secondIndex :=
   fun imagesEq => distinct (capBoundaryReindex_inj bottomCount position firstIndex secondIndex imagesEq)
@@ -584,7 +584,7 @@ invariant through the fresh-inert join. -/
 
 /-- Every boundary node read is below the fresh counter (range values `< bottomCount <= nextFresh`, open wires
 `< nextFresh`, past-the-end default `0 < nextFresh`). -/
-private theorem boundaryRead_lt_nextFreshBBC (bottomCount : Nat) (state : WireState)
+theorem boundaryRead_lt_nextFreshBBC (bottomCount : Nat) (state : WireState)
     (fresh : WiringDescStateFresh state) (bottomLe : bottomCount ≤ state.nextFresh)
     (nfPos : 0 < state.nextFresh) (index : Nat) :
     natListGetAt (matchingBoundaryNodes bottomCount state) index < state.nextFresh := by
@@ -626,7 +626,7 @@ private theorem sameComponent_nextFreshSucc_old_falseBBC (state : WireState) (fr
 /-- The cup's fresh join is INVISIBLE to two old nodes: joining `nextFresh`/`nextFresh + 1` leaves the
 same-component view on old probes equal to the base view (both bridging disjuncts collapse — the fresh legs are
 disconnected from either old node). -/
-private theorem cupJoin_inert_oldBBC (state : WireState) (forest : isUnionFindForest state.links)
+theorem cupJoin_inert_oldBBC (state : WireState) (forest : isUnionFindForest state.links)
     (fresh : WiringDescStateFresh state) (nodeA nodeB : Nat)
     (aBelow : nodeA < state.nextFresh) (bBelow : nodeB < state.nextFresh) :
     isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) nodeA nodeB
@@ -662,7 +662,7 @@ private theorem cupJoin_nextFreshSucc_old_falseBBC (state : WireState) (forest :
 (`= bottomCount + position`), the RIGHT fresh leg (`= bottomCount + (position + 1)`), or an OLD node whose pre-cup
 index is `capBoundaryReindex bottomCount position pre` (the same additive up-shift the cap uses).  No index-`- 2`
 subtraction — the past-block reindex is stated additively through the shipped cup read. -/
-private theorem cupReadClassBBC (bottomCount : Nat) (state : WireState) (position : Nat)
+theorem cupReadClassBBC (bottomCount : Nat) (state : WireState) (position : Nat)
     (positionLe : position ≤ state.openWires.length)
     (index : Nat) (indexRange : index < bottomCount + state.openWires.length + 2) :
     (index = bottomCount + position
@@ -975,7 +975,7 @@ leg with no Frobenius analog: the shipped two-join transposition view did the co
 /-- The **window transposition** on boundary indices: swap the crossing's two window boundary slots `bottomCount +
 position` and `bottomCount + (position + 1)`, fixing everything else.  The pullback map along which the crossing's
 same-component view is the base view. -/
-private def crossingReindexBBC (bottomCount position index : Nat) : Nat :=
+def crossingReindexBBC (bottomCount position index : Nat) : Nat :=
   if index = bottomCount + position then bottomCount + (position + 1)
   else if index = bottomCount + (position + 1) then bottomCount + position
   else index
@@ -1012,7 +1012,7 @@ private theorem crossingReindexBBC_other (bottomCount position index : Nat)
   rw [if_neg neLeft, if_neg neRight]
 
 /-- The reindex is an involution (it swaps the two window indices and fixes the rest). -/
-private theorem crossingReindexBBC_involutive (bottomCount position index : Nat) :
+theorem crossingReindexBBC_involutive (bottomCount position index : Nat) :
     crossingReindexBBC bottomCount position (crossingReindexBBC bottomCount position index) = index := by
   cases Nat.decEq index (bottomCount + position) with
   | isTrue hLeft =>
@@ -1041,7 +1041,7 @@ private theorem crossingReindexBBC_ne (bottomCount position firstIndex secondInd
 
 /-- The reindex preserves the boundary range (window indices map to window indices, which are in range when the
 window is in range; everything else is fixed). -/
-private theorem crossingReindexBBC_lt (bottomCount : Nat) (state : WireState) (position index : Nat)
+theorem crossingReindexBBC_lt (bottomCount : Nat) (state : WireState) (position index : Nat)
     (windowInRange : position + 2 ≤ state.openWires.length)
     (indexRange : index < bottomCount + state.openWires.length) :
     crossingReindexBBC bottomCount position index < bottomCount + state.openWires.length := by
@@ -1147,7 +1147,7 @@ transposition).  Every combination of the two indices' read classes (fresh left 
 by the matching leg of the shipped `crossingJoin_transposition_view`: two OLD reads are unchanged, a LEFT fresh read
 transposes to the SECOND window strand, a RIGHT fresh read to the FIRST, and the two fresh reads share iff the two
 strands did. -/
-private theorem matchingSameComponent_stepCrossing_reindexBBC (bottomCount : Nat) (state : WireState)
+theorem matchingSameComponent_stepCrossing_reindexBBC (bottomCount : Nat) (state : WireState)
     (position : Nat) (fresh : WiringDescStateFresh state) (forest : isUnionFindForest state.links)
     (nfPos : 0 < state.nextFresh) (bottomLe : bottomCount ≤ state.nextFresh)
     (windowInRange : position + 2 ≤ state.openWires.length)
