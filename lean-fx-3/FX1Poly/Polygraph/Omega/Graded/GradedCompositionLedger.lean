@@ -2,6 +2,7 @@ import FX1Poly.Polygraph.Omega.Graded.GradedCell
 import FX1Poly.Polygraph.Omega.Graded.GradedAppAnchor
 import FX1Poly.Polygraph.Omega.Graded.EnrichedCheckSeed
 import FX1Poly.Polygraph.Omega.Graded.CollisionCatalog
+import FX1Poly.Polygraph.Omega.Graded.GradedCellComposition
 
 /-! # Polygraph/Omega/Graded/GradedCompositionLedger — the OMEGA-5 r1 ledger + the OMEGA-6 handoff (B5)
 
@@ -166,5 +167,62 @@ def fxOmega5_appCellLevelCompositionReached : Bool := false
 (B1), the App anchor both directions (B2), the grade-side functor + its free compatibility laws (B3),
 and the non-free loci as data (B4).  See the file docstring for the full spec. -/
 def fxOmega5_omegaSixHandoffRecordedR1 : Bool := true
+
+/-! ## OMEGA-5 r2 — the cell-side graded composition (the 110-percent grind)
+
+r2 grinds one rung past r1's recognition (`GradedCellComposition.lean`): the lockstep composite's GRADE
+leg is now a proven ALGEBRA, the grade projection is a machine-checked enriched FUNCTOR, and the checker
+REFUSES genuinely.  Each marker below is a hypothesis-free `Bool`.  The honest boundary: r2 owns the
+GRADE leg only; the CELL leg's associativity is NOT proven here (free `CellExpr.vcomp`) — it is cited to
+OMEGA-7's `linearizeFull_pasteAlong_assoc` (Tier-0, un-importable under the layer rule).  The r1 jams
+(cell-side functor, product semiring, collision transfer, cell-level App composite) stay open — their
+`false` markers above are UNCHANGED.
+
+## What OMEGA-5 r2 SHIPPED (each machine-checked zero-axiom, `GradedCellComposition.lean`)
+
+  * **B1 — the grade-leg composition algebra.**  `gradeCompose_assoc` (the scalar-REINDEXED associativity
+    `gradeCompose (a·b) (gradeCompose a p q) t = gradeCompose a p (gradeCompose b q t)`, both sides
+    `p + a·q + (a·b)·t`, anchored to the kernel semiring's `mul_assoc` via `scale_scale`) and
+    `gradeCompose_leftUnit`.  The naive same-outer-scalar form is REFUTED
+    (`gradeCompose_assoc_naive_isFalse`, at `a=ω, b=1`) — the reindex is load-bearing.
+  * **B2 — the enriched-functor grade slice.**  `gradeOf` + the projection / sequential / whisker functor
+    laws (composition → `gradeCompose` / `gradeComposePar`) + `gradedVcomp_gradeOf_assoc`
+    (functor-over-associativity: the grade legs IDENTIFIED, the cell legs DISTINCT).
+  * **B3 — the refusal slice.**  `gradedComposeGuarded` (blocks the composite on over-budget grades) +
+    `gradedComposeAtCollisionRow` (the §6.8 `E044` CT × Async row exercised as a genuine composition
+    refusal at the non-free locus).
+  * **B4 — non-vacuity on real cells + real kernel grades.**  `demoGradedCellOmegaOne` (a real dim-2 cell
+    decorated with the ω-scaling-redex App grade `[ω,1]`), the composite computing cell + grade, and the
+    refusal firing on real cells (over-budget `none` / within-budget `some` / `E044` blocking a
+    within-budget composite). -/
+
+/-- ★ **B1 — the grade-leg composition algebra SHIPPED (r2).**  `= true`: `gradeCompose_assoc` (the
+scalar-reindexed associativity, anchored to the kernel semiring's `mul_assoc` via `scale_scale`) +
+`gradeCompose_leftUnit`, with the naive same-scalar form refuted (`gradeCompose_assoc_naive_isFalse`).
+The carrier + composite are REUSED (`GradedCell` / `gradedVcomp`), not re-founded. -/
+def fxOmega5_gradedAssociativityShippedR2 : Bool := true
+
+/-- ★ **B2 — the enriched-functor grade slice SHIPPED (r2).**  `= true`: `gradeOf` (the functor's
+object-map) + the projection / sequential / whisker functor laws (composition → `gradeCompose` /
+`gradeComposePar`) + `gradedVcomp_gradeOf_assoc`.  This IDENTIFIES the grade legs of the two triple
+composites while their CELL legs stay DISTINCT (free `vcomp`) — an identification of grades and a
+DISPARITY of cells, stated openly; the cell leg is cited to OMEGA-7. -/
+def fxOmega5_enrichedFunctorGradeSliceShippedR2 : Bool := true
+
+/-- ★ **B3/B4 — the refusal slice SHIPPED (r2).**  `= true`: `gradedComposeGuarded` blocks the annotated
+composite on over-budget grades (refuses/admits, witnessed on real cells), and
+`gradedComposeAtCollisionRow` exercises the §6.8 `E044` (CT × Async) row as a genuine composition refusal
+at the non-free locus.  The refusal reads the catalog DATA (the checker content); the underlying
+amalgam-collision theorem stays the jam (`fxOmega5_collisionNonFreeLinkReached = false`), and the refusal
+is single-dimension (`fxUsageSemiring`) — the product-semiring collision stays
+`fxOmega5_productSemiring21Reached = false`. -/
+def fxOmega5_collisionRefusalSliceShippedR2 : Bool := true
+
+/-- ★ **The r2 CELL-leg associativity stays CITED, not re-proven.**  `= true` records the HONEST scope
+boundary: r2 proves the GRADE-leg associativity ONLY; the annotated-cell composite is NOT associative
+(free `CellExpr.vcomp`), so the cell leg is cited to OMEGA-7's `linearizeFull_pasteAlong_assoc` (Tier-0,
+un-importable under the layer rule), never re-derived here.  Accordingly
+`fxOmega5_appCellLevelCompositionReached` (above) stays `false`. -/
+def fxOmega5_r2CellLegAssociativityCitedToOmegaSeven : Bool := true
 
 end FX1Poly.Polygraph.Omega.Graded

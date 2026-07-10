@@ -21,5 +21,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.fxOmega5_amalgamModularTransferReached
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.fxOmega5_appCellLevelCompositionReached
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.fxOmega5_omegaSixHandoffRecordedR1
+-- OMEGA-5 r2 markers (hypothesis-free)
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.fxOmega5_gradedAssociativityShippedR2
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.fxOmega5_enrichedFunctorGradeSliceShippedR2
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.fxOmega5_collisionRefusalSliceShippedR2
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.fxOmega5_r2CellLegAssociativityCitedToOmegaSeven
 
 end FX1PolyAudit
