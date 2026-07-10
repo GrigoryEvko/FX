@@ -421,6 +421,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraddleDescent
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescExtractorFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescExtractorLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcExtractorRec
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStagedDescent
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
