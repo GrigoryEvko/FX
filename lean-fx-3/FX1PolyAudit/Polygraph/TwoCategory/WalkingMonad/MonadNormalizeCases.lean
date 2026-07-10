@@ -14,17 +14,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.monadNormalize_genEta
 #assert_no_axioms FX1Poly.Polygraph.monadNormalize_genMu
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasNormalizeGeneratorBaseCases
--- The `id`-cell case + its supporting ones-word collapse and boundary-cast algebra (all zero-axiom).
-#assert_no_axioms FX1Poly.Polygraph.monadOnes
-#assert_no_axioms FX1Poly.Polygraph.length_monadOnes
-#assert_no_axioms FX1Poly.Polygraph.countsDomainPath_monadOnes
-#assert_no_axioms FX1Poly.Polygraph.runLengthAt_ascendingFrom_succ
-#assert_no_axioms FX1Poly.Polygraph.dropRunAt_ascendingFrom_succ
-#assert_no_axioms FX1Poly.Polygraph.countsOf_ascendingFrom_ones
+-- The `id`-cell case + its ones-word collapse (the conv-free ones-data + boundary-cast helpers now live in
+-- `MonadNormalizeCasesReps`; gated there).
 #assert_no_axioms FX1Poly.Polygraph.MonadSaturatedTwoCellConv.castBoundaryCongr
-#assert_no_axioms FX1Poly.Polygraph.monadWhiskerLeft_castBoundary
-#assert_no_axioms FX1Poly.Polygraph.monadCastBoundary_castBoundary
-#assert_no_axioms FX1Poly.Polygraph.monadCastBoundary_id
 #assert_no_axioms FX1Poly.Polygraph.wordFromCounts_monadOnes_succ_conv
 #assert_no_axioms FX1Poly.Polygraph.wordFromCounts_monadOnes_conv
 #assert_no_axioms FX1Poly.Polygraph.monadNormalize_id
