@@ -707,7 +707,9 @@ theorem fxBrauer_r15Ledger :
       ∧ fxBrauer_hasReadOffWiredFiring = true
       ∧ fxBrauer_hasArcEnumeration = true
       ∧ fxBrauer_hasArcConjugatorLeg = true
-      ∧ fxBrauer_hasPermInverseRangePreservation = true)
+      ∧ fxBrauer_hasPermInverseRangePreservation = true
+      ∧ fxBrauer_hasReadOffOrderPermutationProbe = true
+      ∧ fxBrauer_hasReadOffRoundtripWiredProbe = true)
     ∧ (fxBrauer_hasReadOffOrderPermutation = false
       ∧ fxBrauer_hasArcEnumerationConjugated = false)
     ∧ (fxBrauer_hasTagCorrDisjoint = false
@@ -717,7 +719,7 @@ theorem fxBrauer_r15Ledger :
     ∧ (fxBrauer_hasBrauerV2FullCompleteness = false
       ∧ fxBrauer_hasBrauerCompleteness = false
       ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) :=
-  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
+  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
 
 /-- ★★ **Honesty marker — BRAUER-MIDDLE r15 did NOT close #2013.**  The round landed the T-CLOSE opening — the finite
 pigeonhole surjectivity of range-permutations and `permInverse` gate-preservation, each zero-axiom and structural,
