@@ -938,6 +938,12 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.LedgerR1
 import FX1PolyAudit.Polygraph.Omega.CarrierAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceAudit
 import FX1PolyAudit.Polygraph.Omega.DesignLockAudit
+import FX1PolyAudit.Polygraph.Omega.Steiner.CoordinateArithmetic
+import FX1PolyAudit.Polygraph.Omega.Steiner.StrongSteiner
+import FX1PolyAudit.Polygraph.Omega.Steiner.Linearize
+import FX1PolyAudit.Polygraph.Omega.Steiner.Soundness
+import FX1PolyAudit.Polygraph.Omega.Steiner.DecideFreeConv
+import FX1PolyAudit.Polygraph.Omega.Steiner.DesignLock
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
