@@ -103,5 +103,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.listGetWithDefaultAddScaledEntries
 #assert_no_axioms FX1Poly.ComputerAlgebra.addRowMultipleEntryOnTargetRow
 #assert_no_axioms FX1Poly.ComputerAlgebra.foldPreservesSettledColumnZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullApplied
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDiagonalSignSweepPastWindow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalSweepPastWindow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepPastWindow
 
 end FX1PolyAudit

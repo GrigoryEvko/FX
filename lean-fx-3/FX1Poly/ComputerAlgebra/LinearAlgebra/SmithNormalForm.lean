@@ -1689,4 +1689,74 @@ theorem foldPreservesSettledColumnZero {height width : Nat} (matrix : IntMatrix)
       ((congrArg (fun laterEntry => (0 : Int) + 1 * laterEntry) foundEntryIsZero).trans
         ((intZeroAdd (1 * 0)).trans (intOneMul 0))))
 
+/-! ## The totality first step: phase decomposition + outer fuel-lockstep base (B3)
+
+The recon's totality skeleton opens by splitting the applied full-driver output across its three
+phase words `diagOps ++ repairOps ++ signOps`.  `smithReduceFullApplied` performs exactly that split
+via the shipped `applyOperationsAppend` (twice), expressing the reduced matrix as the composed phase
+outputs `((afterDiag).applyOperations repairOps).applyOperations signOps` — the shape the three-level
+induction then attacks phase by phase.
+
+The three `*PastWindow` lemmas are the outer fuel-lockstep base: each outer sweep returns the EMPTY
+word once `pivotIndex` has passed the window (`¬ (pivotIndex + 1 ≤ Nat.min height width)`), for ANY
+fuel.  This is the guard-exhaustion base case of the fuel-adequacy coupling the recon flags "tight and
+trivially adequate" — the guard falsifies before fuel runs out, so no fuel measure is needed for the
+outer sweeps. -/
+
+/-- **The applied full-driver output, phase-decomposed** — `matrix.applyOperations (smithReduceFull
+matrix height width).operations` equals the three phase words fired in sequence: cross-clear
+(`smithReduceTotal`), then the top-down divisibility repair, then the diagonal sign sweep.  The first
+structural step of any `smithReduceFull` totality proof, riding the shipped `applyOperationsAppend`
+twice over the `diagOps ++ repairOps ++ signOps` composition. -/
+theorem smithReduceFullApplied (matrix : IntMatrix) (height width : Nat) :
+    matrix.applyOperations (smithReduceFull matrix height width).operations
+      = (((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+            (smithDivisibilityRepairSweep (Nat.min height width)
+              (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+              0 height width)).applyOperations
+          (smithDiagonalSignSweep (Nat.min height width)
+            ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+              (smithDivisibilityRepairSweep (Nat.min height width)
+                (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+                0 height width))
+            0 height width)) := by
+  show matrix.applyOperations
+      ((smithReduceTotal matrix height width).operations
+        ++ smithDivisibilityRepairSweep (Nat.min height width)
+              (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width
+        ++ smithDiagonalSignSweep (Nat.min height width)
+              ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+                (smithDivisibilityRepairSweep (Nat.min height width)
+                  (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+                  0 height width))
+              0 height width) = _
+  rw [applyOperationsAppend, applyOperationsAppend]
+
+/-- **Outer sign sweep, past the window** — once `pivotIndex` is beyond the pivot budget the sign
+sweep emits no operations, for any fuel.  The guard-exhaustion base of the outer fuel lockstep. -/
+theorem smithDiagonalSignSweepPastWindow :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      ¬ (pivotIndex + 1 ≤ Nat.min height width) →
+      smithDiagonalSignSweep fuel matrix pivotIndex height width = []
+  | 0, _, _, _, _, _ => rfl
+  | _ + 1, _, _, _, _, pastWindow => if_neg pastWindow
+
+/-- **Outer cross-clear sweep, past the window** — the total sweep emits no operations once the pivot
+budget is exhausted, for any fuel. -/
+theorem smithReduceTotalSweepPastWindow :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      ¬ (pivotIndex + 1 ≤ Nat.min height width) →
+      smithReduceTotalSweep fuel matrix pivotIndex height width = []
+  | 0, _, _, _, _, _ => rfl
+  | _ + 1, _, _, _, _, pastWindow => if_neg pastWindow
+
+/-- **Outer repair sweep, past the window** — the divisibility-repair sweep emits no operations once
+the pivot budget is exhausted, for any fuel. -/
+theorem smithDivisibilityRepairSweepPastWindow :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      ¬ (pivotIndex + 1 ≤ Nat.min height width) →
+      smithDivisibilityRepairSweep fuel matrix pivotIndex height width = []
+  | 0, _, _, _, _, _ => rfl
+  | _ + 1, _, _, _, _, pastWindow => if_neg pastWindow
+
 end FX1Poly.ComputerAlgebra
