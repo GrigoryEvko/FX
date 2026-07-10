@@ -649,6 +649,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcArity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSwapDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSwapPeel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDisjointWordFactorization
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDisjointWordSwap
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
@@ -1043,8 +1044,9 @@ import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
 import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
 -- OMEGA-6 r1 — the ceiling ledger + the OMEGA-7 handoff (markers only hypothesis-free)
 import FX1PolyAudit.Polygraph.Omega.DesignLockOmega6Audit
--- OMEGA-7 r1 — substitution composition IS pasting arithmetic (the App-anchor play, B1)
-import FX1PolyAudit.Polygraph.Omega.SubstPastingAudit
+-- OMEGA-7 r1 — substitution composition IS pasting arithmetic (the App-anchor play, B1;
+-- lives on the Tier0 side of the layer DAG because it imports the kernel subst engine)
+import FX1PolyAudit.Tier0.Term.Subst.SubstPastingAudit
 -- OMEGA-7 r1 — the presented kernel = (signature, table2, table3) tuple seed (B2)
 import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
 -- OMEGA-7 r1 — the per-dimension admission chain seed (kernel-as-value shape, B3)
