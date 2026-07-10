@@ -200,16 +200,18 @@ discharges it at the fresh seed (for `0 < bottomCount`), the bottom port and top
 partner pair.  Non-vacuous (`boundaryPartnered_seed_two`, `boundaryPartnered_seedPair_firing`).  `= true`. -/
 def fxBrauer_hasBoundaryPartneredSeed : Bool := true
 
-/-- **Honesty marker — the partner-TOTALITY FOLD LIFT does NOT close this round.**  Beyond the seed, the r10
-template needs the three per-atom preservations of `boundaryPartnered` and the whole-`processBrauer` fold lift:
-the CUP splices a fresh same-component pair (two new partnered reads); the CROSSING transposes two boundary reads
-with the root multiset fixed; and the CAP — THE sub-long-pole — is where the perfect-matching content lives: the
-two capped ports must have partnered EACH OTHER, so a surviving index that partnered a capped port would lose its
-boundary partner unless the cap consumes a matched pair, a fact NOT implied by `boundedBoundaryComponents` (≤ 2)
-at the point-set level.  These preservations + the fold lift + the seed payoff (the partner-total analogue of
-`boundedBoundaryComponents_reachable`) are the standing rungs; none is fabricated this round.  So
-`fxBrauer_hasTagCorrDisjoint` / `fxBrauer_hasTagCorrExtraction`, the roundtrip flags, and the masters stay
-`false`; #2013 does NOT close.  `= false`. -/
-def fxBrauer_hasBoundaryPartneredFold : Bool := false
+/-- ★ **Honesty marker — the partner-TOTALITY FOLD LIFT is SHIPPED (r12).**  Beyond the seed, the three per-atom
+preservations of `boundaryPartnered` and the whole-`processBrauer` fold lift now ship in
+`Brauer/WiringDescBoundaryPartneredFold.lean`: the CUP splices a fresh same-component pair
+(`boundaryPartnered_stepCup`); the CROSSING transposes two boundary reads with the root multiset fixed
+(`boundaryPartnered_stepCrossing`); and the CAP — THE sub-long-pole — where a surviving index that partnered a
+capped port is repaired by the OTHER port's partner (the `x`-partners-`y` derangement composition,
+`boundaryPartnered_stepCap`), threading `boundedBoundaryComponents` alongside so exactly-2 (a perfect matching)
+holds.  `boundaryPartnered_reachable` reads the payoff off the seed, and `partnerIndexOf_readsPartner_reachable`
+combines it with the r11 read-off for the universal, hypothesis-free partner read-off.  This does NOT flip the
+masters: `fxBrauer_hasTagCorrDisjoint` / `fxBrauer_hasTagCorrExtraction` additionally need the read-off WIRED to a
+specific diagram `d` over the six-phase standard-form word (T-ENUM, its own round, + T-CLOSE), so they, the
+roundtrip flags, and the completeness flags stay `false`; #2013 does NOT close.  `= true`. -/
+def fxBrauer_hasBoundaryPartneredFold : Bool := true
 
 end FX1Poly.Polygraph

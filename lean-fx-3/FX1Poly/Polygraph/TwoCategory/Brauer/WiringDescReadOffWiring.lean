@@ -97,29 +97,31 @@ witness (`wellFormedBrauerFold_crossingSeed`).
   partner-totality FOLD (only the seed shipped).  Those stay `false`.  `= true`. -/
 def fxBrauer_hasReadOffWiredFiring : Bool := true
 
-/-- ★★★ **The BRAUER-MIDDLE r11 GRAND LEDGER — MACHINE-CHECKED.**  The four shipped r11 markers — the r10
+/-- ★★★ **The BRAUER-MIDDLE r11→r12 GRAND LEDGER — MACHINE-CHECKED.**  The FIVE shipped markers — the r10
 T-DISJOINT fold lift (`fxBrauer_hasBoundedBoundaryFoldLift`), the extraction read-off
-(`fxBrauer_hasPartnerReadOff`), the partner-totality seed (`fxBrauer_hasBoundaryPartneredSeed`), and the wired
-firing (`fxBrauer_hasReadOffWiredFiring`) — are `true`; and EVERY wall — the partner-totality FOLD
-(`fxBrauer_hasBoundaryPartneredFold`), both tag-correspondence masters (`fxBrauer_hasTagCorrDisjoint`,
+(`fxBrauer_hasPartnerReadOff`), the partner-totality seed (`fxBrauer_hasBoundaryPartneredSeed`), the wired
+firing (`fxBrauer_hasReadOffWiredFiring`), and now the r12 partner-totality FOLD
+(`fxBrauer_hasBoundaryPartneredFold`, flipped `true` in `Brauer/WiringDescBoundaryPartneredFold.lean`) — are
+`true`; and EVERY remaining wall — both tag-correspondence masters (`fxBrauer_hasTagCorrDisjoint`,
 `fxBrauer_hasTagCorrExtraction`), the extractor-totality roundtrip nodes, and the master completeness flags — is
-`false`.  A `rfl`-conjunction the kernel checks over the shipped markers: r11 shipped the uniqueness read-off,
-the existence seed, and the wired composition, but the two-source master assembly (T-ENUM ∧ T-CLOSE ∧ the
-partner-totality fold) is unbuilt, so no master flip is fabricated and #2013 does NOT close. -/
+`false`.  A `rfl`-conjunction the kernel checks over the shipped markers: r11 shipped the uniqueness read-off, the
+existence seed, and the wired composition; r12 shipped the partner-totality fold and the universal read-off; but
+the two-source master assembly (T-ENUM ∧ T-CLOSE wiring the read-off to a specific `d`) is unbuilt, so no master
+flip is fabricated and #2013 does NOT close. -/
 theorem fxBrauer_r11Ledger :
     (fxBrauer_hasBoundedBoundaryFoldLift = true
       ∧ fxBrauer_hasPartnerReadOff = true
       ∧ fxBrauer_hasBoundaryPartneredSeed = true
-      ∧ fxBrauer_hasReadOffWiredFiring = true)
-    ∧ (fxBrauer_hasBoundaryPartneredFold = false
-      ∧ fxBrauer_hasTagCorrDisjoint = false
+      ∧ fxBrauer_hasReadOffWiredFiring = true
+      ∧ fxBrauer_hasBoundaryPartneredFold = true)
+    ∧ (fxBrauer_hasTagCorrDisjoint = false
       ∧ fxBrauer_hasTagCorrExtraction = false)
     ∧ (fxBrauer_hasExt5CorrectedRoundtripProof = false
       ∧ fxBrauer_hasExt5TotalExtractorRoundtrip = false)
     ∧ (fxBrauer_hasBrauerV2FullCompleteness = false
       ∧ fxBrauer_hasBrauerCompleteness = false
       ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) :=
-  ⟨⟨rfl, rfl, rfl, rfl⟩, ⟨rfl, rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
+  ⟨⟨rfl, rfl, rfl, rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
 
 /-- ★★ **Honesty marker — BRAUER-MIDDLE r11 did NOT close #2013.**  The round shipped the uniqueness EXTRACTION
 read-off (`partnerIndexOf` reads the exhibited same-component partner over any T-DISJOINT state), the partner-

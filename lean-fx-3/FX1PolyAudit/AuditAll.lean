@@ -451,6 +451,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGeneratorBridge
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPartnerReadOff
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundaryPartnered
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundaryPartneredFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescReadOffWiring
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
@@ -1088,6 +1089,9 @@ import FX1PolyAudit.Tier0.Term.Subst.SubstPastingAudit
 -- OMEGA-7 r2 — composeLinearized = pasteAlong as a genuine boundary-faithful map on the CellExpr fragment (B1-B3;
 -- Tier0 side because it pairs with the kernel subst law substCompose_assoc)
 import FX1PolyAudit.Tier0.Term.Subst.PastingCompositeLinearizationAudit
+-- OMEGA-7 r4 — the fragment term-to-cell ACTION: kernel subst genuinely carried to pasteAlong on the
+-- strong-Steiner successor-tower fragment, shared variable and all (Tier0 side; needs kernel subst + Steiner)
+import FX1PolyAudit.Tier0.Term.Subst.FragmentTermCellActionAudit
 -- OMEGA-7 r1 — the presented kernel = (signature, table2, table3) tuple seed (B2)
 import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
 -- OMEGA-7 r1 — the per-dimension admission chain seed (kernel-as-value shape, B3)
