@@ -217,4 +217,59 @@ theorem walkerChainComplexBoundaryComposesToZero (dim rowIndex colIndex : Nat)
   augmentedDirectedComplexBoundaryComposesToZero walkerChainComplex dim rowIndex colIndex
     rowBound colBound
 
+/-! ## B3 — non-vacuity + the oracle check (the literal matrices match the recon hand computation)
+
+The oracle theorems below PIN the literal boundary matrices to the independently hand-computed values
+(the recon).  Any mismatch makes the `rfl` fail and the build STOP — the oracle is not silently
+adjusted.  Together with `walkerChainComplexBoundaryComposesToZero`, the non-vacuity witnesses show
+the `d d = 0` is a GENUINE cancellation (both `d2` and `d3` are nonzero, yet `d2·d3 = 0`), not the
+trivial all-zero-boundary complex — and in particular the cofork sign (recon risk: "cofork vs
+valley") is correct, since a mis-signed `d3` would make `d2·d3 ≠ 0` and break `walkerBoundaryComposesToZero`. -/
+
+/-- The column index of each critical pair in `d3` (`a, b, c, d ↦ 0, 1, 2, 3`). -/
+def monadCriticalPairIndex : MonadCriticalPair → Nat
+  | .unitUnit => 0
+  | .leftUnitAssoc => 1
+  | .rightUnitAssoc => 2
+  | .pentagon => 3
+
+/-- ★ **THE ORACLE.**  Each `d3` column (read off the literal matrix at the pair's index, rows
+`eta`/`mu`) equals the hand-computed abelianized cofork column `monadCriticalPairBoundaryColumn` —
+the enumerated critical-pair data and the shipped literal matrix AGREE.  `rfl` per pair; a mismatch
+would fail to compile. -/
+theorem walkerBoundaryDimTwoColumnMatchesCriticalPair :
+    ∀ (pair : MonadCriticalPair),
+      ((walkerBoundaryOfDimTwo.entryAt 0 (monadCriticalPairIndex pair)),
+       (walkerBoundaryOfDimTwo.entryAt 1 (monadCriticalPairIndex pair)))
+        = monadCriticalPairBoundaryColumn pair
+  | .unitUnit => rfl
+  | .leftUnitAssoc => rfl
+  | .rightUnitAssoc => rfl
+  | .pentagon => rfl
+
+/-- Oracle for `d2`: `d2(eta) = 1`, `d2(mu) = −1` (the recon `[[1, −1]]`). -/
+theorem walkerBoundaryDimOneMatchesOracle :
+    ((walkerBoundaryOfDimOne.entryAt 0 0), (walkerBoundaryOfDimOne.entryAt 0 1))
+      = ((1 : Int), (-1 : Int)) := rfl
+
+/-- Oracle for `d1`: the sole entry is `0` (the endo `t` is a loop). -/
+theorem walkerBoundaryDimZeroMatchesOracle :
+    walkerBoundaryOfDimZero.entryAt 0 0 = (0 : Int) := rfl
+
+/-- **Non-vacuity**: `d3` is nonzero (`d3(eta, b) = 1`), so `im d3 ≠ 0` — the degree-2 boundary group
+is a genuine subgroup, not trivial. -/
+theorem walkerBoundaryDimTwoIsNonzero :
+    walkerBoundaryOfDimTwo.entryAt 0 1 = (1 : Int) := rfl
+
+/-- **Non-vacuity**: `d2` is nonzero (`d2(eta) = 1`), so `im d2 ≠ 0`. -/
+theorem walkerBoundaryDimOneIsNonzero :
+    walkerBoundaryOfDimOne.entryAt 0 0 = (1 : Int) := rfl
+
+/-- ★ **Non-vacuity marker.**  The walking-monad chain complex is genuinely non-trivial: `d2` and
+`d3` are both nonzero (`walkerBoundaryDimOneIsNonzero` / `walkerBoundaryDimTwoIsNonzero`), yet
+`d d = 0` holds (`walkerChainComplexBoundaryComposesToZero`) — a REAL cancellation, and the oracle
+(`walkerBoundaryDimTwoColumnMatchesCriticalPair`) confirms the literals match the hand computation.
+`= true`. -/
+def walkerChainComplexIsNonVacuous : Bool := true
+
 end FX1Poly.Polygraph.Homology

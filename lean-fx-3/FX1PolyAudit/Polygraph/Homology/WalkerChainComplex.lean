@@ -24,5 +24,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryComposesToZero
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerChainComplex
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerChainComplexBoundaryComposesToZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.monadCriticalPairIndex
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryDimTwoColumnMatchesCriticalPair
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryDimOneMatchesOracle
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryDimZeroMatchesOracle
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryDimTwoIsNonzero
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryDimOneIsNonzero
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerChainComplexIsNonVacuous
 
 end FX1PolyAudit
