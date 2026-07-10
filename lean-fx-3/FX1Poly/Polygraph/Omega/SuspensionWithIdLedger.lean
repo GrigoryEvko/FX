@@ -191,4 +191,29 @@ map-IN reconstruct does NOT fully land, because owe (iii) at dim 1 is genuinely 
 the abelian invariant on a non-abelian object), not merely open.  `= true` (the residual is recorded). -/
 def fxOmega3_mapInResidualLedgerR3 : Bool := true
 
+/-! ## The bridge round — leg (ii) CLOSED, the map-IN family rests on leg (iii) alone (B4)
+
+The bridge round LANDS leg (ii): the full dim-2 bridge conv leg `bridgeDimTwoHoldsWithId` is now INHABITED
+for every signature (`bridgeDimTwoHoldsWithId_proof`, `BridgeDimTwoConvLegWithId.lean`) — the whole
+`TwoCellConv -> SaturatedConvOverWithId` induction over the real dim-2 carrier, the interchange arm and all,
+zero-axiom.  The r2/r3 `...OpenR2` / `...R3` markers above are the round-stamped historical snapshots (kept,
+NOT flipped); this fresh `...R4` marker is the round-4 truth.  The r2 statement-file marker
+`fxOmega_bridgeDimTwoHoldsWithIdConvLegOpenR2` (`BridgeDimTwoWithId.lean`) likewise stays as the historical
+record; its resolution is `fxOmega_bridgeDimTwoHoldsWithIdConvLegClosedR4`. -/
+
+/-- ★ **B4 — leg (ii) CLOSED; the map-IN family now rests on the genuinely-false leg (iii) ALONE.**  `= true`
+records the bridge round's landing.  The three-node map-IN residual (`fxOmega3_mapInResidualLedgerR3`) had:
+(ii) the full dim-2 bridge conv leg (a BUDGET wall), (iii) the dim-1 multi-generator non-abelian invariant
+wall (genuinely FALSE at dim 1), plus the permanent cited FORM-A ceiling.  The bridge round CLOSES leg (ii)
+(`bridgeDimTwoHoldsWithId_proof` inhabits the statement for every signature, the interchange Godement arm
+discharged over the sibling via `bridgeInterchangeArm` + `vcompMiddleFourRebracket`, boundary coherences
+`toCellDimTwo_boundary{Source,Target}_convWithId`, the composePath homomorphism port
+`realizePathCellSig_composePath_convWithId`, and the two `vcompId{Left,Right}_bridgedWithId` unit steps).
+So the map-IN family now rests on leg (iii) ALONE — the genuinely-false dim-1 non-abelian invariant
+incompleteness (`fxOmega3_multiGeneratorDimOneNonAbelianWallR3`; dim >= 2 landable via Eckmann-Hilton, dim-1
+permanently walled) — plus the permanent FORM-A ceiling.  `fxOmega_omega3Complete` /
+`fxOmega3_omega3CompleteReassessedR2` STAY `false` honestly: it is leg (iii), not leg (ii), that keeps them
+`false`.  `= true` (the closure is recorded). -/
+def fxOmega_mapInFamilyRestsOnLegThreeAloneR4 : Bool := true
+
 end FX1Poly.Polygraph.Omega

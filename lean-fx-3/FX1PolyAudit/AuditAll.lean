@@ -1067,6 +1067,8 @@ import FX1PolyAudit.Polygraph.Omega.BridgeDimTwoWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.EckmannHiltonWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.Steiner.SuspensionChainShift
 import FX1PolyAudit.Polygraph.Omega.SuspensionWithIdLedgerAudit
+-- OMEGA bridge round — the full n=2 bridge conv leg over the sibling (leg (ii) closed)
+import FX1PolyAudit.Polygraph.Omega.BridgeDimTwoConvLegWithIdAudit
 -- OMEGA-3 r3 — the varying-whisker map-IN reconstruct
 import FX1PolyAudit.Polygraph.Omega.Steiner.VaryingWhiskerReconstruct
 -- OMEGA-4 r1 — the Squier ascent: dim-3 critical-pair row family

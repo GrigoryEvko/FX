@@ -21,5 +21,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_generalWhiskeredMapInShippedR3
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_multiGeneratorDimOneNonAbelianWallR3
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega3_mapInResidualLedgerR3
+-- the bridge round — leg (ii) closed, family rests on leg (iii) alone
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_mapInFamilyRestsOnLegThreeAloneR4
 
 end FX1PolyAudit
