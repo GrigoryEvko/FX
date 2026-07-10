@@ -982,17 +982,17 @@ FULL two-sided decider (`fxAmalg_hasReconstructionDecoderReseat` in `DeciderRese
 round-trip `reseatCellInv (reseatCell a) = a` — the remaining walled labor.  `= true`. -/
 def fxAmalg_hasReseatConvTransport : Bool := true
 
-/-- ★ **Honesty marker (`false`) — the WIRED inheritance pipeline (recognise → witness → transport → decide) is
-NOT one term yet (r4: the isFalse HALF now ships).**  MODE-ADMIT r2 ships recognise (`admitByRowAware`) →
+/-- ★★ **Honesty marker (`true`, MODE-ADMIT-INV-N3) — the WIRED inheritance pipeline (recognise → witness →
+transport → decide) is ONE term, both verdicts.**  MODE-ADMIT r2 ships recognise (`admitByRowAware`) →
 registered-family retrieval (running the bespoke decider on the walker's OWN cells); r3 ships the forward reseat
 FUNCTOR (`reseatCell`); r4 ships the forward CONV TRANSPORT (`reseatConvForward`) and thereby the isFalse leg of a
-reconstructed-signature decision literally (`monadReconRefutes`: a reconstructed pair whose `reseatCell`-images the
-bespoke decider refutes is refuted at the reconstructed signature).  What remains for a SINGLE term that decides a
-CANDIDATE's own reconstructed pair (both verdicts) is the isTrue leg: the backward functor `reseatCellInv` + the
-round-trip `reseatCellInv (reseatCell a) = a` + the reverse conv induction (the P1a mirror over `reseatCellInv`) —
-a genuine multi-lemma inverse-functor file, bounded cast LABOR (all `Eq.rec`, fib-3-decoupled), NOT a mathematical
-wall.  Until it ships the pipeline decides only the isFalse direction of a candidate's reconstructed pair (plus
-recognise + retrieve for the registered walkers).  `= false`. -/
-def fxModeAdmit_hasWiredInheritancePipeline : Bool := false
+reconstructed-signature decision literally (`monadReconRefutes`).  The isTrue leg — the backward functor
+`reseatCellInv` + the round-trip `reseatCellInv (reseatCell a) = a` + the reverse conv induction — is now shipped:
+MODE-ADMIT-INV r1/r2 built the backward functor, the backward conv transport, and both round-trip NODES;
+MODE-ADMIT-INV-N3 (`Amalgam/ReconstructedDecision.lean`) discharges the CELL round-trip
+(`reseatCellInv_reseatCell`), inhabits the reflection UNCONDITIONALLY (`reseatReflect`), and ships the total
+unconditional decider `monadReconstructedDecision` — so a CANDIDATE's own reconstructed pair is decided both
+directions by a single term.  All `Eq.rec`, fib-3-decoupled, zero-axiom.  `= true`. -/
+def fxModeAdmit_hasWiredInheritancePipeline : Bool := true
 
 end FX1Poly.Polygraph.Amalgam

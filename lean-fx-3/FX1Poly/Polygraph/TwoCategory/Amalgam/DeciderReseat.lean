@@ -276,21 +276,24 @@ is coupled to `fxMode_hasDecidableTwoCellEquality` (fib-3), the residual (ii) of
 true` (the graph half ships). -/
 def fxAmalg_hasReconstructionGraphBridge : Bool := true
 
-/-- **Honesty marker (`false`) — the FULL two-sided decider reseat: the isFalse leg SHIPS (r4), the isTrue leg
-remains bounded LABOR.**  Transporting `monadSaturatedTwoCellDecision` from the bespoke `monadModeSignature` onto
-the reconstructed `monadComputad.toModeSignature` (the field discrepancy tabled above) needs the 2-cell-inclusive
-signature equivalence + the bidirectional cell re-basing functor.  MODE-ADMIT r3 (`MonadReseat.lean`) built the
-FORWARD FUNCTOR (`reseatPath` / `reseatGen` / `reseatCell`); MODE-ADMIT r4 DISCHARGES the FORWARD CONV TRANSPORT
-zero-axiom — `reseatCell_preservesConv` (the thirteen-constructor `TwoCellConvFull` functoriality, the reseat
-analogue of `mapTwoCellConvFull`, re-derived because `monadModeSignature` is not a `_.toModeSignature`) and
-`reseatConvForward` (`recInto` into the `reseatCell`-image congruence, the three law rows bridged at the conv
-level) — so `fxAmalg_hasReseatConvTransport = true` and the isFalse leg is literal (`monadReconRefutes`).  This
-confirms the r3 reclassification: NOT coupled to `fxMode_hasDecidableTwoCellEquality` (fib-3) — the forward reseat
-decides NO 2-cell equality modulo the 3-cell laws.  The FULL two-sided decider still needs the isTrue leg: the
-backward functor `reseatCellInv` + the round-trip `reseatCellInv (reseatCell a) = a` + the reverse conv induction —
-a genuine multi-lemma inverse-functor file, bounded cast LABOR (all `Eq.rec`, no `HEq`), fib-3-DECOUPLED, NOT a
-mathematical wall.  `= false`. -/
-def fxAmalg_hasReconstructionDecoderReseat : Bool := false
+/-- ★★ **Honesty marker (`true`, MODE-ADMIT-INV-N3) — the FULL two-sided decider reseat SHIPS.**  Transporting
+`monadSaturatedTwoCellDecision` from the bespoke `monadModeSignature` onto the reconstructed
+`monadComputad.toModeSignature` (the field discrepancy tabled above) needs the 2-cell-inclusive signature
+equivalence + the bidirectional cell re-basing functor.  MODE-ADMIT r3 (`MonadReseat.lean`) built the FORWARD
+FUNCTOR (`reseatPath` / `reseatGen` / `reseatCell`); r4 DISCHARGED the FORWARD CONV TRANSPORT zero-axiom
+(`reseatCell_preservesConv`, `reseatConvForward`), so the isFalse leg is literal (`monadReconRefutes`); this
+confirms the r3 reclassification: NOT coupled to `fxMode_hasDecidableTwoCellEquality` (fib-3) — the reseat decides
+NO 2-cell equality modulo the 3-cell laws.  MODE-ADMIT-INV r1/r2 built the BACKWARD functor `reseatCellInv`, the
+backward conv transport `reseatConvBackward`, and both round-trip NODES.  MODE-ADMIT-INV-N3
+(`Amalgam/ReconstructedDecision.lean`) DISCHARGES the CELL round-trip `reseatCellInv (reseatCell cell) =
+castBoundary .. cell` (`reseatCellInv_reseatCell`), inhabits the reflection UNCONDITIONALLY (`reseatReflect`), and
+ships the total unconditional decider `monadReconstructedDecision` over `MonadLawRelReconstructed` — both verdicts
+LIVE on real recon cells.  All `Eq.rec` / no `HEq`, fib-3-DECOUPLED, zero-axiom.
+
+RETIREMENT NOTE: this is the unconditional-decider milestone, NOT island dissolution.  The decider still
+transitively imports `WalkingMonad/MonadWordProblem` (via `MonadNormalizeGen`), and the `SaturatedOver` +
+`monadRelationFamily` root pins are untouched; deletion count this round is ZERO (see `Table/LedgerR1`).  `= true`. -/
+def fxAmalg_hasReconstructionDecoderReseat : Bool := true
 
 /-! ## Honesty markers -/
 

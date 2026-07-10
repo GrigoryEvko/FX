@@ -943,26 +943,23 @@ labor:
 Both nodes are `Eq.rec` / no `HEq`, STRUCTURAL, per-declaration `#assert_no_axioms`-gated.  `= true`. -/
 def fxAmalgInverse_hasRoundTripNodesDischarged : Bool := true
 
-/-- ★ **Honesty marker (`false`) — the UNCONDITIONAL two-sided reseated decider still needs the cell round-trip
-ASSEMBLY (no longer a wall — bounded cast labor over the two discharged nodes).**  `fxAmalg_hasReconstructionDecoderReseat`
-(`DeciderReseat.lean`) named the residual for the FULL two-sided decider: after the FORWARD transport (r4, isFalse
-leg literal) the isTrue leg needs the inverse functor + the round-trip.  r1 shipped the inverse functor and the
-BACKWARD conv transport (`reseatConvBackward`) and assembled the decider CONDITIONAL on the reflection
-(`monadReconstructedDecisionViaReflection`).  r2 DISCHARGES both round-trip NODES
+/-- ★★ **Honesty marker (`true`, MODE-ADMIT-INV-N3) — the UNCONDITIONAL two-sided reseated decider SHIPS.**
+`fxAmalg_hasReconstructionDecoderReseat` (`DeciderReseat.lean`) named the residual for the FULL two-sided decider:
+after the FORWARD transport (r4, isFalse leg literal) the isTrue leg needs the inverse functor + the round-trip.
+r1 shipped the inverse functor and the BACKWARD conv transport (`reseatConvBackward`) and assembled the decider
+CONDITIONAL on the reflection (`monadReconstructedDecisionViaReflection`).  r2 DISCHARGED both round-trip NODES
 (`fxAmalgInverse_hasRoundTripNodesDischarged`: `reseatPathInv_reseatPath`, `reseatGenInv_reseatGen`) plus the
 saturated-conv cast-strip tool (`saturatedConvOver_castBoundaryStrip`).
 
-What remains to FLIP this marker (and inhabit `reflect` unconditionally) is the CELL round-trip
-`reseatCellInv (reseatCell cell) = castBoundary .. cell` — the structural functoriality assembling the two node
-results over the whole `RawTwoCellExpr` grammar (`gen` via `reseatGenInv_reseatGen`, `id` via `castBoundaryId`,
-the whisker cases reconciling `reseatCell`'s forward `reseatPath_composePath` cast with `reseatCellInv`'s
-`reseatPathInv_composePath` cast through the `ReseatCastKit` algebra) — followed by `reseatConvBackward` +
-`saturatedConvOver_castBoundaryStrip` to inhabit `reflect`, then `monadReconstructedDecisionViaReflection` applied
-to it.  This is bounded, all-`Eq.rec` cast-assembly LABOR over generic `Fin 1` endpoints (mode-pinned as in the
-nodes), NOT a mathematical wall.  Both decider verdicts remain LIVE on real recon cells (isFalse roundtrip-free,
-isTrue via the backward transport), so completeness is DEMONSTRATED on concrete pairs; only the GENERAL
-unconditional isTrue leg awaits the cell-round-trip assembly.  `= false` (unconditional flip of
-`fxAmalg_hasReconstructionDecoderReseat` remains the residual). -/
-def fxAmalgInverse_hasReseatedReconstructionDecider : Bool := false
+N3 DISCHARGES the sole residual — the CELL round-trip `reseatCellInv (reseatCell cell) = castBoundary .. cell`
+(`ReconstructedDecision.reseatCellInv_reseatCell`, the structural functoriality assembling the two node results
+over the whole `RawTwoCellExpr` grammar by cell-size fuel, `gen` via `genTransportCast`, `id` via `castBoundaryId`,
+`vcomp` via `castBoundaryVcomp`, the whisker cases reconciling `reseatCell`'s forward `reseatPath_composePath` cast
+with `reseatCellInv`'s `reseatPathInv_composePath` cast through the `ReseatCastKit` algebra).  With it,
+`ReconstructedDecision.reseatReflect` inhabits `reflect` UNCONDITIONALLY (`reseatConvBackward` +
+`saturatedConvOver_castBoundaryStrip`), and `ReconstructedDecision.monadReconstructedDecision` is the total
+unconditional decider.  Both verdicts stay LIVE on real recon cells (isFalse roundtrip-free, isTrue via the
+reflection).  All `Eq.rec` / no `HEq`, STRUCTURAL, zero-axiom.  `= true`. -/
+def fxAmalgInverse_hasReseatedReconstructionDecider : Bool := true
 
 end FX1Poly.Polygraph.Amalgam
