@@ -423,6 +423,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescExtractorLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcExtractorRec
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldPhases
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldInterior
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldGlue
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStagedDescent
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCorrectedFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCorrectedLedger
