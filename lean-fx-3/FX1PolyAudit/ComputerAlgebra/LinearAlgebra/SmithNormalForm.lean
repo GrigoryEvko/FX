@@ -126,5 +126,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.offDiagonalVanishesOfWindowDiagonalAtZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.diagonalDividesSuccessorOfChainPrefix
 #assert_no_axioms FX1Poly.ComputerAlgebra.isSmithNormalFormOfWindowDiagonalChainNonneg
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverOfInvariants
 
 end FX1PolyAudit

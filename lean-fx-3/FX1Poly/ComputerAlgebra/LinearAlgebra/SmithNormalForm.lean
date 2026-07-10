@@ -2220,4 +2220,47 @@ theorem isSmithNormalFormOfWindowDiagonalChainNonneg (matrix : IntMatrix) (heigh
     diagonalIsNonnegative := isNonneg
     diagonalDividesSuccessor := diagonalDividesSuccessorOfChainPrefix matrix height width chain }
 
+/-! ## The conditional totality assembly (H2-SMITH r6, B4)
+
+`SmithReduceFullDriverStatement` is NOT inhabited this round — #2137 does NOT close.  The augmented
+driver's total correctness rides the deep Gaussian-elimination pole (the corrected POLE-A / POLE-B
+above, and POLE-0 for the cross-clear phase), which the r6 recon flags as the r7 wall, not a
+one-round deliverable.  B4 ships the honest CONDITIONAL assembly instead: `smithReduceFullDriverOfInvariants`
+reduces the whole totality target to EXACTLY three invariant obligations on the augmented-driver
+output — window-diagonality at 0, diagonal nonnegativity, and the full prefix divisibility chain.
+Inhabit those three and the driver is total; that is now the precise r7 target.  The reduction is the
+SNF convergence glue (B3) lifted pointwise over every rectangular input.  A future discharge of the
+three hypotheses would split each driver output through the shipped `smithReduceFullApplied`
+(`diagOps ++ repairOps ++ signOps`) and prove the invariants phase by phase — window-diagonality +
+chain from the repair sweep (POLE-B, POLE-0), nonnegativity from the sign sweep. -/
+
+/-- **The conditional totality assembly** — `SmithReduceFullDriverStatement` follows from three
+invariant obligations on the augmented-driver output: that it is window-diagonal at 0, its diagonal is
+nonnegative, and its full prefix chain divides.  This does NOT inhabit the driver statement
+unconditionally (the three hypotheses are the r7 wall — POLE-B / POLE-0 for the first and third, the
+sign-phase induction for the second); it isolates that wall to exactly those three named goals.  Proof:
+the SNF convergence glue `isSmithNormalFormOfWindowDiagonalChainNonneg` applied to the driver output at
+every rectangular input. -/
+theorem smithReduceFullDriverOfInvariants
+    (windowDiagHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      IsWindowDiagonal
+        (matrix.applyOperations (smithReduceFull matrix height width).operations) 0 height width)
+    (nonnegHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      ∀ position, position < Nat.min height width →
+        0 ≤ (matrix.applyOperations
+              (smithReduceFull matrix height width).operations).diagonalEntryAt position)
+    (chainHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      SmithChainPrefix (matrix.applyOperations (smithReduceFull matrix height width).operations)
+        (Nat.min height width) height width) :
+    SmithReduceFullDriverStatement :=
+  fun matrix height width isRect =>
+    isSmithNormalFormOfWindowDiagonalChainNonneg
+      (matrix.applyOperations (smithReduceFull matrix height width).operations) height width
+      (windowDiagHolds matrix height width isRect)
+      (nonnegHolds matrix height width isRect)
+      (chainHolds matrix height width isRect)
+
 end FX1Poly.ComputerAlgebra
