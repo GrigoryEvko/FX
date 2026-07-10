@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerEmbedding
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedSkeletonReps
 
 /-! # WalkingKZ/KZMonadOrderModel — the pointwise POSET order on monotone maps (the KZ hom-order)
 
