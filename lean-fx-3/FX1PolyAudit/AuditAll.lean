@@ -982,6 +982,8 @@ import FX1PolyAudit.Polygraph.Omega.CongruenceWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceWithIdNonVacuityAudit
 import FX1PolyAudit.Polygraph.Omega.Steiner.SoundnessWithId
 import FX1PolyAudit.Polygraph.Omega.SuspensionWithIdAudit
+import FX1PolyAudit.Polygraph.Omega.Steiner.WallHarvestWithId
+import FX1PolyAudit.Polygraph.Omega.BridgeDimTwoWithIdAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
