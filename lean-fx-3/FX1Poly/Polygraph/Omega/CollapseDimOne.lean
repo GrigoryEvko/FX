@@ -55,18 +55,92 @@ def realizePathCell {graph : ModeGraph} :
 
 /-! ## The collapse statement -/
 
-/-- ★ **STATEMENT (r2 proves): the dim-1 fragment collapses to `ModalityPath`.**  Every formal 1-cell over the
+/-- **STATEMENT: the dim-1 fragment collapses to `ModalityPath`.**  Every formal 1-cell over the
 graph's computad is convertible (via the strict category laws `SaturatedConvOver StrictAxiomRel`) to the
-realisation of some modality path — i.e. `realizePathCell` is surjective up to the strict laws.  A forward-
-declared Prop (not proven here): the free 1-category presented by `CellExpr .. 1` has `ModalityPath` as its
-strict-law normal forms.  Honest note: this is an iso up to `SaturatedConvOver StrictAxiomRel`, not a
-definitional equality, because `CellExpr 1` carries explicit `id` / `vcomp` where `ModalityPath` is
-pre-normalised `nil` / `cons`. -/
+realisation of some modality path — i.e. `realizePathCell` is surjective up to the strict laws.  Honest note:
+this is an iso up to `SaturatedConvOver StrictAxiomRel`, not a definitional equality, because `CellExpr 1`
+carries explicit `id` / `vcomp` where `ModalityPath` is pre-normalised `nil` / `cons`.
+
+★ **HONEST STATUS (OMEGA-1 r2): this UNCONDITIONAL `∀` is REFUTED — see `dimOneCollapse_not_unconditional`.**
+The extrinsic-boundary carrier admits `gen ⟨s, t, mod⟩ (ofMode a) (ofMode b)` with the DECLARED boundary
+`(ofMode a, ofMode b)` disagreeing with the label modes `(s, t)`.  `StrictAxiomRel` at dimension 1 is only
+`vcompAssoc` / `vcompUnitLeft` / `vcompUnitRight` (the whisker / interchange rows require dimension `dim+2`), and
+none of these alter a `gen` atom; the one-hole congruences preserve the atom multiset.  Every realised path's
+`gen` atoms are boundary-CANONICAL (`gen ⟨s, mid, mod⟩ (ofMode s) (ofMode mid)`), so an ill-boundaried `gen`
+has NO path preimage.  The substantive collapse content that DOES hold unconditionally ships below:
+`realizePath_composePath_conv` (the homomorphism), `realizePathCell_boundarySource`, and
+`oneCellCollapse_vcompClosed` (compositional closure).  A `GlobularComputad`-restricted collapse (the boundary
+of every generator canonical, and every `vcomp` composable) is the honest true statement OMEGA-2 layers on. -/
 def dimOneCollapsesToPath (graph : ModeGraph) : Prop :=
   ∀ (cell : CellExpr (computadOfGraph graph) 1),
     ∃ (sourceMode targetMode : graph.Mode) (path : ModalityPath graph sourceMode targetMode),
       SaturatedConvOver (computadOfGraph graph) (StrictAxiomRel (computadOfGraph graph))
         cell (realizePathCell path)
+
+/-! ## The dim-1 collapse content — homomorphism + compositional closure (OMEGA-1 r2, B1)
+
+The unconditional `dimOneCollapsesToPath` is refuted (see its note).  What holds unconditionally, and carries
+the mathematical content of "dimension 1 is the free 1-category on the graph", ships here: the boundary of a
+realisation reads off the path's source mode; `realizePathCell` is a HOMOMORPHISM up to
+`SaturatedConvOver StrictAxiomRel` (path composition maps to `vcomp`); hence the realisable cells are CLOSED
+under composable vertical composition. -/
+
+/-- The source boundary of a realised 1-cell is the mode the path starts at (`ofMode sourceMode`) — read off
+structurally (`nil` gives `id (ofMode sourceMode)`; `cons` gives a `vcomp` whose left factor is the head `gen`
+with declared source `ofMode sourceMode`).  Propext-free (`cases` + `rfl`). -/
+theorem realizePathCell_boundarySource {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
+    (path : ModalityPath graph sourceMode targetMode) :
+    boundarySource (realizePathCell path) = CellExpr.ofMode sourceMode := by
+  cases path with
+  | nil _ => rfl
+  | cons _ _ => rfl
+
+/-- ★ **`realizePathCell` is a homomorphism up to the strict category laws.**  Path composition maps to
+vertical composition modulo `SaturatedConvOver StrictAxiomRel`: `realize (first . second)` is convertible to
+`(realize first) vcomp (realize second)`.  By induction on `first` — the `nil` case fires `vcompUnitLeft` (the
+realised tail's source boundary is `ofMode`, by `realizePathCell_boundarySource`), the `cons` case threads the
+inductive hypothesis under `vcompCongrRight` then re-associates with `vcompAssoc`.  This is the substantive
+"dimension 1 = free 1-category on the graph" content. -/
+theorem realizePath_composePath_conv {graph : ModeGraph} {sourceMode middleMode : graph.Mode}
+    (first : ModalityPath graph sourceMode middleMode) :
+    ∀ {targetMode : graph.Mode} (second : ModalityPath graph middleMode targetMode),
+      SaturatedConvOver (computadOfGraph graph) (StrictAxiomRel (computadOfGraph graph))
+        (realizePathCell (composePath first second))
+        (CellExpr.vcomp (realizePathCell first) (realizePathCell second)) := by
+  induction first with
+  | nil _ =>
+      intro _ second
+      have unitStep := SaturatedConvOver.ofRelation (computad := computadOfGraph graph)
+        (baseRel := StrictAxiomRel (computadOfGraph graph))
+        (StrictAxiomRel.vcompUnitLeft (realizePathCell second))
+      rw [realizePathCell_boundarySource] at unitStep
+      exact unitStep.symm
+  | cons _ rest ih =>
+      intro _ second
+      exact SaturatedConvOver.trans
+        (SaturatedConvOver.vcompCongrRight _ (ih second))
+        (SaturatedConvOver.symm
+          (SaturatedConvOver.ofRelation
+            (StrictAxiomRel.vcompAssoc _ (realizePathCell rest) (realizePathCell second))))
+
+/-- The realisable cells are CLOSED under composable vertical composition: if `cellA` collapses to `realize pA`
+and `cellB` collapses to `realize pB` along a shared middle mode, then `vcomp cellA cellB` collapses to
+`realize (pA . pB)`.  Two `vcompCongr` steps feed the composite into `realizePath_composePath_conv`; this is
+the compositional half of the honest dim-1 collapse. -/
+theorem oneCellCollapse_vcompClosed {graph : ModeGraph} {sourceMode middleMode targetMode : graph.Mode}
+    (pathA : ModalityPath graph sourceMode middleMode) (pathB : ModalityPath graph middleMode targetMode)
+    {cellA cellB : CellExpr (computadOfGraph graph) 1}
+    (collapseA : SaturatedConvOver (computadOfGraph graph) (StrictAxiomRel (computadOfGraph graph))
+      cellA (realizePathCell pathA))
+    (collapseB : SaturatedConvOver (computadOfGraph graph) (StrictAxiomRel (computadOfGraph graph))
+      cellB (realizePathCell pathB)) :
+    SaturatedConvOver (computadOfGraph graph) (StrictAxiomRel (computadOfGraph graph))
+      (CellExpr.vcomp cellA cellB) (realizePathCell (composePath pathA pathB)) :=
+  SaturatedConvOver.trans
+    (SaturatedConvOver.trans
+      (SaturatedConvOver.vcompCongrLeft cellB collapseA)
+      (SaturatedConvOver.vcompCongrRight (realizePathCell pathA) collapseB))
+    (SaturatedConvOver.symm (realizePath_composePath_conv pathA pathB))
 
 /-- ★ **The dim-0 collapse is definitional.**  `CellExpr computad 0` is exactly the modes carrier: `ofMode`
 is the sole constructor at dimension 0, so `CellExpr (computadOfGraph graph) 0` is `graph.Mode` up to the
