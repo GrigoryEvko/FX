@@ -2,6 +2,7 @@ import FX1Poly.Polygraph.TwoCategory.Table.Ledger
 import FX1Poly.Polygraph.TwoCategory.Table.InvariantFoldInstances
 import FX1Poly.Polygraph.TwoCategory.Table.ThinWalkerMigration
 import FX1Poly.Polygraph.TwoCategory.Table.StrategyRegistry
+import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
 
 /-! # Polygraph/TwoCategory/Table/LedgerR1 — the POLY-TAB r1 honest ledger + aggregate verdict + the grown
 deletion list (still awaiting confirmation) + the POLY-TAB-2 plan (P4 + P5)
@@ -78,6 +79,29 @@ def fxTab_polyTabR1Complete : Bool :=
 /-- The r1 aggregate verdict computes to `true` — POLY-TAB r1 is complete (r0 green + P1 + P2 + P3),
 machine-checked. -/
 theorem polyTabR1Complete_holds : fxTab_polyTabR1Complete = true := by decide
+
+/-! ## The POLY-TAB r6 monad-re-founding marker (WAVE 1; strictly factual — the machine-checked chain ONLY) -/
+
+open FX1Poly.Polygraph.Amalgam (fxMonad_hasLawRelationLeaf fxMonad_hasGenericNativeSoundnessLeg
+  fxMonad_hasGenericNativeDeciderInterim)
+
+/-- ★★ **The POLY-TAB r6 monad-re-founding marker (WAVE 1).**  Conjoins ONLY the machine-checked-bespoke-free chain:
+the bespoke-free law carrier (S1, `fxMonad_hasLawRelationLeaf`), the born-generic Δ SOUNDNESS leg + decision assembly
+(S2 + S3, `fxMonad_hasGenericNativeSoundnessLeg`, exhaustive-meta-walk-certified bespoke-free), and the working
+INTERIM generic decider with born-generic soundness + regression continuity (S4,
+`fxMonad_hasGenericNativeDeciderInterim`).  It DELIBERATELY EXCLUDES `fxMonad_hasGenericNativeDecider` (which is
+`false`): the fully bespoke-free `decideSaturatedConvOverMonadNative` awaits the born-generic completeness
+`monadNormalizeGen` (the Eilenberg–Zilber word-multiplicativity chain, wave-2).  So this marker asserts exactly what
+is machine-checked: the re-founding's soundness half + assembly + working interim decider ship green and
+zero-axiom; the bespoke-free completeness is the honest named residual.  `= true`. -/
+def fxTab_hasMonadNativeRefounding : Bool :=
+  fxMonad_hasLawRelationLeaf
+    && fxMonad_hasGenericNativeSoundnessLeg
+    && fxMonad_hasGenericNativeDeciderInterim
+
+/-- The r6 monad-re-founding marker computes to `true` — the machine-checked born-generic soundness chain + interim
+decider are complete and green, machine-checked. -/
+theorem hasMonadNativeRefounding_holds : fxTab_hasMonadNativeRefounding = true := by decide
 
 /-! ## P4 — the DELETION LIST, GROWN with per-file readiness states (nothing deleted; awaiting confirmation)
 
@@ -230,6 +254,70 @@ files) + `Amalgam/SaturatedComponentDecider` (the hinge).  KEPT: `IdempotentMona
 regression `idempotentNativeAgreesOldOnRegression` is repointed native-vs-native (`decideSaturatedConvOverIdempotent`
 -> `decideSaturatedConvOverIdempotentNative`).  `fxTab_hasThinClassWalkerMigrations` stays `true` (the idempotent
 migration is now the identity migration, as the involution's).  `= true`.
+
+### r6 OUTCOME (POLY-TAB r6 monad re-founding, WAVE 1, EXECUTED, #2228) — born-generic SOUNDNESS + decision assembly SHIPPED bespoke-free; completeness the named residual; ZERO deletions
+
+r6 opened the MONAD lane (the KEPT exemplar, r2 outcome DEFERRED, 35 consumers) on the r4 idempotent template —
+NEW `MonadSaturated*`/`MonadLawRelation` sibling files, ADDITIVE, the bespoke `MonadSaturatedTwoCellConv` UNTOUCHED
+(retirement is r7 per the r5 protocol).  Unlike the trivially-thin idempotent lane, the walking monad is NOT locally
+posetal, so its decision is the Δ monotone-map model (`monadMonotoneMapOf`) with a genuine SEPARATING `isFalse` branch,
+and completeness is the full Eilenberg–Zilber word-multiplicativity chain rather than a one-shot thinness normalizer.
+
+  * **(S1) The law rows + carrier, bespoke-free home** — `WalkingMonad/MonadLawRelation.lean`: the carrier
+    abbreviation `MonadSaturatedConvGen := SaturatedConvOver monadModeSignature MonadLawRel`, the three monad-law rows
+    (`monadLeftUnitRowGen` / `monadRightUnitRowGen` / `monadAssocRowGen`) over the ALREADY-SHIPPED `MonadLawRel`
+    (`Amalgam/SaturatedOver`, the INT-SIG-ALIGN #2079 exemplar), plus non-vacuity — each a generic `ofRelation` term
+    with NO `MonadSaturatedTwoCellConv` in its constant-closure.  (`MonadLawRel` was not missing, so S1 is lighter than
+    the idempotent `IdempotentLawRelation` — it re-homes and adds the carrier, not the relation.)
+  * **(S2 + S3) The Δ SOUNDNESS leg re-founded GENERIC-NATIVE** — `WalkingMonad/MonadSaturatedDeltaGen.lean`: the
+    born-generic `monadMonotoneMapOf_mapEqOfConvGen` (every `SaturatedConvOver monadModeSignature MonadLawRel`
+    derivation preserves the monotone map), proved via the universal property `SaturatedConvOver.recInto` +
+    `monadIsMonotoneMapCongruence` (the three bespoke law arms collapsed into ONE `ofRelation` match).  The conv-FREE
+    fold + soundness lemmas (`monadMonotoneMapOf` / `_eqOfConvFull` including the cap-free Godement invariance / the
+    three simplicial seed lemmas / the four fold-congruences) are REUSED verbatim — none references the bespoke.  The
+    born-generic canonicalization structure `MonadSaturatedCanonicalizationGen` and decision assembly
+    `monadDecideSaturatedConvOverGen` / `monadSaturatedGenDecisionModulo` ship bespoke-free (soundness field inhabited).
+  * **(S4) The working GENERIC decider, INTERIM completeness** — `WalkingMonad/MonadSaturatedDecisionGen.lean`:
+    `decideSaturatedConvOverMonadInterim` decides the generic carrier on every parallel pair; its SOUNDNESS half is
+    born-generic, its COMPLETENESS half transports the bespoke `monadConvOfMapEq_ofNormalize monadNormalize` through
+    `monadSaturated_to_generic` (the interim canonicalization `monadSaturatedCanonicalizationGenViaBridge`).  It
+    reproduces the shipped bespoke decider's verdicts on BOTH lane regression pairs
+    (`monadGenAgreesOldOnRegression_holds`, `rfl`): the size-3 associativity pair `t.t.t ⇒ t` (CONVERTIBLE, both fold
+    `[0,0,0]`, `isTrue`) and the SEPARATING size-1 faces pair `t ⇒ t.t` (NON-convertible, maps `[1]` vs `[0]`,
+    `isFalse`).  Honest marker `fxMonad_hasGenericNativeDecider = false` records that the fully bespoke-free decider is
+    NOT yet done.
+  * **The bespoke-free META-WALK (r4 gold standard, made SOUND)** — `FX1PolyAudit/.../MonadBespokeFreeWalk.lean`: a
+    build-failing transitive-constant walk (`#assert_constant_free_of` / `#assert_constant_depends_on`) proves the four
+    born-generic decls (`monadIsMonotoneMapCongruence`, `monadMonotoneMapOf_mapEqOfConvGen`,
+    `monadDecideSaturatedConvOverGen`, `monadSaturatedGenDecisionModulo`) have NO `MonadSaturatedTwoCellConv` in their
+    FULL constant closure, with the needle-detector control confirming the bespoke deciders + the interim decider DO.
+    ★ The walk is EXHAUSTIVE (`includeStdlib := true`): a pruning walk drops structure-field INTERNAL auxiliaries and
+    would have UNSOUNDLY hidden the interim decider's completeness residual behind one — the sound walk sees through it.
+    Backed additionally by per-declaration `#assert_no_axioms` audit twins.
+
+**The wave-1 RESIDUAL (named, honest):** the born-generic normalize `monadNormalizeGen : cell → SaturatedConvOver
+monadModeSignature MonadLawRel cell (canon cell)` — the Eilenberg–Zilber word-multiplicativity chain (`wordMul_vcomp`
+/ `wordMul_hcomp` + the vcomp/hcomp/word multiplicativity conv-producing files `MonadVcompMult` (87 refs) /
+`MonadWordVcomp` (81) / `MonadNormalizeCases` (50) / `MonadHcompMult` / `MonadWordMultiplicativity`, ~2000 conv-producing
+lines) re-founded ctor-for-ctor over the generic carrier.  This is the substantial wave-2 port; once it inhabits
+`convOfMapEqGen` born-generic, the interim canonicalization is swapped, the bespoke-free `decideSaturatedConvOverMonadNative`
+is assembled, and `fxMonad_hasGenericNativeDecider` flips.
+
+### r7 RETIREMENT-ROUND PREVIEW (monad lane; GATED — NOTHING deleted this round)
+
+Post-re-founding consumer census of `MonadSaturatedTwoCellConv` (unchanged by the additive r6): the bespoke inductive
+stays live, consumed by (a) the whole WalkingMonad Δ decision/normalize chain (the RE-PROVES core, retired only once
+`monadNormalizeGen` lands born-generic); (b) `Amalgam/SaturatedOver`'s migration facts (`monadSaturated_iff_generic` /
+`monadSaturatedIsCongruence` / the two iso directions — an iff INHERENTLY about the bespoke, collapses to `Iff.rfl` on
+retirement); (c) `Amalgam/SaturatedRelationFamily.monadRelationFamily` (the SEPARATING family member, re-points
+born-generic like the idempotent/involution shape); and — ★ THE HARD BLOCKER — (d) **`WalkingKZ`**:
+`KZTwoCellLE.ofMonad : MonadSaturatedTwoCellConv a b → KZTwoCellLE a b` (`KZMonadPresentation`) is a genuine structural
+ctor consuming the monad conv BOTH ways (the directed-preorder antisymmetrization RECOVERS `MonadSaturatedTwoCellConv`),
+so KZ migration needs an ORIENTED / preorder-valued base relation the symmetric generic carrier does not provide
+(`fxTab_hasKZWalkerMigration = false`, LedgerR1:241-242).  Consequence: the r7 monad deletion cannot fire until BOTH
+`monadNormalizeGen` (the completeness port) lands AND the KZ `ofMonad` ctor is re-pointed / given its own oriented base
+— the exact idempotent-r4 posture (deletion UNBLOCKED at the proof level only after the port, and separately GATED on
+KZ), reserved for explicit user sign-off per never-delete-without-confirm.
 
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 

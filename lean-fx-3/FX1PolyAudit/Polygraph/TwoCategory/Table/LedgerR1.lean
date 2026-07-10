@@ -11,5 +11,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_polyTabR1Complete
 #assert_no_axioms FX1Poly.Polygraph.Table.polyTabR1Complete_holds
 #assert_no_axioms FX1Poly.Polygraph.Table.fxTab_polyTabR1LedgerComplete
+#assert_no_axioms FX1Poly.Polygraph.Table.fxTab_hasMonadNativeRefounding
+#assert_no_axioms FX1Poly.Polygraph.Table.hasMonadNativeRefounding_holds
 
 end FX1PolyAudit
