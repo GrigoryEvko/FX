@@ -725,4 +725,64 @@ def fxTab_hasMonadDeepBridgeRelocated : Bool := true
 /-- The r7-r4 deep-bridge-relocated marker computes to `true`, machine-checked. -/
 theorem hasMonadDeepBridgeRelocated_holds : fxTab_hasMonadDeepBridgeRelocated = true := by decide
 
+/-- ★ **The POLY-TAB r7 r5 marker — the CASES-helpers leaf split SHIPPED, the ISR repoint's block #2 CLOSED, the
+Vcomp severance classified as a two-level cascade + banked (#2228).**  MONAD-R7 r5 executed the r4-playbook
+content-preserving relocation on `WalkingMonad/MonadNormalizeCases` and retried the r4-jammed ISR repoint:
+
+  * **B1 (cases leaf).**  The 9 conv-FREE helpers of `MonadNormalizeCases` — `monadOnes` / `length_monadOnes` /
+    `countsDomainPath_monadOnes`, the ascending-block run-peel `runLengthAt_ascendingFrom_succ` /
+    `dropRunAt_ascendingFrom_succ` / `countsOf_ascendingFrom_ones`, and the monad boundary-cast algebra
+    `monadWhiskerLeft_castBoundary` / `monadCastBoundary_castBoundary` / `monadCastBoundary_id` — moved VERBATIM into
+    the new bespoke-free leaf `WalkingMonad/MonadNormalizeCasesReps`, importing only `MonadSaturatedCanonReps`
+    (leaf 2).  The source keeps the 6 conv-bearing theorems (the two `gen` base cases, `castBoundaryCongr`, the
+    ones-word collapse `wordFromCounts_monadOnes_succ_conv` / `_conv`, `monadNormalize_id`) + 3 markers and imports
+    the leaf.  **Census correction to r4:** r4's "11 conv-free helpers" OVERCOUNTED; by strict proof-dependency the
+    honest split is 12 conv-free decls (the 9 pure helpers + 3 Bool markers) + 6 conv-bearing theorems, and the
+    LOAD-BEARING movable set is exactly the 9 pure helpers relocated here (`castBoundaryCongr` is conv-bearing and
+    STAYS; the 3 markers are consumer-less and STAY).  Per-decl `#assert_no_axioms` + independent `#print axioms`
+    both clean (all 9 + the residue's `wordFromCounts_monadOnes_conv` / `monadNormalize_id` depend on NO axioms).
+
+  * **B2 (ISR repoint — block #2 CLOSED).**  With the leaf in place, `IdempotentSaturatedReps` drops its vestigial
+    `import MonadWhiskerRightMult` (ISR references none of its decls; `monadTPower_add` stays reachable via
+    `MonadCanonicalWord`).  `IdempotentSaturatedGeneralBricks` — the SOLE idempotent consumer of the monad
+    `monadWhiskerLeft_castBoundary` (line 194) — now imports the conv-free leaf for that helper AND
+    `FreeTwoCell.ChainReadbackConv` directly for the GENERIC `RawTwoCellExpr.whiskerLeft_castBoundary` /
+    `castBoundary_castBoundary` / `vcomp_castBoundaryLeft` (previously reached only through the dropped chain).
+    **Closure drop (machine-verified):** `MonadWhiskerRightMult`, `MonadWordMultiplicativity`, and the
+    `MonadNormalizeCases` residue all LEAVE both ISR's (29-module) and GeneralBricks' (57-module) import closure —
+    the bespoke `MonadWordMultiplicativity` chain is pruned from the idempotent lane.  **HONEST — block #1 PERSISTS:**
+    the `IdempotentLawRelation -> Amalgam.SaturatedOver -> MonadSaturatedConv` pin is untouched (AMALG's) and still
+    in GeneralBricks' closure — the leaf is necessary-not-sufficient for full conv-decoupling.  Idempotent audit
+    twins pass (28 zero-axiom gates).
+
+  * **B3 (the pair — NO MOVE).**  Per the recon placement, `countsDomainPath_consAppend_ones` /
+    `monadTPower_length_consAppend_ones` do NOT relocate: once #4/#5 moved to the leaf, `MonadWordMultiplicativity`
+    resolves the pair IN PLACE via `MonadWordMultiplicativity -> MonadNormalizeCases -> MonadNormalizeCasesReps`
+    (verified green).  Parking the pair in `MonadSaturatedCanonReps` would form an import cycle (the pair needs
+    `monadOnes`, which lands in the cases leaf that imports CanonReps); parking it in the cases leaf would force
+    carrying the `consAppend` cluster.  Recommendation stands: keep in place; bank the optional `consAppend`-cluster
+    extraction.
+
+  * **B4 (Vcomp probe — RELOCATION, NOT a wall; BANKED as a two-level cascade).**  Classification confirmed by
+    machine check: the native decider `MonadNormalizeGen` consumes exactly ONE `MonadNormalizeVcomp` decl — the
+    conv-FREE `canonCounts_vcomp`; the bespoke `wordMul_vcomp` (the multi-cast interchange re-sort) is proven
+    zero-axiom (`#print axioms wordMul_vcomp` = "does not depend on any axioms") and is NOT on the native decider's
+    dependency path — so it is NOT an open sort and there is NO NAMED wall / no bounded push applies.  The severance
+    (relocate the conv-free data-bridge stratum `MonadNormalizeVcomp` lines 38-533 into a bespoke-free leaf, drop
+    `MonadNormalizeGen`'s `import MonadNormalizeVcomp`) is a genuine RELOCATION but is BANKED as a TWO-LEVEL CASCADE:
+    the data-bridge stratum depends on conv-FREE `List Nat` primitives (`composeCounts`, `listSum`, `consTake`,
+    `consDrop`, `consTake_consAppend`, `consDrop_consAppend`, `natAddSubCancelLeft`) that are DEFINED INSIDE the
+    conv-bearing `MonadWordVcomp` (81 `MonadSaturatedTwoCellConv` mentions).  A clean B1-style single-leaf split is
+    therefore impossible; those shared primitives must first be extracted from `MonadWordVcomp` into a lower conv-free
+    leaf, then the data bridge relocated — matching the recon's budget BANK of the Vcomp extraction as "bigger".
+
+DELETIONS — ZERO (unchanged posture): block #1 (`SaturatedOver`) still pins the whole survivor lane; the r5 leaf
+severs the idempotent lane's bespoke `MonadWordMultiplicativity` entanglement but does not dissolve the gated island.
+Shipped: `MonadNormalizeCasesReps` (+ audit twin, `AuditAll` line) and its two import-repoints; commits carry the
+per-brick states.  `= true`. -/
+def fxTab_hasMonadCasesLeafSplitR5 : Bool := true
+
+/-- The r7-r5 cases-leaf-split marker computes to `true`, machine-checked. -/
+theorem hasMonadCasesLeafSplitR5_holds : fxTab_hasMonadCasesLeafSplitR5 = true := by decide
+
 end FX1Poly.Polygraph.Table
