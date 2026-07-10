@@ -994,6 +994,7 @@ import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.CellCoordinates
 import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.DecidableCellEq
 import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.LoopFreeOrder
 import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.ComputadLoopFree
+import FX1PolyAudit.Polygraph.Homology.WalkerChainComplex
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
