@@ -175,6 +175,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DecisionTransfer
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerAudit
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealLawDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.SPrefixRefutation
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutNormalForm
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
