@@ -1071,6 +1071,8 @@ import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
 import FX1PolyAudit.Polygraph.Omega.CohGateTypedAudit
 -- OMEGA-6 r1 — the coinductive-invertibility = SN-duality seed at the omega-cell carrier
 import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
+-- OMEGA-6 r2 — the REVERSE invertibility duality: unconditional reverse refuted, conditional/genuine walled
+import FX1PolyAudit.Polygraph.Omega.InvertibilityReverseSeedAudit
 -- OMEGA-6 r1 — the ceiling ledger + the OMEGA-7 handoff (markers only hypothesis-free)
 import FX1PolyAudit.Polygraph.Omega.WeakDirectedCeilingLedgerAudit
 -- OMEGA-7 r1 — substitution composition IS pasting arithmetic (the App-anchor play, B1;
