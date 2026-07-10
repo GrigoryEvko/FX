@@ -180,6 +180,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutNormalForm
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ReverseCompletenessLeg
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ReconstructedDecisionGen
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutRightImageReflect
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutRightImageDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
