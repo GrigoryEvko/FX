@@ -23,6 +23,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.computadOfSignature
 #assert_no_axioms FX1Poly.Polygraph.Omega.DimTwoTranslation
 #assert_no_axioms FX1Poly.Polygraph.Omega.bridgeDimTwoHolds
+-- BridgeDimTwo.lean — the r2 translation + PROVEN forward-size leg (B2)
+#assert_no_axioms FX1Poly.Polygraph.Omega.realizePathCellSig
+#assert_no_axioms FX1Poly.Polygraph.Omega.toCellDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.toCellDimTwo_size
+#assert_no_axioms FX1Poly.Polygraph.Omega.bridgeDimTwoForwardSize
 
 -- CollapseDimOne.lean (the n=1 collapse STATEMENT + the build map)
 #assert_no_axioms FX1Poly.Polygraph.Omega.graphGenLabel
