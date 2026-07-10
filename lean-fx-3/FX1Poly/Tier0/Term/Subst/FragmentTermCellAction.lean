@@ -166,4 +166,160 @@ example : (linearizeFull towerValuation (cellOf (towerSubst 1))).top = [1] := rf
 example : (linearizeFull towerValuation
     (fragmentTermToCell (RawTerm.subst (towerSubst 1) (omegaSuccTower 2)))).poles = [([0], [0])] := rfl
 
+/-! ## THE SUBST LEG — the fragment is closed under the tower substitutions (the kernel `RawTerm.subst`)
+
+The genuine kernel `RawTerm.subst` (Tier0) fires on the fragment: substituting a depth-`k` tower by the
+tower substitution of index `m` yields a depth-`(m + k)` tower.  Induction on `depth`; the successor step
+rides `subst`'s straight-through pass over the zero-shift `gen_natSucc` wrapper (`iterateLiftRaw sigma 0 =
+sigma`), a `rfl` step-reduction, then the induction hypothesis.  `depth` is inducted (not `towerIndex`) so
+the base index arithmetic `towerIndex + 0` is `rfl`-clean and no `Nat.add_comm` / `Nat.zero_add` is touched. -/
+
+/-- ★ **THE SUBST LEG — `subst (towerSubst m) (tower k) = tower (m + k)`.**  The genuine kernel
+`RawTerm.subst` carrying the fragment into the fragment: the tower is closed under the tower substitutions.
+This is the same `RawTerm.subst` machinery `substFusion_nonVacuity` exercises, played on the successor
+tower. -/
+theorem subst_omegaSuccTower (towerIndex depth : Nat) :
+    RawTerm.subst (towerSubst towerIndex) (omegaSuccTower depth) = omegaSuccTower (towerIndex + depth) := by
+  induction depth with
+  | zero => rfl
+  | succ predecessorDepth priorFusion =>
+      show RawTerm.subst (towerSubst towerIndex)
+            (.mkGen .gen_natSucc () (.single (omegaSuccTower predecessorDepth)))
+          = omegaSuccTower (towerIndex + (predecessorDepth + 1))
+      have substThroughSucc :
+          RawTerm.subst (towerSubst towerIndex)
+              (.mkGen .gen_natSucc () (.single (omegaSuccTower predecessorDepth)))
+            = .mkGen .gen_natSucc ()
+                (.single (RawTerm.subst (towerSubst towerIndex) (omegaSuccTower predecessorDepth))) := rfl
+      rw [substThroughSucc, priorFusion]
+      rfl
+
+/-! ## THE POLE BOUNDARIES — every tower cell has degenerate boundaries (`[0]` on both faces)
+
+The realization of any tower has both boundary faces at the base mode, so its single boundary pole is
+`([0], [0])`.  The source face is `rfl` at each level (`vcomp`'s source is `succCell`'s source, the base
+mode); the target face recurses through the right factor to the base (induction). -/
+
+/-- The **source boundary** of any tower realization linearizes to the degenerate `[0]` — `vcomp`'s source
+is `succCell`'s source (the base mode) at each level, the identity base at depth 0. -/
+theorem towerBoundarySourceCoords (depth : Nat) :
+    (linearize towerValuation (boundarySource (fragmentTermToCell (omegaSuccTower depth)))).coordinates
+      = [0] := by
+  cases depth with
+  | zero => rfl
+  | succ _ => rfl
+
+/-- The **target boundary** of any tower realization linearizes to the degenerate `[0]` — `vcomp`'s target
+recurses through the right factor to the base mode. -/
+theorem towerBoundaryTargetCoords (depth : Nat) :
+    (linearize towerValuation (boundaryTarget (fragmentTermToCell (omegaSuccTower depth)))).coordinates
+      = [0] := by
+  induction depth with
+  | zero => rfl
+  | succ _ priorTarget => exact priorTarget
+
+/-! ## THE TOP ROW ADDITIVITY — realization tops add across tower concatenation
+
+The top row of a tower realization is additive across the substitution: `tower (m + k)`'s top is the sum of
+`tower m`'s and `tower k`'s.  Induction on `k`; the successor step prepends the `succCell` unit `[1]`, moved
+past the `tower m` block by `addCoordinates_assoc` + `addCoordinates_comm` (both the shipped propext-clean
+kit over the local `intAddComm` / `intAddAssoc`, NOT Init's `Int.add_comm`).  This is the same
+`addCoordinates_assoc` play as `linearizeFull_pasteAlong_assoc`. -/
+
+/-- The realization top prepends the `succCell` unit `[1]` at each successor level (`rfl`, via the `vcomp
+succCell` structure of the map). -/
+theorem towerTopSucc (depth : Nat) :
+    (linearize towerValuation (fragmentTermToCell (omegaSuccTower (depth + 1)))).coordinates
+      = addCoordinates [1] (linearize towerValuation (fragmentTermToCell (omegaSuccTower depth))).coordinates :=
+  rfl
+
+/-- ★ **THE TOP ADDITIVITY — `top (tower (m + k)) = top (tower m) + top (tower k)`.**  The realization tops
+add across the substitution; the discharging arithmetic is the shipped `addCoordinates_assoc` /
+`addCoordinates_comm` / `addCoordinates_zeroVector_right`. -/
+theorem towerTopAdd (towerIndex depth : Nat) :
+    (linearize towerValuation (fragmentTermToCell (omegaSuccTower (towerIndex + depth)))).coordinates
+      = addCoordinates
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower towerIndex))).coordinates
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower depth))).coordinates := by
+  induction depth with
+  | zero =>
+      have ambientLength :
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower towerIndex))).coordinates.length = 1 :=
+        linearize_length towerValuation _
+      have rightUnit :=
+        addCoordinates_zeroVector_right
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower towerIndex))).coordinates
+      rw [ambientLength] at rightUnit
+      exact rightUnit.symm
+  | succ predecessorDepth priorAdditivity =>
+      show (linearize towerValuation
+            (fragmentTermToCell (omegaSuccTower ((towerIndex + predecessorDepth) + 1)))).coordinates
+         = addCoordinates
+             (linearize towerValuation (fragmentTermToCell (omegaSuccTower towerIndex))).coordinates
+             (linearize towerValuation (fragmentTermToCell (omegaSuccTower (predecessorDepth + 1)))).coordinates
+      rw [towerTopSucc (towerIndex + predecessorDepth), priorAdditivity, towerTopSucc predecessorDepth,
+        ← addCoordinates_assoc [1]
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower towerIndex))).coordinates
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower predecessorDepth))).coordinates,
+        addCoordinates_comm [1]
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower towerIndex))).coordinates,
+        addCoordinates_assoc
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower towerIndex))).coordinates [1]
+          (linearize towerValuation (fragmentTermToCell (omegaSuccTower predecessorDepth))).coordinates]
+
+/-! ## THE POLE EQUALITY of the action's two sides -/
+
+/-- The boundary poles of `fragmentTermToCell (tower (m + k))` and of the pasting composite `pasteAlong
+(cellOf (towerSubst m)) (fragmentTermToCell (tower k))` agree — both are the single degenerate pole
+`([0], [0])`.  The left source and the composite's source are both the base mode (`cellOf (towerSubst m)`'s
+source), the left target and the composite's target both the base mode (`tower k`'s target). -/
+theorem towerActionPolesEq (towerIndex depth : Nat) :
+    polesOf towerValuation (fragmentTermToCell (omegaSuccTower (towerIndex + depth)))
+      = polesOf towerValuation
+          (pasteAlong (cellOf (towerSubst towerIndex)) (fragmentTermToCell (omegaSuccTower depth))) := by
+  show [((linearize towerValuation
+            (boundarySource (fragmentTermToCell (omegaSuccTower (towerIndex + depth))))).coordinates,
+         (linearize towerValuation
+            (boundaryTarget (fragmentTermToCell (omegaSuccTower (towerIndex + depth))))).coordinates)]
+     = [((linearize towerValuation
+            (boundarySource (fragmentTermToCell (omegaSuccTower towerIndex)))).coordinates,
+         (linearize towerValuation
+            (boundaryTarget (fragmentTermToCell (omegaSuccTower depth)))).coordinates)]
+  rw [towerBoundarySourceCoords (towerIndex + depth), towerBoundaryTargetCoords (towerIndex + depth),
+    towerBoundarySourceCoords towerIndex, towerBoundaryTargetCoords depth]
+
+/-! ## ★★ THE ACTION EQUATION — kernel substitution genuinely carried to `pasteAlong` -/
+
+/-- ★★ **THE OMEGA-7 r4 ACTION EQUATION.**  On the strong-Steiner successor-tower fragment, relative to
+`towerValuation`, the realization of the kernel-substituted term IS the pasting composite of the
+substitution's cell with the term's cell:
+
+    linearizeFull (fragmentTermToCell (t.subst sigma))
+      = linearizeFull (pasteAlong (cellOf sigma) (fragmentTermToCell t))
+
+with `t = omegaSuccTower depth` and `sigma = towerSubst towerIndex` the SHARED variables linking the two
+sides — exactly the glue the r2 conjunction `substComposeAssoc_and_pastingAssoc` lacks.  Proven by the
+subst leg (`subst_omegaSuccTower`, the genuine kernel `RawTerm.subst`) reducing the LHS, then
+`linearizeFull_eq_of`: the boundary poles agree (`towerActionPolesEq`), the top row adds
+(`towerTopAdd`).  Scope: RELATIVE to `towerValuation` on the strong-Steiner fragment; arbitrary
+lambda-terms with binders stay Makkai / Form-A-walled (never widened). -/
+theorem fragmentTermToCell_subst_eq_pasteAlong (towerIndex depth : Nat) :
+    linearizeFull towerValuation
+        (fragmentTermToCell (RawTerm.subst (towerSubst towerIndex) (omegaSuccTower depth)))
+      = linearizeFull towerValuation
+          (pasteAlong (cellOf (towerSubst towerIndex)) (fragmentTermToCell (omegaSuccTower depth))) := by
+  rw [subst_omegaSuccTower towerIndex depth]
+  refine linearizeFull_eq_of towerValuation ?_ ?_
+  · exact towerActionPolesEq towerIndex depth
+  · exact towerTopAdd towerIndex depth
+
+/-- Non-vacuity of the general action equation at the probed witness `(m = 1, k = 2)` — the general
+theorem instantiates to the concrete non-degenerate chain the truth probe computes. -/
+theorem fragmentTermToCell_subst_eq_pasteAlong_witness :
+    linearizeFull towerValuation
+        (fragmentTermToCell (RawTerm.subst (towerSubst 1) (omegaSuccTower 2)))
+      = linearizeFull towerValuation
+          (pasteAlong (cellOf (towerSubst 1)) (fragmentTermToCell (omegaSuccTower 2))) :=
+  fragmentTermToCell_subst_eq_pasteAlong 1 2
+
 end FX1Poly.Polygraph.Omega

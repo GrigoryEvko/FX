@@ -26,4 +26,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fragmentChildrenHeadToCell
 #assert_no_axioms FX1Poly.Polygraph.Omega.cellOf
 
+-- FragmentTermCellAction.lean — the subst leg, the boundary / top lemmas, and the action equation
+#assert_no_axioms FX1Poly.Polygraph.Omega.subst_omegaSuccTower
+#assert_no_axioms FX1Poly.Polygraph.Omega.towerBoundarySourceCoords
+#assert_no_axioms FX1Poly.Polygraph.Omega.towerBoundaryTargetCoords
+#assert_no_axioms FX1Poly.Polygraph.Omega.towerTopSucc
+#assert_no_axioms FX1Poly.Polygraph.Omega.towerTopAdd
+#assert_no_axioms FX1Poly.Polygraph.Omega.towerActionPolesEq
+#assert_no_axioms FX1Poly.Polygraph.Omega.fragmentTermToCell_subst_eq_pasteAlong
+#assert_no_axioms FX1Poly.Polygraph.Omega.fragmentTermToCell_subst_eq_pasteAlong_witness
+
 end FX1PolyAudit
