@@ -416,6 +416,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcAnchor
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcAnchorLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcMiddle
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcMiddleLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcExtractor
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
