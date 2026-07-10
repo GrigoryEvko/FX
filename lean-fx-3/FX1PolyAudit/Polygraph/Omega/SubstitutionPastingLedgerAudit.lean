@@ -33,4 +33,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_r3KernelTupleRoundComplete
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_substitutionPastingStaircaseClosed
 
+-- OMEGA-7 r4 — the fragment term→cell ACTION round complete (the r2 verifier's named node CLOSED)
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega7_r4FragmentActionRoundComplete
+
 end FX1PolyAudit
