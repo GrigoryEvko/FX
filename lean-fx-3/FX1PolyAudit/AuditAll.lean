@@ -1063,6 +1063,8 @@ import FX1PolyAudit.Polygraph.Omega.Graded.GradedCompositionLedgerAudit
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellCompositionAudit
 -- OMEGA-6 r1 — the weak/directed rung: CaTT ps-context rows + the decidable ps-checker
 import FX1PolyAudit.Polygraph.Omega.PsContextAudit
+-- OMEGA-6 r2 — the CaTT ps-context as a TYPED telescope on de Bruijn levels + the erasure commuting lemma
+import FX1PolyAudit.Polygraph.Omega.PsContextTypedAudit
 -- OMEGA-6 r1 — the CaTT coherence rule as a checked-ps + parallel-boundary generator seed
 import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
 -- OMEGA-6 r1 — the coinductive-invertibility = SN-duality seed at the omega-cell carrier
