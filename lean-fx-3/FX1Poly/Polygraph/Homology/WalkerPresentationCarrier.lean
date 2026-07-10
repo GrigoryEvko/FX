@@ -351,4 +351,124 @@ theorem involutionPresentationIsWellFormed :
   fun rowIndex colIndex rowBound colBound =>
     involutionBoundaryComposesToZero 1 rowIndex colIndex rowBound colBound
 
+/-! ## B1 (crown) — the generic carrier PRODUCES an `AugmentedDirectedComplex`
+
+Rectangularity holds BY CONSTRUCTION (each row is built to a fixed length), so it is a generic lemma,
+not a per-instance obligation.  Together with the generic loop lemma (`d1 · d2 = 0`), the
+well-formedness-gated `d2 · d3 = 0`, and the generic `eps d = 0` (again from the all-zero loop row),
+every WELL-FORMED presentation yields a full `AugmentedDirectedComplex` — the honest generic carrier. -/
+
+/-- `List.replicate count element` has length `count` — structural. -/
+theorem listReplicateLength {Entry : Type} (element : Entry) :
+    ∀ count, (List.replicate count element).length = count
+  | 0 => rfl
+  | count + 1 => congrArg (· + 1) (listReplicateLength element count)
+
+/-- Each `d2` row has width `rules.length` — structural on the rule list. -/
+theorem walkerPresentationDimOneRowLength (generator : Nat) :
+    ∀ rules : List (List Nat × List Nat),
+      (walkerPresentationDimOneRow generator rules).length = rules.length
+  | [] => rfl
+  | (_, _) :: remainingRules =>
+      congrArg (· + 1) (walkerPresentationDimOneRowLength generator remainingRules)
+
+/-- The `d2` row list has `rowCount` rows — structural on `rowCount`. -/
+theorem walkerPresentationDimOneRowsLength (rules : List (List Nat × List Nat)) :
+    ∀ startGenerator rowCount,
+      (walkerPresentationDimOneRows rules startGenerator rowCount).length = rowCount
+  | _, 0 => rfl
+  | startGenerator, rowCount + 1 =>
+      congrArg (· + 1) (walkerPresentationDimOneRowsLength rules (startGenerator + 1) rowCount)
+
+/-- Every `d2` row has width `rules.length` — structural on `rowCount`, one width witness per row. -/
+theorem walkerPresentationDimOneRowsAllHaveWidth (rules : List (List Nat × List Nat)) :
+    ∀ startGenerator rowCount,
+      IntMatrix.rowsAllHaveWidth rules.length
+        (walkerPresentationDimOneRows rules startGenerator rowCount)
+  | _, 0 => True.intro
+  | startGenerator, rowCount + 1 =>
+      ⟨walkerPresentationDimOneRowLength startGenerator rules,
+       walkerPresentationDimOneRowsAllHaveWidth rules (startGenerator + 1) rowCount⟩
+
+/-- Each `d3` row has width `criticalPairs.length` — structural on the critical-pair list. -/
+theorem walkerPresentationDimTwoRowLength (ruleIndex : Nat) :
+    ∀ criticalPairs : List (List Nat × List Nat × List Nat),
+      (walkerPresentationDimTwoRow ruleIndex criticalPairs).length = criticalPairs.length
+  | [] => rfl
+  | (_, _, _) :: remainingPairs =>
+      congrArg (· + 1) (walkerPresentationDimTwoRowLength ruleIndex remainingPairs)
+
+/-- The `d3` row list has `rowCount` rows — structural on `rowCount`. -/
+theorem walkerPresentationDimTwoRowsLength (criticalPairs : List (List Nat × List Nat × List Nat)) :
+    ∀ startRule rowCount,
+      (walkerPresentationDimTwoRows criticalPairs startRule rowCount).length = rowCount
+  | _, 0 => rfl
+  | startRule, rowCount + 1 =>
+      congrArg (· + 1) (walkerPresentationDimTwoRowsLength criticalPairs (startRule + 1) rowCount)
+
+/-- Every `d3` row has width `criticalPairs.length` — structural on `rowCount`. -/
+theorem walkerPresentationDimTwoRowsAllHaveWidth
+    (criticalPairs : List (List Nat × List Nat × List Nat)) :
+    ∀ startRule rowCount,
+      IntMatrix.rowsAllHaveWidth criticalPairs.length
+        (walkerPresentationDimTwoRows criticalPairs startRule rowCount)
+  | _, 0 => True.intro
+  | startRule, rowCount + 1 =>
+      ⟨walkerPresentationDimTwoRowLength startRule criticalPairs,
+       walkerPresentationDimTwoRowsAllHaveWidth criticalPairs (startRule + 1) rowCount⟩
+
+/-- A list of `count` empty rows all have width `0` — the `d4` zero-width shape. -/
+theorem walkerPresentationRowsAllZeroWidthReplicateEmpty :
+    ∀ count, IntMatrix.rowsAllHaveWidth 0 (List.replicate count ([] : IntRow))
+  | 0 => True.intro
+  | count + 1 => ⟨rfl, walkerPresentationRowsAllZeroWidthReplicateEmpty count⟩
+
+/-- ★ **Every computed boundary matrix has its declared rectangular shape** — by construction, for ANY
+presentation (no well-formedness needed). -/
+theorem walkerPresentationBoundaryHasDimensions (presentation : WalkerPresentation) :
+    ∀ dim, (presentation.computeBoundaryMatrix dim).IsRectangular
+      (presentation.computeBasisCount dim) (presentation.computeBasisCount (dim + 1))
+  | 0 => ⟨rfl, listReplicateLength (0 : Int) presentation.oneGeneratorCount, True.intro⟩
+  | 1 =>
+      ⟨walkerPresentationDimOneRowsLength presentation.rules 0 presentation.oneGeneratorCount,
+       walkerPresentationDimOneRowsAllHaveWidth presentation.rules 0 presentation.oneGeneratorCount⟩
+  | 2 =>
+      ⟨walkerPresentationDimTwoRowsLength presentation.criticalPairs 0 presentation.rules.length,
+       walkerPresentationDimTwoRowsAllHaveWidth presentation.criticalPairs 0 presentation.rules.length⟩
+  | 3 =>
+      ⟨listReplicateLength ([] : IntRow) presentation.criticalPairs.length,
+       walkerPresentationRowsAllZeroWidthReplicateEmpty presentation.criticalPairs.length⟩
+  | _ + 4 => ⟨rfl, True.intro⟩
+
+/-- ★ **The augmentation `[1]` kills every `d1`-boundary** — again from the all-zero loop row, for ANY
+presentation. -/
+theorem walkerPresentationAugmentationComposesToZero (presentation : WalkerPresentation) :
+    ∀ (colIndex : Nat), colIndex < presentation.computeBasisCount 1 →
+      sumOverIndices (presentation.computeBasisCount 0) (fun middleIndex =>
+        listGetWithDefault 0 [1] middleIndex *
+        (presentation.computeBoundaryMatrix 0).entryAt middleIndex colIndex) = 0 :=
+  fun colIndex _ =>
+    sumOverIndicesOfAllZero _
+      (fun middleIndex =>
+        (congrArg (listGetWithDefault (0 : Int) [1] middleIndex * ·)
+          (walkerPresentationDimZeroEntryIsZero presentation middleIndex colIndex)).trans
+          (Int.mul_zero _))
+      (presentation.computeBasisCount 0)
+
+/-- ★★ **The generic carrier.**  Every WELL-FORMED `WalkerPresentation` yields a full shipped
+`AugmentedDirectedComplex`: the computed basis counts and boundary matrices, the `[1]` augmentation,
+the by-construction rectangularity, the assembled `d d = 0`, and the generic `eps d = 0`.  The shipped
+`walkerChainComplex` / `involutionChainComplex` are the literal instances; this is the abstraction they
+are the first three data points of. -/
+def walkerPresentationChainComplex (presentation : WalkerPresentation)
+    (wellFormed : WellFormedWalkerPresentation presentation) : AugmentedDirectedComplex where
+  basisCount := presentation.computeBasisCount
+  boundaryMatrix := presentation.computeBoundaryMatrix
+  augmentation := [1]
+  boundaryHasDimensions := walkerPresentationBoundaryHasDimensions presentation
+  augmentationHasWidth := rfl
+  boundaryComposesToZero :=
+    walkerPresentationBoundaryComposesToZeroOfWellFormed presentation wellFormed
+  augmentationComposesToZero := walkerPresentationAugmentationComposesToZero presentation
+
 end FX1Poly.Polygraph.Homology
