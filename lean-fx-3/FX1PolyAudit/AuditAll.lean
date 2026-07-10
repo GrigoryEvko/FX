@@ -909,6 +909,11 @@ import FX1PolyAudit.Polygraph.Steiner.CellCoordinates
 import FX1PolyAudit.Polygraph.Steiner.DecidableCellEq
 import FX1PolyAudit.Polygraph.Steiner.LoopFreeOrder
 import FX1PolyAudit.Polygraph.Steiner.ComputadLoopFree
+import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
+import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
+import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
+import FX1PolyAudit.Polygraph.TwoCategory.Table.DesignLock
+import FX1PolyAudit.Polygraph.TwoCategory.Table.Ledger
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
