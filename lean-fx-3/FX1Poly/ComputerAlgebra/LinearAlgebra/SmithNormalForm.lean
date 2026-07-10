@@ -2082,4 +2082,95 @@ theorem smithRepairChainHoldsOnSixTenFifteen :
              (natEqZeroOfLeZero
                (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc earlierLt))))⟩
 
+/-! ## The Euclid invariant made a machine-checked fact (H2-SMITH r6, B2)
+
+The termination side of the middle repair loop is already SHIPPED: `smithRepairDecreasesPivotSize`
+(the strict measure `gcd(d_p, d_q).natAbs < d_p.natAbs` when `d_p ∤ d_q`, resting on
+`natGcdLtLeftOfNotDivides`) and the inner-cascade descent `smithRotationDecreasesPivotSize`.  What
+was only INFORMALLY described (§3 of the r6 recon: "gcd(pivotEntry, later) is INVARIANT while the
+pivot magnitude drops") is now a proven lemma: `intGcdInvariantUnderAddScaledLeft` — the gcd is
+unchanged by folding any multiple of the left argument into the right.  This is the exact arithmetic
+core of the Euclid rotation: the fold + cascade replaces `(d_p, d_q)` by `(gcd, lcm)` WITHOUT changing
+the pivot's gcd with the folded entry, so the classical invariant that made termination meaningful is
+no longer a claim.  Pure Number-layer over the shipped signed-gcd certificates (`intGcdGreatest`,
+`intGcdDividesLeft/Right`, the sign bridges) plus four small `IntDivides` combinators; no matrix
+machinery, no propext traps. -/
+
+/-- `divisor` divides `value`  ==>  `divisor` divides `value * multiplier` (the cofactor scales;
+`intMulAssoc` reassociates). -/
+theorem intDividesScaled {divisor value : Int} (divides : IntDivides divisor value)
+    (multiplier : Int) : IntDivides divisor (value * multiplier) :=
+  match divides with
+  | ⟨factor, valueEquation⟩ =>
+      ⟨factor * multiplier,
+        (congrArg (· * multiplier) valueEquation).trans (intMulAssoc divisor factor multiplier)⟩
+
+/-- `divisor` divides both summands  ==>  `divisor` divides their sum (the cofactors add;
+`intLeftDistrib` refactors). -/
+theorem intDividesSum {divisor leftValue rightValue : Int}
+    (dividesLeft : IntDivides divisor leftValue) (dividesRight : IntDivides divisor rightValue) :
+    IntDivides divisor (leftValue + rightValue) :=
+  match dividesLeft, dividesRight with
+  | ⟨leftFactor, leftEquation⟩, ⟨rightFactor, rightEquation⟩ =>
+      ⟨leftFactor + rightFactor,
+        ((congrArg (· + rightValue) leftEquation).trans
+          (congrArg (divisor * leftFactor + ·) rightEquation)).trans
+          (intLeftDistrib divisor leftFactor rightFactor).symm⟩
+
+/-- `divisor` divides `value`  ==>  `divisor` divides `-value` (the cofactor negates; `intMulNeg`
+pulls the sign out). -/
+theorem intDividesNegated {divisor value : Int} (divides : IntDivides divisor value) :
+    IntDivides divisor (-value) :=
+  match divides with
+  | ⟨factor, valueEquation⟩ =>
+      ⟨-factor,
+        (congrArg (fun entry => -entry) valueEquation).trans (intMulNeg divisor factor).symm⟩
+
+/-- The residue direction — `divisor` divides `leftValue` and divides the fold `rightValue +
+leftValue * multiplier`  ==>  `divisor` divides the base `rightValue`: subtract the folded multiple
+back off (`(rightValue + leftValue * multiplier) + -(leftValue * multiplier) = rightValue` by
+`intAddAssoc` / `intAddRightNeg` / `intAddZero`) and transport the sum-divisibility across the
+cancellation. -/
+theorem intDividesRightOfDividesFold {divisor leftValue rightValue multiplier : Int}
+    (dividesLeft : IntDivides divisor leftValue)
+    (dividesFold : IntDivides divisor (rightValue + leftValue * multiplier)) :
+    IntDivides divisor rightValue :=
+  have dividesSum :
+      IntDivides divisor ((rightValue + leftValue * multiplier) + -(leftValue * multiplier)) :=
+    intDividesSum dividesFold (intDividesNegated (intDividesScaled dividesLeft multiplier))
+  have foldCancels :
+      (rightValue + leftValue * multiplier) + -(leftValue * multiplier) = rightValue :=
+    (intAddAssoc rightValue (leftValue * multiplier) (-(leftValue * multiplier))).trans
+      ((congrArg (rightValue + ·) (intAddRightNeg (leftValue * multiplier))).trans
+        (intAddZero rightValue))
+  foldCancels ▸ dividesSum
+
+/-- **gcd-invariance per rotation** — folding any integer multiple of `leftValue` into `rightValue`
+leaves the gcd unchanged: `intGcd leftValue rightValue = intGcd leftValue (rightValue + leftValue *
+multiplier)`.  The classical Euclid-rotation invariant the middle repair loop rides (the pivot's gcd
+with a later entry is fixed while the pivot magnitude strictly drops — the counterpart of the shipped
+descent `smithRepairDecreasesPivotSize`).  Each gcd is a common divisor of the OTHER's operand pair
+(`intGcdGreatest` fed by the `IntDivides` combinators — forward via `intDividesSum`/`intDividesScaled`,
+backward via `intDividesRightOfDividesFold`), so they divide each other; `natDividesAntisymm` on the
+nonnegative magnitudes collapses the two divisibilities to equality. -/
+theorem intGcdInvariantUnderAddScaledLeft (leftValue rightValue multiplier : Int) :
+    intGcd leftValue rightValue = intGcd leftValue (rightValue + leftValue * multiplier) :=
+  have forwardDivides :
+      IntDivides (intGcd leftValue rightValue)
+        (intGcd leftValue (rightValue + leftValue * multiplier)) :=
+    intGcdGreatest (intGcdDividesLeft leftValue rightValue)
+      (intDividesSum (intGcdDividesRight leftValue rightValue)
+        (intDividesScaled (intGcdDividesLeft leftValue rightValue) multiplier))
+  have backwardDivides :
+      IntDivides (intGcd leftValue (rightValue + leftValue * multiplier))
+        (intGcd leftValue rightValue) :=
+    intGcdGreatest (intGcdDividesLeft leftValue (rightValue + leftValue * multiplier))
+      (intDividesRightOfDividesFold
+        (intGcdDividesLeft leftValue (rightValue + leftValue * multiplier))
+        (intGcdDividesRight leftValue (rightValue + leftValue * multiplier)))
+  congrArg Int.ofNat
+    (natDividesAntisymm
+      (natDividesNatAbsOfIntDivides forwardDivides)
+      (natDividesNatAbsOfIntDivides backwardDivides))
+
 end FX1Poly.ComputerAlgebra

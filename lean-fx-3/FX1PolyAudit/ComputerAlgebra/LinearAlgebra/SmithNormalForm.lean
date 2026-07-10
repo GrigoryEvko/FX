@@ -118,5 +118,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadePostFoldDividesAllFailsOnSixTenFifteen
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairChainHoldsOnCoprimeTwoThree
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairChainHoldsOnSixTenFifteen
+#assert_no_axioms FX1Poly.ComputerAlgebra.intDividesScaled
+#assert_no_axioms FX1Poly.ComputerAlgebra.intDividesSum
+#assert_no_axioms FX1Poly.ComputerAlgebra.intDividesNegated
+#assert_no_axioms FX1Poly.ComputerAlgebra.intDividesRightOfDividesFold
+#assert_no_axioms FX1Poly.ComputerAlgebra.intGcdInvariantUnderAddScaledLeft
 
 end FX1PolyAudit
