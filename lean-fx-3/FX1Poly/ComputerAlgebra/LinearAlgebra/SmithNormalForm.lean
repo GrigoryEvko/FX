@@ -459,4 +459,236 @@ theorem smithReducedRankDeficient :
             (natEqZeroOfLeZero
               (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
 
+/-! ## Rectangularity preservation + the totality statement (H2-SMITH r2, B3)
+
+`IsRectangular` (equal-length rows) is load-bearing for the totalisation: the exact-clear arithmetic
+(`addScaledEntriesCancel`) and the transvection round-trip need the source and target rows to share a
+length, which rectangularity supplies.  `applyOperationsPreservesRectangular` discharges the
+prerequisite the recon flags "build FIRST": every alphabet letter is length-preserving on the outer
+row list AND on each row, so a whole certificate word carries `height x width` rectangularity from
+the input to the output.  The proof is structural — a stack of length lemmas
+(`listReplaceAt`/`listModifyAt`/`mapAllRows`/`addScaledEntries`/`swapEntriesWithinRow` preserve
+lengths) plus width-preservation lemmas over `rowsAllHaveWidth`, then per-letter guard navigation.
+
+`SmithReduceTotalStatement` NAMES the driver's total-correctness goal as a first-class `Prop` — that
+`smithReduce` emits a Smith-reducing word for EVERY rectangular integer matrix.  It is the honest r3
+RESIDUAL: r2 ships the cascade certificates (the three r1 failures reduce), the strict-descent
+measure, and this rectangularity prerequisite; the full two-level induction (outer pivot budget,
+inner Euclid fuel) that inhabits `SmithReduceTotalStatement` is the next round's pole (the recon's
+Risk 1 — a full verified elimination theorem). -/
+
+/-- `listReplaceAt` preserves the outer length — it never grows or shrinks the list. -/
+theorem listReplaceAtPreservesLength {Entry : Type} :
+    ∀ (entries : List Entry) (position : Nat) (newEntry : Entry),
+      (listReplaceAt entries position newEntry).length = entries.length
+  | [], 0, _ => rfl
+  | [], _ + 1, _ => rfl
+  | _ :: _, 0, _ => rfl
+  | _ :: remainingEntries, position + 1, newEntry =>
+      congrArg (· + 1) (listReplaceAtPreservesLength remainingEntries position newEntry)
+
+/-- `listModifyAt` preserves the outer length — it transforms in place. -/
+theorem listModifyAtPreservesLength {Entry : Type} (transform : Entry → Entry) :
+    ∀ (entries : List Entry) (position : Nat),
+      (listModifyAt transform entries position).length = entries.length
+  | [], 0 => rfl
+  | [], _ + 1 => rfl
+  | _ :: _, 0 => rfl
+  | _ :: remainingEntries, position + 1 =>
+      congrArg (· + 1) (listModifyAtPreservesLength transform remainingEntries position)
+
+/-- `mapAllRows` preserves the row count. -/
+theorem mapAllRowsPreservesLength (transform : IntRow → IntRow) :
+    ∀ rows : List IntRow, (mapAllRows transform rows).length = rows.length
+  | [] => rfl
+  | _ :: remainingRows => congrArg (· + 1) (mapAllRowsPreservesLength transform remainingRows)
+
+/-- `List.map` preserves length (self-contained, for the `negateRow` width step). -/
+theorem listMapPreservesLength {Source Target : Type} (transform : Source → Target) :
+    ∀ entries : List Source, (entries.map transform).length = entries.length
+  | [] => rfl
+  | _ :: remainingEntries => congrArg (· + 1) (listMapPreservesLength transform remainingEntries)
+
+/-- `addScaledEntries` preserves the target row's length when the rows agree in length. -/
+theorem addScaledEntriesPreservesLength (coefficient : Int) :
+    ∀ sourceRow targetRow : IntRow, sourceRow.length = targetRow.length →
+      (addScaledEntries coefficient sourceRow targetRow).length = targetRow.length
+  | [], [], _ => rfl
+  | [], _ :: _, lengthsAgree => nomatch lengthsAgree
+  | _ :: _, [], lengthsAgree => nomatch lengthsAgree
+  | _ :: sourceRemaining, _ :: targetRemaining, lengthsAgree =>
+      congrArg (· + 1)
+        (addScaledEntriesPreservesLength coefficient sourceRemaining targetRemaining
+          (Nat.succ.inj lengthsAgree))
+
+/-- A within-row column swap preserves the row's length. -/
+theorem swapEntriesWithinRowPreservesLength (row : IntRow) (firstIndex secondIndex : Nat) :
+    (swapEntriesWithinRow row firstIndex secondIndex).length = row.length := by
+  unfold swapEntriesWithinRow
+  split
+  · split
+    · exact (listReplaceAtPreservesLength _ _ _).trans (listReplaceAtPreservesLength _ _ _)
+    · rfl
+  · rfl
+
+/-- A within-row column transvection preserves the row's length. -/
+theorem addScaledEntryWithinRowPreservesLength (row : IntRow)
+    (sourceIndex targetIndex : Nat) (coefficient : Int) :
+    (addScaledEntryWithinRow row sourceIndex targetIndex coefficient).length = row.length := by
+  unfold addScaledEntryWithinRow
+  split
+  · exact listModifyAtPreservesLength _ _ _
+  · rfl
+
+/-- `listModifyAt` preserves `rowsAllHaveWidth` when the transform keeps a width-`width` row's
+width. -/
+theorem listModifyAtPreservesRowsWidth {width : Nat} (transform : IntRow → IntRow)
+    (transformKeepsWidth : ∀ row : IntRow, row.length = width → (transform row).length = width) :
+    ∀ (rows : List IntRow) (position : Nat),
+      rowsAllHaveWidth width rows → rowsAllHaveWidth width (listModifyAt transform rows position)
+  | [], 0, allHaveWidth => allHaveWidth
+  | [], _ + 1, allHaveWidth => allHaveWidth
+  | row :: _, 0, ⟨rowHasWidth, restHaveWidth⟩ => ⟨transformKeepsWidth row rowHasWidth, restHaveWidth⟩
+  | _ :: remainingRows, position + 1, ⟨rowHasWidth, restHaveWidth⟩ =>
+      ⟨rowHasWidth,
+        listModifyAtPreservesRowsWidth transform transformKeepsWidth remainingRows position
+          restHaveWidth⟩
+
+/-- `listReplaceAt` preserves `rowsAllHaveWidth` when the replacement row has the right width. -/
+theorem listReplaceAtPreservesRowsWidth {width : Nat} {newRow : IntRow}
+    (newRowHasWidth : newRow.length = width) :
+    ∀ (rows : List IntRow) (position : Nat),
+      rowsAllHaveWidth width rows → rowsAllHaveWidth width (listReplaceAt rows position newRow)
+  | [], 0, allHaveWidth => allHaveWidth
+  | [], _ + 1, allHaveWidth => allHaveWidth
+  | _ :: _, 0, ⟨_, restHaveWidth⟩ => ⟨newRowHasWidth, restHaveWidth⟩
+  | _ :: remainingRows, position + 1, ⟨rowHasWidth, restHaveWidth⟩ =>
+      ⟨rowHasWidth, listReplaceAtPreservesRowsWidth newRowHasWidth remainingRows position restHaveWidth⟩
+
+/-- `mapAllRows` preserves `rowsAllHaveWidth` when the transform keeps a width-`width` row's width. -/
+theorem mapAllRowsPreservesRowsWidth {width : Nat} (transform : IntRow → IntRow)
+    (transformKeepsWidth : ∀ row : IntRow, row.length = width → (transform row).length = width) :
+    ∀ rows : List IntRow,
+      rowsAllHaveWidth width rows → rowsAllHaveWidth width (mapAllRows transform rows)
+  | [], allHaveWidth => allHaveWidth
+  | _ :: remainingRows, ⟨rowHasWidth, restHaveWidth⟩ =>
+      ⟨transformKeepsWidth _ rowHasWidth,
+        mapAllRowsPreservesRowsWidth transform transformKeepsWidth remainingRows restHaveWidth⟩
+
+/-- An in-range row read has the declared width (the swap letter's swapped-in rows). -/
+theorem listGetWithDefaultHasWidth {width : Nat} :
+    ∀ (rows : List IntRow) (position : Nat),
+      rowsAllHaveWidth width rows → position < rows.length →
+      (listGetWithDefault [] rows position).length = width
+  | [], _, _, isInRange => Nat.noConfusion (natEqZeroOfLeZero isInRange)
+  | _ :: _, 0, ⟨rowHasWidth, _⟩, _ => rowHasWidth
+  | _ :: remainingRows, position + 1, ⟨_, restHaveWidth⟩, isInRange =>
+      listGetWithDefaultHasWidth remainingRows position restHaveWidth (natLeOfSuccLeSucc isInRange)
+
+/-- Every row letter preserves rectangularity. -/
+theorem applyRowOperationPreservesRectangular {height width : Nat}
+    (operation : ElementaryRowOperation) (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width) :
+    (matrix.applyRowOperation operation).IsRectangular height width := by
+  obtain ⟨rowCount, rowWidths⟩ := isRect
+  cases operation with
+  | swapRows firstIndex secondIndex =>
+      show (matrix.swapRows firstIndex secondIndex).IsRectangular height width
+      unfold IntMatrix.swapRows
+      split
+      · rename_i isFirstInRange
+        split
+        · rename_i isSecondInRange
+          exact ⟨(listReplaceAtPreservesLength _ _ _).trans
+              ((listReplaceAtPreservesLength _ _ _).trans rowCount),
+            listReplaceAtPreservesRowsWidth
+              (listGetWithDefaultHasWidth matrix.rows firstIndex rowWidths isFirstInRange) _ _
+              (listReplaceAtPreservesRowsWidth
+                (listGetWithDefaultHasWidth matrix.rows secondIndex rowWidths isSecondInRange) _ _
+                rowWidths)⟩
+        · exact ⟨rowCount, rowWidths⟩
+      · exact ⟨rowCount, rowWidths⟩
+  | negateRow rowIndex =>
+      show (matrix.negateRow rowIndex).IsRectangular height width
+      exact ⟨(listModifyAtPreservesLength _ _ _).trans rowCount,
+        listModifyAtPreservesRowsWidth _ (fun row rowHasWidth => (listMapPreservesLength _ row).trans rowHasWidth)
+          matrix.rows rowIndex rowWidths⟩
+  | addRowMultiple sourceIndex targetIndex coefficient =>
+      show (matrix.addRowMultiple sourceIndex targetIndex coefficient).IsRectangular height width
+      unfold IntMatrix.addRowMultiple
+      split
+      · exact ⟨rowCount, rowWidths⟩
+      · split
+        · rename_i isSourceInRange
+          split
+          · exact ⟨(listModifyAtPreservesLength _ _ _).trans rowCount,
+              listModifyAtPreservesRowsWidth _
+                (fun row rowHasWidth =>
+                  (addScaledEntriesPreservesLength coefficient _ row
+                    ((listGetWithDefaultHasWidth matrix.rows sourceIndex rowWidths isSourceInRange).trans
+                      rowHasWidth.symm)).trans rowHasWidth)
+                matrix.rows targetIndex rowWidths⟩
+          · exact ⟨rowCount, rowWidths⟩
+        · exact ⟨rowCount, rowWidths⟩
+
+/-- Every column letter preserves rectangularity. -/
+theorem applyColumnOperationPreservesRectangular {height width : Nat}
+    (operation : ElementaryColumnOperation) (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width) :
+    (matrix.applyColumnOperation operation).IsRectangular height width := by
+  obtain ⟨rowCount, rowWidths⟩ := isRect
+  cases operation with
+  | swapColumns firstIndex secondIndex =>
+      show (matrix.swapColumns firstIndex secondIndex).IsRectangular height width
+      exact ⟨(mapAllRowsPreservesLength _ _).trans rowCount,
+        mapAllRowsPreservesRowsWidth _
+          (fun row rowHasWidth => (swapEntriesWithinRowPreservesLength row firstIndex secondIndex).trans rowHasWidth)
+          matrix.rows rowWidths⟩
+  | negateColumn colIndex =>
+      show (matrix.negateColumn colIndex).IsRectangular height width
+      exact ⟨(mapAllRowsPreservesLength _ _).trans rowCount,
+        mapAllRowsPreservesRowsWidth _
+          (fun row rowHasWidth => (listModifyAtPreservesLength _ row colIndex).trans rowHasWidth)
+          matrix.rows rowWidths⟩
+  | addColumnMultiple sourceIndex targetIndex coefficient =>
+      show (matrix.addColumnMultiple sourceIndex targetIndex coefficient).IsRectangular height width
+      unfold IntMatrix.addColumnMultiple
+      split
+      · exact ⟨rowCount, rowWidths⟩
+      · exact ⟨(mapAllRowsPreservesLength _ _).trans rowCount,
+          mapAllRowsPreservesRowsWidth _
+            (fun row rowHasWidth =>
+              (addScaledEntryWithinRowPreservesLength row sourceIndex targetIndex coefficient).trans
+                rowHasWidth)
+            matrix.rows rowWidths⟩
+
+/-- One certificate step preserves rectangularity — dispatch to the row/column half. -/
+theorem applyOperationPreservesRectangular {height width : Nat} (operation : ElementaryOperation)
+    (matrix : IntMatrix) (isRect : matrix.IsRectangular height width) :
+    (matrix.applyOperation operation).IsRectangular height width := by
+  cases operation with
+  | rowOperation operation => exact applyRowOperationPreservesRectangular operation matrix isRect
+  | columnOperation operation => exact applyColumnOperationPreservesRectangular operation matrix isRect
+
+/-- **Rectangularity is preserved by a whole certificate word** — the r3 totalisation
+prerequisite: `applyOperations` carries `height x width` shape from input to output, so the
+exact-clear arithmetic and transvection round-trips always see equal-length rows. -/
+theorem applyOperationsPreservesRectangular {height width : Nat} :
+    ∀ (word : List ElementaryOperation) (matrix : IntMatrix),
+      matrix.IsRectangular height width →
+      (matrix.applyOperations word).IsRectangular height width
+  | [], _, isRect => isRect
+  | operation :: remainingOperations, matrix, isRect =>
+      applyOperationsPreservesRectangular remainingOperations (matrix.applyOperation operation)
+        (applyOperationPreservesRectangular operation matrix isRect)
+
+/-- **The driver's total-correctness goal, named** — that `smithReduce` emits a Smith-reducing word
+for every rectangular integer matrix.  The honest r3 RESIDUAL: r2 ships the strict-descent measure
+(`smithRotationDecreasesPivotSize`), the three cascade certificates, and the rectangularity
+prerequisite (`applyOperationsPreservesRectangular`); inhabiting this `Prop` is the full two-level
+elimination induction (outer pivot budget, inner Euclid fuel), next round's pole. -/
+def SmithReduceTotalStatement : Prop :=
+  ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
+    (smithReduce matrix height width).reducesToSmithForm matrix height width
+
 end FX1Poly.ComputerAlgebra
