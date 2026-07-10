@@ -20,4 +20,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradeCompose_assoc_corrected_computes
 #assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradeCompose_assoc_naive_isFalse
 
+-- GradedCellComposition.lean — B2: the enriched-functor grade slice
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradeOf
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedVcomp_underlyingCell
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedVcomp_gradeOf
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedWhiskerLeft_gradeOf
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedWhiskerRight_gradeOf
+#assert_no_axioms FX1Poly.Polygraph.Omega.Graded.gradedVcomp_gradeOf_assoc
+
 end FX1PolyAudit

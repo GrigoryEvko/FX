@@ -149,4 +149,74 @@ theorem gradeCompose_assoc_naive_isFalse :
   injection contradictoryEq with headEq _
   exact UsageGrade.noConfusion headEq
 
+/-! ## The enriched-functor grade slice (B2) — projections + functoriality
+
+`gradeOf` is the enriched functor's action on objects (the grade projection).  The projection theorems
+(both `rfl`, so trivial content — SAID plainly) fix the object map; the functor laws show that the
+lockstep composites map to the grade composites (`gradedVcomp → gradeCompose`, the whiskers →
+`gradeComposePar`); the functor-over-associativity is the genuine content — it identifies the GRADE legs
+of the two triple composites while their CELL legs stay distinct (free `vcomp`, cited to OMEGA-7). -/
+
+/-- **The enriched functor's action on objects** — the grade projection of a graded cell.  Definitionally
+`GradedCell.gradeVector`; named `gradeOf` to read as the 21-dim checker's per-grade evaluation
+(`check`-on-objects), the map the composition laws below are functorial for. -/
+def gradeOf {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (gradedCell : GradedCell computad dim R) : GradeVectorOver R :=
+  gradedCell.gradeVector
+
+/-- **Cell projection of the lockstep composite** — `rfl` (trivial content: the carrier is a plain pair,
+`gradedVcomp` is componentwise).  The composite's underlying cell is exactly `CellExpr.vcomp` of the two
+underlying cells. -/
+theorem gradedVcomp_underlyingCell {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (binderGrade : R.Carrier) (firstCell secondCell : GradedCell computad (dim + 1) R) :
+    (gradedVcomp binderGrade firstCell secondCell).underlyingCell =
+      CellExpr.vcomp firstCell.underlyingCell secondCell.underlyingCell :=
+  rfl
+
+/-- **The sequential functor law** — `rfl` (trivial content).  `gradeOf` sends the lockstep composite to
+the sequential grade composite `gradeCompose`: the first machine-checked piece of "the 21-dim checker is
+ONE enriched functor into the grade composite", on the sequential composite. -/
+theorem gradedVcomp_gradeOf {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (binderGrade : R.Carrier) (firstCell secondCell : GradedCell computad (dim + 1) R) :
+    gradeOf (gradedVcomp binderGrade firstCell secondCell) =
+      gradeCompose binderGrade (gradeOf firstCell) (gradeOf secondCell) :=
+  rfl
+
+/-- **The left-whisker functor law** — `rfl`.  `gradeOf` sends the left-whisker composite to the PARALLEL
+grade composite `gradeComposePar` (whiskering by an independent cell is context-split, §7.7). -/
+theorem gradedWhiskerLeft_gradeOf {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (whiskering : GradedCell computad (dim + 1) R) (target : GradedCell computad (dim + 2) R) :
+    gradeOf (gradedWhiskerLeft whiskering target) =
+      gradeComposePar (gradeOf whiskering) (gradeOf target) :=
+  rfl
+
+/-- **The right-whisker functor law** — `rfl`.  Dual to `gradedWhiskerLeft_gradeOf`. -/
+theorem gradedWhiskerRight_gradeOf {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (target : GradedCell computad (dim + 2) R) (whiskering : GradedCell computad (dim + 1) R) :
+    gradeOf (gradedWhiskerRight target whiskering) =
+      gradeComposePar (gradeOf target) (gradeOf whiskering) :=
+  rfl
+
+/-- **Functor-over-associativity on the GRADE leg — the genuine r2 content.**  `gradeOf` sends the
+reindexed `(a·b)`-over-`a` left-nested triple composite and the `a`-over-`b` right-nested triple composite
+to the SAME grade (via `gradeCompose_assoc`) — even though their CELL legs `vcomp (vcomp L M) R` and
+`vcomp L (vcomp M R)` are DISTINCT syntax (free `CellExpr.vcomp`).  The functor COLLAPSES the two
+non-equal cell legs onto one grade: that collapse is exactly the functoriality content.  The cell leg's
+own associativity is NOT proven here — it is OMEGA-7's `linearizeFull_pasteAlong_assoc` (Tier-0,
+un-importable under the layer rule), which this statement CITES; r2 owns only the grade leg.  So this is
+an IDENTIFICATION of the grade legs and a DISPARITY of the cell legs, stated openly. -/
+theorem gradedVcomp_gradeOf_assoc {computad : OmegaComputad} {dim : Nat} {R : OrderedGradeSemiring}
+    (lawful : IsLawfulOrderedGradeSemiring R) (firstScale secondScale : R.Carrier)
+    (leftCell middleCell rightCell : GradedCell computad (dim + 1) R) :
+    gradeOf (gradedVcomp (R.mul firstScale secondScale)
+        (gradedVcomp firstScale leftCell middleCell) rightCell) =
+      gradeOf (gradedVcomp firstScale leftCell
+        (gradedVcomp secondScale middleCell rightCell)) := by
+  show gradeCompose (R.mul firstScale secondScale)
+        (gradeCompose firstScale (gradeOf leftCell) (gradeOf middleCell)) (gradeOf rightCell) =
+      gradeCompose firstScale (gradeOf leftCell)
+        (gradeCompose secondScale (gradeOf middleCell) (gradeOf rightCell))
+  exact gradeCompose_assoc lawful firstScale secondScale
+    (gradeOf leftCell) (gradeOf middleCell) (gradeOf rightCell)
+
 end FX1Poly.Polygraph.Omega.Graded
