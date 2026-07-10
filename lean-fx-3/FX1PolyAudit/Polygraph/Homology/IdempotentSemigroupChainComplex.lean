@@ -1,0 +1,83 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.Homology.IdempotentSemigroupChainComplex
+
+/-! # FX1PolyAudit/Polygraph/Homology/IdempotentSemigroupChainComplex — zero-axiom gate (the
+    idempotent-semigroup walker `⟨e | ee ⟹ e⟩`: polygraphic chain complex + machine-checked `d d = 0` +
+    Smith-normal boundaries + the homology read-offs `H1 = 0` (UNIT invariant-factor endpoint) and
+    `H2 = 0` + the generic-carrier recovery)
+
+Per-declaration zero-axiom gate for the H2-WALKERS census-maximum fourth instance: the basis counts,
+the single critical pair as DATA, the three boundary-matrix literals, the augmented directed complex
+instance and its `d d = 0` corollary, the oracle / non-vacuity smokes, the three Smith reduction
+certificates and rank/torsion read-offs (★★ `H1(idempotent semigroup) = 0`, the UNIT invariant-factor
+endpoint, and `H2 = 0`), the fourth-instance recovery through the generic carrier, and the census update.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBasisCount
+#assert_no_axioms FX1Poly.Polygraph.Homology.allIdempotentSemigroupCriticalPairs
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupCriticalPairCountIsOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.allIdempotentSemigroupCriticalPairsExhaustive
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupCriticalPairIndex
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupCriticalPairOverlapCell
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupCriticalPairBoundaryColumn
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryMatrix
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryComposesToZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupChainComplex
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupChainComplexBoundaryComposesToZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryDimZeroMatchesOracle
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryDimOneIsUnit
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryDimTwoColumnMatchesCriticalPair
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupChainComplexIsNonVacuous
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimZeroSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimOneSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimTwoSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimZeroReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimOneReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupBoundaryOfDimTwoReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupSmithNormalFormOfDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupSmithNormalFormOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupSmithNormalFormOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDimZeroCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDimOneCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDimTwoCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupRankOfDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupRankOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupRankOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupNullityOfDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupNullityOfDimZeroValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeOneHomologyFreeRank
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeOneHomologyFreeRankIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeOneInvariantFactors
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeOneInvariantFactorsValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDimOneHasNoTorsion
+#assert_no_axioms FX1Poly.Polygraph.Homology.IdempotentSemigroupDegreeOneHomologyStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeOneHomologyIsTrivial
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupNullityOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupNullityOfDimOneValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeTwoHomologyFreeRank
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeTwoHomologyFreeRankIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDimTwoHasNoTorsion
+#assert_no_axioms FX1Poly.Polygraph.Homology.IdempotentSemigroupDegreeTwoHomologyIsZeroStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupDegreeTwoHomologyIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.IdempotentSemigroupSmithHandoffStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupSmithHandoff
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupWalkerPresentation
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupPresentationComputesBasisCount
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupPresentationComputesBoundaryDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupPresentationComputesBoundaryDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupPresentationComputesBoundaryDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupPresentationComputesBoundaryMatrix
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupPresentationIsWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupGenericCarrierBoundaryComposesToZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithComputedHomologyCountAfterIdempotentSemigroup
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithComputedHomologyCountAfterIdempotentSemigroupValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.idempotentSemigroupHomologyLedgerIsComplete
+
+end FX1PolyAudit
