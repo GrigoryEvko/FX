@@ -1,0 +1,35 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescArcReadOffCount
+
+/-! # FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcReadOffCount — zero-axiom gate (BRAUER-MIDDLE r16)
+
+Per-declaration zero-axiom gate for the counting round: the arc-class guards, the three-way partition count
+(`partitionCountThree` + `partitionThree_of_involution`), and the crux truth-probes.  The two partition assertions
+transitively cover every re-derived private helper (the `propext`-free `Nat.blt` / `Nat.ble` deciders, the `Bool`
+conjunction closers, the range-membership kit, and the six-summand rearrangement).
+
+Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`.  Registered in
+`AuditAll`. -/
+
+namespace FX1PolyAudit
+
+-- the arc-class guards + the counting engine
+#assert_no_axioms FX1Poly.Polygraph.capSmallerGuard
+#assert_no_axioms FX1Poly.Polygraph.capLargerGuard
+#assert_no_axioms FX1Poly.Polygraph.throughBottomGuard
+#assert_no_axioms FX1Poly.Polygraph.countTrue
+#assert_no_axioms FX1Poly.Polygraph.onlyOneTrueThree
+
+-- the three-way partition count + the involution-gated per-index classification
+#assert_no_axioms FX1Poly.Polygraph.partitionCountThree
+#assert_no_axioms FX1Poly.Polygraph.partitionThree_of_involution
+
+-- the crux truth-probes on the recon hand-worked partners
+#assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_adversarialB
+#assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_freshMixed
+#assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_allCaps
+#assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_allThrough
+#assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_widthOne
+#assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_empty
+
+end FX1PolyAudit
