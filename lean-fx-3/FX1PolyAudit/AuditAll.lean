@@ -1044,6 +1044,8 @@ import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
 import FX1PolyAudit.Polygraph.Omega.DesignLockOmega6Audit
 -- OMEGA-7 r1 — substitution composition IS pasting arithmetic (the App-anchor play, B1)
 import FX1PolyAudit.Polygraph.Omega.SubstPastingAudit
+-- OMEGA-7 r1 — the presented kernel = (signature, table2, table3) tuple seed (B2)
+import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
