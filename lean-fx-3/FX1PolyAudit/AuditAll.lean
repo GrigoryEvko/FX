@@ -172,7 +172,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.EndgameDemo
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchMap
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Modularity
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DecisionTransfer
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerR1
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealLawDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
@@ -650,6 +650,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSwapDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSwapPeel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDisjointWordFactorization
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDisjointWordSwap
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDisjointWordBubble
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
@@ -988,21 +989,21 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.StrategyRegistry
 import FX1PolyAudit.Polygraph.TwoCategory.Table.LedgerR1
 import FX1PolyAudit.Polygraph.Omega.CarrierAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceAudit
-import FX1PolyAudit.Polygraph.Omega.DesignLockAudit
+import FX1PolyAudit.Polygraph.Omega.CarrierArchitectureLedgerAudit
 import FX1PolyAudit.Polygraph.Omega.Steiner.CoordinateArithmetic
 import FX1PolyAudit.Polygraph.Omega.Steiner.ChainCell
 import FX1PolyAudit.Polygraph.Omega.Steiner.StrongSteiner
 import FX1PolyAudit.Polygraph.Omega.Steiner.Linearize
 import FX1PolyAudit.Polygraph.Omega.Steiner.Soundness
 import FX1PolyAudit.Polygraph.Omega.Steiner.DecideFreeConv
-import FX1PolyAudit.Polygraph.Omega.Steiner.DesignLock
+import FX1PolyAudit.Polygraph.Omega.Steiner.SteinerArithmeticLedger
 import FX1PolyAudit.Polygraph.Omega.Steiner.Integration
 import FX1PolyAudit.Polygraph.Omega.Steiner.AgreementBattery
 import FX1PolyAudit.Polygraph.Omega.Steiner.Reconstruct
 import FX1PolyAudit.Polygraph.Omega.Steiner.LinearizeFull
 import FX1PolyAudit.Polygraph.Omega.Steiner.WhiskerFix
 import FX1PolyAudit.Polygraph.Omega.Steiner.SoundnessFull
-import FX1PolyAudit.Polygraph.Omega.Steiner.DesignLockOmega25
+import FX1PolyAudit.Polygraph.Omega.Steiner.LinearizationCompletenessLedger
 import FX1PolyAudit.Polygraph.Omega.SuspensionAudit
 import FX1PolyAudit.Polygraph.Omega.CeilingLiftAudit
 -- OMEGA-3 r2 — the idCongr additive sibling + soundness cascade + wall harvest + conv-form EH
@@ -1014,18 +1015,18 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.WallHarvestWithId
 import FX1PolyAudit.Polygraph.Omega.BridgeDimTwoWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.EckmannHiltonWithIdAudit
 import FX1PolyAudit.Polygraph.Omega.Steiner.SuspensionChainShift
-import FX1PolyAudit.Polygraph.Omega.DesignLockOmega3WithIdAudit
+import FX1PolyAudit.Polygraph.Omega.SuspensionWithIdLedgerAudit
 -- OMEGA-4 r1 — the Squier ascent: dim-3 critical-pair row family
 import FX1PolyAudit.Polygraph.Omega.CriticalPairRowAudit
 import FX1PolyAudit.Polygraph.Omega.InvolutionDemonstratorAudit
 import FX1PolyAudit.Polygraph.Omega.KernelDiamondReadingAudit
-import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4Audit
+import FX1PolyAudit.Polygraph.Omega.SquierAscentLedgerAudit
 -- OMEGA-4 r2 — the Squier ascent: the abstract certificate -> dim-3 cell functor
 import FX1PolyAudit.Polygraph.Omega.CertificateFunctorAudit
 -- OMEGA-4 r2 — the Squier ascent: the walking-involution homotopy-basis fragment
 import FX1PolyAudit.Polygraph.Omega.InvolutionSquierBasisAudit
 -- OMEGA-4 r2 — the Squier ascent: the r2 ledger + refined OMEGA-5 handoff
-import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4R2Audit
+import FX1PolyAudit.Polygraph.Omega.CertificateFunctorLedgerAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
@@ -1035,7 +1036,7 @@ import FX1PolyAudit.Polygraph.Omega.Graded.EnrichedCheckSeedAudit
 -- OMEGA-5 r1 — the §6.8 soundness-collision catalog as data (non-free loci)
 import FX1PolyAudit.Polygraph.Omega.Graded.CollisionCatalogAudit
 -- OMEGA-5 r1 — the r1 ledger + OMEGA-6 handoff (markers only hypothesis-free)
-import FX1PolyAudit.Polygraph.Omega.Graded.DesignLockOmega5Audit
+import FX1PolyAudit.Polygraph.Omega.Graded.GradedCompositionLedgerAudit
 -- OMEGA-6 r1 — the weak/directed rung: CaTT ps-context rows + the decidable ps-checker
 import FX1PolyAudit.Polygraph.Omega.PsContextAudit
 -- OMEGA-6 r1 — the CaTT coherence rule as a checked-ps + parallel-boundary generator seed
@@ -1043,7 +1044,7 @@ import FX1PolyAudit.Polygraph.Omega.CohSeedAudit
 -- OMEGA-6 r1 — the coinductive-invertibility = SN-duality seed at the omega-cell carrier
 import FX1PolyAudit.Polygraph.Omega.InvertibilitySeedAudit
 -- OMEGA-6 r1 — the ceiling ledger + the OMEGA-7 handoff (markers only hypothesis-free)
-import FX1PolyAudit.Polygraph.Omega.DesignLockOmega6Audit
+import FX1PolyAudit.Polygraph.Omega.WeakDirectedCeilingLedgerAudit
 -- OMEGA-7 r1 — substitution composition IS pasting arithmetic (the App-anchor play, B1;
 -- lives on the Tier0 side of the layer DAG because it imports the kernel subst engine)
 import FX1PolyAudit.Tier0.Term.Subst.SubstPastingAudit
@@ -1052,7 +1053,7 @@ import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
 -- OMEGA-7 r1 — the per-dimension admission chain seed (kernel-as-value shape, B3)
 import FX1PolyAudit.Polygraph.Omega.AdmissionChainSeedAudit
 -- OMEGA-7 r1 — the grand-rung ledger + Makkai wall + staircase criteria (B4)
-import FX1PolyAudit.Polygraph.Omega.DesignLockOmega7Audit
+import FX1PolyAudit.Polygraph.Omega.SubstitutionPastingLedgerAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
