@@ -57,26 +57,28 @@ open FX1Poly.Polygraph.Amalgam
 
 /-! ## Migration ONE — the walking idempotent monad (a genuine retirement bridge) -/
 
-/-- ★ **The walking-idempotent-monad migration bridge, re-exposed at the Table layer** — the bespoke
-`IdempotentMonadSaturatedTwoCellConv` IS the generic `SaturatedConvOver` at its four-law relation `IdempotentLawRel`,
-both directions over the SAME base relation.  This is the shipped `idempotentSaturated_iff_generic` (RELFAM's family
-`idempotentRelationFamily.walkerIffGeneric`) surfaced as a Table migration value — the retirement is
-behaviour-preserving. -/
+/-- ★ **The walking-idempotent-monad migration, re-exposed at the Table layer** — BORN GENERIC (POLY-TAB r5): after
+the bespoke `IdempotentMonadSaturatedTwoCellConv` lane's RETIREMENT, the family's `walkerConv` IS the generic
+saturated carrier `SaturatedConvOver monadModeSignature IdempotentLawRel` itself, so the migration bridge is
+`Iff.rfl` — the identity migration, exactly as the walking involution's.  The retirement executed: the once-genuine
+retirement bridge collapsed to the born-generic shape, its decision content preserved in the native
+`IdempotentSaturated*` lane. -/
 theorem idempotentWalker_iff_generic {sourceMode targetMode : MonadMode}
     {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
     (cellAlpha cellBeta : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
-    IdempotentMonadSaturatedTwoCellConv cellAlpha cellBeta
+    SaturatedConvOver monadModeSignature IdempotentLawRel cellAlpha cellBeta
       ↔ SaturatedConvOver monadModeSignature IdempotentLawRel cellAlpha cellBeta :=
-  idempotentSaturated_iff_generic cellAlpha cellBeta
+  Iff.rfl
 
-/-- ★ **Regression ONE — the bespoke and the generic route AGREE on the idempotent sample pair.**  Runs the shipped
-bespoke `decideSaturatedConvOverIdempotent` and the family-generic `idempotentRelationFamily.decider` on the shipped
-size-4 pair `mu . (eta |> t)` vs `mu . (t <| eta)` (convertible in the idempotent hom — it is posetal) and checks
-they return the same verdict.  All four `Decidable`-outcome cases enumerated (propext-free). -/
+/-- ★ **Regression ONE — the family-generic and the native route AGREE on the idempotent sample pair.**  Runs the
+family-generic `idempotentRelationFamily.decider` and the shipped native `decideSaturatedConvOverIdempotentNative`
+on the size-4 pair `mu . (eta |> t)` vs `mu . (t <| eta)` (convertible in the idempotent hom — it is posetal) and
+checks they return the same verdict.  Post-retirement (POLY-TAB r5) the family decider IS the native decider, so
+this is a native-vs-native self-consistency check.  All four `Decidable`-outcome cases enumerated (propext-free). -/
 def idempotentRouteAgreement : Bool :=
   match idempotentRelationFamily.decider (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
           (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell),
-        decideSaturatedConvOverIdempotent (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
+        decideSaturatedConvOverIdempotentNative (RawTwoCellExpr.vcomp monadMulTwoCell monadEtaTCell)
           (RawTwoCellExpr.vcomp monadMulTwoCell monadTEtaCell) with
   | isTrue _, isTrue _ => true
   | isTrue _, isFalse _ => false
@@ -159,7 +161,7 @@ theorem monadSeparatingRouteAgreement_holds : monadSeparatingRouteAgreement = tr
 /-! ## Honesty markers -/
 
 /-- ★ **Honesty marker — the thin-class walker migrations SHIP as table values (POLY-TAB r1, P3).**  The walking
-idempotent monad (`idempotentWalker_iff_generic`, a genuine retirement bridge over `IdempotentLawRel`) and the
+idempotent monad (`idempotentWalker_iff_generic`, born generic over `IdempotentLawRel` post-retirement — `Iff.rfl`) and the
 walking involution (`involutionWalker_iff_generic`, born generic over `emptyCellRel`, `Iff.rfl`) are surfaced as
 Table migration values with the two-way bridge iff over the SAME base relation, plus the monad SEPARATING precedent
 (`monadRelationFamily_bridge_is_precedent`: `monadSaturated_iff_generic` IS the family's `walkerIffGeneric` field).
