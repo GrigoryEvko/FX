@@ -2,7 +2,7 @@ import FX1Poly.Polygraph.Omega.PresentedKernelSeed
 import FX1Poly.Polygraph.Omega.AdmissionChainSeed
 import FX1Poly.Polygraph.Omega.WeakDirectedCeilingLedger
 
-/-! # Polygraph/Omega/SubstitutionPastingLedger — the OMEGA-7 r1 ledger (B4)
+/-! # Polygraph/Omega/SubstitutionPastingLedger — the OMEGA-7 r1+r2 ledger (B4)
 
 ★ **THE GRAND-RUNG r1 LEDGER — "substitution = pasting", the honest scoreboard.**  Mirrors
 `GradedCompositionLedger` / `WeakDirectedCeilingLedger`: it gates on what compiles (it imports the Polygraph-side OMEGA-7
@@ -80,7 +80,52 @@ SCOPE (the arithmetic anchor + the tuple/admission SHAPES), NOT the deeper theor
 markers below (all `false`). -/
 def fxOmega7_r1AnchorRoundComplete : Bool := true
 
-/-! ## The surviving-jam markers (each `= false` — NOT reached; the exact goal + NAMED node below)
+/-! ## The r2 shipped-piece markers (the fragment cell leg — `substCell = pasteAlong` as a GENUINE map)
+
+r2 lifts r1's single-vector arithmetic shadow to the boundary-faithful CHAIN map.  The pieces live at
+`Tier0/Term/Subst/SubstCellPasting.lean` (the same layer position as the r1 anchor `SubstPasting.lean`,
+because they PAIR with the kernel term-side law `substCompose_assoc`; Polygraph may not import Tier0, so
+these `Bool` markers gate against the audit twin `SubstCellPastingAudit.lean`, not this import).  Each is
+machine-checked zero-axiom (independent `#print axioms`: "does not depend on any axioms"). -/
+
+/-- ★ **r2 — the fragment pasting composite is DEFINED and boundary-aligned.**  `= true`: `pasteAlong` on the
+`CellExpr` carrier (the free vertical composite `vcomp`) + `boundarySource_pasteAlong` / `boundaryTarget_pasteAlong`
+(both `rfl`: source-from-left, target-from-right, aligned with the shipped total boundaries). -/
+def fxOmega7_fragmentPasteAlongDefined : Bool := true
+
+/-- ★ **r2 — the substitution-realization action is REALIZED at chain granularity.**  `= true`: `substCell`
+= `composeAtFull (linearizeFull left) (linearizeFull right)`, the boundary-faithful chain composite that
+RETAINS the boundary poles the single-vector shadow drops (the r2 upgrade over r1's `linearize`). -/
+def fxOmega7_fragmentSubstCellRealized : Bool := true
+
+/-- ★ **r2 — the pasting associativity is discharged VIA `addCoordinates_assoc`.**  `= true`: `substCell_assoc`
+re-brackets a triple pasting composite invisibly to `linearizeFull` — the boundary POLES agree by `rfl`, the
+TOP row by `addCoordinates_assoc` (the jam's literal demand), the chain-level upgrade of r1's
+`linearize_vcomp_assoc`. -/
+def fxOmega7_fragmentSubstCellAssocViaAddCoordinates : Bool := true
+
+/-- ★ **r2 — the paired anchor (substitution law IS chain pasting arithmetic) is SHIPPED.**  `= true`:
+`substCellEqPasteAlong_is_substCompose_assoc` pairs the kernel term-side law (`substCompose_assoc`, =
+`RawTerm.subst_compose`) with the chain-level pasting associativity — "substitution = pasting", not merely
+"composition = pasting" (the r1 `substLemma_is_pastingAssoc` lifted to the chain map). -/
+def fxOmega7_fragmentSubstPairedAnchor : Bool := true
+
+/-- ★ **The OMEGA-7 r2 fragment round is COMPLETE.**  `= true`: the fragment `substCell = pasteAlong` genuine
+map (`fxOmega7_fragmentSubstCellEqPasteAlongReached`), its associativity via `addCoordinates_assoc`, the paired
+kernel anchor, and the two concrete dim-3 non-vacuity witnesses (identical concrete chains) all shipped,
+machine-checked zero-axiom, RELATIVE to a `ComputadValuation` on the STRONG-STEINER fragment (Makkai wall
+scope preserved, NEVER widened).  This gates the r2 SCOPE (the boundary-faithful map identification); the r3
+kernel-as-value tuple is the surviving jam below. -/
+def fxOmega7_r2FragmentRoundComplete : Bool := true
+
+/-! ## The r2-SHIPPED fragment leg + the surviving-jam markers (the exact goal + NAMED node below)
+
+  * **SHIPPED (r2) — the fragment-level `substCell = pasteAlong` as a genuine map.**  `substCell = pasteAlong`
+    on the STRONG-STEINER fragment as a GENUINE MAP (not only the arithmetic shadow), with the substitution
+    lemma discharged VIA `addCoordinates_assoc`.  `pasteAlong` on the `CellExpr` carrier aligned with
+    `boundarySource` / `boundaryTarget` (the pasting engine on the fragment); r1 did only the arithmetic shadow
+    (`linearize_vcomp_assoc`).  DONE at `Tier0/Term/Subst/SubstCellPasting.lean`, machine-checked zero-axiom.
+    `fxOmega7_fragmentSubstCellEqPasteAlongReached = true`.
 
   * **JAM — the total `termToCell` model homomorphism (Form A).**  Goal: a TOTAL `termToCell : RawTerm →
     SteinerCell` with `termToCell (t.subst σ) = pasteAlong (contextToScheme σ) (termToCell t)` on the GENERAL
@@ -91,19 +136,15 @@ def fxOmega7_r1AnchorRoundComplete : Bool := true
     strong-Steiner, so no total homomorphism into the ℤ-arithmetic fragment exists in general — memo pin
     OMEGA-7(c).  `fxOmega7_totalTermToCellModelReached = false`.
 
-  * **JAM — the fragment-level `substCell = pasteAlong` as a genuine map (r2).**  Goal: `substCell =
-    pasteAlong` on the STRONG-STEINER fragment as a genuine map (not only the arithmetic shadow), with the
-    substitution lemma discharged VIA `addCoordinates_assoc`.  NAMED node: `pasteAlong` on the `CellExpr`
-    carrier aligned with `boundarySource` / `boundaryTarget` (the pasting engine on the fragment); r1 did the
-    arithmetic shadow (`linearize_vcomp_assoc`).  `fxOmega7_fragmentSubstCellEqPasteAlongReached = false`.
-
   * **JAM — the kernel-as-value tuple with genuine per-dimension admission (r3).**  Goal: the tuple
     `(signature, table2, table3, …)` as `Kernel := (n : Nat) → AdmittedTable n` with per-dimension admission
     lifted from `admitModeTheory` (the packaged decider, not a `Bool` flag).  NAMED node: MODE-ADMIT's
     `admitModeTheory` (`Amalgam/ModeAdmit.lean`) lifted to a per-dimension family, which needs the OMEGA-7
     pasting engine to TYPE the rows' boundaries (the typed telescope + substitution, `fxOmega6_psContextTypedTelescope
-    = false`).  r1 SEEDED the SHAPE (`PresentedKernel`, `AdmissionChainSeed` with a `Bool` certificate).
-    `fxOmega7_kernelAsValueTuple = false`. -/
+    = false`).  WHAT r2 CHANGED: the fragment pasting engine now EXISTS as a genuine map (`pasteAlong` /
+    `substCell` on `CellExpr`, boundary-aligned), so r3's remaining gap is narrowed to TYPING the rows'
+    boundaries (the typed telescope), not the pasting operation itself.  r1 SEEDED the SHAPE
+    (`PresentedKernel`, `AdmissionChainSeed` with a `Bool` certificate).  `fxOmega7_kernelAsValueTuple = false`. -/
 
 /-- ★ **The total `termToCell` model homomorphism is NOT reached (Form A).**  `= false` — the general
 familial representability wall: `pasteAlong` on the general computad needs the general presented / weak-ω word
@@ -111,10 +152,16 @@ problem, both undecidable (Burroni / Makkai), and arbitrary lambda-terms are not
 OMEGA-7(c)). -/
 def fxOmega7_totalTermToCellModelReached : Bool := false
 
-/-- ★ **The fragment-level `substCell = pasteAlong` genuine map is NOT reached (r2).**  `= false` — needs
-`pasteAlong` on the `CellExpr` carrier aligned with the shipped boundaries; r1 did the arithmetic shadow
-(`linearize_vcomp_assoc` = `addCoordinates_assoc` under `linearize`). -/
-def fxOmega7_fragmentSubstCellEqPasteAlongReached : Bool := false
+/-- ★ **The fragment-level `substCell = pasteAlong` genuine map is REACHED (r2).**  `= true` — SHIPPED at
+`Tier0/Term/Subst/SubstCellPasting.lean`: `pasteAlong` on the `CellExpr` carrier (boundary-aligned with the
+shipped `boundarySource`/`boundaryTarget`), `substCell` its boundary-faithful chain realization
+(`composeAtFull` on `linearizeFull`), and `substCell_eq_pasteAlong` the GENUINE MAP equality (whole chain,
+boundary poles included, the rfl-anchor `linearizeFull_vcomp_composeAtFull`) with `substCell_assoc` discharged
+VIA `addCoordinates_assoc` (poles by `rfl`) — the boundary-faithful upgrade over r1's single-vector shadow
+(`linearize_vcomp_assoc`).  Machine-checked zero-axiom (independent `#print axioms`), gated by the audit twin
+`SubstCellPastingAudit.lean` (this ledger cannot import Tier0).  Scope: RELATIVE to a `ComputadValuation` on
+the STRONG-STEINER fragment (Makkai wall NEVER widened). -/
+def fxOmega7_fragmentSubstCellEqPasteAlongReached : Bool := true
 
 /-- ★ **The kernel-as-value tuple with genuine per-dimension admission is NOT reached (r3).**  `= false` —
 `Kernel := (n : Nat) → AdmittedTable n` with `admitModeTheory`-packaged deciders needs the OMEGA-7 pasting
@@ -131,12 +178,12 @@ def fxOmega7_generalFamilialityDecidable : Bool := false
 
 /-- ★ **The staircase-closure criteria for #2237 are RECORDED.**  `= true`: #2237 closes when (r1) the
 substitution ≡ pasting ARITHMETIC anchor is machine-checked [DONE, `fxOmega7_substCompositionAnchored`], (r2)
-the fragment-level `substCell = pasteAlong` is proven as a genuine map [`fxOmega7_fragmentSubstCellEqPasteAlongReached`],
-and (r3) the kernel tuple `(signature, table2, table3, …)` is assembled with per-dimension admission
-[`fxOmega7_kernelAsValueTuple`] OR the general familiality is honestly walled by citation with the fragment
-identification banked as the prize.  Decided-or-walled: r2/r3 are closeable because both endpoints are
-shipped (the subst lemma is `subst_compose`, the pasting law is `addCoordinates_assoc`); the wall is a real
-result (Burroni / Makkai), not a punt. -/
+the fragment-level `substCell = pasteAlong` is proven as a genuine map [DONE,
+`fxOmega7_fragmentSubstCellEqPasteAlongReached`], and (r3) the kernel tuple `(signature, table2, table3, …)`
+is assembled with per-dimension admission [`fxOmega7_kernelAsValueTuple`] OR the general familiality is
+honestly walled by citation with the fragment identification banked as the prize.  Decided-or-walled: r3 is
+closeable because both endpoints are shipped (the subst lemma is `subst_compose`, the pasting map is now the
+genuine `substCell = pasteAlong`); the wall is a real result (Burroni / Makkai), not a punt. -/
 def fxOmega7_staircaseClosureCriteriaRecorded : Bool := true
 
 end FX1Poly.Polygraph.Omega

@@ -1049,6 +1049,9 @@ import FX1PolyAudit.Polygraph.Omega.WeakDirectedCeilingLedgerAudit
 -- OMEGA-7 r1 — substitution composition IS pasting arithmetic (the App-anchor play, B1;
 -- lives on the Tier0 side of the layer DAG because it imports the kernel subst engine)
 import FX1PolyAudit.Tier0.Term.Subst.SubstPastingAudit
+-- OMEGA-7 r2 — substCell = pasteAlong as a genuine boundary-faithful map on the CellExpr fragment (B1-B3;
+-- Tier0 side because it pairs with the kernel subst law substCompose_assoc)
+import FX1PolyAudit.Tier0.Term.Subst.SubstCellPastingAudit
 -- OMEGA-7 r1 — the presented kernel = (signature, table2, table3) tuple seed (B2)
 import FX1PolyAudit.Polygraph.Omega.PresentedKernelSeedAudit
 -- OMEGA-7 r1 — the per-dimension admission chain seed (kernel-as-value shape, B3)
