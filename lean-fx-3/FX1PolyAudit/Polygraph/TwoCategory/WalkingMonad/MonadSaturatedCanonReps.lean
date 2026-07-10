@@ -71,4 +71,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.countsOf_insert_first
 #assert_no_axioms FX1Poly.Polygraph.reconstructFrom_countsOf_smoke
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasCountsRoundTripInversion
+
+#assert_no_axioms FX1Poly.Polygraph.countsOf_length
+#assert_no_axioms FX1Poly.Polygraph.monadPath_normalForm_ofLength
+#assert_no_axioms FX1Poly.Polygraph.monadPath_normalForm
+#assert_no_axioms FX1Poly.Polygraph.canonCounts
+#assert_no_axioms FX1Poly.Polygraph.canonCounts_length
+#assert_no_axioms FX1Poly.Polygraph.canonCodomain_eq
+#assert_no_axioms FX1Poly.Polygraph.canonDomain_eq
+#assert_no_axioms FX1Poly.Polygraph.canon
+#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_canon
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.castBoundary_wordCongr
+#assert_no_axioms FX1Poly.Polygraph.canonCounts_eqOfMapEq
+#assert_no_axioms FX1Poly.Polygraph.canon_eqOfMapEq
 end FX1PolyAudit

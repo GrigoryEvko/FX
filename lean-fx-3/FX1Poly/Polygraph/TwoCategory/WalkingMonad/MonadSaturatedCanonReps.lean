@@ -695,4 +695,168 @@ land, `MonadSaturatedCanonicalization.convOfMapEq` is NOT inhabited and
 def fxMonad_hasCountsRoundTripInversion : Bool := true
 
 
+/-! ## The canon / boundary-transport stratum, relocated from `MonadNormalizeCell` -/
+
+/-! ## `countsOf` produces exactly `targetLen` counts -/
+
+/-- The per-target multiplicity list has exactly `targetLen` entries — one count per target position.  Structural
+recursion on `targetLen`. -/
+theorem countsOf_length : ∀ (targetLen base : Nat) (values : List Nat),
+    (countsOf targetLen base values).length = targetLen
+  | 0, _, _ => rfl
+  | targetLen + 1, base, values => by
+      show (runLengthAt base values :: countsOf targetLen (base + 1) (dropRunAt base values)).length
+        = targetLen + 1
+      show (countsOf targetLen (base + 1) (dropRunAt base values)).length + 1 = targetLen + 1
+      rw [countsOf_length targetLen (base + 1) (dropRunAt base values)]
+
+/-! ## The boundary transport: every walking-monad 1-cell is a `t`-power -/
+
+/-- The length-indexed normal-form: a walking-monad 1-cell of length `n` is `monadTPower n`.  STRUCTURAL recursion
+on `n` (the ModalityPath is an indexed family, so recursion runs on the plain `Nat` length instead): the `n = 0`
+case inverts to `nil`; the `n + 1` case inverts to a `cons` whose modality is forced to `t` (the single
+generator), and the tail — of length `n` — is `monadTPower n` by the recursive call. -/
+theorem monadPath_normalForm_ofLength :
+    ∀ (targetLen : Nat) (path : ModalityPath monadGraph MonadMode.point MonadMode.point),
+      path.length = targetLen → path = monadTPower targetLen
+  | 0, ModalityPath.nil _, _ => rfl
+  | 0, ModalityPath.cons _ _, hlen => absurd hlen (fun heq => Nat.noConfusion heq)
+  | targetLen + 1, ModalityPath.nil _, hlen => absurd hlen (fun heq => Nat.noConfusion heq)
+  | targetLen + 1, ModalityPath.cons modality rest, hlen => by
+      cases modality
+      have hrest : rest.length = targetLen := Nat.succ.inj hlen
+      show ModalityPath.cons MonadModality.t rest = composePath monadT (monadTPower targetLen)
+      show ModalityPath.cons MonadModality.t rest
+        = ModalityPath.cons MonadModality.t (monadTPower targetLen)
+      rw [← monadPath_normalForm_ofLength targetLen rest hrest]
+
+/-- ★ **Every walking-monad 1-cell is the `t`-power of its length.**  `path = monadTPower path.length` — the
+walking monad has ONE object `point` and ONE endo-generator `t`, so a modality path is a run of `t`'s, exactly
+`monadTPower path.length`.  Immediate from the length-indexed form.  This is the boundary transport lining up the
+canonical EZ word with the cell's own `(sourcePath, targetPath)`, the SECONDARY residual the `convOfMapEq` honesty
+markers named. -/
+theorem monadPath_normalForm (path : ModalityPath monadGraph MonadMode.point MonadMode.point) :
+    path = monadTPower path.length :=
+  monadPath_normalForm_ofLength path.length path rfl
+
+/-! ## The canonical Eilenberg–Zilber word of a cell's fold, transported to the cell's boundary -/
+
+/-- The per-target multiplicity list of a cell's monotone map — the Eilenberg–Zilber degeneracy/face data
+(`countsOf` read off the fold), the input to the canonical word builder. -/
+def canonCounts {sourceMode targetMode : MonadMode}
+    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) : List Nat :=
+  countsOf targetPath.length 0 (monadMonotoneMapOf cell)
+
+/-- The multiplicity list has exactly `targetPath.length` entries (one count per target position). -/
+theorem canonCounts_length {sourceMode targetMode : MonadMode}
+    {sourcePath targetPath : ModalityPath monadGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    (canonCounts cell).length = targetPath.length :=
+  countsOf_length targetPath.length 0 (monadMonotoneMapOf cell)
+
+/-- ★ **The codomain boundary transport.**  The canonical word's codomain `monadTPower (canonCounts cell).length`
+equals the cell's own `targetPath` — the count list has `targetPath.length` entries and `targetPath` is its own
+`t`-power. -/
+theorem canonCodomain_eq
+    {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    monadTPower (canonCounts cell).length = targetPath := by
+  rw [canonCounts_length cell]
+  exact (monadPath_normalForm targetPath).symm
+
+/-- ★ **The domain boundary transport.**  The canonical word's domain `countsDomainPath (canonCounts cell)` equals
+the cell's own `sourcePath` — it is a `t`-power (`monadPath_normalForm`) of length `sum (canonCounts cell)`, which
+is `sourcePath.length` by the counts round-trip (`reconstructFrom 0 counts = map cell`) and the fold's domain law
+(`(map cell).length = sourcePath.length`). -/
+theorem canonDomain_eq {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    countsDomainPath (canonCounts cell) = sourcePath := by
+  have hround : reconstructFrom 0 (canonCounts cell) = monadMonotoneMapOf cell :=
+    monadMonotoneMapOf_reconstructRoundTrip cell
+  have hlen : (countsDomainPath (canonCounts cell)).length = sourcePath.length := by
+    rw [← reconstructFrom_length 0 (canonCounts cell), hround]
+    exact monadMonotoneMapOf_length cell
+  rw [monadPath_normalForm (countsDomainPath (canonCounts cell)), hlen]
+  exact (monadPath_normalForm sourcePath).symm
+
+/-- ★ The **boundary-transported canonical Eilenberg–Zilber word** of a cell: the horizontal composite of
+per-target merge gadgets for the cell's own monotone-map multiplicities (`wordFromCounts (canonCounts cell)`),
+transported across the two boundary equalities so it is a free 2-cell PARALLEL to `cell`
+(`sourcePath ⇒ targetPath`).  The `convOfMapEq` target `normalizeCell` asserts `cell` is
+`MonadSaturatedTwoCellConv`-convertible to this. -/
+def canon {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    RawTwoCellExpr monadModeSignature sourcePath targetPath :=
+  RawTwoCellExpr.castBoundary (canonDomain_eq cell) (canonCodomain_eq cell)
+    (wordFromCounts (canonCounts cell))
+
+/-- ★ **`canon` folds to the same monotone map as the cell** — the SOUNDNESS cross-check that the canonical word is
+the RIGHT one: `map (canon cell) = map cell`.  The boundary cast is spine-invisible and preserves the source
+length, so `map (canon cell) = map (wordFromCounts (canonCounts cell)) = reconstructFrom 0 (canonCounts cell) =
+map cell` (the section + the counts round-trip).  This validates `canon` is non-vacuous and pins the intended
+normal form, though the CONVERTIBILITY `cell ≈ canon cell` (completeness) still needs the word multiplicativity. -/
+theorem monadMonotoneMapOf_canon {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cell : RawTwoCellExpr monadModeSignature sourcePath targetPath) :
+    monadMonotoneMapOf (canon cell) = monadMonotoneMapOf cell := by
+  have hspine : (canon cell).spine = (wordFromCounts (canonCounts cell)).spine :=
+    RawTwoCellExpr.castBoundary_spine (canonDomain_eq cell) (canonCodomain_eq cell)
+      (wordFromCounts (canonCounts cell))
+  have hsrc : sourcePath.length = (countsDomainPath (canonCounts cell)).length := by
+    rw [canonDomain_eq cell]
+  show (((canon cell).spine).foldl monadMonoStepAtom (sourcePath.length, idMap sourcePath.length)).2
+    = monadMonotoneMapOf cell
+  rw [hspine, hsrc]
+  show (((wordFromCounts (canonCounts cell)).spine).foldl monadMonoStepAtom
+      ((countsDomainPath (canonCounts cell)).length, idMap (countsDomainPath (canonCounts cell)).length)).2
+    = monadMonotoneMapOf cell
+  show monadMonotoneMapOf (wordFromCounts (canonCounts cell)) = monadMonotoneMapOf cell
+  rw [monadMonotoneMapOf_wordFromCounts (canonCounts cell)]
+  exact monadMonotoneMapOf_reconstructRoundTrip cell
+
+/-! ## The `canon` congruence: `canon` depends on a cell only through its monotone map
+
+The `convOfMapEq` ASSEMBLY needs one algebraic fact about `canon`: two cells with EQUAL monotone maps have the
+SAME canonical word.  This holds because `canon cell` reads the cell only through `canonCounts cell =
+countsOf targetPath.length 0 (monadMonotoneMapOf cell)` — a function of the fold — while the two boundary
+transports it casts along are PROOFS, definitionally irrelevant.  So the whole `convOfMapEq` reduces to the single
+cell-level normalization `normalizeCell`; this file closes that reduction and names the residual. -/
+
+/-- The canonical EZ word transported to a fixed parallel boundary depends on its counts list only up to equality:
+casting the same word along different boundary proofs is definitional proof-irrelevance, and equal counts lists
+give the same word.  Structural `subst` on the counts equality, then `rfl` (the two casts to the same boundary are
+definitionally equal by `Eq`'s proof irrelevance, per `RawTwoCellExpr.castBoundary`). -/
+theorem RawTwoCellExpr.castBoundary_wordCongr
+    {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    {countsLeft countsRight : List Nat}
+    (hdomLeft : countsDomainPath countsLeft = sourcePath)
+    (hcodLeft : monadTPower countsLeft.length = targetPath)
+    (hdomRight : countsDomainPath countsRight = sourcePath)
+    (hcodRight : monadTPower countsRight.length = targetPath)
+    (hcounts : countsLeft = countsRight) :
+    RawTwoCellExpr.castBoundary hdomLeft hcodLeft (wordFromCounts countsLeft)
+      = RawTwoCellExpr.castBoundary hdomRight hcodRight (wordFromCounts countsRight) := by
+  subst hcounts
+  rfl
+
+/-- The multiplicity list `canonCounts` is a function of the monotone map: equal maps give equal counts. -/
+theorem canonCounts_eqOfMapEq {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cellA cellB : RawTwoCellExpr monadModeSignature sourcePath targetPath)
+    (hmap : monadMonotoneMapOf cellA = monadMonotoneMapOf cellB) :
+    canonCounts cellA = canonCounts cellB :=
+  congrArg (countsOf targetPath.length 0) hmap
+
+/-- ★ **The `canon` congruence.**  Two parallel cells with EQUAL monotone maps have the SAME canonical word:
+`monadMonotoneMapOf cellA = monadMonotoneMapOf cellB → canon cellA = canon cellB`.  Immediate from
+`canonCounts_eqOfMapEq` (the counts agree) and `castBoundary_wordCongr` (the boundary casts are proof-irrelevant).
+This is the algebraic glue the `convOfMapEq` assembly rests on: the YES-branch of the decision needs only that
+BOTH cells normalize to their canonical word, and those two words then COINCIDE. -/
+theorem canon_eqOfMapEq {sourcePath targetPath : ModalityPath monadGraph MonadMode.point MonadMode.point}
+    (cellA cellB : RawTwoCellExpr monadModeSignature sourcePath targetPath)
+    (hmap : monadMonotoneMapOf cellA = monadMonotoneMapOf cellB) :
+    canon cellA = canon cellB :=
+  RawTwoCellExpr.castBoundary_wordCongr (canonDomain_eq cellA) (canonCodomain_eq cellA)
+    (canonDomain_eq cellB) (canonCodomain_eq cellB) (canonCounts_eqOfMapEq cellA cellB hmap)
+
+
 end FX1Poly.Polygraph

@@ -14,18 +14,6 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.countsOf_length
-#assert_no_axioms FX1Poly.Polygraph.monadPath_normalForm_ofLength
-#assert_no_axioms FX1Poly.Polygraph.monadPath_normalForm
-#assert_no_axioms FX1Poly.Polygraph.canonCounts
-#assert_no_axioms FX1Poly.Polygraph.canonCounts_length
-#assert_no_axioms FX1Poly.Polygraph.canonCodomain_eq
-#assert_no_axioms FX1Poly.Polygraph.canonDomain_eq
-#assert_no_axioms FX1Poly.Polygraph.canon
-#assert_no_axioms FX1Poly.Polygraph.monadMonotoneMapOf_canon
-#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.castBoundary_wordCongr
-#assert_no_axioms FX1Poly.Polygraph.canonCounts_eqOfMapEq
-#assert_no_axioms FX1Poly.Polygraph.canon_eqOfMapEq
 #assert_no_axioms FX1Poly.Polygraph.monadConvOfMapEq_ofNormalize
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasBoundaryTransportAndCanon
 #assert_no_axioms FX1Poly.Polygraph.fxMonad_hasConvOfMapEqReducedToNormalize
