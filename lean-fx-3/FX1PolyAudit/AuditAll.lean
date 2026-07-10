@@ -995,6 +995,7 @@ import FX1PolyAudit.Polygraph.Omega.DesignLockOmega3WithIdAudit
 import FX1PolyAudit.Polygraph.Omega.CriticalPairRowAudit
 import FX1PolyAudit.Polygraph.Omega.InvolutionDemonstratorAudit
 import FX1PolyAudit.Polygraph.Omega.KernelDiamondReadingAudit
+import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4Audit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
