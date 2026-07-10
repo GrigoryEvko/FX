@@ -427,6 +427,60 @@ whisker embedding) co-mingled with bespoke conv, and that skeleton is imported b
 / born-generic only at Round C, which VOIDS the `monadRelationFamily_bridge_is_precedent` migration fact (the same
 meaning-erosion the r5 idempotent gate reserved for explicit sign-off).  Those re-points are DEFERRED, not forced.
 
+### r7-r2 OUTCOME (POLY-TAB r7 r2 — the INTERIM-DECIDER retirement + the skeleton-severance RE-SCOPE, #2228)
+
+r7-r2 (Round B) ships the ONE honest deletion the round makes available and RE-SCOPES the deep skeleton-severance.
+NO FX1Poly file is deleted; the pinned Δ island stays (the r7-r1 leftovers above are unchanged).
+
+SHIPPED — the superseded INTERIM generic decider is RETIRED (`WalkingMonad/MonadSaturatedDecisionGen`):
+`monadSaturatedCanonicalizationGenViaBridge` / `decideSaturatedConvOverMonadInterim` and their old-vs-interim
+regression witnesses (`monadOldVerdict` / `monadGenDecidesTrue_assoc` / `monadGenDecidesFalse_faces` /
+`monadGenAgreesOldOnRegression`) are gone.  The interim was the LAST WalkingMonad Gen-lane consumer of the bespoke
+`monadNormalize` / `monadSaturatedTwoCellDecision` (its completeness field rode the bridge through
+`monadSaturated_to_generic`); it is superseded BOTH ways born-generic by `decideSaturatedConvOverMonadNative`
+(`fxMonad_hasGenericNativeDecider`, untouched, exhaustively bespoke-free — 847 constants walked).
+`MonadNormalizeGen`'s regression is re-founded self-contained (`monadNativeAgreesOnRegression` now asserts the native
+decider decides the assoc pair `isTrue` and the separating faces pair `isFalse`, by `rfl`), and it imports
+`MonadWordProblem` directly for the conv-FREE `one_le_cellSize` fuel lemma it had received transitively through the
+dropped interim edge.  The two audit twins are pruned (`MonadSaturatedDecisionGen` per-decl `#assert_no_axioms` gates
++ `MonadBespokeFreeWalk`'s two interim needle-detector controls); the native `#assert_constant_free_of` gates + the
+bespoke `#assert_constant_depends_on` controls stay.  Marker `fxTab_hasMonadInterimDeciderRetired = true`.
+
+REGRESSION CONTINUITY (history): at r6 the native / interim / old-bespoke deciders all branched on the SAME
+`monadMonotoneMapOf cellA = monadMonotoneMapOf cellB` comparison and agreed on both lane pairs — the size-3
+associativity pair `t.t.t ⇒ t` (both fold `[0,0,0]`, `isTrue`) and the SEPARATING size-1 faces pair `t ⇒ t.t`
+(maps `[1]` vs `[0]`, `isFalse`).  With the interim retired, the tie is the native pair alone
+(`monadNativeAgreesOnRegression_holds`, `rfl`); native = interim = old is this historical record.
+
+RE-SCOPE — the deep skeleton-severance (the recon's Round B S1–S4) IS the r5-Step-2 skeleton relocation the r7-r1
+OUTCOME named, and it is NOT a green-incremental "drop the imports in place" edit; it needs a bespoke-free
+`MonadSaturated*Reps` relocation home (ONE bottom-of-DAG bridge collecting the severed bespoke decls).  The blockers,
+machine-observed this round:
+  * The Δ chain is a LINEAR import spine (`MonadSaturatedConv` → `MonadDeltaModel` → … → `MonadNormalizeVcomp`) in
+    which conv-FREE skeleton decls and bespoke conv decls are INTERLEAVED file-by-file (`MonadDeltaModel` 5 conv
+    refs, `MonadDeltaDecision` 4, `MonadNormalizeCell` 8, `MonadNormalizeVcomp` 12, …), with three PURE-BESPOKE files
+    sitting in the MIDDLE (`MonadNormalizeCases` 50, `MonadWordMultiplicativity` 20, `MonadWhiskerNormalizeCases` 16)
+    imported-through by would-be-survivor files.
+  * The interface decl `MonadSaturatedCanonicalization` (`MonadDeltaModel`) is referenced by bespoke decls THROUGHOUT
+    the downstream chain, so every severed bespoke decl must lift to ONE file ABOVE the whole bespoke-free skeleton —
+    which makes S1/S2/S3 a SINGLE entangled change, not three separately-green commits.  Dropping `MonadDeltaModel`'s
+    `MonadSaturatedConv` import in isolation (recon S1) breaks `MonadDeltaDecision` (its bespoke lemmas lose the conv)
+    unless S3 lands in the same commit.
+  * The recon's "keep reps" for `MonadWhiskerRightMult` mis-attributes them: `repFull` / `repNF` / `growTower` are
+    IDEMPOTENT-lane decls (`WalkingIdempotent/IdempotentSaturatedReps` + `…Normalizer`), NOT in
+    `MonadWhiskerRightMult`, which is fully bespoke (`wordMul_whiskerRight` + its cast algebra).
+    `IdempotentSaturatedReps` uses NOTHING from `MonadWhiskerRightMult` (0 refs to its decls) — its import is a
+    vestigial edge that pulls the mid-chain bespoke into a KEPT file.
+Consequence: the one-commit-per-step / umbrella-green-after-each posture the recon assumed for S1–S4 does not hold;
+that severance is BANKED for a dedicated relocation round (build the `MonadSaturated*Reps` bridge, lift the ~18
+bespoke decls, re-point `KZOrderCompleteness` / `IdempotentSaturatedReps`, THEN drop the imports).
+
+ROUND-C CARVE-OUT (unchanged, sign-off-gated): the pinned island stays — the pure-bespoke chain files +
+`MonadSaturatedConv`, consumed only by the deferred trio `Amalgam/DeciderReseat` (P3-blocked native reseat),
+`Amalgam/SaturatedRelationFamily.monadRelationFamily` (the SEPARATING member; re-point VOIDS
+`monadRelationFamily_bridge_is_precedent`), and `Amalgam/SaturatedOver` (the migration iffs).  The monad lane is NOT
+retired — it is the SECOND bespoke lane, still live; r7-r2 retired only the superseded interim decider.
+
 ### NOT-READY (census-only; POLY-TAB-2 re-homing required before any confirmation)
 
   * `StringSaturatedTwoCellConv` (WalkingAdjunction / adjoint string) — no generic instance shipped; POLY-TAB-2.
@@ -499,5 +553,18 @@ written: the Brauer `cupSlideRelation` row as the first versioned-row test (#223
 and the EncodedConv question ARGUED and DECIDED (stays bespoke-by-design as the reduction artifact).  Lock-vs-brick
 differences (B->A rebase banked, KZ banked, registry/thin-walker brought forward) are recorded.  `= true`. -/
 def fxTab_polyTabR1LedgerComplete : Bool := fxTab_polyTabR1Complete
+
+/-- ★ **The POLY-TAB r7 r2 marker — the superseded INTERIM monad decider is RETIRED (#2228).**  MONAD-R7 r2 (S5)
+deleted the interim generic decider (`monadSaturatedCanonicalizationGenViaBridge` /
+`decideSaturatedConvOverMonadInterim` + its old-vs-interim regression witnesses) from
+`WalkingMonad/MonadSaturatedDecisionGen` — the last WalkingMonad Gen-lane consumer of the bespoke `monadNormalize` /
+`monadSaturatedTwoCellDecision`.  It is superseded BOTH ways born-generic by `decideSaturatedConvOverMonadNative`
+(the still-green `fxTab_hasMonadNativeRefoundingWave2`).  NO FX1Poly file is deleted this round (the pinned Δ island
+stays; the deep skeleton-severance is RE-SCOPED to a dedicated `MonadSaturated*Reps` relocation round — see the
+r7-r2 OUTCOME above).  `= true`. -/
+def fxTab_hasMonadInterimDeciderRetired : Bool := true
+
+/-- The r7-r2 interim-decider-retirement marker computes to `true`, machine-checked. -/
+theorem hasMonadInterimDeciderRetired_holds : fxTab_hasMonadInterimDeciderRetired = true := by decide
 
 end FX1Poly.Polygraph.Table
