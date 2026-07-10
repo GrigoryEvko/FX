@@ -78,9 +78,9 @@ def permutationToCrossingWord (bottomCount : Nat) (perm : List Nat) : List Nat :
 
 /-- The count of list entries strictly below `bound` — the rank of `bound` among a list of distinct values (used to
 reduce boundary indices to `[0, count)` ranks).  `Nat.blt`-driven, propext-free. -/
-def countBelow : List Nat → Nat → Nat
+def arcMiddleCountBelow : List Nat → Nat → Nat
   | [], _ => 0
-  | head :: rest, bound => cond (Nat.blt head bound) 1 0 + countBelow rest bound
+  | head :: rest, bound => cond (Nat.blt head bound) 1 0 + arcMiddleCountBelow rest bound
 
 /-- The through-strand bottom ports of a diagram, in ascending order: the bottom ports `index < bottomCount` whose
 partner is a TOP boundary node (`≥ bottomCount`), i.e. a strand that passes through rather than a cap leg. -/
@@ -98,7 +98,7 @@ def throughStrandPerm (bottomCount topCount : Nat) (partner : List Nat) : List N
   (List.range topCount).filterMap (fun topIndex =>
     match Nat.blt (natListGetAt partner (bottomCount + topIndex)) bottomCount with
     | true =>
-        some (countBelow (throughStrandBottoms bottomCount partner)
+        some (arcMiddleCountBelow (throughStrandBottoms bottomCount partner)
           (natListGetAt partner (bottomCount + topIndex)))
     | false => none)
 

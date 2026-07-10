@@ -17,7 +17,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.descendingSwapPositions
 #assert_no_axioms FX1Poly.Polygraph.permutationRealizerFold
 #assert_no_axioms FX1Poly.Polygraph.permutationToCrossingWord
-#assert_no_axioms FX1Poly.Polygraph.countBelow
+#assert_no_axioms FX1Poly.Polygraph.arcMiddleCountBelow
 #assert_no_axioms FX1Poly.Polygraph.throughStrandBottoms
 #assert_no_axioms FX1Poly.Polygraph.throughStrandPerm
 #assert_no_axioms FX1Poly.Polygraph.readCapArcPositions
