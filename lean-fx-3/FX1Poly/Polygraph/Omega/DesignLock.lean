@@ -101,4 +101,108 @@ the OMEGA-0 KEY DECISION in the repo: HYBRID architecture, extrinsic-syntax carr
 arithmetic below it, banned candidate (i).  `= true`. -/
 def fxOmega_carrierIsExtrinsicCandidateTwo : Bool := true
 
+/-! ## OMEGA-1 r2 — the four bricks + the ONE honest wall (B5 ledger)
+
+The rung closes **complete-except-for-one-named-wall**.  Per-brick, strictly factual:
+
+  * **B1 (n=1 collapse) — CLOSED, honestly.**  The UNCONDITIONAL `dimOneCollapsesToPath` is REFUTED
+    (`dimOneCollapse_not_unconditional`, via the gen-atom difference-list invariant through `recInto` + a
+    canonicity contradiction) — the extrinsic carrier admits ill-boundaried `gen` cells with no path preimage.
+    The substantive UNCONDITIONAL content (homomorphism `realizePath_composePath_conv`, boundary read-off,
+    `vcomp`-closure) ships alongside; the honest positive statement is the `GlobularComputad`-restricted collapse.
+
+  * **B2 (n=2 bridge) — SIZE leg CLOSED, CONV leg WALLED (the one wall).**  `toCellDimTwo` maps the five
+    `RawTwoCellExpr` generators to the five `CellExpr` generators on the nose (falsifiability: no extra
+    generator), and `bridgeDimTwoForwardSize` PROVES size preservation.  The conv leg of `bridgeDimTwoHolds`
+    (`TwoCellConv → freeStrictCongruence`) is the named wall: `freeStrictCongruence`'s four one-hole congruences
+    (exactly the dim-2 four) are NOT a full congruence over the Omega carrier's EXPLICIT 1-cells, so `vcompIdLeft`
+    needs an `id`-congruence it lacks.  `bridgeDimTwoHolds` keeps its name/meaning as the open statement.
+
+  * **B3 (globularity) — CLOSED, softer than forecast.**  `globularLegs_of_isGlobularCell` PROVES globularity on
+    the well-formed sub-carrier (`IsGlobularCell` = parallel generators + composable vcomps) by clean structural
+    induction — NOT the forecast stratified-carriers wall.  The extrinsic `IsGlobularCarrier` stays stated.
+
+  * **B4 (adequacy) — RESOLVED via DERIVED OPERATIONS.**  See `fxOmega_adequateByDerivedOperations`.
+
+Only B2's conv leg is open; everything else is proven zero-axiom. -/
+
+/-- ★ **Honesty marker — B1: the unconditional dim-1 collapse is REFUTED (closed honestly).** `= true`. -/
+def fxOmega_dimOneCollapseRefuted : Bool := true
+
+/-- ★ **Honesty marker — B2: the n=2 bridge SIZE leg is PROVEN (`bridgeDimTwoForwardSize`).** `= true`. -/
+def fxOmega_bridgeDimTwoSizeLegProven : Bool := true
+
+/-- ★ **Honesty marker — B2: the n=2 bridge CONV leg is OPEN (the ONE wall).**  `freeStrictCongruence` (four
+one-hole congruences, matching dim-2) is not a full congruence over the Omega carrier's explicit 1-cells; the
+`vcompIdLeft` row needs an `id`-congruence.  `= true` records the wall is present, not that the conv leg holds. -/
+def fxOmega_bridgeDimTwoConvLegOpen : Bool := true
+
+/-- ★ **Honesty marker — B3: globularity DISCHARGED on the well-formed sub-carrier
+(`globularLegs_of_isGlobularCell`).** `= true`. -/
+def fxOmega_globularityDischargedOnWellFormed : Bool := true
+
+/-- ★ **Honesty marker — B4: the fixed-five carrier is ADEQUATE via DERIVED operations.**  The DERIVED-OPERATIONS
+branch (recon verdict), NOT the memo's `2n` new composition constructors.  `godementComp` (`*_dim` Godement /
+hcomp, the dim-2 `RawTwoCellExpr.hcomp` lifted) and `whiskerByLowerId` (`*_0` deep whisker via id-promotion) DEFINE
+every codimension-`k` composite from `vcomp` / `whisker` / `id`, so the constructor COUNT is CONSTANT across
+dimensions — strictly more faithful to "the dimension index is a parameter, never a reason for a parallel
+structure" than a `*_k`-primitive-per-level set.  Congruence in the whiskered-CELL positions is FREE
+(`whiskerByLowerId_congruence`).  The n=2 falsifiability RE-RUN holds: the four one-hole congruences reproduce the
+dim-2 four (unchanged), `toCellDimTwo` maps the five generators — no parallel structure crept in.  `= true`. -/
+def fxOmega_adequateByDerivedOperations : Bool := true
+
+/-- ★ **Honesty marker — OMEGA-1 is COMPLETE-EXCEPT-FOR-ONE-WALL.**  `= false` (NOT fully complete): the ONE
+open obligation is the B2 bridge conv leg (`fxOmega_bridgeDimTwoConvLegOpen`).  Every other r2 deliverable — the
+n=1 refutation (B1), globularity on the well-formed sub-carrier (B3), and derived-operations adequacy (B4) — is
+PROVEN zero-axiom.  Set `true` only when the conv leg is discharged (an `idCongr` + whisker-1-cell congruence
+extension of `SaturatedConvOver`, or a normalising translation) in a follow-up. -/
+def fxOmega_omega1Complete : Bool := false
+
+/-! ## The OMEGA-2 handoff spec (B5)
+
+OMEGA-2 (the Steiner crown) linearizes FROM this rung.  The map-out substrate is ALL shipped and clean:
+`SaturatedConvOver.recInto` + `IsSaturatedCongruence` + `StrictAxiomRel` + `boundarySource` / `boundaryTarget`
+(linearize's d⁻/d⁺) + `freeStrictCongruence` / `emptyPresentation`.  The generic invariant fold IS the shipped
+eliminator.  Two SHAPES are recorded below so OMEGA-2 has exact targets; the Steiner substrate anchors + the two
+recon API-drift corrections it must absorb follow.
+
+### Steiner substrate anchors (recon-verified against `Steiner/`, with the two drift corrections)
+
+  * `SteinerCell` (`Steiner/CellCoordinates.lean`) is a STRUCTURE `{ coordinates : CellVector }`,
+    `CellVector := List Int` (abbrev) — NOT the memo's bare `= List Int`.  `linearize` produces the wrapper;
+    `DecidableCellEq.lean` gives structural `DecidableEq` on it (propext-free).
+  * **R1 (OMEGA-2 crux):** the shipped composition is `composeAtDimension (left right sharedBoundary : SteinerCell)
+    : SteinerCell = x + y − sharedBoundary` — NOT the memo's `composeAt : Nat → SteinerCell → SteinerCell →
+    Option SteinerCell`.  There is NO `Nat` arg, NO `Option`, and the shared boundary is an EXPLICIT argument whose
+    computation from the augmented directed complex is DEFERRED.  So `T2.homomorphism`
+    (`linearize (a *_k b) = compose k (lin a) (lin b)`) cannot even be STATED until `sharedBoundary` is derivable —
+    the real OMEGA-2 crux the memo understated.
+  * **R2 (structure drift):** there is NO dimension-indexed `Computad n`; the carrier is the FLAT `OmegaComputad`,
+    and `Computad := ModeSignature` (flat abbrev).  `isStrongSteiner` / `suspend` must be FLAT
+    (`OmegaComputad → Bool`), reading `genLabel` per dimension — NOT the memo's `Computad n → Bool`.
+  * `sourceOfCell` / `targetOfCell` (d⁻/d⁺), `SteinerCell.HasDimensionShape` (the `isStrongSteiner` shape predicate
+    layers on it), and `loopFreeOrderIsWellFounded` (`LoopFreeOrder.lean`, PRESENT and PROVEN by structural `Nat`
+    induction, no `WellFounded.fix`) are the reconstruction well-order for excision-of-extremals.
+  * `decideFreeConv a b := linearize a == linearize b` uses SteinerCell's STRUCTURAL `DecidableEq` — so OMEGA-2
+    does NOT need `CellExpr`'s Prop-`DecidableEq`; the Bool-only `cellBeq` / `toSkeleton`-injectivity residual is
+    OFF OMEGA-2's critical path. -/
+
+/-- The OMEGA-2 **linearize-soundness SHAPE** — the exact target OMEGA-2 inhabits via the generic invariant fold
+`SaturatedConvOver.recInto` at `inv := linearize`, `targetRel := fun a b => linearize a = linearize b`.  Parameterised
+by the yet-to-be-defined `SteinerCellCarrier` and `linearize`; ships here as the handoff contract. -/
+def OmegaTwoLinearizeSoundnessShape (computad : OmegaComputad) (SteinerCellCarrier : Type)
+    (linearize : {dim : Nat} → CellExpr computad dim → SteinerCellCarrier) : Prop :=
+  ∀ {dim : Nat} {cellAlpha cellBeta : CellExpr computad dim},
+    SaturatedConvOver computad (StrictAxiomRel computad) cellAlpha cellBeta →
+    linearize cellAlpha = linearize cellBeta
+
+/-- The OMEGA-2 **interface-line SHAPE** — `isStrongSteiner` is a decidable `Bool` predicate on the FLAT
+`OmegaComputad` (recon R2: a dimension-indexed `Computad n` is absent on disk).  Ships here as the signature
+OMEGA-2 defines. -/
+def OmegaTwoInterfaceLineShape : Type 1 := OmegaComputad → Bool
+
+/-- ★ **Honesty marker — the OMEGA-2 handoff spec is RECORDED** (linearize-soundness shape, flat `isStrongSteiner`
+signature, the Steiner substrate anchors, and the two recon API-drift corrections R1/R2).  `= true`. -/
+def fxOmega_omegaTwoHandoffRecorded : Bool := true
+
 end FX1Poly.Polygraph.Omega

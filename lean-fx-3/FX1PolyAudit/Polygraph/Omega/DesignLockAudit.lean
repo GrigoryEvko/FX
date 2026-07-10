@@ -17,6 +17,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.omega1CarrierChoice
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_omega1R1Complete
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_carrierIsExtrinsicCandidateTwo
+-- OMEGA-1 r2 ledger + OMEGA-2 handoff (B5)
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_dimOneCollapseRefuted
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_bridgeDimTwoSizeLegProven
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_bridgeDimTwoConvLegOpen
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_globularityDischargedOnWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_adequateByDerivedOperations
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_omega1Complete
+#assert_no_axioms FX1Poly.Polygraph.Omega.OmegaTwoLinearizeSoundnessShape
+#assert_no_axioms FX1Poly.Polygraph.Omega.OmegaTwoInterfaceLineShape
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega_omegaTwoHandoffRecorded
 
 -- BridgeDimTwo.lean (the n=2 bridge STATEMENT)
 #assert_no_axioms FX1Poly.Polygraph.Omega.signatureGenLabel
