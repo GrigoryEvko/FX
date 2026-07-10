@@ -1014,6 +1014,8 @@ import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4R2Audit
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedAppAnchorAudit
+-- OMEGA-5 r1 — the enriched-functor seed at the grade-vector level (usage factor)
+import FX1PolyAudit.Polygraph.Omega.Graded.EnrichedCheckSeedAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
