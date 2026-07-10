@@ -3,10 +3,12 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupPreservation
 
 /-! # WalkingString — the two-endpoint BOUNDARY CENSUS over the bare `WireState` (FC-5, P1)
 
-The JOIN branch of `stringNonCrossing_stepCap` (FC-4's residual, `fxString_hasCapNonCrossingJoinBranch := false`) is
-refuted by a PERFECT-MATCHING census: every union-find component of a cup/cap fold state carries at most TWO boundary
-ends (an original bottom port and a currently-open wire end).  This is the load-bearing NEW fold invariant the arc
-lane shipped as `ArcBoundaryCensus` over the enriched `ArcWireState`; this file PORTS it to the bare `WireState`.
+The JOIN branch of `stringNonCrossing_stepCap` (FC-4's residual) is refuted by a PERFECT-MATCHING census: every
+union-find component of a cup/cap fold state carries at most TWO boundary ends (an original bottom port and a
+currently-open wire end).  This is the load-bearing NEW fold invariant the arc lane shipped as `ArcBoundaryCensus`
+over the enriched `ArcWireState`; this file PORTS it to the bare `WireState`.  As of FC-5 P2 the census is CONSUMED:
+`stringNonCrossing_stepCap` (in the sibling `StringCapNonCrossingJoin`) is CLOSED, `fxString_hasCapNonCrossingJoinBranch
+:= true`.
 
 A boundary END TOKEN (`ArcEndToken`, carrier-free — reused verbatim) is either a `bottomPort v` (an original seed
 wire, one per node value below the seed width) or an `openSlot p` (the wire end currently at `openWires` position
@@ -1002,9 +1004,10 @@ def fxString_hasBoundaryCensus : Bool := true
 /-- **OPEN (honest, LOCALIZED) — the census UNLOCKS `preserves.orient`(cap join), NOT `capPin`.**  The census fold
 (above) is the exact perfect-matching fact the JOIN-branch cap non-crossing survivor analysis
 (`fxString_hasCapNonCrossingJoinBranch`, in `StringFussCatalanCapNonCrossing`) needs to refute the "two survivors reach
-the same window end" combos.  Consuming it — the 5-survivor + 4-census combo table, the string port of
-`ArcNonCrossingCapMain` — is the remaining CAP non-crossing residual; it feeds ONLY the cap case of the FC-1
-`preserves` obligation (`StringOrientationDiscipline` fold invariance).
+the same window end" combos.  As of FC-5 P2 it is CONSUMED — the 5-survivor + 4-census combo table (the string port of
+`ArcNonCrossingCapMain`) is SHIPPED as `stringNonCrossing_stepCap` in the sibling `StringCapNonCrossingJoin`, so
+`fxString_hasCapNonCrossingJoinBranch := true`.  That consumer feeds ONLY the cap case of the FC-1 `preserves`
+obligation (`StringOrientationDiscipline` fold invariance).
 
 It does NOT unlock the FC-1 `capPin` obligation.  `capPin` (a cap window reads its `generatorDom` cap word) is NOT a
 census consequence and NOT derivable from `StringOrientationDiscipline` alone: `orient` constrains SAME-component open
