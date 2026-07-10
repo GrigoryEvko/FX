@@ -39,7 +39,7 @@ witnesses the `isFalse` verdict transports too, not merely `isTrue`.
 ## KZ banked (the walking lax-idempotent monad is NOT cheap)
 
 The lock's deletion-target list flags `KZTwoCellLE` as "needs an oriented / preorder-valued base relation"
-(`DesignLock.lean` decision 1).  The generic `SaturatedConvOver` carrier is SYMMETRIC (it has `symm`); the walking
+(`TableArchitectureLock.lean` decision 1).  The generic `SaturatedConvOver` carrier is SYMMETRIC (it has `symm`); the walking
 KZ monad's `KZTwoCellLE` is a DIRECTED preorder (`t <| eta => eta |> t`, `WalkingKZ/KZMonadPresentation.lean`).
 A born-generic KZ migration would need the symmetric CLOSURE `kzEq` (via `KZMonadDecision.kzEq_iff_mapEq`) as the
 walker conv, and a proof that the symmetric closure's generic carrier agrees with the directed decision — genuine

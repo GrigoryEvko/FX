@@ -5,7 +5,7 @@ import FX1Poly.Polygraph.TwoCategory.Table.StrategyRegistry
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedDecisionGen
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeGen
 
-/-! # Polygraph/TwoCategory/Table/LedgerR1 — the POLY-TAB r1 honest ledger + aggregate verdict + the grown
+/-! # Polygraph/TwoCategory/Table/TableRetirementLedger — the POLY-TAB r1 honest ledger + aggregate verdict + the grown
 deletion list (still awaiting confirmation) + the POLY-TAB-2 plan (P4 + P5)
 
 The terminal marker of POLY-TAB r1 (migration wave 1 on the locked r0 table design, task #2228).  It aggregates
@@ -160,7 +160,7 @@ does NOT fire, gated on the SECOND conjunct + user sign-off:
 
 /-! ## P4 — the DELETION LIST, GROWN with per-file readiness states (nothing deleted; awaiting confirmation)
 
-The r0 `DesignLock.lean` recorded the deletion-target census.  r1 GROWS it with per-file READINESS states — a
+The r0 `TableArchitectureLock.lean` recorded the deletion-target census.  r1 GROWS it with per-file READINESS states — a
 declaration is `ready-for-confirmation` when it is MIGRATED-AND-BRIDGED (a shipped generic instance + an iff
 bridge transporting every downstream fact), and `not-ready` when it is CENSUS-ONLY (named but no bridge yet).
 This list stays a docstring AWAITING USER CONFIRMATION; nothing is deleted; the r1 git diff shows ZERO deletions.
@@ -260,7 +260,7 @@ hard node — build-only moves, ctor-for-ctor to `SaturatedConvOver`) SHIPPED, a
     `IdempotentMonadSaturatedTwoCellConv` runs through re-pointing `idempotentRelationFamily` /
     `idempotentWalker_iff_generic` born-generic, which VOIDS the migration facts those state (an iff INHERENTLY about
     the bespoke inductive; collapses to the involution's trivial `Iff.rfl`).  That is the same semantic-content
-    erosion r3 flagged (LedgerR1:146-150) and the recon reserved for explicit user sign-off ("decide WITH the user").
+    erosion r3 flagged (TableRetirementLedger:146-150) and the recon reserved for explicit user sign-off ("decide WITH the user").
     Per never-delete-without-confirm, r4 does NOT force it.  The exact deletion endgame awaiting the green-light:
     (1) relocate `IdempotentLawRel` to a bespoke-free home (imports `SaturatedOver` + the monad/idempotent Seed, not
     the bespoke conv lane); (2) retire the two iso inductions + `idempotentIsCongruence` +
@@ -369,7 +369,7 @@ born-generic like the idempotent/involution shape); and — ★ THE HARD BLOCKER
 `KZTwoCellLE.ofMonad : MonadSaturatedTwoCellConv a b → KZTwoCellLE a b` (`KZMonadPresentation`) is a genuine structural
 ctor consuming the monad conv BOTH ways (the directed-preorder antisymmetrization RECOVERS `MonadSaturatedTwoCellConv`),
 so KZ migration needs an ORIENTED / preorder-valued base relation the symmetric generic carrier does not provide
-(`fxTab_hasKZWalkerMigration = false`, LedgerR1:241-242).  Consequence: the r7 monad deletion cannot fire until BOTH
+(`fxTab_hasKZWalkerMigration = false`, TableRetirementLedger:241-242).  Consequence: the r7 monad deletion cannot fire until BOTH
 `monadNormalizeGen` (the completeness port) lands AND the KZ `ofMonad` ctor is re-pointed / given its own oriented base
 — the exact idempotent-r4 posture (deletion UNBLOCKED at the proof level only after the port, and separately GATED on
 KZ), reserved for explicit user sign-off per never-delete-without-confirm.

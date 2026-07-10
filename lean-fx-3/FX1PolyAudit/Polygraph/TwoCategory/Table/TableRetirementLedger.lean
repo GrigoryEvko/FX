@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.TwoCategory.Table.LedgerR1
+import FX1Poly.Polygraph.TwoCategory.Table.TableRetirementLedger
 
-/-! # FX1PolyAudit.Polygraph.TwoCategory.Table.LedgerR1 — zero-axiom gate for the POLY-TAB r1 aggregate verdict +
+/-! # FX1PolyAudit.Polygraph.TwoCategory.Table.TableRetirementLedger — zero-axiom gate for the POLY-TAB r1 aggregate verdict +
 grown deletion list + POLY-TAB-2 plan (POLY-TAB r1, P4 + P5).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/

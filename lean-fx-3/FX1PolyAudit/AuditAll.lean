@@ -979,7 +979,7 @@ import FX1PolyAudit.Polygraph.Omega.SteinerFoundation.ComputadLoopFree
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
-import FX1PolyAudit.Polygraph.TwoCategory.Table.DesignLock
+import FX1PolyAudit.Polygraph.TwoCategory.Table.TableArchitectureLock
 import FX1PolyAudit.Polygraph.TwoCategory.Table.Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.InvariantFoldInstances
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusReadback
@@ -990,7 +990,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusConnectivityInduction
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusResumeLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ThinWalkerMigration
 import FX1PolyAudit.Polygraph.TwoCategory.Table.StrategyRegistry
-import FX1PolyAudit.Polygraph.TwoCategory.Table.LedgerR1
+import FX1PolyAudit.Polygraph.TwoCategory.Table.TableRetirementLedger
 import FX1PolyAudit.Polygraph.Omega.CarrierAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceAudit
 import FX1PolyAudit.Polygraph.Omega.CarrierArchitectureLedgerAudit

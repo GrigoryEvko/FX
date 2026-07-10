@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.TwoCategory.Table.DesignLock
+import FX1Poly.Polygraph.TwoCategory.Table.TableArchitectureLock
 
 /-! # Polygraph/TwoCategory/Table/Ledger — the POLY-TAB r0 honest ledger + aggregate verdict (T5)
 
@@ -7,7 +7,7 @@ verdict and records, honestly, what SHIPPED, what the FALSIFIABILITY CHECK retur
 
 ## SHIPPED (green, zero-axiom, additive)
 
-  * **T2 design lock** (`Table/DesignLock.lean`): the five decisions (carrier reconciliation; contextual closure =
+  * **T2 design lock** (`Table/TableArchitectureLock.lean`): the five decisions (carrier reconciliation; contextual closure =
     relation-level operator, option ii; the invariant fold; the strategy registry with the `DecisionMechanism`
     tag; the falsifiability outcome), census totals, deletion-target list awaiting confirmation, new-walker
     playbook, four-wave plan.

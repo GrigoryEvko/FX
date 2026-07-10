@@ -277,7 +277,7 @@ def decideSaturatedConvOverMonadNative :
     DecidableSaturatedConvForRel monadModeSignature MonadLawRel :=
   monadSaturatedGenDecisionModulo monadSaturatedCanonicalizationGenNative
 
-/-! ## Regression: the native decider decides the lane pairs (native / interim / old continuity in Table/LedgerR1) -/
+/-! ## Regression: the native decider decides the lane pairs (native / interim / old continuity in Table/TableRetirementLedger) -/
 
 /-- The native decider decides the size-3 associativity pair `t.t.t ⇒ t` (both fold `[0,0,0]`) to `true`. -/
 def monadNativeDecidesTrue_assoc : Bool :=
@@ -305,7 +305,7 @@ theorem monadNativeDecidesFalse_faces_holds : monadNativeDecidesFalse_faces = fa
 decided `isFalse` (`monadNativeDecidesFalse_faces`) — by `rfl`.  (At r6 the interim generic decider
 `decideSaturatedConvOverMonadInterim` and the old bespoke decider `monadSaturatedTwoCellDecision` branched on the
 SAME `monadMonotoneMapOf` comparison and agreed on both pairs; that native / interim / old continuity — with the
-interim decider retired in MONAD-R7 r2 S5 — is recorded historically in `Table/LedgerR1`.) -/
+interim decider retired in MONAD-R7 r2 S5 — is recorded historically in `Table/TableRetirementLedger`.) -/
 def monadNativeAgreesOnRegression : Bool :=
   (monadNativeDecidesTrue_assoc == true) && (monadNativeDecidesFalse_faces == false)
 
@@ -330,7 +330,7 @@ terminal `decideSaturatedConvOverMonadNative`, decided BOTH ways born-generic.  
 constant-closure is free of `MonadSaturatedTwoCellConv` (the exhaustive `includeStdlib := true` meta-walk in the
 audit twin certifies it).  Decides both lane regression pairs correctly (`monadNativeAgreesOnRegression_holds` —
 the associativity pair `isTrue`, the separating faces pair `isFalse`); the historical native / interim / old
-verdict continuity is recorded in `Table/LedgerR1` (the r7-r2 section, the interim decider retired MONAD-R7 r2 S5).
+verdict continuity is recorded in `Table/TableRetirementLedger` (the r7-r2 section, the interim decider retired MONAD-R7 r2 S5).
 This is what `fxMonad_hasGenericNativeDecider` (`MonadSaturatedDecisionGen`) now flips to `true` on.  `= true`. -/
 def fxMonad_hasGenericNativeDeciderComplete : Bool := true
 

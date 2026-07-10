@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.Table.WalkerMigration
 
-/-! # Polygraph/TwoCategory/Table/DesignLock — the POLY-TAB architecture design lock (r0, T2)
+/-! # Polygraph/TwoCategory/Table/TableArchitectureLock — the POLY-TAB architecture design lock (r0, T2)
 
 The table-driven polygraph layer (task #2228, executing INT-SIG-ALIGN #2079).  The literature-anchored shape:
 **polygraph-as-value + ONE relation-level contextual-closure operator + ONE parameterized-invariant fold + ONE

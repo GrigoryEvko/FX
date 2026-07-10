@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.TwoCategory.Table.DesignLock
+import FX1Poly.Polygraph.TwoCategory.Table.TableArchitectureLock
 
-/-! # FX1PolyAudit.Polygraph.TwoCategory.Table.DesignLock — zero-axiom gate for the POLY-TAB design lock + the
+/-! # FX1PolyAudit.Polygraph.TwoCategory.Table.TableArchitectureLock — zero-axiom gate for the POLY-TAB design lock + the
 strategy-table mechanism tag (POLY-TAB r0, T2).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/

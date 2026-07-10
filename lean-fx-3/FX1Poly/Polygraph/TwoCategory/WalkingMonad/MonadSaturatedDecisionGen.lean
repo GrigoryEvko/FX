@@ -23,7 +23,7 @@ their old-vs-interim regression pairs (`monadGenDecidesTrue_assoc` / `monadGenDe
 imports `MonadWordProblem` directly for the conv-FREE `one_le_cellSize` fuel lemma it previously received
 transitively through this file).  The
 native / interim / old verdict continuity (all three fold the same `monadMonotoneMapOf` comparison — assoc `[0,0,0]`
-`isTrue`, separating faces `[1] ≠ [0]` `isFalse`) is now recorded HISTORICALLY in `Table/LedgerR1` (the r7-r2
+`isTrue`, separating faces `[1] ≠ [0]` `isFalse`) is now recorded HISTORICALLY in `Table/TableRetirementLedger` (the r7-r2
 section).  The two markers below survive as HISTORY (interim, retired) + LIVE (native, complete).
 
 Raw Lean 4 + Init; `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free.  Per-declaration
@@ -55,7 +55,7 @@ born-generic `monadMonotoneMapOf_mapEqOfConvGen`), yielding the terminal `decide
 `MonadSaturatedTwoCellConv` (the exhaustive `includeStdlib := true` meta-walk certifies it; 847 constants walked).
 It decides both lane regression pairs correctly (`monadNativeAgreesOnRegression_holds` — the associativity pair
 `isTrue`, the separating faces pair `isFalse`); the historical native / interim / old verdict continuity is recorded
-in `Table/LedgerR1` (the r7-r2 section).  `= true`. -/
+in `Table/TableRetirementLedger` (the r7-r2 section).  `= true`. -/
 def fxMonad_hasGenericNativeDecider : Bool := true
 
 end FX1Poly.Polygraph.Amalgam

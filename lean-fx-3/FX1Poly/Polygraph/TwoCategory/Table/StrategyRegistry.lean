@@ -1,10 +1,10 @@
-import FX1Poly.Polygraph.TwoCategory.Table.DesignLock
+import FX1Poly.Polygraph.TwoCategory.Table.TableArchitectureLock
 import FX1Poly.Polygraph.TwoCategory.Amalgam.EndgameDemo
 
 /-! # Polygraph/TwoCategory/Table/StrategyRegistry — the CERTIFIED strategy registry + one generic dispatch
 soundness theorem (POLY-TAB r1, P2)
 
-`Table/DesignLock.lean` (r0, decision 4) anchored the strategy table with the `DecisionMechanism` tag and DEFERRED
+`Table/TableArchitectureLock.lean` (r0, decision 4) anchored the strategy table with the `DecisionMechanism` tag and DEFERRED
 the dependent per-mechanism certificate.  This file ships the certified registry: entries pairing a fingerprint, a
 `DecisionMechanism` tag, a certified decider, and an admissibility certificate; ONE generic dispatch-soundness
 theorem; and the re-seat of the MODE-ADMIT row-aware registry ONTO it BY BRIDGE — the existing `admitByRowAware`
@@ -89,7 +89,7 @@ structure CertifiedStrategyEntry where
   name : String
   /-- The EXACT decidable registry key (mode count + generator renaming + reflected law rows). -/
   fingerprint : RowAwarePresentationData
-  /-- The decision mechanism tag (`Table/DesignLock.lean`): WHY the decider is sound. -/
+  /-- The decision mechanism tag (`Table/TableArchitectureLock.lean`): WHY the decider is sound. -/
   mechanism : DecisionMechanism
   /-- The decided family, carrying the certified decider AND the admissibility certificate. -/
   family : SaturatedRelationFamily

@@ -10,7 +10,7 @@ MONAD-R7 r2 (S5) RETIRED the INTERIM decider (`monadSaturatedCanonicalizationGen
 `decideSaturatedConvOverMonadInterim` + its `monadGenDecidesTrue_assoc` / `monadGenDecidesFalse_faces` /
 `monadGenAgreesOldOnRegression` regression witnesses), so their per-declaration `#assert_no_axioms` gates are gone
 with them; the interim milestone is now recorded historically (the `fxMonad_hasGenericNativeDeciderInterim` marker
-and `Table/LedgerR1`).  The fully bespoke-free native decider `decideSaturatedConvOverMonadNative` and its
+and `Table/TableRetirementLedger`).  The fully bespoke-free native decider `decideSaturatedConvOverMonadNative` and its
 completeness/soundness legs are gated in `WalkingMonad/MonadNormalizeGen`'s audit twin and the bespoke-free
 meta-walk `MonadBespokeFreeWalk`. -/
 
