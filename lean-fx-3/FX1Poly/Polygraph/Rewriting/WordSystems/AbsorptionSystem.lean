@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.TranspositionSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.TranspositionSystem
 
 /-! # FX1Poly/OmegacE/AbsorptionSystem
     — the first TWO-rule presentation with GENUINE inter-rule critical pairs

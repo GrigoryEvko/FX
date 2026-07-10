@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.OmegacE.TranspositionConfluence
-import FX1Poly.Polygraph.OmegacE.IdempotentReducer
+import FX1Poly.Polygraph.Rewriting.WordSystems.TranspositionConfluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentReducer
 
 /-!
 # Bounded-search decidability for the transposition word system

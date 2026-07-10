@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.WordProblem
+import FX1Poly.Polygraph.Rewriting.WordSystems.WordProblem
 
 /-! # FX1Poly/OmegacE/EmptySystem
     — the first CONCRETE convergent presentation: the empty (free-monoid) rule system

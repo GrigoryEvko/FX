@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.Confluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.Confluence
 
 /-! # FX1Poly/OmegacE/TranspositionSystem
     — the first CONCRETE LENGTH-PRESERVING presentation: the adjacent-transposition rule `[a,b] → [b,a]`

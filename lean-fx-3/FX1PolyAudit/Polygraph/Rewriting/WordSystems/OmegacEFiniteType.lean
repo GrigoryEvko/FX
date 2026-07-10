@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.OmegacEFiniteType
+import FX1Poly.Polygraph.Rewriting.WordSystems.OmegacEFiniteType
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.OmegacEFiniteType
 

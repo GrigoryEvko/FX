@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.EmptySystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.EmptySystem
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.EmptySystem
 

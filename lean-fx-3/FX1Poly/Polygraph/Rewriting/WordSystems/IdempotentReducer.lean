@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.OmegacE.IdempotentSystem
-import FX1Poly.Polygraph.OmegacE.ReducerNormalizer
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.ReducerNormalizer
 
 /-! # FX1Poly/OmegacE/IdempotentReducer
     — the searchable reducer + terminating normalizer for the idempotent system `[c,c] → [c]`

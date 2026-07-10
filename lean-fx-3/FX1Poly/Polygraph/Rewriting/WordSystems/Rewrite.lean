@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.Word
+import FX1Poly.Polygraph.Rewriting.WordSystems.Word
 
 /-! # FX1Poly/OmegacE/Rewrite
     — the dimension-2 word-rewriting relation: word equality MODULO a rule system (Makkai/Forest, Path B)

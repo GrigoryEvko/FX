@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.SortingSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.SortingSystem
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.SortingSystem
 

@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.Word
+import FX1Poly.Polygraph.Rewriting.WordSystems.Word
 
 /-! # FX1Poly/OmegacE/WordFreeMonoid
     — the dimension-1 free-monoid (one-object free-category) structure on ωcE scaffold words.

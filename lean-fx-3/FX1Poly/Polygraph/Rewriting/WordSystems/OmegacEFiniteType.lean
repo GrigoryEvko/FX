@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.OmegacEAt
+import FX1Poly.Polygraph.Rewriting.WordSystems.OmegacEAt
 
 /-! # FX1Poly/OmegacE/OmegacEFiniteType
     — the ωcE polygraph is a BINARY FINITE-TYPE family

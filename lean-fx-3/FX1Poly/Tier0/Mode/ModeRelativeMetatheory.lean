@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.Computad.WordProblem
-import FX1Poly.Polygraph.OmegacE.Word
+import FX1Poly.Polygraph.Rewriting.WordSystems.Word
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.BareConvDecisionReconciliation
 import FX1Poly.Tier0.Mode.Mode

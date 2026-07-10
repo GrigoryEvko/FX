@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.Omega.KernelDiamondReading
-import FX1Poly.Polygraph.OmegaCategory.FreeStrictOmega
+import FX1Poly.Polygraph.Rewriting.Coherence.FreeStrictOmega
 
 /-! # Polygraph/Omega/CertificateFunctor — the abstract certificate -> dim-3 cell functor
 (OMEGA-4 r2, B1)

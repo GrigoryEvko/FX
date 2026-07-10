@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
+import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
 /-! # Tier0/Term — the polygraphic resolution + 𝔽₂ polygraphic homology (term-5)
 

@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.Rewrite
+import FX1Poly.Polygraph.Rewriting.WordSystems.Rewrite
 
 /-! # FX1Poly/OmegacE/Confluence
     — confluence / Church-Rosser for word rewriting: the decidability enabler for the Makkai word problem

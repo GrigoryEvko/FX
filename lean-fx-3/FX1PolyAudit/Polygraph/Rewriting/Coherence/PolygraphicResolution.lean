@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegaCategory.PolygraphicResolution
+import FX1Poly.Polygraph.Rewriting.Coherence.PolygraphicResolution
 
 /-! # FX1PolyAudit/AuditPolygraphOmegaCategoryPolygraphicResolution — zero-axiom gate for term-5
 

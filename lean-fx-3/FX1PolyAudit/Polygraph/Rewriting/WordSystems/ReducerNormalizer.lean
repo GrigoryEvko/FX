@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.ReducerNormalizer
+import FX1Poly.Polygraph.Rewriting.WordSystems.ReducerNormalizer
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.ReducerNormalizer
 

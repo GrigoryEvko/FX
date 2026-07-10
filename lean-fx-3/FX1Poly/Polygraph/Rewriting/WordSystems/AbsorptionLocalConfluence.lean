@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.AbsorptionConfluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.AbsorptionConfluence
 
 /-! # FX1Poly/OmegacE/AbsorptionLocalConfluence
     — local + global confluence of the two-rule absorption system

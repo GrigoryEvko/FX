@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.OmegacE.AbsorptionLocalConfluence
-import FX1Poly.Polygraph.OmegacE.IdempotentReducer
+import FX1Poly.Polygraph.Rewriting.WordSystems.AbsorptionLocalConfluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentReducer
 
 /-! # FX1Poly/OmegacE/AbsorptionReducer
     — the absorption-system capstone: decidable word problem for the two-rule absorption system

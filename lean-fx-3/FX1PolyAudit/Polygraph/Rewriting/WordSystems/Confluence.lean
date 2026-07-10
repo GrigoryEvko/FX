@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.Confluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.Confluence
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.Confluence
 

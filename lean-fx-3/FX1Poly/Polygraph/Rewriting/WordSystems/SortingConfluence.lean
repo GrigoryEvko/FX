@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.OmegacE.SortingTermination
-import FX1Poly.Polygraph.OmegacE.IdempotentConfluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.SortingTermination
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentConfluence
 
 /-! # FX1Poly/OmegacE/SortingConfluence
     — the sorting/symmetric system's structural inversion + the BRAID critical-pair join

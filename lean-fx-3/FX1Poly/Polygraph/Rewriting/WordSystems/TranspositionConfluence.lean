@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.OmegacE.TranspositionSystem
-import FX1Poly.Polygraph.OmegacE.IdempotentConfluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.TranspositionSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentConfluence
 
 /-! # FX1Poly/OmegacE/TranspositionConfluence
     — the adjacent-transposition system is locally confluent (hence, with termination, CONFLUENT)

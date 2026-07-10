@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
+import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
 /-! # Tier0/Term — the marked / complicial structure of the term rewriting ω-category (term-18)
 

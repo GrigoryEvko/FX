@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.WordProblem
+import FX1Poly.Polygraph.Rewriting.WordSystems.WordProblem
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.WordProblem
 

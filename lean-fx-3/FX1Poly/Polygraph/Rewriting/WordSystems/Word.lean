@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.OmegacEAt
+import FX1Poly.Polygraph.Rewriting.WordSystems.OmegacEAt
 
 /-!
 # omega-cE Scaffold Words

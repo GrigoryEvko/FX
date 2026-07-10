@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.WordProblem
+import FX1Poly.Polygraph.Rewriting.WordSystems.WordProblem
 
 /-! # FX1Poly/OmegacE/ReducerNormalizer
     — a normalizer from termination + a searchable reducer; the full convergent-presentation decidability

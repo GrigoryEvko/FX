@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.TranspositionSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.TranspositionSystem
 
 /-! # FX1Poly/OmegacE/SortingSystem
     — the braid/symmetric system: the sorting / symmetric-group convergent presentation

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegaCategory.FreeStrictOmega
+import FX1Poly.Polygraph.Rewriting.Coherence.FreeStrictOmega
 
 /-! # FX1PolyAudit/AuditTier0TermFreeStrictOmega — zero-axiom gate for term-17 (free strict ω-cat + Gray)
 

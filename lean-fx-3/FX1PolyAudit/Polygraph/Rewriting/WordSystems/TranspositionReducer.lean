@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.TranspositionReducer
+import FX1Poly.Polygraph.Rewriting.WordSystems.TranspositionReducer
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.TranspositionReducer
 

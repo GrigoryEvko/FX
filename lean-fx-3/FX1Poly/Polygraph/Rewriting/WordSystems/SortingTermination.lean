@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.SortingSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.SortingSystem
 
 /-! # FX1Poly/OmegacE/SortingTermination
     — the inversion-count measure + TERMINATION for the sorting system

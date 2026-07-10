@@ -1,6 +1,6 @@
 import FX1Poly.Dimensions.Cohesion.CohesiveFocus
 import FX1Poly.ProfileFibration.ProfileMorphism
-import FX1Poly.Polygraph.OmegacE.OmegacEAt
+import FX1Poly.Polygraph.Rewriting.WordSystems.OmegacEAt
 import FX1Poly.Tier0.Type.Universe.UniverseConfig
 import FX1Poly.Tier0.Term.SSC.Backbone
 import FX1Poly.STC.Modalities

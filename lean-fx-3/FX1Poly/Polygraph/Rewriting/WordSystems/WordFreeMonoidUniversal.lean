@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.WordFreeMonoid
+import FX1Poly.Polygraph.Rewriting.WordSystems.WordFreeMonoid
 
 /-! # FX1Poly/OmegacE/WordFreeMonoidUniversal
     — the universal property of the dimension-1 free monoid on ωcE scaffold words.

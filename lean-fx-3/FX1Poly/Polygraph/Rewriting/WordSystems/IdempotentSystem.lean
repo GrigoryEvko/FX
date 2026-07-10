@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.Confluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.Confluence
 
 /-! # FX1Poly/OmegacE/IdempotentSystem
     — the first CONCRETE NON-EMPTY terminating presentation: the idempotent rule `[c,c] → [c]`

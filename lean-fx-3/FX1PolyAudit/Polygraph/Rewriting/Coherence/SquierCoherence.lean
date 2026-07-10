@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
+import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
 /-! # FX1PolyAudit/AuditTier0TermSquier — zero-axiom gate for term-4 (Squier coherence)
 

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.OmegacE.IdempotentSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentSystem
 
 /-! # FX1PolyAudit.Polygraph.OmegacE.IdempotentSystem
 

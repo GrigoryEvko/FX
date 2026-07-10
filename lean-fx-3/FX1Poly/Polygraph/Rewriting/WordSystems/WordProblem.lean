@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.Confluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.Confluence
 
 /-! # FX1Poly/OmegacE/WordProblem
     — the Makkai word problem DECIDED by a convergent presentation (Path B)

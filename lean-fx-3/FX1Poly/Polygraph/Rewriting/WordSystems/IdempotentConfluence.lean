@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.OmegacE.IdempotentReducer
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentReducer
 
 /-! # FX1Poly/OmegacE/IdempotentConfluence
     — the confluence layer for the idempotent system `[c,c] → [c]`: structural characterization of one-step

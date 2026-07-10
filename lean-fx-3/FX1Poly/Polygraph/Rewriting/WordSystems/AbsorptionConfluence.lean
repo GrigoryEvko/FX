@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.OmegacE.AbsorptionSystem
-import FX1Poly.Polygraph.OmegacE.IdempotentConfluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.AbsorptionSystem
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentConfluence
 
 /-! # FX1Poly/OmegacE/AbsorptionConfluence
     — structural inversion for the two-rule absorption system

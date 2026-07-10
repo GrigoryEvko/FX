@@ -1,5 +1,5 @@
-import FX1Poly.Polygraph.OmegacE.SortingConfluence
-import FX1Poly.Polygraph.OmegacE.IdempotentReducer
+import FX1Poly.Polygraph.Rewriting.WordSystems.SortingConfluence
+import FX1Poly.Polygraph.Rewriting.WordSystems.IdempotentReducer
 
 /-! # FX1Poly/OmegacE/SortingReducer
     — the bounded-search reducer + decidable word problem for the sorting/symmetric system
