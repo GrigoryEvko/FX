@@ -590,6 +590,63 @@ theorem readOffTopOrder_isPermutationOfRange_freshMixed :
           freshMixedProbeDiagram.partner)) :=
   ⟨by decide, by decide, by decide⟩
 
+/-! ## E2 roundtrip wired to the specific read-off orders (on the probe diagrams)
+
+Feeding the concrete read-off `IsPermutationOfRange` witnesses into the shipped conjugator roundtrip
+`permuteOfCrossingWord_permutationToCrossingWord` (`Brauer/WiringDescArcConjugator.lean`) shows the
+`permutationToCrossingWord` staircase genuinely REALIZES the specific extractor read-off orders — the E2 end-to-end
+wiring on the probe diagrams (the general wiring waits on the read-off counting identities). -/
+
+/-- ★ **E2 wired (adversarial-B, bottom).**  The conjugator staircase realizes the concrete bottom read-off order. -/
+theorem readOffBottomOrder_realizesRoundtrip_adversarialB :
+    permuteOfCrossingWord adversarialBDiagram.bottomCount
+        (permutationToCrossingWord adversarialBDiagram.bottomCount
+          (capArcFeet adversarialBDiagram.bottomCount adversarialBDiagram.partner
+            ++ throughStrandBottoms adversarialBDiagram.bottomCount adversarialBDiagram.partner))
+      = capArcFeet adversarialBDiagram.bottomCount adversarialBDiagram.partner
+        ++ throughStrandBottoms adversarialBDiagram.bottomCount adversarialBDiagram.partner :=
+  permuteOfCrossingWord_permutationToCrossingWord adversarialBDiagram.bottomCount _
+    readOffBottomOrder_isPermutationOfRange_adversarialB
+
+/-- ★ **E2 wired (adversarial-B, top).**  The conjugator staircase realizes the concrete top read-off order. -/
+theorem readOffTopOrder_realizesRoundtrip_adversarialB :
+    permuteOfCrossingWord adversarialBDiagram.topCount
+        (permutationToCrossingWord adversarialBDiagram.topCount
+          (permInverse (throughStrandTops adversarialBDiagram.bottomCount adversarialBDiagram.topCount
+              adversarialBDiagram.partner
+            ++ cupArcTops adversarialBDiagram.bottomCount adversarialBDiagram.topCount adversarialBDiagram.partner)))
+      = permInverse (throughStrandTops adversarialBDiagram.bottomCount adversarialBDiagram.topCount
+          adversarialBDiagram.partner
+        ++ cupArcTops adversarialBDiagram.bottomCount adversarialBDiagram.topCount adversarialBDiagram.partner) :=
+  permuteOfCrossingWord_permutationToCrossingWord adversarialBDiagram.topCount _
+    readOffTopOrder_isPermutationOfRange_adversarialB
+
+/-- ★ **E2 wired (fresh mixed, bottom).**  The conjugator staircase realizes the concrete bottom read-off order. -/
+theorem readOffBottomOrder_realizesRoundtrip_freshMixed :
+    permuteOfCrossingWord freshMixedProbeDiagram.bottomCount
+        (permutationToCrossingWord freshMixedProbeDiagram.bottomCount
+          (capArcFeet freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.partner
+            ++ throughStrandBottoms freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.partner))
+      = capArcFeet freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.partner
+        ++ throughStrandBottoms freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.partner :=
+  permuteOfCrossingWord_permutationToCrossingWord freshMixedProbeDiagram.bottomCount _
+    readOffBottomOrder_isPermutationOfRange_freshMixed
+
+/-- ★ **E2 wired (fresh mixed, top).**  The conjugator staircase realizes the concrete top read-off order. -/
+theorem readOffTopOrder_realizesRoundtrip_freshMixed :
+    permuteOfCrossingWord freshMixedProbeDiagram.topCount
+        (permutationToCrossingWord freshMixedProbeDiagram.topCount
+          (permInverse (throughStrandTops freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.topCount
+              freshMixedProbeDiagram.partner
+            ++ cupArcTops freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.topCount
+              freshMixedProbeDiagram.partner)))
+      = permInverse (throughStrandTops freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.topCount
+          freshMixedProbeDiagram.partner
+        ++ cupArcTops freshMixedProbeDiagram.bottomCount freshMixedProbeDiagram.topCount
+          freshMixedProbeDiagram.partner) :=
+  permuteOfCrossingWord_permutationToCrossingWord freshMixedProbeDiagram.topCount _
+    readOffTopOrder_isPermutationOfRange_freshMixed
+
 /-! ## Honesty markers -/
 
 /-- ★★ **Honesty marker — `permInverse` preserves the range-permutation gate (r15 T-CLOSE opening).**  The finite
@@ -624,6 +681,15 @@ proven genuine range-permutations on the adversarial-B diagram
 is KNOWN TRUE, not conjectured — the residual is the general PROOF (a `filterMap` classification counting induction),
 not the truth.  `= true`. -/
 def fxBrauer_hasReadOffOrderPermutationProbe : Bool := true
+
+/-- ★★ **Honesty marker — the E2 roundtrip is WIRED to the specific read-off orders (r15, on the probe diagrams).**
+`permuteOfCrossingWord_permutationToCrossingWord` applied to the concrete read-off `IsPermutationOfRange` witnesses
+shows the `permutationToCrossingWord` staircase realizes EXACTLY the bottom / top read-off orders on the
+adversarial-B and fresh-mixed diagrams (`readOffBottomOrder_realizesRoundtrip_adversarialB` /
+`readOffTopOrder_realizesRoundtrip_adversarialB` and the fresh-mixed pair) — E2 end-to-end on the specific `d`, at
+the probe granularity.  The general wiring (all `d` under the gate) waits on the read-off counting identities.
+`= true`. -/
+def fxBrauer_hasReadOffRoundtripWiredProbe : Bool := true
 
 /-- ★★★ **The BRAUER-MIDDLE r15 LEDGER — MACHINE-CHECKED (T-CLOSE opening landed).**  Extends the r14 grand ledger
 with the `permInverse` gate-preservation flip `fxBrauer_hasPermInverseRangePreservation = true` (justified by the

@@ -36,10 +36,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_isPermutationOfRange_freshMixed
 #assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_isPermutationOfRange_freshMixed
 
+-- the E2 roundtrip wired to the specific read-off orders (probe granularity)
+#assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_realizesRoundtrip_adversarialB
+#assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_realizesRoundtrip_adversarialB
+#assert_no_axioms FX1Poly.Polygraph.readOffBottomOrder_realizesRoundtrip_freshMixed
+#assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_realizesRoundtrip_freshMixed
+
 -- the honesty markers + ledger
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasPermInverseRangePreservation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffOrderPermutation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffOrderPermutationProbe
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffRoundtripWiredProbe
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_r15Ledger
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR15Complete
 
