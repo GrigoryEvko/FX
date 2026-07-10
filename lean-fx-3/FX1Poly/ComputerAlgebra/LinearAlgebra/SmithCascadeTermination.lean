@@ -1790,4 +1790,266 @@ theorem intNegNatAbs : ∀ value : Int, (-value).natAbs = value.natAbs
   | .ofNat magnitude => intNegOfNatNatAbs magnitude
   | .negSucc _ => rfl
 
+/-! ## The fuel-adequacy induction (H2-SMITH r10, B2) — `smithCascadeReachesCrossClear`
+
+The cascade recursion moves the min-abs entry to the pivot, sign-normalises it, clears the cross, and
+LOOPS if the cross is not yet zero.  The measure is the moved pivot's magnitude
+`(matrix.entryAt foundRow foundCol).natAbs`, read at cascade entry and bounded by the STATIC fuel; each
+loop iteration re-searches a strictly smaller minor (the parked cross residues land strictly below the
+old pivot).  This section ships the strong (structural) induction on the inner fuel that, seeded with
+`measure ≤ fuel`, reaches a cross-clear state.
+
+The pivot-magnitude PACKAGING (`smithSignNormalizeOpsPreservesPivotMagnitude`) and the sweep
+succ-unfolding equation (`smithCascadeSweepSucc`) are the two glue atoms; the induction body dispatches
+the shipped `smithCrossNotClearWitness` into the two strict-descent lemmas
+(`smithClear{RowRight,ColumnBelow}StepsCrossEntryStrictlyDecreases`, threading the pivot-column locality
+`smithClearRowRightStepsPreservesColumn` for the column segment) and bounds the next measure through
+`smithFindMinAbsInMinorBoundsWitness`.  Every joint is a NAMED shipped lemma; the whole family is
+function-correctness about the definite cascade word on ONE threaded matrix, refutation-immune.
+
+**Scope caveat (honest, DESIGN-LOCKED):** `smithCascadeReachesCrossClear` delivers ONLY the cross-clear
+conjunct of obligation (a).  The sub-block-stays-diagonal + gcd-divides-folded-operands + chain
+conjuncts feeding `SmithNormalForm`'s `repairWindowDiagHolds` / `repairChainHolds` remain the r10+ wall
+— those two surviving repair hypotheses stay UNCLOSED, `SmithReduceFullDriverStatement` uninhabited (no
+flip). -/
+
+/-- **The per-pivot sign word preserves the pivot magnitude** — `|afterSign pivot| = |afterMove pivot|`:
+the sign word either leaves the pivot untouched (`signNormalizeOpsEntryOnPivotIsSignedInput` left arm,
+`natAbs` unchanged) or negates it (right arm, `intNegNatAbs` strips the flip).  The magnitude bridge the
+cascade recursion rides to carry the moved pivot's magnitude through the sign phase. -/
+theorem smithSignNormalizeOpsPreservesPivotMagnitude (matrix : IntMatrix) (pivotIndex : Nat)
+    (isInRange : pivotIndex < matrix.rows.length) :
+    ((matrix.applyOperations (smithSignNormalizeOps matrix pivotIndex)).entryAt
+        pivotIndex pivotIndex).natAbs
+      = (matrix.entryAt pivotIndex pivotIndex).natAbs :=
+  match signNormalizeOpsEntryOnPivotIsSignedInput matrix pivotIndex isInRange with
+  | Or.inl unchanged => congrArg Int.natAbs unchanged
+  | Or.inr negated =>
+      (congrArg Int.natAbs negated).trans (intNegNatAbs (matrix.entryAt pivotIndex pivotIndex))
+
+/-- **`smithCascadeSweep` at successor fuel unfolds to its match body** — the definitional unfolding of
+the structural recursion at `innerFuel + 1`, exposed as a rewrite target (`rfl`).  Lets the fuel-adequacy
+induction reduce the sweep by rewriting the search result (`hFind`) and the cross-clear branch. -/
+theorem smithCascadeSweepSucc (innerFuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat) :
+    smithCascadeSweep (innerFuel + 1) matrix pivotIndex height width
+      = (match smithFindMinAbsInMinor matrix pivotIndex height width with
+         | none => []
+         | some (foundRow, foundCol) =>
+             let moveOps := smithMoveToPivotOps pivotIndex foundRow foundCol
+             let afterMove := matrix.applyOperations moveOps
+             let signOps := smithSignNormalizeOps afterMove pivotIndex
+             let afterSign := afterMove.applyOperations signOps
+             let columnClearOps :=
+               (smithClearColumnBelowSteps afterSign pivotIndex (height - (pivotIndex + 1))
+                   (pivotIndex + 1)).map ElementaryOperation.rowOperation
+             let afterColumnClear := afterSign.applyOperations columnClearOps
+             let rowClearOps :=
+               (smithClearRowRightSteps afterColumnClear pivotIndex (width - (pivotIndex + 1))
+                   (pivotIndex + 1)).map ElementaryOperation.columnOperation
+             let afterRowClear := afterColumnClear.applyOperations rowClearOps
+             let settledOps := moveOps ++ signOps ++ columnClearOps ++ rowClearOps
+             match smithCrossIsClear afterRowClear pivotIndex height width with
+             | true => settledOps
+             | false =>
+                 settledOps ++ smithCascadeSweep innerFuel afterRowClear pivotIndex height width) :=
+  rfl
+
+/-- **The cascade reaches a cross-clear state within its fuel** — for a rectangular matrix with the
+pivot in range, if the fuel bounds the moved pivot's magnitude (`measure ≤ fuel`, seeded at cascade
+entry by `smithMinorEntryLeAbsSum`), then after `smithCascadeSweep fuel` the pivot's cross is clear.
+Strong (structural) induction on the inner `fuel`.
+
+  * **Base (`fuel = 0`)**: the sweep is empty; the search must be `none` (a `some` would carry a
+    nonzero magnitude `≤ 0`, impossible by `smithFindMinAbsInMinorFoundNonzero`), so
+    `smithCrossIsClearOfFindNone` closes.
+  * **Step, `none`**: same — the empty sweep leaves the already-clear cross.
+  * **Step, `some (foundRow, foundCol)`, cross already clear after the settle**: the settle word applied
+    lands `afterRowClear`, whose cross-clear flag is the taken branch.
+  * **Step, `some`, cross NOT clear**: the sweep loops on `afterRowClear` with fuel `fuel`; the IH
+    closes, once the fuel bound descends.  The descent: the moved+sign-normalised pivot has magnitude
+    `= (matrix.entryAt foundRow foundCol).natAbs ≤ fuel + 1` (the packaging bridges), positive and
+    nonnegative; `smithCrossNotClearWitness` exhibits a nonzero cross residue whose magnitude is
+    STRICTLY below that pivot (the two strict-descent lemmas, the column segment carried through the
+    row clear by `smithClearRowRightStepsPreservesColumn`), and `smithFindMinAbsInMinorBoundsWitness`
+    bounds the next search result by that residue — strictly below `fuel + 1`, hence `≤ fuel`. -/
+theorem smithCascadeReachesCrossClear :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width →
+      (∀ foundRow foundCol,
+        smithFindMinAbsInMinor matrix pivotIndex height width = some (foundRow, foundCol) →
+        (matrix.entryAt foundRow foundCol).natAbs ≤ fuel) →
+      smithCrossIsClear
+          (matrix.applyOperations (smithCascadeSweep fuel matrix pivotIndex height width))
+          pivotIndex height width = true := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width _ pivotRowInRange pivotColInRange fuelBound
+      show smithCrossIsClear matrix pivotIndex height width = true
+      cases hFind : smithFindMinAbsInMinor matrix pivotIndex height width with
+      | none =>
+          exact smithCrossIsClearOfFindNone matrix pivotIndex height width pivotRowInRange
+            pivotColInRange hFind
+      | some pair =>
+          obtain ⟨foundRow, foundCol⟩ := pair
+          exact absurd
+            (Nat.le_antisymm (fuelBound foundRow foundCol hFind) (Nat.zero_le _))
+            (smithFindMinAbsInMinorFoundNonzero matrix pivotIndex height width foundRow foundCol hFind)
+  | succ fuel ih =>
+      intro matrix pivotIndex height width isRect pivotRowInRange pivotColInRange fuelBound
+      cases hFind : smithFindMinAbsInMinor matrix pivotIndex height width with
+      | none =>
+          rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          exact smithCrossIsClearOfFindNone matrix pivotIndex height width pivotRowInRange
+            pivotColInRange hFind
+      | some pair =>
+          obtain ⟨foundRow, foundCol⟩ := pair
+          let moveOps := smithMoveToPivotOps pivotIndex foundRow foundCol
+          let afterMove := matrix.applyOperations moveOps
+          let signOps := smithSignNormalizeOps afterMove pivotIndex
+          let afterSign := afterMove.applyOperations signOps
+          let columnClearOps :=
+            (smithClearColumnBelowSteps afterSign pivotIndex (height - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.rowOperation
+          let afterColumnClear := afterSign.applyOperations columnClearOps
+          let rowClearOps :=
+            (smithClearRowRightSteps afterColumnClear pivotIndex (width - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.columnOperation
+          let afterRowClear := afterColumnClear.applyOperations rowClearOps
+          let settledOps := moveOps ++ signOps ++ columnClearOps ++ rowClearOps
+          have afterMoveRect : afterMove.IsRectangular height width :=
+            applyOperationsPreservesRectangular moveOps matrix isRect
+          have afterSignRect : afterSign.IsRectangular height width :=
+            applyOperationsPreservesRectangular signOps afterMove afterMoveRect
+          have afterColumnClearRect : afterColumnClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular columnClearOps afterSign afterSignRect
+          have afterRowClearRect : afterRowClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular rowClearOps afterColumnClear afterColumnClearRect
+          have afterMoveInRows : pivotIndex < afterMove.rows.length :=
+            Eq.mp (congrArg (pivotIndex < ·) afterMoveRect.1.symm) pivotRowInRange
+          have foundInRange := smithFindMinAbsInMinorFoundInRange matrix pivotIndex height width
+            foundRow foundCol pivotRowInRange pivotColInRange hFind
+          have foundNonzero : (matrix.entryAt foundRow foundCol).natAbs ≠ 0 :=
+            smithFindMinAbsInMinorFoundNonzero matrix pivotIndex height width foundRow foundCol hFind
+          have pivotPositive : 0 < (matrix.entryAt foundRow foundCol).natAbs :=
+            match Nat.eq_zero_or_pos (matrix.entryAt foundRow foundCol).natAbs with
+            | Or.inl isZero => absurd isZero foundNonzero
+            | Or.inr isPositive => isPositive
+          have pivotMagLe : (matrix.entryAt foundRow foundCol).natAbs ≤ fuel + 1 :=
+            fuelBound foundRow foundCol hFind
+          have moveEntry : afterMove.entryAt pivotIndex pivotIndex = matrix.entryAt foundRow foundCol :=
+            smithMoveToPivotEntryOnPivot matrix isRect pivotIndex foundRow foundCol pivotRowInRange
+              foundInRange.2.1 pivotColInRange foundInRange.2.2.2
+          have signMagFound :
+              (afterSign.entryAt pivotIndex pivotIndex).natAbs = (matrix.entryAt foundRow foundCol).natAbs :=
+            (smithSignNormalizeOpsPreservesPivotMagnitude afterMove pivotIndex afterMoveInRows).trans
+              (congrArg Int.natAbs moveEntry)
+          have signNonneg : 0 ≤ afterSign.entryAt pivotIndex pivotIndex :=
+            signNormalizeOpsEntryOnPivotNonneg afterMove pivotIndex afterMoveInRows
+          have colClearPreservesPivot :
+              afterColumnClear.entryAt pivotIndex pivotIndex = afterSign.entryAt pivotIndex pivotIndex :=
+            smithClearColumnBelowStepsPreservesRow afterSign pivotIndex pivotIndex pivotIndex
+              (height - (pivotIndex + 1)) (pivotIndex + 1) afterSign (Nat.lt_succ_self pivotIndex)
+          have colClearPivotMag :
+              (afterColumnClear.entryAt pivotIndex pivotIndex).natAbs = (matrix.entryAt foundRow foundCol).natAbs :=
+            (congrArg Int.natAbs colClearPreservesPivot).trans signMagFound
+          have colClearPivotNonneg : 0 ≤ afterColumnClear.entryAt pivotIndex pivotIndex :=
+            Eq.mp (congrArg (0 ≤ ·) colClearPreservesPivot.symm) signNonneg
+          have hApplySettled : matrix.applyOperations settledOps = afterRowClear :=
+            (applyOperationsAppend (moveOps ++ signOps ++ columnClearOps) rowClearOps matrix).trans
+              (congrArg (fun reducedMatrix => reducedMatrix.applyOperations rowClearOps)
+                ((applyOperationsAppend (moveOps ++ signOps) columnClearOps matrix).trans
+                  (congrArg (fun reducedMatrix => reducedMatrix.applyOperations columnClearOps)
+                    (applyOperationsAppend moveOps signOps matrix))))
+          have hSweep : smithCascadeSweep (fuel + 1) matrix pivotIndex height width
+              = (match smithCrossIsClear afterRowClear pivotIndex height width with
+                 | true => settledOps
+                 | false => settledOps ++ smithCascadeSweep fuel afterRowClear pivotIndex height width) := by
+            rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          rw [hSweep]
+          cases hCross : smithCrossIsClear afterRowClear pivotIndex height width with
+          | true =>
+              rw [hApplySettled]
+              exact hCross
+          | false =>
+              rw [applyOperationsAppend, hApplySettled]
+              refine ih afterRowClear pivotIndex height width afterRowClearRect pivotRowInRange
+                pivotColInRange ?_
+              intro nextRow nextCol hFind'
+              have boundFromWitness : ∀ witnessRow witnessCol,
+                  pivotIndex ≤ witnessRow → witnessRow < pivotIndex + (height - pivotIndex) →
+                  pivotIndex ≤ witnessCol → witnessCol < pivotIndex + (width - pivotIndex) →
+                  (afterRowClear.entryAt witnessRow witnessCol).natAbs ≠ 0 →
+                  (afterRowClear.entryAt witnessRow witnessCol).natAbs
+                    < (matrix.entryAt foundRow foundCol).natAbs →
+                  (afterRowClear.entryAt nextRow nextCol).natAbs ≤ fuel := by
+                intro witnessRow witnessCol wRGe wRLt wCGe wCLt witNonzero witLtPivot
+                match smithFindMinAbsInMinorBoundsWitness afterRowClear pivotIndex height width
+                    witnessRow witnessCol wRGe wRLt wCGe wCLt witNonzero with
+                | ⟨boundRow, boundCol, boundFindEq, boundLe⟩ =>
+                    have someEq : some (boundRow, boundCol) = some (nextRow, nextCol) :=
+                      boundFindEq.symm.trans hFind'
+                    injection someEq with pairEq
+                    injection pairEq with rowEq colEq
+                    subst rowEq
+                    subst colEq
+                    exact Nat.le_trans boundLe
+                      (Nat.le_of_lt_succ (Nat.lt_of_lt_of_le witLtPivot pivotMagLe))
+              cases smithCrossNotClearWitness afterRowClear pivotIndex height width hCross with
+              | inl rowWitness =>
+                  obtain ⟨col, colGe, colLt, colNonzero⟩ := rowWitness
+                  have colLtWidth : col < width :=
+                    Eq.mp (congrArg (col < ·)
+                      (smithNatAddSubOfLe (pivotIndex + 1) width pivotColInRange)) colLt
+                  have colClearPivotPositive : 0 < (afterColumnClear.entryAt pivotIndex pivotIndex).natAbs :=
+                    Nat.lt_of_lt_of_le pivotPositive (Nat.le_of_eq colClearPivotMag.symm)
+                  have rowStrict :
+                      (afterRowClear.entryAt pivotIndex col).natAbs
+                        < (afterColumnClear.entryAt pivotIndex pivotIndex).natAbs :=
+                    smithClearRowRightStepsCrossEntryStrictlyDecreases afterColumnClear
+                      afterColumnClearRect pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) col
+                      (Nat.lt_succ_self pivotIndex) colGe colLt pivotRowInRange pivotColInRange
+                      (Nat.le_of_eq (smithNatAddSubOfLe (pivotIndex + 1) width pivotColInRange))
+                      colClearPivotNonneg colClearPivotPositive
+                  have witLtPivot :
+                      (afterRowClear.entryAt pivotIndex col).natAbs
+                        < (matrix.entryAt foundRow foundCol).natAbs :=
+                    Nat.lt_of_lt_of_le rowStrict (Nat.le_of_eq colClearPivotMag)
+                  exact boundFromWitness pivotIndex col (Nat.le_refl pivotIndex)
+                    (natLtAddSubOfLt pivotIndex pivotIndex height (Nat.le_refl pivotIndex) pivotRowInRange)
+                    (Nat.le_of_succ_le colGe)
+                    (natLtAddSubOfLt pivotIndex col width (Nat.le_of_succ_le colGe) colLtWidth)
+                    colNonzero witLtPivot
+              | inr colWitness =>
+                  obtain ⟨row, rowGe, rowLt, rowNonzero⟩ := colWitness
+                  have rowLtHeight : row < height :=
+                    Eq.mp (congrArg (row < ·)
+                      (smithNatAddSubOfLe (pivotIndex + 1) height pivotRowInRange)) rowLt
+                  have signPositive : 0 < (afterSign.entryAt pivotIndex pivotIndex).natAbs :=
+                    Nat.lt_of_lt_of_le pivotPositive (Nat.le_of_eq signMagFound.symm)
+                  have rowClearPreservesCol :
+                      afterRowClear.entryAt row pivotIndex = afterColumnClear.entryAt row pivotIndex :=
+                    smithClearRowRightStepsPreservesColumn afterColumnClear pivotIndex height width
+                      row pivotIndex rowLtHeight (width - (pivotIndex + 1)) (pivotIndex + 1)
+                      afterColumnClear afterColumnClearRect (Nat.lt_succ_self pivotIndex)
+                  have colStrict :
+                      (afterColumnClear.entryAt row pivotIndex).natAbs
+                        < (afterSign.entryAt pivotIndex pivotIndex).natAbs :=
+                    smithClearColumnBelowStepsCrossEntryStrictlyDecreases afterSign afterSignRect
+                      pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1) row
+                      (Nat.lt_succ_self pivotIndex) rowGe rowLt pivotRowInRange pivotColInRange
+                      (Nat.le_of_eq (smithNatAddSubOfLe (pivotIndex + 1) height pivotRowInRange))
+                      signNonneg signPositive
+                  have witLtPivot :
+                      (afterRowClear.entryAt row pivotIndex).natAbs
+                        < (matrix.entryAt foundRow foundCol).natAbs :=
+                    Nat.lt_of_le_of_lt (Nat.le_of_eq (congrArg Int.natAbs rowClearPreservesCol))
+                      (Nat.lt_of_lt_of_le colStrict (Nat.le_of_eq signMagFound))
+                  exact boundFromWitness row pivotIndex (Nat.le_of_succ_le rowGe)
+                    (natLtAddSubOfLt pivotIndex row height (Nat.le_of_succ_le rowGe) rowLtHeight)
+                    (Nat.le_refl pivotIndex)
+                    (natLtAddSubOfLt pivotIndex pivotIndex width (Nat.le_refl pivotIndex) pivotColInRange)
+                    rowNonzero witLtPivot
+
 end FX1Poly.ComputerAlgebra

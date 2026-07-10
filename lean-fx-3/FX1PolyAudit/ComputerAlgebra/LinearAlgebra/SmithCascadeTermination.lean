@@ -77,4 +77,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithFindMinAbsInMinorFoundInRange
 #assert_no_axioms FX1Poly.ComputerAlgebra.intNegNatAbs
 
+/- H2-SMITH r10 — the fuel-adequacy induction (B2): the pivot-magnitude packaging, the sweep
+   succ-unfolding equation, and the cross-clear-within-fuel reachability theorem itself. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSignNormalizeOpsPreservesPivotMagnitude
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeReachesCrossClear
+
 end FX1PolyAudit
