@@ -1012,6 +1012,8 @@ import FX1PolyAudit.Polygraph.Omega.InvolutionSquierBasisAudit
 import FX1PolyAudit.Polygraph.Omega.DesignLockOmega4R2Audit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
+-- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
+import FX1PolyAudit.Polygraph.Omega.Graded.GradedAppAnchorAudit
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
