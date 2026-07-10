@@ -239,6 +239,164 @@ def smithReduceSweep : Nat → IntMatrix → Nat → Nat → Nat → List Elemen
 def smithReduce (matrix : IntMatrix) (height width : Nat) : SmithReductionCertificate :=
   { operations := smithReduceSweep (Nat.min height width) matrix 0 height width }
 
+/-! ## The total driver (H2-SMITH r3, B1) — search + sign + Euclid cascade wired
+
+The r1 `smithReduce` clears a pivot's cross by ONE magnitude-quotient transvection, so it stalls
+whenever the pivot does not already divide a cross entry (`[[6, 4], [0, 0]]`: `6 ∤ 4`, coefficient
+`0`, the `4` survives).  `smithReduceTotal` ADDS the three missing passes AROUND the reused r1 clear
+helpers, keeping `smithReduce` byte-identical (the two driver-riding defeq theorems
+`smithReducedUpperTriangular` / `smithReducedDenseTwo` stay green):
+
+  * **Search** (`smithFindMinAbsInMinor`): the minimal-magnitude nonzero entry of the pivot minor —
+    the Euclidean pivot choice (reducing a larger entry by a smaller one is what makes the quotient
+    nonzero).
+  * **Move + sign** (`smithMoveToPivotOps` / `smithSignNormalizeOps`): swap that entry to the pivot
+    slot, then `negateRow` a negative pivot so the exact clear (whose divisor is `pivot.natAbs`)
+    always sees a nonnegative pivot.
+  * **Euclid cascade** (`smithCascadeSweep`, structural on `innerFuel`): move-sign-clear, then if the
+    cross is not yet zero, LOOP — the freshly parked remainders are strictly smaller than the pivot,
+    so the next minimal-magnitude search finds a strictly smaller pivot; the rotation count is
+    bounded by the pivot magnitude, over-approximated by the whole-minor magnitude sum
+    (`smithMinorAbsSum`) as the structural fuel.
+
+STRUCTURAL fuel throughout (no `WellFounded.fix`); the decision branches (`Nat`/`Int` `<`/`==`, the
+`if`/`match` on `Bool`) are all axiom-free `Decidable` instances.  Correctness is the untrusted
+producer's — CHECKED per input by the r1-battery `#eval` regression (every r1 hand-word certificate
+input now reduces BY THE DRIVER to the same Smith normal form).  The whole-minor
+divisibility-repair phase that would force the full invariant-factor chain `d_p | d_{p+1}` on
+arbitrary inputs is the honest r4 residual (see the totality footer). -/
+
+/-- Scan `colCount` entries of row `rowIndex` from `colStart`, keeping the running minimal-magnitude
+nonzero position (`best`).  Structural on the column count. -/
+def smithScanRowMinAbs (matrix : IntMatrix) (rowIndex : Nat) :
+    Nat → Nat → Option (Nat × Nat) → Option (Nat × Nat)
+  | 0, _, best => best
+  | colCount + 1, colStart, best =>
+      let entry := matrix.entryAt rowIndex colStart
+      let updatedBest :=
+        match best with
+        | none => if entry.natAbs == 0 then none else some (rowIndex, colStart)
+        | some (bestRow, bestCol) =>
+            if entry.natAbs == 0 then some (bestRow, bestCol)
+            else if entry.natAbs < (matrix.entryAt bestRow bestCol).natAbs then
+              some (rowIndex, colStart)
+            else some (bestRow, bestCol)
+      smithScanRowMinAbs matrix rowIndex colCount (colStart + 1) updatedBest
+
+/-- Scan `rowCount` rows from `rowStart`, each over `colCount` columns from `colStart`, folding the
+minimal-magnitude nonzero position.  Structural on the row count. -/
+def smithScanMinorMinAbs (matrix : IntMatrix) (colStart colCount : Nat) :
+    Nat → Nat → Option (Nat × Nat) → Option (Nat × Nat)
+  | 0, _, best => best
+  | rowCount + 1, rowStart, best =>
+      smithScanMinorMinAbs matrix colStart colCount rowCount (rowStart + 1)
+        (smithScanRowMinAbs matrix rowStart colCount colStart best)
+
+/-- The minimal-magnitude nonzero position of the pivot minor (rows/cols `≥ pivotIndex`), or `none`
+when the minor is all zero — the Euclidean pivot search. -/
+def smithFindMinAbsInMinor (matrix : IntMatrix) (pivotIndex height width : Nat) :
+    Option (Nat × Nat) :=
+  smithScanMinorMinAbs matrix pivotIndex (width - pivotIndex)
+    (height - pivotIndex) pivotIndex none
+
+/-- Bring the found entry to the pivot slot: swap its row and its column into `pivotIndex` (both
+swaps are identities when the found index already equals the pivot). -/
+def smithMoveToPivotOps (pivotIndex foundRow foundCol : Nat) : List ElementaryOperation :=
+  [ ElementaryOperation.rowOperation (ElementaryRowOperation.swapRows pivotIndex foundRow)
+  , ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns pivotIndex foundCol) ]
+
+/-- Normalise the pivot's sign: `negateRow` the pivot row when the pivot entry is negative, so the
+exact clear (divisor `pivot.natAbs`) sees a nonnegative pivot; the empty word otherwise. -/
+def smithSignNormalizeOps (matrix : IntMatrix) (pivotIndex : Nat) : List ElementaryOperation :=
+  if matrix.entryAt pivotIndex pivotIndex < 0 then
+    [ ElementaryOperation.rowOperation (ElementaryRowOperation.negateRow pivotIndex) ]
+  else []
+
+/-- Are all `colCount` entries of row `rowIndex` from `colStart` zero?  Structural on the count. -/
+def smithRowSegmentAllZero (matrix : IntMatrix) (rowIndex : Nat) : Nat → Nat → Bool
+  | 0, _ => true
+  | colCount + 1, colStart =>
+      (matrix.entryAt rowIndex colStart).natAbs == 0 &&
+        smithRowSegmentAllZero matrix rowIndex colCount (colStart + 1)
+
+/-- Are all `rowCount` entries of column `colIndex` from `rowStart` zero?  Structural on the count. -/
+def smithColSegmentAllZero (matrix : IntMatrix) (colIndex : Nat) : Nat → Nat → Bool
+  | 0, _ => true
+  | rowCount + 1, rowStart =>
+      (matrix.entryAt rowStart colIndex).natAbs == 0 &&
+        smithColSegmentAllZero matrix colIndex rowCount (rowStart + 1)
+
+/-- Is the pivot's cross cleared — every entry of row `pivotIndex` right of the pivot and every entry
+of column `pivotIndex` below the pivot is zero?  The cascade's loop-termination flag. -/
+def smithCrossIsClear (matrix : IntMatrix) (pivotIndex height width : Nat) : Bool :=
+  smithRowSegmentAllZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) &&
+    smithColSegmentAllZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1)
+
+/-- Sum the magnitudes of `colCount` entries of row `rowIndex` from `colStart`. -/
+def smithRowAbsSum (matrix : IntMatrix) (rowIndex : Nat) : Nat → Nat → Nat
+  | 0, _ => 0
+  | colCount + 1, colStart =>
+      (matrix.entryAt rowIndex colStart).natAbs + smithRowAbsSum matrix rowIndex colCount (colStart + 1)
+
+/-- Sum the magnitudes over `rowCount` rows from `rowStart`, each `colCount` columns from `colStart`. -/
+def smithMinorAbsSumRows (matrix : IntMatrix) (colStart colCount : Nat) : Nat → Nat → Nat
+  | 0, _ => 0
+  | rowCount + 1, rowStart =>
+      smithRowAbsSum matrix rowStart colCount colStart +
+        smithMinorAbsSumRows matrix colStart colCount rowCount (rowStart + 1)
+
+/-- The whole-minor magnitude sum — the over-approximated Euclid-cascade fuel (at least the minimal
+pivot magnitude, which bounds the rotation count). -/
+def smithMinorAbsSum (matrix : IntMatrix) (pivotIndex height width : Nat) : Nat :=
+  smithMinorAbsSumRows matrix pivotIndex (width - pivotIndex) (height - pivotIndex) pivotIndex
+
+/-- One pivot's Euclid cascade: search the minor, move + sign-normalise the minimal-magnitude entry
+into the pivot slot, clear the cross by magnitude-quotient transvections (the reused r1 helpers),
+and — if the cross is not yet zero — LOOP on the reduced matrix with one less fuel.  Structural on
+`innerFuel`. -/
+def smithCascadeSweep : Nat → IntMatrix → Nat → Nat → Nat → List ElementaryOperation
+  | 0, _, _, _, _ => []
+  | innerFuel + 1, matrix, pivotIndex, height, width =>
+      match smithFindMinAbsInMinor matrix pivotIndex height width with
+      | none => []
+      | some (foundRow, foundCol) =>
+          let moveOps := smithMoveToPivotOps pivotIndex foundRow foundCol
+          let afterMove := matrix.applyOperations moveOps
+          let signOps := smithSignNormalizeOps afterMove pivotIndex
+          let afterSign := afterMove.applyOperations signOps
+          let columnClearOps :=
+            (smithClearColumnBelowSteps afterSign pivotIndex (height - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.rowOperation
+          let afterColumnClear := afterSign.applyOperations columnClearOps
+          let rowClearOps :=
+            (smithClearRowRightSteps afterColumnClear pivotIndex (width - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.columnOperation
+          let afterRowClear := afterColumnClear.applyOperations rowClearOps
+          let settledOps := moveOps ++ signOps ++ columnClearOps ++ rowClearOps
+          match smithCrossIsClear afterRowClear pivotIndex height width with
+          | true => settledOps
+          | false =>
+              settledOps ++ smithCascadeSweep innerFuel afterRowClear pivotIndex height width
+
+/-- The total pivot sweep: at each pivot run the Euclid cascade (fuelled by the minor's magnitude
+sum), thread the reduced matrix, and recurse on the next pivot.  Structural on `outerFuel` (the pivot
+budget `Nat.min height width`). -/
+def smithReduceTotalSweep : Nat → IntMatrix → Nat → Nat → Nat → List ElementaryOperation
+  | 0, _, _, _, _ => []
+  | outerFuel + 1, matrix, pivotIndex, height, width =>
+      if pivotIndex + 1 ≤ Nat.min height width then
+        let pivotOps :=
+          smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width
+        let afterPivot := matrix.applyOperations pivotOps
+        pivotOps ++ smithReduceTotalSweep outerFuel afterPivot (pivotIndex + 1) height width
+      else []
+
+/-- The total Smith reduction certificate for `matrix` in the `height × width` window — search + sign
++ Euclid cascade per pivot, one sweep per pivot (`Nat.min height width` outer fuel). -/
+def smithReduceTotal (matrix : IntMatrix) (height width : Nat) : SmithReductionCertificate :=
+  { operations := smithReduceTotalSweep (Nat.min height width) matrix 0 height width }
+
 /-! ## Non-vacuity (B4)
 
 Concrete SNF certificates, produced-then-checked.  The `diagonalDividesSuccessor` witnesses are
@@ -343,6 +501,26 @@ theorem smithExampleCyclicTwo :
   diagonalIsNonnegative := by decide
   diagonalDividesSuccessor := fun position isPositionBelow =>
     Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow))
+
+/-- A genuinely NON-SQUARE `2 x 3` Smith normal form `diag(1, 2)` with a free zero column — the
+`H = ℤ` free-summand read-off (no torsion: the unit `1` gives `1 | 2`).  `Nat.min 2 3 = 2` gates the
+diagonal at two positions while column 2 stays free.  The r1/r2 battery's missing rectangular member
+(H2-SMITH r3, B3). -/
+theorem smithExampleWideTwoByThree :
+    ({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 3 where
+  offDiagonalVanishes := by
+    have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 3 →
+        rowIndex ≠ colIndex →
+        ({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+    exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+      offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+  diagonalIsNonnegative := by decide
+  diagonalDividesSuccessor := fun position isPositionBelow =>
+    match position, isPositionBelow with
+    | 0, _ => ⟨2, rfl⟩
+    | _ + 1, isBeyondDiagonal =>
+        Nat.noConfusion
+          (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))
 
 /-! ## The Euclid cascade + sign/swap pass (H2-SMITH r2, B1/B2)
 
@@ -682,11 +860,13 @@ theorem applyOperationsPreservesRectangular {height width : Nat} :
       applyOperationsPreservesRectangular remainingOperations (matrix.applyOperation operation)
         (applyOperationPreservesRectangular operation matrix isRect)
 
-/-- **The driver's total-correctness goal, named** — that `smithReduce` emits a Smith-reducing word
-for every rectangular integer matrix.  The honest r3 RESIDUAL: r2 ships the strict-descent measure
-(`smithRotationDecreasesPivotSize`), the three cascade certificates, and the rectangularity
-prerequisite (`applyOperationsPreservesRectangular`); inhabiting this `Prop` is the full two-level
-elimination induction (outer pivot budget, inner Euclid fuel), next round's pole. -/
+/-- **The total-correctness goal named over the r1 driver** — that `smithReduce` emits a
+Smith-reducing word for every rectangular integer matrix.  As stated (over the ONE-SHOT `smithReduce`)
+this `Prop` is REFUTABLE: the r1 driver stalls on `[[6, 4], [0, 0]]` — see `smithReduceIsNotTotal`
+below, which inhabits its negation.  The r3 correction re-points the goal at the total driver as
+`SmithReduceTotalDriverStatement`; this def is kept (name and meaning unchanged) so the refutation has
+a subject.  r2 ships the strict-descent measure (`smithRotationDecreasesPivotSize`), the cascade
+certificates, and the rectangularity prerequisite (`applyOperationsPreservesRectangular`). -/
 def SmithReduceTotalStatement : Prop :=
   ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
     (smithReduce matrix height width).reducesToSmithForm matrix height width
@@ -728,5 +908,170 @@ theorem smithExampleBoundaryMap :
       | _ + 1, isBeyondDiagonal =>
           Nat.noConfusion
             (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-! ## The r3 driver-produced battery + the corrected totality target (H2-SMITH r3, B1/B2/B4)
+
+`smithReduceTotal` reduces the FULL r1/r2 battery BY THE DRIVER: every input the r1 one-shot
+`smithReduce` could only diagonalise by a HAND-WRITTEN word now reduces by the driver's emitted
+certificate, closed against the literal Smith normal form by defeq (the driver computes to the
+literal; corroborated live by the r1-battery `#eval` regression).  The five theorems below re-close
+the three r2 failures, the walker boundary map, and the B3 non-square member as DRIVER-produced
+certificates, superseding the hand-word `smithReducedEuclideanRow` / `smithReducedSignedDiagonal` /
+`smithReducedRankDeficient` / `smithExampleBoundaryMap` (kept, name and meaning unchanged, for
+history).
+
+**B2 (totality).**  `SmithReduceTotalStatement` names the goal over the WRONG driver — the one-shot
+`smithReduce` is not total.  `smithReduceIsNotTotal` proves that Prop FALSE by the `[[6, 4], [0, 0]]`
+witness (`smithReduce` leaves the `4`; the reduced `entryAt 0 1` computes to `4 ≠ 0`).
+`SmithReduceTotalDriverStatement` re-points the goal at `smithReduceTotal`; its inhabitant is the
+two-level induction (outer pivot budget structural on `Nat.min height width`, inner Euclid cascade
+structural on the minor magnitude sum), riding the shipped `applyOperationsPreservesRectangular` and
+`smithRotationDecreasesPivotSize`.  That inhabitant is NOT shipped this round — the honest r4 pole.
+
+**B4 (divisibility chain), honest deferral.**  The cascade clears each pivot's CROSS (its own row and
+column), so the driver reaches a DIAGONAL with each pivot dividing its cross and nonnegative — but NOT
+in general the full invariant-factor chain `d_p | d_{p+1}` that `IsSmithNormalFormWithin` demands: a
+coprime diagonal like `[[2, 0], [0, 3]]` is left as `diag(2, 3)` (the driver's own `#eval` exhibits
+this), which is off-diagonal-clear and nonnegative but is NOT Smith-normal.  Forcing the chain needs
+the whole-minor divisibility-repair pass (add a non-multiple's row into the pivot row, re-Euclid) —
+the named r4 residual.  Every r1/r2/B3 battery member is rank ≤ 1 or an already-divisible diagonal, so
+the cross-only driver lands each in genuine Smith normal form (the driver-produced theorems below are
+the kernel-checked witnesses); the chain gap is invisible to the battery, visible only to a coprime
+multi-invariant input. -/
+
+/-- **The Euclidean-row failure, driver-produced** — `smithReduceTotal` reduces `[[6, 4], [0, 0]]`
+(`6 ∤ 4`, the r1 one-shot stall) to `diag(2, 0)`; the emitted certificate is kernel-checked into Smith
+normal form, closed against the literal by defeq.  Supersedes the hand-word `smithReducedEuclideanRow`. -/
+theorem smithReducedEuclideanRowByDriver :
+    (({ rows := [[6, 4], [0, 0]] } : IntMatrix).applyOperations
+        (smithReduceTotal { rows := [[6, 4], [0, 0]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **The rank-deficient pivot-search failure, driver-produced** — `smithReduceTotal` reduces the
+rank-one `[[2, 4, 6], [1, 2, 3], [3, 6, 9]]` to `diag(1, 0, 0)`; the search swaps the unit `1` into
+the pivot the r1 driver could not find.  Supersedes the hand-word `smithReducedRankDeficient`. -/
+theorem smithReducedRankDeficientByDriver :
+    (({ rows := [[2, 4, 6], [1, 2, 3], [3, 6, 9]] } : IntMatrix).applyOperations
+        (smithReduceTotal { rows := [[2, 4, 6], [1, 2, 3], [3, 6, 9]] } 3 3).operations).IsSmithNormalFormWithin
+      3 3 :=
+  show ({ rows := [[1, 0, 0], [0, 0, 0], [0, 0, 0]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 0, 0], [0, 0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by
+        decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | 1, _ => ⟨0, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
+/-- **The signed-diagonal failure, driver-produced** — `smithReduceTotal` normalises `diag(-2, -6)` to
+`diag(2, 6)` by the sign pass (`negateRow` on each negative pivot); the chain `2 | 6` is `(6 : Int) =
+2 * 3`.  Supersedes the hand-word `smithReducedSignedDiagonal`. -/
+theorem smithReducedSignedDiagonalByDriver :
+    (({ rows := [[-2, 0], [0, -6]] } : IntMatrix).applyOperations
+        (smithReduceTotal { rows := [[-2, 0], [0, -6]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 6]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 6]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨3, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **The torsion-plus-free boundary map, driver-produced** — `smithReduceTotal` reduces the degree-2
+boundary `[[2, 2], [2, 2]]` (rank one, gcd `2`) to `diag(2, 0)`: `im ∂₂ ≅ 2·ℤ`, so `H = ℤ/2 ⊕ ℤ`.
+Supersedes the hand-word `smithExampleBoundaryMap`; the integral-homology read-off now rides the
+driver. -/
+theorem smithReducedBoundaryMapByDriver :
+    (({ rows := [[2, 2], [2, 2]] } : IntMatrix).applyOperations
+        (smithReduceTotal { rows := [[2, 2], [2, 2]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[2, 0], [0, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0], [0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **The non-square member, driver-produced** — `smithReduceTotal` leaves the already-Smith-normal
+`2 x 3` `diag(1, 2)`-with-free-column in place (the rectangular B3 member reduced BY THE DRIVER). -/
+theorem smithReducedWideTwoByThreeByDriver :
+    (({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).applyOperations
+        (smithReduceTotal { rows := [[1, 0, 0], [0, 2, 0]] } 2 3).operations).IsSmithNormalFormWithin 2 3 :=
+  show ({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 2, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨2, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+/-- **The r1 driver is not total** — `SmithReduceTotalStatement` (which names the one-shot
+`smithReduce`) is FALSE: `[[6, 4], [0, 0]]` is rectangular yet `smithReduce` leaves the off-diagonal
+`4` (the one-shot magnitude quotient `intPivotQuotient 6 4 = 0`), so the reduced `entryAt 0 1`
+computes to `4`, contradicting `offDiagonalVanishes`.  This is why the corrected B2 target names the
+total driver (`SmithReduceTotalDriverStatement`). -/
+theorem smithReduceIsNotTotal : ¬ SmithReduceTotalStatement := fun isTotal =>
+  have reducesToSmith :=
+    isTotal { rows := [[6, 4], [0, 0]] } 2 2 ⟨rfl, ⟨rfl, ⟨rfl, True.intro⟩⟩⟩
+  absurd
+    (((reducesToSmith.offDiagonalVanishes 0 1 (by decide) (by decide) (by decide)).symm).trans
+      (rfl : (({ rows := [[6, 4], [0, 0]] } : IntMatrix).applyOperations
+          (smithReduce { rows := [[6, 4], [0, 0]] } 2 2).operations).entryAt 0 1 = 4))
+    (by decide)
+
+/-- **The corrected totality target** — that the TOTAL driver `smithReduceTotal` emits a
+Smith-reducing word for every rectangular integer matrix.  Its inhabitant is the two-level induction
+(outer pivot budget structural on `Nat.min height width`; inner Euclid cascade structural on the minor
+magnitude sum), riding `applyOperationsPreservesRectangular` (shipped) and
+`smithRotationDecreasesPivotSize` (shipped).  NOT inhabited this round — the honest r4 pole; the exact
+remaining obligations are (i) the outer-step LOCALITY lemma (minor ops at indices `> pivotIndex` leave
+the settled pivot row/column fixed), and (ii) the whole-minor divisibility repair that forces the
+`d_p | d_{p+1}` chain (B4), without which even the total driver falls short on coprime diagonals. -/
+def SmithReduceTotalDriverStatement : Prop :=
+  ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
+    (smithReduceTotal matrix height width).reducesToSmithForm matrix height width
 
 end FX1Poly.ComputerAlgebra
