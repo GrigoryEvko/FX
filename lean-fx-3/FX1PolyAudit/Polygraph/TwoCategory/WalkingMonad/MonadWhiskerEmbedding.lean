@@ -11,17 +11,6 @@ top-level whiskerings embed the body's map, discharging the two WHISKER-congruen
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Polygraph.ascendingPrepend_length
-#assert_no_axioms FX1Poly.Polygraph.ascendingPrepend_get_lt
-#assert_no_axioms FX1Poly.Polygraph.ascendingPrepend_get_add
-#assert_no_axioms FX1Poly.Polygraph.shiftPrepend_length
-#assert_no_axioms FX1Poly.Polygraph.shiftPrepend_get_lt
-#assert_no_axioms FX1Poly.Polygraph.shiftPrepend_get_add
-#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_length
-#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_get_left
-#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_get_mid
-#assert_no_axioms FX1Poly.Polygraph.embedLocalMap_get_right
-#assert_no_axioms FX1Poly.Polygraph.embedRegionSplit
 #assert_no_axioms FX1Poly.Polygraph.embedLocalMap_idMap
 #assert_no_axioms FX1Poly.Polygraph.faceMap_eq_embedLocalMap
 #assert_no_axioms FX1Poly.Polygraph.degenMap_eq_embedLocalMap

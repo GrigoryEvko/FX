@@ -571,6 +571,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadLawRelation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadDeltaModel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadMonotoneEngine
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadMapFactorization
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadSaturatedSkeletonReps
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWhiskerEmbedding
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadDeltaDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadCanonicalWord
