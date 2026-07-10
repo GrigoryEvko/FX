@@ -1820,24 +1820,27 @@ deep obligation the recon flags `[HIGH, shared with the r3 pole]`: obligation (a
 cascade `smithCascadeSweep` RE-DIAGONALIZES a folded window — a full verified Gaussian-elimination
 correctness proof over the extrinsic-shape substrate, not a one-round deliverable.
 
-`SmithCascadeReDiagonalizesStatement` NAMES that obligation as a first-class `Prop` (the honest r6
-pole's subject, mirroring how `SmithReduceTotalDriverStatement` / `SmithReduceFullDriverStatement` name
-their poles): after firing the cascade at `pivotIndex` on a window that is diagonal from `pivotIndex`,
-the pivot cross is clear, the sub-window from `pivotIndex + 1` is again diagonal, and the pivot divides
-every later diagonal (`gcd` landed at the pivot).  The r4 refutation
-`smithReduceTotalIsNotFullyReducing` forecloses any cross-only shortcut, so the r6 proof must genuinely
-engage the repair Euclid semantics — there is no cheaper path.  Given this statement, the three-level
-induction assembles `SmithReduceFullDriverStatement` phase by phase over the shipped decomposition; it
-is NOT inhabited here. -/
+`SmithCascadeReDiagonalizesStatement` NAMED that obligation as a first-class `Prop`, but the r5
+adversarial verification REFUTED the statement as written: its conclusion fires only the cross-clear
+cascade `smithCascadeSweep`, while the gcd/divisibility landing is performed by the SEPARATE
+`smithDivisibilityRepairSweep` (fold-then-recascade).  The hypothesis `IsWindowDiagonal` admits
+already-diagonal-but-non-divisible inputs (`diag(2, 3)` at pivot 0 — a member of this round's own
+battery) on which the cascade is a NO-OP, so clause (c) demands `2 ∣ 3` — FALSE.  The r4 refutation
+`smithReduceTotalIsNotFullyReducing` makes the same point from the driver side.  The Prop is retained
+below EXACTLY as shipped (a false `Prop` definition is harmless and nothing is proved from it) as the
+honest record; the CORRECTED r6 pole must be stated over the POST-FOLD shape — the window after
+`addRowMultiple foundPos pivotIndex 1` has the non-dividing entry IN the pivot cross, and THERE the
+cascade genuinely lands the gcd — or equivalently over `smithDivisibilityRepairSweep` end-to-end.
+Stating and inhabiting that corrected Prop assembles `SmithReduceFullDriverStatement` phase by phase
+over the shipped decomposition. -/
 
-/-- **The r6 elimination-correctness pole, named** — that firing the Euclid cascade
-`smithCascadeSweep` at `pivotIndex` on a window diagonal from `pivotIndex` (a) clears the pivot cross,
-(b) leaves the sub-window from `pivotIndex + 1` diagonal, and (c) lands the `gcd` at the pivot so it
-divides every later diagonal entry.  This is obligation (a) of the r5 recon — the deep verified-Euclid
-elimination correctness shared with the r3 pole, empirically true on the whole `#eval` battery
-(including `diag(4, 6, 9) ↝ diag(1, 6, 36)`) but NOT machine-proved this round.  Its inhabitant, wired
-through the shipped r5 decomposition and the invariant bundle, inhabits
-`SmithReduceFullDriverStatement`. -/
+/-- **REFUTED as the r6 pole (r5 adversarial verification)** — retained verbatim as the honest record;
+see the section header above.  As written this `Prop` is FALSE: on `diag(2, 3)` at pivot 0 the
+hypotheses hold, the cascade is a no-op (the window is already diagonal, the cross already clear), and
+clause (c) demands `2 ∣ 3`.  The defect: the conclusion uses only the cross-clear `smithCascadeSweep`;
+the divisibility landing lives in `smithDivisibilityRepairSweep` (fold-then-recascade), so the correct
+pole must quantify over the POST-FOLD window shape.  Do NOT attempt to inhabit this; the r6 round
+states the corrected pole. -/
 def SmithCascadeReDiagonalizesStatement : Prop :=
   ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
     matrix.IsRectangular height width →
