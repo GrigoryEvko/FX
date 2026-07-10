@@ -36,5 +36,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.addColumnMultipleEntryOffTargetCol
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithClearRowRightStepsPreservesColumn
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithClearRowRightStepsLandsAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearColumnBelowStepsPreservesRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearColumnBelowStepsLandsAt
 
 end FX1PolyAudit

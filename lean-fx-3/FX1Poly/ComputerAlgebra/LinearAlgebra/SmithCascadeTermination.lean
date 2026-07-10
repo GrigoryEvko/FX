@@ -697,4 +697,133 @@ theorem smithClearRowRightStepsLandsAt (coeffMatrix : IntMatrix) (pivotIndex hei
               pivotIndex _ pivotNeStart pivotRowInRange
           rw [ihResult, entryTargetEq, entryPivotEq]
 
+/-- **Column-below word preserves a top row** — the row mirror of `smithClearRowRightStepsPreservesColumn`:
+every op in `smithClearColumnBelowSteps coeffMatrix pivotIndex stepCount startRow` targets a row in
+`[startRow, startRow + stepCount)`, so reading any row `readRow < startRow` after the whole mapped word
+is unchanged.  Structural on `stepCount`, threading the SHIPPED off-target-row atom
+`addRowMultiplePreservesEntryOffTargetRow` (which needs no rectangularity) through `applyOperations`. -/
+theorem smithClearColumnBelowStepsPreservesRow (coeffMatrix : IntMatrix)
+    (pivotIndex readRow readCol : Nat) :
+    ∀ (stepCount startRow : Nat) (workMatrix : IntMatrix),
+      readRow < startRow →
+      (workMatrix.applyOperations
+          ((smithClearColumnBelowSteps coeffMatrix pivotIndex stepCount startRow).map
+            ElementaryOperation.rowOperation)).entryAt readRow readCol
+        = workMatrix.entryAt readRow readCol
+  | 0, _, _, _ => rfl
+  | stepCount + 1, startRow, workMatrix, readRowLtStart =>
+      have headOffTarget :
+          (workMatrix.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex)))).entryAt readRow readCol
+            = workMatrix.entryAt readRow readCol :=
+        addRowMultiplePreservesEntryOffTargetRow workMatrix pivotIndex startRow
+          (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+              (coeffMatrix.entryAt startRow pivotIndex)))
+          readRow readCol (Nat.ne_of_lt readRowLtStart)
+      (smithClearColumnBelowStepsPreservesRow coeffMatrix pivotIndex readRow readCol
+        stepCount (startRow + 1)
+        (workMatrix.addRowMultiple pivotIndex startRow
+          (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+              (coeffMatrix.entryAt startRow pivotIndex))))
+        (Nat.lt_trans readRowLtStart (Nat.lt_succ_self startRow))).trans headOffTarget
+
+/-- **The column-below clear-word lift** — the row mirror of `smithClearRowRightStepsLandsAt`: reading
+the pivot column at any target row `targetRow` in the cleared window after the whole
+`smithClearColumnBelowSteps coeffMatrix pivotIndex stepCount startRow` word lands `old + (coeff) *
+pivot`, with `old`/`pivot` read off the THREADED `workMatrix` and `coeff = -(intPivotQuotient …)` read
+off the FIXED `coeffMatrix`.  Induction on `stepCount`; the on-target landing rides the shipped
+`addRowMultipleEntryOnTargetRow`, the frozen-through-rest and source-preservation ride the shipped
+`addRowMultiplePreservesEntryOffTargetRow` and `smithClearColumnBelowStepsPreservesRow` — no new atom. -/
+theorem smithClearColumnBelowStepsLandsAt (coeffMatrix : IntMatrix) (pivotIndex height width : Nat) :
+    ∀ (stepCount startRow targetRow : Nat) (workMatrix : IntMatrix),
+      workMatrix.IsRectangular height width →
+      pivotIndex < startRow →
+      startRow ≤ targetRow → targetRow < startRow + stepCount →
+      pivotIndex < width → startRow + stepCount ≤ height →
+      (workMatrix.applyOperations
+          ((smithClearColumnBelowSteps coeffMatrix pivotIndex stepCount startRow).map
+            ElementaryOperation.rowOperation)).entryAt targetRow pivotIndex
+        = workMatrix.entryAt targetRow pivotIndex
+            + (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt targetRow pivotIndex)))
+                * workMatrix.entryAt pivotIndex pivotIndex := by
+  intro stepCount
+  induction stepCount with
+  | zero =>
+      intro startRow targetRow _ _ _ targetGe targetLt _ _
+      exact absurd (Nat.lt_of_le_of_lt targetGe targetLt) (Nat.lt_irrefl startRow)
+  | succ m ih =>
+      intro startRow targetRow workMatrix isRect pivotBelowStart targetGe targetLt
+        pivotColInRange allRowsInRange
+      have pivotNeStart : pivotIndex ≠ startRow := Nat.ne_of_lt pivotBelowStart
+      have nextRect :
+          (workMatrix.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex)))).IsRectangular height width :=
+        applyOperationPreservesRectangular
+          (ElementaryOperation.rowOperation
+            (ElementaryRowOperation.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex))))) workMatrix isRect
+      show ((workMatrix.addRowMultiple pivotIndex startRow
+                (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                    (coeffMatrix.entryAt startRow pivotIndex)))).applyOperations
+              ((smithClearColumnBelowSteps coeffMatrix pivotIndex m (startRow + 1)).map
+                ElementaryOperation.rowOperation)).entryAt targetRow pivotIndex
+            = workMatrix.entryAt targetRow pivotIndex
+                + (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                      (coeffMatrix.entryAt targetRow pivotIndex)))
+                    * workMatrix.entryAt pivotIndex pivotIndex
+      cases Nat.eq_or_lt_of_le targetGe with
+      | inl startEqTarget =>
+          have startRowLtHeight : startRow < height :=
+            Nat.lt_of_lt_of_le
+              (Nat.lt_of_le_of_lt (Nat.le_add_right startRow m) (Nat.lt_succ_self (startRow + m)))
+              allRowsInRange
+          have pivotRowLtHeight : pivotIndex < height := Nat.lt_trans pivotBelowStart startRowLtHeight
+          rw [← startEqTarget]
+          rw [smithClearColumnBelowStepsPreservesRow coeffMatrix pivotIndex startRow pivotIndex m
+                (startRow + 1)
+                (workMatrix.addRowMultiple pivotIndex startRow
+                  (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                      (coeffMatrix.entryAt startRow pivotIndex))))
+                (Nat.lt_succ_self startRow)]
+          exact addRowMultipleEntryOnTargetRow workMatrix isRect pivotIndex startRow pivotIndex
+            (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                (coeffMatrix.entryAt startRow pivotIndex)))
+            pivotNeStart pivotRowLtHeight startRowLtHeight pivotColInRange
+      | inr startLtTarget =>
+          have addSwap : startRow + (m + 1) = startRow + 1 + m :=
+            (Nat.add_succ startRow m).trans (Nat.succ_add startRow m).symm
+          have targetLt' : targetRow < startRow + 1 + m :=
+            Eq.mp (congrArg (targetRow < ·) addSwap) targetLt
+          have allRowsInRange' : startRow + 1 + m ≤ height :=
+            Eq.mp (congrArg (· ≤ height) addSwap) allRowsInRange
+          have ihResult := ih (startRow + 1) targetRow
+            (workMatrix.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex))))
+            nextRect (Nat.lt_succ_of_lt pivotBelowStart) startLtTarget targetLt'
+            pivotColInRange allRowsInRange'
+          have entryTargetEq :
+              (workMatrix.addRowMultiple pivotIndex startRow
+                  (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                      (coeffMatrix.entryAt startRow pivotIndex)))).entryAt targetRow pivotIndex
+                = workMatrix.entryAt targetRow pivotIndex :=
+            addRowMultiplePreservesEntryOffTargetRow workMatrix pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex)))
+              targetRow pivotIndex (Nat.ne_of_lt startLtTarget).symm
+          have entryPivotEq :
+              (workMatrix.addRowMultiple pivotIndex startRow
+                  (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                      (coeffMatrix.entryAt startRow pivotIndex)))).entryAt pivotIndex pivotIndex
+                = workMatrix.entryAt pivotIndex pivotIndex :=
+            addRowMultiplePreservesEntryOffTargetRow workMatrix pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex)))
+              pivotIndex pivotIndex pivotNeStart
+          rw [ihResult, entryTargetEq, entryPivotEq]
+
 end FX1Poly.ComputerAlgebra
