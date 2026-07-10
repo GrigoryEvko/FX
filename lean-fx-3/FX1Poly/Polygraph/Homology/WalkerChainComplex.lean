@@ -74,4 +74,147 @@ theorem augmentedDirectedComplexBoundaryComposesToZero (complex : AugmentedDirec
       (complex.boundaryMatrix (dim + 1)).entryAt middleIndex colIndex) = 0 :=
   complex.boundaryComposesToZero dim rowIndex colIndex rowBound colBound
 
+/-! ## B2 — the critical-pair enumeration, the boundary literals, and the walker instance
+
+### The four Squier critical pairs (hand-enumerated per the recon)
+
+No shipped monad-specific Squier enumeration exists to anchor to (the generic
+`Omega/CriticalPairRow` lives over a DIFFERENT substrate — `OmegaComputad`/`CellExpr`, not the
+monad's `RawTwoCellExpr monadModeSignature`), so the enumeration below is the recon's hand analysis,
+recorded as data.  Orient the two length-reducing unit rules and the count-preserving associativity
+rule:
+
+  * `R1 : mu ∘ (eta ▷ t) ⟹ id_t`   (removes one `eta`, one `mu`)
+  * `R2 : mu ∘ (t ◁ eta) ⟹ id_t`   (removes one `eta`, one `mu`)
+  * `R3 : mu ∘ (mu ▷ t) ⟹ mu ∘ (t ◁ mu)`   (associativity — preserves generator counts)
+
+`eta` feeds ONE `mu`-input, so there is no `eta`-sharing overlap; the root-`mu` sharing and `R3`'s
+inner-`mu` overlaps give exactly FOUR critical branchings — the classical coherent monoid
+presentation (pentagon + two unit-associativity triangles + the unit-unit pair). -/
+
+/-- The four Squier critical pairs of the walking-monad presentation. -/
+inductive MonadCriticalPair
+  /-- (a) `R1`–`R2` overlap at `mu(eta, eta) : id ⇒ t` — both legs reduce to `eta`. -/
+  | unitUnit
+  /-- (b) `R3`–`R1` overlap at `mu(mu(eta, t), t)`. -/
+  | leftUnitAssoc
+  /-- (c) `R3`–`R2` overlap at `mu(mu(t, eta), t)`. -/
+  | rightUnitAssoc
+  /-- (d) `R3`–`R3` overlap at `mu(mu(mu, t), t)` — the pentagon; both legs preserve counts. -/
+  | pentagon
+
+/-- **The abelianized boundary column of each critical pair**, as the generator-count difference
+`[w1] − [w2] = (#eta, #mu)` of its two rewriting legs (the immediate COFORK, not "difference of
+valleys" — the cofork reading is the one that yields the KNOWN-correct `H2 = 0`):
+
+  * (a) unit-unit: `R1→(1,0)` vs `R2→(1,0)` ⟹ `(0, 0)`;
+  * (b) left-unit-assoc: `R3→(1,2)` vs `R1→(0,1)` ⟹ `(1, 1)`;
+  * (c) right-unit-assoc: `R3→(1,2)` vs `R2→(0,1)` ⟹ `(1, 1)`;
+  * (d) pentagon: `R3`-outer→`(0,3)` vs `R3`-inner→`(0,3)` ⟹ `(0, 0)`.
+
+The `(#eta, #mu)` component order is the row order of `d3` (row 0 = `eta`, row 1 = `mu`). -/
+def monadCriticalPairBoundaryColumn : MonadCriticalPair → Int × Int
+  | .unitUnit => (0, 0)
+  | .leftUnitAssoc => (1, 1)
+  | .rightUnitAssoc => (1, 1)
+  | .pentagon => (0, 0)
+
+/-! ### The three boundary matrices as literals (derivation documented)
+
+Abelianize: a 1-path `t^n ↦ n·[t]`; a 2-path to its generator counts `(#eta, #mu)`; whiskering /
+vertical composition / identities are free (add parts).  Boundary sign `d(cell) = [target] − [source]`.
+
+  * **`d1 : C1 → C0`** — the endo `t : point → point` is a LOOP, `[point] − [point] = 0`, so the
+    `1 × 1` matrix `[[0]]` (independently confirmed by `Steiner/ComputadLoopFree`).
+  * **`d2 : C2 → C1`** — rows `= [t]`, columns `= (eta, mu)`: `d2(eta) = 1·[t] − 0 = 1`,
+    `d2(mu) = 1·[t] − 2·[t] = −1`, so the `1 × 2` matrix `[[1, −1]]`.
+  * **`d3 : C3 → C2`** — rows `= (eta, mu)`, columns `= (a, b, c, d)` from
+    `monadCriticalPairBoundaryColumn`: `[[0, 1, 1, 0], [0, 1, 1, 0]]` (`2 × 4`).
+
+`d4 : C4 → C3` is the empty map `C4 = 0`, recorded at the `4 × 0` shape (four empty rows) so the
+carrier's rectangularity obligation holds; degrees `≥ 4` are the `0 × 0` empty matrix. -/
+
+/-- `d1 : C1 → C0`, the `1 × 1` loop boundary `[[0]]`. -/
+def walkerBoundaryOfDimZero : IntMatrix := ⟨[[0]]⟩
+
+/-- `d2 : C2 → C1`, the `1 × 2` boundary `[[1, −1]]` (columns `eta`, `mu`). -/
+def walkerBoundaryOfDimOne : IntMatrix := ⟨[[1, -1]]⟩
+
+/-- `d3 : C3 → C2`, the `2 × 4` boundary `[[0, 1, 1, 0], [0, 1, 1, 0]]` (rows `eta`, `mu`; columns
+the four critical pairs `a`, `b`, `c`, `d`). -/
+def walkerBoundaryOfDimTwo : IntMatrix := ⟨[[0, 1, 1, 0], [0, 1, 1, 0]]⟩
+
+/-- The dimension-indexed boundary map: `d_{dim+1} : C_{dim+1} → C_dim` as a
+`walkerBasisCount dim × walkerBasisCount (dim+1)` integer matrix.  `d4` is the `4 × 0` zero map (four
+empty rows), everything above is the `0 × 0` empty matrix. -/
+def walkerBoundaryMatrix : Nat → IntMatrix
+  | 0 => walkerBoundaryOfDimZero
+  | 1 => walkerBoundaryOfDimOne
+  | 2 => walkerBoundaryOfDimTwo
+  | 3 => ⟨[[], [], [], []]⟩
+  | _ + 4 => ⟨[]⟩
+
+/-- **`d d = 0`, DECIDED on the boundary literals.**  The only non-vacuous compositions are
+`d1·d2` (`dim = 0`) and the genuine `d2·d3` (`dim = 1`); every in-range scalar identity closes by
+`rfl` on the literal matrices, every out-of-range index is refuted by the propext-clean peel.  The
+`dim ≥ 2` compositions land in the zero-width degree `C4 = 0`, so `colBound : colIndex < 0` refutes
+them.  This is the walker's `boundaryComposesToZero` field. -/
+theorem walkerBoundaryComposesToZero :
+    ∀ (dim rowIndex colIndex : Nat),
+      rowIndex < walkerBasisCount dim → colIndex < walkerBasisCount (dim + 2) →
+      sumOverIndices (walkerBasisCount (dim + 1)) (fun middleIndex =>
+        (walkerBoundaryMatrix dim).entryAt rowIndex middleIndex *
+        (walkerBoundaryMatrix (dim + 1)).entryAt middleIndex colIndex) = 0
+  | 0, 0, 0, _, _ => rfl
+  | 0, 0, 1, _, _ => rfl
+  | 0, 0, _ + 2, _, colBound =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc colBound)))
+  | 0, _ + 1, _, rowBound, _ =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc rowBound))
+  | 1, 0, 0, _, _ => rfl
+  | 1, 0, 1, _, _ => rfl
+  | 1, 0, 2, _, _ => rfl
+  | 1, 0, 3, _, _ => rfl
+  | 1, 0, _ + 4, _, colBound =>
+      Nat.noConfusion (natEqZeroOfLeZero
+        (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc colBound)))))
+  | 1, _ + 1, _, rowBound, _ =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc rowBound))
+  | _ + 2, _, colIndex, _, colBound => absurd colBound (Nat.not_lt_zero colIndex)
+
+/-- **The walking-monad polygraphic chain complex** as a shipped `AugmentedDirectedComplex`: the
+basis counts, the three boundary literals (plus the `4 × 0` `d4` and empty tails), the augmentation
+`[1]` on `C0`, the rectangular-shape obligations, and the two chain obligations `d d = 0` /
+`eps d = 0` discharged. -/
+def walkerChainComplex : AugmentedDirectedComplex where
+  basisCount := walkerBasisCount
+  boundaryMatrix := walkerBoundaryMatrix
+  augmentation := [1]
+  boundaryHasDimensions := fun dim =>
+    match dim with
+    | 0 => ⟨rfl, rfl, True.intro⟩
+    | 1 => ⟨rfl, rfl, True.intro⟩
+    | 2 => ⟨rfl, rfl, rfl, True.intro⟩
+    | 3 => ⟨rfl, rfl, rfl, rfl, rfl, True.intro⟩
+    | _ + 4 => ⟨rfl, True.intro⟩
+  augmentationHasWidth := rfl
+  boundaryComposesToZero := walkerBoundaryComposesToZero
+  augmentationComposesToZero := fun colIndex colBound =>
+    match colIndex, colBound with
+    | 0, _ => rfl
+    | _ + 1, cb => Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc cb))
+
+/-- ★ **The walking-monad `d d = 0`, as a COROLLARY of the generic ADC statement.**  This is the
+instance-level chain obligation obtained by specialising `augmentedDirectedComplexBoundaryComposesToZero`
+to `walkerChainComplex` (whose fields are `walkerBasisCount` / `walkerBoundaryMatrix` by defeq) —
+the theorem stated over the carrier structure, the walker a corollary, exactly as the recon designs. -/
+theorem walkerChainComplexBoundaryComposesToZero (dim rowIndex colIndex : Nat)
+    (rowBound : rowIndex < walkerBasisCount dim)
+    (colBound : colIndex < walkerBasisCount (dim + 2)) :
+    sumOverIndices (walkerBasisCount (dim + 1)) (fun middleIndex =>
+      (walkerBoundaryMatrix dim).entryAt rowIndex middleIndex *
+      (walkerBoundaryMatrix (dim + 1)).entryAt middleIndex colIndex) = 0 :=
+  augmentedDirectedComplexBoundaryComposesToZero walkerChainComplex dim rowIndex colIndex
+    rowBound colBound
+
 end FX1Poly.Polygraph.Homology

@@ -16,5 +16,13 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkerBasisCount
 #assert_no_axioms FX1Poly.Polygraph.Homology.augmentedDirectedComplexBoundaryComposesToZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.monadCriticalPairBoundaryColumn
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryMatrix
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerBoundaryComposesToZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerChainComplex
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerChainComplexBoundaryComposesToZero
 
 end FX1PolyAudit
