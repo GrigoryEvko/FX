@@ -32,4 +32,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_widthOne
 #assert_no_axioms FX1Poly.Polygraph.cruxCount_probe_empty
 
+-- the filterMap length ↔ countTrue bridge + the three read-off length counts
+#assert_no_axioms FX1Poly.Polygraph.filterMapLength_eq_countTrue
+#assert_no_axioms FX1Poly.Polygraph.capArcFeetIndices_length_eq_count
+#assert_no_axioms FX1Poly.Polygraph.throughStrandBottoms_length_eq_count
+#assert_no_axioms FX1Poly.Polygraph.capLargerFeetIndices
+#assert_no_axioms FX1Poly.Polygraph.capLargerFeetIndices_length_eq_count
+
+-- filterMap completeness (K3), the erase-kit length equality (K4), and the pairing bijection (crux-of-crux)
+#assert_no_axioms FX1Poly.Polygraph.memFilterMapGuardComplete
+#assert_no_axioms FX1Poly.Polygraph.distinctSameMembersLengthEq
+#assert_no_axioms FX1Poly.Polygraph.capLargerFeetIndices_length_eq
+
 end FX1PolyAudit
