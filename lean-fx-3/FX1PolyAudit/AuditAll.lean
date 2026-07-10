@@ -168,6 +168,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.MonadReseatInverse
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.ReconstructedDecision
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.EndgameDemo
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchMap
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Modularity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
