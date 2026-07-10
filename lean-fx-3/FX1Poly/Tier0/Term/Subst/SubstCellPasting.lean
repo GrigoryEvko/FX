@@ -96,4 +96,60 @@ def substCell {computad : OmegaComputad} (valuation : ComputadValuation computad
     {dim : Nat} (leftCell rightCell : CellExpr computad (dim + 1)) : SteinerChainCell :=
   composeAtFull (linearizeFull valuation leftCell) (linearizeFull valuation rightCell)
 
+/-! ## THE IDENTIFICATION — substCell = pasteAlong as a genuine map -/
+
+/-- ★★ **THE OMEGA-7 r2 IDENTIFICATION.**  The Steiner realization of the pasting composite IS the
+substitution-realization action — `linearizeFull (pasteAlong left right) = substCell left right` — a GENUINE
+MAP equality (the whole chain table, boundary poles included), UNCONDITIONAL, by the shipped rfl-anchor
+`linearizeFull_vcomp_composeAtFull`.  This is the r2 upgrade over r1's single-vector arithmetic shadow
+(`linearize_vcomp_eq_pasting`). -/
+theorem substCell_eq_pasteAlong {computad : OmegaComputad}
+    (valuation : ComputadValuation computad) {dim : Nat}
+    (leftCell rightCell : CellExpr computad (dim + 1)) :
+    linearizeFull valuation (pasteAlong leftCell rightCell)
+      = substCell valuation leftCell rightCell :=
+  linearizeFull_vcomp_composeAtFull valuation leftCell rightCell
+
+/-- ★ **The pasting associativity of the genuine map, discharged VIA `addCoordinates_assoc`.**  On the
+strong-Steiner fragment (relative to a valuation), re-bracketing a triple pasting composite is invisible to
+the boundary-faithful `linearizeFull`: the boundary POLES agree by `rfl` (source-from-left / target-from-right
+degenerate-glue, `boundarySource (vcomp (vcomp a b) c) = boundarySource a` and dually for the target), and the
+TOP row is `addCoordinates_assoc` on the linearized legs.  The chain-level, boundary-faithful upgrade of r1's
+single-vector `linearize_vcomp_assoc` — the substitution lemma the jam demands, discharged VIA
+`addCoordinates_assoc`. -/
+theorem substCell_assoc {computad : OmegaComputad}
+    (valuation : ComputadValuation computad) {dim : Nat}
+    (cellA cellB cellC : CellExpr computad (dim + 1)) :
+    linearizeFull valuation (pasteAlong (pasteAlong cellA cellB) cellC)
+      = linearizeFull valuation (pasteAlong cellA (pasteAlong cellB cellC)) := by
+  refine linearizeFull_eq_of valuation ?_ ?_
+  · rfl
+  · exact addCoordinates_assoc (linearize valuation cellA).coordinates
+      (linearize valuation cellB).coordinates (linearize valuation cellC).coordinates
+
+/-! ## THE PAIRED ANCHOR — substitution law IS chain pasting arithmetic -/
+
+/-- ★ **THE OMEGA-7 r2 PAIRED ANCHOR.**  The kernel term-side substitution law (`substCompose_assoc`, = the
+polynomial-monad multiplication `RawTerm.subst_compose`) and the CHAIN-LEVEL pasting associativity of the
+genuine map (`substCell_assoc`) are the SAME associative-composition law, exhibited as a pair.  This is what
+makes the r2 identification "substitution = pasting" and not merely "composition = pasting" — the r1 paired
+anchor `substLemma_is_pastingAssoc` lifted from the single-vector shadow to the boundary-faithful chain
+map. -/
+theorem substCellEqPasteAlong_is_substCompose_assoc
+    {scopeA scopeB scopeC scopeD : Nat}
+    (firstSubstitution : RawTermSubst scopeA scopeB)
+    (middleSubstitution : RawTermSubst scopeB scopeC)
+    (lastSubstitution : RawTermSubst scopeC scopeD)
+    (position : Fin scopeA)
+    {computad : OmegaComputad} (valuation : ComputadValuation computad)
+    {dim : Nat} (cellA cellB cellC : CellExpr computad (dim + 1)) :
+    (RawTermSubst.compose (RawTermSubst.compose firstSubstitution middleSubstitution)
+          lastSubstitution position
+        = RawTermSubst.compose firstSubstitution
+            (RawTermSubst.compose middleSubstitution lastSubstitution) position)
+      ∧ (linearizeFull valuation (pasteAlong (pasteAlong cellA cellB) cellC)
+          = linearizeFull valuation (pasteAlong cellA (pasteAlong cellB cellC))) :=
+  ⟨substCompose_assoc firstSubstitution middleSubstitution lastSubstitution position,
+   substCell_assoc valuation cellA cellB cellC⟩
+
 end FX1Poly.Polygraph.Omega
