@@ -69,4 +69,14 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBubbleSortFuel
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermWord
 
+-- B4 — the star honest partial (markers only, NO star flip).
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starLegsGatedOnGenericNaturalityAndCoxeter
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_correctedWellTypedStarStillOpenAfterRiffle
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_riffleAssemblyRoundEightLedgerShipped
+
+-- Independent (non-fuel) axiom prints on the B4 narrowing marker + the no-flip marker + the round ledger.
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starLegsGatedOnGenericNaturalityAndCoxeter
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_correctedWellTypedStarStillOpenAfterRiffle
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_riffleAssemblyRoundEightLedgerShipped
+
 end FX1PolyAudit

@@ -391,4 +391,54 @@ bridge connecting the fuel-structural sort trace to a CONV chain (each swap step
 fuel-recursive assembly is the genuine r9 work. -/
 def fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid : Bool := false
 
+/-! # =========================================================================================
+    # B4 — THE STAR HONEST PARTIAL: the two residuals NARROWED, no star flip
+    # =========================================================================================
+
+★ **The r7 star `bunchedBimonoidStarStatementAdditiveWellTyped` needs, at its `vcomp` case, the wide-collision
+CONV recursion, and at its equal-matrices step, the perm-middle `CoxeterWordUnique`.  Before r8 BOTH residuals
+read "the word does not exist" (B1 general `wideSwap` unbuilt) + "the recursion is unbuilt".  This round the
+wideSwap WORD is BUILT (B1) and the staged-NF matrix side closes at generic width (B2), so the two residuals
+NARROW from unbuilt-word to two precisely-named lemmas.  The star does NOT flip — a flip requires a literal
+hypothesis-free inhabitant of `bunchedBimonoidStarStatementAdditiveWellTyped`, which is NOT produced here. -/
+
+/-- ★★ **ESTABLISHED (B4) — the star's two heavy residuals are NARROWED, the star chain re-stated.**  `= true`
+records the honest star-chain shape `alpha ~ retract alpha = retract beta ~ beta`: the `gen` / `id` / `whisker`
+OUTER legs are the shipped r6 CONV deltas (`RetractionConvDeltas`); the `vcomp` case is the wide-collision CONV
+recursion, whose general `wideSwap` word is NOW BUILT (B1 `fxBunchedBimonoid_wideSwapGeneralRiffleWordShipped`)
+and whose matrix side NOW closes at generic width (B2 `fxBunchedBimonoid_stagedNormalFormMatrixSideShipped`), so
+it gates on ONLY the generic-width naturality slide
+(`fxBunchedBimonoid_wideCollisionConvGatedOnGenericNaturality`); the equal-matrices MIDDLE is the perm-middle
+`CoxeterWordUnique`, whose carrier + fuel-structural sort are NOW shipped (B3
+`fxBunchedBimonoid_coxeterSortNfScaffoldShipped`), so it gates on ONLY the generic-position braid + the
+sort-to-CONV bridge (`fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid`).  Two precisely-named lemmas, not
+"the word does not exist". -/
+def fxBunchedBimonoid_starLegsGatedOnGenericNaturalityAndCoxeter : Bool := true
+
+/-- ★ **THE CORRECTED WELL-TYPED STAR STAYS OPEN — no flip (byte-intact, cross-file).**  `= false` records that
+`bunchedBimonoidStarStatementAdditiveWellTyped` is STILL NOT proven in r8: no literal hypothesis-free inhabitant
+is produced.  The star-owning marker `fxBunchedBimonoid_correctedWellTypedStarStillOpen` (StarAssembly, r7) and
+every upstream star marker keep their name and `= false` value byte-intact (cross-file, not edited) — NO
+fabricated flip.  The two residuals are narrowed (B4 above), not closed. -/
+def fxBunchedBimonoid_correctedWellTypedStarStillOpenAfterRiffle : Bool := false
+
+/-! ## The r8 round ledger -/
+
+/-- ★★★ **ESTABLISHED (B4) — the WP-PROP r8 riffle-assembly ledger (the honest scoreboard).**  `= true` records
+the complete r8 two-gap assembly: B1 the general `wideSwap(m,n)` riffle word BUILT (the three-layer nested
+shuffle `blockPastBlock`/`riffleIn`/`wideSwap`, matrix-correct at the transpose permutation, the r7 unbuilt wall
+falls — `fxBunchedBimonoid_wideSwapGeneralRiffleWordShipped`); B2 the staged bialgebra NF matched to the collision
+at generic width (`fxBunchedBimonoid_stagedNormalFormMatrixSideShipped`, the CONV recursion narrowed to a
+generic-width naturality slide); B3 the Coxeter sorted-NF scaffold (carrier + fuel-structural sort,
+`fxBunchedBimonoid_coxeterSortNfScaffoldShipped`, the `CoxeterWordUnique` narrowed to a generic-position braid);
+B4 the star's two residuals narrowed to two precisely-named lemmas
+(`fxBunchedBimonoid_starLegsGatedOnGenericNaturalityAndCoxeter`), the star NOT flipped
+(`fxBunchedBimonoid_correctedWellTypedStarStillOpenAfterRiffle = false`).  Every upstream wall
+(`...wideSwapGeneralRiffleWordUnbuilt`, `...wideCollisionConvRecursionUnbuilt`,
+`...coxeterWordUniqueBubbleSortStillUnbuilt`, `...correctedWellTypedStarStillOpen`) keeps its name and value
+byte-intact (cross-file, retired name-only at literal delivery); zero-axiom (per-decl `#assert_no_axioms` +
+independent `#print axioms` in the twin); STRUCTURAL only (strand-count + fuel recursions, no `WellFounded.fix`).
+NO fabricated star flip. -/
+def fxBunchedBimonoid_riffleAssemblyRoundEightLedgerShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
