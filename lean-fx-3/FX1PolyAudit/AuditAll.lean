@@ -837,6 +837,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapHeadCancella
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointTripleModeParity
 -- FC-3 r22 B2 P3 — the boundary chain advances along the arc fold (read-off split-state seat bound)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSpineChainAlong
+-- FC-3 r22 B2 P4 — the pure-cap arity transports along the atomic swap (matched-remainder pure-cap inheritance)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAllCapAritySwapTransport
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
