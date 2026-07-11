@@ -95,4 +95,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeRankOracleIsOneThroughDegreeSix
 #assert_no_axioms FX1Poly.Polygraph.Homology.multiObstructionAnickCarrierIsNamedNode
 
+-- B5 (r2): the r2 ledger
+#assert_no_axioms FX1Poly.Polygraph.Homology.towerAnickRoundTwoLedgerIsComplete
+
 end FX1PolyAudit

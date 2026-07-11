@@ -775,4 +775,63 @@ read, and NAMES this r3 node — NOT any movement of the `S_1` wall
 `= true`. -/
 def multiObstructionAnickCarrierIsNamedNode : Bool := true
 
+/-! ## B5 (r2) — THE TOWER-ANICK #2144 r2 LEDGER (the enumerative round: bricks shipped, residuals NAMED)
+
+  * **B1 (r2) — THE ENUMERATOR**: SHIPPED.  The fueled strictly-increasing candidate generator
+    (`natCountUpFrom`, `anickCandidateTails`, `anickCandidateChains`) + the guard filter
+    (`anickMinimalChainsAtDegree`), truth-probed to reproduce the shipped `anickChainTips` SINGLETON at
+    cyclic-3 degrees 1–6 (`anickEnumeratorAgreesWithGeneratorThroughDegreeSix`, the 21-candidate degree-6
+    `rfl`); k = 2 covered (`involutionAnickEnumeratorSingletonAtDegreeFive`); two NEW hostile near-misses
+    rejected (`nonMinimalOverStepBeyondWindowIsRejected` over-disjoint `{0,1,4}`,
+    `nonMinimalMidChainOverStepIsRejected` mid-chain over-step `{0,1,3,5}`); the bound-gate self-attack
+    (`anickUndersizedBoundDropsCanonicalChain`).
+  * **B2 (r2) — ★ THE UNIQUENESS THEOREM**: SHIPPED, FULLY GENERAL.  `natEqBoolTrueImpliesEq` (the one
+    helper), the forward window-threaded `anickCanonicalTail` / `anickCanonicalChain`, the tail uniqueness
+    (`anickCanonicalTailMatchesGuardTail`), and ★★ `anickGuardForcesCanonicalChain` — ANY guard-passing tip
+    list IS the canonical chain of its length, the forced-positions induction (general in `tipLength` and
+    length).  Corollary `anickGuardPassersOfEqualLengthAreEqual`; per-degree `rfl` bridge to the shipped
+    generator (`anickCanonicalChainMatchesShippedTipsThroughDegreeEight`, no snoc/append propext).
+  * **B3 (r2) — THE RE-BASED TIE-IN**: SHIPPED (concrete).  `anickChainCountAtDegreeDerived` = the
+    enumeration length, `= 1` at degrees 1–6 (`anickDerivedCountThroughDegreeSix`), DEFINITIONALLY equal to
+    r1's fiat `anickChainCountAtDegree` (`anickDefinitionalCountEqualsDerivedThroughDegreeSix`), and re-tied
+    to the shipped `PeriodicTower.basisCount` (`cyclicThreeAnickDerivedCountMatchesPeriodicTowerBasis`),
+    ALONGSIDE the verbatim r1 theorem.  The GENERAL `Derived n = 1` (filter-collapse lemma) is NAMED
+    (`anickGeneralDerivedCountCollapseIsNamedNode`).
+  * **B4 (r2) — THE CROWN BRICK**: SHIPPED (interface + named node).  The computable rank-ORACLE
+    (`anickMinimalChainRankOracle`, `= derived count`, finite constant `1` at cyclic-3 degrees 1–6 — the
+    WRONG shape for `S_1`); the NAMED r3 node `multiObstructionAnickCarrierIsNamedNode` (a two-generator
+    branching monomial carrier with unbounded per-degree rank).  The `S_1` rank-finiteness wall stays
+    UNMOVED (`squierWitnessLedger.homologicalNonFinitenessStatus` unchanged).
+  * **B5 (r2) — this ledger**: SHIPPED.
+
+### Honest scoping (no overclaim)
+
+r2 adds the ENUMERATIVE certification on top of r1's exhibition: the guard-filtered candidate space
+collapses to the shipped singleton (B1), and — the mathematical crown — ANY guard-passer IS the canonical
+chain (B2, fully general).  The per-degree count is now the ENUMERATION, not a fiat (B3).  The rank oracle
+is the honest per-degree rank-data interface (B4).  What r2 does NOT do: prove the general `Derived n = 1`
+(the filter-collapse residual), move the `S_1` non-finiteness wall (the constant-1 count is the wrong shape;
+witnessing `S_1` needs the multi-obstruction r3 carrier's unbounded rank), or re-derive the Anick boundary
+maps (they still RIDE the shipped tower).  Both deferrals are NAMED nodes, not jams.
+
+### Named residual nodes (deferred by budget, decided elsewhere)
+
+  * **The general `Derived n = 1`** — the filter-collapse / one-survivor lemma over the `n`-level candidate
+    tree + the general forward-generator = shipped-append equality (`anickGeneralDerivedCountCollapseIsNamedNode`).
+  * **The multi-obstruction Anick carrier** (unbounded per-degree rank; the `S_1` shape) —
+    `multiObstructionAnickCarrierIsNamedNode`.
+  * The r1 named nodes stand: full Anick-resolution exactness, the polygraphic-Anick monad census, the
+    general single-letter family homology (#2146). -/
+
+/-- ★ **The TOWER-ANICK (#2144) r2 ledger marker (the enumerative round).**  What stands, zero-axiom, on
+top of r1: THE ENUMERATOR (fueled candidate generator + guard filter, truth-probed to the shipped singleton
+at cyclic-3 degrees 1–6, k = 2 covered, two new near-misses + the bound-gate); ★★ THE UNIQUENESS THEOREM
+(`anickGuardForcesCanonicalChain` — any guard-passer IS the canonical chain, fully general in `tipLength`
+and length, the forced-positions induction); THE RE-BASED TIE-IN (the derived enumeration count `= 1`
+`= ` r1's fiat count `= ` the shipped `PeriodicTower.basisCount`, alongside the verbatim r1 theorems); and
+THE CROWN BRICK (the computable rank-oracle interface + the NAMED multi-obstruction r3 node; the `S_1`
+rank-finiteness wall UNMOVED).  Two residuals NAMED (general `Derived n = 1`; the multi-obstruction carrier),
+never papered.  Read the meaning from THIS docstring (the honest-record convention). -/
+def towerAnickRoundTwoLedgerIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
