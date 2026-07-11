@@ -180,7 +180,6 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.EndgameDemo
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchMap
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.Modularity
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DecisionTransfer
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.DispatchLedgerAudit
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.RealLawDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.SPrefixRefutation
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutNormalForm
@@ -196,31 +195,23 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutShiftedGapSplice
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalLayout
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutVcompInterchangeSplice
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutReseatFillWiring
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizationInductionLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallBlockScaffold
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutLayoutFactorization
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallBlockRefutationLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestLayout
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestGapMerge
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeInversion
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreePathInjectivity
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeInversionLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutVcompSeam
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMidPathSeamLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutEndoModeTransport
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreePathInversion
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestPairs
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeCellConverse
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutKeystoneUnlockLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeCellInvert
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestBoundaries
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCellConverseLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeCellInvertRoundTrip
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestPayloadZip
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCellRoundTripLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutReconstructedWordGapSplice
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutAtomicFiringAdjudication
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutDispatchMasterReAuditLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutAmalgamDispatchStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeGenCase
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeWhiskerCase
@@ -231,17 +222,14 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutAlignmentTruthProbe
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerHeadPrependMultiGap
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutVcompMultiGapSeam
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalReaderConsistency
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalityMasterReAuditLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerMergeIntoHead
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerRightAppend
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalFiringBlockReader
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutVcompSkeletonAlignment
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalReaderStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallShiftOffset
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallShiftReanchor
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerRightAppendFold
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeCanonicalWhiskerRight
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallShiftStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutInteriorOrdinalReanchor
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFiringBlockProducer
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeCanonical
@@ -249,13 +237,10 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutIdentityLayoutCollapse
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutPayloadZipProbeVerdict
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCeilingLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalFactorizeProbes
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutInteriorProducerStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerLeftJunctionMerge
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerLeftJunctionCanonical
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerRightJunctionMerge
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerRightJunctionCanonical
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutJunctionMergeCeilingLedger
-import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutJunctionMergeTerminalLedger
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
@@ -864,7 +849,6 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDistinctSeatCapExc
 -- FC-3 r24 B3 — the unconditional pure-cap sort marker held FALSE (pin uninhabited) + fresh-valley exclusion example
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringUnconditionalCapSortLedger
 -- FC-3 r24 B4 — the valley-program ledger (r17 cup arm / NOW cap arm modulo one discharge / verbatim owed + wiring bill)
-import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapDualR24Ledger
 -- FC-3 r25 B1 — the FORWARD adjacency invariant substrate (disjoint-cap seat push + below-fresh membership monotonicity)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringConsecutiveUntouchedSeat
 -- FC-3 r25 B2 — the DISTINCTNESS-founded prefix descent master (drops the false prefixSharesWindowMode premise)
@@ -872,7 +856,6 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDesc
 -- FC-3 r25 B3 — the AllCapArity-augmented cap-head pin-prime + the conditional sort consuming it
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapHeadExtractionWordPinPrime
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
-import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapDualR25Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
@@ -1212,6 +1195,7 @@ import FX1PolyAudit.Polygraph.Homology.CrossedModuleFreeGroupStructureTheorem
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleFreeGroupMeasureInduction
 import FX1PolyAudit.Polygraph.Homology.CyclicThreeAnickChains
 import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickChains
+import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickBoundaryHomology
 import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
 import FX1PolyAudit.Polygraph.Homology.BlockDiagonalCertificateLifting
 import FX1PolyAudit.Polygraph.Homology.FreshGeneratorTietzeExpansionInvariance
@@ -1242,7 +1226,6 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.StrongSteiner
 import FX1PolyAudit.Polygraph.Omega.Steiner.Linearize
 import FX1PolyAudit.Polygraph.Omega.Steiner.Soundness
 import FX1PolyAudit.Polygraph.Omega.Steiner.DecideFreeConv
-import FX1PolyAudit.Polygraph.Omega.Steiner.SteinerArithmeticLedger
 import FX1PolyAudit.Polygraph.Omega.Steiner.Integration
 import FX1PolyAudit.Polygraph.Omega.Steiner.AgreementBattery
 import FX1PolyAudit.Polygraph.Omega.Steiner.Reconstruct
@@ -1270,13 +1253,11 @@ import FX1PolyAudit.Polygraph.Omega.Steiner.VaryingWhiskerReconstruct
 import FX1PolyAudit.Polygraph.Omega.CriticalPairRowAudit
 import FX1PolyAudit.Polygraph.Omega.InvolutionDemonstratorAudit
 import FX1PolyAudit.Polygraph.Omega.KernelDiamondReadingAudit
-import FX1PolyAudit.Polygraph.Omega.SquierAscentLedgerAudit
 -- OMEGA-4 r2 — the Squier ascent: the abstract certificate -> dim-3 cell functor
 import FX1PolyAudit.Polygraph.Omega.CertificateFunctorAudit
 -- OMEGA-4 r2 — the Squier ascent: the walking-involution homotopy-basis fragment
 import FX1PolyAudit.Polygraph.Omega.InvolutionSquierBasisAudit
 -- OMEGA-4 r2 — the Squier ascent: the r2 ledger + refined OMEGA-5 handoff
-import FX1PolyAudit.Polygraph.Omega.CertificateFunctorLedgerAudit
 -- OMEGA-4 continued — the Squier ascent: the walking-monad five-critical-pair coherent presentation
 import FX1PolyAudit.Polygraph.Omega.MonadCoherentPresentationAudit
 -- WP-SQUIER r2 — the family round: the walking-idempotent-semigroup one-critical-pair demonstrator (half-globular)

@@ -1,4 +1,6 @@
-import FX1Poly.Polygraph.TwoCategory.Amalgam.PushoutDispatchMasterReAuditLedger
+import FX1Poly.Polygraph.TwoCategory.Amalgam.PushoutAtomicFiringAdjudication
+import FX1Poly.Polygraph.TwoCategory.Amalgam.PushoutBundle
+import FX1Poly.Polygraph.TwoCategory.Amalgam.PushoutVcompInterchangeSplice
 import FX1Poly.Polygraph.TwoCategory.Amalgam.SaturatedDispatch
 import FX1Poly.Polygraph.TwoCategory.Amalgam.PushoutWireChangeLedger
 
@@ -49,6 +51,10 @@ namespace FX1Poly.Polygraph.Amalgam
 open FX1Poly.Polygraph
 
 /-! ## r14 shipped — the four bricks live (machine-checked conjunction) -/
+
+/-- The r14 B4 master re-audit outcome — no master flipped at r14.  Inlined from the retired r14
+scoreboard file (`= true` there, value preserved verbatim). -/
+def fxAmalg_masterReAuditR14NoFlip : Bool := true
 
 /-- The r14 deliverable conjunction — B1 reseat, B2 splice, B3 adjudication, B4 re-audit all live. -/
 def reconR14BricksShipped : Bool :=
