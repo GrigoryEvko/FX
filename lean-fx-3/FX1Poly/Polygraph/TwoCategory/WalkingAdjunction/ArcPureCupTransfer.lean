@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPureCupSpine
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AllCupAritySwapTransport
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.AtomCountTraceInvariance
 
 /-! # ArcPureCupTransfer — arc equality carries the pure-cup regime across both spines (cap-first base case)
@@ -136,21 +137,17 @@ theorem pureCupSpines_sameLength_ofArcEqual
 
 /-- ★ **The pure-cup regime is closed under interchange.**  If two spines are trace-equivalent
 (`AtomicTraceEquiv` — the disjoint-atom-transposition closure) and the first is pure cup, so is the
-second: interchange permutes the atom multiset, and the cap tally is a trace invariant
-(`capAtomCount_eq_of_atomicTraceEquiv`), so a zero tally is preserved.  This lets the cup-interchange
-base-case induction reorder a spine freely while staying pure cup.  Routed through the Nat cap count
-(via the shipped `AllCupArity ↔ capAtomCount = 0` characterization) rather than an indexed inversion,
-so it stays `propext`-free. -/
-theorem allCupArity_preservedOfAtomicTraceEquiv
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    {firstList secondList : List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
-    (atomicEquiv : AtomicTraceEquiv adjunctionModeSignature firstList secondList)
-    (firstPureCup : AllCupArity firstList) : AllCupArity secondList := by
-  have firstCapZero : capAtomCount firstList = 0 :=
-    capAtomCount_ofAllCupArity firstList firstPureCup
-  have countsAgree : capAtomCount firstList = capAtomCount secondList :=
-    capAtomCount_eq_of_atomicTraceEquiv atomicEquiv
-  exact allCupArity_ofCapAtomCountZero secondList (countsAgree.symm.trans firstCapZero)
+second: interchange permutes the atom multiset, keeping each atom's generator, so the cup arities
+transport directly.  Routed through the signature-generic `allCupArity_iff_ofAtomicTraceEquiv`
+(Route B — the swap constructor is matched and the two head arities inverted), which drops the
+walking-adjunction classifier `adjunctionSpineAtom_isCupOrCap` from this leg's closure and widens
+it to any signature; probe-confirmed `propext`-free. -/
+theorem allCupArity_preservedOfAtomicTraceEquiv {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {firstList secondList : List (SpineAtom signature overallSource overallTarget)}
+    (atomicEquiv : AtomicTraceEquiv signature firstList secondList)
+    (firstPureCup : AllCupArity firstList) : AllCupArity secondList :=
+  (allCupArity_iff_ofAtomicTraceEquiv atomicEquiv).1 firstPureCup
 
 /-- The right summand of a `Nat` sum that vanishes is itself zero — a `noConfusion` peel (the succ case's
 `leftSummand + succ predRight` is defeq `succ (leftSummand + predRight)`, refuting `= 0`), staying
@@ -163,21 +160,16 @@ private theorem addRightZero {leftSummand rightSummand : Nat}
 
 /-- ★ **`AllCupArity` cons-inversion, `propext`-free.**  A pure-cup spine's tail is pure cup.  The
 completeness induction peels a head cup and recurses on the tail, so it needs `AllCupArity rest` from
-`AllCupArity (headAtom :: rest)`.  A direct `cases` on the head-indexed `AllCupArity` would leak
-`propext` (partial match on an indexed inductive); instead route through the cap count — the head
-contributes a non-negative summand, so the tail's cap tally is still zero
-(`addRightZero`) — and rebuild via `allCupArity_ofCapAtomCountZero`. -/
-theorem allCupArity_ofCons
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    {headAtom : SpineAtom adjunctionModeSignature overallSource overallTarget}
-    {rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
+`AllCupArity (headAtom :: rest)`.  Discharged by a DIRECT `cases` on the witness (the tail field falls
+out) — machine-checked axiom-clean (`scratchpad/probe.lean`: the double-`cases` transport pattern
+carries no `propext`), signature-generic, superseding the old cap-count detour. -/
+theorem allCupArity_ofCons {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {headAtom : SpineAtom signature overallSource overallTarget}
+    {rest : List (SpineAtom signature overallSource overallTarget)}
     (consPureCup : AllCupArity (headAtom :: rest)) : AllCupArity rest := by
-  have consCapZero : capAtomCount (headAtom :: rest) = 0 :=
-    capAtomCount_ofAllCupArity (headAtom :: rest) consPureCup
-  have restCapZero : capAtomCount rest = 0 := by
-    dsimp only [capAtomCount] at consCapZero
-    exact addRightZero consCapZero
-  exact allCupArity_ofCapAtomCountZero rest restCapZero
+  cases consPureCup with
+  | cons _ _ restPureCup => exact restPureCup
 
 /-! ## Pure-cup cap-count vanishing (the peel step's cap-count leg)
 
