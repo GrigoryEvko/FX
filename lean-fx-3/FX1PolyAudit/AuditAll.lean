@@ -777,6 +777,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainSwapLeft
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringScrambledThreeCupPortProbe
 -- FC-3 r17 THE NOVEL ASSEMBLY — the width-0 pure-cup determinacy INHABITED at the adjoint-triple seed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWidthZeroPureCupSort
+-- FC-3 r18 THE CAP-DUAL — the pure-cap sort ported to the adjoint-triple seed, modulo the cap-head discharge
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPureCapSpineSort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
