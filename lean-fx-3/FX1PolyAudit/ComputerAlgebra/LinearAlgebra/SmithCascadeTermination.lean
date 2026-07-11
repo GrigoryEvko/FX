@@ -246,4 +246,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.SmithSuffixMinRepairPreservesStatement
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinRepairDoesNotPreserve
 
+/- H2-SMITH r15 — the establishment fails on rank-deficient inputs (B2/R1): `diag(4, 1, 150, 0)` refutes
+   the invariant (`min(4,1)=1 > trailing d_3=0`), witnessing the def is over-strong on zeros — not
+   establishable as a reduceTotal postcondition without excluding them.  A second permanent regression. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinEstablishFailsOnRankDeficient
+
 end FX1PolyAudit

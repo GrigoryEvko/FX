@@ -4762,4 +4762,29 @@ theorem smithSuffixMinRepairDoesNotPreserve : ¬ SmithSuffixMinRepairPreservesSt
   have bound := m1Invariant 1 (by decide) 2 rfl 3 (by decide) (by decide)
   exact absurd (id (α := (180 : Nat) ≤ 150) bound) (by decide)
 
+/-! ## The establishment fails on rank-deficient inputs (H2-SMITH r15, B2/R1 — permanent regression)
+
+Beyond the preservation failure (B1), the suffix-min invariant is over-strong on rank-deficient
+inputs.  `SmithSuffixMinRepairInvariant` quantifies its suffix bound over ALL later diagonals INCLUDING
+zeros; on a reduceTotal output with a trailing zero (a rank-deficient input — zeros come last), the
+static establishment fails outright: `min(|d_p|, |d_q|) <= |d_last| = 0` is false for any nonzero pivot
+pair.  So the invariant cannot even be ESTABLISHED as a reduceTotal postcondition without excluding
+zeros — a second permanent LITERAL regression witnessing the def names the wrong carrier (the driver's
+`d_p | 0` chain closure, not a suffix-min bound, handles trailing zeros).  This is a FALSE ALARM for the
+drag purpose (a 0 cannot be dragged into a smaller nonzero residue), but it refutes the invariant as
+written. -/
+
+set_option maxRecDepth 4096 in
+/-- **The invariant fails on a rank-deficient diagonal (R1)** — `diag(4, 1, 150, 0)` refutes
+`SmithSuffixMinRepairInvariant`: at `p = 0` the search returns `q = 1` (`4 ∤ 1`), the fold pair min is
+`min(4, 1) = 1`, yet the trailing `d_3 = 0 < 1`.  The def's quantification over all later diagonals
+(zeros included) makes it FALSE on any rank-deficient reduceTotal output, so it is not establishable
+without excluding zeros — the establishment floor is hit as a refutation, not a discharge. -/
+theorem smithSuffixMinEstablishFailsOnRankDeficient :
+    ¬ SmithSuffixMinRepairInvariant
+        { rows := [[4, 0, 0, 0], [0, 1, 0, 0], [0, 0, 150, 0], [0, 0, 0, 0]] } 4 4 := by
+  intro invariant
+  have bound := invariant 0 (by decide) 1 rfl 3 (by decide) (by decide)
+  exact absurd (id (α := (1 : Nat) ≤ 0) bound) (by decide)
+
 end FX1Poly.ComputerAlgebra
