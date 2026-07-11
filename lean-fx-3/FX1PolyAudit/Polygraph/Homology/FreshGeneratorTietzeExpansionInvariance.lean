@@ -23,6 +23,29 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedTietzeBoundaryOfDimOneSmithCertificate
 #assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedBoundaryReducesToSmithNormalForm
 
+-- B2: the certificate-extension engine + the GENERIC well-formedness of the expansion
+#assert_no_axioms FX1Poly.Polygraph.Homology.natZeroAddEqSelf
+#assert_no_axioms FX1Poly.Polygraph.Homology.natSuccAddEqAddSucc
+#assert_no_axioms FX1Poly.Polygraph.Homology.natZeroLtSucc
+#assert_no_axioms FX1Poly.Polygraph.Homology.natSuccLeSucc
+#assert_no_axioms FX1Poly.Polygraph.Homology.natLtSuccCases
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerPresentationDimOneRowsGet
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerPresentationDimTwoRowsGet
+#assert_no_axioms FX1Poly.Polygraph.Homology.walkerPresentationDimOneRowAppendDistrib
+#assert_no_axioms FX1Poly.Polygraph.Homology.listGetWithDefaultAppendLeft
+#assert_no_axioms FX1Poly.Polygraph.Homology.sumOverIndicesCongrBelow
+#assert_no_axioms FX1Poly.Polygraph.Homology.sumOverIndicesZeroBelow
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionOldColumnD2Agrees
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionOldRowD3Agrees
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionNewGeneratorRowVanishes
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionNewRuleRowVanishes
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionIsWellFormedOfBase
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionChainComplex
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeZmodThreeBaseFreshGeneratorRowIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeZmodThreeBaseFreshRuleRowIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedTietzePresentationIsWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedTietzeChainComplex
+
 -- B3: the reader-level diagonal inductions + the generic degree-1/degree-2 preservation theorems
 #assert_no_axioms FX1Poly.Polygraph.Homology.natSuccSubSuccEqSub
 #assert_no_axioms FX1Poly.Polygraph.Homology.homologyInvariantEq

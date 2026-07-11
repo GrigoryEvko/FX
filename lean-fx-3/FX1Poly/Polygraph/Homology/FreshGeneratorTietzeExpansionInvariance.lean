@@ -149,6 +149,344 @@ theorem handProbeExpandedBoundaryReducesToSmithNormalForm :
         handProbeExpandedTietzeBoundaryOfDimOneSmithCertificate.operations
       = ⟨[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 3, 0, 0]]⟩ := rfl
 
+/-! ## B2 — the certificate-extension engine and the GENERIC well-formedness of the expansion
+
+The block `d2·d3 = 0` of the expanded presentation is derived GENERICALLY from the base's `d2·d3 = 0`
+plus two honest base-shape facts (`base` is free of its own fresh index; its firing lists are indexed by
+its own rules).  The proof splits the `R + 1` rule sum into the old rules — where the boundary blocks
+AGREE with the base — and the fresh rule, whose `d3` row VANISHES.  All the index bookkeeping is
+structural (`Nat`, `List`), no `omega`. -/
+
+/-- `0 + value = value` — structural (`natZeroAdd` is taken elsewhere in the repo). -/
+theorem natZeroAddEqSelf : ∀ (value : Nat), 0 + value = value
+  | 0 => rfl
+  | value + 1 => congrArg (· + 1) (natZeroAddEqSelf value)
+
+/-- `(leftValue + 1) + rightValue = leftValue + (rightValue + 1)` — structural on `rightValue`. -/
+theorem natSuccAddEqAddSucc :
+    ∀ (leftValue rightValue : Nat), (leftValue + 1) + rightValue = leftValue + (rightValue + 1)
+  | _, 0 => rfl
+  | leftValue, rightValue + 1 => congrArg (· + 1) (natSuccAddEqAddSucc leftValue rightValue)
+
+/-- `0 < value + 1` — the successor is positive, by the `Nat.le` constructors. -/
+theorem natZeroLtSucc : ∀ (value : Nat), 0 < value + 1
+  | 0 => Nat.le.refl
+  | value + 1 => Nat.le.step (natZeroLtSucc value)
+
+/-- Successor monotonicity of `≤` — induction on the `Nat.le` derivation, constructor-injective. -/
+theorem natSuccLeSucc :
+    ∀ {lowValue highValue : Nat}, lowValue ≤ highValue → lowValue + 1 ≤ highValue + 1
+  | _, _, Nat.le.refl => Nat.le.refl
+  | _, _, Nat.le.step lowerStep => Nat.le.step (natSuccLeSucc lowerStep)
+
+/-- `value < bound + 1` splits into `value < bound` or `value = bound` — the row-case split for the
+well-formedness proof, structural on both arguments. -/
+theorem natLtSuccCases : ∀ {value bound : Nat}, value < bound + 1 → value < bound ∨ value = bound
+  | 0, 0, _ => Or.inr rfl
+  | 0, bound + 1, _ => Or.inl (natZeroLtSucc bound)
+  | value + 1, 0, isBelow => Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isBelow))
+  | value + 1, bound + 1, isBelow =>
+      match natLtSuccCases (natLeOfSuccLeSucc isBelow) with
+      | Or.inl valueLtBound => Or.inl (natSuccLeSucc valueLtBound)
+      | Or.inr valueEqBound => Or.inr (congrArg (· + 1) valueEqBound)
+
+/-- Reading row `rowIndex < rowCount` of the generator-indexed `d2` row block returns the abelianized
+row for generator `startGenerator + rowIndex` — structural on the row count. -/
+theorem walkerPresentationDimOneRowsGet (rules : List (List Nat × List Nat)) :
+    ∀ (startGenerator rowCount rowIndex : Nat), rowIndex < rowCount →
+      listGetWithDefault [] (walkerPresentationDimOneRows rules startGenerator rowCount) rowIndex
+        = walkerPresentationDimOneRow (startGenerator + rowIndex) rules
+  | _, 0, rowIndex, isBelow => absurd isBelow (Nat.not_lt_zero rowIndex)
+  | _, _ + 1, 0, _ => rfl
+  | startGenerator, rowCount + 1, rowIndex + 1, isBelow =>
+      (walkerPresentationDimOneRowsGet rules (startGenerator + 1) rowCount rowIndex
+          (natLeOfSuccLeSucc isBelow)).trans
+        (congrArg (fun generatorIndex => walkerPresentationDimOneRow generatorIndex rules)
+          (natSuccAddEqAddSucc startGenerator rowIndex))
+
+/-- Reading row `rowIndex < rowCount` of the rule-indexed `d3` row block returns the abelianized cofork
+row for rule `startRule + rowIndex` — structural on the row count. -/
+theorem walkerPresentationDimTwoRowsGet (criticalPairs : List (List Nat × List Nat × List Nat)) :
+    ∀ (startRule rowCount rowIndex : Nat), rowIndex < rowCount →
+      listGetWithDefault [] (walkerPresentationDimTwoRows criticalPairs startRule rowCount) rowIndex
+        = walkerPresentationDimTwoRow (startRule + rowIndex) criticalPairs
+  | _, 0, rowIndex, isBelow => absurd isBelow (Nat.not_lt_zero rowIndex)
+  | _, _ + 1, 0, _ => rfl
+  | startRule, rowCount + 1, rowIndex + 1, isBelow =>
+      (walkerPresentationDimTwoRowsGet criticalPairs (startRule + 1) rowCount rowIndex
+          (natLeOfSuccLeSucc isBelow)).trans
+        (congrArg (fun ruleIndex => walkerPresentationDimTwoRow ruleIndex criticalPairs)
+          (natSuccAddEqAddSucc startRule rowIndex))
+
+/-- The abelianized `d2` row distributes over a rule-list append — structural on the left rules, cons
+congruence (no `List.map_append`). -/
+theorem walkerPresentationDimOneRowAppendDistrib (generator : Nat) :
+    ∀ (leftRules rightRules : List (List Nat × List Nat)),
+      walkerPresentationDimOneRow generator (leftRules ++ rightRules)
+        = walkerPresentationDimOneRow generator leftRules
+            ++ walkerPresentationDimOneRow generator rightRules
+  | [], _ => rfl
+  | (sourceWord, targetWord) :: remainingRules, rightRules =>
+      congrArg
+        (fun remainingRow =>
+          (Int.ofNat (countGeneratorOccurrences generator targetWord)
+            - Int.ofNat (countGeneratorOccurrences generator sourceWord)) :: remainingRow)
+        (walkerPresentationDimOneRowAppendDistrib generator remainingRules rightRules)
+
+/-- Reading an index below the left list's length ignores the appended tail — structural. -/
+theorem listGetWithDefaultAppendLeft {Entry : Type} (defaultEntry : Entry) :
+    ∀ (leftEntries rightEntries : List Entry) (index : Nat), index < leftEntries.length →
+      listGetWithDefault defaultEntry (leftEntries ++ rightEntries) index
+        = listGetWithDefault defaultEntry leftEntries index
+  | [], _, index, isBelow => absurd isBelow (Nat.not_lt_zero index)
+  | _ :: _, _, 0, _ => rfl
+  | _ :: tailEntries, rightEntries, index + 1, isBelow =>
+      listGetWithDefaultAppendLeft defaultEntry tailEntries rightEntries index
+        (natLeOfSuccLeSucc isBelow)
+
+/-- Two finite sums whose summands agree below the count are equal — structural on the count. -/
+theorem sumOverIndicesCongrBelow (leftSummand rightSummand : Nat → Int) :
+    ∀ (count : Nat), (∀ index, index < count → leftSummand index = rightSummand index) →
+      sumOverIndices count leftSummand = sumOverIndices count rightSummand
+  | 0, _ => rfl
+  | count + 1, agreeBelow =>
+      (congrArg (· + leftSummand count)
+          (sumOverIndicesCongrBelow leftSummand rightSummand count
+            (fun index isBelow => agreeBelow index (Nat.le.step isBelow)))).trans
+        (congrArg (sumOverIndices count rightSummand + ·) (agreeBelow count Nat.le.refl))
+
+/-- A finite sum whose summands are all zero below the count is zero — structural on the count. -/
+theorem sumOverIndicesZeroBelow (summand : Nat → Int) :
+    ∀ (count : Nat), (∀ index, index < count → summand index = 0) →
+      sumOverIndices count summand = 0
+  | 0, _ => rfl
+  | count + 1, allZeroBelow =>
+      (congrArg (· + summand count)
+          (sumOverIndicesZeroBelow summand count
+            (fun index isBelow => allZeroBelow index (Nat.le.step isBelow)))).trans
+        ((congrArg (0 + ·) (allZeroBelow count Nat.le.refl)).trans rfl)
+
+/-- ★ **The old `d2` columns AGREE with the base.**  For an original generator/rule index, the expanded
+`d2` entry equals the base `d2` entry — the base block sits index-stable at the top-left. -/
+theorem freshGeneratorExpansionOldColumnD2Agrees
+    (base : WalkerPresentation) (freshRuleWord : List Nat)
+    (genIndex ruleIndex : Nat)
+    (genBelow : genIndex < base.oneGeneratorCount) (ruleBelow : ruleIndex < base.rules.length) :
+    (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimOne.entryAt
+        genIndex ruleIndex
+      = base.computeBoundaryDimOne.entryAt genIndex ruleIndex := by
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (walkerPresentationDimOneRows (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]) 0
+          (base.oneGeneratorCount + 1)) genIndex) ruleIndex
+    = listGetWithDefault 0
+      (listGetWithDefault [] (walkerPresentationDimOneRows base.rules 0 base.oneGeneratorCount)
+        genIndex) ruleIndex
+  rw [walkerPresentationDimOneRowsGet (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]) 0
+        (base.oneGeneratorCount + 1) genIndex (Nat.le.step genBelow),
+      walkerPresentationDimOneRowsGet base.rules 0 base.oneGeneratorCount genIndex genBelow,
+      natZeroAddEqSelf genIndex,
+      walkerPresentationDimOneRowAppendDistrib genIndex base.rules
+        [([base.oneGeneratorCount], freshRuleWord)],
+      listGetWithDefaultAppendLeft 0 (walkerPresentationDimOneRow genIndex base.rules)
+        (walkerPresentationDimOneRow genIndex [([base.oneGeneratorCount], freshRuleWord)]) ruleIndex
+        (by rw [walkerPresentationDimOneRowLength]; exact ruleBelow)]
+
+/-- ★ **The old `d3` rows AGREE with the base.**  For an original rule index, the expanded `d3` row
+equals the base `d3` row — appending the fresh rule row does not disturb the earlier rows. -/
+theorem freshGeneratorExpansionOldRowD3Agrees
+    (base : WalkerPresentation) (freshRuleWord : List Nat)
+    (ruleIndex pairIndex : Nat) (ruleBelow : ruleIndex < base.rules.length) :
+    (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimTwo.entryAt
+        ruleIndex pairIndex
+      = base.computeBoundaryDimTwo.entryAt ruleIndex pairIndex := by
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (walkerPresentationDimTwoRows base.criticalPairs 0
+          (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]).length) ruleIndex) pairIndex
+    = listGetWithDefault 0
+      (listGetWithDefault [] (walkerPresentationDimTwoRows base.criticalPairs 0 base.rules.length)
+        ruleIndex) pairIndex
+  rw [walkerPresentationDimTwoRowsGet base.criticalPairs 0
+        (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]).length ruleIndex
+        (by rw [listAppendSingletonLength]; exact Nat.le.step ruleBelow),
+      walkerPresentationDimTwoRowsGet base.criticalPairs 0 base.rules.length ruleIndex ruleBelow]
+
+/-- ★ **The fresh-generator `d2` row VANISHES on the old rules.**  Because the base uses only its own
+generators (`baseFreshGeneratorRowIsZero`), the new generator does not occur in any base rule, so its
+`d2` row is zero over the original rule columns. -/
+theorem freshGeneratorExpansionNewGeneratorRowVanishes
+    (base : WalkerPresentation) (freshRuleWord : List Nat)
+    (baseFreshGeneratorRowIsZero :
+      walkerPresentationDimOneRow base.oneGeneratorCount base.rules
+        = List.replicate base.rules.length 0)
+    (ruleIndex : Nat) (ruleBelow : ruleIndex < base.rules.length) :
+    (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimOne.entryAt
+      base.oneGeneratorCount ruleIndex = 0 := by
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (walkerPresentationDimOneRows (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]) 0
+          (base.oneGeneratorCount + 1)) base.oneGeneratorCount) ruleIndex = 0
+  rw [walkerPresentationDimOneRowsGet (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]) 0
+        (base.oneGeneratorCount + 1) base.oneGeneratorCount Nat.le.refl,
+      natZeroAddEqSelf base.oneGeneratorCount,
+      walkerPresentationDimOneRowAppendDistrib base.oneGeneratorCount base.rules
+        [([base.oneGeneratorCount], freshRuleWord)],
+      listGetWithDefaultAppendLeft 0 (walkerPresentationDimOneRow base.oneGeneratorCount base.rules)
+        (walkerPresentationDimOneRow base.oneGeneratorCount [([base.oneGeneratorCount], freshRuleWord)])
+        ruleIndex (by rw [walkerPresentationDimOneRowLength]; exact ruleBelow),
+      baseFreshGeneratorRowIsZero, listGetReplicateZeroIsZero]
+
+/-- ★ **The fresh-rule `d3` row VANISHES.**  Because the base's firing lists are indexed by its own
+rules (`baseFreshRuleRowIsZero`), reading the fresh rule index in every critical pair returns zero, so
+the appended `d3` row is entirely zero. -/
+theorem freshGeneratorExpansionNewRuleRowVanishes
+    (base : WalkerPresentation) (freshRuleWord : List Nat)
+    (baseFreshRuleRowIsZero :
+      walkerPresentationDimTwoRow base.rules.length base.criticalPairs
+        = List.replicate base.criticalPairs.length 0)
+    (pairIndex : Nat) :
+    (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimTwo.entryAt
+      base.rules.length pairIndex = 0 := by
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (walkerPresentationDimTwoRows base.criticalPairs 0
+          (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]).length) base.rules.length)
+      pairIndex = 0
+  rw [walkerPresentationDimTwoRowsGet base.criticalPairs 0
+        (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]).length base.rules.length
+        (by rw [listAppendSingletonLength]; exact Nat.le.refl),
+      natZeroAddEqSelf base.rules.length, baseFreshRuleRowIsZero, listGetReplicateZeroIsZero]
+
+/-- ★★ **THE GENERIC WELL-FORMEDNESS OF THE FRESH-GENERATOR EXPANSION.**  Given the base's `d2·d3 = 0`
+and two honest base-shape facts (the base is free of its own fresh index; its firing lists are indexed by
+its own rules), the expanded presentation satisfies `d2·d3 = 0`.  The `R + 1` rule sum splits into the
+old rules — where the boundary blocks agree with the base (`baseWellFormed` on rows `< G`, the zero
+fresh-generator row on row `= G`) — and the fresh rule, whose `d3` row vanishes.  Route A: fully generic
+over the base presentation. -/
+theorem freshGeneratorExpansionIsWellFormedOfBase
+    (base : WalkerPresentation) (freshRuleWord : List Nat)
+    (baseWellFormed : WellFormedWalkerPresentation base)
+    (baseFreshGeneratorRowIsZero :
+      walkerPresentationDimOneRow base.oneGeneratorCount base.rules
+        = List.replicate base.rules.length 0)
+    (baseFreshRuleRowIsZero :
+      walkerPresentationDimTwoRow base.rules.length base.criticalPairs
+        = List.replicate base.criticalPairs.length 0) :
+    WellFormedWalkerPresentation (expandWalkerPresentationWithFreshGenerator base freshRuleWord) := by
+  intro rowIndex colIndex rowBound colBound
+  have rowBound' : rowIndex < base.oneGeneratorCount + 1 := rowBound
+  have baseRangeZero :
+      sumOverIndices base.rules.length
+        (fun middleIndex =>
+          (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimOne.entryAt
+              rowIndex middleIndex
+          * (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimTwo.entryAt
+              middleIndex colIndex) = 0 := by
+    cases natLtSuccCases rowBound' with
+    | inl rowLtGenCount =>
+        have congrToBase :
+            sumOverIndices base.rules.length
+                (fun middleIndex =>
+                  (expandWalkerPresentationWithFreshGenerator base
+                      freshRuleWord).computeBoundaryDimOne.entryAt rowIndex middleIndex
+                  * (expandWalkerPresentationWithFreshGenerator base
+                      freshRuleWord).computeBoundaryDimTwo.entryAt middleIndex colIndex)
+              = sumOverIndices base.rules.length
+                (fun middleIndex =>
+                  base.computeBoundaryDimOne.entryAt rowIndex middleIndex
+                  * base.computeBoundaryDimTwo.entryAt middleIndex colIndex) :=
+          sumOverIndicesCongrBelow _ _ base.rules.length
+            (fun middleIndex middleBelow => by
+              show (expandWalkerPresentationWithFreshGenerator base
+                    freshRuleWord).computeBoundaryDimOne.entryAt rowIndex middleIndex
+                  * (expandWalkerPresentationWithFreshGenerator base
+                    freshRuleWord).computeBoundaryDimTwo.entryAt middleIndex colIndex
+                = base.computeBoundaryDimOne.entryAt rowIndex middleIndex
+                  * base.computeBoundaryDimTwo.entryAt middleIndex colIndex
+              rw [freshGeneratorExpansionOldColumnD2Agrees base freshRuleWord rowIndex middleIndex
+                    rowLtGenCount middleBelow,
+                  freshGeneratorExpansionOldRowD3Agrees base freshRuleWord middleIndex colIndex
+                    middleBelow])
+        exact congrToBase.trans (baseWellFormed rowIndex colIndex rowLtGenCount colBound)
+    | inr rowEqGenCount =>
+        exact sumOverIndicesZeroBelow
+          (fun middleIndex =>
+            (expandWalkerPresentationWithFreshGenerator base
+                freshRuleWord).computeBoundaryDimOne.entryAt rowIndex middleIndex
+            * (expandWalkerPresentationWithFreshGenerator base
+                freshRuleWord).computeBoundaryDimTwo.entryAt middleIndex colIndex)
+          base.rules.length
+          (fun middleIndex middleBelow => by
+            show (expandWalkerPresentationWithFreshGenerator base
+                  freshRuleWord).computeBoundaryDimOne.entryAt rowIndex middleIndex
+                * (expandWalkerPresentationWithFreshGenerator base
+                  freshRuleWord).computeBoundaryDimTwo.entryAt middleIndex colIndex = 0
+            rw [rowEqGenCount,
+                freshGeneratorExpansionNewGeneratorRowVanishes base freshRuleWord
+                  baseFreshGeneratorRowIsZero middleIndex middleBelow,
+                intZeroMul])
+  have freshTermZero :
+      (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimOne.entryAt
+          rowIndex base.rules.length
+        * (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimTwo.entryAt
+          base.rules.length colIndex = 0 :=
+    (congrArg
+      ((expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimOne.entryAt
+          rowIndex base.rules.length * ·)
+      (freshGeneratorExpansionNewRuleRowVanishes base freshRuleWord baseFreshRuleRowIsZero
+        colIndex)).trans (Int.mul_zero _)
+  rw [freshGeneratorExpansionBumpsRuleCount base freshRuleWord]
+  exact (congrArg
+      (· + (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimOne.entryAt
+        rowIndex base.rules.length
+        * (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimTwo.entryAt
+          base.rules.length colIndex) baseRangeZero).trans
+    ((congrArg (0 + ·) freshTermZero).trans rfl)
+
+/-- ★★ **THE GENERIC EXPANDED CHAIN COMPLEX.**  Every base presentation satisfying the two shape facts
+yields a full `AugmentedDirectedComplex` for its fresh-generator expansion, through the shipped generic
+`walkerPresentationChainComplex` gated on the generic well-formedness. -/
+def freshGeneratorExpansionChainComplex (base : WalkerPresentation) (freshRuleWord : List Nat)
+    (baseWellFormed : WellFormedWalkerPresentation base)
+    (baseFreshGeneratorRowIsZero :
+      walkerPresentationDimOneRow base.oneGeneratorCount base.rules
+        = List.replicate base.rules.length 0)
+    (baseFreshRuleRowIsZero :
+      walkerPresentationDimTwoRow base.rules.length base.criticalPairs
+        = List.replicate base.criticalPairs.length 0) : AugmentedDirectedComplex :=
+  walkerPresentationChainComplex (expandWalkerPresentationWithFreshGenerator base freshRuleWord)
+    (freshGeneratorExpansionIsWellFormedOfBase base freshRuleWord baseWellFormed
+      baseFreshGeneratorRowIsZero baseFreshRuleRowIsZero)
+
+/-- The r2 Tietze base is free of its own fresh index (`#u` in every base rule word is zero) — `rfl`. -/
+theorem tietzeZmodThreeBaseFreshGeneratorRowIsZero :
+    walkerPresentationDimOneRow tietzeZmodThreePresentation.oneGeneratorCount
+        tietzeZmodThreePresentation.rules
+      = List.replicate tietzeZmodThreePresentation.rules.length 0 := rfl
+
+/-- The r2 Tietze base's firing lists are indexed by its four rules (index `4` reads zero) — `rfl`. -/
+theorem tietzeZmodThreeBaseFreshRuleRowIsZero :
+    walkerPresentationDimTwoRow tietzeZmodThreePresentation.rules.length
+        tietzeZmodThreePresentation.criticalPairs
+      = List.replicate tietzeZmodThreePresentation.criticalPairs.length 0 := rfl
+
+/-- ★★ **The r2-expanded presentation is WELL-FORMED, through the GENERIC block theorem** — the two rfl
+base-shape facts and the shipped r2 `d2·d3 = 0` fed into `freshGeneratorExpansionIsWellFormedOfBase`.
+The generic well-formedness is non-vacuously inhabited. -/
+theorem handProbeExpandedTietzePresentationIsWellFormed :
+    WellFormedWalkerPresentation handProbeExpandedTietzePresentation :=
+  freshGeneratorExpansionIsWellFormedOfBase tietzeZmodThreePresentation []
+    tietzeZmodThreePresentationIsWellFormed
+    tietzeZmodThreeBaseFreshGeneratorRowIsZero tietzeZmodThreeBaseFreshRuleRowIsZero
+
+/-- ★★ **The r2-expanded `AugmentedDirectedComplex`, through the GENERIC constructor** — a concrete
+expanded chain complex built by `freshGeneratorExpansionChainComplex`. -/
+def handProbeExpandedTietzeChainComplex : AugmentedDirectedComplex :=
+  freshGeneratorExpansionChainComplex tietzeZmodThreePresentation []
+    tietzeZmodThreePresentationIsWellFormed
+    tietzeZmodThreeBaseFreshGeneratorRowIsZero tietzeZmodThreeBaseFreshRuleRowIsZero
+
 /-! ## B3 — the generic homology-preservation theorem (the reader-level invariance)
 
 The single Tietze move — adjoin `t` with `t ⟹ w` — inserts exactly ONE unit into the Smith diagonal of
