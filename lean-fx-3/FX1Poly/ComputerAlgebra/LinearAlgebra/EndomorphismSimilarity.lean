@@ -137,4 +137,80 @@ def endomorphismDegenerateScaleWitness : EndomorphismSimilarityWitness :=
 theorem endomorphismDegenerateScaleRejected :
     ¬ endomorphismDegenerateScaleWitness.WitnessesSimilarity := by decide
 
+/-! ## Separator engine 1: the characteristic polynomial (equal char-poly is NECESSARY for similarity)
+
+Ascending-coefficient list of `det(x·I − M)`, in closed form for the adjudicated sizes (`n = 2, 3`),
+reusing the shipped exact cofactor determinant for the constant term.  A `≠` between two char-poly
+lists is a machine-checked DISsimilarity certificate (contrapositive of "similar ⇒ equal char-poly").
+
+Honest wall: the GENERAL `det(x·I − M)` over `ℚ[x]` — the complete invariant-factor separator — needs
+a univariate polynomial matrix carrier that does NOT ship (no `IntPolynomial`, no `x·I − M`).  That,
+and Smith-over-`ℚ[x]` when eigenvalues are irrational, is the r2 boundary. -/
+
+/-- The characteristic-polynomial coefficients of `matrix`, ascending (`[c₀, c₁, …, cₙ = 1]`), in
+closed form at `n = 2` (`x² − tr·x + det`) and `n = 3` (`x³ − c₁x² + c₂x − c₃`).  Other sizes return
+`[]` (out of r1 scope). -/
+def endomorphismCharPolyCoefficients (dimension : Nat) (matrix : SetoidMatrix Int) : List Int :=
+  match dimension with
+  | 2 =>
+      let traceValue := matrix.entry 0 0 + matrix.entry 1 1
+      [intCofactorDet 2 matrix, -traceValue, 1]
+  | 3 =>
+      let traceValue := matrix.entry 0 0 + matrix.entry 1 1 + matrix.entry 2 2
+      let principalTwoMinorSum :=
+        (matrix.entry 0 0 * matrix.entry 1 1 - matrix.entry 0 1 * matrix.entry 1 0)
+          + (matrix.entry 0 0 * matrix.entry 2 2 - matrix.entry 0 2 * matrix.entry 2 0)
+          + (matrix.entry 1 1 * matrix.entry 2 2 - matrix.entry 1 2 * matrix.entry 2 1)
+      [-(intCofactorDet 3 matrix), principalTwoMinorSum, -traceValue, 1]
+  | _ => []
+
+/-- `source` and `target` are dissimilar because their characteristic polynomials differ. -/
+def EndomorphismDissimilarByCharPoly (dimension : Nat) (source target : SetoidMatrix Int) : Prop :=
+  endomorphismCharPolyCoefficients dimension source
+    ≠ endomorphismCharPolyCoefficients dimension target
+
+/-- Grounding: the `2×2` char-poly of `[[1,1],[0,3]]` is `x² − 4x + 3` (trace 4, det 3). -/
+theorem endomorphismCharPolyTwoByTwoExample :
+    endomorphismCharPolyCoefficients 2 (setoidMatrixOfRows [[1, 1], [0, 3]]) = [3, -4, 1] := by decide
+
+/-- Grounding: the `3×3` char-poly of `diag(2,3,4)` is `x³ − 9x² + 26x − 24`. -/
+theorem endomorphismCharPolyThreeByThreeExample :
+    endomorphismCharPolyCoefficients 3 (setoidMatrixOfRows [[2, 0, 0], [0, 3, 0], [0, 0, 4]])
+      = [-24, 26, -9, 1] := by decide
+
+/-! ## Separator engine 2: the `2×2` rank (separates the equal-char-poly nilpotents)
+
+The rank at `2×2` in closed form via the shipped determinant: full rank `2` when `det ≠ 0`, else `0`
+for the zero matrix and `1` otherwise.  A `≠` between two ranks is a machine-checked dissimilarity
+certificate (rank is a similarity invariant), and it separates the subtle `0` vs Jordan-block pair
+that char-poly cannot see.
+
+Honest wall: `3×3` and higher rank needs a general `k×k` minor selector (the shipped determinant only
+deletes row 0); the complete NILPOTENT separator is the rank sequence `rank(Mᵏ)`, which needs a matrix
+power — both r1-stretch.  The smallest equal-char-poly, equal-`rank(M)`, still-dissimilar pair is
+`4×4` (`J(2)⊕J(2)` vs `J(3)⊕J(1)`), separated only at `rank(M²)`; r1's `rank(M)` cannot see it. -/
+
+/-- The rank of a `2×2` integer matrix (a similarity invariant): `2` if `det ≠ 0`, else `0`/`1`. -/
+def endomorphismRank2 (matrix : SetoidMatrix Int) : Nat :=
+  if intCofactorDet 2 matrix = 0 then
+    (if matrix.entry 0 0 = 0 ∧ matrix.entry 0 1 = 0 ∧ matrix.entry 1 0 = 0 ∧ matrix.entry 1 1 = 0
+      then 0 else 1)
+  else 2
+
+/-- `source` and `target` are dissimilar because their `2×2` ranks differ. -/
+def EndomorphismDissimilarByRank (source target : SetoidMatrix Int) : Prop :=
+  endomorphismRank2 source ≠ endomorphismRank2 target
+
+/-- Grounding: the zero matrix has rank `0`. -/
+theorem endomorphismRankZeroExample :
+    endomorphismRank2 (setoidMatrixOfRows [[0, 0], [0, 0]]) = 0 := by decide
+
+/-- Grounding: a single Jordan block `[[0,1],[0,0]]` has rank `1` (`det = 0`, not all-zero). -/
+theorem endomorphismRankOneExample :
+    endomorphismRank2 (setoidMatrixOfRows [[0, 1], [0, 0]]) = 1 := by decide
+
+/-- Grounding: the identity has full rank `2` (`det = 1 ≠ 0`). -/
+theorem endomorphismRankTwoExample :
+    endomorphismRank2 (setoidMatrixOfRows [[1, 0], [0, 1]]) = 2 := by decide
+
 end FX1Poly.ComputerAlgebra
