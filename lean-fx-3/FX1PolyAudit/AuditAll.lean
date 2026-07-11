@@ -233,6 +233,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalFiringBlockRea
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutVcompSkeletonAlignment
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalReaderStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallShiftOffset
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallShiftReanchor
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
