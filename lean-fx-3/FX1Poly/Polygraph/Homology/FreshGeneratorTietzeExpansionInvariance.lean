@@ -975,6 +975,108 @@ theorem expandedTietzeThirdGeneratorPreservesDegreeTwoInvariant :
 theorem expandedTietzeThirdGeneratorDegreeTwoHomologyIsZero :
     expandedTietzeThirdGeneratorDegreeTwoSmithData.homologyInvariant = ⟨0, []⟩ := rfl
 
+/-! ## r4 engine — the fresh-column pivot, the reader congruences, the clearing recipe
+
+The certificate-extension engine that turns the per-instance reader hypotheses of r3 into GENERIC facts
+about the expanded boundary.  The pivot at `(base.oneGeneratorCount, base.rules.length)` of the expanded
+`d2` is the UNIT `-1` exactly when `w` is `t`-free (`freshColumnPivotIsUnitOfFreshFree`); the reader
+`smithRankWithin` / `smithInvariantFactorsWithin` are congruent when the diagonals agree below the window
+(`smithRankWithinCongrBelow`, `smithInvariantFactorsWithinCongrBelow`); an all-zero diagonal has rank
+zero (`smithRankWithinAllZeroDiagonalIsZero`).  All structural on the `Nat` window / `List`. -/
+
+/-- Reading index `= leftEntries.length` of an append reads the head of the right list — the pivot lands
+at exactly the fresh-column position, one past the base block.  Structural on the left list. -/
+theorem listGetWithDefaultAppendRightStart {Entry : Type} (defaultEntry : Entry) :
+    ∀ (leftEntries rightEntries : List Entry),
+      listGetWithDefault defaultEntry (leftEntries ++ rightEntries) leftEntries.length
+        = listGetWithDefault defaultEntry rightEntries 0
+  | [], _ => rfl
+  | _ :: tailEntries, rightEntries =>
+      listGetWithDefaultAppendRightStart defaultEntry tailEntries rightEntries
+
+/-- ★★ **The fresh-column pivot is the unit `-1` when `w` is `t`-free.**  The expanded `d2` entry at the
+fresh generator row `base.oneGeneratorCount` and the fresh rule column `base.rules.length` reads
+`#t in w − #t in [t] = 0 − 1 = -1` — the `#t in w = 0` from `t`-freeness, the `#t in [t] = 1` by `rfl`.
+This is where `t`-freeness BITES: a `w` containing `t` (e.g. `w = [t]`) gives `#t in w = 1`, pivot `0`,
+no rank bump, and the homology would NOT be preserved.  The structural entry point
+`expandWalkerPresentationWithBaseWord` supplies `freshFree` by construction. -/
+theorem freshColumnPivotIsUnitOfFreshFree (base : WalkerPresentation) (freshRuleWord : List Nat)
+    (freshFree : countGeneratorOccurrences base.oneGeneratorCount freshRuleWord = 0) :
+    (expandWalkerPresentationWithFreshGenerator base freshRuleWord).computeBoundaryDimOne.entryAt
+      base.oneGeneratorCount base.rules.length = -1 := by
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (walkerPresentationDimOneRows (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]) 0
+          (base.oneGeneratorCount + 1)) base.oneGeneratorCount) base.rules.length = -1
+  rw [walkerPresentationDimOneRowsGet (base.rules ++ [([base.oneGeneratorCount], freshRuleWord)]) 0
+        (base.oneGeneratorCount + 1) base.oneGeneratorCount Nat.le.refl,
+      natZeroAddEqSelf base.oneGeneratorCount,
+      walkerPresentationDimOneRowAppendDistrib base.oneGeneratorCount base.rules
+        [([base.oneGeneratorCount], freshRuleWord)],
+      ← walkerPresentationDimOneRowLength base.oneGeneratorCount base.rules,
+      listGetWithDefaultAppendRightStart 0
+        (walkerPresentationDimOneRow base.oneGeneratorCount base.rules)
+        (walkerPresentationDimOneRow base.oneGeneratorCount [([base.oneGeneratorCount], freshRuleWord)])]
+  show Int.ofNat (countGeneratorOccurrences base.oneGeneratorCount freshRuleWord)
+      - Int.ofNat ((if base.oneGeneratorCount = base.oneGeneratorCount then 1 else 0) + 0) = -1
+  rw [freshFree, if_pos (rfl : base.oneGeneratorCount = base.oneGeneratorCount)]
+  rfl
+
+/-- ★ **Reader rank congruence below the window.**  Two matrices whose diagonal entries agree at every
+position below `windowSize` have the same `smithRankWithin` — the rank read is a function of the
+in-window diagonal only.  Structural on `windowSize`; the top `if diag = 0` branch is rewritten by the
+agreement, never `decide`d on a symbolic diagonal. -/
+theorem smithRankWithinCongrBelow (leftMatrix rightMatrix : IntMatrix) :
+    ∀ (windowSize : Nat),
+      (∀ position, position < windowSize →
+        leftMatrix.diagonalEntryAt position = rightMatrix.diagonalEntryAt position) →
+      smithRankWithin leftMatrix windowSize = smithRankWithin rightMatrix windowSize
+  | 0, _ => rfl
+  | windowSize + 1, agreeBelow => by
+      show (if leftMatrix.diagonalEntryAt windowSize = 0 then 0 else 1)
+          + smithRankWithin leftMatrix windowSize
+        = (if rightMatrix.diagonalEntryAt windowSize = 0 then 0 else 1)
+          + smithRankWithin rightMatrix windowSize
+      rw [agreeBelow windowSize Nat.le.refl,
+          smithRankWithinCongrBelow leftMatrix rightMatrix windowSize
+            (fun position isBelow => agreeBelow position (Nat.le.step isBelow))]
+
+/-- ★ **Reader invariant-factor congruence below the window.**  Two matrices whose diagonal entries
+agree below `windowSize` have the same `smithInvariantFactorsWithin` — the torsion read is a function of
+the in-window diagonal only.  Structural on `windowSize`, the top branch rewritten by the agreement. -/
+theorem smithInvariantFactorsWithinCongrBelow (leftMatrix rightMatrix : IntMatrix) :
+    ∀ (windowSize : Nat),
+      (∀ position, position < windowSize →
+        leftMatrix.diagonalEntryAt position = rightMatrix.diagonalEntryAt position) →
+      smithInvariantFactorsWithin leftMatrix windowSize
+        = smithInvariantFactorsWithin rightMatrix windowSize
+  | 0, _ => rfl
+  | windowSize + 1, agreeBelow => by
+      show (if leftMatrix.diagonalEntryAt windowSize = 0 then []
+              else [leftMatrix.diagonalEntryAt windowSize])
+          ++ smithInvariantFactorsWithin leftMatrix windowSize
+        = (if rightMatrix.diagonalEntryAt windowSize = 0 then []
+              else [rightMatrix.diagonalEntryAt windowSize])
+          ++ smithInvariantFactorsWithin rightMatrix windowSize
+      rw [agreeBelow windowSize Nat.le.refl,
+          smithInvariantFactorsWithinCongrBelow leftMatrix rightMatrix windowSize
+            (fun position isBelow => agreeBelow position (Nat.le.step isBelow))]
+
+/-- ★ **An all-zero diagonal has rank zero.**  When every diagonal entry below `windowSize` is `0` (the
+`d1` all-zero loop row), `smithRankWithin` is `0` — the generic form of the per-instance `rfl` rank the
+degree-1 reader consumes.  Structural on `windowSize`, `if_pos rfl` on each zero entry. -/
+theorem smithRankWithinAllZeroDiagonalIsZero (matrix : IntMatrix) :
+    ∀ (windowSize : Nat),
+      (∀ position, position < windowSize → matrix.diagonalEntryAt position = 0) →
+      smithRankWithin matrix windowSize = 0
+  | 0, _ => rfl
+  | windowSize + 1, allZero => by
+      show (if matrix.diagonalEntryAt windowSize = 0 then 0 else 1)
+          + smithRankWithin matrix windowSize = 0
+      rw [allZero windowSize Nat.le.refl, if_pos rfl,
+          smithRankWithinAllZeroDiagonalIsZero matrix windowSize
+            (fun position isBelow => allZero position (Nat.le.step isBelow))]
+
 /-! ## B5 — the ledger: what r3 landed, the r2 beyond-expansion frame, the R1 wall re-stated
 
 ### What r3 LANDED (shipped, zero-axiom)

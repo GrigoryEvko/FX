@@ -103,6 +103,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorPreservesDegreeTwoInvariant
 #assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorDegreeTwoHomologyIsZero
 
+-- r4 engine: the fresh-column pivot, the reader congruences, the append-right helper
+#assert_no_axioms FX1Poly.Polygraph.Homology.listGetWithDefaultAppendRightStart
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshColumnPivotIsUnitOfFreshFree
+#assert_no_axioms FX1Poly.Polygraph.Homology.smithRankWithinCongrBelow
+#assert_no_axioms FX1Poly.Polygraph.Homology.smithInvariantFactorsWithinCongrBelow
+#assert_no_axioms FX1Poly.Polygraph.Homology.smithRankWithinAllZeroDiagonalIsZero
+
 -- B5: the ledger
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithFreshGeneratorExpansionInvarianceCount
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithFreshGeneratorExpansionInvarianceCountValue
