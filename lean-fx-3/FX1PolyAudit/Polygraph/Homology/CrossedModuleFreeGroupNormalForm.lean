@@ -57,5 +57,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.sortByResidueSortedProbe
 #assert_no_axioms FX1Poly.Polygraph.Homology.residueInversionsSortedIsZero
 #assert_no_axioms FX1Poly.Polygraph.Homology.residueInversionsUnsortedIsOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModuleInjectivityObligation
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModuleNormalFormResidual
+#assert_no_axioms FX1Poly.Polygraph.Homology.realizeEmptyProbe
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModuleNormalFormImpliesInjectivity
+#assert_no_axioms FX1Poly.Polygraph.Homology.FreeCrossedModuleIsoLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleFreeGroupNormalFormLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleFreeGroupNormalFormIsComplete
 
 end FX1PolyAudit

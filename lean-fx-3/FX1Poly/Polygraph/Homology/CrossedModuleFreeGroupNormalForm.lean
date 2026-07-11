@@ -457,4 +457,127 @@ theorem residueInversionsSortedIsZero : residueInversions [genE0, genE1] = 0 := 
 /-- ★ Probe — the unsorted `[genE1, genE0]` has exactly one residue inversion (the pair `1 > 0`). -/
 theorem residueInversionsUnsortedIsOne : residueInversions [genE1, genE0] = 1 := rfl
 
+/-! ## B3 — the retargeted injectivity obligation and the iso at instance scope
+
+r3's `relationModuleInjectivityObligation` (`image x = 0 ⟹ PeifferEquiv x []`) is kept BYTE-INTACT and
+is NOT proved here (the truth-probe verdict of B1: it is morally false against the too-fine
+`PeifferEquiv`).  The honest re-target is the SAME obligation against the group-enriched relation.  Two
+`Prop`s are STATED (not asserted): the retargeted injectivity, and the r5 structure-theorem residual that
+implies it.  The bridge `freeCrossedModuleNormalFormImpliesInjectivity` is PROVED — it shows the residual
+is exactly the missing piece, so proving it in r5 upgrades r3's shipped surjection `identities ↠ ker(N)`
+to the full instance iso `π₂⟨s | s³⟩ ≅ ker(N)`. -/
+
+/-- ★ **The retargeted injectivity obligation** — `image x = 0 ⟹ FreeCrossedModuleEquiv x []`.  The r3
+obligation against the group-ENRICHED relation.  Stated as a `Prop` (a def), NOT asserted here in
+general; it is inhabited only at the literal deliveries (the moral counterexample + the two self-attacks
+above), with the general proof left to r5 via the structure theorem below. -/
+def freeCrossedModuleInjectivityObligation : Prop :=
+  ∀ element : PreCrossedElement,
+    crossedModuleImage element = groupRingZero →
+      FreeCrossedModuleEquiv element ([] : PreCrossedElement)
+
+/-- ★ **The r5 structure-theorem residual (NAMED, R1-hungry)** — every element reduces, under the
+group-enriched relation, to the residue-vector normal form `realize (image x)`.  This is the general
+`normalFormReduction` the recon defers to r5: its step (ii) conjugator normalization
+`⟨w, 0, ·⟩ ~ genE_{residue w}` and step (iii) twisted-swap `s^{k+3} → s^k` strip both need r1's residual
+R1 (`reduceWord` associativity + `mulWord a (invWord a) = []`), which is NOT shipped.  Stated as a `Prop`
+(a def), NEVER asserted / NEVER an `axiom`/`sorry`. -/
+def freeCrossedModuleNormalFormResidual : Prop :=
+  ∀ element : PreCrossedElement,
+    FreeCrossedModuleEquiv element
+      (realizeAugmentationZeroIdentity (crossedModuleImage element).coeffOne
+        (crossedModuleImage element).coeffT (crossedModuleImage element).coeffTsq)
+
+/-- Probe — the residue-vector normal form of the origin is the empty word: `realize 0 0 0 = []`. -/
+theorem realizeEmptyProbe :
+    realizeAugmentationZeroIdentity 0 0 0 = ([] : PreCrossedElement) := rfl
+
+/-- ★★ **The structure theorem implies the retargeted injectivity** — if every element reduces to its
+residue-vector normal form (`freeCrossedModuleNormalFormResidual`), then `image x = 0` forces
+`FreeCrossedModuleEquiv x []`, because `realize 0 0 0 = []`.  This is PROVED (the residual is exactly the
+missing piece): the r5 structure theorem upgrades r3's shipped surjection to the instance iso
+`π₂ ≅ ker(N)`.  The normal form is transported to `[]` by rewriting `image element = 0` through the
+realizer and collapsing `realize 0 0 0` (`realizeEmptyProbe`). -/
+theorem freeCrossedModuleNormalFormImpliesInjectivity
+    (normalFormReduces : freeCrossedModuleNormalFormResidual) :
+    freeCrossedModuleInjectivityObligation :=
+  fun element imageIsZero =>
+    let realizeCollapsesToEmpty :
+        realizeAugmentationZeroIdentity (crossedModuleImage element).coeffOne
+            (crossedModuleImage element).coeffT (crossedModuleImage element).coeffTsq
+          = ([] : PreCrossedElement) :=
+      congrArg (fun value => realizeAugmentationZeroIdentity (GroupRingZmod3.coeffOne value)
+        (GroupRingZmod3.coeffT value) (GroupRingZmod3.coeffTsq value)) imageIsZero
+    Eq.mp (congrArg (FreeCrossedModuleEquiv element) realizeCollapsesToEmpty)
+      (normalFormReduces element)
+
+/-! ## B4 — the honest r4 ledger
+
+The scope of what r4 delivered against `π₂⟨s | s³⟩ ≅ ker(N)`, and the exact residual state. -/
+
+/-- The six-obligation ledger of the r4 iso spike, honestly classified against
+`RelationModuleObligationStatus` (r3): what shipped zero-axiom vs the R1-hungry structure-theorem
+residual. -/
+structure FreeCrossedModuleIsoLedger where
+  /-- The encoding adjudication: r3's obligation is morally false against the too-fine `PeifferEquiv`;
+  the two-letter moral counterexample (image `0`, no `PeifferEquiv` move) is machine-checked
+  (`moralCounterexampleImageIsZero`), the negative verdict is documented. -/
+  encodingAdjudicationStatus : RelationModuleObligationStatus
+  /-- The group-enrichment congruence + soundness (`FreeCrossedModuleEquiv`,
+  `crossedModuleImageRespectsFreeCrossed`). -/
+  groupEnrichmentSoundnessStatus : RelationModuleObligationStatus
+  /-- The strengthened non-triviality `¬ FreeCrossedModuleEquiv ζ []`
+  (`rotationIdentityNotFreeCrossedTrivial`). -/
+  strengthenedNonTrivialityStatus : RelationModuleObligationStatus
+  /-- The two clean self-attacks `ζ ++ ζ⁻¹`, `(s·ζ) ++ (s·ζ)⁻¹` reduce to `[]`
+  (`selfAttackOneReduces`, `selfAttackThreeReduces`). -/
+  selfAttackStatus : RelationModuleObligationStatus
+  /-- The residue-keyed sort primitive + produced-sorted + the `(length, inversions)` measure
+  (`sortByResidueProducesSorted`, `residueInversions`). -/
+  normalFormKitStatus : RelationModuleObligationStatus
+  /-- The GENERAL retargeted injectivity `freeCrossedModuleInjectivityObligation` — the R1-hungry
+  structure-theorem residual (`freeCrossedModuleNormalFormResidual`), deferred to r5. -/
+  generalInjectivityStatus : RelationModuleObligationStatus
+
+/-- ★ **The r4 iso-spike ledger.**  Encoding adjudication / group enrichment / strengthened
+non-triviality / self-attacks / normal-form kit all SHIPPED zero-axiom; the general retargeted
+injectivity is the R1-hungry structure-theorem residual (r5).  The honest reading: r4 REPLACES the
+too-fine `PeifferEquiv` with the group-enriched `FreeCrossedModuleEquiv` (the honest home for the iso),
+ships the sort/cancel normal-form kit, and PROVES the structure-theorem-implies-injectivity bridge — so
+the instance iso `π₂⟨s | s³⟩ ≅ ker(N)` holds iff the named `freeCrossedModuleNormalFormResidual` also
+lands (its only obstruction is r1's residual R1). -/
+def crossedModuleFreeGroupNormalFormLedger : FreeCrossedModuleIsoLedger :=
+  { encodingAdjudicationStatus := RelationModuleObligationStatus.shipped
+  , groupEnrichmentSoundnessStatus := RelationModuleObligationStatus.shipped
+  , strengthenedNonTrivialityStatus := RelationModuleObligationStatus.shipped
+  , selfAttackStatus := RelationModuleObligationStatus.shipped
+  , normalFormKitStatus := RelationModuleObligationStatus.shipped
+  , generalInjectivityStatus := RelationModuleObligationStatus.structureTheoremResidual }
+
+/-- ★ **The #2199 r4 iso-spike marker.**  Shipped zero-axiom over r3:
+
+  * **B1 (the truth-probe + the enrichment)** — the r3 obligation is morally false against the too-fine
+    `PeifferEquiv` (the two-letter `[genE0, invGen genE0]` has `image 0` yet no reducing move —
+    `moralCounterexampleImageIsZero`, verdict documented); the additive `FreeCrossedModuleEquiv` adds the
+    two group cancellations, `crossedModuleImageRespectsFreeCrossed` extends soundness for free,
+    `rotationIdentityNotFreeCrossedTrivial` strengthens r2's non-triviality, and the two rotation-orbit
+    self-attacks `ζ ++ ζ⁻¹` / `(s·ζ) ++ (s·ζ)⁻¹` reduce to `[]` (`selfAttackOneReduces`,
+    `selfAttackThreeReduces`).  `PeifferEquiv` stays BYTE-INTACT (zero external dependents).
+  * **B2 (the normal-form kit)** — the residue-keyed sort `sortByResidue` (produced-sorted:
+    `sortByResidueProducesSorted`) + the `(length, inversions)` measure (`residueInversions`), the SORT
+    half of the deferred structure theorem (the CANCEL half is the two `FreeCrossedModuleEquiv` ctors).
+  * **B3 (the injectivity/iso)** — the retargeted `freeCrossedModuleInjectivityObligation` and the r5
+    residual `freeCrossedModuleNormalFormResidual` are STATED (`Prop` defs, never asserted); the bridge
+    `freeCrossedModuleNormalFormImpliesInjectivity` is PROVED, so proving the residual upgrades r3's
+    surjection to the instance iso `π₂⟨s | s³⟩ ≅ ker(N)`.
+  * **B4 (the ledger)** — `crossedModuleFreeGroupNormalFormLedger`: five obligations SHIPPED, the general
+    injectivity is the R1-hungry structure-theorem residual; the H2 program feed is r3's
+    `normAugmentationMatchesRelatorShadow` (`ε(N) = 3`) name-only (no chain-complex import, lane law
+    respected).
+
+The honest r4 close: the iso spike REPLACES the wrong relation and ships the normal-form kit; the general
+instance iso is one R1-round away (the named `freeCrossedModuleNormalFormResidual`).  Read the meaning
+from THIS docstring (the honest-record convention). -/
+def crossedModuleFreeGroupNormalFormIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
