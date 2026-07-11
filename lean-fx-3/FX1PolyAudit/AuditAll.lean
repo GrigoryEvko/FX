@@ -603,6 +603,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcSamePartitionFresh
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcJoinReachabilityProbe
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcDisjointBlockCommuteProbe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneFaithful
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCanonicalization
