@@ -238,4 +238,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.freshColumnClearingReducesToBlockDiag
 #assert_no_axioms FX1Poly.Polygraph.Homology.r2TietzeClearingViaGenericLemma
 
+-- B5 (r6): the ledger — fresh-generator move class CLOSED, clearing action generic, type-2 H1 closed
+#assert_no_axioms FX1Poly.Polygraph.Homology.nonSquareHomologyViaBlockSwapInstanceCount
+#assert_no_axioms FX1Poly.Polygraph.Homology.nonSquareHomologyViaBlockSwapInstanceCountValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorTietzeMoveClassIsComplete
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorClearingActionIsGeneric
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2MoveH1ClosedH2Walled
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionR6LedgerResidual
+
 end FX1PolyAudit

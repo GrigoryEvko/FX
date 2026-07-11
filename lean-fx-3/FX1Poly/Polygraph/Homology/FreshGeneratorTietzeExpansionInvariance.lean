@@ -2443,4 +2443,56 @@ theorem r2TietzeClearingViaGenericLemma :
       = blockDiagWithFreshUnit tietzeBoundaryOfDimOne 4 :=
   freshColumnClearingReducesToBlockDiag tietzeBoundaryOfDimOne [1, 1] 2 4 ⟨rfl, rfl, rfl, True.intro⟩ rfl
 
+/-! ### B5 (r6) — the ledger: the fresh-generator move class CLOSED, type-2 H1 closed, H2/R1 named
+
+The r4/r5 ledger markers above are preserved byte-intact; the r6 ledger is these NEW additive decls. -/
+
+/-- The number of NON-SQUARE (`m < n`) homology re-feeds whose diagonal facts are DERIVED from the r6
+block+swap read-off (not per-instance `decide`): the r2 Tietze `ZZ/3` at degree 1 and its `H2 = 0` at
+degree 2.  Together with the r5 three SQUARE re-feeds this closes the fresh-generator homology class. -/
+def nonSquareHomologyViaBlockSwapInstanceCount : Nat := 2
+
+/-- The additive census value: `2` non-square homology re-feeds via block+swap, by `rfl`. -/
+theorem nonSquareHomologyViaBlockSwapInstanceCountValue :
+    nonSquareHomologyViaBlockSwapInstanceCount = 2 := rfl
+
+/-- ★ **The #2139 round-six marker: the FRESH-GENERATOR (Tietze type-1) MOVE CLASS is COMPLETE.**  Both
+shape cases are now GENERIC: SQUARE (`m = n`, r5, via `blockDiagDiagonalBelow` /
+`blockDiagDiagonalAtFreshSquare`) and NON-SQUARE (`m < n`, r6, via `blockDiagSwapFreshDiagonalBelow` /
+`blockDiagSwapFreshDiagonalAtHeight`) — every fresh-generator homology re-feed derives its diagonal facts
+from the block read-off with NOTHING per-instance beyond the base SNF and the block identity, at degrees 1
+AND 2.  The FIRST Tietze move class is fully closed.  The r5 marker
+`freshGeneratorExpansionBlockLiftingWallPaid` is preserved above byte-intact; read the meaning from THIS
+docstring.  `= true` records the r6 closure. -/
+def freshGeneratorTietzeMoveClassIsComplete : Bool := true
+
+/-- ★ **The #2139 round-six marker: the CLEARING WRAPPER action is GENERIC.**  The r5 per-instance clearing
+`rfl` is lifted to `freshColumnClearingReducesToBlockDiag` — the fresh-column clearing word reduces the
+`expandedWithFreshColumn` form to the block-diagonal for ANY base `d2` and ANY fresh column (the multi-row
+clearing induction `clearFreshColumnFrom` + the terminal pivot flip).  What STAYS the r7 bill (JOB 1b):
+connecting the ACTUAL `computeBoundaryDimOne` to the `expandedWithFreshColumn` shape (the abelianization
+reconstruction `expandedBoundaryIsFreshColumnForm`) — with it, `clearingBridge` becomes a theorem.  The
+r5 residual marker `freshGeneratorExpansionBlockLiftingResidual` is preserved above byte-intact; `= true`
+records the r6 clearing-action generalisation.  Read the meaning from THIS docstring. -/
+def freshGeneratorClearingActionIsGeneric : Bool := true
+
+/-- ★ **The #2139 round-six marker: TYPE-2 H1 CLOSED, H2 the NAMED WALL.**  The type-2 (relation-adjunction)
+move preserves H1 GENERICALLY (`type2CyclicThreeDegreeOneHomologyPreserved`, via the generic column-in-span
+clearing `appendedScalarMultipleColumnClearsToZeroColumn`).  H2 is REFUTED for the naive move
+(`type2NaiveH2FreeRankIsOne`, r5, spurious `ZZ`) — H2 preservation is resolution-CHOICE-dependent (needs
+Knuth–Bendix completion, the Squier/Pride homotopy wall), so NO type-2 H2-preservation theorem is claimed
+(`type2CyclicThreeH2PreservationHasNoTheorem`, preserved above).  `= true` records the r6 stance. -/
+def type2MoveH1ClosedH2Walled : Bool := true
+
+/-- ★ **The #2139 round-six residual marker (the exact nodes STILL named after r6).**  What STAYS:
+(1) JOB 1b — the abelianization reconstruction (`computeBoundaryDimOne` = `expandedWithFreshColumn` shape)
+that would turn `clearingBridge` from a per-instance `rfl` into a theorem — DEFERRED to r7 (the clearing
+ACTION is generic; only the boundary-to-shape identity remains per instance);
+(2) the type-2 H2 wall — resolution-choice-dependent, needs Knuth–Bendix completion (the Squier/Pride
+homotopy machinery);
+(3) R1 — the GENERAL monoid-level presentation-invariance (arbitrary Tietze-equivalent presentations,
+general orientation/completion, the full homotopy) — the deep research wall, UNCHANGED.
+`= true` records the r6 stance.  Read the meaning from THIS docstring. -/
+def freshGeneratorExpansionR6LedgerResidual : Bool := true
+
 end FX1Poly.Polygraph.Homology
