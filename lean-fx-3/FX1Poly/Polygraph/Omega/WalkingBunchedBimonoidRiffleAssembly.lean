@@ -167,4 +167,96 @@ those markers keep their name and `= false` value byte-intact (cross-file, not e
 now stale — the word IS built.  NO star marker flips. -/
 def fxBunchedBimonoid_wideSwapGeneralRiffleWordShipped : Bool := true
 
+/-! # =========================================================================================
+    # B2 — THE STAGED BIALGEBRA NF + THE COLLISION MATRIX SIDE (matrix-correct at generic width)
+    # =========================================================================================
+-/
+
+/-- ★ **THE DELTA-STAGE `deltaStage m n : a^m => a^(m*n)`** — the tensor of `m` copies of the delta-fan
+`deltaFan n` (comultiply each of the `m` input strands into `n` copies), by structural recursion on the input
+count `m`: `0` is the empty stage; `m+1` fans the leading strand (`deltaFan n |> a^m`) then recurses on the
+remaining `m` strands under the placed `a^n` block.  The comultiplication half of the spider normal form. -/
+def bunchedBimonoidDeltaStage : Nat → Nat → CellExpr bunchedBimonoidOmegaComputad 2
+  | 0, _ => CellExpr.id bunchedBimonoidIdOne
+  | inputCountM + 1, fanWidthN => CellExpr.vcomp
+      (CellExpr.whiskerRight (bunchedBimonoidDeltaFan fanWidthN) (bunchedBimonoidAWordPow inputCountM))
+      (CellExpr.whiskerLeft (bunchedBimonoidAWordPow fanWidthN)
+        (bunchedBimonoidDeltaStage inputCountM fanWidthN))
+
+/-- ★ **THE MU-STAGE `muStage n m : a^(n*m) => a^n`** — the tensor of `n` copies of the mu-fold `muFold m`
+(merge each block of `m` strands into one output), by structural recursion on the output count `n`: `0` is the
+empty stage; `n+1` folds the leading block (`muFold m |> a^(n*m)`) then recurses on the remaining `n` blocks under
+the placed output strand `a`.  The multiplication half of the spider normal form. -/
+def bunchedBimonoidMuStage : Nat → Nat → CellExpr bunchedBimonoidOmegaComputad 2
+  | 0, _ => CellExpr.id bunchedBimonoidIdOne
+  | outputCountN + 1, foldWidthM => CellExpr.vcomp
+      (CellExpr.whiskerRight (bunchedBimonoidMuFold foldWidthM)
+        (bunchedBimonoidAWordPow (outputCountN * foldWidthM)))
+      (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen (bunchedBimonoidMuStage outputCountN foldWidthM))
+
+/-- ★★ **THE STAGED BIALGEBRA NORMAL FORM `bialgebraNF m n : a^m => a^n`** — the honest three-stage Lafont form
+`deltaStage(m,n) ; wideSwap(m,n) ; muStage(n,m)`: fan each of the `m` inputs into `n` copies, route grouped-by-input
+to grouped-by-output through the general riffle word `wideSwap` (B1), then fold each output block of `m` into one.
+As a map `evalCell (bialgebraNF m n) = matMul (muStage) (matMul (wideSwap) (deltaStage))` — the `n x m` all-ones,
+the same map as the wide collision `wideCollision m n`.  The general-width RESOLUTION of the collision waist, now
+constructible because `wideSwap` exists. -/
+def bunchedBimonoidBialgebraNF (m n : Nat) : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  bunchedBimonoidSpiderStaged (bunchedBimonoidDeltaStage m n) (bunchedBimonoidWideSwap m n)
+    (bunchedBimonoidMuStage n m)
+
+/-! ## B2 truth-probe outputs (the staged NF and the collision share their matrix) -/
+
+#eval bunchedBimonoidEvalCell (bunchedBimonoidBialgebraNF 2 2)
+#eval bunchedBimonoidEvalCell (bunchedBimonoidWideCollision 2 2)
+#eval bunchedBimonoidEvalCell (bunchedBimonoidBialgebraNF 2 3)
+#eval bunchedBimonoidEvalCell (bunchedBimonoidWideCollision 2 3)
+
+/-! ## B2 matrix probes (all `rfl` — the staged NF matches the collision at generic width) -/
+
+/-- ★★★ **THE STAGED NF MATCHES THE COLLISION AT `(2,2)`.**  `evalCell (bialgebraNF 2 2) = evalCell (wideCollision
+2 2)` (both `[[1,1],[1,1]]`), `rfl` — the flagship base, the CONV recursion's semantic target at width `(2,2)`. -/
+theorem bunchedBimonoidBialgebraNFMatchesCollisionTwoTwo :
+    bunchedBimonoidEvalCell (bunchedBimonoidBialgebraNF 2 2)
+      = bunchedBimonoidEvalCell (bunchedBimonoidWideCollision 2 2) := rfl
+
+/-- ★★★ **THE STAGED NF MATCHES THE COLLISION AT `(2,3)`.**  `evalCell (bialgebraNF 2 3) = evalCell (wideCollision
+2 3)` (both the `3 x 2` all-ones `[[1,1],[1,1],[1,1]]`), `rfl` — a GENUINE wider-than-`(2,2)` instance where the
+`wideSwap 2 3` word (a `6 x 6` perfect shuffle) is load-bearing.  The matrix side of the CONV recursion, closed at
+generic width on the nose. -/
+theorem bunchedBimonoidBialgebraNFMatchesCollisionTwoThree :
+    bunchedBimonoidEvalCell (bunchedBimonoidBialgebraNF 2 3)
+      = bunchedBimonoidEvalCell (bunchedBimonoidWideCollision 2 3) := rfl
+
+/-- ★★ **THE STAGED NF MATCHES THE COLLISION AT `(3,2)`.**  `evalCell (bialgebraNF 3 2) = evalCell (wideCollision
+3 2)` (both the `2 x 3` all-ones), `rfl` — the transposed grid. -/
+theorem bunchedBimonoidBialgebraNFMatchesCollisionThreeTwo :
+    bunchedBimonoidEvalCell (bunchedBimonoidBialgebraNF 3 2)
+      = bunchedBimonoidEvalCell (bunchedBimonoidWideCollision 3 2) := rfl
+
+/-- ★★ **THE STAGED NF MATCHES THE COLLISION AT `(3,3)`.**  `evalCell (bialgebraNF 3 3) = evalCell (wideCollision
+3 3)` (both the `3 x 3` all-ones), `rfl` — the square grid, where `wideSwap 3 3` is a `9 x 9` perfect shuffle. -/
+theorem bunchedBimonoidBialgebraNFMatchesCollisionThreeThree :
+    bunchedBimonoidEvalCell (bunchedBimonoidBialgebraNF 3 3)
+      = bunchedBimonoidEvalCell (bunchedBimonoidWideCollision 3 3) := rfl
+
+/-! ## The B2 markers — the matrix side is shipped, the CONV recursion is walled at its exact node -/
+
+/-- ★★ **ESTABLISHED (B2) — the staged bialgebra NF matrix side closes at generic width.**  `= true` records
+`bunchedBimonoid{DeltaStage,MuStage,BialgebraNF}` (the three-stage form now constructible because `wideSwap`
+exists) and `bunchedBimonoidBialgebraNFMatchesCollision{TwoTwo,TwoThree,ThreeTwo,ThreeThree}` — the staged NF and
+the wide collision share their `Mat(N)` map on the nose at four generic widths.  This is the SEMANTIC TARGET the
+CONV double induction must reach, now machine-checked at width beyond the flagship `(2,2)`. -/
+def fxBunchedBimonoid_stagedNormalFormMatrixSideShipped : Bool := true
+
+/-- ★ **THE `(m,n)` CONV RECURSION IS GATED ON A GENERIC-WIDTH NATURALITY SLIDE + COXETER — no flip.**  `= false`
+records the exact remaining node, now PRECISELY named (the r6/r7 `...wideCollisionConvRecursionUnbuilt` /
+`...wideCollisionRecursionStillUnbuilt` markers stay byte-intact, their denotation narrowing here): `wideSwap` and
+`bialgebraNF` are now BUILT and matrix-correct (B1 + B2 above), so the double induction
+`wideCollision m n ~ bialgebraNF m n` over the star scope is gated on exactly two lemmas — (a) a GENERIC-WIDTH
+naturality slide lifting the width-3 `bunchedBimonoid{Mu,Delta}NaturalitySlideConv` (`sigma` past a `mu`/`delta`
+block at arbitrary width `k`, whiskered by `whiskerRightCongr` / `whiskerRightFunctorial`), and (b) the B3
+`CoxeterWordUnique` bubble-sort to identify the induction's generated permutation word with `wideSwap`'s canonical
+bracketing.  NOT "the word does not exist" (it does) — the two heavy lemmas above it. -/
+def fxBunchedBimonoid_wideCollisionConvGatedOnGenericNaturality : Bool := false
+
 end FX1Poly.Polygraph.Omega

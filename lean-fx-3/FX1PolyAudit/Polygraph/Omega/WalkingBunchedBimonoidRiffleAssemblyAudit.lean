@@ -32,4 +32,20 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWideSwap
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWideSwapTwoTwoIsMiddleSwap
 
+-- B2 — the staged bialgebra NF + the collision matrix side (matrix-correct at generic width).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaStage
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuStage
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraNF
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraNFMatchesCollisionTwoTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraNFMatchesCollisionTwoThree
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraNFMatchesCollisionThreeTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraNFMatchesCollisionThreeThree
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_stagedNormalFormMatrixSideShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_wideCollisionConvGatedOnGenericNaturality
+
+-- Independent (non-fuel) axiom prints on the two staged recursive defs + the flagship generic-width NF match.
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaStage
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuStage
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraNFMatchesCollisionTwoThree
+
 end FX1PolyAudit
