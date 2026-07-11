@@ -530,4 +530,45 @@ theorem chainWindowedThroughPivots (seed : SmithCascadeLandsDivisibleSubBlock) :
         exact matrixDiagonalChainWindowedMonotone matrix pivotIndex _ chainHolds
           (Nat.le_trans (natMinLeLeft (Nat.min height width) (pivotIndex + (outerFuel + 1))) minLePivot)
 
+/-! ## NODE B — the kernel reduction theorem: seed ⟹ `repairChainHolds` (THE r20 verifier deliverable) -/
+
+/-- **NODE B — the seed yields the corrected driver's `repairChainHolds`.**  Instantiating the NODE A
+carrier at the driver start (`pivotIndex := 0`, `outerFuel := Nat.min height width`, matrix := the
+Phase-A output) collapses the cap to `Nat.min height width` (`Nat.zero_add` + `natMinSelf`), the base
+chain being vacuous; the SHIPPED read-off `smithChainPrefixOfDiagonalChainWindowed` then yields exactly
+the `SmithChainPrefix` conjunct that `smithReduceCompleteDriverOfChain` consumes.  This is the reduction
+r19 asserted in prose and the r19 verifier refuted — now a Lean theorem, hypothesis = the seed ALONE. -/
+theorem repairChainHoldsOfSeed (seed : SmithCascadeLandsDivisibleSubBlock) :
+    ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      SmithChainPrefix
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweepClearing (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        (Nat.min height width) height width :=
+  fun matrix height width isRect =>
+    smithChainPrefixOfDiagonalChainWindowed
+      ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+        (smithDivisibilityRepairSweepClearing (Nat.min height width)
+          (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+      (Nat.min height width) height width
+      (by
+        have windowedAtCap :=
+          chainWindowedThroughPivots seed (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+            0 height width
+            (applyOperationsPreservesRectangular _ matrix isRect)
+            (fun earlierIndex earlierLtZero => absurd earlierLtZero (Nat.not_lt_zero earlierIndex))
+        rw [Nat.zero_add, natMinSelf] at windowedAtCap
+        exact windowedAtCap)
+
+/-- **NODE B — the corrected driver totality on the seed ALONE.**  Feed the reduced chain
+`repairChainHoldsOfSeed` into the SHIPPED `smithReduceCompleteDriverOfChain`.  A pure structural
+assembly term (no kernel evaluation — the 3×3/4×4 whole-driver defeq ceiling is untouched).  After this
+brick the corrected driver's totality residual count is honestly ONE:
+`SmithCascadeLandsDivisibleSubBlock`. -/
+theorem smithReduceCompleteDriverOfSubBlockSeed (seed : SmithCascadeLandsDivisibleSubBlock) :
+    SmithReduceCompleteDriverStatement :=
+  smithReduceCompleteDriverOfChain (repairChainHoldsOfSeed seed)
+
 end FX1Poly.ComputerAlgebra

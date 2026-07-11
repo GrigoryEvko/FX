@@ -44,4 +44,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepClearingSucc
 #assert_no_axioms FX1Poly.ComputerAlgebra.chainWindowedThroughPivots
 
+/- H2-SMITH r20 — NODE B (B2): the kernel reduction theorem seed ⟹ repairChainHolds, and the driver
+   totality on the seed ALONE (structural assembly; no kernel evaluation). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.repairChainHoldsOfSeed
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfSubBlockSeed
+
 end FX1PolyAudit
