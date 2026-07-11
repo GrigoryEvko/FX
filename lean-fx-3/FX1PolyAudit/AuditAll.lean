@@ -1327,6 +1327,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidWideCollisionAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMiddleDeterminismAudit
 -- WP-PROP r6 (B3) — the per-constructor CONVERTIBILITY deltas of the additive NF-retraction (the syntactic lift of the r5 MATRIX census): the five generators convert to their staged spiders (mu_a~muFold2 / delta_a~deltaFan2 via strict chains, eta/eps/sigma definitional), the id/whisker cases lift by idCongr/whisker*Congr; the corrected-star assembly gated on the B1/B2 residuals (vcomp collision + determinism), no star flip, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRetractionConvDeltasAudit
+-- WP-PROP r6 (B4) — the BI cash-out: the three verbatim Node-A components (matMul assoc + identity units + block multiplicativity) literally shipped AND assembled at the matrix level, BUT the recon's unconditional cell-level absorber over the FREE carrier REFUTED (a mis-declared free gen breaks the strict unit law: eval 1x0 != 1x2) -- the honest correction of the Job-4 verdict; matrixStrictLawExtensionReached stays false byte-intact, no fabricated flip, zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStrictLawAbsorberAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
