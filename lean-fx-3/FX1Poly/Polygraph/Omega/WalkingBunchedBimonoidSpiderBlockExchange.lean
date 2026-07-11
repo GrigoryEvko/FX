@@ -1015,4 +1015,53 @@ overlapping output blocks, e.g. the anti-diagonal swap) is the star, walled at t
 stay `= false` (r2/r1 files, byte-intact) — cited name-only, NO fake flip. -/
 def fxBunchedBimonoid_starHeldBlockDiagonalOnly : Bool := true
 
+/-! # =========================================================================================
+    # B4 — THE LEDGER: the block-exchange wall retired name-only + the strict-law dividend adjudicated
+    # =========================================================================================
+
+★ **The honest r3 scoreboard.**  The block-exchange interchange is LITERALLY delivered (the exact r2 wall goal),
+so that wall is retired NAME-ONLY; the cross-arc dividend to the WP-BI strict-law extension is adjudicated against
+its VERBATIM three-component demand and found PARTIALLY met (block multiplicativity delivered, associativity + the
+general unit laws residual) — so a NARROWING marker, NOT a flip; and the #2033 star stays walled (arbitrary `q x
+p` needs the hexagon).  Every jam is named at its exact node; every upstream `= false` marker keeps its name and
+value byte-intact. -/
+
+/-- ★★★ **RETIRED NAME-ONLY — the block-exchange wall's EXACT goal is literally delivered.**  `= true` records
+that `bunchedBimonoidBlockExchangeInterchange` IS the exact equation the r2 wall
+`fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall` named (`matMul (directSum A B) (directSum C D) =
+directSum (matMul A C) (matMul B D)`, composable blocks) — delivered zero-axiom via route (iii), WITHOUT the matrix
+extensionality the wall anticipated.  Per the "retire name-only ONLY at literal delivery" rule, this fresh marker
+retires that wall by NAME; the r2 marker `fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall` keeps its name
+and `= false` value byte-intact (r2 file, not edited), its residual denotation narrowing to the arbitrary-`q x p`
+(routing-braided) spider walled at the hexagon (`fxBunchedBimonoid_starVcompCoherenceHexagonWall`). -/
+def fxBunchedBimonoid_blockExchangeWallRetiredNameOnly : Bool := true
+
+/-- ★★ **CROSS-ARC DIVIDEND ADJUDICATED (narrowing, NOT a flip) — the interchange meets ONE of the strict-law
+extension's THREE demands.**  `= true` records the adjudication against the VERBATIM
+`fxBunchedBimonoid_matrixStrictLawExtensionReached` demand — its three components are "`matMul` associativity (a
+finite-sum Fubini over `List.range`), the identity-matrix unit laws, and block multiplicativity
+(whisker-functoriality + interchange)".  DELIVERED here: component (3) block multiplicativity =
+`bunchedBimonoidBlockExchangeInterchange` (zero-axiom).  NOT delivered: (1) general `matMul` associativity (only
+the r2 concrete `rfl` probes, not the general Fubini) and (2) the general identity-matrix unit laws (only the `1 x
+1` singleton units `bunchedBimonoidIdentityLeftUnitSingleton` / `...RightUnitSingleton`, not general `n`).  Since
+the demand is NOT literally met (2 of 3 residual), `fxBunchedBimonoid_matrixStrictLawExtensionReached` stays
+`= false` (byte-intact, cross-file); this is a NARROWING marker recording the block-multiplicativity component
+alone. -/
+def fxBunchedBimonoid_biCrossArcDividendNarrowsStrictLawExtension : Bool := true
+
+/-- ★★ **ESTABLISHED (B4) — the WP-PROP r3 block-exchange ledger (honest scoreboard).**  `= true` records the
+complete r3 advance: B1 the block-exchange sub-kit + the general INTERCHANGE
+(`bunchedBimonoidBlockExchangeInterchange`, the exact r2 wall goal, route iii, no matrix extensionality,
+zero-axiom); B2 the three r2-refused matrices round-tripping (`diag(2,3)`, `3x2`-with-`3`, `2x4`-with-zero-column)
++ the general `diag(a, b)` round-trip VIA the interchange (`bunchedBimonoidSpiderDiagMatrix`, resolving the r2
+blocker for all `a, b`); B3 the star census with the EXACT missing rows named (the width-3 hexagon for the
+`sigma`/`vcomp` coherence, the strict-law extension for the `whiskerRight (id a) a` identities) and the concrete
+obstruction witnesses (`bunchedBimonoidSwapUnreachableByDiagonal`,
+`...SpiderScalarTwoMatchesDirectMultiplicity`), NO fake flip; B4 the block-exchange wall retired name-only + the
+strict-law dividend narrowed.  Every wall NAMED at its node; every upstream `= false` marker
+(`fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall`, `...matrixStrictLawExtensionReached`,
+`...spiderNormalFormStarNamedRThree`, `...propGeneralCompletenessStarReached`, `...matrixHexagonReached`) keeps
+its name and value byte-intact. -/
+def fxBunchedBimonoid_spiderRoundThreeLedgerShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega

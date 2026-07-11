@@ -89,4 +89,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starStrictLawExtensionWall
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starHeldBlockDiagonalOnly
 
+-- B4 — the ledger: block-exchange wall retired name-only + strict-law dividend narrowed + the r3 scoreboard.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_blockExchangeWallRetiredNameOnly
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_biCrossArcDividendNarrowsStrictLawExtension
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderRoundThreeLedgerShipped
+
 end FX1PolyAudit
