@@ -193,4 +193,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionBlockLiftingWallPaid
 #assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionBlockLiftingResidual
 
+-- B3 (r6): the NON-SQUARE presentation-to-homology assembly (m < n) + r2 Tietze deg-1/2 re-feeds
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorNonSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorNonSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeThirdGeneratorEndToEndDegreeOneViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeThirdGeneratorEndToEndDegreeTwoViaBlockLifting
+
 end FX1PolyAudit

@@ -1867,4 +1867,117 @@ dependent (needs Knuth–Bendix completion), the Squier/Pride homotopy wall (R1,
 records the r5 stance.  Read the meaning from THIS docstring. -/
 def freshGeneratorExpansionBlockLiftingResidual : Bool := true
 
+/-! ## r6 — the NON-SQUARE class closure + the type-2 H1 theorem + the H2 wall
+
+r5 left three named residuals (`freshGeneratorExpansionBlockLiftingResidual`, preserved above
+byte-intact): (1) the CLEARING wrapper stays per-instance (the r6 bill = the abelianization
+reconstruction, deferred to r7); (2) the NON-SQUARE (`m < n`) degree-1 homology re-feed stayed on the r4
+`decide` path — a generic swap-diagonal read-off was the r6 residual; (3) the type-2 move preserved H1
+(column-in-span) but its naive H2 read-off was REFUTED.
+
+r6 pays (2) and (3): the swap read-off `blockDiagSwapFreshDiagonal{Below,AtHeight}` (shipped in
+`BlockDiagonalCertificateLifting`) closes the non-square case, so the FRESH-GENERATOR (Tietze type-1)
+move class is now FULLY generic — SQUARE (r5) and NON-SQUARE (r6) both deriving their `fromHigherDiag…` /
+`intoLowerDiag…` facts from the block read-off with NOTHING per-instance beyond the base SNF and the block
+identity.  The type-2 H1 is lifted to a homology-invariant equality via the column-clearing certificate,
+and the r5 spurious-Z finding is recorded as a PERMANENT boundary decl (no H2 claim). -/
+
+/-! ### B3 (r6) — the NON-SQUARE presentation-to-homology assembly (`m < n`), diagonal facts via block+swap
+
+The r4 end-to-end theorem `freshGeneratorExpansionPreservesDegreeOne/TwoHomologyOfBase` took the two
+`fromHigherDiag…` (deg 1) / two `intoLowerDiag…` (deg 2) facts as per-instance `(by decide)` arguments.
+For the SQUARE base case (`m = n`) r5 derived them from `blockDiagDiagonalBelow` /
+`blockDiagDiagonalAtFreshSquare`.  For the NON-SQUARE base case (`m < n`: the r2 Tietze `d2` is `2 × 4`),
+the block's fresh unit lands off-diagonal at `(height, width)`; ONE generic `swapColumns height width`
+(the recipe's own reorder) moves it onto `(height, height)`, and the two swap read-offs
+`blockDiagSwapFreshDiagonal{Below,AtHeight}` discharge those facts — NOT per instance by `decide`.  The
+r4/r5 `…EndToEnd…` / `…ViaBlockLifting` decls are preserved byte-intact; the `…NonSquare…ViaBlockLifting`
+decls below are ADDITIVE. -/
+
+/-- ★★ **THE NON-SQUARE DEGREE-1 ASSEMBLY, via block+swap.**  For a NON-SQUARE base `d2` Smith normal
+form (`height × width` with `height < width`), the two `fromHigherDiag…` hypotheses of the r4 end-to-end
+degree-1 theorem are DERIVED from the swap read-off (`blockDiagSwapFreshDiagonalBelow` below the base
+window; `blockDiagSwapFreshDiagonalAtHeight` at the fresh window) — NOT discharged per instance by
+`decide`.  The from-higher SNF is the block with ONE generic `swapColumns height width` applied. -/
+theorem freshGeneratorNonSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+    (baseData expandedData : SmithHomologyData) (baseSNF : IntMatrix) (height width : Nat)
+    (snfRect : baseSNF.IsRectangular height width) (heightBelowWidth : height < width)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (baseWindowIsHeight : baseData.windowFromHigher = height)
+    (expandedWindowIsSuccessor : expandedData.windowFromHigher = height + 1)
+    (baseFromHigherIsSNF : baseData.smithBoundaryFromHigher = baseSNF)
+    (expandedFromHigherIsSwappedBlock :
+      expandedData.smithBoundaryFromHigher
+        = (blockDiagWithFreshUnit baseSNF width).swapColumns height width)
+    (expandedIntoLowerAllZero : ∀ position, position < expandedData.windowIntoLower →
+      expandedData.smithBoundaryIntoLower.diagonalEntryAt position = 0)
+    (baseIntoLowerAllZero : ∀ position, position < baseData.windowIntoLower →
+      baseData.smithBoundaryIntoLower.diagonalEntryAt position = 0) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  refine freshGeneratorExpansionPreservesDegreeOneHomologyOfBase baseData expandedData basisIsSuccessor
+    (by rw [expandedWindowIsSuccessor, baseWindowIsHeight]) expandedIntoLowerAllZero
+    baseIntoLowerAllZero ?_ ?_
+  · intro position positionBelow
+    rw [baseWindowIsHeight] at positionBelow
+    rw [expandedFromHigherIsSwappedBlock, baseFromHigherIsSNF]
+    exact blockDiagSwapFreshDiagonalBelow baseSNF height width position snfRect heightBelowWidth
+      positionBelow
+  · rw [expandedFromHigherIsSwappedBlock, baseWindowIsHeight]
+    exact blockDiagSwapFreshDiagonalAtHeight baseSNF height width snfRect heightBelowWidth
+
+/-- ★★ **THE NON-SQUARE DEGREE-2 ASSEMBLY, via block+swap.**  For a NON-SQUARE base `d2` (the into-lower
+boundary at degree 2), the two `intoLowerDiag…` hypotheses of the r4 end-to-end degree-2 theorem are
+DERIVED from the same swap read-off; the from-higher (`d3`) side stays the appended-zero-row `decide` (no
+block-lifting — the `d3` gains a ZERO row, not a fresh unit). -/
+theorem freshGeneratorNonSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting
+    (baseData expandedData : SmithHomologyData) (baseSNF : IntMatrix) (height width : Nat)
+    (snfRect : baseSNF.IsRectangular height width) (heightBelowWidth : height < width)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (baseWindowIntoLowerIsHeight : baseData.windowIntoLower = height)
+    (expandedWindowIntoLowerIsSuccessor : expandedData.windowIntoLower = height + 1)
+    (windowFromHigherIsSuccessor : expandedData.windowFromHigher = baseData.windowFromHigher + 1)
+    (baseIntoLowerIsSNF : baseData.smithBoundaryIntoLower = baseSNF)
+    (expandedIntoLowerIsSwappedBlock :
+      expandedData.smithBoundaryIntoLower
+        = (blockDiagWithFreshUnit baseSNF width).swapColumns height width)
+    (fromHigherDiagAgreesBelow : ∀ position, position < baseData.windowFromHigher →
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt position
+        = baseData.smithBoundaryFromHigher.diagonalEntryAt position)
+    (fromHigherDiagZeroAtBaseWindow :
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt baseData.windowFromHigher = 0) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  refine freshGeneratorExpansionPreservesDegreeTwoHomologyOfBase baseData expandedData basisIsSuccessor
+    (by rw [expandedWindowIntoLowerIsSuccessor, baseWindowIntoLowerIsHeight])
+    windowFromHigherIsSuccessor ?_ ?_ fromHigherDiagAgreesBelow fromHigherDiagZeroAtBaseWindow
+  · intro position positionBelow
+    rw [baseWindowIntoLowerIsHeight] at positionBelow
+    rw [expandedIntoLowerIsSwappedBlock, baseIntoLowerIsSNF]
+    exact blockDiagSwapFreshDiagonalBelow baseSNF height width position snfRect heightBelowWidth
+      positionBelow
+  · rw [expandedIntoLowerIsSwappedBlock, baseWindowIntoLowerIsHeight]
+    exact blockDiagSwapFreshDiagonalAtHeight baseSNF height width snfRect heightBelowWidth
+
+/-- ★★ **The r2 Tietze `ZZ/3` (`u ⟹ st`, `m < n`) degree-1 homology preserved, THROUGH block+swap** — the
+two diagonal `decide`s of the r4 `tietzeThirdGeneratorEndToEndDegreeOne` call are now the swap read-off,
+closing the last non-square residual of the degree-1 fresh-generator class.  `diag(1, 3, 1)` is
+`(blockDiag (diag(1,3)) 4).swapColumns 2 4` by `rfl`. -/
+theorem tietzeThirdGeneratorEndToEndDegreeOneViaBlockLifting :
+    expandedTietzeThirdGeneratorUnitLastDegreeOneSmithData.homologyInvariant
+      = tietzeDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorNonSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+    tietzeDegreeOneSmithData expandedTietzeThirdGeneratorUnitLastDegreeOneSmithData
+    tietzeSmithNormalFormOfDimOne 2 4 ⟨rfl, rfl, rfl, True.intro⟩ (by decide) rfl rfl rfl rfl rfl
+    (by decide) (by decide)
+
+/-- ★★ **The r2 Tietze `H2 = 0` (`m < n`) degree-2 homology preserved, THROUGH block+swap** — the `d2`
+into-lower fresh unit is now the swap read-off; the `d3` from-higher stays the appended-zero-row `decide`.
+`H2 = 0` preserved with the non-square `d2` side generic. -/
+theorem tietzeThirdGeneratorEndToEndDegreeTwoViaBlockLifting :
+    expandedTietzeThirdGeneratorUnitLastDegreeTwoSmithData.homologyInvariant
+      = tietzeDegreeTwoSmithData.homologyInvariant :=
+  freshGeneratorNonSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting
+    tietzeDegreeTwoSmithData expandedTietzeThirdGeneratorUnitLastDegreeTwoSmithData
+    tietzeSmithNormalFormOfDimOne 2 4 ⟨rfl, rfl, rfl, True.intro⟩ (by decide) rfl rfl rfl rfl rfl rfl
+    (by decide) (by decide)
+
 end FX1Poly.Polygraph.Homology
