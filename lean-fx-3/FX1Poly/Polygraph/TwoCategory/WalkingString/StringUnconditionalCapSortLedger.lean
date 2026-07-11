@@ -57,17 +57,20 @@ theorem stringFreshValleyProbe_fires :
 
 /-! ## Honesty marker -/
 
-/-- **OPEN (honest) — the UNCONDITIONAL pure-cap sort is NOT achieved; NO flip (FC-3 r24, B3).**  The
-shipped sort `stringPureCapSpine_sort` is conditional on the residual `StringCapHeadExtractionWordPin`.
-Making it unconditional requires inhabiting that residual, which this round does NOT do: B1 refuted the
-r23-planned colour discharge (`AllCapArity` ⟹ `prefixSharesWindowMode` is FALSE), and B2 shipped the genuine
-colour-free replacement (`stringArcPairSeated_beforeCapStep_ofDistinctSeat`) but the FULL inhabitation still
-needs the descent-master re-founding (forward adjacency thread of the toucher's consecutive untouched legs +
-re-keying `stringWordPairSeated_bubblesThroughPrefix` on the B2 exclusion) plus the four-conjunct pin
-assembly.  `stringFreshValleyProbe_fires` demonstrates the B2 exclusion on a fresh six-wire valley (the
-past-window branch) — the colour-free descent step the re-founding iterates.  This marker stays `false`; no
-shipped marker is re-touched (`fxString_hasMidZeroValleyCapSort` = `true` byte-intact, completeness = `false`).
-`= false`. -/
-def fxString_hasUnconditionalPureCapSort : Bool := false
+/-- **★ ESTABLISHED — the UNCONDITIONAL pure-cap sort is ACHIEVED (flipped FC-3 r26).**  The r24 target beyond
+the conditional sort is now reached: r25 shipped the AllCapArity-augmented pin-prime and the sort
+`stringPureCapSpine_sort_ofPrime` consuming it, and r26 INHABITED the pin-prime as the closed axiom-free term
+`stringCapHeadExtractionWordPinInhabited` (`StringCapHeadExtractionWordPinInhabited`) — LOCATE
+(`stringArcPairCapWindow_ofCapHeadExtractEq`) + SEAT/DESCEND (the re-founded distinctness descent
+`stringWordPairSeated_bubblesThroughPrefix_ofDistinct`) + IDENTIFY (the DOM word pin
+`stringCapAtom_eq_of_sharedDom_sameWindow`) + REALIZE/CANCEL (the WORD-bubble consumers + the r21
+`stringArcCapHeadFolded_extractArc_cancel` fed the pin-prime's `AllCapArity`), the located certificate's
+swapped-read branch refuted by order-preservation of the pure-cap split open-wires.  Feeding that inhabitant to
+`stringPureCapSpine_sort_ofPrime` yields the hypothesis-free `stringPureCapSpine_sort_unconditional`.  This
+marker flips to `true`.  What this does NOT flip: `fxString_hasAdjointTripleCompleteness`
+(`StringMatchingCompleteness`) stays `false` — the mid-zero valley wiring (the (ii) sub-producer
+`StringMidZeroValleyTraceEquiv` + the mid-width telescope / floor-0 cup-block reconstruct) is separate, on top of
+this cap sort.  `= true`. -/
+def fxString_hasUnconditionalPureCapSort : Bool := true
 
 end FX1Poly.Polygraph
