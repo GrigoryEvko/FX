@@ -1151,6 +1151,8 @@ import FX1PolyAudit.Polygraph.Omega.DistLawNoGoLedgerAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingEquivalencePresentationAudit
 -- WP-FROBMONAD r1 — the walking Frobenius monad: twelve-critical-pair presentation + four-count soundness
 import FX1PolyAudit.Polygraph.Omega.FrobeniusMonadPresentationAudit
+-- WP-STRONG r1 — the walking strong monad: seven-critical-pair sub-presentation of the distributive law
+import FX1PolyAudit.Polygraph.Omega.WalkingStrongMonadPresentationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)

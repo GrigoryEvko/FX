@@ -72,4 +72,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_singleObjectFrobeniusMonadHasOmegaPresentation
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bareFrobeniusMonadWordProblemWalledInCensus
 
+-- WP-STRONG r1 (#2189) — the additive walking-strong-monad census extension
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyStrongWalker
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyStrongWalkers
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyStrongWalkerCountIsOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyStrongWalkersExhaustive
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyStrongStatus
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyStrongWalkerPresentedStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyStrongWalkerPresented
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_walkingStrongMonadPresentedInCensus
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_singleObjectStrongMonadHasOmegaPresentation
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bareStrongMonadTwoCellDecisionWalledInCensus
+
 end FX1PolyAudit
