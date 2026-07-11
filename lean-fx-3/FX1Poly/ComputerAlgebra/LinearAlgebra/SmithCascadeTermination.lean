@@ -3959,4 +3959,71 @@ theorem smithDivisibilityRepairSweepDiagonalizes
     (matrix.applyOperations (smithDivisibilityRepairSweep (Nat.min height width) matrix 0 height width))
     height width generalResult
 
+/-! ## The verbatim repair-window-diagonal hypothesis + the audited driver movement (H2-SMITH r13, B4)
+
+B3's `smithDivisibilityRepairSweepDiagonalizes` reads off `IsWindowDiagonal` of the repair output on ANY
+rectangular input, conditional on the named single-step `SmithRepairStepSettlesStatement`.  B4 instantiates it
+at the driver's ACTUAL repair input `afterDiag = matrix.applyOperations (smithReduceTotal …).operations` to hit
+EXACTLY the shape of `smithReduceFullDriverOfRepairInvariants`'s first hypothesis `repairWindowDiagHolds`, then
+composes with that upstream reduction to move `SmithReduceFullDriverStatement` off `repairWindowDiagHolds`.
+
+**The audited driver-statement movement, stated exactly.**  Before B4 the two surviving hypotheses of
+`smithReduceFullDriverOfRepairInvariants` were `repairWindowDiagHolds` (every off-diagonal cell of the WHOLE
+`height × width` window vanishes after the repair sweep — a large ∀-over-cells obligation) and
+`repairChainHolds`.  After B4 the window-diagonal half is DISCHARGED conditionally on
+`SmithRepairStepSettlesStatement` (one per-position frame advance `p → p+1`), so
+`SmithReduceFullDriverStatement` now rests on EXACTLY the two conjuncts
+
+  * `SmithRepairStepSettlesStatement` — the named single-step, REFUTABLE over the bare `SmithPrefixSettled`
+    frame (POLE-B eval `[[2,0,0],[0,60,0],[0,60,-60]]` at pivot `1`); discharging it needs the driver-path
+    min-magnitude invariant, not frame monotonicity;
+  * `repairChainHolds` — the invariant-factor chain, a SEPARATE POLE-A conjunct (untouched this round).
+
+It does NOT rest on `repairChainHolds` ALONE: the window-diagonal half is not UNCONDITIONALLY inhabited
+(that would need the strictly-stronger driver-path invariant B3's honesty scope names).  So the exact residual
+of the window-diagonal half is the ONE named `Prop` `SmithRepairStepSettlesStatement`; the chain half is
+`repairChainHolds`.  `SmithReduceFullDriverStatement` stays UNINHABITED; NO flip. -/
+
+/-- **The verbatim `repairWindowDiagHolds` hypothesis, conditional on the single-step** — GIVEN the named
+repair single-step `SmithRepairStepSettlesStatement`, the driver's repair output
+`(afterDiag).applyOperations (smithDivisibilityRepairSweep (Nat.min height width) afterDiag 0 …)` is
+window-diagonal at `0`, for every rectangular `matrix` (with `afterDiag = matrix.applyOperations
+(smithReduceTotal …).operations`).  This is EXACTLY the type of `smithReduceFullDriverOfRepairInvariants`'s
+first hypothesis: `smithDivisibilityRepairSweepDiagonalizes` instantiated at `matrix := afterDiag` (rectangular
+by `applyOperationsPreservesRectangular`), the two `0 ≤ ·` window guards dropped.  A conditional discharge, NOT
+an unconditional inhabitation — the single-step is refutable over the bare frame (POLE-B). -/
+theorem repairWindowDiagHoldsOfRepairStep (stepSettles : SmithRepairStepSettlesStatement) :
+    ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      IsWindowDiagonal
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweep (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        0 height width := by
+  intro matrix height width isRect
+  intro rowIndex colIndex _zeroLeRow rowLtHeight _zeroLeCol colLtWidth rowNeCol
+  exact smithDivisibilityRepairSweepDiagonalizes stepSettles
+    (matrix.applyOperations (smithReduceTotal matrix height width).operations) height width
+    (applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect)
+    rowIndex colIndex rowLtHeight colLtWidth rowNeCol
+
+/-- **The driver totality from the single-step and the chain (the audited movement)** — GIVEN the named repair
+single-step `SmithRepairStepSettlesStatement` AND the invariant-factor chain `repairChainHolds` (verbatim its
+`smithReduceFullDriverOfRepairInvariants` type), `SmithReduceFullDriverStatement` follows.  The window-diagonal
+hypothesis is supplied by `repairWindowDiagHoldsOfRepairStep`, discharging one of the two prior driver
+survivors and moving the whole totality onto EXACTLY `{SmithRepairStepSettlesStatement, repairChainHolds}`.  It
+does NOT rest on `repairChainHolds` alone — the single-step is the residual of the window-diagonal half
+(refutable over the bare frame; POLE-B).  `SmithReduceFullDriverStatement` stays UNINHABITED; NO flip. -/
+theorem smithReduceFullDriverOfRepairStepAndChain
+    (stepSettles : SmithRepairStepSettlesStatement)
+    (repairChainHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      SmithChainPrefix
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweep (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        (Nat.min height width) height width) :
+    SmithReduceFullDriverStatement :=
+  smithReduceFullDriverOfRepairInvariants (repairWindowDiagHoldsOfRepairStep stepSettles) repairChainHolds
+
 end FX1Poly.ComputerAlgebra

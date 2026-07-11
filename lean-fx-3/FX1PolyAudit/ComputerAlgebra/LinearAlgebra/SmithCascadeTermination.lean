@@ -176,4 +176,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepSettlesThroughPivots
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepDiagonalizes
 
+/- H2-SMITH r13 — the verbatim repair-window-diagonal hypothesis + the audited driver movement (B4): the
+   conditional `smithDivisibilityRepairSweepDiagonalizes` instantiated at the driver's actual repair input to
+   match `smithReduceFullDriverOfRepairInvariants`'s first hypothesis `repairWindowDiagHolds` verbatim, and the
+   driver totality reduced to EXACTLY `{SmithRepairStepSettlesStatement, repairChainHolds}` (does NOT rest on
+   the chain alone — the single-step is the window-diagonal residual, refutable over the bare frame per POLE-B).
+   `SmithReduceFullDriverStatement` stays uninhabited; NO flip. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.repairWindowDiagHoldsOfRepairStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverOfRepairStepAndChain
+
 end FX1PolyAudit
