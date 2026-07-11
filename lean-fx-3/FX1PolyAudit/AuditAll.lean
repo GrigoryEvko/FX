@@ -756,6 +756,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingWidthZeroC
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingDropLastCup
 -- FC-3 r16 B3 — the boundary-WORD-chain append / peel / snoc substrate (W1-W3)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainAppend
+-- FC-3 r16 B3 — the LEFT swap's boundary-WORD-chain preservation (W4)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainSwapLeft
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
