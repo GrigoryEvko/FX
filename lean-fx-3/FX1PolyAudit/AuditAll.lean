@@ -207,6 +207,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestPairs
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeCellConverse
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutKeystoneUnlockLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeCellInvert
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestBoundaries
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
