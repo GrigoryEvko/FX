@@ -31,4 +31,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDiagonalInputReplumbFixture
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDiagonalInputPivotOneInputNotWindowDiagonal
 
+/- BRICK 3 — the iterated pairwise gcd is a common divisor of the whole list. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.intDividesTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.IntDividesAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.intDividesAllMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.intGcdFoldrDividesAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.intGcdFoldrLandsDiagonalGcdOnConcreteWindow
+#assert_no_axioms FX1Poly.ComputerAlgebra.intGcdFoldrDividesDiagonalOnConcreteWindow
+
 end FX1PolyAudit

@@ -207,4 +207,67 @@ theorem smithDiagonalInputPivotOneInputNotWindowDiagonal :
   fun isDiag =>
     absurd (isDiag 3 1 (by decide) (by decide) (by decide) (by decide) (by decide)) (by decide)
 
+/-! ## BRICK 3 — the iterated pairwise gcd is a common divisor of the whole list (H2-SMITH r24, B3)
+
+On a DIAGONAL input the pivot sweep's diagonal-common-divisor obligation is "the landed pivot divides
+each diagonal entry `a_p … a_{n-1}`".  On the honest domain (the diagonal is fixed once diagonalised)
+the value that divides all of them is the ITERATED pairwise gcd `foldr intGcd 0 [a_p, …]`.  This brick
+ships the ARITHMETIC half — the iterated pairwise gcd IS a common divisor of every list element —
+independent of the cascade.  The remaining gap (the CASCADE's landed pivot equals this fold) is the
+open keystone, NOT arithmetic (recon Δ3: the fold does NOT compute the pairwise gcd of its two operands,
+only the whole-minor min-abs descent lands the diagonal gcd). -/
+
+/-- **Transitivity of `IntDivides`** — `a | b` and `b | c` compose to `a | c`; the cofactors multiply
+through `intMulAssoc`.  The step the iterated-gcd fold rides. -/
+theorem intDividesTrans {leftValue midValue rightValue : Int}
+    (leftDividesMid : IntDivides leftValue midValue)
+    (midDividesRight : IntDivides midValue rightValue) :
+    IntDivides leftValue rightValue :=
+  match leftDividesMid, midDividesRight with
+  | ⟨leftCofactor, midEquation⟩, ⟨midCofactor, rightEquation⟩ =>
+      ⟨leftCofactor * midCofactor,
+        rightEquation.trans
+          ((congrArg (· * midCofactor) midEquation).trans
+            (intMulAssoc leftValue leftCofactor midCofactor))⟩
+
+/-- **A common divisor of a whole list** — `divisor` divides every entry, as a structural conjunction
+(`True` at the empty list).  The honest-domain diagonal-common-divisor predicate for an iterated fold. -/
+def IntDividesAll (divisor : Int) : List Int → Prop
+  | [] => True
+  | head :: tail => IntDivides divisor head ∧ IntDividesAll divisor tail
+
+/-- **`IntDividesAll` is monotone under divisor descent** — if `newDivisor | oldDivisor` and
+`oldDivisor` divides every entry, then `newDivisor` divides every entry.  Transitivity lifted pointwise
+over the list, structural on the list. -/
+theorem intDividesAllMono {newDivisor oldDivisor : Int}
+    (newDividesOld : IntDivides newDivisor oldDivisor) :
+    ∀ {values : List Int}, IntDividesAll oldDivisor values → IntDividesAll newDivisor values
+  | [], _ => trivial
+  | _ :: _, ⟨headDivisible, tailDivisible⟩ =>
+      ⟨intDividesTrans newDividesOld headDivisible, intDividesAllMono newDividesOld tailDivisible⟩
+
+/-- **The iterated pairwise gcd is a common divisor of the whole list** — `foldr intGcd 0 values`
+divides every entry of `values`.  Structural on the list: the head is divided by `intGcdDividesLeft`,
+the tail by the inductive common divisor pushed down through `intGcdDividesRight` +
+`intDividesAllMono`.  The arithmetic content of "the sweep computes the diagonal gcd" on the honest
+domain (the value; NOT the claim that the cascade lands it — that is the open keystone). -/
+theorem intGcdFoldrDividesAll :
+    ∀ values : List Int, IntDividesAll (List.foldr intGcd 0 values) values
+  | [] => trivial
+  | head :: tail =>
+      ⟨intGcdDividesLeft head (List.foldr intGcd 0 tail),
+       intDividesAllMono (intGcdDividesRight head (List.foldr intGcd 0 tail))
+         (intGcdFoldrDividesAll tail)⟩
+
+/-- **The iterated pairwise gcd lands the diagonal gcd `2` on the concrete gcd > 1 window** —
+`foldr intGcd 0 [6, 10, 8] = 2`, matching the CASCADE's landed pivot `2` on `diag(6, 10, 8)`
+(`smithClearingSweepLandsMinorGcdOnConcreteWindow`).  The n = 3 honest-domain tie. -/
+theorem intGcdFoldrLandsDiagonalGcdOnConcreteWindow : List.foldr intGcd 0 [6, 10, 8] = 2 := by decide
+
+/-- **The concrete diagonal-common-divisor fact** — `2` divides every diagonal entry `6, 10, 8`, read
+off `intGcdFoldrDividesAll [6, 10, 8]` at the reduced fold value `2` (defeq).  The arithmetic half of
+the diagonal-input keystone at pivot 0 on `diag(6, 10, 8)`, fired from the general `∀`-theorem. -/
+theorem intGcdFoldrDividesDiagonalOnConcreteWindow : IntDividesAll (2 : Int) [6, 10, 8] :=
+  intGcdFoldrDividesAll [6, 10, 8]
+
 end FX1Poly.ComputerAlgebra
