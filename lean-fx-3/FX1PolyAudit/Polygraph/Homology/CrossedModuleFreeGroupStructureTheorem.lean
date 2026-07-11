@@ -43,4 +43,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.conjugationCollapseProbe
 #assert_no_axioms FX1Poly.Polygraph.Homology.freeGroupResidualR1IsComplete
 
+/-! ## B2 — the R1-unlocked sub-moves + the shuffled-commutator attack -/
+
+#assert_no_axioms FX1Poly.Polygraph.Homology.signPowerPosAppend
+#assert_no_axioms FX1Poly.Polygraph.Homology.reduceWordSignPowerPos
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedAdjacentSwap
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedSignPowerStrip
+#assert_no_axioms FX1Poly.Polygraph.Homology.conjugatorStripS3ToGenE0
+#assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorBoundaryVanishes
+#assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorImageIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorReduces
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedSubMovesAreComplete
+
 end FX1PolyAudit

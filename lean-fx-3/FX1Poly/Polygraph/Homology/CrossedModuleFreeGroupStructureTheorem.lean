@@ -314,4 +314,108 @@ CLOSED for the single-generator fragment (all the `⟨s | s³⟩` corpus lives t
 cancellation-confluence diamond stays out of scope (unneeded).  Read the meaning from THIS docstring. -/
 def freeGroupResidualR1IsComplete : Bool := true
 
+/-! ## B2 — the R1-unlocked crossed-module sub-moves + the shuffled-commutator attack
+
+Now that R1 supplies `∂⟨w, 0, true⟩ = s³` for every over-gen-0 `w`, three sub-moves against the shipped
+`FreeCrossedModuleEquiv` ctors become derivable (recon §2): the adjacent swap `x·y ~ (^{∂x}y)·x` (pure
+structure, no R1), and the conjugator-exponent strip `s^{k+3} ~ s^k` (R1-gated).  Together they discharge
+the r4-deferred **shuffled-commutator** identity `[genE0, genE1, genE0⁻¹, genE1⁻¹] ~ []` — the first
+attack that exercises step (iii) (a genuine swap before cancellation) non-vacuously. -/
+
+/-- `s^a · s^b = s^{a+b}` at the word level (concatenation of two positive `signPower`s). -/
+theorem signPowerPosAppend : ∀ (leftCount rightCount : Nat),
+    signPowerPos leftCount ++ signPowerPos rightCount = signPowerPos (leftCount + rightCount)
+  | 0, rightCount => congrArg signPowerPos (Nat.zero_add rightCount).symm
+  | leftCount + 1, rightCount =>
+      (congrArg (fun tail => SignedLetter.pos 0 :: tail) (signPowerPosAppend leftCount rightCount)).trans
+        (congrArg signPowerPos (Nat.succ_add leftCount rightCount).symm)
+
+/-- Free reduction fixes a positive `signPower` (it is already reduced — no adjacent inverse pair). -/
+theorem reduceWordSignPowerPos : ∀ count : Nat, reduceWord (signPowerPos count) = signPowerPos count
+  | 0 => rfl
+  | count + 1 =>
+      (congrArg (consReduced (SignedLetter.pos 0)) (reduceWordSignPowerPos count)).trans
+        (consReducedPosSignPowerPos count)
+
+/-- ★ **Sub-move 3 — the adjacent swap** `x·y ~ (^{∂x}y)·x`.  `[x, y] ~ [^{∂x}y, x]` derived from
+`peifferMove x y : [x, y, x⁻¹] ~ [^{∂x}y]` right-multiplied by `[x]`, threading `[x⁻¹, x] ~ []`
+(`invConsCancel`) through `congrAppend`.  PURE STRUCTURE — no R1, no conjugation collapse. -/
+theorem freeCrossedAdjacentSwap (firstGen secondGen : ConjugatedRelator) :
+    FreeCrossedModuleEquiv [firstGen, secondGen] [peifferConjugate firstGen secondGen, firstGen] :=
+  FreeCrossedModuleEquiv.trans
+    (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl [firstGen, secondGen])
+      (FreeCrossedModuleEquiv.symm (FreeCrossedModuleEquiv.invConsCancel firstGen)))
+    (FreeCrossedModuleEquiv.congrAppend
+      (FreeCrossedModuleEquiv.ofPeiffer (PeifferEquiv.peifferMove firstGen secondGen))
+      (FreeCrossedModuleEquiv.refl [firstGen]))
+
+/-- ★★ **Sub-move 2 — the conjugator-exponent strip** `⟨s^{k+3}, 0, +⟩ ~ ⟨s^k, 0, +⟩`, the R1-gated
+reduction of the conjugator exponent modulo `3`.  With `g = ⟨s^k, 0, +⟩` (so `∂g = s³` by R1's
+`conjugatedRelatorBoundaryIsRelatorOverGenZero`), `peifferMove g g` sends `[g, g, g⁻¹]` to
+`[^{∂g}g] = [⟨reduceWord(s³ · s^k), 0, +⟩] = [⟨s^{k+3}, 0, +⟩]`, and `[g, g, g⁻¹] ~ [g]` by tail
+cancellation — so `⟨s^{k+3}, 0, +⟩ ~ g`.  This IS the free-crossed-module strip the recon deferred,
+now delivered off R1. -/
+theorem freeCrossedSignPowerStrip (count : Nat) :
+    FreeCrossedModuleEquiv [⟨signPowerPos (count + 3), 0, true⟩] [⟨signPowerPos count, 0, true⟩] :=
+  let baseGen : ConjugatedRelator := ⟨signPowerPos count, 0, true⟩
+  let conjugatorEq :
+      reduceWord (conjugatedRelatorBoundary baseGen ++ signPowerPos count) = signPowerPos (count + 3) :=
+    (congrArg (fun boundary => reduceWord (boundary ++ signPowerPos count))
+        (conjugatedRelatorBoundaryIsRelatorOverGenZero (allLettersSignPowerPos count))).trans
+      ((congrArg reduceWord (signPowerPosAppend 3 count)).trans
+        ((reduceWordSignPowerPos (3 + count)).trans (congrArg signPowerPos (Nat.add_comm 3 count))))
+  let peifferConjugateEq : peifferConjugate baseGen baseGen = ⟨signPowerPos (count + 3), 0, true⟩ :=
+    congrArg (fun conjugator => ConjugatedRelator.mk conjugator 0 true) conjugatorEq
+  peifferConjugateEq ▸
+    ((FreeCrossedModuleEquiv.ofPeiffer (PeifferEquiv.peifferMove baseGen baseGen)).symm.trans
+      (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl [baseGen])
+        (FreeCrossedModuleEquiv.consInvCancel baseGen)))
+
+/-- ★ **Concrete strip probe** — `⟨s³, 0, +⟩ ~ genE0` (the `k = 0` instance of the strip: the conjugator
+`s³` collapses to the empty conjugator of `genE0`). -/
+theorem conjugatorStripS3ToGenE0 :
+    FreeCrossedModuleEquiv
+      [⟨[SignedLetter.pos 0, SignedLetter.pos 0, SignedLetter.pos 0], 0, true⟩] [genE0] :=
+  (FreeCrossedModuleEquiv.ofPeiffer (PeifferEquiv.peifferMove genE0 genE0)).symm.trans
+    (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl [genE0])
+      (FreeCrossedModuleEquiv.consInvCancel genE0))
+
+/-- ★ Probe — the shuffled commutator is a genuine identity: `∂[genE0, genE1, genE0⁻¹, genE1⁻¹] = 1`
+(`s³·s³·s⁻³·s⁻³ = 1` in the abelian `F(s)`).  `rfl`. -/
+theorem shuffledCommutatorBoundaryVanishes :
+    partialBoundary [genE0, genE1, invGen genE0, invGen genE1] = oneWord := rfl
+
+/-- ★ Probe — the shuffled commutator images to `0` (satisfies the injectivity hypothesis):
+`e₀ + e₁ + (−e₀) + (−e₁) = 0`.  `rfl`. -/
+theorem shuffledCommutatorImageIsZero :
+    crossedModuleImage [genE0, genE1, invGen genE0, invGen genE1] = groupRingZero := rfl
+
+/-- ★★★ **The shuffled-commutator attack (the r4 deferral, now landed)** —
+`[genE0, genE1, genE0⁻¹, genE1⁻¹] ~ []`.  The commutator of two DISTINCT generators cannot cancel
+directly (the shipped cancellations need adjacent inverse pairs); it needs a genuine swap.  Move `genE0`
+right past `genE1` (`peifferMove genE0 genE1`, exposing `genE0⁻¹·genE0`), STRIP the resulting `⟨s⁴, 0, +⟩`
+to `genE1` (via `peifferMove genE1 genE1`, since `∂genE1 = s³`), then cancel `[genE1, genE1⁻¹]`.  This is
+the first attack exercising sub-move 3 non-vacuously — the enrichment doing what neither `PeifferEquiv`
+nor pure double-cancellation could. -/
+theorem shuffledCommutatorReduces :
+    FreeCrossedModuleEquiv [genE0, genE1, invGen genE0, invGen genE1] ([] : PreCrossedElement) :=
+  let stripToGenE1 : FreeCrossedModuleEquiv [peifferConjugate genE0 genE1] [genE1] :=
+    (FreeCrossedModuleEquiv.ofPeiffer (PeifferEquiv.peifferMove genE1 genE1)).symm.trans
+      (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl [genE1])
+        (FreeCrossedModuleEquiv.consInvCancel genE1))
+  FreeCrossedModuleEquiv.trans
+    (FreeCrossedModuleEquiv.congrAppend
+      (FreeCrossedModuleEquiv.ofPeiffer (PeifferEquiv.peifferMove genE0 genE1))
+      (FreeCrossedModuleEquiv.refl [invGen genE1]))
+    (FreeCrossedModuleEquiv.trans
+      (FreeCrossedModuleEquiv.congrAppend stripToGenE1 (FreeCrossedModuleEquiv.refl [invGen genE1]))
+      (FreeCrossedModuleEquiv.consInvCancel genE1))
+
+/-- ★ **The r5 sub-move marker.**  Shipped zero-axiom over R1: sub-move 3 (`freeCrossedAdjacentSwap`,
+pure structure), the R1-gated conjugator-exponent strip `s^{k+3} ~ s^k` (`freeCrossedSignPowerStrip`),
+and the r4-deferred shuffled-commutator identity `[genE0, genE1, genE0⁻¹, genE1⁻¹] ~ []`
+(`shuffledCommutatorReduces`) — the first crossed-module reduction needing a genuine swap before
+cancellation.  Read the meaning from THIS docstring. -/
+def freeCrossedSubMovesAreComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
