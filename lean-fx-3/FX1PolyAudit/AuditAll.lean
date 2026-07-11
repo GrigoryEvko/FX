@@ -1289,6 +1289,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidHexagonAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermStageAudit
 -- WP-PROP r4 — the NF-induction census (per CellExpr ctor) + the #2033 star NAMED at scope StrictAxiom-union-Sound-union-Hexagon (unproven, r5, no flip) + the vcomp perm-of-a-diagonal witness
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidNormalFormCensusAudit
+-- WP-PROP r4 — the grand ledger: hexagon/perm-layer/star-scope delivered, remaining NAMED nodes (matMul-assoc, general-n units, general routing transpose) each with exact goal, star = r5, upstream walls byte-intact
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRoundFourLedgerAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
