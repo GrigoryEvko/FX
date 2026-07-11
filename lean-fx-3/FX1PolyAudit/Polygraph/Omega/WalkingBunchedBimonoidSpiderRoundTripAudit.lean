@@ -39,4 +39,33 @@ namespace FX1PolyAudit
 -- B1 — the marker.
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matMulFubiniKitShipped
 
+-- B2 — the stage target matrices + base-case pins.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanMatrixMatchesDeltaFanTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowMatrixMatchesMuFoldTwo
+
+-- B2 — the delta-stage block reads + the general delta stage lemma.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanBlockEntries
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanBlockEntryLowZero
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanBlockEntryLowOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanBlockEntryHighZero
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanBlockEntryHighOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFanMatMulRowIsOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaFanMatrix
+
+-- B2 — the mu-stage block reads + the general mu stage lemma.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowBlockEntryFirstLow
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowBlockEntryFirstHigh
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowBlockEntrySecondLow
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowBlockEntrySecondHigh
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowMatMulColIsOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuFoldMatrix
+
+-- B2 — the general scalar round-trip + the markers.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidScalarProductIsOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderStageLemmasGeneralShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderScalarRoundTripGeneralShipped
+
 end FX1PolyAudit
