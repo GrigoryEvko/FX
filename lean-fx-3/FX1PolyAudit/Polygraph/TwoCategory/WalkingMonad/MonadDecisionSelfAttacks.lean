@@ -16,5 +16,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.monadAssocCombRightFour
 #assert_no_axioms FX1Poly.Polygraph.monadFold_assocCombLeftFour
 #assert_no_axioms FX1Poly.Polygraph.monadFold_assocCombRightFour
+#assert_no_axioms FX1Poly.Polygraph.monadDecision_yes_assocFour
+#assert_no_axioms FX1Poly.Polygraph.monadFaceInsertPortZero
+#assert_no_axioms FX1Poly.Polygraph.monadFaceInsertPortTwo
+#assert_no_axioms FX1Poly.Polygraph.monadFold_faceInsertPortZero
+#assert_no_axioms FX1Poly.Polygraph.monadFold_faceInsertPortTwo
+#assert_no_axioms FX1Poly.Polygraph.monadDecision_no_facePorts
 
 end FX1PolyAudit

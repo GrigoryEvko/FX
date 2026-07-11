@@ -68,4 +68,47 @@ theorem monadFold_assocCombLeftFour : monadMonotoneMapOf monadAssocCombLeftFour 
 `K4` collapses in the model with no `assoc` generator. -/
 theorem monadFold_assocCombRightFour : monadMonotoneMapOf monadAssocCombRightFour = [0, 0, 0, 0] := rfl
 
+/-! ## B2 — the self-attack VERDICTS
+
+The two decisive convertibility verdicts on the fresh concrete words above, both delivered by the CLOSED decision
+machinery: the map-EQUAL width-4 pair converts through COMPLETENESS (`convOfMapEq`), and a map-UNEQUAL two-port face
+pair is SEPARATED through SOUNDNESS (`mapEqOfConv`). -/
+
+/-- ★ **Self-attack (map-EQUAL, WIDTH FOUR → YES).**  The two width-4 associativity foldings `t·t·t·t ⇒ t` —
+`monadAssocCombLeftFour` and `monadAssocCombRightFour` — are syntactically distinct combs yet saturated-convertible:
+both fold to the width-4 degeneracy `[0, 0, 0, 0]` (`monadFold_assocCombLeftFour`, `monadFold_assocCombRightFour`),
+so the total decision derives their convertibility through COMPLETENESS (`monadConvOfMapEq_ofNormalize
+monadNormalize`), normalizing both to `canon = wordFromCounts [0,0,0,0]` with NO `assoc` law generator.  This extends
+the shipped width-3 `monadDecision_yes_assoc` to the next level of the associahedron. -/
+theorem monadDecision_yes_assocFour :
+    MonadSaturatedTwoCellConv monadAssocCombLeftFour monadAssocCombRightFour :=
+  monadConvOfMapEq_ofNormalize monadNormalize rfl
+
+/-- The unit inserted at the FAR-LEFT port of `t·t` — the face `whiskerRight (t·t) eta`, a 2-cell `t·t ⇒ t·t·t`;
+the fresh strand occupies target index 0, so the fold is the face `[1, 2]`. -/
+def monadFaceInsertPortZero :=
+  RawTwoCellExpr.whiskerRight (signature := monadModeSignature) monadTThenT monadUnitTwoCell
+
+/-- The unit inserted at the FAR-RIGHT port of `t·t` — the face `whiskerLeft (t·t) eta`, a 2-cell `t·t ⇒ t·t·t`
+PARALLEL to `monadFaceInsertPortZero`; the fresh strand occupies target index 2, so the fold is the face `[0, 1]`. -/
+def monadFaceInsertPortTwo :=
+  RawTwoCellExpr.whiskerLeft (signature := monadModeSignature) monadTThenT monadUnitTwoCell
+
+/-- Truth-probe: the far-left port insertion folds to the face `[1, 2]`. -/
+theorem monadFold_faceInsertPortZero : monadMonotoneMapOf monadFaceInsertPortZero = [1, 2] := rfl
+
+/-- Truth-probe: the far-right port insertion folds to the DISTINCT face `[0, 1]`. -/
+theorem monadFold_faceInsertPortTwo : monadMonotoneMapOf monadFaceInsertPortTwo = [0, 1] := rfl
+
+/-- ★ **Self-attack (map-UNEQUAL, two ports → NO).**  Inserting the unit at DIFFERENT ports of the same boundary
+`t·t ⇒ t·t·t` — far-left (`monadFaceInsertPortZero`, fold `[1, 2]`) versus far-right (`monadFaceInsertPortTwo`, fold
+`[0, 1]`) — yields DISTINCT monotone maps (they differ in which target index the fresh strand occupies).  So the two
+insertions are NOT saturated-convertible: SOUNDNESS (`monadMonotoneMapOf_mapEqOfConv`) would force their maps equal,
+which `decide` refutes.  This generalizes the shipped width-1 `monadDecision_no_faces` to a genuine two-position
+insertion at positive width. -/
+theorem monadDecision_no_facePorts :
+    ¬ MonadSaturatedTwoCellConv monadFaceInsertPortZero monadFaceInsertPortTwo := by
+  intro conv
+  exact absurd (monadMonotoneMapOf_mapEqOfConv conv) (by decide)
+
 end FX1Poly.Polygraph
