@@ -423,4 +423,156 @@ theorem tietzeSmithHandoff : TietzeSmithHandoffStatement :=
    tietzeBoundaryOfDimOneReducesToSmith,
    tietzeBoundaryOfDimTwoReducesToSmith⟩
 
+/-! ## B3 — the AGREEMENT record (both presentations, equal invariants, the finite monoid iso)
+
+The two presentations of `ZZ/3` — `⟨s | sss⟩` (`cyclicThreeWalkerPresentation`) and the expanded
+`⟨s, t | ss, st, ts, tt⟩` (`tietzeZmodThreePresentation`) — receive the SAME homology invariant in every
+degree `≤ 2`, read through the shipped generic reader, AND their normal-form monoids `{e, s, ss}` and
+`{e, s, t}` are isomorphic as a decidable 3-element monoid iso `φ(ss) = t`.  This is the finite
+monoid-correspondence witness the substrate cannot give at MONOID level (the JOB-2 wall) but CAN give at
+NORMAL-FORM granularity for this worked instance. -/
+
+/-- Cyclic's degree-two Smith read-off (`⟨s | sss⟩`): `C_2 = 1`, `SNF(d_2) = [[3]]` (window `1`),
+`SNF(d_3) = [[0, 0]]` (window `1`) — reads `H2 = 0`. -/
+def cyclicThreeDegreeTwoSmithData : SmithHomologyData :=
+  { chainBasisCount := cyclicThreeBasisCount 2
+  , smithBoundaryIntoLower := cyclicThreeSmithNormalFormOfDimOne
+  , windowIntoLower := 1
+  , smithBoundaryFromHigher := cyclicThreeSmithNormalFormOfDimTwo
+  , windowFromHigher := 1 }
+
+/-- The normal forms of the compact presentation `⟨s | sss⟩`: `{e, s, ss}`, as a 3-constructor
+inductive (full-enum, propext-clean). -/
+inductive CyclicThreeNormalForm
+  /-- The identity `e`. -/
+  | identityElement
+  /-- The generator `s`. -/
+  | generatorS
+  /-- The square `ss` (`= s²`). -/
+  | generatorSquared
+
+/-- The normal forms of the expanded presentation `⟨s, t | …⟩`: `{e, s, t}`, as a 3-constructor
+inductive (full-enum, propext-clean). -/
+inductive TietzeZmodThreeNormalForm
+  /-- The identity `e`. -/
+  | identityElement
+  /-- The generator `s`. -/
+  | generatorS
+  /-- The generator `t` (`= s²`). -/
+  | generatorT
+
+/-- The monoid iso `φ : {e, s, ss} → {e, s, t}`, `φ(ss) = t`. -/
+def cyclicThreeNormalFormToTietze : CyclicThreeNormalForm → TietzeZmodThreeNormalForm
+  | .identityElement => .identityElement
+  | .generatorS => .generatorS
+  | .generatorSquared => .generatorT
+
+/-- The inverse iso `φ⁻¹ : {e, s, t} → {e, s, ss}`, `φ⁻¹(t) = ss`. -/
+def tietzeNormalFormToCyclicThree : TietzeZmodThreeNormalForm → CyclicThreeNormalForm
+  | .identityElement => .identityElement
+  | .generatorS => .generatorS
+  | .generatorT => .generatorSquared
+
+/-- The normal-form multiplication table of `⟨s | sss⟩` (exponent addition mod 3): `s·s = ss`,
+`s·ss = e`, `ss·s = e`, `ss·ss = s`. -/
+def multiplyCyclicThreeNormalForm : CyclicThreeNormalForm → CyclicThreeNormalForm → CyclicThreeNormalForm
+  | .identityElement, rightForm => rightForm
+  | .generatorS, .identityElement => .generatorS
+  | .generatorS, .generatorS => .generatorSquared
+  | .generatorS, .generatorSquared => .identityElement
+  | .generatorSquared, .identityElement => .generatorSquared
+  | .generatorSquared, .generatorS => .identityElement
+  | .generatorSquared, .generatorSquared => .generatorS
+
+/-- The normal-form multiplication table of the expanded `⟨s, t | …⟩`: `s·s = t`, `s·t = e`, `t·s = e`,
+`t·t = s` — read straight off the rewriting rules. -/
+def multiplyTietzeNormalForm :
+    TietzeZmodThreeNormalForm → TietzeZmodThreeNormalForm → TietzeZmodThreeNormalForm
+  | .identityElement, rightForm => rightForm
+  | .generatorS, .identityElement => .generatorS
+  | .generatorS, .generatorS => .generatorT
+  | .generatorS, .generatorT => .identityElement
+  | .generatorT, .identityElement => .generatorT
+  | .generatorT, .generatorS => .identityElement
+  | .generatorT, .generatorT => .generatorS
+
+/-- ★ **The proof-carrying degree-≤2 agreement record.**  Two presentations of `ZZ/3`, their EQUAL
+degree-1 and degree-2 homology invariants (read through the shipped reader), and the mutually-inverse
+normal-form monoid iso respecting multiplication. -/
+structure TietzePairAgreement where
+  /-- The compact presentation `⟨s | sss⟩`. -/
+  presentationA : WalkerPresentation
+  /-- The expanded presentation `⟨s, t | …⟩`. -/
+  presentationB : WalkerPresentation
+  /-- `H1(A)` read through the generic reader. -/
+  degreeOneReadOffA : HomologyInvariant
+  /-- `H1(B)` read through the generic reader. -/
+  degreeOneReadOffB : HomologyInvariant
+  /-- ★ `H1(A) = H1(B)` (both `ZZ/3 = (0, [3])`). -/
+  degreeOneInvariantsAgree : degreeOneReadOffA = degreeOneReadOffB
+  /-- `H2(A)` read through the generic reader. -/
+  degreeTwoReadOffA : HomologyInvariant
+  /-- `H2(B)` read through the generic reader. -/
+  degreeTwoReadOffB : HomologyInvariant
+  /-- ★ `H2(A) = H2(B)` (both `0 = (0, [])`). -/
+  degreeTwoInvariantsAgree : degreeTwoReadOffA = degreeTwoReadOffB
+  /-- The monoid iso `{e, s, ss} → {e, s, t}`. -/
+  normalFormMapAtoB : CyclicThreeNormalForm → TietzeZmodThreeNormalForm
+  /-- The inverse `{e, s, t} → {e, s, ss}`. -/
+  normalFormMapBtoA : TietzeZmodThreeNormalForm → CyclicThreeNormalForm
+  /-- `φ⁻¹ ∘ φ = id`. -/
+  normalFormRoundTripA : ∀ formA, normalFormMapBtoA (normalFormMapAtoB formA) = formA
+  /-- `φ ∘ φ⁻¹ = id`. -/
+  normalFormRoundTripB : ∀ formB, normalFormMapAtoB (normalFormMapBtoA formB) = formB
+  /-- ★ `φ` is a monoid homomorphism: `φ(a · b) = φ(a) · φ(b)`. -/
+  multiplicationCorrespondence : ∀ leftForm rightForm,
+      normalFormMapAtoB (multiplyCyclicThreeNormalForm leftForm rightForm)
+        = multiplyTietzeNormalForm (normalFormMapAtoB leftForm) (normalFormMapAtoB rightForm)
+
+/-- ★★ **THE AGREEMENT RECORD, inhabited.**  The compact and expanded presentations of `ZZ/3` agree at
+`H1` (both `ZZ/3`) and `H2` (both `0`) through the shipped reader, and their normal-form monoids are
+isomorphic (`φ(ss) = t`, mutually inverse, multiplication-respecting).  Every field is
+`rfl`/full-enum — proof-carrying and decidable. -/
+def tietzeCyclicPairAgreement : TietzePairAgreement :=
+  { presentationA := cyclicThreeWalkerPresentation
+  , presentationB := tietzeZmodThreePresentation
+  , degreeOneReadOffA := cyclicThreeDegreeOneSmithData.homologyInvariant
+  , degreeOneReadOffB := tietzeDegreeOneSmithData.homologyInvariant
+  , degreeOneInvariantsAgree := rfl
+  , degreeTwoReadOffA := cyclicThreeDegreeTwoSmithData.homologyInvariant
+  , degreeTwoReadOffB := tietzeDegreeTwoSmithData.homologyInvariant
+  , degreeTwoInvariantsAgree := rfl
+  , normalFormMapAtoB := cyclicThreeNormalFormToTietze
+  , normalFormMapBtoA := tietzeNormalFormToCyclicThree
+  , normalFormRoundTripA := fun formA =>
+      match formA with
+      | .identityElement => rfl
+      | .generatorS => rfl
+      | .generatorSquared => rfl
+  , normalFormRoundTripB := fun formB =>
+      match formB with
+      | .identityElement => rfl
+      | .generatorS => rfl
+      | .generatorT => rfl
+  , multiplicationCorrespondence := fun leftForm rightForm =>
+      match leftForm, rightForm with
+      | .identityElement, .identityElement => rfl
+      | .identityElement, .generatorS => rfl
+      | .identityElement, .generatorSquared => rfl
+      | .generatorS, .identityElement => rfl
+      | .generatorS, .generatorS => rfl
+      | .generatorS, .generatorSquared => rfl
+      | .generatorSquared, .identityElement => rfl
+      | .generatorSquared, .generatorS => rfl
+      | .generatorSquared, .generatorSquared => rfl }
+
+/-- ★ **HONEST degree scoping: the agreement is a degree-≤2 phenomenon.**  At degree 3 the two truncated
+Squier complexes DIVERGE — the compact presentation has `C_3 = 2` critical pairs, the expanded one has
+`C_3 = 8`, so their `ker d3` (the truncation-artifact `H3`) differ (`ZZ²` vs `ZZ⁶`).  The agreement is
+scoped to degrees `≤ 2` — the degrees where both truncated complexes compute the true group homology —
+and the H3 divergence is named, NOT papered.  `2 ≠ 8` by `decide`. -/
+theorem tietzeAndCyclicDegreeThreeChainCountsDiffer :
+    cyclicThreeWalkerPresentation.computeBasisCount 3 ≠ tietzeZmodThreePresentation.computeBasisCount 3 :=
+  by decide
+
 end FX1Poly.Polygraph.Homology
