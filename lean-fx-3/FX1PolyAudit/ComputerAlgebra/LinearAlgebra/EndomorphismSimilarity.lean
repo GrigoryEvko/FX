@@ -14,5 +14,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.agreeOnWindow
 #assert_no_axioms FX1Poly.ComputerAlgebra.EndomorphismSimilarityWitness
 #assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismScaledInverseWindowProbe
+#assert_no_axioms FX1Poly.ComputerAlgebra.EndomorphismSimilarityWitness.WitnessesSimilarity
+#assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismSingularBasisWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismSingularBasisRejected
+#assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismDegenerateScaleWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismDegenerateScaleRejected
 
 end FX1PolyAudit

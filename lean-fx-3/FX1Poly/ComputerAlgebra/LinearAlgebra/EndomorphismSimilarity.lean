@@ -83,4 +83,58 @@ theorem endomorphismScaledInverseWindowProbe :
       (scalarMul intCommutativeRingWitness 2 (identityMatrix intCommutativeRingWitness 2)) 2 2 := by
   decide
 
+/-! ## The certificate checker
+
+`WitnessesSimilarity` is the produced-then-checked obligation: the load-bearing `d ≠ 0` guard
+(stated `1 ≤ Int.natAbs d`, decided by `Nat.decLe`) plus the two kernel-checked window identities
+`P · Q = d · I` and `Q · (A · P) = d · B`.  Reducible so `Decidable` synthesis unfolds it to the
+`And` of decidable pieces — each concrete instance closes by `decide`. -/
+@[reducible] def EndomorphismSimilarityWitness.WitnessesSimilarity
+    (witness : EndomorphismSimilarityWitness) : Prop :=
+  1 ≤ Int.natAbs witness.scale
+  ∧ agreeOnWindow
+      (mulMatrix intCommutativeRingWitness witness.changeOfBasis witness.scaledInverse)
+      (scalarMul intCommutativeRingWitness witness.scale
+        (identityMatrix intCommutativeRingWitness witness.dimension))
+      witness.dimension witness.dimension
+  ∧ agreeOnWindow
+      (mulMatrix intCommutativeRingWitness witness.scaledInverse
+        (mulMatrix intCommutativeRingWitness witness.source witness.changeOfBasis))
+      (scalarMul intCommutativeRingWitness witness.scale witness.target)
+      witness.dimension witness.dimension
+
+/-! ## Self-attack: singular-`P` and degenerate-`d` rejection
+
+Two ways an attacker could forge a "universal" similarity are structurally rejected by the checker.
+Both target the genuinely DISSIMILAR pair `[[1,0],[0,0]]` (trace 1) vs `[[2,0],[0,0]]` (trace 2). -/
+
+/-- A singular change of basis (`P = 0`) with a nonzero scale (`d = 1`).  The guard passes, but
+`P · Q = 0 ≠ 1 · I` at entry `(0,0)` (`0 ≠ 1`), so the inverse window rejects it. -/
+def endomorphismSingularBasisWitness : EndomorphismSimilarityWitness :=
+  { dimension := 2
+    source := setoidMatrixOfRows [[1, 0], [0, 0]]
+    target := setoidMatrixOfRows [[2, 0], [0, 0]]
+    changeOfBasis := setoidMatrixOfRows [[0, 0], [0, 0]]
+    scaledInverse := setoidMatrixOfRows [[0, 0], [0, 0]]
+    scale := 1 }
+
+/-- The singular-`P` witness is rejected: no nonzero-scale inverse can hold for a zero basis. -/
+theorem endomorphismSingularBasisRejected :
+    ¬ endomorphismSingularBasisWitness.WitnessesSimilarity := by decide
+
+/-- The degenerate `d = 0` forgery (`P = Q = 0`, `d = 0`): without the guard this fakes similarity of
+ANY pair (`P · Q = 0 · I` and `Q · A · P = 0 · B` both hold).  The `1 ≤ Int.natAbs 0` guard is false,
+so the checker rejects it — the guard is load-bearing. -/
+def endomorphismDegenerateScaleWitness : EndomorphismSimilarityWitness :=
+  { dimension := 2
+    source := setoidMatrixOfRows [[1, 0], [0, 0]]
+    target := setoidMatrixOfRows [[2, 0], [0, 0]]
+    changeOfBasis := setoidMatrixOfRows [[0, 0], [0, 0]]
+    scaledInverse := setoidMatrixOfRows [[0, 0], [0, 0]]
+    scale := 0 }
+
+/-- The degenerate `d = 0` witness is rejected by the `d ≠ 0` guard. -/
+theorem endomorphismDegenerateScaleRejected :
+    ¬ endomorphismDegenerateScaleWitness.WitnessesSimilarity := by decide
+
 end FX1Poly.ComputerAlgebra
