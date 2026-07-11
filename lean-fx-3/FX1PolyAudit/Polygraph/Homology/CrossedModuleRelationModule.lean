@@ -84,5 +84,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.rotationIdentityWitnessThirdBoundaryVanishes
 #assert_no_axioms FX1Poly.Polygraph.Homology.rotationOrbitSumsToNormElement
 #assert_no_axioms FX1Poly.Polygraph.Homology.augmentationZeroSpannedByRotations
+#assert_no_axioms FX1Poly.Polygraph.Homology.RelationModuleObligationStatus
+#assert_no_axioms FX1Poly.Polygraph.Homology.RelationModuleCharacterizationLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.relationModuleInjectivityObligation
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleRelationModuleLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.normAugmentationMatchesRelatorShadow
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleRelationModuleCharacterizationIsComplete
 
 end FX1PolyAudit

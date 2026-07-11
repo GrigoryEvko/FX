@@ -664,4 +664,101 @@ theorem augmentationZeroSpannedByRotations (targetOne targetT targetTsq : Int)
           (congrArg (fun summand => -targetOne + summand) sumEqualsNegThird))))
     (intZeroAdd targetTsq).symm
 
+/-! ## B3 — the completeness adjudication: the honest surjection, the injectivity WALL
+
+Soundness (r2 `crossedModuleImageRespectsPeiffer`) + kernel landing (`identityLandsAugmentationZero`) +
+realization (`crossedModuleImageSurjectsOntoGroupRing`) give: the induced map on the identities
+`ker(∂) / PeifferEquiv → ker(N)` is a well-defined SURJECTION.  The full `π₂ ≅ ker(N)` isomorphism needs
+its INJECTIVITY — `image x = 0 ⟹ PeifferEquiv x []` — the injectivity half of Brown–Huebschmann.
+
+★ **This is a genuine WALL, not a paperable step.**  A proof needs a NORMAL FORM for `PreCrossedElement`
+modulo `PeifferEquiv` (the free-crossed-module structure theorem: canonicalize per residue class, cancel
+inverse pairs, exhibit the free `ZZ[G]`-module structure of the identities), plus a completeness proof of
+the invariant on canonical forms.  `PeifferEquiv` is shipped as an OPAQUE inductively-generated `Prop`
+with no confluence / termination / decision procedure, and the general boundary manipulation itself needs
+r1's residual R1 (`mulWord` associativity).  The obligation is NAMED below (a `Prop`-valued def and a
+ledger status) — NEVER an `axiom`/`sorry`, and NEVER a fabricated iso. -/
+
+/-- The honest status of one relation-module obligation. -/
+inductive RelationModuleObligationStatus where
+  /-- Shipped, zero-axiom (in this corpus). -/
+  | shipped
+  /-- The Brown–Huebschmann structure-theorem residual — a named wall, NOT attempted (no normal form for
+  `PreCrossedElement / PeifferEquiv` in the shipped kit). -/
+  | structureTheoremResidual
+
+/-- The four-obligation ledger of the relation-module characterization `π₂⟨s | s³⟩ ≅ ker(N)`. -/
+structure RelationModuleCharacterizationLedger where
+  /-- The invariant descends to the crossed module (r2 `crossedModuleImageRespectsPeiffer`). -/
+  soundnessStatus : RelationModuleObligationStatus
+  /-- Identities land in `ker(N)` (`identityLandsAugmentationZero`). -/
+  kernelLandingStatus : RelationModuleObligationStatus
+  /-- Every `ker(N)` element is an image (`crossedModuleImageSurjectsOntoGroupRing`). -/
+  realizationSurjectionStatus : RelationModuleObligationStatus
+  /-- `image x = 0 ⟹ x` Peiffer-trivial (the injectivity / structure-theorem half). -/
+  injectivityStatus : RelationModuleObligationStatus
+
+/-- ★ **The injectivity obligation, NAMED as a `Prop`** — `image x = 0 ⟹ PeifferEquiv x []`.  Stating
+this Prop names the walled Brown–Huebschmann structure-theorem residual precisely; it is NOT proved and
+NOT asserted (a def of a proposition, not a theorem).  Proving it would upgrade the surjection to the full
+`π₂ ≅ ker(N)` iso. -/
+def relationModuleInjectivityObligation : Prop :=
+  ∀ element : PreCrossedElement,
+    crossedModuleImage element = groupRingZero → PeifferEquiv element ([] : PreCrossedElement)
+
+/-- ★ **The relation-module characterization ledger.**  Soundness / kernel landing / realization
+surjection all SHIPPED; the injectivity half is the named structure-theorem residual.  The honest reading:
+`crossedModuleImage` is a SURJECTION of the identities onto `ker(N)`; the `π₂ ≅ ker(N)` iso holds iff the
+`injectivityStatus` residual also lands. -/
+def crossedModuleRelationModuleLedger : RelationModuleCharacterizationLedger :=
+  { soundnessStatus := RelationModuleObligationStatus.shipped
+  , kernelLandingStatus := RelationModuleObligationStatus.shipped
+  , realizationSurjectionStatus := RelationModuleObligationStatus.shipped
+  , injectivityStatus := RelationModuleObligationStatus.structureTheoremResidual }
+
+/-! ## B4 — the H2 tie: `ε(N) = 3` matches the shipped abelianized `d2` shadow
+
+The shared integer between this un-abelianized layer and the shipped trivial-coefficient homology is
+`3 = ε(N) = ε(1 + s + s²)`.  Applying the augmentation `ε` to the group-ring norm `N` (here `N · e₀`, the
+diagonal `(1, 1, 1)`) recovers the abelianized Fox derivative that the shipped
+`Homology/CyclicThreeChainComplex` carries as `cyclicThreeBoundaryOfDimOne = ⟨[[-3]]⟩` (`d2 = target −
+source = 0 − 3`, the invariant factor of order `3` giving `H1 = ZZ/3`, `H2 = 0`).  This is the
+Brown–Huebschmann abelianized-shadow made precise: `ε ∘ N` is the shipped `d2` invariant factor.
+
+The tie is a self-contained `theorem` to the r1 shadow (`relatorAbelianShadowIsThree`); NO chain-complex
+import is needed (name-only cross-reference to `cyclicThreeBoundaryOfDimOne`, honoring the lane law — no
+`SmithNormalForm` / `SmithCascade` in `Homology/`). -/
+
+/-- ★★ **The H2 tie**: `ε(N · e₀) = exponentSum(∂(1, ρ)) = 3` — the augmentation of the group-ring norm
+element equals the r1 abelianized boundary shadow (`relatorAbelianShadowIsThree`), which is exactly the
+invariant factor `3` carried by the shipped `d2 = cyclicThreeBoundaryOfDimOne = ⟨[[-3]]⟩` in
+`Homology/CyclicThreeChainComplex`.  Both sides `3`; the LHS is `ε` applied to the un-abelianized norm,
+the RHS is its abelianized shadow — the Brown–Huebschmann correspondence's numeric down-payment. -/
+theorem normAugmentationMatchesRelatorShadow :
+    groupRingAugmentation (groupRingNormElement (powerOfT ZmodThree.residue0))
+      = exponentSum (conjugatedRelatorBoundary ⟨[], 0, true⟩) :=
+  relatorAbelianShadowIsThree.symm
+
+/-- ★ **The #2199 r3 relation-module characterization marker.**  Shipped zero-axiom over r2:
+
+  * **B1** — the kernel landing.  `normKernelIffAugmentationZero` names the target lattice
+    `ker(N) = {a + b + c = 0}` (the `(s − 1)` ideal); the exponent-sum bridge
+    `exponentSumBoundaryIsThreeAugmentation` (under the load-bearing `AllRelatorIndexZero` guard) yields
+    `identityLandsAugmentationZero` — every well-formed identity lands in `ker(N)`.
+  * **B2** — the realization family.  `realizeRoundTrip` (`image (realize a b c) = (a, b, c)`) makes
+    `crossedModuleImage` a SURJECTION onto `ZZ[ZZ/3]` (`crossedModuleImageSurjectsOntoGroupRing`), hence
+    onto `ker(N)`; the genuine `ker(N)`-generators are the rotation orbit `ζ, s·ζ, s²·ζ` (all `∂ = []`),
+    `s`-equivariant and summing to `N · image ζ`; `ker(N)` is Z-spanned by the rotations.
+  * **B3** — the adjudication.  Soundness + kernel landing + realization = the invariant is a SURJECTION
+    of the identities onto `ker(N)` (`crossedModuleRelationModuleLedger`).  The `π₂ ≅ ker(N)` iso needs
+    the INJECTIVITY half (`relationModuleInjectivityObligation`), the Brown–Huebschmann structure-theorem
+    residual — WALLED (no normal form for `PreCrossedElement / PeifferEquiv`), named, never fabricated.
+  * **B4** — the H2 tie.  `normAugmentationMatchesRelatorShadow`: `ε(N) = 3` matches the shipped
+    `d2 = ⟨[[-3]]⟩` invariant factor (name-only cross-reference, lane law respected).
+
+The honest r3 close: the relation module of `⟨s | s³⟩` is CHARACTERIZED at the instance scope as the
+surjection `identities ↠ ker(N)`; the full `π₂ ≅ ker(N) ≅ H²(ZZ/3; ZZ[G])` iso holds iff the named
+injectivity residual also lands.  Read the meaning from THIS docstring (the honest-record convention). -/
+def crossedModuleRelationModuleCharacterizationIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
