@@ -175,4 +175,78 @@ reduction.  The recon's hand-worked `mu` firing, machine-checked. -/
 theorem wallFreeGenInvert_mult_index :
     (wallFreeGenInvert pushoutMonadMult tRunTwoWallFree monadPushTPath_wallFree).val.val = 1 := rfl
 
+/-! ## The wall-free split / join lemmas (the whisker-case ingredients) -/
+
+/-- ★★ **Wall-freeness SPLITS over path composition** — a wall-free composite forces both factors wall-free.
+STRUCTURAL on the first path (`composePath` recurses on the first, so the head letter's tag comes from the composite's
+first conjunct and the tail recurses); NO wall-count arithmetic, NO `Nat.add_eq_zero` (propext-free).  The ingredient
+the whisker cases of `wallFreeCellInvert` need to descend into the frame and the core. -/
+theorem pathWallFree_composePath_split :
+    {sourceMode middleMode targetMode : Fin involutionMonadPushout.modeCount} →
+    (first : ModalityPath involutionMonadPushout.toModeGraph sourceMode middleMode) →
+    (second : ModalityPath involutionMonadPushout.toModeGraph middleMode targetMode) →
+    pathWallFree (composePath first second) →
+    pathWallFree first ∧ pathWallFree second
+  | _, _, _, .nil _, _second, wf => ⟨True.intro, wf⟩
+  | _, _, _, .cons _letter rest, second, wf =>
+      let restSplit := pathWallFree_composePath_split rest second wf.2
+      ⟨⟨wf.1, restSplit.1⟩, restSplit.2⟩
+
+/-- ★★ **Wall-freeness JOINS over path composition** — two wall-free factors give a wall-free composite (the converse
+of the split).  STRUCTURAL on the first path.  Cheap; feeds the backward round-trip. -/
+theorem pathWallFree_composePath_join :
+    {sourceMode middleMode targetMode : Fin involutionMonadPushout.modeCount} →
+    (first : ModalityPath involutionMonadPushout.toModeGraph sourceMode middleMode) →
+    (second : ModalityPath involutionMonadPushout.toModeGraph middleMode targetMode) →
+    pathWallFree first → pathWallFree second →
+    pathWallFree (composePath first second)
+  | _, _, _, .nil _, _second, _wfFirst, wfSecond => wfSecond
+  | _, _, _, .cons _letter rest, second, wfFirst, wfSecond =>
+      ⟨wfFirst.1, pathWallFree_composePath_join rest second wfFirst.2 wfSecond⟩
+
+/-! ## The monad-side boundary-word homomorphism + `pathInvert_composePath` -/
+
+/-- `List.map` distributes over `++`, reproved by hand (structural `congrArg`) so it is propext-free — the core
+`List.map_append` leaks `propext`.  The concatenation law `pathInvert_composePath`'s word route needs. -/
+theorem mapAppendDistrib {Source Target : Type} (mapper : Source → Target) :
+    (listFirst listSecond : List Source) →
+    (listFirst ++ listSecond).map mapper = listFirst.map mapper ++ listSecond.map mapper
+  | [], _listSecond => rfl
+  | head :: tailFirst, listSecond => congrArg (mapper head :: ·) (mapAppendDistrib mapper tailFirst listSecond)
+
+/-- ★ **`monadPathWord` is a MONOID HOMOMORPHISM** — the boundary word of a monad path composite is the concatenation
+of the boundary words (structural on the first path, `congrArg`).  The monad analogue of `pushoutPathWord_composePath`,
+the word-level engine of `pathInvert_composePath`. -/
+theorem monadPathWord_composePath :
+    {sourceMode middleMode targetMode : Fin monadComputad.modeCount} →
+    (first : ModalityPath monadComputad.toModeGraph sourceMode middleMode) →
+    (second : ModalityPath monadComputad.toModeGraph middleMode targetMode) →
+    monadPathWord (composePath first second) = monadPathWord first ++ monadPathWord second
+  | _, _, _, .nil _, _second => rfl
+  | _, _, _, .cons letter rest, second =>
+      congrArg (letter.val :: ·) (monadPathWord_composePath rest second)
+
+/-- ★★★ **`pathInvert` DISTRIBUTES over path composition** — inverting a wall-free composite is the composite of the
+inverted factors.  Proved on the WORD route: `monadPathWord_injective` reduces the path equality to a monad-word
+equality, `mapEmbedRight_injective` to its `embedRightLetter`-retag, which `monadEmbedInvert_word` (both factors) +
+`monadPathWord_composePath` + `pushoutPathWord_composePath` fold to the same pushout boundary word.  No `castBoundary`,
+no middle-mode `Eq.rec` (the pushout middle mode never enters — `pathInvert`'s output is fixed endo).  The dependent
+plumbing lemma the two whisker cases of `wallFreeCellInvert` thread through `castBoundary`. -/
+theorem pathInvert_composePath
+    {sourceMode middleMode targetMode : Fin involutionMonadPushout.modeCount}
+    (first : ModalityPath involutionMonadPushout.toModeGraph sourceMode middleMode)
+    (second : ModalityPath involutionMonadPushout.toModeGraph middleMode targetMode)
+    (wfBoth : pathWallFree (composePath first second))
+    (wfFirst : pathWallFree first) (wfSecond : pathWallFree second) :
+    pathInvert (composePath first second) wfBoth
+      = composePath (pathInvert first wfFirst) (pathInvert second wfSecond) := by
+  apply monadPathWord_injective
+  apply mapEmbedRight_injective
+  rw [monadEmbedInvert_word (composePath first second) wfBoth,
+      monadPathWord_composePath (pathInvert first wfFirst) (pathInvert second wfSecond),
+      mapAppendDistrib,
+      monadEmbedInvert_word first wfFirst,
+      monadEmbedInvert_word second wfSecond]
+  exact pushoutPathWord_composePath first second
+
 end FX1Poly.Polygraph.Amalgam

@@ -23,5 +23,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.pushoutMonadMult
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeGenInvert_unit_index
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeGenInvert_mult_index
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.pathWallFree_composePath_split
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.pathWallFree_composePath_join
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.monadPathWord_composePath
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.mapAppendDistrib
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.pathInvert_composePath
 
 end FX1PolyAudit
