@@ -124,4 +124,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithPrefixSettledZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithPrefixSettledAtMinIsWindowDiagonal
 
+/- H2-SMITH r12 — the band-preservation lemmas (B2): the `…AtSecond` swap readers, the two zero-source clear
+   preservers (row-right reads pivot column, column-below reads pivot row), the two move-word band preservers,
+   and the two cascade band keystones (above-right ROW band, below-left COLUMN band) with their driver-path
+   seed forms.  The genuinely new content — zeros propagate through the `p+1` ops. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapEntriesWithinRowAtSecond
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapRowsEntryAtSecond
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapColumnsEntryAtSecond
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearRowRightStepsPreservesRowWithZeroPivotColumn
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearColumnBelowStepsPreservesColumnWithZeroPivotRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMoveToPivotOpsPreservesRowBandZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMoveToPivotOpsPreservesColBandZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepPreservesAboveRightRowBandZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepPreservesBelowLeftColBandZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedPreservesAboveRightRowBandZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedPreservesBelowLeftColBandZero
+
 end FX1PolyAudit

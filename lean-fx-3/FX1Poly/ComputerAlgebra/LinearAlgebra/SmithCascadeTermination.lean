@@ -2820,4 +2820,582 @@ theorem smithPrefixSettledAtMinIsWindowDiagonal (matrix : IntMatrix) (height wid
           rw [if_neg heightGtWidth]
           exact Or.inr colLtWidth)
 
+/-! ## The band-preservation lemmas (H2-SMITH r12, B2) — zeros propagate through the `p+1` ops
+
+The two bands survive the cascade's settle word because the added multiples are of ZERO entries and the
+move-swap only permutes zero entries among themselves.  This section ships the two NEW keystones — the
+above-right ROW band (`lowRow < p`, columns `[p, width)`) and the below-left COLUMN band (`lowCol < p`,
+rows `[p, height)`) — as whole-fuel structural inductions carrying the WHOLE-band `∀`-hypothesis (a single
+cell is insufficient: the move-swap mixes DISTINCT band cells).  Three small atom groups feed them: the
+`…AtSecond` swap readers (the move-swap `c = foundCol` / `r = foundRow` case, mirrors of the shipped
+`…AtFirst`), and the zero-source clear preservers (the hard phase — the row-right clear reads the pivot
+COLUMN as source, the column-below clear reads the pivot ROW; both are band-zero, so every transvection is a
+no-op `old + coeff·0 = old`).
+
+Every atom is a FUNCTION-CORRECTNESS fact about a definite word on ONE matrix under `IsRectangular` +
+pivot-in-range — refutation-immune, entries-stay-unchanged, never a re-diagonalization (the sub-block stays
+POLE-A-walled). -/
+
+/-- **Within-row swap reads the other entry at the SECOND index** — the `…AtSecond` mirror of
+`swapEntriesWithinRowAtFirst`: reading position `secondIndex` after `swapEntriesWithinRow row firstIndex
+secondIndex` returns `listGetWithDefault 0 row firstIndex`.  The outer `listReplaceAt` at `secondIndex`
+reads its new entry directly (`listGetWithDefaultReplaceAtEq`, no index case-split). -/
+theorem swapEntriesWithinRowAtSecond (row : IntRow) (firstIndex secondIndex : Nat)
+    (isFirstInRange : firstIndex < row.length) (isSecondInRange : secondIndex < row.length) :
+    listGetWithDefault 0 (swapEntriesWithinRow row firstIndex secondIndex) secondIndex
+      = listGetWithDefault 0 row firstIndex := by
+  unfold IntMatrix.swapEntriesWithinRow
+  rw [if_pos isFirstInRange, if_pos isSecondInRange]
+  show listGetWithDefault 0
+      (listReplaceAt (listReplaceAt row firstIndex (listGetWithDefault 0 row secondIndex)) secondIndex
+        (listGetWithDefault 0 row firstIndex)) secondIndex
+    = listGetWithDefault 0 row firstIndex
+  exact listGetWithDefaultReplaceAtEq 0
+    (listReplaceAt row firstIndex (listGetWithDefault 0 row secondIndex)) secondIndex
+    (listGetWithDefault 0 row firstIndex)
+    (Eq.mp (congrArg (secondIndex < ·)
+      (listReplaceAtPreservesLength row firstIndex (listGetWithDefault 0 row secondIndex)).symm)
+      isSecondInRange)
+
+/-- **Swap reads the other row at the SECOND index** — the `…AtSecond` mirror of `swapRowsEntryAtFirst`:
+reading row `secondIndex` after `swapRows firstIndex secondIndex` returns the whole `firstIndex` row.  The
+outer `listReplaceAt` at `secondIndex` reads its new row directly (`listGetWithDefaultReplaceAtEq`). -/
+theorem swapRowsEntryAtSecond (matrix : IntMatrix) (firstIndex secondIndex colIndex : Nat)
+    (isFirstInRange : firstIndex < matrix.rows.length)
+    (isSecondInRange : secondIndex < matrix.rows.length) :
+    (matrix.swapRows firstIndex secondIndex).entryAt secondIndex colIndex
+      = matrix.entryAt firstIndex colIndex := by
+  have rowEq :
+      listGetWithDefault [] (matrix.swapRows firstIndex secondIndex).rows secondIndex
+        = listGetWithDefault [] matrix.rows firstIndex := by
+    unfold IntMatrix.swapRows
+    rw [if_pos isFirstInRange, if_pos isSecondInRange]
+    show listGetWithDefault []
+        (listReplaceAt (listReplaceAt matrix.rows firstIndex
+            (listGetWithDefault [] matrix.rows secondIndex)) secondIndex
+          (listGetWithDefault [] matrix.rows firstIndex)) secondIndex
+      = listGetWithDefault [] matrix.rows firstIndex
+    exact listGetWithDefaultReplaceAtEq []
+      (listReplaceAt matrix.rows firstIndex (listGetWithDefault [] matrix.rows secondIndex)) secondIndex
+      (listGetWithDefault [] matrix.rows firstIndex)
+      (Eq.mp (congrArg (secondIndex < ·)
+        (listReplaceAtPreservesLength matrix.rows firstIndex
+          (listGetWithDefault [] matrix.rows secondIndex)).symm) isSecondInRange)
+  show listGetWithDefault 0
+      (listGetWithDefault [] (matrix.swapRows firstIndex secondIndex).rows secondIndex) colIndex
+    = listGetWithDefault 0 (listGetWithDefault [] matrix.rows firstIndex) colIndex
+  rw [rowEq]
+
+/-- **Swap reads the other column at the SECOND index** — the `…AtSecond` mirror of
+`swapColumnsEntryAtFirst`: reading column `secondIndex` of row `rowIndex` after `swapColumns firstIndex
+secondIndex` returns `matrix.entryAt rowIndex firstIndex`.  Reads the mapped row
+(`listGetWithDefaultMapAllRows`), then rides `swapEntriesWithinRowAtSecond`. -/
+theorem swapColumnsEntryAtSecond {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (firstIndex secondIndex rowIndex : Nat)
+    (isRowInRange : rowIndex < height)
+    (isFirstInRange : firstIndex < width) (isSecondInRange : secondIndex < width) :
+    (matrix.swapColumns firstIndex secondIndex).entryAt rowIndex secondIndex
+      = matrix.entryAt rowIndex firstIndex := by
+  obtain ⟨rowCount, rowWidths⟩ := isRect
+  have rowInRows : rowIndex < matrix.rows.length :=
+    Eq.mp (congrArg (rowIndex < ·) rowCount.symm) isRowInRange
+  have rowHasWidth : (listGetWithDefault [] matrix.rows rowIndex).length = width :=
+    listGetWithDefaultHasWidth matrix.rows rowIndex rowWidths rowInRows
+  show listGetWithDefault 0 (listGetWithDefault []
+      (mapAllRows (fun row => swapEntriesWithinRow row firstIndex secondIndex) matrix.rows) rowIndex)
+      secondIndex
+    = listGetWithDefault 0 (listGetWithDefault [] matrix.rows rowIndex) firstIndex
+  rw [listGetWithDefaultMapAllRows _ matrix.rows rowIndex rowInRows]
+  exact swapEntriesWithinRowAtSecond (listGetWithDefault [] matrix.rows rowIndex) firstIndex secondIndex
+    (Eq.mp (congrArg (firstIndex < ·) rowHasWidth.symm) isFirstInRange)
+    (Eq.mp (congrArg (secondIndex < ·) rowHasWidth.symm) isSecondInRange)
+
+/-- **The row-right clear preserves a whole row whose pivot-column entry is zero** — if `workMatrix.entryAt
+lowRow pivotIndex = 0` and the pivot sits left of the cleared window (`pivotIndex < startCol`), then every
+column read of row `lowRow` survives `smithClearRowRightSteps` (each op is `addColumnMultiple pivotIndex
+targetCol coeff`, source column `pivotIndex`, so on-target reads `old + coeff·0 = old` and the pivot column
+— never a target — stays zero for the recursion).  Structural on `stepCount`; the read-column case split
+rides `addColumnMultipleEntryOnTargetCol` (zeroed by `intMulZero`/`intAddZero`) versus
+`addColumnMultipleEntryOffTargetCol`.  The hard phase of the above-right ROW band. -/
+theorem smithClearRowRightStepsPreservesRowWithZeroPivotColumn (coeffMatrix : IntMatrix)
+    (pivotIndex height width lowRow : Nat) :
+    ∀ (stepCount startCol readCol : Nat) (workMatrix : IntMatrix),
+      workMatrix.IsRectangular height width →
+      lowRow < height →
+      pivotIndex < startCol → startCol + stepCount ≤ width →
+      workMatrix.entryAt lowRow pivotIndex = 0 →
+      (workMatrix.applyOperations
+          ((smithClearRowRightSteps coeffMatrix pivotIndex stepCount startCol).map
+            ElementaryOperation.columnOperation)).entryAt lowRow readCol
+        = workMatrix.entryAt lowRow readCol := by
+  intro stepCount
+  induction stepCount with
+  | zero => intro _ _ _ _ _ _ _ _; rfl
+  | succ stepCount ih =>
+      intro startCol readCol workMatrix isRect lowRowInRange pivotLtStart allColsInRange zeroSource
+      have pivotNeStart : pivotIndex ≠ startCol := Nat.ne_of_lt pivotLtStart
+      have startColLtWidth : startCol < width :=
+        Nat.lt_of_lt_of_le
+          (Nat.lt_of_le_of_lt (Nat.le_add_right startCol stepCount) (Nat.lt_succ_self (startCol + stepCount)))
+          allColsInRange
+      have pivotColLtWidth : pivotIndex < width := Nat.lt_trans pivotLtStart startColLtWidth
+      have nextRect :
+          (workMatrix.addColumnMultiple pivotIndex startCol
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt pivotIndex startCol)))).IsRectangular height width :=
+        applyOperationPreservesRectangular
+          (ElementaryOperation.columnOperation
+            (ElementaryColumnOperation.addColumnMultiple pivotIndex startCol
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt pivotIndex startCol))))) workMatrix isRect
+      have nextZeroSource :
+          (workMatrix.addColumnMultiple pivotIndex startCol
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt pivotIndex startCol)))).entryAt lowRow pivotIndex = 0 :=
+        (addColumnMultipleEntryOffTargetCol workMatrix isRect pivotIndex startCol lowRow pivotIndex _
+          pivotNeStart lowRowInRange).trans zeroSource
+      have headPreservesRead :
+          (workMatrix.addColumnMultiple pivotIndex startCol
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt pivotIndex startCol)))).entryAt lowRow readCol
+            = workMatrix.entryAt lowRow readCol := by
+        cases Nat.decEq readCol startCol with
+        | isTrue readEqStart =>
+            rw [readEqStart,
+              addColumnMultipleEntryOnTargetCol workMatrix isRect pivotIndex startCol lowRow _
+                pivotNeStart lowRowInRange pivotColLtWidth startColLtWidth,
+              zeroSource, intMulZero, intAddZero]
+        | isFalse readNeStart =>
+            exact addColumnMultipleEntryOffTargetCol workMatrix isRect pivotIndex startCol lowRow readCol _
+              readNeStart lowRowInRange
+      have allColsInRange' : startCol + 1 + stepCount ≤ width :=
+        Eq.mp (congrArg (· ≤ width)
+          ((Nat.add_succ startCol stepCount).trans (Nat.succ_add startCol stepCount).symm)) allColsInRange
+      exact (ih (startCol + 1) readCol
+          (workMatrix.addColumnMultiple pivotIndex startCol
+            (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                (coeffMatrix.entryAt pivotIndex startCol))))
+          nextRect lowRowInRange (Nat.lt_succ_of_lt pivotLtStart) allColsInRange' nextZeroSource).trans
+        headPreservesRead
+
+/-- **The column-below clear preserves a whole column whose pivot-row entry is zero** — the row mirror of
+`smithClearRowRightStepsPreservesRowWithZeroPivotColumn`: if `workMatrix.entryAt pivotIndex lowCol = 0` and
+`pivotIndex < startRow`, every row read of column `lowCol` survives `smithClearColumnBelowSteps` (each op is
+`addRowMultiple pivotIndex targetRow coeff`, source ROW `pivotIndex`, so on-target reads `old + coeff·0 =
+old`).  The hard phase of the below-left COLUMN band. -/
+theorem smithClearColumnBelowStepsPreservesColumnWithZeroPivotRow (coeffMatrix : IntMatrix)
+    (pivotIndex height width lowCol : Nat) :
+    ∀ (stepCount startRow readRow : Nat) (workMatrix : IntMatrix),
+      workMatrix.IsRectangular height width →
+      lowCol < width →
+      pivotIndex < startRow → startRow + stepCount ≤ height →
+      workMatrix.entryAt pivotIndex lowCol = 0 →
+      (workMatrix.applyOperations
+          ((smithClearColumnBelowSteps coeffMatrix pivotIndex stepCount startRow).map
+            ElementaryOperation.rowOperation)).entryAt readRow lowCol
+        = workMatrix.entryAt readRow lowCol := by
+  intro stepCount
+  induction stepCount with
+  | zero => intro _ _ _ _ _ _ _ _; rfl
+  | succ stepCount ih =>
+      intro startRow readRow workMatrix isRect lowColInRange pivotLtStart allRowsInRange zeroSource
+      have pivotNeStart : pivotIndex ≠ startRow := Nat.ne_of_lt pivotLtStart
+      have startRowLtHeight : startRow < height :=
+        Nat.lt_of_lt_of_le
+          (Nat.lt_of_le_of_lt (Nat.le_add_right startRow stepCount) (Nat.lt_succ_self (startRow + stepCount)))
+          allRowsInRange
+      have pivotRowLtHeight : pivotIndex < height := Nat.lt_trans pivotLtStart startRowLtHeight
+      have nextRect :
+          (workMatrix.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex)))).IsRectangular height width :=
+        applyOperationPreservesRectangular
+          (ElementaryOperation.rowOperation
+            (ElementaryRowOperation.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex))))) workMatrix isRect
+      have nextZeroSource :
+          (workMatrix.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex)))).entryAt pivotIndex lowCol = 0 :=
+        (addRowMultiplePreservesEntryOffTargetRow workMatrix pivotIndex startRow _ pivotIndex lowCol
+          pivotNeStart).trans zeroSource
+      have headPreservesRead :
+          (workMatrix.addRowMultiple pivotIndex startRow
+              (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                  (coeffMatrix.entryAt startRow pivotIndex)))).entryAt readRow lowCol
+            = workMatrix.entryAt readRow lowCol := by
+        cases Nat.decEq readRow startRow with
+        | isTrue readEqStart =>
+            rw [readEqStart,
+              addRowMultipleEntryOnTargetRow workMatrix isRect pivotIndex startRow lowCol _
+                pivotNeStart pivotRowLtHeight startRowLtHeight lowColInRange,
+              zeroSource, intMulZero, intAddZero]
+        | isFalse readNeStart =>
+            exact addRowMultiplePreservesEntryOffTargetRow workMatrix pivotIndex startRow _ readRow lowCol
+              readNeStart
+      have allRowsInRange' : startRow + 1 + stepCount ≤ height :=
+        Eq.mp (congrArg (· ≤ height)
+          ((Nat.add_succ startRow stepCount).trans (Nat.succ_add startRow stepCount).symm)) allRowsInRange
+      exact (ih (startRow + 1) readRow
+          (workMatrix.addRowMultiple pivotIndex startRow
+            (-(intPivotQuotient (coeffMatrix.entryAt pivotIndex pivotIndex)
+                (coeffMatrix.entryAt startRow pivotIndex))))
+          nextRect lowColInRange (Nat.lt_succ_of_lt pivotLtStart) allRowsInRange' nextZeroSource).trans
+        headPreservesRead
+
+/-- **The move word preserves an above-right ROW band** — after `smithMoveToPivotOps pivotIndex foundRow
+foundCol` a settled row `lowRow < pivotIndex` keeps every band cell `(lowRow, col)`, `col ∈ [pivotIndex,
+width)`, zero, PROVIDED the found position sits in the pivot window.  The row swap fixes row `lowRow`
+entirely (off both `pivotIndex` and `foundRow`, both `> lowRow`); the column swap permutes the band columns
+`{pivotIndex, foundCol}` among themselves (`swapColumnsEntryAtFirst`/`AtSecond` land the OTHER band column,
+still zero) and fixes the rest (`swapColumnsPreservesEntryOffBothCols`).  All targets are band-zero on
+input. -/
+theorem smithMoveToPivotOpsPreservesRowBandZero {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex foundRow foundCol lowRow : Nat)
+    (lowRowLtPivot : lowRow < pivotIndex)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (pivotLeFoundRow : pivotIndex ≤ foundRow) (pivotLeFoundCol : pivotIndex ≤ foundCol)
+    (foundColLtWidth : foundCol < width)
+    (bandZero : ∀ col, pivotIndex ≤ col → col < width → matrix.entryAt lowRow col = 0) :
+    ∀ col, pivotIndex ≤ col → col < width →
+      (matrix.applyOperations (smithMoveToPivotOps pivotIndex foundRow foundCol)).entryAt lowRow col = 0 := by
+  intro col pivotLeCol colLtWidth
+  have lowRowInRange : lowRow < height := Nat.lt_trans lowRowLtPivot pivotRowInRange
+  have swapRowRect : (matrix.swapRows pivotIndex foundRow).IsRectangular height width :=
+    applyRowOperationPreservesRectangular (ElementaryRowOperation.swapRows pivotIndex foundRow) matrix isRect
+  have rowPreservedAt : ∀ readCol,
+      (matrix.swapRows pivotIndex foundRow).entryAt lowRow readCol = matrix.entryAt lowRow readCol :=
+    fun readCol => swapRowsPreservesEntryOffBothRows matrix pivotIndex foundRow lowRow readCol
+      (Nat.ne_of_lt lowRowLtPivot) (Nat.ne_of_lt (Nat.lt_of_lt_of_le lowRowLtPivot pivotLeFoundRow))
+  show ((matrix.swapRows pivotIndex foundRow).swapColumns pivotIndex foundCol).entryAt lowRow col = 0
+  cases Nat.decEq col pivotIndex with
+  | isTrue colEqPivot =>
+      rw [colEqPivot,
+        swapColumnsEntryAtFirst (matrix.swapRows pivotIndex foundRow) swapRowRect pivotIndex foundCol lowRow
+          lowRowInRange pivotColInRange foundColLtWidth,
+        rowPreservedAt foundCol]
+      exact bandZero foundCol pivotLeFoundCol foundColLtWidth
+  | isFalse colNePivot =>
+      cases Nat.decEq col foundCol with
+      | isTrue colEqFound =>
+          rw [colEqFound,
+            swapColumnsEntryAtSecond (matrix.swapRows pivotIndex foundRow) swapRowRect pivotIndex foundCol
+              lowRow lowRowInRange pivotColInRange foundColLtWidth,
+            rowPreservedAt pivotIndex]
+          exact bandZero pivotIndex (Nat.le_refl pivotIndex) pivotColInRange
+      | isFalse colNeFound =>
+          rw [swapColumnsPreservesEntryOffBothCols (matrix.swapRows pivotIndex foundRow) swapRowRect
+              pivotIndex foundCol lowRow col lowRowInRange colNePivot colNeFound,
+            rowPreservedAt col]
+          exact bandZero col pivotLeCol colLtWidth
+
+/-- **The move word preserves a below-left COLUMN band** — the transpose mirror: after the move a settled
+column `lowCol < pivotIndex` keeps every band cell `(row, lowCol)`, `row ∈ [pivotIndex, height)`, zero.  The
+column swap fixes column `lowCol` (off both `pivotIndex` and `foundCol`, both `> lowCol`); the row swap
+permutes the band rows `{pivotIndex, foundRow}` among themselves
+(`swapRowsEntryAtFirst`/`AtSecond`) and fixes the rest (`swapRowsPreservesEntryOffBothRows`). -/
+theorem smithMoveToPivotOpsPreservesColBandZero {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex foundRow foundCol lowCol : Nat)
+    (lowColLtPivot : lowCol < pivotIndex)
+    (pivotRowInRange : pivotIndex < height)
+    (pivotLeFoundRow : pivotIndex ≤ foundRow) (pivotLeFoundCol : pivotIndex ≤ foundCol)
+    (foundRowLtHeight : foundRow < height)
+    (bandZero : ∀ row, pivotIndex ≤ row → row < height → matrix.entryAt row lowCol = 0) :
+    ∀ row, pivotIndex ≤ row → row < height →
+      (matrix.applyOperations (smithMoveToPivotOps pivotIndex foundRow foundCol)).entryAt row lowCol = 0 := by
+  intro readRow pivotLeReadRow readRowLtHeight
+  have swapRowRect : (matrix.swapRows pivotIndex foundRow).IsRectangular height width :=
+    applyRowOperationPreservesRectangular (ElementaryRowOperation.swapRows pivotIndex foundRow) matrix isRect
+  have pivotInRows : pivotIndex < matrix.rows.length :=
+    Eq.mp (congrArg (pivotIndex < ·) isRect.1.symm) pivotRowInRange
+  have foundInRows : foundRow < matrix.rows.length :=
+    Eq.mp (congrArg (foundRow < ·) isRect.1.symm) foundRowLtHeight
+  show ((matrix.swapRows pivotIndex foundRow).swapColumns pivotIndex foundCol).entryAt readRow lowCol = 0
+  rw [swapColumnsPreservesEntryOffBothCols (matrix.swapRows pivotIndex foundRow) swapRowRect pivotIndex
+      foundCol readRow lowCol readRowLtHeight (Nat.ne_of_lt lowColLtPivot)
+      (Nat.ne_of_lt (Nat.lt_of_lt_of_le lowColLtPivot pivotLeFoundCol))]
+  cases Nat.decEq readRow pivotIndex with
+  | isTrue readEqPivot =>
+      rw [readEqPivot, swapRowsEntryAtFirst matrix pivotIndex foundRow lowCol pivotInRows foundInRows]
+      exact bandZero foundRow pivotLeFoundRow foundRowLtHeight
+  | isFalse readNePivot =>
+      cases Nat.decEq readRow foundRow with
+      | isTrue readEqFound =>
+          rw [readEqFound, swapRowsEntryAtSecond matrix pivotIndex foundRow lowCol pivotInRows foundInRows]
+          exact bandZero pivotIndex (Nat.le_refl pivotIndex) pivotRowInRange
+      | isFalse readNeFound =>
+          rw [swapRowsPreservesEntryOffBothRows matrix pivotIndex foundRow readRow lowCol readNePivot
+            readNeFound]
+          exact bandZero readRow pivotLeReadRow readRowLtHeight
+
+/-- **Concrete truth probe for the two bands** — on `[[3, 0, 0], [0, 5, 6], [0, 7, 4]]` at pivot `1` the
+sub-minor `[[5, 6], [7, 4]]` is nonzero, so the cascade FIRES a genuine move+sign+clear word (min-abs `4`
+at `(2, 2)` swapped in via `swapRows 1↔2`, `swapColumns 1↔2`).  The settled above-right band cells `(0, 1)`,
+`(0, 2)` (row `0 < 1`) and the settled below-left band cells `(1, 0)`, `(2, 0)` (column `0 < 1`) all start
+zero and stay zero through the firing pivot — a distinct check from the r11 low-low probe (which only
+touched a corner `< p` in BOTH coordinates).  Anonymous, no axiom footprint. -/
+example :
+    (({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix).applyOperations
+        (smithCascadeSweep 6 ({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix) 1 3 3)).entryAt 0 2
+      = 0 := by decide
+
+example :
+    (({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix).applyOperations
+        (smithCascadeSweep 6 ({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix) 1 3 3)).entryAt 2 0
+      = 0 := by decide
+
+/-- **The cascade preserves an above-right ROW band within its fuel** (H2-SMITH r12, B2 keystone) — for a
+rectangular matrix with the pivot in range, `smithCascadeSweep fuel` leaves every band cell `(lowRow, col)`
+with `lowRow < pivotIndex` and `col ∈ [pivotIndex, width)` zero, given the WHOLE band zero on input.
+Structural induction on `fuel`, the band mirror of `smithCascadeSweepPreservesLowLowEntry`.
+
+  * **Base / step `none`**: the sweep is empty, the band is trivially fixed.
+  * **Step `some (foundRow, foundCol)`**: split the settle word `moveOps ++ signOps ++ columnClearOps ++
+    rowClearOps`; the band survives the move (`smithMoveToPivotOpsPreservesRowBandZero`, found position
+    pinned `≥ pivotIndex`), the sign (off-pivot row), the column clear (top row `lowRow < pivotIndex + 1`,
+    off-target), and the row clear (pivot COLUMN is band-zero so every transvection is a no-op —
+    `smithClearRowRightStepsPreservesRowWithZeroPivotColumn`).  Cross clear ⟹ the settle word is the whole
+    sweep; NOT clear ⟹ the recursion re-establishes the WHOLE-band hypothesis on `afterRowClear` and closes
+    by IH.
+
+The whole-band `∀`-hypothesis is load-bearing (the move-swap mixes distinct band cells).  Entries stay
+UNCHANGED — immune to the r5/r6 refuted-pole shape; the sub-block stays POLE-A-walled. -/
+theorem smithCascadeSweepPreservesAboveRightRowBandZero :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width lowRow : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width →
+      lowRow < pivotIndex →
+      (∀ col, pivotIndex ≤ col → col < width → matrix.entryAt lowRow col = 0) →
+      ∀ col, pivotIndex ≤ col → col < width →
+        (matrix.applyOperations (smithCascadeSweep fuel matrix pivotIndex height width)).entryAt lowRow col
+          = 0 := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width lowRow _ _ _ _ bandZero col pivotLeCol colLtWidth
+      exact bandZero col pivotLeCol colLtWidth
+  | succ fuel ih =>
+      intro matrix pivotIndex height width lowRow isRect pivotRowInRange pivotColInRange lowRowLtPivot bandZero
+      have lowRowInRange : lowRow < height := Nat.lt_trans lowRowLtPivot pivotRowInRange
+      cases hFind : smithFindMinAbsInMinor matrix pivotIndex height width with
+      | none =>
+          rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          intro col pivotLeCol colLtWidth
+          exact bandZero col pivotLeCol colLtWidth
+      | some pair =>
+          obtain ⟨foundRow, foundCol⟩ := pair
+          let moveOps := smithMoveToPivotOps pivotIndex foundRow foundCol
+          let afterMove := matrix.applyOperations moveOps
+          let signOps := smithSignNormalizeOps afterMove pivotIndex
+          let afterSign := afterMove.applyOperations signOps
+          let columnClearOps :=
+            (smithClearColumnBelowSteps afterSign pivotIndex (height - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.rowOperation
+          let afterColumnClear := afterSign.applyOperations columnClearOps
+          let rowClearOps :=
+            (smithClearRowRightSteps afterColumnClear pivotIndex (width - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.columnOperation
+          let afterRowClear := afterColumnClear.applyOperations rowClearOps
+          let settledOps := moveOps ++ signOps ++ columnClearOps ++ rowClearOps
+          have afterMoveRect : afterMove.IsRectangular height width :=
+            applyOperationsPreservesRectangular moveOps matrix isRect
+          have afterSignRect : afterSign.IsRectangular height width :=
+            applyOperationsPreservesRectangular signOps afterMove afterMoveRect
+          have afterColumnClearRect : afterColumnClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular columnClearOps afterSign afterSignRect
+          have afterRowClearRect : afterRowClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular rowClearOps afterColumnClear afterColumnClearRect
+          have foundInRange := smithFindMinAbsInMinorFoundInRange matrix pivotIndex height width
+            foundRow foundCol pivotRowInRange pivotColInRange hFind
+          have afterMoveBandZero : ∀ col, pivotIndex ≤ col → col < width → afterMove.entryAt lowRow col = 0 :=
+            smithMoveToPivotOpsPreservesRowBandZero matrix isRect pivotIndex foundRow foundCol lowRow
+              lowRowLtPivot pivotRowInRange pivotColInRange foundInRange.1 foundInRange.2.2.1
+              foundInRange.2.2.2 bandZero
+          have afterSignBandZero : ∀ col, pivotIndex ≤ col → col < width → afterSign.entryAt lowRow col = 0 :=
+            fun col pivotLeCol colLtWidth =>
+              (signNormalizeOpsPreserveEntryOffPivot afterMove pivotIndex lowRow col
+                (Nat.ne_of_lt lowRowLtPivot)).trans (afterMoveBandZero col pivotLeCol colLtWidth)
+          have afterColumnClearBandZero :
+              ∀ col, pivotIndex ≤ col → col < width → afterColumnClear.entryAt lowRow col = 0 :=
+            fun col pivotLeCol colLtWidth =>
+              (smithClearColumnBelowStepsPreservesRow afterSign pivotIndex lowRow col
+                (height - (pivotIndex + 1)) (pivotIndex + 1) afterSign
+                (Nat.lt_trans lowRowLtPivot (Nat.lt_succ_self pivotIndex))).trans
+                (afterSignBandZero col pivotLeCol colLtWidth)
+          have afterRowClearBandZero :
+              ∀ col, pivotIndex ≤ col → col < width → afterRowClear.entryAt lowRow col = 0 :=
+            fun col pivotLeCol colLtWidth =>
+              (smithClearRowRightStepsPreservesRowWithZeroPivotColumn afterColumnClear pivotIndex height width
+                  lowRow (width - (pivotIndex + 1)) (pivotIndex + 1) col afterColumnClear afterColumnClearRect
+                  lowRowInRange (Nat.lt_succ_self pivotIndex)
+                  (Nat.le_of_eq (smithNatAddSubOfLe (pivotIndex + 1) width pivotColInRange))
+                  (afterColumnClearBandZero pivotIndex (Nat.le_refl pivotIndex) pivotColInRange)).trans
+                (afterColumnClearBandZero col pivotLeCol colLtWidth)
+          have hApplySettled : matrix.applyOperations settledOps = afterRowClear :=
+            (applyOperationsAppend (moveOps ++ signOps ++ columnClearOps) rowClearOps matrix).trans
+              (congrArg (fun reducedMatrix => reducedMatrix.applyOperations rowClearOps)
+                ((applyOperationsAppend (moveOps ++ signOps) columnClearOps matrix).trans
+                  (congrArg (fun reducedMatrix => reducedMatrix.applyOperations columnClearOps)
+                    (applyOperationsAppend moveOps signOps matrix))))
+          have settledOpsBandZero :
+              ∀ col, pivotIndex ≤ col → col < width →
+                (matrix.applyOperations settledOps).entryAt lowRow col = 0 :=
+            fun col pivotLeCol colLtWidth =>
+              (congrArg (fun reducedMatrix => reducedMatrix.entryAt lowRow col) hApplySettled).trans
+                (afterRowClearBandZero col pivotLeCol colLtWidth)
+          have hSweep : smithCascadeSweep (fuel + 1) matrix pivotIndex height width
+              = (match smithCrossIsClear afterRowClear pivotIndex height width with
+                 | true => settledOps
+                 | false => settledOps ++ smithCascadeSweep fuel afterRowClear pivotIndex height width) := by
+            rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          rw [hSweep]
+          cases hCross : smithCrossIsClear afterRowClear pivotIndex height width with
+          | true => exact settledOpsBandZero
+          | false =>
+              intro col pivotLeCol colLtWidth
+              rw [applyOperationsAppend, hApplySettled]
+              exact ih afterRowClear pivotIndex height width lowRow afterRowClearRect pivotRowInRange
+                pivotColInRange lowRowLtPivot afterRowClearBandZero col pivotLeCol colLtWidth
+
+/-- **The cascade preserves a below-left COLUMN band within its fuel** — the transpose mirror of
+`smithCascadeSweepPreservesAboveRightRowBandZero`: `smithCascadeSweep fuel` leaves every band cell `(row,
+lowCol)` with `lowCol < pivotIndex` and `row ∈ [pivotIndex, height)` zero, given the WHOLE band zero on
+input.  The move rides `smithMoveToPivotOpsPreservesColBandZero`, the sign preserves the column (the `row =
+pivotIndex` cell is band-zero, negated to `0`; off-pivot rows fixed), the row clear fixes the left column
+(off-target, `lowCol < pivotIndex + 1`), and the column clear rides
+`smithClearColumnBelowStepsPreservesColumnWithZeroPivotRow` (the pivot ROW is band-zero).  The sign phase
+here needs a per-cell case (the pivot row IS in the band), handled by `negateRow`-on-zero. -/
+theorem smithCascadeSweepPreservesBelowLeftColBandZero :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width lowCol : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width →
+      lowCol < pivotIndex →
+      (∀ row, pivotIndex ≤ row → row < height → matrix.entryAt row lowCol = 0) →
+      ∀ row, pivotIndex ≤ row → row < height →
+        (matrix.applyOperations (smithCascadeSweep fuel matrix pivotIndex height width)).entryAt row lowCol
+          = 0 := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width lowCol _ _ _ _ bandZero row pivotLeRow rowLtHeight
+      exact bandZero row pivotLeRow rowLtHeight
+  | succ fuel ih =>
+      intro matrix pivotIndex height width lowCol isRect pivotRowInRange pivotColInRange lowColLtPivot bandZero
+      have lowColInRange : lowCol < width := Nat.lt_trans lowColLtPivot pivotColInRange
+      cases hFind : smithFindMinAbsInMinor matrix pivotIndex height width with
+      | none =>
+          rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          intro row pivotLeRow rowLtHeight
+          exact bandZero row pivotLeRow rowLtHeight
+      | some pair =>
+          obtain ⟨foundRow, foundCol⟩ := pair
+          let moveOps := smithMoveToPivotOps pivotIndex foundRow foundCol
+          let afterMove := matrix.applyOperations moveOps
+          let signOps := smithSignNormalizeOps afterMove pivotIndex
+          let afterSign := afterMove.applyOperations signOps
+          let columnClearOps :=
+            (smithClearColumnBelowSteps afterSign pivotIndex (height - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.rowOperation
+          let afterColumnClear := afterSign.applyOperations columnClearOps
+          let rowClearOps :=
+            (smithClearRowRightSteps afterColumnClear pivotIndex (width - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.columnOperation
+          let afterRowClear := afterColumnClear.applyOperations rowClearOps
+          let settledOps := moveOps ++ signOps ++ columnClearOps ++ rowClearOps
+          have afterMoveRect : afterMove.IsRectangular height width :=
+            applyOperationsPreservesRectangular moveOps matrix isRect
+          have afterSignRect : afterSign.IsRectangular height width :=
+            applyOperationsPreservesRectangular signOps afterMove afterMoveRect
+          have afterColumnClearRect : afterColumnClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular columnClearOps afterSign afterSignRect
+          have afterRowClearRect : afterRowClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular rowClearOps afterColumnClear afterColumnClearRect
+          have foundInRange := smithFindMinAbsInMinorFoundInRange matrix pivotIndex height width
+            foundRow foundCol pivotRowInRange pivotColInRange hFind
+          have afterMoveBandZero : ∀ row, pivotIndex ≤ row → row < height → afterMove.entryAt row lowCol = 0 :=
+            smithMoveToPivotOpsPreservesColBandZero matrix isRect pivotIndex foundRow foundCol lowCol
+              lowColLtPivot pivotRowInRange foundInRange.1 foundInRange.2.2.1 foundInRange.2.1 bandZero
+          have pivotInAfterMoveRows : pivotIndex < afterMove.rows.length :=
+            Eq.mp (congrArg (pivotIndex < ·) afterMoveRect.1.symm) pivotRowInRange
+          have afterSignBandZero : ∀ row, pivotIndex ≤ row → row < height → afterSign.entryAt row lowCol = 0 :=
+            fun row pivotLeRow rowLtHeight =>
+              signNormalizeOpsPreserveZeroEntry afterMove pivotIndex row lowCol pivotInAfterMoveRows
+                (afterMoveBandZero row pivotLeRow rowLtHeight)
+          have afterColumnClearBandZero :
+              ∀ row, pivotIndex ≤ row → row < height → afterColumnClear.entryAt row lowCol = 0 :=
+            fun row pivotLeRow rowLtHeight =>
+              (smithClearColumnBelowStepsPreservesColumnWithZeroPivotRow afterSign pivotIndex height width
+                  lowCol (height - (pivotIndex + 1)) (pivotIndex + 1) row afterSign afterSignRect lowColInRange
+                  (Nat.lt_succ_self pivotIndex)
+                  (Nat.le_of_eq (smithNatAddSubOfLe (pivotIndex + 1) height pivotRowInRange))
+                  (afterSignBandZero pivotIndex (Nat.le_refl pivotIndex) pivotRowInRange)).trans
+                (afterSignBandZero row pivotLeRow rowLtHeight)
+          have afterRowClearBandZero :
+              ∀ row, pivotIndex ≤ row → row < height → afterRowClear.entryAt row lowCol = 0 :=
+            fun row pivotLeRow rowLtHeight =>
+              (smithClearRowRightStepsPreservesColumn afterColumnClear pivotIndex height width row lowCol
+                rowLtHeight (width - (pivotIndex + 1)) (pivotIndex + 1) afterColumnClear afterColumnClearRect
+                (Nat.lt_succ_of_lt lowColLtPivot)).trans
+                (afterColumnClearBandZero row pivotLeRow rowLtHeight)
+          have hApplySettled : matrix.applyOperations settledOps = afterRowClear :=
+            (applyOperationsAppend (moveOps ++ signOps ++ columnClearOps) rowClearOps matrix).trans
+              (congrArg (fun reducedMatrix => reducedMatrix.applyOperations rowClearOps)
+                ((applyOperationsAppend (moveOps ++ signOps) columnClearOps matrix).trans
+                  (congrArg (fun reducedMatrix => reducedMatrix.applyOperations columnClearOps)
+                    (applyOperationsAppend moveOps signOps matrix))))
+          have settledOpsBandZero :
+              ∀ row, pivotIndex ≤ row → row < height →
+                (matrix.applyOperations settledOps).entryAt row lowCol = 0 :=
+            fun row pivotLeRow rowLtHeight =>
+              (congrArg (fun reducedMatrix => reducedMatrix.entryAt row lowCol) hApplySettled).trans
+                (afterRowClearBandZero row pivotLeRow rowLtHeight)
+          have hSweep : smithCascadeSweep (fuel + 1) matrix pivotIndex height width
+              = (match smithCrossIsClear afterRowClear pivotIndex height width with
+                 | true => settledOps
+                 | false => settledOps ++ smithCascadeSweep fuel afterRowClear pivotIndex height width) := by
+            rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          rw [hSweep]
+          cases hCross : smithCrossIsClear afterRowClear pivotIndex height width with
+          | true => exact settledOpsBandZero
+          | false =>
+              intro row pivotLeRow rowLtHeight
+              rw [applyOperationsAppend, hApplySettled]
+              exact ih afterRowClear pivotIndex height width lowCol afterRowClearRect pivotRowInRange
+                pivotColInRange lowColLtPivot afterRowClearBandZero row pivotLeRow rowLtHeight
+
+/-- **The seed cascade preserves an above-right ROW band** (driver-path form) — the keystone
+`smithCascadeSweepPreservesAboveRightRowBandZero` discharged at `smithMinorAbsSum matrix pivotIndex height
+width`, the static fuel the driver seeds the cascade with.  The band twin of
+`smithCascadeSweepSeedPreservesLowLowEntry`. -/
+theorem smithCascadeSweepSeedPreservesAboveRightRowBandZero (matrix : IntMatrix)
+    (pivotIndex height width lowRow : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (lowRowLtPivot : lowRow < pivotIndex)
+    (bandZero : ∀ col, pivotIndex ≤ col → col < width → matrix.entryAt lowRow col = 0) :
+    ∀ col, pivotIndex ≤ col → col < width →
+      (matrix.applyOperations
+          (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width)).entryAt lowRow col = 0 :=
+  smithCascadeSweepPreservesAboveRightRowBandZero (smithMinorAbsSum matrix pivotIndex height width) matrix
+    pivotIndex height width lowRow isRect pivotRowInRange pivotColInRange lowRowLtPivot bandZero
+
+/-- **The seed cascade preserves a below-left COLUMN band** (driver-path form) — the transpose mirror. -/
+theorem smithCascadeSweepSeedPreservesBelowLeftColBandZero (matrix : IntMatrix)
+    (pivotIndex height width lowCol : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (lowColLtPivot : lowCol < pivotIndex)
+    (bandZero : ∀ row, pivotIndex ≤ row → row < height → matrix.entryAt row lowCol = 0) :
+    ∀ row, pivotIndex ≤ row → row < height →
+      (matrix.applyOperations
+          (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width)).entryAt row lowCol = 0 :=
+  smithCascadeSweepPreservesBelowLeftColBandZero (smithMinorAbsSum matrix pivotIndex height width) matrix
+    pivotIndex height width lowCol isRect pivotRowInRange pivotColInRange lowColLtPivot bandZero
+
 end FX1Poly.ComputerAlgebra
