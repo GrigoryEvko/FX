@@ -73,4 +73,10 @@ namespace FX1PolyAudit
    4x4 whose single-pivot clearing sweep leaves a nonzero interior off-diagonal). -/
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepInteriorNotDiagonalWitness
 
+/- H2-SMITH r22 — THE FIT CHECK (B1): Node 3 (`foldDescends`) is a genuine three-part delta, TWO
+   halves machine-refuted — the minor-abs-sum measure rises on a fold (Δ1), and the zero-pivot fold
+   saturates the fuel budget so no fixed-K lex-into-Nat measure fits (Δ2). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMinorAbsSumRaisesOnFoldWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithZeroPivotFoldSaturatesBudgetWitness
+
 end FX1PolyAudit

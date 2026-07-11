@@ -964,4 +964,63 @@ seed-conditional totality, byte-intact.
 single keystone both halves share (B4).  `smithReduceFull`, its refutation, the certificate API, and the
 r18/r19/r20 world stay byte-intact (additive only). -/
 
+/-! ## THE FIT CHECK — Node 3 (`foldDescends`) is a GENUINE three-part delta, machine-refuted
+    (H2-SMITH r22, B1, #2261)
+
+The r21 NODE D reduces the seed's diagonal half to `foldDescends` — a strict drop of some descent
+`measure` on each genuine fold — plus a fuel-BUDGET fit `measure matrix ≤ smithMinorAbsSum matrix …`
+(the fuel the driver fires the sweep with).  The recon's FIT CHECK asked whether `foldDescends`
+COMPOSES from the shipped pure-`Int` `smithRepairDecreasesPivotSize` (`|gcd(a, b)| < |a|` when
+`a ≠ 0`, `a ∤ b`).  It does NOT: three separable deltas block it, TWO machine-refuted here as theorems
+(the NODE-E reduce-to-witness pattern).
+
+  * Δ1 (minor-abs-sum is NOT a descent measure).  The obvious budget-fitting candidate
+    `measure := smithMinorAbsSum · pivot h w` (trivially `≤` the fuel) is NOT monotone-down on a fold:
+    on `diag(6, 10, 8)` pivot `0` the whole-minor magnitude sum RISES `24 → 40` across the single
+    genuine fold+cascade.  `smithMinorAbsSumRaisesOnFoldWitness` pins it.
+
+  * Δ2 (the zero-pivot bootstrap saturates the budget — no lex-into-`Nat` headroom).  A zero pivot folds
+    to a NONZERO pivot, so plain `|pivot|` is not monotone; the witness measure must be lexicographic
+    `(isPivotZero, pivotAbs)`.  But on `diag(0, 4)` the fold lands `|pivot| = 4` EXACTLY equal to the
+    budget `smithMinorAbsSum = 4`, while the input pivot is `0`: any lex-into-`Nat` collapse
+    `flag · K + pivotAbs` needs `K > pivotAbs` to make the flag dominate (`K ≥ 5` here), which BREAKS
+    the budget `measure ≤ 4`.  `smithZeroPivotFoldSaturatesBudgetWitness` pins the clash.
+
+  * Δ3 (cascade ≠ two-operand gcd).  `smithRepairDecreasesPivotSize` bounds `intGcd d_p d_foundPos`,
+    but the fold fires the whole min-abs Euclid cascade, which lands `≤ min-abs(whole minor)` — on
+    `diag(15, 10, 6, 4)` step 1 lands `4 ∤ 15`, `4 ∤ 10`.  So the shipped gcd-of-pair lemma does not
+    characterise the landed pivot (the r11+ wall; this delta is not a `decide`-refutation but is why
+    `foldDescends`'s measure existence IS the cascade-output content, not plumbing).
+
+Truth-probed (r22 eval): `diag(6, 9, 10, 10)` pivot 0 `pivotAbs 6 → 3 → 1` / `minorAbsSum 35 → 41 → 59`;
+`diag(15, 10, 6, 4)` `pivotAbs 15 → 4 → 2 → 1` / `minorAbsSum 35 → 45 → 63 → 77`; `diag(0, 4)`
+`pivotAbs 0 → 4`, `minorAbsSum 4 → 4`.  So `foldDescends`'s witness measure is a genuine
+cascade-output-magnitude fact, NOT free plumbing over `smithRepairDecreasesPivotSize`. -/
+
+set_option maxRecDepth 8000 in
+/-- **Δ1 — the minor-abs-sum measure RISES on a fold** — `smithMinorAbsSum` (the budget/fuel, trivially
+an upper bound) is NOT a descent measure: on `diag(6, 10, 8)` pivot `0` the single genuine fold+cascade
+raises it `24 → 40`.  So the naive budget-fitting `measure := smithMinorAbsSum` cannot drive
+`foldDescends` — a machine-checked refutation of the cheapest measure candidate. -/
+theorem smithMinorAbsSumRaisesOnFoldWitness :
+    ∃ (matrix : IntMatrix) (foundPos pivotIndex height width : Nat),
+      smithMinorAbsSum matrix pivotIndex height width
+        < smithMinorAbsSum (smithClearingFoldStep matrix foundPos pivotIndex height width)
+            pivotIndex height width :=
+  ⟨{ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] }, 1, 0, 3, 3, by decide⟩
+
+set_option maxRecDepth 8000 in
+/-- **Δ2 — the zero-pivot fold saturates the budget** — on `diag(0, 4)` the fold lands `|pivot| = 4`,
+EXACTLY the fuel budget `smithMinorAbsSum = 4`, while the input pivot is `0`.  A lex measure
+`(isPivotZero, pivotAbs)` must rank the zero-flag strictly above `pivotAbs`, so any collapse
+`flag · K + pivotAbs` needs `K > pivotAbs`; here that forces `measure(diag(0, 4)) > 4`, violating the
+budget `measure ≤ smithMinorAbsSum = 4`.  The budget/descent clash (recon Δ2) as a machine-checked
+pin: no fixed-`K` lex-into-`Nat` measure both fits the budget AND strictly descends. -/
+theorem smithZeroPivotFoldSaturatesBudgetWitness :
+    ∃ (matrix : IntMatrix) (foundPos pivotIndex height width : Nat),
+      matrix.diagonalEntryAt pivotIndex = 0 ∧
+      ((smithClearingFoldStep matrix foundPos pivotIndex height width).diagonalEntryAt pivotIndex).natAbs
+        = smithMinorAbsSum matrix pivotIndex height width :=
+  ⟨{ rows := [[0, 0], [0, 4]] }, 1, 0, 2, 2, by decide, by decide⟩
+
 end FX1Poly.ComputerAlgebra
