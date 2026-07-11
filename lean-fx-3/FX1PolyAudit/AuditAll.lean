@@ -484,6 +484,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcConjugator
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcReadOffPermutation
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcReadOffCount
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingFoldAlignment
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFoldTargetHonest
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
