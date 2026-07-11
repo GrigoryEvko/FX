@@ -305,4 +305,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairClearingStepSettlesHolds
 #assert_no_axioms FX1Poly.ComputerAlgebra.repairWindowDiagHoldsForClearing
 
+/- H2-SMITH r18 — RESIDUAL 2 ESTABLISH ingredients (B2) + the driver totality on `repairChainHolds` ALONE
+   (B3).  The find-loop-exit semantic core — the Bool-to-`dividesExactly` decode and the scan closure "none
+   ⟹ pivot divides every later diagonal" — is shipped zero-axiom; the FULL `repairChainHolds` remains
+   honestly walled (fuel-adequacy + windowed preserve tower + cross-pivot induction).  With residual 1
+   discharged, `smithReduceCompleteDriverOfChain` reduces `SmithReduceCompleteDriverStatement` to the SINGLE
+   surviving residual `repairChainHolds` (empirically clean on the r17 whole-driver battery). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPivotDividesEntryDecode
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithFindNonDividingLaterDiagonalNoneDividesAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfChain
+
 end FX1PolyAudit
