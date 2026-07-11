@@ -328,14 +328,19 @@ the opposite extreme from the Fibonacci `fibMonomialNeverExact` (`H_d ≠ 0 ∀d
 has global dimension 2 (chains die above degree 1).  Read the meaning from THIS docstring.  `= true`. -/
 def truncationEqualsFiniteGlobalDimension : Bool := true
 
-/-- ★ **The `∀ d` truncation closed form is a NAMED node.**  The criterion lemma
-`noLinearChainOfLengthThreeOrMore` (no chain of length `≥ 3`) + the concrete `rfl` census
-`linearSystemChainCensusTruncates` are shipped.  The general `∀ d, 2 ≤ d ⟹
-multiObstructionChainRankOracle {xy} d = 0` needs a `flatMap`-membership bridge over `allWordsOfLength`
+/-- ★ **The `∀ d` truncation closed form is a NAMED node here — now SHIPPED DOWNSTREAM (r10 NODE-3).**
+The criterion lemma `noLinearChainOfLengthThreeOrMore` (no chain of length `≥ 3`) + the concrete `rfl`
+census `linearSystemChainCensusTruncates` are shipped in THIS file.  The general `∀ d, 2 ≤ d ⟹
+multiObstructionChainRankOracle {xy} d = 0` needed a `flatMap`-membership bridge over `allWordsOfLength`
 (`w ∈ allWordsOfLength n ⟹ w.length = n`, then filter-empties) — the lane's propext minefield
-(`List.Mem` / `List.append` / `List.mem_flatMap` leak `propext`), so it is deferred (mirrors r3's
-`multiObstructionGeneralEnumeratorCollapseIsNamedNode`).  Read the meaning from THIS docstring.
-`= true`. -/
+(`List.Mem` / `List.append` / `List.mem_flatMap` leak `propext`).  ★ **That minefield is now CROSSED**
+zero-axiom via the `List.Mem`-constructor route, and the closed form is DELIVERED as
+`linearCensusZeroAboveDegreeOne` in
+`FX1Poly.Polygraph.Homology.AcyclicTruncationClosedFormAndDisjointUnionAdditivity` (r10 NODE-3), with the
+full eventual-exactness `linearSystemExactAboveDegreeOne` on top; this file's
+`noLinearChainOfLengthThreeOrMore` is the load-bearing criterion the downstream
+`linearGuardFalseOnLengthGeThree` lifts to length `≥ 3`.  The `Bool := true` value is unchanged (the
+honest-record convention).  Read the meaning from THIS docstring.  `= true`. -/
 def allDegreesTruncationClosedFormIsNamedNode : Bool := true
 
 /-! ### The TOWER-ANICK (#2144) r5 ledger — bricks shipped, advances and standing walls named

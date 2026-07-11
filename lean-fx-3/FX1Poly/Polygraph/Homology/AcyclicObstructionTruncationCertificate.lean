@@ -231,18 +231,29 @@ theorem linearSystemEventuallyExact :
 
 /-! ## B4 — the standing walls (NAMED) and the r6 truncation ledger -/
 
-/-- ★ **The general `acyclic ==> census 0` closed form is a NAMED node.**  The checker
-`isAcyclicUfnarovskiGraph` classifies the three shipped graphs (`linearGraphIsAcyclic`,
-`selfLoopGraphIsNotAcyclic`, `fibGraphIsNotAcyclic`), and the conditional vanishing
-`censusZeroImpliesExact` is shipped.  The SOUNDNESS bridge `isAcyclicUfnarovskiGraph obs fuel = true ==>
-forall degree, longestPath < degree ==> multiObstructionChainRankOracle obs degree = 0` reduces to: every
-`w in allWordsOfLength (degree + 1)` has `w.length = degree + 1 > longestPath`, so it fails the guard
-(`noLinearChainOfLengthThreeOrMore` for `{xy}`), so the filter empties — needing the `allWordsOfLength`
-length lemma `w in allWordsOfLength n ==> w.length = n` (the lane's `flatMap`-membership propext minefield:
-`List.Mem` / `List.append` / `List.mem_flatMap` leak `propext`) plus the general graph longest-path bound
-(a topological-sort argument).  This HONESTLY upgrades r5's `allDegreesTruncationClosedFormIsNamedNode`
-from "named" to "reduced to a decidable acyclicity check + one `allWordsOfLength` length lemma".  Read the
-meaning from THIS docstring.  `= true`. -/
+/-- ★ **The general-graph `acyclic ==> census 0` closed form is a NAMED node — the `{xy}` INSTANCE now
+SHIPPED (r10 NODE-3), the general-graph case still named.**  The checker `isAcyclicUfnarovskiGraph`
+classifies the three shipped graphs (`linearGraphIsAcyclic`, `selfLoopGraphIsNotAcyclic`,
+`fibGraphIsNotAcyclic`), and the conditional vanishing `censusZeroImpliesExact` is shipped.
+
+★ **FLIP (r10 NODE-3, literal delivery).**  The five-round `flatMap`-membership "propext minefield" is
+CROSSED zero-axiom: the `allWordsOfLength` length lemma `w in allWordsOfLength n ==> w.length = n`
+(`memWordsHasLength`) is built via the `List.Mem`-constructor route (`List.Mem.head` / `List.Mem.tail`
+`cases`, NOT the leaking `List.mem_flatMap` / `List.mem_append` / `List.filter_cons` `iff` lemmas), and
+with the filter-empties step (`filterAllFalseIsNil`) and the shipped `{xy}` criterion lifted to length
+`>= 3` (`linearGuardFalseOnLengthGeThree`) the `{xy}` closed form `forall degree, 2 <= degree ==>
+multiObstructionChainRankOracle {xy} degree = 0` is DELIVERED — `linearCensusZeroAboveDegreeOne` /
+`linearAcyclicImpliesTruncation` in
+`FX1Poly.Polygraph.Homology.AcyclicTruncationClosedFormAndDisjointUnionAdditivity`, which also upgrades
+this file's FINITE eventual-exactness window (`linearSystemEventuallyExact`, degrees `2..5`) to the whole
+tail `degree >= 2` (`linearSystemExactAboveDegreeOne`).
+
+What REMAINS named is the GENERAL-graph soundness only: `isAcyclicUfnarovskiGraph edges vertexCount = true
+==> forall degree, vertexCount <= degree ==> multiObstructionChainRankOracle edges degree = 0`, which
+needs the classical pigeonhole + checker saturation + the topological-sort longest-path bound (the `{xy}`
+instance uses the bespoke `noLinearChainOfLengthThreeOrMore` in place of the pigeonhole).  Recorded as
+`generalGraphLongestPathBoundIsNamedNode` downstream.  The `Bool := true` value is unchanged (the
+honest-record convention).  Read the meaning from THIS docstring.  `= true`. -/
 def acyclicToCensusZeroIsNamedNode : Bool := true
 
 /-! ### The TOWER-ANICK (#2144 / #2145) r6 truncation-certificate ledger
@@ -260,9 +271,12 @@ def acyclicToCensusZeroIsNamedNode : Bool := true
 
 ### Still WALLED (NAMED, never papered)
 
-  * `acyclicToCensusZeroIsNamedNode` — the general `acyclic ==> census 0` closed form (the
-    `flatMap`-membership `allWordsOfLength` length lemma + the longest-path bound), the honest upgrade of
-    r5's `allDegreesTruncationClosedFormIsNamedNode`.
+  * `acyclicToCensusZeroIsNamedNode` — the GENERAL-GRAPH `acyclic ==> census 0` closed form ONLY (the
+    classical pigeonhole + checker saturation + the topological-sort longest-path bound).  The `{xy}`
+    INSTANCE is DISCHARGED (r10 NODE-3, `linearCensusZeroAboveDegreeOne` /
+    `linearSystemExactAboveDegreeOne` downstream in `AcyclicTruncationClosedFormAndDisjointUnionAdditivity`,
+    which crossed the `flatMap`-membership `allWordsOfLength` length lemma via the `List.Mem`-constructor
+    route); the general-graph soundness stays named as `generalGraphLongestPathBoundIsNamedNode`.
   * `generalTelescopeHomologyIsNamedNode` (#2145, `MultiObstructionAnickBoundaryHomology`) — the general
     `finiteConvergent ==> H_d` (the differential need not vanish under `k (x)_A`); this file delivers only
     the finite-global-dimension monomial special case.
@@ -281,9 +295,14 @@ zero-axiom, additively over r5: THE DECIDABLE ACYCLICITY CHECKER (`isAcyclicUfna
 structural + `hasSelfLoop`, the `{xy}` acyclic / `{xx}` + Fibonacci cyclic classification, all `rfl`; the
 checker soundness NAMED); THE CONDITIONAL VANISHING (`censusZeroImpliesExact`: no chains ==> trivial
 homology, `rfl`-after-`congrArg`); THE `{xy}` FINITE CERTIFICATE (`AcyclicTruncationCertificate` +
-`linearSystemEventuallyExact`, exact at degrees 2..5).  Residuals NAMED (the general `acyclic ==> census 0`
-closed form, the #2145 general `finiteConvergent ==> H_d`), never papered.  Read the meaning from THIS
-docstring (the honest-record convention). -/
+`linearSystemEventuallyExact`, exact at degrees 2..5).  ★ **r10 NODE-3 (downstream)**: the `{xy}` case of
+the general closed form is now SHIPPED in `AcyclicTruncationClosedFormAndDisjointUnionAdditivity`
+(`linearCensusZeroAboveDegreeOne` — `∀ degree ≥ 2` truncation, crossing the five-round
+`flatMap`-membership wall via the `List.Mem`-constructor route; `linearSystemExactAboveDegreeOne` — full
+eventual exactness upgrading the `2..5` window; `mvListSplitAndAdditivity` — the disjoint-union
+Mayer-Vietoris seed), leaving only the general-graph soundness named.  Residuals NAMED (the general-graph
+`acyclic ==> census 0` closed form, the #2145 general `finiteConvergent ==> H_d`), never papered.  Read
+the meaning from THIS docstring (the honest-record convention). -/
 def acyclicObstructionTruncationCertificateIsComplete : Bool := true
 
 end FX1Poly.Polygraph.Homology
