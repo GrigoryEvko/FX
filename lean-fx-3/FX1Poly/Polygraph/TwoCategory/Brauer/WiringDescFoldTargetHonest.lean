@@ -130,6 +130,64 @@ theorem foldTargetConnectivity_monotone_viaLemma :
     (processBrauer_links_isUnionFindForest [capAt 0] (brauerSeed 4) isUnionFindForest_nil)
     0 1 (by decide)
 
+/-! ## B2 — per-phase corollaries: the CORRECTED extractor's crossing blocks decode to their read-off orders
+
+Corollaries of the shipped conjugator roundtrip (`permuteOfCrossingWord_permutationToCrossingWord`) and the shipped
+read-off range-permutations — phrased for the FIRST time at the `reconstructStandardFormExt5Corrected` field level,
+which the six-phase assembly consumes.  The bottom side reuses the shipped raw roundtrip
+`readOffBottomOrder_realizesRoundtrip` (cap side unchanged by r3); the top side is the genuinely NEW content — the
+`permInverse`d top order (the r3 cup-side fix) is a range-permutation (`readOffTopOrderInverse_isPermutationOfRange`),
+so its staircase decodes back to the INVERSE read-off order (only the NON-inverse top roundtrip was shipped). -/
+
+/-- ★ **The corrected extractor's `bottomPerm` block decodes to the bottom read-off order.**  Decoding the corrected
+extractor's bottom crossing staircase with `permuteOfCrossingWord` recovers `capArcFeet ++ throughStrandBottoms` — the
+read-off order that routes the cap feet and through-bottoms into place.  A corollary of the shipped bottom roundtrip
+`readOffBottomOrder_realizesRoundtrip`, re-phrased at the corrected-extractor field level (cap side unchanged by r3). -/
+theorem correctedBottomPerm_decodesReadOff (d : DiagramType)
+    (wf : IsBoundaryInvolution (d.bottomCount + d.topCount) d.partner) :
+    permuteOfCrossingWord d.bottomCount (reconstructStandardFormExt5Corrected d).bottomPerm
+      = capArcFeet d.bottomCount d.partner ++ throughStrandBottoms d.bottomCount d.partner := by
+  show permuteOfCrossingWord d.bottomCount
+      (permutationToCrossingWord d.bottomCount
+        (capArcFeet d.bottomCount d.partner ++ throughStrandBottoms d.bottomCount d.partner))
+    = capArcFeet d.bottomCount d.partner ++ throughStrandBottoms d.bottomCount d.partner
+  exact readOffBottomOrder_realizesRoundtrip d.bottomCount d.topCount d.partner wf
+
+/-- ★★ **The corrected extractor's `topPerm` block decodes to the INVERSE top read-off order — the r3 fix's content.**
+Decoding the corrected extractor's top crossing staircase recovers `permInverse (throughStrandTops ++ cupArcTops)` — the
+INVERTED routing the cup side (crossings applied AFTER the cups) requires, the exact defect the r3 `permInverse` fix
+corrected.  The `permInverse`d order is a range-permutation (`readOffTopOrderInverse_isPermutationOfRange`), so the
+shipped conjugator roundtrip `permuteOfCrossingWord_permutationToCrossingWord` decodes it — only the NON-inverse top
+roundtrip `readOffTopOrder_realizesRoundtrip` was shipped, so this is genuinely new at the corrected-extractor level. -/
+theorem correctedTopPerm_decodesInverseReadOff (d : DiagramType)
+    (wf : IsBoundaryInvolution (d.bottomCount + d.topCount) d.partner) :
+    permuteOfCrossingWord d.topCount (reconstructStandardFormExt5Corrected d).topPerm
+      = permInverse (throughStrandTops d.bottomCount d.topCount d.partner
+          ++ cupArcTops d.bottomCount d.topCount d.partner) := by
+  show permuteOfCrossingWord d.topCount
+      (permutationToCrossingWord d.topCount
+        (permInverse (throughStrandTops d.bottomCount d.topCount d.partner
+          ++ cupArcTops d.bottomCount d.topCount d.partner)))
+    = permInverse (throughStrandTops d.bottomCount d.topCount d.partner
+        ++ cupArcTops d.bottomCount d.topCount d.partner)
+  exact permuteOfCrossingWord_permutationToCrossingWord d.topCount _
+    (readOffTopOrderInverse_isPermutationOfRange d.bottomCount d.topCount d.partner wf)
+
+/-- ★ **Non-vacuity — both corrected crossing blocks decode on adversarial-B.**  The corrected extractor's `bottomPerm`
+decodes to `capArcFeet ++ throughStrandBottoms` and its `topPerm` to the `permInverse`d top order, evaluated on the
+adversarial-B triple-axis instance (nontrivial crossing cap + crossing cup). -/
+theorem correctedCrossingBlocks_decode_adversarialB :
+    (permuteOfCrossingWord adversarialBDiagram.bottomCount
+        (reconstructStandardFormExt5Corrected adversarialBDiagram).bottomPerm
+      = capArcFeet adversarialBDiagram.bottomCount adversarialBDiagram.partner
+          ++ throughStrandBottoms adversarialBDiagram.bottomCount adversarialBDiagram.partner)
+    ∧ (permuteOfCrossingWord adversarialBDiagram.topCount
+        (reconstructStandardFormExt5Corrected adversarialBDiagram).topPerm
+      = permInverse (throughStrandTops adversarialBDiagram.bottomCount adversarialBDiagram.topCount
+          adversarialBDiagram.partner
+        ++ cupArcTops adversarialBDiagram.bottomCount adversarialBDiagram.topCount adversarialBDiagram.partner)) :=
+  ⟨by decide, by decide⟩
+
 /-! ## B4 / B5 — the honesty markers + the #2013 endgame ledger -/
 
 /-- ★★ **Honesty marker — the UNCORRECTED six-phase fold target is machine-refuted (r19 headline).**
@@ -153,6 +211,14 @@ shipped `processBrauer_isSameComponent_ofBase` is the "phase-k connectivity surv
 cap) and `foldTargetConnectivity_monotone_viaLemma` re-derives it from the lemma.  No new monotonicity lemma was
 needed — the shipped one, exposed.  `= true`. -/
 def fxBrauer_hasFoldTargetMonotoneProbe : Bool := true
+
+/-- ★ **Honesty marker — the corrected extractor's crossing blocks decode to their read-off orders (r19 B2).**
+`correctedBottomPerm_decodesReadOff` and `correctedTopPerm_decodesInverseReadOff` name, at the
+`reconstructStandardFormExt5Corrected` field level the assembly consumes, that the bottom staircase decodes to
+`capArcFeet ++ throughStrandBottoms` and the top staircase to the `permInverse`d top order (the r3 fix's semantic
+content — only the NON-inverse top roundtrip was shipped).  Corollaries of the shipped conjugator roundtrip + read-off
+range-permutations, firing on adversarial-B (`correctedCrossingBlocks_decode_adversarialB`).  `= true`. -/
+def fxBrauer_hasCorrectedBlockDecoding : Bool := true
 
 /-- **Honesty WALL marker — the #2013 endgame after r19: the six-phase assembly stays OPEN, now on an HONEST target.**
 r19 corrected the r18 misstatement: the true target is `foldRealizesTargetDiagramCorrected` (over the CORRECTED

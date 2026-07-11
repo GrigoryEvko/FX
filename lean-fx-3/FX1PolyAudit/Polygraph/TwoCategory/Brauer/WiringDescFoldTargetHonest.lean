@@ -28,10 +28,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.foldTargetConnectivity_monotone_probe
 #assert_no_axioms FX1Poly.Polygraph.foldTargetConnectivity_monotone_viaLemma
 
+-- B2: the corrected extractor's crossing blocks decode to their read-off orders
+#assert_no_axioms FX1Poly.Polygraph.correctedBottomPerm_decodesReadOff
+#assert_no_axioms FX1Poly.Polygraph.correctedTopPerm_decodesInverseReadOff
+#assert_no_axioms FX1Poly.Polygraph.correctedCrossingBlocks_decode_adversarialB
+
 -- B4 / B5: the honesty markers
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasFoldTargetRefutation
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasFoldTargetCorrected
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasFoldTargetMonotoneProbe
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCorrectedBlockDecoding
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasFoldTargetHonestAssembly
 
 end FX1PolyAudit
