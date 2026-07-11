@@ -1284,6 +1284,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderRoundTripAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderBlockExchangeAudit
 -- WP-PROP r4 — the width-3 hexagon rows (Yang-Baxter + mu/delta wide-symmetry naturality) added additively over BunchedBimonoidSoundRow, matrix-sound + two completeness instances
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidHexagonAudit
+-- WP-PROP r4 — the perm-layer general-spiderOf adjudication: three-stage NF (delta/perm/mu), permutation-word NF (swap = sigma, reversal = Yang-Baxter word), perm layer irreducible, general routing walled
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermStageAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
