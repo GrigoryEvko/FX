@@ -1855,29 +1855,35 @@ read-off order for EVERY well-formed involution — the r15 probe-granular E2 wi
 (`readOffBottomOrder_realizesRoundtrip_adversarialB` / `_freshMixed`) promoted to a general theorem.  `= true`. -/
 def fxBrauer_hasReadOffBottomOrderRoundtrip : Bool := true
 
-/-- **Honesty WALL marker — the TOP read-off order range-permutation is the named r16 residual (T-CLOSE top side).**
-The bottom read-off is now a general range-permutation, but `fxBrauer_hasReadOffOrderPermutation` demands BOTH sides:
-the top read-off `throughStrandTops ++ cupArcTops` still needs its ∗-dual counting identity
-(`2·|cupArcTopIndices| + |throughStrandTops| = topCount`) — the dual partition count over `List.range topCount`, the
-dual pairing bijection, and the interleaved-top distinctness, with the `cupArcTops` `− bottomCount` subtraction handled
-additively (`cupArcTop_sub_exact`).  Every generic engine here (`partitionCountThree`, `filterMapLength_eq_countTrue`,
-`distinctSameMembersLengthEq`, `filterMapGuardIdentityDistinctCount`, `appendDistinctCount`) is guard-generic and
-reused verbatim; the top round instantiates them over the `bottomCount + topIndex` ports.  Then the inverted top
-read-off closes by r15's `isPermutationOfRange_permInverse`.  So `fxBrauer_hasReadOffOrderPermutation` stays honestly
-`false`, and — since E3 (fold-alignment / T-CONNECT, the union-find `stepWiring` long-pole) and the T-CLOSE(b) field
-reassembly are untouched — both tag-correspondence masters stay `false`; #2013 does NOT close.  `= false`. -/
-def fxBrauer_hasReadOffTopOrderPermutation : Bool := false
+/-- ★★★ **Honesty marker — the TOP read-off order is a range-permutation for EVERY well-formed involution (r17).**  The
+r16 wall FELL: `readOffTopOrder_isPermutationOfRange` proves `throughStrandTops ++ cupArcTops` satisfies
+`IsPermutationOfRange topCount` (distinct, length `topCount`, `[0, topCount)`-bounded) for every
+`IsBoundaryInvolution (bottomCount + topCount)` partner — zero-axiom, structural.  The ∗-dual counting core: the
+∗-dual three-way partition count (`partitionCountThree` + `partitionThree_of_involution_top`), the ∗-dual pairing
+bijection `|larger cup tops| = |smaller cup tops|` (`cupLargerTopIndices_length_eq`, via `distinctSameMembersLengthEq`
+and the shift map `partnerTopShift`), the ∗-dual doubling (`expandCupTopPairs_length`), and the interleaved cup-top
+distinctness (`cupArcTops_distinct`), with the `cupArcTops` `− bottomCount` subtraction handled additively
+(`cupArcTop_sub_exact`).  Promotes the r15 `by decide` top probes to the general theorem, and the inverted top read-off
+closes by r15's `isPermutationOfRange_permInverse` (`readOffTopOrderInverse_isPermutationOfRange`).  `= true`. -/
+def fxBrauer_hasReadOffTopOrderPermutation : Bool := true
 
-/-- ★★★ **The BRAUER-MIDDLE r16 LEDGER — MACHINE-CHECKED (T-CLOSE bottom side landed).**  Extends the r15 ledger with
-the two bottom flips `fxBrauer_hasReadOffBottomOrderPermutation = true` (the general bottom read-off
-`IsPermutationOfRange`) and `fxBrauer_hasReadOffBottomOrderRoundtrip = true` (the universal bottom E2 wiring), each
-zero-axiom.  Every r11→r15 marker stays `true`; and EVERY remaining wall stays `false` — the JOINT read-off order
-permutation (`fxBrauer_hasReadOffOrderPermutation`, blocked on the TOP-side dual counting identity), the CONJUGATED
-enumeration node (E3 fold-alignment), both tag-correspondence masters, the extractor-totality roundtrip nodes, and the
-completeness flags.  A `rfl`-conjunction over the shipped markers.  The remaining chain to the masters: **the TOP-side
-read-off counting identity** (`throughStrandTops ++ cupArcTops` `IsPermutationOfRange`, then `permInverse` lift) **→ E3**
-(union-find `stepWiring` long-pole) **→ T-CLOSE(b)** (the `extractDiagram` field reassembly) **→ the master flips**.  So
-#2013 does NOT close this round. -/
+/-- ★★★ **Honesty marker — the TOP E2 roundtrip is wired UNIVERSALLY (r17).**  `readOffTopOrder_realizesRoundtrip`
+feeds the general top range-permutation witness into the shipped conjugator roundtrip
+`permuteOfCrossingWord_permutationToCrossingWord`, so the `permutationToCrossingWord` staircase realizes the top
+read-off order `throughStrandTops ++ cupArcTops` for EVERY well-formed involution — the ∗-dual of
+`fxBrauer_hasReadOffBottomOrderRoundtrip`.  `= true`. -/
+def fxBrauer_hasReadOffTopOrderRoundtrip : Bool := true
+
+/-- ★★★ **The BRAUER-MIDDLE r16 LEDGER — MACHINE-CHECKED (T-CLOSE bottom side landed; TOP + JOINT flipped at r17).**
+Extends the r15 ledger with the two bottom flips `fxBrauer_hasReadOffBottomOrderPermutation = true` (the general bottom
+read-off `IsPermutationOfRange`) and `fxBrauer_hasReadOffBottomOrderRoundtrip = true` (the universal bottom E2 wiring),
+each zero-axiom.  **r17 update:** with the TOP read-off `IsPermutationOfRange` landed
+(`readOffTopOrder_isPermutationOfRange`), the TOP wall `fxBrauer_hasReadOffTopOrderPermutation` and the JOINT node
+`fxBrauer_hasReadOffOrderPermutation` ALSO flip `true` here (see `fxBrauer_r17Ledger`); only E3 (the CONJUGATED
+enumeration / fold-alignment node), both tag-correspondence masters, the extractor-totality roundtrip nodes, and the
+completeness flags remain `false`.  A `rfl`-conjunction over the shipped markers.  The remaining chain to the masters:
+**E3** (union-find `stepWiring` long-pole) **→ T-CLOSE(b)** (the `extractDiagram` field reassembly) **→ the master
+flips**.  So #2013 does NOT close through the read-off round. -/
 theorem fxBrauer_r16Ledger :
     (fxBrauer_hasBoundedBoundaryFoldLift = true
       ∧ fxBrauer_hasPartnerReadOff = true
@@ -1889,10 +1895,10 @@ theorem fxBrauer_r16Ledger :
       ∧ fxBrauer_hasReadOffOrderPermutationProbe = true
       ∧ fxBrauer_hasReadOffRoundtripWiredProbe = true
       ∧ fxBrauer_hasReadOffBottomOrderPermutation = true
-      ∧ fxBrauer_hasReadOffBottomOrderRoundtrip = true)
-    ∧ (fxBrauer_hasReadOffTopOrderPermutation = false
-      ∧ fxBrauer_hasReadOffOrderPermutation = false
-      ∧ fxBrauer_hasArcEnumerationConjugated = false)
+      ∧ fxBrauer_hasReadOffBottomOrderRoundtrip = true
+      ∧ fxBrauer_hasReadOffTopOrderPermutation = true
+      ∧ fxBrauer_hasReadOffOrderPermutation = true)
+    ∧ (fxBrauer_hasArcEnumerationConjugated = false)
     ∧ (fxBrauer_hasTagCorrDisjoint = false
       ∧ fxBrauer_hasTagCorrExtraction = false)
     ∧ (fxBrauer_hasExt5CorrectedRoundtripProof = false
@@ -1900,7 +1906,7 @@ theorem fxBrauer_r16Ledger :
     ∧ (fxBrauer_hasBrauerV2FullCompleteness = false
       ∧ fxBrauer_hasBrauerCompleteness = false
       ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) :=
-  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, ⟨rfl, rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩,
+  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩,
     ⟨rfl, rfl, rfl⟩⟩
 
 /-- ★★ **Honesty marker — BRAUER-MIDDLE r16 did NOT close #2013.**  The round CLOSED the T-CLOSE bottom side: the
@@ -1912,5 +1918,51 @@ counting identity (`throughStrandTops ++ cupArcTops` `IsPermutationOfRange` + th
 permutation, both tag-correspondence masters, and the completeness flags stay `false`, and #2013 does not close — every
 residual a ROUTE / counting gap, never a truth gap (Lehrer–Zhang arXiv:1207.5889 Thm 2.6).  `= false`. -/
 def fxBrauer_hasBrauerMiddleR16Complete : Bool := false
+
+/-- ★★★ **The BRAUER-MIDDLE r17 LEDGER — MACHINE-CHECKED (T-CLOSE top side landed + JOINT flip).**  Extends the r16
+ledger with the two TOP flips `fxBrauer_hasReadOffTopOrderPermutation = true` (the general top read-off
+`IsPermutationOfRange`) and `fxBrauer_hasReadOffTopOrderRoundtrip = true` (the universal top E2 wiring), and — since
+BOTH read-off orders are now general range-permutations (`readOffBottomOrder_isPermutationOfRange` r16,
+`readOffTopOrder_isPermutationOfRange` r17) — the JOINT node `fxBrauer_hasReadOffOrderPermutation = true`, each
+zero-axiom.  Every r11→r16 marker stays `true`; and EVERY remaining wall stays `false` — the CONJUGATED enumeration
+node (E3 fold-alignment, `fxBrauer_hasArcEnumerationConjugated`), both tag-correspondence masters, the
+extractor-totality roundtrip nodes, and the completeness flags.  A `rfl`-conjunction over the shipped markers.  The
+remaining chain to the masters: **E3** (route the actual boundary feet through the `bottomPerm` / `topPerm`
+conjugators — the union-find `stepWiring` long-pole) **→ T-CLOSE(b)** (the `extractDiagram` field reassembly,
+`extractDiagram_realizes_partner_ofConnectivity`) **→ the master flips**.  So #2013 does NOT close this round — the
+read-off-order permutation is closed on both sides, but the fold-alignment and target-closure walls stand. -/
+theorem fxBrauer_r17Ledger :
+    (fxBrauer_hasBoundedBoundaryFoldLift = true
+      ∧ fxBrauer_hasPartnerReadOff = true
+      ∧ fxBrauer_hasBoundaryPartneredFold = true
+      ∧ fxBrauer_hasReadOffWiredFiring = true
+      ∧ fxBrauer_hasArcEnumeration = true
+      ∧ fxBrauer_hasArcConjugatorLeg = true
+      ∧ fxBrauer_hasPermInverseRangePreservation = true
+      ∧ fxBrauer_hasReadOffBottomOrderPermutation = true
+      ∧ fxBrauer_hasReadOffBottomOrderRoundtrip = true
+      ∧ fxBrauer_hasReadOffTopOrderPermutation = true
+      ∧ fxBrauer_hasReadOffTopOrderRoundtrip = true
+      ∧ fxBrauer_hasReadOffOrderPermutation = true)
+    ∧ (fxBrauer_hasArcEnumerationConjugated = false)
+    ∧ (fxBrauer_hasTagCorrDisjoint = false
+      ∧ fxBrauer_hasTagCorrExtraction = false)
+    ∧ (fxBrauer_hasExt5CorrectedRoundtripProof = false
+      ∧ fxBrauer_hasExt5TotalExtractorRoundtrip = false)
+    ∧ (fxBrauer_hasBrauerV2FullCompleteness = false
+      ∧ fxBrauer_hasBrauerCompleteness = false
+      ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) :=
+  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
+
+/-- ★★ **Honesty marker — BRAUER-MIDDLE r17 did NOT close #2013.**  The round CLOSED the T-CLOSE top side: the general
+top read-off order `throughStrandTops ++ cupArcTops` is a range-permutation for every well-formed involution
+(`readOffTopOrder_isPermutationOfRange`), its `permInverse` is too (`readOffTopOrderInverse_isPermutationOfRange`), and
+the E2 roundtrip is wired universally on the top side — each zero-axiom and structural, promoting the r15 `by decide`
+top probes to general theorems.  With both sides closed, the JOINT `fxBrauer_hasReadOffOrderPermutation` flips `true`.
+But E3 (fold-alignment / T-CONNECT, the union-find `stepWiring` long-pole) and the T-CLOSE(b) field reassembly
+(`extractDiagram_realizes_partner_ofConnectivity`) remain named, not built, so both tag-correspondence masters and the
+completeness flags stay `false`, and #2013 does not close — every residual a ROUTE gap, never a truth gap (Lehrer–Zhang
+arXiv:1207.5889 Thm 2.6).  `= false`. -/
+def fxBrauer_hasBrauerMiddleR17Complete : Bool := false
 
 end FX1Poly.Polygraph

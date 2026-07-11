@@ -659,17 +659,18 @@ needs to feed `permInverse (throughStrandTops ++ cupArcTops)` into the shipped c
 `permuteOfCrossingWord_permutationToCrossingWord`.  `= true`. -/
 def fxBrauer_hasPermInverseRangePreservation : Bool := true
 
-/-- **Honesty WALL marker — the extractor read-off orders are NOT yet proven range-permutations (T-CLOSE residual).**
-`permInverse`-preservation supplies the top side's INVERSE step, but the read-off orders
-`capArcFeet ++ throughStrandBottoms` (bottom) and `throughStrandTops ++ cupArcTops` (top) are not yet shown to
-satisfy `IsPermutationOfRange`: that needs the still-unbuilt cardinality identities
-(`2 · |capArcFeetIndices| + |throughStrandBottoms| = bottomCount` and its ∗-dual) — a three-way `filterMap`
-classification counting induction under the `IsBoundaryInvolution` gate, with the cap class doubled by
-`expandBottomFeetPairs`.  And E3 (fold-alignment / T-CONNECT, the union-find `stepWiring` long-pole) plus the
-T-CLOSE(b) field reassembly stay unbuilt.  So the masters `fxBrauer_hasTagCorrDisjoint` /
-`fxBrauer_hasTagCorrExtraction`, the roundtrip nodes, and the completeness flags stay honestly `false`; #2013 does
-NOT close.  `= false`. -/
-def fxBrauer_hasReadOffOrderPermutation : Bool := false
+/-- ★★★ **Honesty marker — BOTH extractor read-off orders ARE proven range-permutations (r17, T-CLOSE both sides).**
+The r15 WALL FELL.  Its verbatim demand — that the read-off orders `capArcFeet ++ throughStrandBottoms` (bottom) and
+`throughStrandTops ++ cupArcTops` (top) satisfy `IsPermutationOfRange` — is now FULLY MET: the bottom by
+`readOffBottomOrder_isPermutationOfRange` (r16) and the top by `readOffTopOrder_isPermutationOfRange` (r17), each via
+the three-way `filterMap` classification counting induction under the `IsBoundaryInvolution` gate (the crux
+`2 · |capArcFeetIndices| + |throughStrandBottoms| = bottomCount` and its ∗-dual
+`2 · |cupArcTopIndices| + |throughStrandTops| = topCount`), with the cap / cup classes doubled by
+`expandBottomFeetPairs` / `expandCupTopPairs`.  Zero-axiom, structural.  The masters `fxBrauer_hasTagCorrDisjoint` /
+`fxBrauer_hasTagCorrExtraction`, the roundtrip nodes, and the completeness flags stay honestly `false` — the SEPARATE
+downstream walls E3 (fold-alignment / T-CONNECT, the union-find `stepWiring` long-pole) and the T-CLOSE(b) field
+reassembly (`extractDiagram_realizes_partner_ofConnectivity`) are unbuilt — so #2013 does NOT close.  `= true`. -/
+def fxBrauer_hasReadOffOrderPermutation : Bool := true
 
 /-- ★★ **Honesty marker — the read-off IsPermutationOfRange CONCLUSION is truth-probed (r15).**  Both read-off orders
 — the bottom `capArcFeet ++ throughStrandBottoms` and the top `permInverse (throughStrandTops ++ cupArcTops)` — are
@@ -691,14 +692,14 @@ the probe granularity.  The general wiring (all `d` under the gate) waits on the
 `= true`. -/
 def fxBrauer_hasReadOffRoundtripWiredProbe : Bool := true
 
-/-- ★★★ **The BRAUER-MIDDLE r15 LEDGER — MACHINE-CHECKED (T-CLOSE opening landed).**  Extends the r14 grand ledger
-with the `permInverse` gate-preservation flip `fxBrauer_hasPermInverseRangePreservation = true` (justified by the
-finite-pigeonhole surjectivity `isPermutationOfRange_surjective` and `isPermutationOfRange_permInverse`,
-zero-axiom).  E1 / E2 and the r11→r12 markers remain `true`; and EVERY remaining wall stays `false` — the read-off
-order permutations (blocked on the bottom/top counting identities), the CONJUGATED enumeration node (E3
-fold-alignment), both tag-correspondence masters, the extractor-totality roundtrip nodes, and the completeness
-flags.  A `rfl`-conjunction over the shipped markers.  The remaining chain to the masters: **the read-off counting
-identities** (bottom/top `IsPermutationOfRange`) **→ E3** (union-find `stepWiring` long-pole) **→ T-CLOSE(b)** (the
+/-- ★★★ **The BRAUER-MIDDLE r15 LEDGER — MACHINE-CHECKED (T-CLOSE opening landed; JOINT flipped at r17).**  Extends the
+r14 grand ledger with the `permInverse` gate-preservation flip `fxBrauer_hasPermInverseRangePreservation = true`
+(justified by the finite-pigeonhole surjectivity `isPermutationOfRange_surjective` and
+`isPermutationOfRange_permInverse`, zero-axiom).  **r17 update:** with both read-off counting identities landed
+(bottom r16, top r17), the JOINT node `fxBrauer_hasReadOffOrderPermutation` flips `true` here (see
+`fxBrauer_r17Ledger`); only the CONJUGATED enumeration node (E3 fold-alignment), both tag-correspondence masters, the
+extractor-totality roundtrip nodes, and the completeness flags remain `false`.  A `rfl`-conjunction over the shipped
+markers.  The remaining chain to the masters: **E3** (union-find `stepWiring` long-pole) **→ T-CLOSE(b)** (the
 `extractDiagram` field reassembly) **→ the master flips**.  So #2013 does NOT close this round. -/
 theorem fxBrauer_r15Ledger :
     (fxBrauer_hasBoundedBoundaryFoldLift = true
@@ -709,9 +710,9 @@ theorem fxBrauer_r15Ledger :
       ∧ fxBrauer_hasArcConjugatorLeg = true
       ∧ fxBrauer_hasPermInverseRangePreservation = true
       ∧ fxBrauer_hasReadOffOrderPermutationProbe = true
-      ∧ fxBrauer_hasReadOffRoundtripWiredProbe = true)
-    ∧ (fxBrauer_hasReadOffOrderPermutation = false
-      ∧ fxBrauer_hasArcEnumerationConjugated = false)
+      ∧ fxBrauer_hasReadOffRoundtripWiredProbe = true
+      ∧ fxBrauer_hasReadOffOrderPermutation = true)
+    ∧ (fxBrauer_hasArcEnumerationConjugated = false)
     ∧ (fxBrauer_hasTagCorrDisjoint = false
       ∧ fxBrauer_hasTagCorrExtraction = false)
     ∧ (fxBrauer_hasExt5CorrectedRoundtripProof = false
@@ -719,7 +720,7 @@ theorem fxBrauer_r15Ledger :
     ∧ (fxBrauer_hasBrauerV2FullCompleteness = false
       ∧ fxBrauer_hasBrauerCompleteness = false
       ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) :=
-  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
+  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl, rfl⟩⟩
 
 /-- ★★ **Honesty marker — BRAUER-MIDDLE r15 did NOT close #2013.**  The round landed the T-CLOSE opening — the finite
 pigeonhole surjectivity of range-permutations and `permInverse` gate-preservation, each zero-axiom and structural,

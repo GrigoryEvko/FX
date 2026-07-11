@@ -96,4 +96,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.readOffTopOrderInverse_isPermutationOfRange
 #assert_no_axioms FX1Poly.Polygraph.readOffTopOrder_realizesRoundtrip
 
+-- ★ BRAUER r17 markers + ledger (the TOP flip + the JOINT read-off-order-permutation flip)
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReadOffTopOrderRoundtrip
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_r17Ledger
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR17Complete
+
 end FX1PolyAudit
