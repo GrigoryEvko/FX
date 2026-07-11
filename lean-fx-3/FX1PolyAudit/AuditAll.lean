@@ -530,6 +530,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapChainLedge
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBasePermuteBridge
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescThroughStrandPerm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR25Ledger
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescRankPositionDuality
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
