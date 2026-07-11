@@ -270,4 +270,98 @@ the diagonal-input keystone at pivot 0 on `diag(6, 10, 8)`, fired from the gener
 theorem intGcdFoldrDividesDiagonalOnConcreteWindow : IntDividesAll (2 : Int) [6, 10, 8] :=
   intGcdFoldrDividesAll [6, 10, 8]
 
+/-! ## BRICK 4 — THE ASSEMBLY: the pivot-0 firing + the honest ledger (H2-SMITH r24, B4)
+
+Per verdict (iii) the chain does NOT close.  What r24 DELIVERS as the assembly is the PIVOT-0 FIRING:
+the diagonal-input-scoped keystone discharges the keystone-input-minor divisibility on the Phase-A
+output HYPOTHESIS-FREE in the diagonal condition (the Phase-A output is provably window-diagonal), for
+ANY rectangular input.  It stays conditional on the diagonal-common-divisor obligation
+`SmithDiagonalInputLandedPivotDividesDiagonal`, which is OPEN.  NO hypothesis-free inhabitant of
+`SmithReduceCompleteDriverStatement` is produced — that would repeat the r19 error. -/
+
+/-- **THE PIVOT-0 FIRING (the assembly).**  GIVEN the diagonal-input-scoped keystone, the keystone's
+input-minor divisibility holds on the Phase-A output at pivot `0`, with the diagonal-input hypothesis
+DISCHARGED by the shipped `phaseAOutputIsWindowDiagonalAtZero` (the Phase-A output is window-diagonal).
+The honest positive content of r24: the diagonal-input specialization COVERS pivot 0 for any
+rectangular input.  It does NOT lift to pivots `≥ 1`
+(`smithDiagonalInputPivotOneInputNotWindowDiagonal`), so it does NOT close
+`SmithReduceCompleteDriverStatement`. -/
+theorem landedPivotDividesMinorOnPhaseAOutputAtZero
+    (diagonalCase : SmithDiagonalInputLandedPivotDividesDiagonal)
+    (matrix : IntMatrix) (height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (heightPos : 0 < height) (widthPos : 0 < width) :
+    MatrixEntriesDivisibleByWithin
+      (((matrix.applyOperations
+              (smithReduceTotalSweep (Nat.min height width) matrix 0 height width)).applyOperations
+          (smithRepairPositionSweepClearing
+            (smithMinorAbsSum
+              (matrix.applyOperations
+                (smithReduceTotalSweep (Nat.min height width) matrix 0 height width))
+              0 height width)
+            (matrix.applyOperations
+              (smithReduceTotalSweep (Nat.min height width) matrix 0 height width))
+            0 height width)).diagonalEntryAt 0)
+      0
+      (matrix.applyOperations
+        (smithReduceTotalSweep (Nat.min height width) matrix 0 height width)) :=
+  landedPivotDividesMinorOnDiagonalInput diagonalCase
+    (matrix.applyOperations (smithReduceTotalSweep (Nat.min height width) matrix 0 height width))
+    0 height width
+    (applyOperationsPreservesRectangular _ matrix isRect)
+    heightPos widthPos
+    (phaseAOutputIsWindowDiagonalAtZero matrix height width isRect)
+
+/-! ## The r24 arc ledger (H2-SMITH r24, #2261) — the diagonal-input specialization does NOT close
+
+**What r24 shipped (all zero-axiom, additive; the r18–r23 world byte-intact).**
+
+  * B1 — THE PAIRWISE-GCD CONTRACT.  The pairwise gcd values are truth-probed on the recon battery
+    (`intGcdFifteenTen … intGcdNegFifteenTen`, all `decide`, independently `#print axioms`-clean), and
+    the shipped counting-Euclid facts are bundled into `IntPairwiseGcdSpec` (nonnegative, divides both,
+    greatest) with inhabitant `intGcdSatisfiesPairwiseSpec`.  The conditional magnitude-descent half is
+    the shipped `smithRepairDecreasesPivotSize`.
+
+  * B2 — THE NARROWING + THE RE-PLUMB REFUTATION.  On a window-diagonal input the keystone's
+    off-diagonal half is free (`subBlockOffDiagonalDivisibleOfWithin`-style
+    `subBlockOffDiagonalDivisibleOfWindowDiagonal`), so the keystone-input-minor divisibility narrows
+    to the diagonal common-divisor obligation alone (`matrixEntriesDivisibleByWithinOfDiagonalInput`).
+    The scoped keystone `SmithDiagonalInputLandedPivotDividesDiagonal` + its reduction
+    `landedPivotDividesMinorOnDiagonalInput` cover the pivot-0 evaluation
+    (`phaseAOutputIsWindowDiagonalAtZero`).  `smithDiagonalInputPivotOneInputNotWindowDiagonal`
+    machine-refutes the re-plumb: `diag(15, 10, 6, 4)`'s pivot-0 sweep output is NOT window-diagonal at
+    floor `1` (`(3, 1) = -20`), so `chainWindowedThroughPivots` cannot invoke the diagonal-input
+    keystone at pivot `≥ 1`.
+
+  * B3 — THE ITERATED PAIRWISE GCD.  `intGcdFoldrDividesAll` proves the iterated pairwise gcd
+    `foldr intGcd 0 values` is a common divisor of every entry (the ARITHMETIC half of the
+    diagonal-common-divisor obligation).  Δ3 (recon): the fold does NOT compute the pairwise gcd of its
+    two operands — only the whole-minor min-abs descent lands the diagonal gcd — so this arithmetic
+    fact does NOT by itself say the cascade lands it.
+
+  * B4 — THE PIVOT-0 FIRING.  `landedPivotDividesMinorOnPhaseAOutputAtZero`: the diagonal-input
+    specialization discharges the keystone at pivot 0 for ANY rectangular input, the diagonal condition
+    supplied by the shipped Phase-A diagonalization.
+
+**THE EXACT SURVIVING GOAL, named (NOT a fabricated flip).**  `SmithReduceCompleteDriverStatement` is
+NOT inhabited hypothesis-free.  Two nested residuals survive, both OPEN:
+
+  1. `SmithCascadeLandedPivotDividesMinor` (the shipped r22 residual) — the UNRESTRICTED keystone the
+     driver totality rests on (`smithReduceCompleteDriverOfLandedPivotDividesMinor`).  The
+     diagonal-input specialization does NOT supply it: the chain needs it on the pivot-`≥ 1` ADVANCED
+     matrices, which are non-diagonal (machine-refuted).
+
+  2. `SmithDiagonalInputLandedPivotDividesDiagonal` (this round's scoped residual) — even the
+     diagonal-input evaluation of the keystone (the diagonal-common-divisor obligation "the landed
+     pivot divides each INPUT diagonal entry") is OPEN.  B3 discharges its ARITHMETIC half (the iterated
+     pairwise gcd IS a common divisor of the diagonal); the surviving content is the cascade-output-value
+     fact "the landed pivot equals the diagonal gcd = `foldr intGcd 0 [a_p, …]`" — a min-abs-descent
+     correctness statement, the r11+ wall, decisively NOT r24-sized.
+
+**Honest verdict.**  r24 narrows the keystone on diagonal inputs and covers pivot 0, but the
+diagonal-input specialization CANNOT re-plumb the chain (verdict (iii), machine-adjudicated).  The
+driver stays open; the surviving arithmetic goal is the cascade-lands-the-diagonal-gcd correctness.  No
+flip is fabricated; `smithReduceFull`, its refutation, the certificate API, and the r18–r23 world stay
+byte-intact (additive only). -/
+
 end FX1Poly.ComputerAlgebra

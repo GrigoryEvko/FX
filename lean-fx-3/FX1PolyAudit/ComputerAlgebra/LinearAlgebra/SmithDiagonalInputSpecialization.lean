@@ -39,4 +39,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGcdFoldrLandsDiagonalGcdOnConcreteWindow
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGcdFoldrDividesDiagonalOnConcreteWindow
 
+/- BRICK 4 — the pivot-0 firing (the honest assembly; driver stays open). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.landedPivotDividesMinorOnPhaseAOutputAtZero
+
 end FX1PolyAudit
