@@ -258,4 +258,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDragDiagonalDriverReducesToSmithForm
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithUnsortedMinorDriverReducesToSmithForm
 
+/- H2-SMITH r16 — the driver totality target is REFUTED (B1): the rectangular `diag(10, 10, 6, 9)` is a
+   kernel-confirmed refuter — `smithReduceFull` strands `entryAt 3 2 = 30` off the diagonal
+   (`[[1,0,0,0],[0,2,0,0],[0,0,30,0],[0,0,30,90]]`), so `SmithReduceFullDriverStatement` is FALSE.
+   Non-vacuity pinned both directions: the input is rectangular and the strand is nonzero. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverRefuterInputIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullStrandsOffDiagonalWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverIsRefuted
+
 end FX1PolyAudit

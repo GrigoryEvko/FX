@@ -4928,4 +4928,65 @@ is a 2x2 with no multi-pivot evolution, and matrix 21 (5x5) is the first genuine
 
 `SmithReduceFullDriverStatement` is NOT flipped. -/
 
+/-! ## The driver totality target is REFUTED — the r16 escalation (H2-SMITH r16, B1, #2137); NO flip
+
+r13/r14/r15 carried `SmithNormalForm.SmithReduceFullDriverStatement` as an UNINHABITED wall pending a
+JAM-1 discharge.  The r16 round probed the cascade-landing carrier on a 24-matrix curated battery plus a
+400-matrix random stress, found NO surviving window-diagonal carrier, and escalated to a KERNEL-CONFIRMED
+REFUTATION OF THE DRIVER ITSELF: `SmithReduceFullDriverStatement` is FALSE, not walled.
+
+**The witness.**  `smithReduceFullDriverRefuterInput` = diag(10, 10, 6, 9), a rectangular 4x4.
+`smithReduceTotal` min-abs-sorts it to diag(6, 9, 10, 10); the top-down single-pass divisibility repair
+then pushes an lcm-inflated residue down the diagonal and its sub-block permutation strands a NONZERO
+off-diagonal at (3, 2):
+  `smithReduceFull(diag(10,10,6,9))` |> applyOperations = `[[1,0,0,0],[0,2,0,0],[0,0,30,0],[0,0,30,90]]`
+(machine-checked `#eval`).  This is the exact r13-refuter shape `[[2,0,0],[0,60,0],[0,60,-60]]` arising on
+a genuine reduceTotal-min-abs-sorted path — falsifying the r13/r14/r15 hope that the presort forbids the
+drag.
+
+**Non-vacuity, both directions.**  (1) the witness IS rectangular
+(`smithReduceFullDriverRefuterInputIsRectangular`), so the statement's hypothesis is satisfiable; (2) the
+stranded off-diagonal IS nonzero (`smithReduceFullStrandsOffDiagonalWitness` pins it at 30), so
+`IsSmithNormalFormWithin.offDiagonalVanishes 3 2` is genuinely violated.  The 4x4 is the SMALLEST
+refuting input; its full-driver defeq reduces at `maxRecDepth 200000` (~1.2 s), under the r15 5x5
+stack-overflow line. -/
+
+/-- The r16 refuter INPUT: diag(10, 10, 6, 9), a rectangular 4x4.  `smithReduceTotal` min-abs-sorts it to
+diag(6, 9, 10, 10) (machine-checked `#eval`), the smallest driver-path input whose single-pass
+divisibility repair strands a nonzero off-diagonal in a later pivot's cross-strip. -/
+def smithReduceFullDriverRefuterInput : IntMatrix :=
+  { rows := [[10, 0, 0, 0], [0, 10, 0, 0], [0, 0, 6, 0], [0, 0, 0, 9]] }
+
+/-- **Non-vacuity, direction 1 (rectangular)** — the refuter input is rectangular, so the driver
+totality statement's hypothesis is satisfiable and `smithReduceFullDriverIsRefuted` exercises the genuine
+conclusion, not a vacuous strike on an ill-formed input. -/
+theorem smithReduceFullDriverRefuterInputIsRectangular :
+    smithReduceFullDriverRefuterInput.IsRectangular 4 4 :=
+  ⟨rfl, rfl, rfl, rfl, rfl, True.intro⟩
+
+set_option maxRecDepth 200000 in
+/-- **Non-vacuity, direction 2 (nonzero strand)** — the augmented driver reduces diag(10, 10, 6, 9) to
+`[[1,0,0,0],[0,2,0,0],[0,0,30,0],[0,0,30,90]]` (machine-checked `#eval`), leaving `entryAt 3 2 = 30` OFF
+the diagonal.  Pins the violated off-diagonal by defeq (`= 30`), so the refutation below is not a vacuous
+`0 = 0`; this is the exact r13-refuter cross-strip on a genuine reduceTotal-min-abs-sorted path. -/
+theorem smithReduceFullStrandsOffDiagonalWitness :
+    (smithReduceFullDriverRefuterInput.applyOperations
+        (smithReduceFull smithReduceFullDriverRefuterInput 4 4).operations).entryAt 3 2 = 30 := by
+  decide
+
+set_option maxRecDepth 200000 in
+/-- **The fourth refutation: `SmithReduceFullDriverStatement` is FALSE** — if the driver were total, the
+rectangular `smithReduceFullDriverRefuterInput` would give `offDiagonalVanishes 3 2 : entryAt 3 2 = 0`;
+but the driver strands `entryAt 3 2 = 30` (`smithReduceFullStrandsOffDiagonalWitness`).  So
+`smithReduceFull` produces non-Smith-normal-form output on a rectangular integer matrix, and the
+total-correctness Prop is a permanent NEGATIVE regression.  `SmithReduceFullDriverStatement` verbatim
+UNTOUCHED; NO flip (there is no positive inhabitant to flip). -/
+theorem smithReduceFullDriverIsRefuted : ¬ SmithReduceFullDriverStatement := by
+  intro isDriverTotal
+  have offDiagonalVanishesAt32 :=
+    (isDriverTotal smithReduceFullDriverRefuterInput 4 4
+        smithReduceFullDriverRefuterInputIsRectangular).offDiagonalVanishes 3 2
+      (by decide) (by decide) (by decide)
+  exact absurd offDiagonalVanishesAt32 (by decide)
+
 end FX1Poly.ComputerAlgebra
