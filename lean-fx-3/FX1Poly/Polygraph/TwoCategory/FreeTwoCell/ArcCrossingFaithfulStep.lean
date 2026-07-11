@@ -63,7 +63,12 @@ def natListSwapTwoAt (openWires : List Nat) (position : Nat) : List Nat :=
 at `position`.  Width is PRESERVED (two consumed, two produced), the union-find forest is UNTOUCHED (a symmetric
 crossing permutes the two strands' boundary positions, not their connectivity), no fresh id is allocated and NO
 arc event is recorded (a crossing is not a turnback).  Contrast the shipped box arm, which drops four wires,
-splices two fresh disconnected ids, and bypasses the forest. -/
+splices two fresh disconnected ids, and bypasses the forest.  This transposition acts on `extractArc` by the
+boundary-index adjacent transposition `transposeAdjacent (bottomCount + position)` of the two crossed ports: it
+UNCONDITIONALLY swaps the two per-port internal cup/cap count entries and conjugates the same-component relation
+(`internalCupCounts_stepCrossArc_eq_swap` / `crossBoundarySameComponent_equivariant` in
+`ArcCrossingEquivariantTransport`), while the `partner` field follows that σ-conjugation only in the
+perfect-matching regime (each boundary component ≤ 2 ports) — the equivariance content the r8 transport lands. -/
 def stepCrossArc (state : ArcWireState) (position : Nat) : ArcWireState :=
   { state with openWires := natListSwapTwoAt state.openWires position }
 
