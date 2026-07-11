@@ -181,7 +181,18 @@ theorem stringCapBlockEmpty_ofSourceZero
 string spines over the width-`0` bottom boundary with EQUAL `matchingOfSpineList 0` are `SpineTraceEquiv`.  Stated
 at the `matchingOf` (= `.diagram`) level so it is exactly the consumer interface the empty-source dispatcher needs.
 The string analog of `WidthZeroPureCupDeterminacy`; genuinely colour-KEYED (the width-0 sort reads cup species off
-the fixed top boundary, not through lengths), so NOT a token-swap of the adjunction's discharged version. -/
+the fixed top boundary, not through lengths), so NOT a token-swap of the adjunction's discharged version.
+
+**★ ADJUDICATION (FC-3 r12, B1): this bare Prop is TRUE by FORCING — not refutable.**  A counterexample would need
+two width-0 pure-cup spines with EQUAL matching but DIFFERENT top words.  None exists: a cup's codomain is FORCED by
+its endpoint mode (`stringBaseCup_codForced` gives `F·G` at `base`, `stringTipCup_codForced` gives `G·H` at `tip`,
+`StringWidthZeroForcingAdjudication`), and the matching pins each chord's endpoint mode, so the top word is a
+well-defined function of the matching — equal matching forces equal top word.  The earlier `(H·G, G·H)` candidate is
+a category error, directly refuted (`stringNoCupHasCodHG` / `stringNoCupHasCodGF`: `H·G`, `G·F` are CAP domains, never
+cup cods; `H·G : base ⟶ base` and `G·H : tip ⟶ tip` are not even parallel).  This definition is therefore KEPT
+VERBATIM (adjudicated true); the r12 strengthening `StringWidthZeroPureCupDeterminacyShared` below is a plumbing
+convenience (the caller supplies its `targetPath` as the shared top word the last-cup pin consumes — cheaper than the
+forcing lemma), NOT a soundness fix.  The FULL matching-to-top-word reconstruction (the width-0 SORT) remains r13+. -/
 def StringWidthZeroPureCupDeterminacy : Prop :=
   ∀ {overallSource overallTarget : adjointTripleGraph.Mode}
     (cupFirst cupSecond : List (SpineAtom adjointTripleModeSignature overallSource overallTarget)),
