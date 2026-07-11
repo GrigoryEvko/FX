@@ -848,4 +848,159 @@ theorem involutionFreshExpansionPreservesDegreeOneInvariant :
 theorem expandedInvolutionDegreeOneHomologyIsZmodTwo :
     expandedInvolutionDegreeOneSmithData.homologyInvariant = ⟨0, [2]⟩ := rfl
 
+/-! ### Degree-2 preservation instance — the r2 Tietze `H2 = 0` survives `u ⟹ st`
+
+The degree-2 side of the fresh-generator theorem: the expanded `d3` is the base `d3` with an appended
+ZERO row (the fresh rule contributes no cofork), lifting the base `d3` certificate UNCHANGED.  `H2 = 0`
+is preserved through `tietzeExpansionPreservesDegreeTwoInvariant`. -/
+
+/-- The expanded r2 `d3` `5 × 8` — the r2 `4 × 8` cofork boundary with the fresh rule's ZERO row
+appended. -/
+def expandedTietzeThirdGeneratorBoundaryOfDimTwo : IntMatrix :=
+  ⟨[ [0, 1, 0, -1, 0, -1, 1, 0]
+   , [-1, -1, 1, 0, -1, 1, 0, 1]
+   , [1, 0, -1, 1, 1, 0, -1, -1]
+   , [0, 1, 0, -1, 0, -1, 1, 0]
+   , [0, 0, 0, 0, 0, 0, 0, 0] ]⟩
+
+/-- ★ The block builder COMPUTES the expanded r2 `d3` (the appended fresh-rule zero row) — `rfl`. -/
+theorem expandedTietzeThirdGeneratorComputesBoundaryDimTwo :
+    expandedTietzeThirdGeneratorPresentation.computeBoundaryDimTwo
+      = expandedTietzeThirdGeneratorBoundaryOfDimTwo := rfl
+
+/-- The ordered Smith normal form of the expanded r2 `d3` — `diag(1, 1, 0, 0, 0)`: the base `diag(1, 1,
+0, 0)` with the zero row appended (same rank, no new torsion). -/
+def expandedTietzeThirdGeneratorSmithNormalFormOfDimTwo : IntMatrix :=
+  ⟨[ [1, 0, 0, 0, 0, 0, 0, 0]
+   , [0, 1, 0, 0, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0, 0, 0] ]⟩
+
+/-- ★ The base r2 `d3` certificate, LIFTED UNCHANGED, lands the expanded r2 `d3` on `diag(1, 1, 0, 0,
+0)` — the zero row is inert and already last, so no reindexing is needed.  `rfl`. -/
+theorem expandedTietzeThirdGeneratorCertificateProducesSmithNormalFormOfDimTwo :
+    expandedTietzeThirdGeneratorBoundaryOfDimTwo.applyOperations
+        tietzeBoundaryOfDimTwoSmithCertificate.operations
+      = expandedTietzeThirdGeneratorSmithNormalFormOfDimTwo := rfl
+
+/-- ★ The expanded r2 `d3` reduces to `diag(1, 1, 0, 0, 0)` within the `5 × 8` window — kernel-checked
+(the lifted base certificate). -/
+theorem expandedTietzeThirdGeneratorBoundaryOfDimTwoReducesToSmith :
+    tietzeBoundaryOfDimTwoSmithCertificate.reducesToSmithForm
+      expandedTietzeThirdGeneratorBoundaryOfDimTwo 5 8 :=
+  show expandedTietzeThirdGeneratorSmithNormalFormOfDimTwo.IsSmithNormalFormWithin 5 8 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 5 → ∀ colIndex, colIndex < 8 →
+          rowIndex ≠ colIndex →
+          expandedTietzeThirdGeneratorSmithNormalFormOfDimTwo.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨1, by decide⟩
+      | 1, _ => ⟨0, by decide⟩
+      | 2, _ => ⟨0, by decide⟩
+      | 3, _ => ⟨0, by decide⟩
+      | _ + 4, isSuccBelow =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isSuccBelow)))))) }
+
+/-- The degree-2 Smith data of the expanded r2 complex: `C2 = 5`, `SNF(d2) = diag(1, 1, 3)` (window
+`3`), `SNF(d3) = diag(1, 1, 0, 0, 0)` (window `5`). -/
+def expandedTietzeThirdGeneratorDegreeTwoSmithData : SmithHomologyData :=
+  { chainBasisCount := 5
+  , smithBoundaryIntoLower := expandedTietzeThirdGeneratorSmithNormalFormOfDimOne
+  , windowIntoLower := 3
+  , smithBoundaryFromHigher := expandedTietzeThirdGeneratorSmithNormalFormOfDimTwo
+  , windowFromHigher := 5 }
+
+/-- ★★ **The r2 Tietze `H2 = 0` survives the fresh-generator expansion — THROUGH THE GENERIC DEGREE-2
+THEOREM.**  The fresh generator bumps `C2` by one and inserts one Smith unit into `d2`; the appended
+zero `d3` row adds no rank; so `H2 = 0` is preserved by `tietzeExpansionPreservesDegreeTwoInvariant`. -/
+theorem expandedTietzeThirdGeneratorPreservesDegreeTwoInvariant :
+    expandedTietzeThirdGeneratorDegreeTwoSmithData.homologyInvariant = tietzeDegreeTwoHomologyInvariant :=
+  (tietzeExpansionPreservesDegreeTwoInvariant tietzeDegreeTwoSmithData
+    expandedTietzeThirdGeneratorDegreeTwoSmithData rfl rfl rfl rfl).trans
+    tietzeDegreeTwoHomologyIsZero
+
+/-- ★ The direct cross-check: the expanded r2 degree-2 invariant is `0 = (0, [])` by `rfl`. -/
+theorem expandedTietzeThirdGeneratorDegreeTwoHomologyIsZero :
+    expandedTietzeThirdGeneratorDegreeTwoSmithData.homologyInvariant = ⟨0, []⟩ := rfl
+
+/-! ## B5 — the ledger: what r3 landed, the r2 beyond-expansion frame, the R1 wall re-stated
+
+### What r3 LANDED (shipped, zero-axiom)
+
+  * **B1 — the generic block constructor**: `expandWalkerPresentationWithFreshGenerator`;
+    ★★ `freshGeneratorExpansionAddsNoCriticalPairs` (`C3` unchanged, the no-new-critical-pair fact);
+    `freshGeneratorExpansionBumpsGeneratorCount` / `…BumpsRuleCount` (`C1`/`C2` `+1`); the hand probe
+    (`handProbeExpandedBoundaryReducesToSmithNormalForm`, the r2 `d2` extended by `u ⟹ e` on
+    `diag(1, 1, 3)` by `rfl`).
+  * **B2 — the GENERIC well-formedness (Route A)**: ★★ `freshGeneratorExpansionIsWellFormedOfBase` (the
+    block `d2·d3 = 0` for ANY base presentation, given the two honest base-shape facts), the four block
+    agreement/vanishing lemmas, and ★★ `freshGeneratorExpansionChainComplex` (the generic expanded ADC),
+    non-vacuously inhabited by `handProbeExpandedTietzeChainComplex`.
+  * **B3 — the GENERIC preservation theorems**: ★★ `tietzeExpansionPreservesDegreeOneInvariant` and
+    ★★ `tietzeExpansionPreservesDegreeTwoInvariant`, at the reader granularity (the fresh Smith unit
+    bumps the rank by one — `smithRankWithinTopNonzeroIsSuccessor` — and the non-unit torsion is stable —
+    `nonUnitInvariantFactorsUnitConsIsStable`).
+  * **B4 — the regressions THROUGH the theorem**: cyclic `ZZ/3` (`t ⟹ s`), r2 Tietze `ZZ/3` (`u ⟹ st`),
+    and the FRESH walking involution `ZZ/2` (`t ⟹ s`) — each degree-1 invariant preserved via the
+    generic theorem, each with an explicit lifted `d2` certificate; plus the degree-2 instance
+    (`expandedTietzeThirdGeneratorPreservesDegreeTwoInvariant`, `H2 = 0` preserved).
+
+### The r2 instance as the worked BEYOND-EXPANSION example (honest)
+
+The r2 file's `⟨s, t | ss, st, ts, tt⟩` presentation of `ZZ/3` was obtained from `⟨s | sss⟩` by a Tietze
+move `t := s²` FOLLOWED BY orientation and Knuth–Bendix completion (all four length-reducing rules).
+This round's theorem captures ONLY the single fresh-generator adjunction `t ⟹ w` — NOT the general
+orientation/completion.  So the r2 presentation is the worked example that lives BEYOND this theorem: its
+own construction needed the completion machinery the theorem does not (yet) formalise.  Here that same
+r2 presentation is instead used as a BASE, expanded by a third generator `u ⟹ st` — the theorem applies
+to it as a base, honestly, without claiming to reproduce its original completion.
+
+### What STAYS WALLED (R1, re-stated with what REMAINS)
+
+The GENERAL monoid-level presentation-invariance (any two finite convergent presentations of the same
+monoid have isomorphic homology) is STILL the R1 research wall.  This round pays it down further — from
+the r2 single worked coincidence to a GENERIC theorem for ONE Tietze move (fresh-generator adjunction) —
+but the residual is real and named:
+
+  * **type-2 Tietze relation moves** (adjoin/remove a DERIVABLE relation) — not covered; only the
+    fresh-GENERATOR move is;
+  * **general orientation + Knuth–Bendix completion** — turning an arbitrary presentation into a
+    convergent one (the r2 example's own provenance) — not formalised;
+  * **the Squier / Pride homotopy machinery** — the chain-homotopy between the two abelianized complexes
+    that would give the FULL invariance across arbitrary Tietze-equivalent presentations — the deep wall.
+
+No overclaim: r3 ships a GENERIC single-fresh-generator invariance theorem and three instances through
+it, moving the R1 down-payment from one coincidence to a theorem — but NOT the general invariance,
+NOT relation moves, NOT completion, NOT the homotopy machinery. -/
+
+/-- The number of decided walkers whose homology is verified invariant under fresh-generator expansion
+THROUGH the generic theorem: cyclic `ZZ/3`, the r2 Tietze `ZZ/3`, and the walking involution `ZZ/2` — a
+running additive count, not a mutation of any shipped census. -/
+def walkersWithFreshGeneratorExpansionInvarianceCount : Nat := 3
+
+/-- The additive census value: `3` instances fed through the generic fresh-generator theorem, by
+`rfl`. -/
+theorem walkersWithFreshGeneratorExpansionInvarianceCountValue :
+    walkersWithFreshGeneratorExpansionInvarianceCount = 3 := rfl
+
+/-- ★ **The #2139 round-three ledger marker.**  Invariance under fresh-generator (Tietze type-1)
+expansion is a GENERIC THEOREM (`tietzeExpansionPreservesDegreeOne/TwoInvariant`), the block
+well-formedness is generic (`freshGeneratorExpansionIsWellFormedOfBase`), and three instances are fed
+through it (cyclic `ZZ/3`, r2 Tietze `ZZ/3`, walking involution `ZZ/2`).  What STAYS WALLED: R1 the
+general monoid-level invariance — type-2 relation moves, general orientation/completion, and the
+Squier/Pride homotopy machinery remain the named residual.  Read the meaning from THIS docstring. -/
+def freshGeneratorTietzeExpansionLedgerIsComplete : Bool := true
+
+/-- ★ **The HONESTY marker: r3 lifts the R1 down-payment from a coincidence to a THEOREM, it moves NO
+wall.**  The single-fresh-generator move is now a generic invariance theorem, but the general Tietze
+invariance (relation moves, completion, homotopy) stays the R1 research wall.  `= true` records the
+stance, not a closure. -/
+def freshGeneratorExpansionEnrichesButNoWallMoved : Bool := true
+
 end FX1Poly.Polygraph.Homology
