@@ -4,6 +4,7 @@ import FX1Poly.Polygraph.Omega.CyclicThreeDemonstrator
 import FX1Poly.Polygraph.Omega.IdempotentSemigroupDemonstrator
 import FX1Poly.Polygraph.Omega.PresentationOpDualityWithId
 import FX1Poly.Polygraph.Omega.WalkingEquivalencePresentation
+import FX1Poly.Polygraph.Omega.FrobeniusMonadPresentation
 
 /-! # Polygraph/Omega/SquierFamilyCensus — the WP-SQUIER family census (the #2082 state, WP-SQUIER r2)
 
@@ -427,5 +428,75 @@ winding word problem (`fxEquiv_bareEquivalenceParallelUniquenessOpen`), so its w
 not decided-9 members.  The ADJOINT walker's parallel-uniqueness is exercised (contractibility) but the full
 quantified decision is the OMEGA-5 normalizer handoff. -/
 def fxOmega4_bareWalkingEquivalenceWordProblemOpenInCensus : Bool := false
+
+/-! ## The WP-FROBMONAD extension — the walking Frobenius monad (additive, #2070)
+
+★ **The census EXTENSION for the walking Frobenius monad — ADDITIVE, the shipped decided-9 census and the
+multi-object marker UNTOUCHED.**  The SINGLE-OBJECT walking Frobenius monad
+`<s | mu, eta, delta, epsilon | monad + comonad + two Frobenius rows>` has a SHIPPED Omega-lane coherent
+presentation (`FrobeniusMonadPresentation.lean`, twelve critical pairs).  It is NOT one of the decided-9
+(its bare 2-cell word problem is walled at non-commutativity + 2Cob-genus,
+`fxFrob_completenessWalledAtNonCommutativityAndGenus`), so it is recorded here as a SEPARATE extension
+rather than grown into `allSquierFamilyDecidedWalkers` (whose count theorem
+`squierFamilyDecidedWalkerCountIsNine` keeps its name and meaning).  The r2 marker
+`fxOmega4_multiObjectWalkersOutsideDecidedNineR2` (which says Brauer / Frobenius are MULTI-object walkers)
+is left UNTOUCHED — it is correct for the multi-object Frobenius PROP, but IMPRECISE for the single-object
+Frobenius MONAD, so a NEW marker below records the distinction. -/
+
+/-- The single **walking-Frobenius-monad walker** — the census extension (additive; NOT part of the
+decided-9; DISTINCT from the multi-object Frobenius PROP). -/
+inductive SquierFamilyFrobeniusWalker
+  /-- The single-object walking Frobenius monad `<s | mu, eta, delta, epsilon>`. -/
+  | walkingFrobeniusMonad
+
+/-- The complete enumeration of the walking-Frobenius-monad walkers — ONE, listed. -/
+def allSquierFamilyFrobeniusWalkers : List SquierFamilyFrobeniusWalker := [.walkingFrobeniusMonad]
+
+/-- ★ **The walking-Frobenius-monad walker count is exactly ONE** — kernel-checked (`rfl`). -/
+theorem squierFamilyFrobeniusWalkerCountIsOne : allSquierFamilyFrobeniusWalkers.length = 1 := rfl
+
+/-- ★ **The Frobenius-walker enumeration is EXHAUSTIVE** — the single walker appears. -/
+theorem allSquierFamilyFrobeniusWalkersExhaustive :
+    ∀ walker : SquierFamilyFrobeniusWalker, walker ∈ allSquierFamilyFrobeniusWalkers
+  | .walkingFrobeniusMonad => List.Mem.head _
+
+/-- The coherent-presentation status of the Frobenius-monad walker — SHIPPED in the Omega lane. -/
+def squierFamilyFrobeniusStatus :
+    SquierFamilyFrobeniusWalker → SquierFamilyCoherentPresentationStatus
+  | .walkingFrobeniusMonad => .shippedOmegaLane
+
+/-- ★ **The walking-Frobenius-monad-presented statement.**  The shipped Omega-lane coherent presentation:
+the twelve-critical-pair bundle (5 monad + 5 comonad + 2 Frobenius). -/
+def SquierFamilyFrobeniusWalkerPresentedStatement : Prop :=
+  FrobMonadWalkerCoherentPresentationStatement
+
+/-- ★★ **THE GROUNDED WALKING-FROBENIUS-MONAD CENSUS (#2070).**  The shipped Omega-lane coherent presentation
+assembled as one machine-checked datum — so the census extension is proof-carrying, not a bare tally.  The
+conjunct is the already-verified coherent presentation of the walker
+(`frobMonadWalkerCoherentPresentation`, all twelve critical pairs resolved modulo strict). -/
+theorem squierFamilyFrobeniusWalkerPresented : SquierFamilyFrobeniusWalkerPresentedStatement :=
+  frobMonadWalkerCoherentPresentation
+
+/-- ★ **THE WALKING FROBENIUS MONAD IS PRESENTED IN THE CENSUS (#2070).**  `= true` records that the
+single-object walking Frobenius monad has a SHIPPED Omega-lane coherent presentation
+(`squierFamilyFrobeniusWalkerPresented`), machine-checked — the WP-FROBMONAD r1 census tie-in, recorded
+additively without touching the shipped decided-9. -/
+def fxOmega4_walkingFrobeniusMonadPresentedInCensus : Bool := true
+
+/-- ★ **THE SINGLE-OBJECT FROBENIUS MONAD HAS AN OMEGA PRESENTATION (census, #2070).**  `= true` records the
+distinction the r2 marker `fxOmega4_multiObjectWalkersOutsideDecidedNineR2` did NOT make: that marker is
+correct for the MULTI-object Frobenius PROP (Brauer / 2Cob, still walled for the single-mode family), but the
+SINGLE-object walking Frobenius MONAD is a DISTINCT walker that NOW has a single-mode (`modeCarrier := Unit`)
+Omega presentation (four 2-cell generators, twelve critical pairs).  The multi-object marker is left
+untouched; this records the single-object landing. -/
+def fxOmega4_singleObjectFrobeniusMonadHasOmegaPresentation : Bool := true
+
+/-- ★ **WALL — the bare Frobenius-monad DECISION stays walled (census, #2070, honest).**  `= false` records
+that the single-object walking Frobenius monad is NOT part of the DECIDED-9: its full 2-cell word-problem
+decision is walled at two named nodes — non-commutativity (the open `BRAUER-BREACH`) and 2Cob-genus
+(`fxFrob_has2CobGenus = false`), the `TwoCategory/Frobenius/SpiderCompleteness` decision being for the
+EXTRASPECIAL-COMMUTATIVE theory only (NAMED, not transferred).  The Omega r1 ships the coherent presentation
++ the weak four-count soundness invariant, not the decision. -/
+def fxOmega4_bareFrobeniusMonadWordProblemWalledInCensus : Bool := false
 
 end FX1Poly.Polygraph.Omega

@@ -60,4 +60,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_walkingEquivalenceFirstTwoObjectOmegaWalkerInCensus
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bareWalkingEquivalenceWordProblemOpenInCensus
 
+-- WP-FROBMONAD r1 (#2070) — the additive walking-Frobenius-monad census extension
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyFrobeniusWalker
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyFrobeniusWalkers
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyFrobeniusWalkerCountIsOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyFrobeniusWalkersExhaustive
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyFrobeniusStatus
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyFrobeniusWalkerPresentedStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyFrobeniusWalkerPresented
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_walkingFrobeniusMonadPresentedInCensus
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_singleObjectFrobeniusMonadHasOmegaPresentation
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bareFrobeniusMonadWordProblemWalledInCensus
+
 end FX1PolyAudit
