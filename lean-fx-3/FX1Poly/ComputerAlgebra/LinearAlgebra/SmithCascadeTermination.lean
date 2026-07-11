@@ -4026,4 +4026,57 @@ theorem smithReduceFullDriverOfRepairStepAndChain
     SmithReduceFullDriverStatement :=
   smithReduceFullDriverOfRepairInvariants (repairWindowDiagHoldsOfRepairStep stepSettles) repairChainHolds
 
+/-! ## The repair-transport arc ledger (H2-SMITH r13, B5, #2137) — what the driver still owes; NO flip
+
+**#2137 state.**  `SmithNormalForm.SmithReduceFullDriverStatement` is UNINHABITED (no flip).  Before r13 its
+totality reduced (`smithReduceFullDriverOfRepairInvariants`) to TWO hypotheses on the repair output
+`afterRepair = smithDivisibilityRepairSweep (Nat.min h w) afterDiag 0` (with `afterDiag = smithReduceTotal`
+output): `repairWindowDiagHolds` (window-diagonal at 0) and `repairChainHolds` (invariant-factor chain).  r13
+DISCHARGES the first CONDITIONALLY and isolates its residual to ONE named per-step `Prop`.
+
+**Shipped this round (r13), all independently axiom-free (`#print axioms` = "no axioms").**
+
+  * B1 — `smithRepairFoldPreservesSettledFrame`: the repair fold `addRowMultiple foundPos pivotIndex 1`
+    preserves `SmithPrefixSettled matrix pivotIndex` (UNCONDITIONAL — touches only row `pivotIndex`, whose
+    frame cells are settled columns `0 + 1*0`).
+  * B2 — `smithRepairFoldCascadeReachesCrossClear` + `smithRepairPositionSweepReachesCrossClear`: the whole
+    per-position repair sweep keeps the pivot cross clear (UNCONDITIONAL, structural on the repair fuel; the
+    MEDIUM recon deliverable, riding r10's seed cross-clear at the post-fold matrix).
+  * B3 — `SmithRepairStepSettlesStatement` (the named wall), `smithDivisibilityRepairSweepSettlesThroughPivots`
+    (conditional growing-frame fold, verbatim mirror of r12's `smithReduceTotalSweepSettlesThroughPivots` with
+    the single-step CALL replaced by the HYPOTHESIS), and `smithDivisibilityRepairSweepDiagonalizes` (reads off
+    `IsWindowDiagonal` of the repair output on ANY rectangular input, GIVEN the single-step).
+  * B4 — `repairWindowDiagHoldsOfRepairStep`: `smithDivisibilityRepairSweepDiagonalizes` instantiated at the
+    driver's actual `afterDiag`, matching `smithReduceFullDriverOfRepairInvariants`'s first hypothesis VERBATIM;
+    `smithReduceFullDriverOfRepairStepAndChain` composes it, moving `SmithReduceFullDriverStatement` off
+    `repairWindowDiagHolds` onto EXACTLY `{SmithRepairStepSettlesStatement, repairChainHolds}`.
+
+**Still owed toward `SmithReduceFullDriverStatement` (UNINHABITED; NO flip) — two named jams.**
+
+  * JAM 1 (the window-diagonal residual).  NAMED NODE: `SmithRepairStepSettlesStatement`.  Exact goal:
+    for `matrix.IsRectangular height width`, `pivotIndex < height`, `pivotIndex < width`,
+    `SmithPrefixSettled matrix pivotIndex height width`, prove
+    `SmithPrefixSettled (matrix.applyOperations (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex
+    height width) matrix pivotIndex height width)) (pivotIndex + 1) height width`.  REFUTABLE over the bare
+    `SmithPrefixSettled` frame: the eval-confirmed standalone `[[2,0,0],[0,60,0],[0,60,-60]]` (pivot-0 repair on
+    the UNSORTED `diag(30, 20, 12)`) is settled at `1` with pivot `1` in range, yet the pivot-`1` repair does
+    NOTHING (`60 ∣ -60`, `find = none`), leaving frame-`2` cell `(2, 1) = 60 ≠ 0`.  Discharging it needs a
+    STRICTLY STRONGER driver-path invariant than `SmithPrefixSettled` — the min-magnitude/pre-sort property of
+    `smithReduceTotal`'s output that forbids the drag (the deep POLE-A elimination-correctness the r8/r9
+    docstrings name; the fuzz shows `afterDiag` is NOT magnitude-sorted, so even a sortedness lemma is not
+    free-standing).
+  * JAM 2 (the chain).  NAMED NODE: `smithReduceFullDriverOfRepairStepAndChain`'s `repairChainHolds`
+    hypothesis (= `smithReduceFullDriverOfRepairInvariants`'s second, verbatim).  Exact goal: for
+    `matrix.IsRectangular height width`, prove `SmithChainPrefix afterRepair (Nat.min height width) height
+    width` — the invariant-factor divisibility `d_p ∣ d_{p+1}` of the repair output.  A SEPARATE POLE-A conjunct
+    (the gcd-landing of the folded operands), correct only along the min-abs-presorted driver path; its own
+    later round.  UNTOUCHED this round.
+
+**Discipline honoured.**  Every r13 UNCONDITIONAL statement (B1, B2) is quantified over the driver's own
+fold/re-cascade word under `SmithPrefixSettled`/`IsRectangular`/pivot-in-range (the r7 reachability template),
+concluding "these zeros stay zero" / "the cross stays clear" — NEVER "re-diagonalized" over an arbitrary input.
+Every CONDITIONAL statement (B3, B4) carries `SmithRepairStepSettlesStatement` as an explicit hypothesis and is
+honest reusable transport, not a discharge.  The window-diagonal wall is isolated to that ONE named `Prop`; the
+chain is the separate JAM 2.  `SmithReduceFullDriverStatement` is NOT flipped. -/
+
 end FX1Poly.ComputerAlgebra
