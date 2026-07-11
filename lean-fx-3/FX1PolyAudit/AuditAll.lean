@@ -1227,6 +1227,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingStrongMonadOverQuotientAdjudicationAu
 import FX1PolyAudit.Polygraph.Omega.WalkingDistLawOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the family census: decidable shape predicate, 3 confirmed over-quotients, not-spurious trio UNRESOLVED, equivalence positive example, homology no-impact
 import FX1PolyAudit.Polygraph.Omega.OmegaHouseStyleFamilyLedgerAudit
+-- OMEGA SWEEP r2 — the not-spurious trio's latent over-quotient: involution/cyclic-3/idempotent legs Mat(N)-separated, ledger "predicted clean" REFUTED, idempotent restored soundness
+import FX1PolyAudit.Polygraph.Omega.NotSpuriousTrioOverQuotientAdjudicationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
