@@ -904,4 +904,64 @@ theorem, and the corrected-driver totality residual count is honestly ONE
 error one level up.  `smithReduceFull` and its refutation, the certificate API, and the r18/r19 world
 stay byte-intact (additive only). -/
 
+/-! ## The r21 arc ledger (H2-SMITH r21, B4, #2261) — the two seed halves, honest to the keystone
+
+**What r21 ADDED (all zero-axiom, additive).**
+
+  * NODE D — the C3 FUEL-ADEQUACY, as a Lean theorem chain (B1/B2).  The seed's DIAGONAL half needs
+    exactly one fact: the sweep OUTPUT satisfies the find-loop `none`-exit (C2 then closes it).
+    `smithClearingSweepReachesFindNoneOfDescent` discharges the FUEL-COUNTING half of THAT by structural
+    induction on the sweep fuel, ISOLATING the two irreducible cascade-output facts as explicit named
+    hypotheses (`foldDescends` = per-fold measure drop; `terminalKeepsFindNone` = the terminal cascade
+    preserves the exit).  `smithClearingSweepDiagonalHalfOfDescent` composes it with C2 to yield the seed's
+    `SubBlockDiagonalDivisibleFrom` at a pivot, GIVEN the descent + fuel-budget hypotheses.  The
+    fuel-counting is MECHANICAL and complete; the cascade residuals are NAMED, not fabricated (the r20
+    reduce-to-named-residual pattern applied to C3).
+
+  * NODE E — route (i) of the C1 adjudication REFUTED, machine-checked (B3).
+    `smithClearingSweepInteriorNotDiagonalWitness` exhibits `diag(15,10,6,4)`, a DIAGONAL rectangular
+    input whose single-pivot clearing sweep output carries a NONZERO interior off-diagonal cell
+    (`(3,1) = -20`).  So the r17 "sub-block-stays-diagonal after one pivot" bridging lemma CANNOT exist:
+    the off-diagonal half is genuinely route (ii), the gcd-ideal invariance.
+
+**Truth-probed (r21, read-only eval).**  Fuel-adequacy is real with a HUGE margin: on the r16 refuter
+`diag(6,9,10,10)` the pivot magnitude descends `6 -> 3 -> 1` (two folds) against fuel `35` at pivot 0, and
+`18 -> 10 -> 2` against `58` at pivot 1; `outputFindNone = none` on every fixture.  The descent measure is
+NOT plain `|pivot|` — a zero pivot BOOTSTRAPS non-monotonically (`diag(0,4)` jumps `0 -> 4` then exits),
+so `foldDescends`'s witness measure is lexicographic, and that lex bound IS the cascade-output content.
+Separately: a `3x3` diagonal input keeps its `2x2` interior diagonal (fill-in needs a `>= 3x3` interior);
+the WHOLE sweep (all pivots) restores full diagonality — but the seed is stated PER pivot, where the
+interior fill-in (always `d_p`-divisible, never zero in general) is real.
+
+**THE MACHINE-CHECKED RESIDUAL, named EXACTLY (the r21 sharpening).**  Both surviving halves of the seed
+`SmithCascadeLandsDivisibleSubBlock` bottom out on ONE keystone — the **cascade output pivot = gcd of the
+folded minor** (`gcd-divides-folded-operands`, the r11+ wall named in the SmithCascadeTermination
+design-lock caveat):
+
+  1. DIAGONAL half — NODE D reduces it to `foldDescends` (the cascade output pivot magnitude drops, i.e.
+     `<= (intGcd d_p d_foundPos).natAbs` through the cascade, plus the zero-pivot bootstrap bound) +
+     `terminalKeepsFindNone`.  BOTH are the cascade-computes-a-common-divisor correctness.
+  2. OFF-DIAGONAL half — C1's `SubBlockOffDiagonalDivisibleFrom (M'.diagonalEntryAt p) (p+1) M'` = the
+     interior fill-in is divisible by the landed pivot `d_p` = the same cascade-lands-gcd, i.e. `d_p` is
+     the minor's gcd and every interior cell a ℤ-combination of the minor cells (the SNF invariant-factor
+     theorem).  Route (i) is now REFUTED as a theorem (NODE E); route (ii) is this major arc.
+
+The correct next keystone is therefore `smithCascadeLandsPivotDividesFoldedPair` (the cascade output pivot
+divides both folded operands) — it unblocks foldDescends, terminalKeepsFindNone, AND the off-diagonal
+ideal invariance at once.  It is a STANDALONE MAJOR ARC (the Euclid-cascade-computes-gcd correctness over
+the threaded work matrix), decisively NOT r21-sized.
+
+**The user close criteria, quoted.**  "every rectangular integer matrix, any size, zero kernel evaluation;
+the honest pair finalized" — `SmithReduceCompleteDriverStatement` inhabited HYPOTHESIS-FREE.  This is NOT
+reached in r21.  Its residual is UNCHANGED from r20 (the seed `SmithCascadeLandsDivisibleSubBlock`), now
+factored to the single cascade-lands-gcd keystone with route (i) machine-refuted and the diagonal half's
+fuel-counting mechanized.  No flip is claimed; `smithReduceCompleteDriverOfSubBlockSeed` remains the
+seed-conditional totality, byte-intact.
+
+**Honest verdict.**  r21 does not close the seed — both halves wait on the SNF invariant-factor major arc
+(one keystone).  It DOES: (a) mechanize the fuel-adequacy fuel-counting, naming the exact cascade residual
+(B1/B2); (b) upgrade r20's route-(i) prose refutation to a machine-checked theorem (B3); (c) name the
+single keystone both halves share (B4).  `smithReduceFull`, its refutation, the certificate API, and the
+r18/r19/r20 world stay byte-intact (additive only). -/
+
 end FX1Poly.ComputerAlgebra
