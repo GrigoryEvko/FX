@@ -554,6 +554,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR28Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescMatchingSymm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPartnerSharesDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFoldLoops
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCircleLoops
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR29Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
