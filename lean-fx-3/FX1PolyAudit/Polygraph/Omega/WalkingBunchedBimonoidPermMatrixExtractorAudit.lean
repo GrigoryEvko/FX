@@ -73,6 +73,10 @@ namespace FX1PolyAudit
 -- The B2 marker.
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_permMatrixInjectiveReadOffShipped
 
+-- The r11 round ledger + the precisely-named residual wall.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_permMatrixReadOffRoundElevenLedgerShipped
+
 -- Independent (non-fuel) axiom prints on the extractor pins, the matMul law, the derived r11 matrix-share, and
 -- the separation.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidExtractorBraidThree
@@ -92,5 +96,7 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMapApplyAdjacentSwapCommute
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFoldlApplyAdjacentSwapMapCommute
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidNatEqOfBeqTrue
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_permMatrixReadOffRoundElevenLedgerShipped
 
 end FX1PolyAudit

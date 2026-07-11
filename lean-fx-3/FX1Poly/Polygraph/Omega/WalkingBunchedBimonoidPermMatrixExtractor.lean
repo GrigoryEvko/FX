@@ -437,4 +437,50 @@ list-algebra (`bunchedBimonoidMapApplyAdjacentSwapCommute`, `bunchedBimonoidFold
 (per-decl `#assert_no_axioms` + independent `#print axioms` in the twin). -/
 def fxBunchedBimonoid_permMatrixInjectiveReadOffShipped : Bool := true
 
+/-! # =========================================================================================
+    # THE r11 ROUND LEDGER + the precisely-named residuals (no star flip)
+    # =========================================================================================
+-/
+
+/-- ★ **THE GENERIC EXTRACTOR STAYS WALLED (r12) — on the matrix-algebra kit, precisely named, no flip.**  `=
+false` records the exact remaining node.  The GENERIC extractor
+`evalCell (permWord w width) = permMatrixOf width (permOfWord w width)` (currently pinned at widths 3, 4, 5) is
+gated on exactly three lemmas at generic width, all clean of the CONV layer: (a) `sigmaAt`-as-transposition —
+`evalCell (sigmaAt width k) = permMatrixOf width (applyAdjacentSwap (List.range width) k)` (the block-diagonal
+`directSum` of the swap generator equals the transposition matrix); (b) the matMul column-swap law —
+`matMul (permMatrixOf width p) (permMatrixOf width (applyAdjacentSwap (List.range width) k))
+= permMatrixOf width (p.map (swapValue k))` (a finite-sum-over-`List.range` "indicator picks one term" argument,
+the honest `Mat(N)` matrix-algebra kit the r2 `fxBunchedBimonoid_matrixStrictLawExtensionReached = false` wall
+already names); and (c) the pure `List Nat` relabel `permOfWord (k :: rest) width = (permOfWord rest width).map
+(swapValue k)` (from `bunchedBimonoidFoldlApplyAdjacentSwapMapCommute` (B2) plus the range-relabel
+`(List.range width).map (swapValue k) = applyAdjacentSwap (List.range width) k` for `k + 1 < width`).  With (a),
+(b), (c) the extractor induction closes; combined with the B2 injective read-off it gives the GENERIC
+`evalCell (permWord w1) = evalCell (permWord w2) -> permOfWord w1 = permOfWord w2` on valid words.  NOT shipped
+here — the concrete pins stand in for it this round. -/
+def fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit : Bool := false
+
+/-- ★★★ **ESTABLISHED — the WP-PROP r11 permutation-matrix read-off ledger (the honest scoreboard).**  `= true`
+records the complete r11 delivery.  B1: the pure `List Nat` symmetric-group engine + `permMatrixOf` + the
+concrete extractor pins (`evalCell (permWord w width) = permMatrixOf width (permOfWord w width)`, widths 3/4/5) +
+the `sigmaAt`-as-transposition and matMul column-swap pins + the r11-pair reduction derived THROUGH the read-off
+(`fxBunchedBimonoid_permMatrixExtractorCarrierAndPinsShipped`).  B2: the GENERIC injective read-off
+`permMatrixOf width p = permMatrixOf width q -> p = q` (the Omega mirror of the Brauer
+`permutationDiagram_injective`) + the clean generic list-algebra (`map` commuting through the swap fold)
+(`fxBunchedBimonoid_permMatrixInjectiveReadOffShipped`).  Together this turns the star hypothesis
+`evalCell alpha = evalCell beta` (a MATRIX) into `permOfWord`-equality (a `List Nat`) — the perm-middle
+determinism the star's `retract = retract` step needs — at every pinned width, with the injectivity half generic.
+
+The residuals are precisely named and DEFERRED: the GENERIC extractor on the matrix-algebra kit
+(`fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit`); the portable `combCanonicity`
+re-derivation (pure `List Nat`, `WiringDescStaircaseCanonical`) turning `permOfWord`-equality into `recComb`-
+equality; and the `recCombConv`-mirror CONV fold (the `sigmaAt`-generic braid / distant / involution moves,
+`fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid`, r8, byte-intact).  The star does NOT flip: no literal
+hypothesis-free inhabitant of `bunchedBimonoidStarStatementAdditiveWellTyped` is produced, and every upstream
+star marker (`fxBunchedBimonoid_correctedWellTypedStarStillOpen*`,
+`fxBunchedBimonoid_collisionGeneralStepStillGatedOnBracketMatch`,
+`fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid`) keeps its name and `= false` value byte-intact
+(cross-file, not edited).  Zero-axiom (per-decl `#assert_no_axioms` + independent `#print axioms` in the twin);
+STRUCTURAL only.  NO fabricated star flip. -/
+def fxBunchedBimonoid_permMatrixReadOffRoundElevenLedgerShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
