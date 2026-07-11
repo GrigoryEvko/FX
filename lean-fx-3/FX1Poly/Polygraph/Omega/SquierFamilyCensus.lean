@@ -5,6 +5,7 @@ import FX1Poly.Polygraph.Omega.IdempotentSemigroupDemonstrator
 import FX1Poly.Polygraph.Omega.PresentationOpDualityWithId
 import FX1Poly.Polygraph.Omega.WalkingEquivalencePresentation
 import FX1Poly.Polygraph.Omega.FrobeniusMonadPresentation
+import FX1Poly.Polygraph.Omega.WalkingStrongMonadPresentation
 
 /-! # Polygraph/Omega/SquierFamilyCensus — the WP-SQUIER family census (the #2082 state, WP-SQUIER r2)
 
@@ -498,5 +499,76 @@ decision is walled at two named nodes — non-commutativity (the open `BRAUER-BR
 EXTRASPECIAL-COMMUTATIVE theory only (NAMED, not transferred).  The Omega r1 ships the coherent presentation
 + the weak four-count soundness invariant, not the decision. -/
 def fxOmega4_bareFrobeniusMonadWordProblemWalledInCensus : Bool := false
+
+/-! ## The WP-STRONG extension — the walking strong monad (additive, #2189)
+
+★ **The census EXTENSION for the walking strong monad — ADDITIVE, the shipped decided-9 census and the
+multi-object marker UNTOUCHED.**  The SINGLE-OBJECT walking strong monad
+`<c, t | eta, mu, st : c.t => t.c | monad + two strength rows>` has a SHIPPED Omega-lane coherent
+presentation (`WalkingStrongMonadPresentation.lean`, seven critical pairs — the walking distributive law
+minus the c-side monad structure).  It is NOT one of the decided-9 (its full 2-cell word problem is walled
+at the two-colour monotone-map model, the SAME node as the distributive law,
+`fxStrong_fullTwoCellDecisionWalledAtTwoColourMonotoneMap`), so it is recorded here as a SEPARATE extension
+rather than grown into `allSquierFamilyDecidedWalkers` (whose count theorem
+`squierFamilyDecidedWalkerCountIsNine` keeps its name and meaning).  Its 1-cell word problem IS decided by
+verbatim Parikh transport of the distributive law's (`strongMonadConv_iffSameCount`).  The r2 marker
+`fxOmega4_multiObjectWalkersOutsideDecidedNineR2` is left UNTOUCHED — the strong monad is single-object and
+fits the `modeCarrier := Unit` family pattern. -/
+
+/-- The single **walking-strong-monad walker** — the census extension (additive; NOT part of the decided-9;
+a SUB-presentation of the walking distributive law). -/
+inductive SquierFamilyStrongWalker
+  /-- The single-object walking strong monad `<c, t | eta, mu, st>`. -/
+  | walkingStrongMonad
+
+/-- The complete enumeration of the walking-strong-monad walkers — ONE, listed. -/
+def allSquierFamilyStrongWalkers : List SquierFamilyStrongWalker := [.walkingStrongMonad]
+
+/-- ★ **The walking-strong-monad walker count is exactly ONE** — kernel-checked (`rfl`). -/
+theorem squierFamilyStrongWalkerCountIsOne : allSquierFamilyStrongWalkers.length = 1 := rfl
+
+/-- ★ **The strong-walker enumeration is EXHAUSTIVE** — the single walker appears. -/
+theorem allSquierFamilyStrongWalkersExhaustive :
+    ∀ walker : SquierFamilyStrongWalker, walker ∈ allSquierFamilyStrongWalkers
+  | .walkingStrongMonad => List.Mem.head _
+
+/-- The coherent-presentation status of the strong-monad walker — SHIPPED in the Omega lane. -/
+def squierFamilyStrongStatus :
+    SquierFamilyStrongWalker → SquierFamilyCoherentPresentationStatus
+  | .walkingStrongMonad => .shippedOmegaLane
+
+/-- ★ **The walking-strong-monad-presented statement.**  The shipped Omega-lane coherent presentation: the
+seven-critical-pair bundle (2 strength + 5 T-monad). -/
+def SquierFamilyStrongWalkerPresentedStatement : Prop :=
+  StrongMonadWalkerCoherentPresentationStatement
+
+/-- ★★ **THE GROUNDED WALKING-STRONG-MONAD CENSUS (#2189).**  The shipped Omega-lane coherent presentation
+assembled as one machine-checked datum — so the census extension is proof-carrying, not a bare tally.  The
+conjunct is the already-verified coherent presentation of the walker
+(`strongMonadWalkerCoherentPresentation`, all seven critical pairs resolved modulo strict). -/
+theorem squierFamilyStrongWalkerPresented : SquierFamilyStrongWalkerPresentedStatement :=
+  strongMonadWalkerCoherentPresentation
+
+/-- ★ **THE WALKING STRONG MONAD IS PRESENTED IN THE CENSUS (#2189).**  `= true` records that the
+single-object walking strong monad has a SHIPPED Omega-lane coherent presentation
+(`squierFamilyStrongWalkerPresented`), machine-checked — the WP-STRONG r1 census tie-in, recorded
+additively without touching the shipped decided-9. -/
+def fxOmega4_walkingStrongMonadPresentedInCensus : Bool := true
+
+/-- ★ **THE SINGLE-OBJECT STRONG MONAD IS A SUB-PRESENTATION OF THE DISTRIBUTIVE LAW (census, #2189).**
+`= true` records that the walking strong monad is the walking distributive law minus the c-side monad
+structure (`eta_s`, `mu_s`): five generator labels, seven critical pairs (the distributive law's fourteen
+minus Beck-1, Beck-3, and the five S-monad rows), machine-checked as a count partition in the presentation
+(`strongMonadKeptDropPartitionsDistLawFourteen`).  A distinct single-object walker fitting the
+`modeCarrier := Unit` family pattern. -/
+def fxOmega4_singleObjectStrongMonadHasOmegaPresentation : Bool := true
+
+/-- ★ **WALL — the bare strong-monad 2-cell DECISION stays walled (census, #2189, honest).**  `= false`
+records that the single-object walking strong monad is NOT part of the DECIDED-9: its full 2-cell
+word-problem decision is walled at the two-colour monotone-map model (the SAME node as the distributive law,
+`fxStrong_fullTwoCellDecisionWalledAtTwoColourMonotoneMap`).  Its 1-cell word problem IS decided by verbatim
+Parikh transport (`strongMonadConv_iffSameCount`), and the coherent presentation ships, but not the full
+2-cell decision. -/
+def fxOmega4_bareStrongMonadTwoCellDecisionWalledInCensus : Bool := false
 
 end FX1Poly.Polygraph.Omega
