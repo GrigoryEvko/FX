@@ -366,4 +366,53 @@ def wallFreeCellInvertWhiskerRightProbe :
       (pathInvert (composePath monadPushTPath monadPushTPath) tRunTwoWallFreeJoin) :=
   wallFreeCellInvert probeWhiskerRight tRunTwoWallFreeJoin tRunTwoWallFreeJoin
 
+/-! ## The backward direction — the reseat index is a genuine SECTION (the gen-case round-trip)
+
+The full CELL round-trip `mapCellAlong inclRight ∘ wallFreeCellInvert ≈ castBoundary` is a `reseatCellInv_reseatCell`
+-style fuel assembly (per-case `mapCellAlong_castBoundary` + `castBoundary`-fusion step theorems); it is scoped to a
+follow-on round.  What ships here is its ESSENTIAL gen-case content: the reseat index is a genuine section of the
+coprojection's `onTwoCell` index (`embedRightTwoGen ∘ retractRightTwoGen = id`), so a reconstructed generator, inverted
+then re-coprojected, returns to its original 2-generator index. -/
+
+/-- The index of the inverted generator is `retractRightTwoGen generator.val` (the `subst` in `wallFreeGenInvert`
+collapses on the singleton `pushoutModeUnique`, so `.val` reads off the retract). -/
+theorem wallFreeGenInvert_val
+    {sourceMode targetMode : Fin involutionMonadPushout.modeCount}
+    {sourcePath targetPath : ModalityPath involutionMonadPushout.toModeGraph sourceMode targetMode}
+    (generator : involutionMonadPushout.ReconstructedTwoCell sourcePath targetPath)
+    (wfS : pathWallFree sourcePath) (wfT : pathWallFree targetPath) :
+    (wallFreeGenInvert generator wfS wfT).val = retractRightTwoGen generator.val := by
+  obtain rfl := pushoutModeUnique sourceMode
+  obtain rfl := pushoutModeUnique targetMode
+  rfl
+
+/-- ★★★ **THE GEN-CASE BACKWARD ROUND-TRIP (index level).**  Inverting a reconstructed pushout 2-generator, then
+re-coprojecting through `inclusionRightTwoReal`'s `onTwoCell`, returns to the ORIGINAL 2-generator index:
+`embedRightTwoGen (retractRightTwoGen generator.val) = generator.val` (the section `embedRight_retractRight`).  The
+essential content of the cell converse's backward round-trip on the crux — the reseat is a genuine section of the
+coprojection, not merely a same-boundary map. -/
+theorem wallFreeGenInvert_onTwoCell_index_roundTrip
+    {sourceMode targetMode : Fin involutionMonadPushout.modeCount}
+    {sourcePath targetPath : ModalityPath involutionMonadPushout.toModeGraph sourceMode targetMode}
+    (generator : involutionMonadPushout.ReconstructedTwoCell sourcePath targetPath)
+    (wfS : pathWallFree sourcePath) (wfT : pathWallFree targetPath) :
+    ((inclusionRightTwoReal involutionComputad monadComputad involutionMonadSameModes).onTwoCell
+        (wallFreeGenInvert generator wfS wfT)).val = generator.val := by
+  show embedRightTwoGen involutionComputad monadComputad involutionMonadSameModes
+      (wallFreeGenInvert generator wfS wfT).val = generator.val
+  rw [wallFreeGenInvert_val]
+  exact embedRight_retractRight generator.val
+
+/-- ★★ **CONCRETE gen backward round-trip probe** — the pushout monad unit, inverted then re-coprojected, returns to
+2-generator index `0` (`eta`); the multiplication returns to index `1` (`mu`). -/
+theorem wallFreeGenInvert_onTwoCell_unit :
+    ((inclusionRightTwoReal involutionComputad monadComputad involutionMonadSameModes).onTwoCell
+        (wallFreeGenInvert pushoutMonadUnit True.intro monadPushTPath_wallFree)).val.val = 0 := rfl
+
+/-- ★★ **CONCRETE gen backward round-trip probe (multiplication)** — the pushout monad multiplication returns to
+2-generator index `1` (`mu`). -/
+theorem wallFreeGenInvert_onTwoCell_mult :
+    ((inclusionRightTwoReal involutionComputad monadComputad involutionMonadSameModes).onTwoCell
+        (wallFreeGenInvert pushoutMonadMult tRunTwoWallFree monadPushTPath_wallFree)).val.val = 1 := rfl
+
 end FX1Poly.Polygraph.Amalgam

@@ -38,5 +38,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvertWhiskerLeftProbe
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.probeWhiskerRight
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvertWhiskerRightProbe
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeGenInvert_val
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeGenInvert_onTwoCell_index_roundTrip
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeGenInvert_onTwoCell_unit
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeGenInvert_onTwoCell_mult
 
 end FX1PolyAudit
