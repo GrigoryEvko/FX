@@ -276,4 +276,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCoprimeByCompleteDriver
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRectangularByCompleteDriver
 
+/- H2-SMITH r17 — PHASE B: the corrected repair-sweep transport (B3).  The r13 conditional-transport structure
+   mirrored verbatim for the UNCONDITIONAL-clearing sweep: the named single-step `SmithRepairClearingStepSettles`
+   (TRUE over the bare frame, unlike the refuted r13 `SmithRepairStepSettlesStatement`), the conditional
+   growing-frame fold, the window-diagonal read-off, the verbatim `repairWindowDiagHolds` hypothesis, and the
+   composition moving `SmithReduceCompleteDriverStatement` onto EXACTLY `{SmithRepairClearingStepSettles,
+   repairChainHolds}` — the two named crux residuals, both TRUE over the empirically-correct driver (r18 lift). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithRepairClearingStepSettles
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepClearingSettlesThroughPivots
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepClearingDiagonalizes
+#assert_no_axioms FX1Poly.ComputerAlgebra.repairWindowDiagHoldsOfClearingStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfClearingStepAndChain
+
 end FX1PolyAudit

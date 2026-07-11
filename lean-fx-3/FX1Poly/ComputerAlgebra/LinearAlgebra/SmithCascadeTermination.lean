@@ -5197,4 +5197,183 @@ theorem smithRectangularByCompleteDriver :
           Nat.noConfusion
             (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
 
+/-! ## PHASE B — the corrected repair-sweep transport to the two named crux residuals (H2-SMITH r17, B3, #2261)
+
+The r13 conditional-transport structure (`smithDivisibilityRepairSweepSettlesThroughPivots` /
+`…Diagonalizes` / `repairWindowDiagHoldsOfRepairStep` / `smithReduceFullDriverOfRepairStepAndChain`) is
+MIRRORED VERBATIM for the UNCONDITIONAL-clearing repair sweep.  The named single-step
+`SmithRepairClearingStepSettles` is the clearing analogue of the r13 `SmithRepairStepSettlesStatement`.
+Composed with the Phase-C assembly (`smithReduceCompleteDriverOfRepairInvariants`), this moves
+`SmithReduceCompleteDriverStatement` onto EXACTLY the two conjuncts `{SmithRepairClearingStepSettles,
+repairChainHolds}` — the r17 crux, over an EMPIRICALLY-CORRECT driver (the B4 battery).
+
+**The crux flip vs. r13.**  The r13 single-step `SmithRepairStepSettlesStatement` was REFUTABLE over the bare
+`SmithPrefixSettled` frame (POLE-B: `[[2,0,0],[0,60,0],[0,60,-60]]` at pivot 1, where the OLD sweep's `find`
+returns `none` and does NOTHING — the frame is not advanced).  `SmithRepairClearingStepSettles` over the SAME
+frame is TRUE: route (i)'s `none`-branch fires the standalone `smithCascadeSweep`, whose frame advance is the
+shipped hypothesis-free `smithCascadeStepSettlesThroughPivot`.  So the wall the r13-r16 rounds could not
+discharge (the POLE-B refutation) is GONE for the corrected driver — the two residuals are TRUE, not
+refutable.
+
+**Honest scope — the two residuals still owed (r18).**
+
+  * `SmithRepairClearingStepSettles` (Phase B-diag).  Exact goal: for rectangular `matrix` with
+    `SmithPrefixSettled matrix pivotIndex`, prove `SmithPrefixSettled (matrix.applyOperations
+    (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex …) matrix pivotIndex …))
+    (pivotIndex + 1)`.  Discharge PATH (route (i), TRUE): the `none`-branch is `smithCascadeStepSettlesThroughPivot`
+    directly; the `some` fold+cascade LOOP preserves the frame at `pivotIndex` (`smithRepairFoldPreservesSettledFrame`
+    + cascade low-low/band preservers) and terminates at a `none`-branch (fuel adequacy: `smithRepairDecreasesPivotSize`
+    strictly drops the pivot each genuine fold — the r13 `smithRepairPositionSweepReachesCrossClear` template for the
+    Bool cross-clear, lifted to the frame).  The remaining WORK is that loop-frame-preservation + termination lift.
+  * `repairChainHolds` (Phase B-chain).  Exact goal: `SmithChainPrefix` of the clearing-repair output at
+    `Nat.min height width`.  PRESERVE half UNCONDITIONAL and shipped (`applyOperationsPreservesEntriesDivisible`:
+    a fixed `d` dividing all entries survives every later word, and the cross-clear at pivot `p` is confined to
+    rows/cols `≥ p` by locality, so it never disturbs a settled `d_earlier`, `earlier < p`).  ESTABLISH half (the
+    r18 promotion): find-loop exit at pivot `p` (`smithFindNonDividingLaterDiagonal … = none` ⟹ `d_p` divides every
+    later DIAGONAL) combined with window-diagonality of the sub-block (off-diagonals are `0`, trivially divisible)
+    promotes to `MatrixEntriesDivisibleBy d_p` over the whole sub-block `≥ p+1`; `d_{p-1} | d_p` closes via PRESERVE
+    (the landed gcd is a Z-combination).
+
+`SmithReduceCompleteDriverStatement` is thus reduced to two NAMED residuals, both TRUE over the corrected
+driver — a material advance past the r16 "driver is FALSE, no surviving carrier".  NO fabricated discharge. -/
+
+/-- **The named single-step for the corrected repair sweep** — the clearing analogue of the r13
+`SmithRepairStepSettlesStatement`: the clearing per-position repair advances the settled frame
+`pivotIndex → pivotIndex + 1`.  TRUE over the bare `SmithPrefixSettled` frame (unlike the refutable r13
+statement) because route (i)'s `none`-branch fires the frame-advancing `smithCascadeSweep`.  The r17 crux
+residual (Phase B-diag), pending the loop-frame-preservation + fuel-termination lift (r18). -/
+def SmithRepairClearingStepSettles : Prop :=
+  ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
+    matrix.IsRectangular height width →
+    pivotIndex < height → pivotIndex < width →
+    SmithPrefixSettled matrix pivotIndex height width →
+    SmithPrefixSettled
+      (matrix.applyOperations
+        (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+          matrix pivotIndex height width))
+      (pivotIndex + 1) height width
+
+/-- **The clearing repair sweep advances the settled frame (conditional)** — GIVEN the named single-step
+`SmithRepairClearingStepSettles`, the whole `smithDivisibilityRepairSweepClearing outerFuel` reaches
+`SmithPrefixSettled` at `Nat.min (Nat.min height width) (pivotIndex + outerFuel)`.  Verbatim mirror of the
+r13 `smithDivisibilityRepairSweepSettlesThroughPivots` — structural on `outerFuel`, the guard-true step
+chains the hypothesised single-step with the IH on the advanced pivot, the base / guard-false branches drop
+to the capped frame by `smithPrefixSettledMonotone`. -/
+theorem smithDivisibilityRepairSweepClearingSettlesThroughPivots
+    (stepSettles : SmithRepairClearingStepSettles) :
+    ∀ (outerFuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      matrix.IsRectangular height width →
+      SmithPrefixSettled matrix pivotIndex height width →
+      SmithPrefixSettled
+        (matrix.applyOperations
+          (smithDivisibilityRepairSweepClearing outerFuel matrix pivotIndex height width))
+        (Nat.min (Nat.min height width) (pivotIndex + outerFuel)) height width := by
+  intro outerFuel
+  induction outerFuel with
+  | zero =>
+      intro matrix pivotIndex height width _ isSettled
+      exact smithPrefixSettledMonotone matrix pivotIndex height width _ isSettled
+        (natMinLeRight (Nat.min height width) (pivotIndex + 0))
+  | succ outerFuel ih =>
+      intro matrix pivotIndex height width isRect isSettled
+      show SmithPrefixSettled (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                height width
+              ++ smithDivisibilityRepairSweepClearing outerFuel
+                  (matrix.applyOperations
+                    (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width) matrix
+                      pivotIndex height width))
+                  (pivotIndex + 1) height width
+           else []))
+        (Nat.min (Nat.min height width) (pivotIndex + (outerFuel + 1))) height width
+      split
+      · rename_i guardTrue
+        have pivotRowInRange : pivotIndex < height := natLeTrans guardTrue (natMinLeLeft height width)
+        have pivotColInRange : pivotIndex < width := natLeTrans guardTrue (natMinLeRight height width)
+        have afterPositionSettled :
+            SmithPrefixSettled
+              (matrix.applyOperations
+                (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width))
+              (pivotIndex + 1) height width :=
+          stepSettles matrix pivotIndex height width isRect pivotRowInRange pivotColInRange isSettled
+        have afterPositionRect :
+            (matrix.applyOperations
+                (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width)).IsRectangular height width :=
+          applyOperationsPreservesRectangular _ matrix isRect
+        have ihResult := ih
+          (matrix.applyOperations
+            (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+              height width))
+          (pivotIndex + 1) height width afterPositionRect afterPositionSettled
+        rw [Nat.succ_add pivotIndex outerFuel] at ihResult
+        rw [applyOperationsAppend]
+        exact ihResult
+      · rename_i guardFalse
+        have minLePivot : Nat.min height width ≤ pivotIndex :=
+          Nat.le_of_lt_succ (Nat.not_le.1 guardFalse)
+        exact smithPrefixSettledMonotone matrix pivotIndex height width _ isSettled
+          (Nat.le_trans (natMinLeLeft (Nat.min height width) (pivotIndex + (outerFuel + 1))) minLePivot)
+
+/-- **The clearing repair output is window-diagonal (conditional)** — GIVEN the single-step
+`SmithRepairClearingStepSettles`, every off-diagonal cell of the window vanishes after
+`smithDivisibilityRepairSweepClearing (Nat.min height width) matrix 0`.  Verbatim mirror of the r13
+`smithDivisibilityRepairSweepDiagonalizes`: instantiate the fold at the driver start (`pivotIndex = 0`,
+vacuous base), collapse the cap (`natMinSelf`), read off with `smithPrefixSettledAtMinIsWindowDiagonal`. -/
+theorem smithDivisibilityRepairSweepClearingDiagonalizes
+    (stepSettles : SmithRepairClearingStepSettles)
+    (matrix : IntMatrix) (height width : Nat)
+    (isRect : matrix.IsRectangular height width) :
+    ∀ rowIndex colIndex, rowIndex < height → colIndex < width → rowIndex ≠ colIndex →
+      (matrix.applyOperations
+          (smithDivisibilityRepairSweepClearing (Nat.min height width) matrix 0 height width)).entryAt rowIndex colIndex
+        = 0 := by
+  have generalResult :=
+    smithDivisibilityRepairSweepClearingSettlesThroughPivots stepSettles (Nat.min height width) matrix 0 height width
+      isRect (smithPrefixSettledZero matrix height width)
+  rw [Nat.zero_add, natMinSelf] at generalResult
+  exact smithPrefixSettledAtMinIsWindowDiagonal
+    (matrix.applyOperations (smithDivisibilityRepairSweepClearing (Nat.min height width) matrix 0 height width))
+    height width generalResult
+
+/-- **The verbatim `repairWindowDiagHolds` hypothesis for the corrected driver, conditional on the single-step**
+— GIVEN `SmithRepairClearingStepSettles`, the corrected driver's repair output is window-diagonal at `0`, for
+every rectangular `matrix`.  EXACTLY the shape of `smithReduceCompleteDriverOfRepairInvariants`'s first
+hypothesis; the r13 `repairWindowDiagHoldsOfRepairStep` mirror over the clearing sweep. -/
+theorem repairWindowDiagHoldsOfClearingStep (stepSettles : SmithRepairClearingStepSettles) :
+    ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      IsWindowDiagonal
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweepClearing (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        0 height width := by
+  intro matrix height width isRect
+  intro rowIndex colIndex _zeroLeRow rowLtHeight _zeroLeCol colLtWidth rowNeCol
+  exact smithDivisibilityRepairSweepClearingDiagonalizes stepSettles
+    (matrix.applyOperations (smithReduceTotal matrix height width).operations) height width
+    (applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect)
+    rowIndex colIndex rowLtHeight colLtWidth rowNeCol
+
+/-- **The corrected driver totality from the single-step and the chain** — GIVEN
+`SmithRepairClearingStepSettles` AND the invariant-factor chain `repairChainHolds` (verbatim the
+`smithReduceCompleteDriverOfRepairInvariants` type), `SmithReduceCompleteDriverStatement` follows.  The
+window-diagonal hypothesis is supplied by `repairWindowDiagHoldsOfClearingStep`, moving the whole totality onto
+EXACTLY `{SmithRepairClearingStepSettles, repairChainHolds}` — both TRUE over the corrected (empirically-clean)
+driver, pending the r18 loop-lift + ESTABLISH promotion.  The r13 `smithReduceFullDriverOfRepairStepAndChain`
+structure, over a driver that LANDS the r16 refuter (not one that is refuted by it). -/
+theorem smithReduceCompleteDriverOfClearingStepAndChain
+    (stepSettles : SmithRepairClearingStepSettles)
+    (repairChainHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      SmithChainPrefix
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweepClearing (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        (Nat.min height width) height width) :
+    SmithReduceCompleteDriverStatement :=
+  smithReduceCompleteDriverOfRepairInvariants (repairWindowDiagHoldsOfClearingStep stepSettles) repairChainHolds
+
 end FX1Poly.ComputerAlgebra
