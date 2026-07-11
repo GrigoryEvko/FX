@@ -23,6 +23,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedTietzeBoundaryOfDimOneSmithCertificate
 #assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedBoundaryReducesToSmithNormalForm
 
+-- B2 (r4): the structurally-t-free entry point + the bridging lemma
+#assert_no_axioms FX1Poly.Polygraph.Homology.embedBaseWord
+#assert_no_axioms FX1Poly.Polygraph.Homology.embeddedBaseWordFreshCountIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandWalkerPresentationWithBaseWord
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandWalkerPresentationWithBaseWordIsFreshFree
+
 -- B2: the certificate-extension engine + the GENERIC well-formedness of the expansion
 #assert_no_axioms FX1Poly.Polygraph.Homology.natZeroAddEqSelf
 #assert_no_axioms FX1Poly.Polygraph.Homology.natSuccAddEqAddSucc

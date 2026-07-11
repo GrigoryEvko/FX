@@ -108,6 +108,52 @@ theorem freshGeneratorExpansionBumpsRuleCount
       = base.computeBasisCount 2 + 1 :=
   listAppendSingletonLength ([base.oneGeneratorCount], freshRuleWord) base.rules
 
+/-! ## B2 — the structurally-`t`-free entry point (the honest guaranteed-`t`-free carrier)
+
+The shipped `List Nat` block constructor cannot structurally exclude the fresh index
+`base.oneGeneratorCount` from `freshRuleWord`, so `w`'s `t`-freeness is enforced NOWHERE by its type.
+The structurally-`t`-free entry point ranges the word over `Fin base.oneGeneratorCount` and embeds it by
+`Fin.val`, so every letter is `< base.oneGeneratorCount` and the fresh index can NEVER appear — the zero
+fresh-generator count becomes a theorem BY CONSTRUCTION (`embeddedBaseWordFreshCountIsZero`).  The
+`w = [t]` attack (`t := base.oneGeneratorCount`) is unrepresentable through this entry point: `[t]` is
+not the image of any `List (Fin base.oneGeneratorCount)`, because no `Fin base.oneGeneratorCount` letter
+has value `base.oneGeneratorCount` (that would need `base.oneGeneratorCount < base.oneGeneratorCount`). -/
+
+/-- Embed a base word over `Fin bound` into `List Nat` by `Fin.val`; every letter is `< bound`, so the
+fresh index `bound` can never appear in the image. -/
+def embedBaseWord (bound : Nat) (word : List (Fin bound)) : List Nat := word.map Fin.val
+
+/-- ★ **The structural `t`-freeness bridge.**  The embedded base word has zero fresh-generator count —
+by construction, since every letter of a `List (Fin bound)` is `< bound`, the fresh index `bound` occurs
+zero times.  Structural on the `List`; `Fin` appears only through its `.val` / `.isLt` projections (no
+`Fin.cases`, so the indexed-match axiom trap is avoided).  This is the honest hypothesis
+`countGeneratorOccurrences base.oneGeneratorCount w = 0` — the r3 phantom — turned into a guarantee. -/
+theorem embeddedBaseWordFreshCountIsZero (bound : Nat) :
+    ∀ (word : List (Fin bound)),
+      countGeneratorOccurrences bound (embedBaseWord bound word) = 0
+  | [] => rfl
+  | letter :: rest =>
+      (congrArg ((if Fin.val letter = bound then 1 else 0) + ·)
+        (embeddedBaseWordFreshCountIsZero bound rest)).trans (if_neg (Nat.ne_of_lt letter.isLt))
+
+/-- ★ **The structurally-`t`-free fresh-generator expansion.**  The word ranges over
+`Fin base.oneGeneratorCount`, so its `Fin.val` embedding is provably free of the fresh index — the
+honest, guaranteed-`t`-free carrier the shipped instances instantiate.  Delegates to the `List Nat`
+block constructor `expandWalkerPresentationWithFreshGenerator`. -/
+def expandWalkerPresentationWithBaseWord (base : WalkerPresentation)
+    (baseWord : List (Fin base.oneGeneratorCount)) : WalkerPresentation :=
+  expandWalkerPresentationWithFreshGenerator base (embedBaseWord base.oneGeneratorCount baseWord)
+
+/-- ★★ **The entry-point fresh-freeness fact.**  Every word built through
+`expandWalkerPresentationWithBaseWord` satisfies the `t`-freeness hypothesis
+`countGeneratorOccurrences base.oneGeneratorCount w = 0` — the guard the r3 docstring named as a phantom
+is here a structural theorem the pivot-unit lemma (`freshColumnPivotIsUnitOfFreshFree`) consumes. -/
+theorem expandWalkerPresentationWithBaseWordIsFreshFree (base : WalkerPresentation)
+    (baseWord : List (Fin base.oneGeneratorCount)) :
+    countGeneratorOccurrences base.oneGeneratorCount
+        (embedBaseWord base.oneGeneratorCount baseWord) = 0 :=
+  embeddedBaseWordFreshCountIsZero base.oneGeneratorCount baseWord
+
 /-! ## B1 — the hand probe: the r2 concrete `d2` extended by a concrete `w`, certificate BY HAND
 
 The truth probe fired BEFORE any generic proof: the r2 Tietze `d2` (`2 × 4`) extended by the fresh
