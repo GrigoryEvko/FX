@@ -9,6 +9,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntFractionFree
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithNormalForm
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithCascadeTermination
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithWindowedDivisibility
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithWindowedChainReduction
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
@@ -1162,6 +1163,7 @@ import FX1PolyAudit.Polygraph.Homology.PeriodicTowerChainComplex
 import FX1PolyAudit.Polygraph.Homology.FreeGroupReducedWord
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleCyclicThree
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleIdentityInvariant
+import FX1PolyAudit.Polygraph.Homology.CrossedModuleRelationModule
 import FX1PolyAudit.Polygraph.Homology.CyclicThreeAnickChains
 import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickChains
 import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
