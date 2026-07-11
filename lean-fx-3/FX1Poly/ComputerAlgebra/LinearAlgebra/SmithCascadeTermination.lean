@@ -4416,4 +4416,57 @@ theorem smithReduceTotalPivotMinIsRefuted : ¬ SmithReduceTotalPivotMinStatement
     ⟨rfl, rfl, rfl, rfl, True.intro⟩ 0 1 (by decide) (by decide)
   exact absurd (id (α := (4 : Nat) ≤ 1) pivotMinAt) (by decide)
 
+/-! ## The strict-`<` / row-major tie-no-drag atom (H2-SMITH r14, B2)
+
+`smithScanRowMinAbs` updates its running best on STRICT `<` only (`entry.natAbs < bestMag`), scanning
+row-major with the pivot cross before deeper rows.  So on an equal magnitude (a tie) — or a larger one —
+the earlier-scanned best is KEPT, not displaced.  This is the load-bearing tie-resolution the recon flags
+(the self-attack): in the repair cross, an untouched later entry equal to the pivot's fold pair cannot
+drag the best away, so a tie never strands residue.  Two atoms — the single-step position-keep and its
+segment fold — witness it, refutation-immune (pure `if`/`match` reduction), STRUCTURAL. -/
+
+/-- **Single-step tie keeps the best POSITION** — the row-scan update leaves its `some` best unchanged
+(the position, stronger than the magnitude bound `smithScanRowUpdateSomeBound` gives) whenever the scanned
+entry is not strictly smaller: the strict-`<` guard means a tie never replaces the earlier best. -/
+theorem smithScanRowUpdateTieKeepsPosition (matrix : IntMatrix)
+    (rowIndex colStart bestRow bestCol : Nat)
+    (notStrictlySmaller : ¬ ((matrix.entryAt rowIndex colStart).natAbs
+        < (matrix.entryAt bestRow bestCol).natAbs)) :
+    (if (matrix.entryAt rowIndex colStart).natAbs == 0 then some (bestRow, bestCol)
+     else if (matrix.entryAt rowIndex colStart).natAbs
+            < (matrix.entryAt bestRow bestCol).natAbs then some (rowIndex, colStart)
+     else some (bestRow, bestCol)) = some (bestRow, bestCol) :=
+  match (matrix.entryAt rowIndex colStart).natAbs == 0 with
+  | true => rfl
+  | false => (if_neg (fun isTrueEq => Bool.noConfusion isTrueEq)).trans (if_neg notStrictlySmaller)
+
+/-- **Segment tie keeps the best** — scanning a whole column window from a `some` best returns that SAME
+best position when no scanned entry is strictly smaller than it: ties and larger magnitudes never drag
+the best away (a strictly-smaller entry is REQUIRED to move it).  Structural on the column count,
+threading the single-step tie-keep with the shifted no-smaller hypothesis. -/
+theorem smithScanRowMinAbsTieKeepsBest (matrix : IntMatrix) (rowIndex bestRow bestCol : Nat) :
+    ∀ (colCount colStart : Nat),
+      (∀ offset, offset < colCount →
+        ¬ ((matrix.entryAt rowIndex (colStart + offset)).natAbs
+            < (matrix.entryAt bestRow bestCol).natAbs)) →
+      smithScanRowMinAbs matrix rowIndex colCount colStart (some (bestRow, bestCol))
+        = some (bestRow, bestCol)
+  | 0, _, _ => rfl
+  | colCount + 1, colStart, noSmaller => by
+      have hereNotSmaller : ¬ ((matrix.entryAt rowIndex colStart).natAbs
+          < (matrix.entryAt bestRow bestCol).natAbs) := by
+        have here := noSmaller 0 (Nat.zero_lt_succ colCount)
+        rwa [Nat.add_zero] at here
+      show smithScanRowMinAbs matrix rowIndex colCount (colStart + 1)
+          (if (matrix.entryAt rowIndex colStart).natAbs == 0 then some (bestRow, bestCol)
+           else if (matrix.entryAt rowIndex colStart).natAbs
+                  < (matrix.entryAt bestRow bestCol).natAbs then some (rowIndex, colStart)
+           else some (bestRow, bestCol)) = some (bestRow, bestCol)
+      rw [smithScanRowUpdateTieKeepsPosition matrix rowIndex colStart bestRow bestCol hereNotSmaller]
+      exact smithScanRowMinAbsTieKeepsBest matrix rowIndex bestRow bestCol colCount (colStart + 1)
+        (fun offset offsetLt => by
+          have later := noSmaller (offset + 1) (Nat.succ_lt_succ offsetLt)
+          rw [Nat.add_succ, ← Nat.succ_add] at later
+          exact later)
+
 end FX1Poly.ComputerAlgebra

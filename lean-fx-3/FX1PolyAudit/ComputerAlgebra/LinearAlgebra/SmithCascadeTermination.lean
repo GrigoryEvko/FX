@@ -219,4 +219,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.SmithReduceTotalPivotMinStatement
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalPivotMinIsRefuted
 
+/- H2-SMITH r14 — the strict-`<` / row-major tie-no-drag atom (B2): the single-step position-keep (a tie
+   never displaces the earlier-scanned best, from the strict-`<` update guard) and its segment fold (the
+   whole scan keeps its `some` best when no scanned entry is strictly smaller).  The load-bearing
+   tie-resolution witnessing that equal magnitudes never strand repair residue. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithScanRowUpdateTieKeepsPosition
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithScanRowMinAbsTieKeepsBest
+
 end FX1PolyAudit
