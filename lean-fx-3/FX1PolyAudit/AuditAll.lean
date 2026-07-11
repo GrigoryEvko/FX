@@ -847,6 +847,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAllCapAritySwapTra
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcPairSeatedDescent
 -- FC-3 r22 B3 — the located-cap read-off seat-bound substrate (bubble emission gated on the word descent master)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapWindowSeedReadoff
+-- FC-3 r23 — the WORD-founded prefix descent master at the adjoint triple (the phantom-locked arc master re-founded)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDescent
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
