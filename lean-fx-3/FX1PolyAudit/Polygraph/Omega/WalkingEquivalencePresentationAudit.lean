@@ -145,4 +145,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_walkingAdjointEquivalenceTrianglesShipped
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_equivalenceSelfOpDualFreeRider
 
+-- B3 — the promotion: the abstract engine, the right defect inverse, the mechanized invertibility
+#assert_no_axioms FX1Poly.Polygraph.Omega.convEndoInvertibleIdempotent_isIdentity
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightDefectInverse
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightDefect_leftInverse
+
+-- B3 — the conditional promotion (right triangle from idempotency) and the non-vacuity witnesses
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightTriangle_ofIdempotency
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightDefectInverse_distinct
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightDefectRoundTrip_notLiterallyId
+
+-- B3 — the honesty markers
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_promotionRightDefectInvertibilityMechanized
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_promotionReducedToIdempotency
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_promotionIdempotencyFromLeftTriangleWalled
+
 end FX1PolyAudit

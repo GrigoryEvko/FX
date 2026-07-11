@@ -704,4 +704,258 @@ adjunction, self-dual but yielding nothing).  The duality is UP TO RELABELING (`
 while swapping boundaries), not literal identity. -/
 def fxEquiv_equivalenceSelfOpDualFreeRider : Bool := true
 
+/-! # =========================================================================================
+    # B3 — THE PROMOTION: the corrected counit + the derived triangle (hand-worked, mechanized)
+    # =========================================================================================
+
+★ **The promotion of the bare equivalence to an adjoint equivalence, at the recon-adjudicated scope.**  The
+classical promotion (Mac Lane CWM IV.4; Johnson–Yau §6.2) keeps the unit `eta` and derives the triangle
+identities once `eta`, `eps` are invertible.  The recon's clean load-bearing route: over the BARE cancellation
+congruence `walkingEquivBaseRel` (strict laws + the four iso-cancellations, NO triangles), the RIGHT triangle
+`ψ_g := (g <| eta) . (eps |> g) ~ id g` is FORCED once the left triangle holds — because `ψ_g` is an INVERTIBLE
+2-cell (its inverse built from `eta^{-1}`, `eps^{-1}` and the whiskered cancellations), and an invertible
+idempotent is the identity.
+
+## What is MECHANIZED here (the honest, machine-checked core)
+
+  1. **`convEndoInvertibleIdempotent_isIdentity`** — the abstract algebraic engine: over any
+     `SaturatedConvOverWithId`, a 2-cell `loop` with a left inverse `loopInv` (`loopInv . loop ~ id`) that is
+     idempotent (`loop . loop ~ loop`) is convertible to the identity `id (boundarySource loop)`.  A four-`trans`
+     proof, generic in the base relation.
+
+  2. **`walkingEquivRightDefect_leftInverse`** — the RIGHT DEFECT `ψ_g` IS INVERTIBLE over the bare cancellation
+     congruence: `ψ_g^{-1} . ψ_g ~ id (g . 1_A)`, mechanized as a ~15-step chain of the shipped whiskered
+     cancellations (`whiskerLeftFunctorial` / `whiskerRightFunctorial` symm, `whiskerLeft/RightCongr` on the
+     E1b / E2b 3-cells, the whisker-unit laws, associativity and unit normalizations, `idCongr` for the
+     dim-bump).  This is the recon's "row inventory (a) already ships", exercised.
+
+  3. **`walkingEquivRightTriangle_ofIdempotency`** — the CONDITIONAL PROMOTION: FROM the idempotency
+     `ψ_g . ψ_g ~ ψ_g` (the single fact the left triangle supplies), the right triangle `ψ_g ~ id g` FOLLOWS —
+     via the abstract engine + the mechanized invertibility.  So the promotion is REDUCED to one idempotency
+     fact.
+
+## The honest WALL (the interchange-bracketed core — recon §2 steps 3-4)
+
+The one residual is `ψ_g . ψ_g ~ ψ_g` FROM the left triangle `(eta |> f) . (f <| eps) ~ id f`.  This is the
+recon's steps 3-4: whisker the left-triangle hypothesis by `g`, insert `eta^{-1}/eta` and `eps/eps^{-1}` pairs,
+and SLIDE them past each other with two `StrictAxiomRel.interchange` (Godement) firings so the inserted inverse
+pairs become vertically adjacent and annihilate.  The exact interchange bracketing is the genuine
+hand-computation the recon flagged; it is NAMED here as the blocking node
+(`fxEquiv_promotionIdempotencyFromLeftTriangleWalled`), NOT axiomatized and NOT fabricated.  Everything up to
+it is machine-checked.  (The LEFT defect `φ_f` is symmetric under the op-duality of B2.) -/
+
+/-! ## The abstract algebraic engine — an invertible idempotent is the identity -/
+
+/-- ★ **AN INVERTIBLE IDEMPOTENT IS THE IDENTITY (abstract).**  Over any `SaturatedConvOverWithId baseRel`, a
+`(dim+1)`-cell `loop` with a left inverse `loopInv` (`loopInv . loop ~ id (boundarySource loop)`) that is
+idempotent (`loop . loop ~ loop`) is convertible to `id (boundarySource loop)`.  The unit and associativity
+inputs are taken as hypotheses (supplied by the strict rows at the call site), so the lemma is generic.  Four
+`trans` steps: `loop ~ id . loop ~ (loopInv . loop) . loop ~ loopInv . (loop . loop) ~ loopInv . loop ~ id`. -/
+theorem convEndoInvertibleIdempotent_isIdentity {computad : OmegaComputad}
+    {baseRel : CellRelOver computad} {dim : Nat}
+    {loop loopInv : CellExpr computad (dim + 1)}
+    (hLeftUnit : SaturatedConvOverWithId computad baseRel
+      (CellExpr.vcomp (CellExpr.id (boundarySource loop)) loop) loop)
+    (hAssoc : SaturatedConvOverWithId computad baseRel
+      (CellExpr.vcomp (CellExpr.vcomp loopInv loop) loop)
+      (CellExpr.vcomp loopInv (CellExpr.vcomp loop loop)))
+    (hLeftInv : SaturatedConvOverWithId computad baseRel
+      (CellExpr.vcomp loopInv loop) (CellExpr.id (boundarySource loop)))
+    (hIdem : SaturatedConvOverWithId computad baseRel (CellExpr.vcomp loop loop) loop) :
+    SaturatedConvOverWithId computad baseRel loop (CellExpr.id (boundarySource loop)) :=
+  SaturatedConvOverWithId.trans (SaturatedConvOverWithId.symm hLeftUnit)
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.vcompCongrLeft loop (SaturatedConvOverWithId.symm hLeftInv))
+      (SaturatedConvOverWithId.trans hAssoc
+        (SaturatedConvOverWithId.trans
+          (SaturatedConvOverWithId.vcompCongrRight loopInv hIdem)
+          hLeftInv)))
+
+/-! ## The right defect and its inverse (built from the inverse generators) -/
+
+/-- The **inverse of the right defect** `ψ_g^{-1} := (eps^{-1} |> g) . (g <| eta^{-1})` — reverse the two
+factors of `ψ_g` and invert each, using the inverse generators. -/
+def walkingEquivRightDefectInverse : CellExpr walkingEquivComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight walkingEquivEpsInvGen walkingEquivGGen)
+    (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+
+/-! ## The right defect is invertible over the bare cancellation congruence (mechanized) -/
+
+/-- ★ **THE RIGHT DEFECT IS INVERTIBLE.**  `ψ_g^{-1} . ψ_g ~ id (g . 1_A)` over `walkingEquivBaseRel` (the bare
+cancellations + strict laws, NO triangles) — the recon's whiskered-cancellation chain, machine-checked: the two
+inner factors `(g <| eta^{-1}) . (g <| eta)` collapse to `id (g . u_A)` by `whiskerLeftFunctorial` + the E1b
+cancellation + `whiskerLeftUnit`, then the outer factors `(eps^{-1} |> g) . (eps |> g)` collapse to
+`id (1_B . g)` by `whiskerRightFunctorial` + the E2b cancellation + `whiskerRightUnit`, with associativity and
+unit normalizations bridging the boundaries.  So `ψ_g` is a genuine iso — the promotion's structural fact. -/
+theorem walkingEquivRightDefect_leftInverse :
+    SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+      (CellExpr.vcomp walkingEquivRightDefectInverse walkingEquivRightTriangleLeg)
+      (CellExpr.id (boundarySource walkingEquivRightTriangleLeg)) := by
+  -- Abbreviations: A = eps^{-1} |> g, B = g <| eta^{-1}, C = g <| eta, D = eps |> g.
+  -- ψ_g^{-1} = A . B, ψ_g = C . D, goal (A.B).(C.D) ~ id (g . 1_A).
+  -- Reassociate ((A.B).(C.D)) to A . (B . (C.D)).
+  have hAssocStart :
+      SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+        (CellExpr.vcomp walkingEquivRightDefectInverse walkingEquivRightTriangleLeg)
+        (CellExpr.vcomp (CellExpr.whiskerRight walkingEquivEpsInvGen walkingEquivGGen)
+          (CellExpr.vcomp (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+            walkingEquivRightTriangleLeg)) :=
+    SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompAssoc
+      (CellExpr.whiskerRight walkingEquivEpsInvGen walkingEquivGGen)
+      (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+      walkingEquivRightTriangleLeg))
+  -- Reassociate the inner B . (C . D) to (B . C) . D.
+  have hReassocMid :
+      SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+        (CellExpr.vcomp (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+          walkingEquivRightTriangleLeg)
+        (CellExpr.vcomp
+          (CellExpr.vcomp (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+            (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaGen))
+          (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen)) :=
+    SaturatedConvOverWithId.symm (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompAssoc
+      (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+      (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaGen)
+      (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen))))
+  -- The inner unit pair B . C collapses to id (g . u_A).
+  have hBC :
+      SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+        (CellExpr.vcomp (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+          (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaGen))
+        (CellExpr.id (CellExpr.vcomp walkingEquivGGen walkingEquivUnitA)) :=
+    SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.symm (SaturatedConvOverWithId.ofRelation
+        (Or.inl (StrictAxiomRel.whiskerLeftFunctorial walkingEquivGGen
+          walkingEquivEtaInvGen walkingEquivEtaGen))))
+      (SaturatedConvOverWithId.trans
+        (SaturatedConvOverWithId.whiskerLeftCongr walkingEquivGGen
+          walkingEquivUnitCancelBackwardThreeCell)
+        (SaturatedConvOverWithId.ofRelation
+          (Or.inl (StrictAxiomRel.whiskerLeftUnit walkingEquivGGen walkingEquivUnitA))))
+  -- (B . C) . D collapses to D via the assoc-normalized left unit.
+  have hBCD :
+      SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+        (CellExpr.vcomp
+          (CellExpr.vcomp (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+            (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaGen))
+          (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen))
+        (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen) :=
+    SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.vcompCongrLeft (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen) hBC)
+      (SaturatedConvOverWithId.trans
+        (SaturatedConvOverWithId.vcompCongrLeft
+          (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen)
+          (SaturatedConvOverWithId.idCongr (SaturatedConvOverWithId.symm
+            (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompAssoc
+              walkingEquivGGen walkingEquivFGen walkingEquivGGen))))))
+        (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft
+          (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen)))))
+  -- Assemble the middle: A . (B . (C.D)) ~ A . D.
+  have hMid :
+      SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+        (CellExpr.vcomp (CellExpr.whiskerRight walkingEquivEpsInvGen walkingEquivGGen)
+          (CellExpr.vcomp (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaInvGen)
+            walkingEquivRightTriangleLeg))
+        (CellExpr.vcomp (CellExpr.whiskerRight walkingEquivEpsInvGen walkingEquivGGen)
+          (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen)) :=
+    SaturatedConvOverWithId.vcompCongrRight
+      (CellExpr.whiskerRight walkingEquivEpsInvGen walkingEquivGGen)
+      (SaturatedConvOverWithId.trans hReassocMid hBCD)
+  -- The outer counit pair A . D collapses to id (1_B . g).
+  have hAD :
+      SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+        (CellExpr.vcomp (CellExpr.whiskerRight walkingEquivEpsInvGen walkingEquivGGen)
+          (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen))
+        (CellExpr.id (CellExpr.vcomp walkingEquivIdB walkingEquivGGen)) :=
+    SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.symm (SaturatedConvOverWithId.ofRelation
+        (Or.inl (StrictAxiomRel.whiskerRightFunctorial
+          walkingEquivEpsInvGen walkingEquivEpsGen walkingEquivGGen))))
+      (SaturatedConvOverWithId.trans
+        (SaturatedConvOverWithId.whiskerRightCongr walkingEquivGGen
+          walkingEquivCounitCancelBackwardThreeCell)
+        (SaturatedConvOverWithId.ofRelation
+          (Or.inl (StrictAxiomRel.whiskerRightUnit walkingEquivIdB walkingEquivGGen))))
+  -- Normalize id (1_B . g) ~ id (g . 1_A) modulo the units.
+  have hFinalNorm :
+      SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+        (CellExpr.id (CellExpr.vcomp walkingEquivIdB walkingEquivGGen))
+        (CellExpr.id (CellExpr.vcomp walkingEquivGGen walkingEquivIdA)) :=
+    SaturatedConvOverWithId.idCongr
+      (SaturatedConvOverWithId.trans
+        (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft walkingEquivGGen)))
+        (SaturatedConvOverWithId.symm
+          (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight walkingEquivGGen)))))
+  exact SaturatedConvOverWithId.trans hAssocStart
+    (SaturatedConvOverWithId.trans hMid
+      (SaturatedConvOverWithId.trans hAD hFinalNorm))
+
+/-! ## The conditional promotion — the right triangle from the single idempotency fact -/
+
+/-- ★★ **THE CONDITIONAL PROMOTION.**  FROM the idempotency `ψ_g . ψ_g ~ ψ_g` (the single fact the left
+triangle supplies), the RIGHT triangle `ψ_g ~ id g` FOLLOWS — via the abstract engine
+`convEndoInvertibleIdempotent_isIdentity` fed the mechanized invertibility `walkingEquivRightDefect_leftInverse`
+and the strict unit / associativity rows, then normalized `id (g . 1_A) ~ id g` by the right unit.  The whole
+promotion is thus REDUCED to the idempotency fact (the interchange-bracketed residual, walled below). -/
+theorem walkingEquivRightTriangle_ofIdempotency
+    (hIdem : SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+      (CellExpr.vcomp walkingEquivRightTriangleLeg walkingEquivRightTriangleLeg)
+      walkingEquivRightTriangleLeg) :
+    SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+      walkingEquivRightTriangleLeg walkingEquivIdG :=
+  SaturatedConvOverWithId.trans
+    (convEndoInvertibleIdempotent_isIdentity
+      (SaturatedConvOverWithId.ofRelation
+        (Or.inl (StrictAxiomRel.vcompUnitLeft walkingEquivRightTriangleLeg)))
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompAssoc
+        walkingEquivRightDefectInverse walkingEquivRightTriangleLeg walkingEquivRightTriangleLeg)))
+      walkingEquivRightDefect_leftInverse
+      hIdem)
+    (SaturatedConvOverWithId.idCongr
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight walkingEquivGGen))))
+
+/-! ## B3 non-vacuity — the defect inverse is a genuine distinct 2-cell -/
+
+/-- The right defect and its inverse are structurally DISTINCT 2-cells (the inverse uses the inverse
+generators). -/
+theorem walkingEquivRightDefectInverse_distinct :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq
+      walkingEquivRightTriangleLeg walkingEquivRightDefectInverse = false := rfl
+
+/-- The right-defect round-trip `ψ_g^{-1} . ψ_g` is structurally NOT the identity `id (g . 1_A)` on the nose
+(it collapses to it only via the cancellations — the invertibility theorem is non-vacuous). -/
+theorem walkingEquivRightDefectRoundTrip_notLiterallyId :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq
+      (CellExpr.vcomp walkingEquivRightDefectInverse walkingEquivRightTriangleLeg)
+      (CellExpr.id (boundarySource walkingEquivRightTriangleLeg)) = false := rfl
+
+/-! ## B3 non-vacuity probe -/
+
+#eval cellBeq walkingEquivModeBeq walkingEquivGenBeq
+  (CellExpr.vcomp walkingEquivRightDefectInverse walkingEquivRightTriangleLeg)
+  (CellExpr.id (boundarySource walkingEquivRightTriangleLeg))
+
+/-! ## B3 honesty markers -/
+
+/-- ★ **THE RIGHT DEFECT INVERTIBILITY IS MECHANIZED (B3).**  `= true` records that the right-triangle defect
+`ψ_g = (g <| eta) . (eps |> g)` is a genuine INVERTIBLE 2-cell over the bare cancellation congruence
+(`walkingEquivRightDefect_leftInverse` — a machine-checked ~15-step whiskered-cancellation chain), so the
+promotion's structural fact (the defect is an iso) is proved zero-axiom. -/
+def fxEquiv_promotionRightDefectInvertibilityMechanized : Bool := true
+
+/-- ★ **THE PROMOTION IS REDUCED TO ONE IDEMPOTENCY FACT (B3).**  `= true` records the conditional promotion
+`walkingEquivRightTriangle_ofIdempotency`: FROM `ψ_g . ψ_g ~ ψ_g`, the right triangle `ψ_g ~ id g` FOLLOWS
+(abstract invertible-idempotent engine + mechanized invertibility).  The whole "one-triangle-forces-the-other"
+promotion is thus reduced to a single idempotency fact. -/
+def fxEquiv_promotionReducedToIdempotency : Bool := true
+
+/-- ★ **WALL — the idempotency-from-left-triangle interchange core (B3, honest).**  `= true` records the single
+residual of the promotion: the idempotency `ψ_g . ψ_g ~ ψ_g` FROM the left triangle
+`(eta |> f) . (f <| eps) ~ id f`.  Blocking node: the recon §2 steps 3-4 — whisker the left-triangle
+hypothesis by `g`, insert `eta^{-1}/eta` and `eps/eps^{-1}` pairs, and slide them past each other with two
+`StrictAxiomRel.interchange` (Godement) firings so the inserted inverse pairs annihilate.  The exact
+interchange bracketing is the genuine hand-computation; it is NAMED, NOT axiomatized, NOT fabricated.
+Everything else in the promotion is machine-checked. -/
+def fxEquiv_promotionIdempotencyFromLeftTriangleWalled : Bool := true
+
 end FX1Poly.Polygraph.Omega
