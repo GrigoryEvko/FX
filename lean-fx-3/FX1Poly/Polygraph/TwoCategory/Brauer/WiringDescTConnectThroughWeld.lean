@@ -857,4 +857,85 @@ This marker supersedes the FROZEN r27 snapshot `fxBrauer_hasThroughClassGeneral`
 `false` until the all-class dispatch lands, and `#2013` closes only after T-CLOSE(b).  `= true`. -/
 def fxBrauer_hasThroughArcGeneral : Bool := true
 
+/-! ## B4 — the all-class routing: the three per-arc generals FED through the r22 routing collapse (the dispatch spine)
+
+With CAP (`capArcMatching_general`, r24), CUP (`cupArcMatching_general`, r26) and THROUGH (`throughArcMatching_general`,
+r28) all general, the `partnerShares` datum for every arc class is now produced by a general theorem — the r22 routing
+collapse `partnerIndexOf_reads_arc_general` consumes each and reads the arc's partner off the fold.  These firings
+demonstrate all three classes routing UNIFORMLY on the width-12 monster (a cap, a cup, and a through arc), fed by the
+GENERAL matching lemma (not `decide`), witnessing that the all-class dispatch is pure plumbing over the three shipped
+generals.  The full unconditional `partnerShares_general` (the 6-way `partitionThree_of_involution` /
+`…_top` split with per-class rank recovery) is the honest r29 residual — see `fxBrauer_hasTConnectThroughWall`. -/
+
+/-- ★★ **CAP arc routed via the GENERAL (monster cap `0↔1`).**  `capArcMatching_general` feeds the routing collapse:
+boundary index `capArcFeetIndices[0] = 0`'s partner reads `partner[0] = 1`. -/
+theorem partnerIndexOf_readsCapArc_monster_viaGeneral :
+    partnerIndexOf
+        (processBrauer (brauerSeed 6)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))).links
+        (matchingBoundaryNodes 6
+          (processBrauer (brauerSeed 6)
+            (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))))
+        (6 + (processBrauer (brauerSeed 6)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))).openWires.length)
+        (natListGetAt (capArcFeetIndices 6 monsterDiagram.partner) 0)
+      = natListGetAt monsterDiagram.partner (natListGetAt (capArcFeetIndices 6 monsterDiagram.partner) 0) :=
+  partnerIndexOf_reads_arc_general monsterDiagram (by decide) monster_isBoundaryInvolution
+    (natListGetAt (capArcFeetIndices 6 monsterDiagram.partner) 0)
+    (natListGetAt monsterDiagram.partner (natListGetAt (capArcFeetIndices 6 monsterDiagram.partner) 0))
+    (by decide) (by decide) (by decide)
+    (capArcMatching_general monsterDiagram (by decide) monster_isBoundaryInvolution 0 (by decide))
+
+/-- ★★ **CUP arc routed via the GENERAL (monster cup `top2↔top3`, indices `8↔9`).**  `cupArcMatching_general` feeds the
+routing collapse: boundary index `6 + cupArcTops[0] = 8`'s partner reads `9`. -/
+theorem partnerIndexOf_readsCupArc_monster_viaGeneral :
+    partnerIndexOf
+        (processBrauer (brauerSeed 6)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))).links
+        (matchingBoundaryNodes 6
+          (processBrauer (brauerSeed 6)
+            (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))))
+        (6 + (processBrauer (brauerSeed 6)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))).openWires.length)
+        (6 + natListGetAt (cupArcTops 6 6 monsterDiagram.partner) (doublePos 0))
+      = 6 + natListGetAt (cupArcTops 6 6 monsterDiagram.partner) (doublePos 0 + 1) :=
+  partnerIndexOf_reads_arc_general monsterDiagram (by decide) monster_isBoundaryInvolution
+    (6 + natListGetAt (cupArcTops 6 6 monsterDiagram.partner) (doublePos 0))
+    (6 + natListGetAt (cupArcTops 6 6 monsterDiagram.partner) (doublePos 0 + 1))
+    (by decide) (by decide) (by decide)
+    (cupArcMatching_general monsterDiagram (by decide) monster_isBoundaryInvolution 0 (by decide))
+
+/-- ★★★ **THROUGH arc routed via the GENERAL (monster through `4↔top0`, indices `4↔6`) — the r28 headline consumer.**
+`throughArcMatching_general` feeds the routing collapse: boundary index `partner[6 + throughStrandTops[0]] = 4`'s
+partner reads `6 + throughStrandTops[0] = 6`.  This is the exact routing the through class was WALLED from before r28
+(`partnerIndexOf_readsArc_adversarialB_through` used a `decide`d `partnerShares`); now the GENERAL through matching
+drops in, so the through class routes uniformly with CAP and CUP. -/
+theorem partnerIndexOf_readsThroughArc_monster_viaGeneral :
+    partnerIndexOf
+        (processBrauer (brauerSeed 6)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))).links
+        (matchingBoundaryNodes 6
+          (processBrauer (brauerSeed 6)
+            (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))))
+        (6 + (processBrauer (brauerSeed 6)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))).openWires.length)
+        (natListGetAt monsterDiagram.partner (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 0))
+      = 6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 0 :=
+  partnerIndexOf_reads_arc_general monsterDiagram (by decide) monster_isBoundaryInvolution
+    (natListGetAt monsterDiagram.partner (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 0))
+    (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 0)
+    (by decide) (by decide) (by decide)
+    (throughArcMatching_general monsterDiagram (by decide) monster_isBoundaryInvolution 0 (by decide))
+
+/-- ★★ **Honesty marker — the ALL-CLASS routing is DEMONSTRATED over the three shipped generals (r28 B4).**  Each of
+the three per-arc classes — CAP (`partnerIndexOf_readsCapArc_monster_viaGeneral`), CUP
+(`partnerIndexOf_readsCupArc_monster_viaGeneral`), THROUGH (`partnerIndexOf_readsThroughArc_monster_viaGeneral`) — now
+feeds the r22 routing collapse `partnerIndexOf_reads_arc_general` via its GENERAL matching lemma (not `decide`), reading
+the arc's partner off the width-12 monster fold.  With all three `…ArcMatching_general` shipped, the all-class dispatch
+is pure plumbing over the three generals.  A NEW ingredient marker; it flips NO master — the full unconditional
+`partnerShares_general` (the 6-way `partitionThree_of_involution` / `…_top` classification split with per-class
+membership→rank recovery, then the unconditional `partnerIndexOf_reads_arc` read-off) is the honest r29 residual, so
+`fxBrauer_hasTConnectThroughWall` stays `false` and `#2013` closes only after that plus T-CLOSE(b).  `= true`. -/
+def fxBrauer_hasAllClassRoutingFirings : Bool := true
+
 end FX1Poly.Polygraph

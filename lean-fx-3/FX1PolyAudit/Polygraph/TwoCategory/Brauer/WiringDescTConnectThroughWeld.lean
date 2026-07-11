@@ -31,5 +31,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.throughArcMatching_firesMonster_one
 #assert_no_axioms FX1Poly.Polygraph.throughArcMatching_fires3Through_two
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasThroughArcGeneral
+#assert_no_axioms FX1Poly.Polygraph.partnerIndexOf_readsCapArc_monster_viaGeneral
+#assert_no_axioms FX1Poly.Polygraph.partnerIndexOf_readsCupArc_monster_viaGeneral
+#assert_no_axioms FX1Poly.Polygraph.partnerIndexOf_readsThroughArc_monster_viaGeneral
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasAllClassRoutingFirings
 
 end FX1PolyAudit
