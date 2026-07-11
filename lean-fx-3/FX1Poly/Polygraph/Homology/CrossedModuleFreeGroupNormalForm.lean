@@ -246,4 +246,215 @@ theorem selfAttackThreeReduces :
     FreeCrossedModuleEquiv [genE2, invGen genE1, genE1, invGen genE2] ([] : PreCrossedElement) :=
   freeCrossedSandwichCancel genE2 genE1
 
+/-! ## B2 — the residue-keyed normal-form kit: the sort primitive + the `(length, inversions)` measure
+
+The r4 normal-form kit is the SORT half of the deferred structure theorem (the CANCEL half is the two
+`FreeCrossedModuleEquiv` cancellations above).  The normal form groups generators by their residue class
+`0 ≤ 1 ≤ 2` (the `realizeAugmentationZeroIdentity a b c = repeatGen a genE0 ++ repeatGen b genE1 ++
+repeatGen c genE2` shape of r3).  `sortByResidue` is an insertion sort keyed by the residue of the
+conjugator, proved to PRODUCE a residue-sorted word (`sortByResidueProducesSorted`, mirroring r1's
+`reduceWordProducesReduced`); `residueInversions` is the second lexicographic measure coordinate the r5
+structure induction will recurse on.  The key comparator `zmodThreeLe` is a full-enum 9-arm `Bool` table
+(never `Nat.decLt` via propext, never an `Int` remainder). -/
+
+/-- The residue sort key of a generator — the image of its conjugator in `G = ZZ/3`. -/
+def conjugatorResidueKey (gen : ConjugatedRelator) : ZmodThree := wordResidue gen.conjugator
+
+/-- The residue-key order `0 ≤ 1 ≤ 2` — the fully-enumerated 9-arm `Bool` table (no wildcard, no
+`Nat.decLt`, no `Int` remainder). -/
+def zmodThreeLe : ZmodThree → ZmodThree → Bool
+  | .residue0, .residue0 => true
+  | .residue0, .residue1 => true
+  | .residue0, .residue2 => true
+  | .residue1, .residue0 => false
+  | .residue1, .residue1 => true
+  | .residue1, .residue2 => true
+  | .residue2, .residue0 => false
+  | .residue2, .residue1 => false
+  | .residue2, .residue2 => true
+
+/-- The order is reflexive. -/
+theorem zmodThreeLeRefl : ∀ key : ZmodThree, zmodThreeLe key key = true
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- `residue0` is the bottom of the order: `0 ≤ k` for every `k`. -/
+theorem zmodThreeLeResidue0Bottom : ∀ key : ZmodThree, zmodThreeLe ZmodThree.residue0 key = true
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- Totality (in `false`-contrapositive form): when `a ≤ b` fails, `b ≤ a` holds.  Full enum over the
+nine key pairs (`Bool.noConfusion` kills the six `a ≤ b = true` diagonals-and-above). -/
+theorem zmodThreeLeTotalFalse : ∀ (leftKey rightKey : ZmodThree),
+    zmodThreeLe leftKey rightKey = false → zmodThreeLe rightKey leftKey = true
+  | .residue0, .residue0, notLe => Bool.noConfusion notLe
+  | .residue0, .residue1, notLe => Bool.noConfusion notLe
+  | .residue0, .residue2, notLe => Bool.noConfusion notLe
+  | .residue1, .residue0, _ => rfl
+  | .residue1, .residue1, notLe => Bool.noConfusion notLe
+  | .residue1, .residue2, notLe => Bool.noConfusion notLe
+  | .residue2, .residue0, _ => rfl
+  | .residue2, .residue1, _ => rfl
+  | .residue2, .residue2, notLe => Bool.noConfusion notLe
+
+/-- The insertion guard: when the incoming generator sorts first (`goesFirst = true`) it is prepended
+whole, otherwise the head is kept and the already-inserted tail follows.  A full-enum `Bool` match — the
+propext-clean replacement for a `Bool`-conditioned `if` (mirrors r1's `consReducedGuarded`). -/
+def insertGuarded (goesFirst : Bool) (gen head : ConjugatedRelator)
+    (rest insertedRest : PreCrossedElement) : PreCrossedElement :=
+  match goesFirst with
+  | true => gen :: head :: rest
+  | false => head :: insertedRest
+
+/-- Insert one generator into a residue-sorted word, keyed by `zmodThreeLe` on the residue keys.
+Structural on the word (never `WellFounded.fix`). -/
+def insertByResidue (gen : ConjugatedRelator) : PreCrossedElement → PreCrossedElement
+  | [] => [gen]
+  | head :: rest =>
+      insertGuarded (zmodThreeLe (conjugatorResidueKey gen) (conjugatorResidueKey head))
+        gen head rest (insertByResidue gen rest)
+
+/-- When the incoming generator sorts first, `insertByResidue` prepends it whole. -/
+theorem insertByResidueLe (gen head : ConjugatedRelator) (rest : PreCrossedElement)
+    (inOrder : zmodThreeLe (conjugatorResidueKey gen) (conjugatorResidueKey head) = true) :
+    insertByResidue gen (head :: rest) = gen :: head :: rest :=
+  congrArg (fun flag => insertGuarded flag gen head rest (insertByResidue gen rest)) inOrder
+
+/-- When the incoming generator does not sort first, `insertByResidue` keeps the head and recurses. -/
+theorem insertByResidueGt (gen head : ConjugatedRelator) (rest : PreCrossedElement)
+    (outOfOrder : zmodThreeLe (conjugatorResidueKey gen) (conjugatorResidueKey head) = false) :
+    insertByResidue gen (head :: rest) = head :: insertByResidue gen rest :=
+  congrArg (fun flag => insertGuarded flag gen head rest (insertByResidue gen rest)) outOfOrder
+
+/-- **The residue sort** — insertion sort keyed by the conjugator residue.  A right fold: sort the tail,
+then insert the head.  Structural on the input word. -/
+def sortByResidue : PreCrossedElement → PreCrossedElement
+  | [] => []
+  | gen :: rest => insertByResidue gen (sortByResidue rest)
+
+/-- The sortedness step: carry the tail verdict when the boundary pair is in order, otherwise reject.
+Full-enum `Bool` match (mirrors r1's `isReducedStep`). -/
+def sortedStep (inOrder tailVerdict : Bool) : Bool :=
+  match inOrder with
+  | true => tailVerdict
+  | false => false
+
+/-- Residue-sortedness scanning FROM a known previous key: the empty tail is sorted; a `gen :: rest`
+tail is sorted when `prevKey ≤ key(gen)` and `rest` continues sorted from `key(gen)`.  Single-cons
+structural recursion. -/
+def isSortedByResidueFrom (prevKey : ZmodThree) : PreCrossedElement → Bool
+  | [] => true
+  | gen :: rest =>
+      sortedStep (zmodThreeLe prevKey (conjugatorResidueKey gen))
+        (isSortedByResidueFrom (conjugatorResidueKey gen) rest)
+
+/-- **A word is residue-sorted** when its keys are non-decreasing — scanned from the bottom key
+`residue0` (which is `≤` everything, so it imposes no head constraint). -/
+def isSortedByResidue (word : PreCrossedElement) : Bool :=
+  isSortedByResidueFrom ZmodThree.residue0 word
+
+/-- When the boundary pair is in order, `sortedStep` passes the tail verdict through. -/
+theorem sortedStepOfInOrder (inOrder tailVerdict : Bool) (inOrderHolds : inOrder = true) :
+    sortedStep inOrder tailVerdict = tailVerdict :=
+  congrArg (fun flag => sortedStep flag tailVerdict) inOrderHolds
+
+/-- `sortedStep b t = true` forces the carried tail verdict `t = true`. -/
+theorem sortedStepTrueImpliesTail : ∀ (inOrder tailVerdict : Bool),
+    sortedStep inOrder tailVerdict = true → tailVerdict = true
+  | true, _, stepHolds => stepHolds
+  | false, _, stepHolds => Bool.noConfusion stepHolds
+
+/-- `sortedStep b t = true` forces the in-order flag `b = true`. -/
+theorem sortedStepTrueImpliesFirst : ∀ (inOrder tailVerdict : Bool),
+    sortedStep inOrder tailVerdict = true → inOrder = true
+  | true, _, _ => rfl
+  | false, _, stepHolds => Bool.noConfusion stepHolds
+
+/-- ★ **Insertion preserves residue-sortedness FROM a floor key** — if `prevKey ≤ key(gen)` and `word`
+is sorted from `prevKey`, then inserting `gen` keeps it sorted from `prevKey`.  Structural recursion on
+`word`: `[]` reduces the singleton guard; `head :: rest` splits on whether `gen` sorts before `head`,
+reducing the two guards (`insertByResidueLe`/`Gt`) and, in the out-of-order case, recursing under the
+head with totality (`zmodThreeLeTotalFalse`). -/
+theorem insertByResidueSortedFrom : ∀ (prevKey : ZmodThree) (gen : ConjugatedRelator)
+    (word : PreCrossedElement),
+    zmodThreeLe prevKey (conjugatorResidueKey gen) = true →
+    isSortedByResidueFrom prevKey word = true →
+    isSortedByResidueFrom prevKey (insertByResidue gen word) = true
+  | prevKey, gen, [], prevLe, _ =>
+      sortedStepOfInOrder (zmodThreeLe prevKey (conjugatorResidueKey gen)) true prevLe
+  | prevKey, gen, head :: rest, prevLe, sortedTail =>
+      match hGuard : zmodThreeLe (conjugatorResidueKey gen) (conjugatorResidueKey head) with
+      | true =>
+          let tailIsSorted : isSortedByResidueFrom (conjugatorResidueKey head) rest = true :=
+            sortedStepTrueImpliesTail _ _ sortedTail
+          (congrArg (isSortedByResidueFrom prevKey) (insertByResidueLe gen head rest hGuard)).trans
+            ((sortedStepOfInOrder (zmodThreeLe prevKey (conjugatorResidueKey gen))
+                (isSortedByResidueFrom (conjugatorResidueKey gen) (head :: rest)) prevLe).trans
+              ((sortedStepOfInOrder (zmodThreeLe (conjugatorResidueKey gen) (conjugatorResidueKey head))
+                  (isSortedByResidueFrom (conjugatorResidueKey head) rest) hGuard).trans
+                tailIsSorted))
+      | false =>
+          let firstTrue : zmodThreeLe prevKey (conjugatorResidueKey head) = true :=
+            sortedStepTrueImpliesFirst _ _ sortedTail
+          let tailIsSorted : isSortedByResidueFrom (conjugatorResidueKey head) rest = true :=
+            sortedStepTrueImpliesTail _ _ sortedTail
+          let headLeGen : zmodThreeLe (conjugatorResidueKey head) (conjugatorResidueKey gen) = true :=
+            zmodThreeLeTotalFalse (conjugatorResidueKey gen) (conjugatorResidueKey head) hGuard
+          let recursed :
+              isSortedByResidueFrom (conjugatorResidueKey head) (insertByResidue gen rest) = true :=
+            insertByResidueSortedFrom (conjugatorResidueKey head) gen rest headLeGen tailIsSorted
+          (congrArg (isSortedByResidueFrom prevKey) (insertByResidueGt gen head rest hGuard)).trans
+            ((sortedStepOfInOrder (zmodThreeLe prevKey (conjugatorResidueKey head))
+                (isSortedByResidueFrom (conjugatorResidueKey head) (insertByResidue gen rest))
+                firstTrue).trans
+              recursed)
+
+/-- ★★ **`sortByResidue` produces a residue-sorted word** — the normal-form soundness of the sort half,
+by structural induction folding `insertByResidueSortedFrom` from the bottom key `residue0`.  Mirrors r1's
+`reduceWordProducesReduced`. -/
+theorem sortByResidueProducesSorted : ∀ word : PreCrossedElement,
+    isSortedByResidue (sortByResidue word) = true
+  | [] => rfl
+  | gen :: rest =>
+      insertByResidueSortedFrom ZmodThree.residue0 gen (sortByResidue rest)
+        (zmodThreeLeResidue0Bottom (conjugatorResidueKey gen))
+        (sortByResidueProducesSorted rest)
+
+/-! ### B2 — the lexicographic `(length, inversions)` measure (r5's structure-induction fuel) -/
+
+/-- The first measure coordinate — the number of generators (cancellation drops it by two). -/
+def preCrossedLength (element : PreCrossedElement) : Nat := element.length
+
+/-- The out-of-order count against a pivot key — the number of later generators whose key sorts strictly
+before the pivot.  Full-enum `Bool` match on the order guard. -/
+def residueInversionsFrom (pivotKey : ZmodThree) : PreCrossedElement → Nat
+  | [] => 0
+  | gen :: rest =>
+      match zmodThreeLe pivotKey (conjugatorResidueKey gen) with
+      | true => residueInversionsFrom pivotKey rest
+      | false => residueInversionsFrom pivotKey rest + 1
+
+/-- The second measure coordinate — the total residue-inversion count (a residue swap drops it while
+preserving length).  Structural right fold. -/
+def residueInversions : PreCrossedElement → Nat
+  | [] => 0
+  | gen :: rest => residueInversionsFrom (conjugatorResidueKey gen) rest + residueInversions rest
+
+/-! ### B2 probes — evaluate the sort/measure on concrete inputs FIRST -/
+
+/-- ★ Probe (eval) — the sort groups by residue: `[genE1, genE0]` (keys `1, 0`) sorts to `[genE0, genE1]`
+(keys `0, 1`). -/
+theorem sortByResidueSwapsProbe : sortByResidue [genE1, genE0] = [genE0, genE1] := rfl
+
+/-- ★ Probe — the sorted output is residue-sorted (the produced-sorted theorem, evaluated). -/
+theorem sortByResidueSortedProbe : isSortedByResidue [genE0, genE1] = true := rfl
+
+/-- ★ Probe — a sorted word has zero residue inversions. -/
+theorem residueInversionsSortedIsZero : residueInversions [genE0, genE1] = 0 := rfl
+
+/-- ★ Probe — the unsorted `[genE1, genE0]` has exactly one residue inversion (the pair `1 > 0`). -/
+theorem residueInversionsUnsortedIsOne : residueInversions [genE1, genE0] = 1 := rfl
+
 end FX1Poly.Polygraph.Homology
