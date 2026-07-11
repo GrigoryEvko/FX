@@ -1320,6 +1320,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRiffleNaturalityAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidWellTypedAbsorberAudit
 -- WP-PROP r7 (B2) — the Coxeter word-problem advanced: DISTANT commutation (disjoint-range s_1 s_3 = s_3 s_1) is DERIVED from the Godement interchange (no new row -- the recon's decisive StrictAxiomRel finding), the complete five-move set in scope (distant/interchange + adjacent-braid/YangBaxter + involution s^2=e + commutativity + cocommutativity double-coset), and the sorted-form verdict (confluence to a common word, NOT a unique normal form); the general CoxeterWordUnique bubble-sort stays walled byte-intact, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCoxeterUniquenessAudit
+-- WP-PROP r7 (B4) — the star assembly: the corrected star RE-STATED at its honest non-refutable scope (additive AND well-typed -- the recon headline that the additive-only star is still refutable by the r6 mis-declared additive datum), the two-guard exclusion of BOTH self-attacks (misdeclaredMu by well-typedness, mu_m by additivity), and the retraction legs gated on B1 (wide collision recursion) + B2 (CoxeterWordUnique bubble-sort); the star does NOT close (all upstream star markers stay false byte-intact), NO fabricated flip, zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarAssemblyAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
