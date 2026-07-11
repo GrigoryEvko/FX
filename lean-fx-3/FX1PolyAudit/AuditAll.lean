@@ -1076,6 +1076,7 @@ import FX1PolyAudit.Polygraph.Homology.CrossedModuleCyclicThree
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleIdentityInvariant
 import FX1PolyAudit.Polygraph.Homology.CyclicThreeAnickChains
 import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickChains
+import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration

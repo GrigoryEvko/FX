@@ -1,0 +1,71 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
+
+/-! # FX1PolyAudit/Polygraph/Homology/TietzeZmodThreeInvarianceInstance — zero-axiom gate (the
+    Tietze-EXPANDED convergent presentation of `ZZ/3`, its `H1 = ZZ/3` / `H2 = 0` through the shipped
+    generic reader, the degree-<=2 agreement record with the 3-element monoid iso, and the first genuine
+    cross-presentation inhabitant of the Squier invariance interface)
+
+Per-declaration zero-axiom gate for H2-SQUIER-NOGO r2 bricks B1..B5.  Every declaration must be free of
+`propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeZmodThreePresentation
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeRewriteReduceRedexAtHead
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeNormalizeWord
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeRewriteFrontLegStep
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeRewriteBackLegStep
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeRewritingNormalFormsAreThree
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeCriticalPairOverlapWords
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeCriticalPairJoinTargets
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeCriticalPairsJoin
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzePresentationBasisCounts
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzePresentationComputesBoundaryDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzePresentationComputesBoundaryDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzePresentationComputesBoundaryDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeColumnIndexBelowEightIsAbsurd
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeZmodThreePresentationIsWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeZmodThreeChainComplex
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeGenericCarrierBoundaryComposesToZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimZeroSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimOneSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimTwoSmithCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeSmithNormalFormOfDimZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeSmithNormalFormOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeSmithNormalFormOfDimTwo
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDimZeroCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDimOneCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDimTwoCertificateProducesSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimZeroReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimOneReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeBoundaryOfDimTwoReducesToSmith
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDegreeOneSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDegreeOneHomologyInvariant
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDegreeOneHomologyIsZmodThree
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDegreeTwoSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDegreeTwoHomologyInvariant
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeDegreeTwoHomologyIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.TietzeSmithHandoffStatement
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeSmithHandoff
+#assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeDegreeTwoSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.CyclicThreeNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.TietzeZmodThreeNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeNormalFormToTietze
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeNormalFormToCyclicThree
+#assert_no_axioms FX1Poly.Polygraph.Homology.multiplyCyclicThreeNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.multiplyTietzeNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.TietzePairAgreement
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeCyclicPairAgreement
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeAndCyclicDegreeThreeChainCountsDiffer
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeAndCyclicShareDegreeOneInvariant
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeInvarianceInterface
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeInvarianceInterfaceHasDistinctPresentations
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeCarrierDegreeThreeChainStillFinite
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeSquierNoGoRoundTwoLedgerIsComplete
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeInvarianceInstanceEnrichesButNoWallMoved
+
+end FX1PolyAudit
