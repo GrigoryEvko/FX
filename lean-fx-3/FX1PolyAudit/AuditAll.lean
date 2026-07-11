@@ -839,6 +839,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointTripleModeP
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSpineChainAlong
 -- FC-3 r22 B2 P4 — the pure-cap arity transports along the atomic swap (matched-remainder pure-cap inheritance)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAllCapAritySwapTransport
+-- FC-3 r22 B2 P2 — the cap-step gap-closing exclusion at the adjoint triple (parity-keyed descent step)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcPairSeatedDescent
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
