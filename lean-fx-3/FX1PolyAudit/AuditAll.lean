@@ -213,6 +213,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeCellInvertRound
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestPayloadZip
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCellRoundTripLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutReconstructedWordGapSplice
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutAtomicFiringAdjudication
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
