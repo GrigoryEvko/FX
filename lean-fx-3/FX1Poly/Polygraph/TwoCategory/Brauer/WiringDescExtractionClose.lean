@@ -136,4 +136,51 @@ The CONV / completeness side (`fxBrauer_hasBrauerCompleteness` / `_hasBrauerV2Fu
 `_hasFreeBrauerStraighteningNF`) stays `false` — #2013 does NOT close (B5 names the sole residual).  `= true`. -/
 def fxBrauer_hasReconstructionSideClosed : Bool := true
 
+/-! ## B5 — THE GRAND LEDGER: the r31 state (machine-checked rfl-conjunction)
+
+The r31 state of the oldest campaign, every marker at its node:
+
+  * **SHIPPED (r31)** — the boundary-word loops field (`foldLoopsField_general`) and the unconditional extraction
+    close (`foldRealizesTargetDiagramCorrected_general`): T-CLOSE(b) `extractDiagram bc (fold (reconstruct d)) = d`
+    for every well-formed boundary involution with `0 < d.bottomCount`.  The reconstruction is a proven SECTION of
+    fold-extract.
+  * **SHIPPED (earlier)** — the SOUNDNESS direction (`brauerConv_sound`, `fxBrauer_hasBrauerSoundness`): equal
+    diagram ⟸ `BrauerConv`.  Together with the congruence-level completeness `brauerConv_complete` (which bakes the
+    boundary-view move in as the `BrauerConv.whisker` PRIMITIVE) and `decidableBrauerConv`, the word problem is
+    DECIDED at the whisker-congruence level.
+  * **STILL FALSE (additive)** — the four reconstruction wall markers, LEFT `false` so their live rfl-ledgers
+    (`WiringDescTConnectCapChainLedger` / `WiringDescTConnectCapClass`) stay intact; the delivery is recorded by the
+    r31 content markers above (`reconstructionMasters_deliveredAdditive`).
+  * **STILL FALSE (the sole #2013 residual)** — the CONV / completeness side over the PURE FREE presentation:
+    `fxBrauer_hasBrauerCompleteness`, `fxBrauer_hasBrauerV2FullCompleteness`, and
+    `fxBrauer_hasFreeBrauerStraighteningNF` — deriving the `whisker` congruence move from the five/seven Reidemeister
+    relations = `BrauerExt5CorrectedFoldReaches` (`Brauer/WiringDescCorrectedFold.lean`), the free-straightening NF,
+    which caps on the pass-5-arc interleaved-arc jam `i < k < j < l` (a cup forced past a cap, windowPin
+    inversion-frozen).  This is orthogonal to T-CLOSE(b) (fold read-back) — it is the CONV direction — so the r31
+    extraction close does NOT touch it. -/
+theorem brauerReconstructionClosure_r31State :
+    (fxBrauer_hasBoundaryPhaseLoopsProbe = true
+      ∧ fxBrauer_hasBoundaryWordLoopsField = true
+      ∧ fxBrauer_hasUnconditionalExtractionClose = true
+      ∧ fxBrauer_hasReconstructionSideClosed = true)
+    ∧ fxBrauer_hasBrauerSoundness = true
+    ∧ (fxBrauer_hasFoldTargetHonestAssembly = false
+      ∧ fxBrauer_hasFoldAlignmentE3 = false
+      ∧ fxBrauer_hasTagCorrDisjoint = false
+      ∧ fxBrauer_hasTagCorrExtraction = false)
+    ∧ (fxBrauer_hasBrauerCompleteness = false
+      ∧ fxBrauer_hasBrauerV2FullCompleteness = false
+      ∧ fxBrauer_hasFreeBrauerStraighteningNF = false) := by decide
+
+/-- ★★★ **#2013 endgame marker after r31 — reconstruction side CLOSED, CONV side OPEN, #2013 does NOT close.**
+The r31 grind CLOSED the reconstruction / tag-correspondence side of #2013: T-CLOSE(b) holds unconditionally for
+`0 < d.bottomCount` (`foldRealizesTargetDiagramCorrected_general`), the loops wall discharged
+(`foldLoopsField_general`).  The word problem is DECIDED at the whisker-congruence level (soundness
+`brauerConv_sound` shipped; completeness `brauerConv_complete` unconditional via the `whisker` primitive;
+`decidableBrauerConv`).  What remains for the FULL #2013 close over the PURE FREE presentation is the SOLE residual:
+the free-straightening NF (`fxBrauer_hasFreeBrauerStraighteningNF` / `BrauerExt5CorrectedFoldReaches`), deriving
+`whisker` from the five/seven relations — the pass-5-arc interleaved-arc jam `i < k < j < l`, named for r32.  So
+`= false`. -/
+def fxBrauer_hasBrauerR31Complete : Bool := false
+
 end FX1Poly.Polygraph

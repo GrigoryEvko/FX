@@ -29,4 +29,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.reconstructionMasters_deliveredAdditive
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReconstructionSideClosed
 
+-- B5: THE GRAND LEDGER -- the r31 state rfl-conjunction + the #2013 endgame marker
+#assert_no_axioms FX1Poly.Polygraph.brauerReconstructionClosure_r31State
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerR31Complete
+
 end FX1PolyAudit
