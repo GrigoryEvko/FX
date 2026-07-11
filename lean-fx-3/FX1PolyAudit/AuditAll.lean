@@ -767,6 +767,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainAppend
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainSwapLeft
 -- FC-3 r16 B1/B3 — the concrete three-cup width-0 port anti-vacuity truth-probe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringScrambledThreeCupPortProbe
+-- FC-3 r17 THE NOVEL ASSEMBLY — the width-0 pure-cup determinacy INHABITED at the adjoint-triple seed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWidthZeroPureCupSort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
