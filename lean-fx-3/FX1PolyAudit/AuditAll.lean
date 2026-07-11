@@ -659,6 +659,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeCasesGen
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadVcompMultGen
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordVcompGen
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadNormalizeGen
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingMonad.MonadWordVcompReconstructed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSaturatedConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingModel
