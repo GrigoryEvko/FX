@@ -872,6 +872,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapHeadExtractionW
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPureCapArcReconstruct
 -- FC-3 r27 B3 — the mid-`0` valley block reassembly: the FIRST consumer of the unconditional cap sort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyReassembly
+-- FC-3 r28 — the M2 string width telescopes (Piece-I length-determinacy core; capLengthEq/cupLengthEq)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineValleyWidthTelescope
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
