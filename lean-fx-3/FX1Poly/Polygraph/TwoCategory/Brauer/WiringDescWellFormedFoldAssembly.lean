@@ -307,6 +307,81 @@ theorem wellFormedBrauerFold_correctedWord_nestedCups :
   exact ⟨Or.inl rfl, by decide, Or.inl rfl, by decide, Or.inr (Or.inr rfl), by decide,
     Or.inr (Or.inr rfl), by decide, trivial⟩
 
+/-! ## B3 — the honest corrected target exercised on fresh width-8 wild diagrams
+
+The general `foldRealizesTargetDiagramCorrected` proof stays open (§ the WALL marker below); this section EXERCISES
+the honest target as proof terms on fresh boundary involutions the r19 file never touched — four width-8 (or
+mixed-split) diagrams spanning through strands, top cups, bottom caps, loops, and crossing routing.  Each is a
+genuine boundary involution (the premise is satisfiable — the exercise is not vacuous) whose corrected six-phase
+word routes back to it exactly. -/
+
+/-- A width-8 all-through wild diagram: four bottom strands passing straight through to the top boundary
+(`0↔top0, 1↔top1, 2↔top2, 3↔top3`). -/
+def wildThroughDiagram : DiagramType :=
+  { bottomCount := 4, topCount := 4, partner := [4, 5, 6, 7, 0, 1, 2, 3], loops := 0 }
+
+/-- A mixed wild diagram: two through strands, two top cups, and two loops over a 2-bottom / 6-top split. -/
+def wildCupLoopDiagram : DiagramType :=
+  { bottomCount := 2, topCount := 6, partner := [7, 6, 3, 2, 5, 4, 1, 0], loops := 2 }
+
+/-- A wild diagram with two bottom caps and two through strands over a 6-bottom / 2-top split. -/
+def wildCapThroughDiagram : DiagramType :=
+  { bottomCount := 6, topCount := 2, partner := [1, 0, 3, 2, 7, 6, 5, 4], loops := 0 }
+
+/-- A width-8 all-through wild diagram with crossing routing (`0↔top1, 1↔top0, 2↔top3, 3↔top2`). -/
+def wildCrossThroughDiagram : DiagramType :=
+  { bottomCount := 4, topCount := 4, partner := [5, 4, 7, 6, 1, 0, 3, 2], loops := 0 }
+
+/-- ★ **The width-8 all-through wild diagram is a boundary involution** — the premise of the corrected target is
+genuinely satisfiable (each field `decide`-checked). -/
+theorem isBoundaryInvolution_wildThrough :
+    IsBoundaryInvolution (wildThroughDiagram.bottomCount + wildThroughDiagram.topCount)
+      wildThroughDiagram.partner where
+  hasBoundaryLength := rfl
+  mapsInRange := by decide
+  isSelfInverse := by decide
+  isFixedPointFree := by decide
+
+/-- ★ **The mixed through/cup/loop wild diagram is a boundary involution** — a second satisfiable premise witness. -/
+theorem isBoundaryInvolution_wildCupLoop :
+    IsBoundaryInvolution (wildCupLoopDiagram.bottomCount + wildCupLoopDiagram.topCount)
+      wildCupLoopDiagram.partner where
+  hasBoundaryLength := rfl
+  mapsInRange := by decide
+  isSelfInverse := by decide
+  isFixedPointFree := by decide
+
+/-- ★★ **The honest corrected target holds on the width-8 all-through wild diagram.**  Four through strands routed
+back exactly by the corrected six-phase word. -/
+theorem foldRealizesTargetDiagramCorrected_wildThrough :
+    foldRealizesTargetDiagramCorrected wildThroughDiagram := fun _ => by decide
+
+/-- ★★ **The honest corrected target holds on the mixed through/cup/loop wild diagram** — two through strands, two
+top cups, and two loops all recovered. -/
+theorem foldRealizesTargetDiagramCorrected_wildCupLoop :
+    foldRealizesTargetDiagramCorrected wildCupLoopDiagram := fun _ => by decide
+
+/-- ★★ **The honest corrected target holds on the cap/through wild diagram** — two bottom caps + two through
+strands. -/
+theorem foldRealizesTargetDiagramCorrected_wildCapThrough :
+    foldRealizesTargetDiagramCorrected wildCapThroughDiagram := fun _ => by decide
+
+/-- ★★ **The honest corrected target holds on the crossing-routed width-8 wild diagram** — four through strands with
+crossing routing recovered. -/
+theorem foldRealizesTargetDiagramCorrected_wildCrossThrough :
+    foldRealizesTargetDiagramCorrected wildCrossThroughDiagram := fun _ => by decide
+
+/-- ★ **The wild-diagram exercise bundle.**  All four fresh boundary involutions — through, cup+loop, cap+through,
+and crossing-routed — satisfy the honest corrected target, exercising the arc-class routing (through / cup / cap /
+loop / crossing) end to end on diagrams the r19 file never saw. -/
+theorem foldRealizesTargetDiagramCorrected_wildBundle :
+    foldRealizesTargetDiagramCorrected wildThroughDiagram
+      ∧ foldRealizesTargetDiagramCorrected wildCupLoopDiagram
+      ∧ foldRealizesTargetDiagramCorrected wildCapThroughDiagram
+      ∧ foldRealizesTargetDiagramCorrected wildCrossThroughDiagram :=
+  ⟨foldRealizesTargetDiagramCorrected_wildThrough, foldRealizesTargetDiagramCorrected_wildCupLoop,
+   foldRealizesTargetDiagramCorrected_wildCapThrough, foldRealizesTargetDiagramCorrected_wildCrossThrough⟩
+
 /-! ## B4 — the B1 honesty marker -/
 
 /-- ★ **Honesty marker — the `WellFormedBrauerFold` append-split + the eval-first through-strand probe are SHIPPED
@@ -327,5 +402,37 @@ corrected word from the six per-phase obligations via the append-split (a clean 
 corrected word of BOTH r19 witnesses — adversarial-B and the refuting nested cups — is well-formed
 (`wellFormedBrauerFold_correctedWord_adversarialB` / `_nestedCups`).  `= true`. -/
 def fxBrauer_hasWellFormedFoldPhaseDischarge : Bool := true
+
+/-- ★ **Honesty marker — the honest corrected target is exercised on fresh width-8 wild diagrams (r20 B3).**  Four
+boundary involutions the r19 file never touched — `wildThroughDiagram` / `wildCupLoopDiagram` /
+`wildCapThroughDiagram` / `wildCrossThroughDiagram`, spanning through strands, top cups, bottom caps, loops, and
+crossing routing — each satisfy `foldRealizesTargetDiagramCorrected` as proof terms
+(`foldRealizesTargetDiagramCorrected_wildBundle`), with two premise-satisfiability witnesses
+(`isBoundaryInvolution_wildThrough` / `_wildCupLoop`) confirming the exercise is not vacuous.  `= true`. -/
+def fxBrauer_hasCorrectedTargetWildExercise : Bool := true
+
+/-! ## B5 — the #2013 endgame ledger after r20 -/
+
+/-- **Honesty WALL marker — the GENERAL `WellFormedBrauerFold`-for-corrected-word (hence the general corrected
+target) stays OPEN after r20.**  This round shipped the connectivity-free half of the r19 wall's third residual: the
+four per-phase discharge lemmas (`wellFormedBrauerFold_crossingWord` / `_cupWord` / `_capZeros` / `_circleWord`) and
+the six-phase reduction (`wellFormedBrauerFold_standardFormWordExt5_ofPhases`) that assembles the corrected word from
+six per-phase width obligations, plus the word-level append-split (`wellFormedBrauerFold_append` / `_appendSplit`).
+What stays OPEN is FEEDING the six obligations from the corrected extractor's fields:
+
+  * the three crossing phases need the staircase POSITION-BOUND
+    `∀ pos ∈ permutationToCrossingWord n perm, pos + 2 ≤ n` (a range property of the descending-swap selection sort);
+  * the cap phase (`wellFormedBrauerFold_capZeros`) needs `#capFeet + #capFeet ≤ bottomCount` AND the phase-boundary
+    WIDTH being `bottomCount`, and the cup phase (`wellFormedBrauerFold_cupWord`) needs the phase-boundary width being
+    `#through` — i.e. the counting identities `2·#capFeet + #through = bottomCount`, `#through + 2·#cupArcs = topCount`
+    threaded through the cap/cup width-accounting.
+
+Those two — the staircase position-bound and the phase-boundary width-accounting — are the standing width residual.
+And BEYOND `WellFormedBrauerFold`, the r19 wall's OTHER two residuals — the through-strand cross-phase T-CONNECT
+(exercised here only as the eval-first `throughStrandConnects_probe`, not proven at boundary-index granularity over
+arbitrary interior-crossing states) and T-ENUM / E3 fold-alignment — stay unbuilt.  So `fxBrauer_hasFoldAlignmentE3`,
+the tag-correspondence masters `fxBrauer_hasTagCorrDisjoint` / `fxBrauer_hasTagCorrExtraction`, and the r19 wall
+`fxBrauer_hasFoldTargetHonestAssembly` all stay honestly `false`; #2013 does NOT close.  `= false`. -/
+def fxBrauer_hasWellFormedFoldGeneralAssembly : Bool := false
 
 end FX1Poly.Polygraph
