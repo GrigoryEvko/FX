@@ -14,6 +14,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.spineTraceEquiv_of_wordBubblesToFront
 #assert_no_axioms FX1Poly.Polygraph.spineBoundaryWordChained_of_wordBubblesToFront
 #assert_no_axioms FX1Poly.Polygraph.stringWordBubble_equalLengthDistinctWord
+#assert_no_axioms FX1Poly.Polygraph.stringWordBubbleLeft_equalLengthDistinctWord
 #assert_no_axioms FX1Poly.Polygraph.fxString_hasWordBubbleToFront
 #assert_no_axioms FX1Poly.Polygraph.fxString_hasWordBubbleSortAssembly
 

@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingString.StringDisjointWordSwap
+import FX1Poly.Polygraph.TwoCategory.WalkingString.StringWordChainSwapLeft
 
 /-! # WalkingString/StringDisjointWordBubble — the WORD-indexed bubble-to-front driver (FC-3 r4, B3)
 
@@ -10,8 +11,9 @@ transposition per passed atom.  This file ships that carrier at the WORD granula
     from a factorization (`inertPath` + `leftFactor` + `rightFactor`) already in hand, so the bubble driver
     never needs to IDENTIFY a produced inert path with a carried one.  This is the mitigation the recon named
     for the two adjunction-side bubble identifications (which used seed length-rigidity, false at the triple);
-  * `WordBubblesToFront` — ★ the bubble witness (right-of direction): the target transposes leftward past each
-    prefix atom, each step carrying the passed atom, the inert gap path, and the word factorization equations;
+  * `WordBubblesToFront` — ★ the bubble witness (BOTH directions, `stepRightOf` and `stepLeftOf`): the target
+    transposes leftward past each prefix atom, each step carrying the passed atom, the inert gap path, and the
+    word factorization equations (the LEFT step rides the shipped LEFT swap and LEFT chain preservation);
   * `atomicTraceEquiv_of_wordBubblesToFront` / `spineTraceEquiv_of_wordBubblesToFront` — ★ the witnessed bubble
     IS a trace equivalence (one consuming swap per step under the head-cons congruence);
   * `spineBoundaryWordChained_of_wordBubblesToFront` — ★ the bubbled list stays boundary-WORD-chained at the
@@ -21,10 +23,9 @@ Signature-GENERIC (the B1/B2 engine is), so it runs at the walking adjoint tripl
 (`stringWordBubble_equalLengthDistinctWord`) bubbles the upper counit `ε' : H·G` past the lower cup `η : F·G`
 (the equal-length-DISTINCT-word class) as a genuine trace-equivalence step on a word-chained spine.
 
-What this file does NOT ship (honest, the multi-round residual the recon names): the LEFT-of mirror direction
-(needs the mirrored word factorization + preservation), the partner LOCATION that constructs the witness from
-arc-structure equality, and the pure-block SORT assembly that iterates the bubble into
-`StringCellValleyTraceEquiv`.  The completeness flag stays `false`.
+What this file does NOT ship (honest, the multi-round residual the recon names): the partner LOCATION that
+constructs the `WordBubblesToFront` witness from arc-structure equality, and the pure-block SORT assembly that
+iterates the bubble into `StringCellValleyTraceEquiv`.  The completeness flag stays `false`.
 
 Raw Lean 4 + Init; the bubble is one consuming swap + one B2 preservation per step, folded by induction on the
 witness.  `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free; per-declaration
@@ -112,6 +113,32 @@ inductive WordBubblesToFront {signature : ModeSignature}
               composePath (composePath inertPath movedTargetOfRest.generatorCod)
                 movedTargetOfRest.rightContext }
           :: movedRestPrefix)
+  /-- Pass one more atom whose window lies a gap RIGHT of the bubbled target's window: the moved target
+  keeps its window, and its right context re-threads through the passed atom's SOURCE 1-cell (the LEFT
+  mirror, riding `spineAtomSwapLeft_of_wordFactorization` and `spineBoundaryWordChained_swappedPairLeft`). -/
+  | stepLeftOf (passedAtom : SpineAtom signature overallSource overallTarget)
+      {restPrefix : List (SpineAtom signature overallSource overallTarget)}
+      {movedTargetOfRest : SpineAtom signature overallSource overallTarget}
+      {movedRestPrefix : List (SpineAtom signature overallSource overallTarget)}
+      (restWitness : WordBubblesToFront target restPrefix movedTargetOfRest movedRestPrefix)
+      (inertPath : ModalityPath signature.graph
+        movedTargetOfRest.rightMidMode passedAtom.leftMidMode)
+      (leftFactor :
+        passedAtom.leftContext
+          = composePath (composePath movedTargetOfRest.leftContext movedTargetOfRest.generatorDom)
+              inertPath)
+      (rightFactor :
+        movedTargetOfRest.rightContext
+          = composePath inertPath (composePath passedAtom.generatorCod passedAtom.rightContext)) :
+      WordBubblesToFront target (passedAtom :: restPrefix)
+        { movedTargetOfRest with
+            rightContext :=
+              composePath (composePath inertPath passedAtom.generatorDom) passedAtom.rightContext }
+        ({ passedAtom with
+            leftContext :=
+              composePath (composePath movedTargetOfRest.leftContext movedTargetOfRest.generatorCod)
+                inertPath }
+          :: movedRestPrefix)
 
 /-! ## Consumption — the bubble is a trace equivalence -/
 
@@ -137,6 +164,13 @@ theorem atomicTraceEquiv_of_wordBubblesToFront {signature : ModeSignature}
       exact AtomicTraceEquiv.trans
         (AtomicTraceEquiv.consCongr passedAtom restHypothesis)
         (AtomicTraceEquiv.ofSwap swapFires)
+  | @stepLeftOf passedAtom restPrefix movedTargetOfRest movedRestPrefix restWitness inertPath
+      leftFactor rightFactor restHypothesis =>
+      have swapFires := spineAtomSwapLeft_of_wordFactorization passedAtom movedTargetOfRest
+        (movedRestPrefix ++ suffixAtoms) inertPath leftFactor rightFactor
+      exact AtomicTraceEquiv.trans
+        (AtomicTraceEquiv.consCongr passedAtom restHypothesis)
+        (AtomicTraceEquiv.symm (AtomicTraceEquiv.ofSwap swapFires))
 
 /-- ★ **The WORD bubble is a spine trace equivalence** — the block-level closure the pure-block sort runs on,
 by including the atomic bubble (`AtomicTraceEquiv.toSpineTraceEquiv`). -/
@@ -172,6 +206,13 @@ theorem spineBoundaryWordChained_of_wordBubblesToFront {signature : ModeSignatur
       intro boundaryWord listChained
       obtain ⟨headFires, tailChained⟩ := spineBoundaryWordChained_tail listChained
       exact spineBoundaryWordChained_swappedPair passedAtom movedTargetOfRest
+        (SpineBoundaryWordChained.cons passedAtom headFires (restHypothesis tailChained))
+        inertPath leftFactor rightFactor
+  | @stepLeftOf passedAtom restPrefix movedTargetOfRest movedRestPrefix restWitness inertPath
+      leftFactor rightFactor restHypothesis =>
+      intro boundaryWord listChained
+      obtain ⟨headFires, tailChained⟩ := spineBoundaryWordChained_tail listChained
+      exact spineBoundaryWordChained_swappedPairLeft passedAtom movedTargetOfRest
         (SpineBoundaryWordChained.cons passedAtom headFires (restHypothesis tailChained))
         inertPath leftFactor rightFactor
 
@@ -229,26 +270,85 @@ theorem stringWordBubble_equalLengthDistinctWord :
   exact ⟨_, _, spineTraceEquiv_of_wordBubblesToFront witness [],
     spineBoundaryWordChained_of_wordBubblesToFront witness [] chained⟩
 
+/-! ## Non-vacuity — the LEFT bubble on the same concrete two-letter word -/
+
+/-- ★ **The LEFT bubble fires on the equal-length-DISTINCT-word pair (concrete two-letter word).**  The upper
+counit `ε' : H·G ⇒ id_base` seated at the FRONT (left context `id_base`, window `H·G`, right context `F·G`)
+bubbles leftward past the lower unit `η : id_base ⇒ F·G` firing at left context `H·G` (windows length `2`,
+`F·G ≠ H·G`): a one-step `WordBubblesToFront.stepLeftOf` whose consuming REVERSED swap is a `SpineTraceEquiv`
+(entered through `AtomicTraceEquiv.symm`), and whose bubbled list stays boundary-word-chained.  The factorization
+is the LEFT B1 output at `windowGap = 0`.  This is the LEFT mirror truth-probe of
+`stringWordBubble_equalLengthDistinctWord`, discharged at the exact class the length-rigid engine could not run. -/
+theorem stringWordBubbleLeft_equalLengthDistinctWord :
+    ∃ (movedTarget :
+          SpineAtom adjointTripleModeSignature AdjointTripleMode.base AdjointTripleMode.base)
+      (movedPrefix :
+          List (SpineAtom adjointTripleModeSignature AdjointTripleMode.base AdjointTripleMode.base)),
+      SpineTraceEquiv adjointTripleModeSignature
+          [(⟨AdjointTripleMode.base, AdjointTripleMode.base, stringHG,
+              ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base, stringFG,
+              StringTwoCell.unitLower,
+              ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base⟩ :
+                SpineAtom adjointTripleModeSignature AdjointTripleMode.base AdjointTripleMode.base),
+            ⟨AdjointTripleMode.base, AdjointTripleMode.base,
+              ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base, stringHG,
+              ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base,
+              StringTwoCell.counitUpper, stringFG⟩]
+          (movedTarget :: movedPrefix)
+        ∧ SpineBoundaryWordChained (signature := adjointTripleModeSignature) stringHG
+            (movedTarget :: movedPrefix) := by
+  let unitAtom : SpineAtom adjointTripleModeSignature AdjointTripleMode.base AdjointTripleMode.base :=
+    ⟨AdjointTripleMode.base, AdjointTripleMode.base, stringHG,
+      ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base, stringFG,
+      StringTwoCell.unitLower,
+      ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base⟩
+  let counitAtom : SpineAtom adjointTripleModeSignature AdjointTripleMode.base AdjointTripleMode.base :=
+    ⟨AdjointTripleMode.base, AdjointTripleMode.base,
+      ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base, stringHG,
+      ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.base,
+      StringTwoCell.counitUpper, stringFG⟩
+  have chained : SpineBoundaryWordChained (signature := adjointTripleModeSignature) stringHG
+      [unitAtom, counitAtom] :=
+    SpineBoundaryWordChained.cons unitAtom rfl
+      (SpineBoundaryWordChained.cons counitAtom rfl (SpineBoundaryWordChained.nil _))
+  have sharedWord := spineBoundaryWordChained_pairSharedWord chained
+  obtain ⟨inertPath, leftFactor, rightFactor, _⟩ :=
+    spineAtom_contextsFactorLeft_of_disjointWordWindows unitAtom counitAtom sharedWord 0 rfl
+  -- counitAtom (target) bubbles to the front past the single-atom prefix [unitAtom].
+  have witness : WordBubblesToFront (signature := adjointTripleModeSignature) counitAtom [unitAtom]
+      { counitAtom with
+          rightContext :=
+            composePath (composePath inertPath unitAtom.generatorDom) unitAtom.rightContext }
+      [{ unitAtom with
+          leftContext :=
+            composePath (composePath counitAtom.leftContext counitAtom.generatorCod) inertPath }] :=
+    WordBubblesToFront.stepLeftOf unitAtom WordBubblesToFront.nil inertPath leftFactor rightFactor
+  exact ⟨_, _, spineTraceEquiv_of_wordBubblesToFront witness [],
+    spineBoundaryWordChained_of_wordBubblesToFront witness [] chained⟩
+
 /-! ## Honesty markers -/
 
-/-- **★ ESTABLISHED — the WORD-indexed bubble-to-front driver is machine-checked (FC-3 r4, B3).**
-`WordBubblesToFront` witnesses an iterated right-of disjoint-window transposition carrying a target atom to the
-front; `atomicTraceEquiv_of_wordBubblesToFront` / `spineTraceEquiv_of_wordBubblesToFront` realize it inside the
-trace equivalences (one CONSUMING swap `spineAtomSwap_of_wordFactorization` per step — no factorization-path
-identification, the recon's mitigation for the adjunction-side length-rigidity), and
+/-- **★ ESTABLISHED — the WORD-indexed bubble-to-front driver is machine-checked, BOTH directions (FC-3 r4 +
+r22, B3).**  `WordBubblesToFront` witnesses an iterated disjoint-window transposition carrying a target atom to
+the front, with `stepRightOf` (target a gap right of the passed atom) and `stepLeftOf` (target a gap left);
+`atomicTraceEquiv_of_wordBubblesToFront` / `spineTraceEquiv_of_wordBubblesToFront` realize it inside the trace
+equivalences (one CONSUMING swap per step — `spineAtomSwap_of_wordFactorization` on the right step,
+`spineAtomSwapLeft_of_wordFactorization` entered through `AtomicTraceEquiv.symm` on the left step — no
+factorization-path identification, the recon's mitigation for the adjunction-side length-rigidity), and
 `spineBoundaryWordChained_of_wordBubblesToFront` keeps the bubbled list word-chained at the same boundary word
-(one B2 preservation per step).  Signature-GENERIC, runs at the adjoint triple.  Non-vacuity
-`stringWordBubble_equalLengthDistinctWord` bubbles the upper counit `ε' : H·G` past the lower cup `η : F·G` as
-a genuine `SpineTraceEquiv` step on a word-chained spine.  `= true`. -/
+(`spineBoundaryWordChained_swappedPair` / `swappedPairLeft` per step).  Signature-GENERIC, runs at the adjoint
+triple.  Non-vacuity `stringWordBubble_equalLengthDistinctWord` (right) and
+`stringWordBubbleLeft_equalLengthDistinctWord` (left) bubble the upper counit `ε' : H·G` and the lower unit
+`η : F·G` past each other as genuine `SpineTraceEquiv` steps on word-chained spines.  `= true`. -/
 def fxString_hasWordBubbleToFront : Bool := true
 
-/-- **OPEN (honest) — the bubble is the CARRIER; the pure-block SORT and the LEFT-of mirror are NOT assembled;
-NO completeness flip.**  On top of the right-of word bubble the sort still needs: the LEFT-of mirror direction
-(the mirrored word factorization + preservation, both un-ported), the partner LOCATION that constructs the
-`WordBubblesToFront` witness from arc-structure equality, and the pure-block sort assembly iterating the bubble
-into `StringCellValleyTraceEquiv` (plus the valley-append `matchingOf`-split, open even at the walking
-adjunction, #2186).  These are the multi-round residual the recon names; `fxString_hasAdjointTripleCompleteness`
-stays `false`.  `= false`. -/
+/-- **OPEN (honest) — the two-sided bubble is the CARRIER; the pure-block SORT is NOT assembled; NO completeness
+flip.**  Both bubble directions now ship (`stepRightOf` r4, `stepLeftOf` r22, riding the shipped LEFT word
+factorization and LEFT chain preservation).  On top of the two-sided word bubble the sort still needs: the
+partner LOCATION that constructs the `WordBubblesToFront` witness from arc-structure equality, and the
+pure-block sort assembly iterating the bubble into `StringCellValleyTraceEquiv` (plus the valley-append
+`matchingOf`-split, open even at the walking adjunction).  These are the multi-round residual the recon names;
+`fxString_hasAdjointTripleCompleteness` stays `false`.  `= false`. -/
 def fxString_hasWordBubbleSortAssembly : Bool := false
 
 end FX1Poly.Polygraph
