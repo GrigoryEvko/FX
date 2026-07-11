@@ -89,4 +89,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.subBlockDiagonalDivisibleOfWithin
 #assert_no_axioms FX1Poly.ComputerAlgebra.subBlockOffDiagonalDivisibleOfWithin
 
+/- H2-SMITH r22 — NODE 4 (B4): THE KEYSTONE ASSEMBLED — the corrected residual (landed pivot divides
+   the input minor, replacing the refutable "divides the folded pair") + the seed from it via the
+   forward tower + the whole corrected-driver totality collapsed onto that ONE residual. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithCascadeLandedPivotDividesMinor
+#assert_no_axioms FX1Poly.ComputerAlgebra.seedOfLandedPivotDividesMinor
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfLandedPivotDividesMinor
+
 end FX1PolyAudit

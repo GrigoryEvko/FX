@@ -1101,4 +1101,78 @@ theorem subBlockOffDiagonalDivisibleOfWithin {divisor : Int} {lo : Nat} {matrix 
     SubBlockOffDiagonalDivisibleFrom divisor lo matrix :=
   fun rowIndex colIndex rowGe colGe _ => within rowIndex rowGe colIndex colGe
 
+/-! ## NODE 4 — THE KEYSTONE ASSEMBLED: the seed reduced to ONE precise residual (H2-SMITH r22, B4)
+
+r21 named the keystone `smithCascadeLandsPivotDividesFoldedPair` — "the cascade output pivot divides
+both folded operands".  That name is **REFUTABLE**: on `diag(15, 10, 6, 4)` pivot 0 step 1 the cascade
+lands `4`, and `4 ∤ 15`, `4 ∤ 10` (`smithClearingSweepInteriorNotDiagonalWitness` rides the same
+fixture).  So the literal "divides the folded pair" is FALSE — chasing it would be chasing a false lemma.
+
+The CORRECTED, TRUE keystone is `SmithCascadeLandedPivotDividesMinor`: the landed pivot divides every
+entry of the INPUT's `[pivotIndex, ·)` minor (it is a common divisor of the whole minor — equivalently,
+since the cascade is unimodular so the landed pivot lies in the minor's gcd-ideal, its magnitude equals
+the minor gcd).  This is the classic "min-abs Euclid pivoting computes the gcd" fact, exhibited
+concretely on a gcd > 1 window in B2 (`smithClearingSweepLandsMinorGcdOnConcreteWindow`, `2 = gcd(6,10,8)`).
+
+**THE KEYSTONE ASSEMBLY (this brick).**  From `SmithCascadeLandedPivotDividesMinor` the WHOLE seed
+`SmithCascadeLandsDivisibleSubBlock` follows, hypothesis-free-modulo-that-residual, via the NODE 1
+forward tower + NODE 2 read-off:
+
+  landed pivot `g := M'.diagonalEntryAt p` divides the input `[p, ·)` minor         (the residual)
+    ─(forward tower, sweep confined below `p`)→  `g` divides the output `[p, ·)` block
+    ─(`matrixEntriesDivisibleByWithinLoMono`, `p ≤ p+1`)→  `g` divides the `[p+1, ·)` sub-block
+    = the seed at pivot `p`.
+
+Both r21 seed halves collapse onto this ONE residual (unifying r21's two-keystone-sharing halves).
+Composing with the SHIPPED `smithReduceCompleteDriverOfSubBlockSeed` collapses the ENTIRE
+corrected-driver totality onto `SmithCascadeLandedPivotDividesMinor` — a strictly sharper residual than
+r21's `SmithCascadeLandsDivisibleSubBlock` (the whole-sub-block statement is now derived, not assumed). -/
+
+/-- **THE CORRECTED KEYSTONE (r22) — the landed pivot divides the input minor.**  After pivot
+`pivotIndex`'s clearing position sweep, the landed pivot diagonal `M'.diagonalEntryAt pivotIndex`
+divides EVERY entry of the INPUT matrix's `[pivotIndex, ·) × [pivotIndex, ·)` minor.  Semantically: the
+min-abs Euclid cascade lands a COMMON DIVISOR of the whole minor (the minor gcd, since the unimodular
+cascade keeps the landed pivot in the minor's gcd-ideal).  Refutation-checked replacement for the r21
+`smithCascadeLandsPivotDividesFoldedPair` (which is false — `diag(15,10,6,4)` lands `4 ∤ 15`); TRUE, with
+a concrete gcd > 1 witness in `smithClearingSweepLandsMinorGcdOnConcreteWindow`. -/
+def SmithCascadeLandedPivotDividesMinor : Prop :=
+  ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
+    matrix.IsRectangular height width → pivotIndex < height → pivotIndex < width →
+    MatrixEntriesDivisibleByWithin
+      ((matrix.applyOperations
+          (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width)).diagonalEntryAt pivotIndex)
+      pivotIndex
+      matrix
+
+/-- **NODE 4 — the seed from the corrected keystone.**  GIVEN `SmithCascadeLandedPivotDividesMinor`, the
+per-pivot ESTABLISH seed `SmithCascadeLandsDivisibleSubBlock` holds: carry the landed-pivot divisibility
+of the INPUT `[p, ·)` minor across the pivot-`p` sweep (confined below `p` by
+`smithRepairPositionSweepClearingBoundedBelow`, forward tower
+`applyOperationsPreservesEntriesDivisibleWithin`), then restrict the floor `p → p+1`
+(`matrixEntriesDivisibleByWithinLoMono`).  A pure structural assembly — no inverse machinery, no kernel
+evaluation. -/
+theorem seedOfLandedPivotDividesMinor (landedDivides : SmithCascadeLandedPivotDividesMinor) :
+    SmithCascadeLandsDivisibleSubBlock := by
+  intro matrix pivotIndex height width isRect pRowLt pColLt
+  exact matrixEntriesDivisibleByWithinLoMono (Nat.le_succ pivotIndex)
+    (applyOperationsPreservesEntriesDivisibleWithin
+      (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+        matrix pivotIndex height width)
+      matrix
+      (smithRepairPositionSweepClearingBoundedBelow pivotIndex
+        (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width
+        pRowLt pColLt (Nat.le_refl pivotIndex))
+      (landedDivides matrix pivotIndex height width isRect pRowLt pColLt))
+
+/-- **NODE 4 — the corrected-driver totality on the corrected keystone ALONE.**  Compose the seed
+reduction with the SHIPPED seed-conditional driver totality `smithReduceCompleteDriverOfSubBlockSeed`.
+`SmithReduceCompleteDriverStatement` is now inhabited GIVEN the SINGLE residual
+`SmithCascadeLandedPivotDividesMinor` — the corrected-driver totality residual count is honestly ONE, and
+this residual is strictly sharper (more atomic) than r21's `SmithCascadeLandsDivisibleSubBlock`. -/
+theorem smithReduceCompleteDriverOfLandedPivotDividesMinor
+    (landedDivides : SmithCascadeLandedPivotDividesMinor) :
+    SmithReduceCompleteDriverStatement :=
+  smithReduceCompleteDriverOfSubBlockSeed (seedOfLandedPivotDividesMinor landedDivides)
+
 end FX1Poly.ComputerAlgebra
