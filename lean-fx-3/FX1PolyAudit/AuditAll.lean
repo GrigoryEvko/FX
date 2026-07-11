@@ -552,6 +552,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR28Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescMatchingSymm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPartnerSharesDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFoldLoops
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR29Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
@@ -1301,6 +1302,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermStageAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidNormalFormCensusAudit
 -- WP-PROP r4 — the grand ledger: hexagon/perm-layer/star-scope delivered, remaining NAMED nodes (matMul-assoc, general-n units, general routing transpose) each with exact goal, star = r5, upstream walls byte-intact
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRoundFourLedgerAudit
+-- WP-PROP r5 (B1) — the reconstruction kit (range-succ-cons + list rebuilds + matReconstruct + get-of-range-map readers + matMul entry read) + the finite-sum Fubini kit + Node A residual (1) general matMul associativity + Node A residual (2) general-n identity unit laws (delta collapse), all zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixReconstructionAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
