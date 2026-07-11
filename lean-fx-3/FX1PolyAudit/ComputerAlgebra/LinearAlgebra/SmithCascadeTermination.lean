@@ -251,4 +251,11 @@ namespace FX1PolyAudit
    establishable as a reduceTotal postcondition without excluding them.  A second permanent regression. -/
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinEstablishFailsOnRankDeficient
 
+/- H2-SMITH r15 — the positive counterweight (B1-positive): the augmented driver `smithReduceFull` lands
+   valid Smith normal form on the exact r14 refuters — the drag input `diag(30,20,12)` reduces to
+   `diag(2,60,60)` and the unsorted minor `[[4,0,0],[0,6,10],[0,15,0]]` to `diag(1,2,300)` — so the
+   refuted suffix-min invariant is NOT necessary for driver correctness. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDragDiagonalDriverReducesToSmithForm
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithUnsortedMinorDriverReducesToSmithForm
+
 end FX1PolyAudit

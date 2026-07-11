@@ -4787,4 +4787,74 @@ theorem smithSuffixMinEstablishFailsOnRankDeficient :
   have bound := invariant 0 (by decide) 1 rfl 3 (by decide) (by decide)
   exact absurd (id (α := (1 : Nat) ≤ 0) bound) (by decide)
 
+/-! ## The positive counterweight: the invariant is NOT necessary (H2-SMITH r15, B1-positive)
+
+The suffix-min invariant is neither on-path-preserved (B1) nor establishable (B2) — yet the augmented
+driver `smithReduceFull` lands VALID Smith normal form on the very inputs that break the r14 premises.
+Two representatives of the 35-matrix probe battery (both eval-confirmed valid SNF for all 35), both the
+EXACT r14 refuters, kernel-closed here by the driver-to-literal defeq (the `IsSmithNormalFormWithin`
+off-diagonal/nonnegative fields decided on the literal output, the invariant-factor chain hand-built):
+the drag input `diag(30, 20, 12)` (the r14 `smithSuffixMinDragInputViolates` witness) and the unsorted
+minor `[[4,0,0],[0,6,10],[0,15,0]]` (the r14 `smithReduceTotalPivotMinIsRefuted` witness).  Correctness
+is carried by the cascade min-abs re-search, NOT by any suffix-min precondition — so the refuted
+invariant names a non-load-bearing property. -/
+
+/-- The r14 drag input diag(30, 20, 12) — `smithSuffixMinDragInputViolates`'s witness. -/
+def smithDragDiagonalInput : IntMatrix := { rows := [[30, 0, 0], [0, 20, 0], [0, 0, 12]] }
+
+set_option maxRecDepth 200000 in
+/-- **The drag input still reduces to valid Smith normal form** — the augmented driver reduces
+`diag(30, 20, 12)` (which VIOLATES the suffix-min invariant, `smithSuffixMinDragInputViolates`) to
+`diag(2, 60, 60)` (chain `2 | 60 | 60`, product `7200 = 30 * 20 * 12`, gcd `2`).  Witnesses that the
+refuted invariant is NOT necessary for driver correctness. -/
+theorem smithDragDiagonalDriverReducesToSmithForm :
+    (smithDragDiagonalInput.applyOperations
+        (smithReduceFull smithDragDiagonalInput 3 3).operations).IsSmithNormalFormWithin 3 3 :=
+  show ({ rows := [[2, 0, 0], [0, 60, 0], [0, 0, 60]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0, 0], [0, 60, 0], [0, 0, 60]] } : IntMatrix).entryAt rowIndex colIndex = 0 :=
+        by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨30, rfl⟩
+      | 1, _ => ⟨1, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
+/-- The r14 unsorted minor `[[4,0,0],[0,6,10],[0,15,0]]` — `smithReduceTotalPivotMinIsRefuted`'s witness
+(reduceTotal leaves the unsorted diagonal `diag(4, 1, 150)`). -/
+def smithUnsortedMinorInput : IntMatrix := { rows := [[4, 0, 0], [0, 6, 10], [0, 15, 0]] }
+
+set_option maxRecDepth 200000 in
+/-- **The unsorted minor still reduces to valid Smith normal form** — the augmented driver reduces
+`[[4,0,0],[0,6,10],[0,15,0]]` (whose reduceTotal output `diag(4, 1, 150)` refuted pivot-is-min,
+`smithReduceTotalPivotMinIsRefuted`) to `diag(1, 2, 300)` (chain `1 | 2 | 300`, product
+`600 = |det|`, gcd `1`).  The divisibility-repair phase repairs the coprime/unsorted diagonal to the
+full invariant-factor chain despite the suffix-min invariant being refuted. -/
+theorem smithUnsortedMinorDriverReducesToSmithForm :
+    (smithUnsortedMinorInput.applyOperations
+        (smithReduceFull smithUnsortedMinorInput 3 3).operations).IsSmithNormalFormWithin 3 3 :=
+  show ({ rows := [[1, 0, 0], [0, 2, 0], [0, 0, 300]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 2, 0], [0, 0, 300]] } : IntMatrix).entryAt rowIndex colIndex = 0 :=
+        by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨2, rfl⟩
+      | 1, _ => ⟨150, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
 end FX1Poly.ComputerAlgebra
