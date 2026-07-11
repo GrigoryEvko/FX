@@ -32,4 +32,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.selfConjugateShiftProbe
 #assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedMeasureAtomicLayerIsComplete
 
+/-! ## B2 — the NORMALIZE phase inductions -/
+
+#assert_no_axioms FX1Poly.Polygraph.Homology.genEformOfResidue
+#assert_no_axioms FX1Poly.Polygraph.Homology.genEformSigned
+#assert_no_axioms FX1Poly.Polygraph.Homology.shiftUpThree
+#assert_no_axioms FX1Poly.Polygraph.Homology.shiftDownThree
+#assert_no_axioms FX1Poly.Polygraph.Homology.reduceWordSignPowerNeg
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedSignPowerNegStrip
+#assert_no_axioms FX1Poly.Polygraph.Homology.normalizePosPower
+#assert_no_axioms FX1Poly.Polygraph.Homology.normalizeNegPower
+#assert_no_axioms FX1Poly.Polygraph.Homology.normalizeSignPowerInt
+#assert_no_axioms FX1Poly.Polygraph.Homology.normalizeGenTrue
+#assert_no_axioms FX1Poly.Polygraph.Homology.normalizeGen
+#assert_no_axioms FX1Poly.Polygraph.Homology.normalizeGenProbe
+#assert_no_axioms FX1Poly.Polygraph.Homology.normalizeNegPowerProbe
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedMeasureNormalizeIsComplete
+
 end FX1PolyAudit

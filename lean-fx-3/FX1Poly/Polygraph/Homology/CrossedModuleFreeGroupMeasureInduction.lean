@@ -313,4 +313,150 @@ positive-left + both-negative via the crossed-inverse anti-congruence `invListCo
 `commutePastBlock`.  Read the meaning from THIS docstring. -/
 def freeCrossedMeasureAtomicLayerIsComplete : Bool := true
 
+/-! ## B2 — the NORMALIZE phase inductions: every well-formed generator lands on its genE-form -/
+
+/-- The positive genE-form of a residue class: `genE0`/`genE1`/`genE2` for `residue0`/`1`/`2` (each
+`⟨signPowerPos j, 0, +⟩` with `wordResidue (signPowerPos j) = residue_j`). -/
+def genEformOfResidue : ZmodThree → ConjugatedRelator
+  | .residue0 => genE0
+  | .residue1 => genE1
+  | .residue2 => genE2
+
+/-- The signed genE-form of a residue class — the positive genE-form for `+`, its formal inverse for `-`. -/
+def genEformSigned (sign : Bool) (residue : ZmodThree) : ConjugatedRelator :=
+  match sign with
+  | true => genEformOfResidue residue
+  | false => invGen (genEformOfResidue residue)
+
+/-- `shiftUp` has order three (the `ZZ/3` residue action). -/
+theorem shiftUpThree : ∀ residue : ZmodThree, shiftUp (shiftUp (shiftUp residue)) = residue
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- `shiftDown` has order three. -/
+theorem shiftDownThree : ∀ residue : ZmodThree, shiftDown (shiftDown (shiftDown residue)) = residue
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- Free reduction fixes a negative `signPower` (already reduced). -/
+theorem reduceWordSignPowerNeg : ∀ count : Nat, reduceWord (signPowerNeg count) = signPowerNeg count
+  | 0 => rfl
+  | count + 1 =>
+      (congrArg (consReduced (SignedLetter.neg 0)) (reduceWordSignPowerNeg count)).trans
+        (consReducedNegSignPowerNeg count)
+
+/-- ★★ **The negative-power strip** `⟨s⁻⁽ᵏ⁺³⁾, 0, +⟩ ~ ⟨s⁻ᵏ, 0, +⟩` — self-conjugating a negative power by
+itself prepends `∂ = s³` and cancels three of the `s⁻¹`s (a direct `reduceWord` computation, no
+`exponentSum`). -/
+theorem freeCrossedSignPowerNegStrip (count : Nat) :
+    FreeCrossedModuleEquiv [⟨signPowerNeg (count + 3), 0, true⟩] [⟨signPowerNeg count, 0, true⟩] :=
+  selfConjugateShiftEq (allLettersSignPowerNeg (count + 3))
+    ((congrArg
+          (fun tail => consReduced (SignedLetter.pos 0)
+            (consReduced (SignedLetter.pos 0) (consReduced (SignedLetter.pos 0) tail)))
+          (reduceWordSignPowerNeg (count + 3))).trans
+      ((congrArg
+            (fun tail => consReduced (SignedLetter.pos 0) (consReduced (SignedLetter.pos 0) tail))
+            (consReducedPosSignPowerNeg (count + 2))).trans
+        ((congrArg (consReduced (SignedLetter.pos 0)) (consReducedPosSignPowerNeg (count + 1))).trans
+          (consReducedPosSignPowerNeg count))))
+
+/-- ★ **The positive-power normalization** — `⟨sᵏ, 0, +⟩ ~ [genE-form of its residue]`, structural on `k`
+via the `k+3` strip (`freeCrossedSignPowerStrip`), residue tracked by `wordResidue` and reconciled with
+`shiftUpThree`. -/
+theorem normalizePosPower : ∀ count : Nat,
+    FreeCrossedModuleEquiv [⟨signPowerPos count, 0, true⟩]
+      [genEformOfResidue (wordResidue (signPowerPos count))]
+  | 0 => FreeCrossedModuleEquiv.refl _
+  | 1 => FreeCrossedModuleEquiv.refl _
+  | 2 => FreeCrossedModuleEquiv.refl _
+  | count + 3 =>
+      Eq.mp (congrArg (fun residue =>
+            FreeCrossedModuleEquiv [⟨signPowerPos (count + 3), 0, true⟩] [genEformOfResidue residue])
+          (shiftUpThree (wordResidue (signPowerPos count))).symm)
+        (FreeCrossedModuleEquiv.trans (freeCrossedSignPowerStrip count) (normalizePosPower count))
+
+/-- ★ **The negative-power normalization** — `⟨s⁻ᵏ, 0, +⟩ ~ [genE-form of its residue]`, structural on `k`
+via the negative strip; the bases `k = 1, 2` are a single self-shift (`selfConjugateShiftEq`, the reduced
+word computed by `rfl`), `k = 0` is `refl`. -/
+theorem normalizeNegPower : ∀ count : Nat,
+    FreeCrossedModuleEquiv [⟨signPowerNeg count, 0, true⟩]
+      [genEformOfResidue (wordResidue (signPowerNeg count))]
+  | 0 => FreeCrossedModuleEquiv.refl _
+  | 1 => selfConjugateShiftEq (allLettersSignPowerNeg 1) rfl
+  | 2 => selfConjugateShiftEq (allLettersSignPowerNeg 2) rfl
+  | count + 3 =>
+      Eq.mp (congrArg (fun residue =>
+            FreeCrossedModuleEquiv [⟨signPowerNeg (count + 3), 0, true⟩] [genEformOfResidue residue])
+          (shiftDownThree (wordResidue (signPowerNeg count))).symm)
+        (FreeCrossedModuleEquiv.trans (freeCrossedSignPowerNegStrip count) (normalizeNegPower count))
+
+/-- ★ **The `Int`-level power normalization** — `⟨sᵉ, 0, +⟩ ~ [genE-form of its residue]` for every exponent
+`e`, dispatching on the `Int` constructor to the positive/negative power normalizations. -/
+theorem normalizeSignPowerInt : ∀ exponent : Int,
+    FreeCrossedModuleEquiv [⟨signPower exponent, 0, true⟩]
+      [genEformOfResidue (wordResidue (signPower exponent))]
+  | Int.ofNat count => normalizePosPower count
+  | Int.negSucc predecessor => normalizeNegPower (predecessor + 1)
+
+/-- ★★ **Normalize a positive well-formed generator** — `⟨w, 0, +⟩ ~ [genE-form of `wordResidue w`]` for any
+over-gen-0 conjugator `w`.  Self-shift `w` to the signPower `reduceWord(s³ ++ w)`, normalize that power, and
+carry the residue back via `reduceResiduePreserved` (the residue of `s³ ++ w` is that of `w`, since
+`∂ρ` has residue `0`) — the whole conjugator reduced with NO `exponentSum↔residue` bridge. -/
+theorem normalizeGenTrue {conjugatorWord : List SignedLetter}
+    (over : AllLettersOverGenZero conjugatorWord) :
+    FreeCrossedModuleEquiv [⟨conjugatorWord, 0, true⟩]
+      [genEformOfResidue (wordResidue conjugatorWord)] :=
+  let shiftedExponent : Int := exponentSum (relatorWord 0 ++ conjugatorWord)
+  let shift : FreeCrossedModuleEquiv [⟨conjugatorWord, 0, true⟩]
+      [⟨signPower shiftedExponent, 0, true⟩] :=
+    selfConjugateShiftEq over
+      (reduceWordIsSignPowerOverGenZero (allLettersAppend allLettersRelatorWordZero over))
+  let normalized := FreeCrossedModuleEquiv.trans shift (normalizeSignPowerInt shiftedExponent)
+  let residueBridge : wordResidue (signPower shiftedExponent) = wordResidue conjugatorWord :=
+    (congrArg wordResidue
+        (reduceWordIsSignPowerOverGenZero
+          (allLettersAppend allLettersRelatorWordZero over)).symm).trans
+      ((reduceResiduePreserved (relatorWord 0 ++ conjugatorWord)).trans
+        ((wordResidueAppendAdd (relatorWord 0) conjugatorWord).trans
+          ((congrArg (fun residue => addZmod3 residue (wordResidue conjugatorWord))
+              (relatorResidueIsZero 0)).trans
+            (addZmod3ZeroLeft (wordResidue conjugatorWord)))))
+  Eq.mp (congrArg (fun residue =>
+        FreeCrossedModuleEquiv [⟨conjugatorWord, 0, true⟩] [genEformOfResidue residue]) residueBridge)
+    normalized
+
+/-- ★★ **Normalize a well-formed generator (either sign)** — `⟨w, 0, sign⟩ ~ [signed genE-form of
+`wordResidue w`]`.  The positive sign is `normalizeGenTrue`; the negative sign piggybacks it through
+`freeCrossedInvGenCongr` (since `⟨w, 0, -⟩ = (⟨w, 0, +⟩)⁻¹`). -/
+theorem normalizeGen (sign : Bool) {conjugatorWord : List SignedLetter}
+    (over : AllLettersOverGenZero conjugatorWord) :
+    FreeCrossedModuleEquiv [⟨conjugatorWord, 0, sign⟩]
+      [genEformSigned sign (wordResidue conjugatorWord)] :=
+  match sign with
+  | true => normalizeGenTrue over
+  | false => freeCrossedInvGenCongr (normalizeGenTrue over)
+
+/-! ### B2 truth probes -/
+
+/-- ★ Probe (arbitrary unreduced conjugator normalized) — `⟨s s⁻¹ s, 0, +⟩ ~ genE1` (residue `1`). -/
+theorem normalizeGenProbe :
+    FreeCrossedModuleEquiv
+      [⟨[SignedLetter.pos 0, SignedLetter.neg 0, SignedLetter.pos 0], 0, true⟩] [genE1] :=
+  normalizeGenTrue (.consPos _ (.consNeg _ (.consPos _ .nil)))
+
+/-- ★ Probe (negative power normalized) — `⟨s⁻⁴, 0, +⟩ ~ genE2` (residue `−4 ≡ 2`). -/
+theorem normalizeNegPowerProbe :
+    FreeCrossedModuleEquiv [⟨signPowerNeg 4, 0, true⟩] [genE2] :=
+  normalizeNegPower 4
+
+/-- ★ **The B2 NORMALIZE marker.**  Shipped zero-axiom: the residue-generic genE-form `genEformOfResidue`,
+the two structural power normalizations (`normalizePosPower`/`normalizeNegPower` off the two strips), their
+`Int` packaging `normalizeSignPowerInt`, and the arbitrary-conjugator `normalizeGen` — every well-formed
+single generator lands on its genE-form, image preserved (r4 soundness).  Read the meaning from THIS
+docstring. -/
+def freeCrossedMeasureNormalizeIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
