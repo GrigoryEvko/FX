@@ -248,4 +248,179 @@ theorem tietzeGenericCarrierBoundaryComposesToZero
   walkerPresentationBoundaryComposesToZeroOfWellFormed tietzeZmodThreePresentation
     tietzeZmodThreePresentationIsWellFormed dim rowIndex colIndex rowBound colBound
 
+/-! ## B2 — the Smith handoff + the homology read-offs (`H1 = ZZ/3`, `H2 = 0`)
+
+The two non-trivial boundaries `d2` (`2 × 4`) and `d3` (`4 × 8`) carry EXPLICIT unimodular reduction
+certificates to `diag(1, 3)` and `diag(1, 1, 0, 0)`; the homology is read off the SHIPPED generic
+`SmithHomologyData.homologyInvariant` with NO new reader.  `H1 = ZZ/3` — the invariant factors `(0, [3])`
+the round DEMANDS. -/
+
+/-- The reduction certificate taking `d1 = [[0, 0]]` to its Smith normal form `[[0, 0]]` — already
+diagonal (rank 0). -/
+def tietzeBoundaryOfDimZeroSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations := [] }
+
+/-- The reduction certificate taking `d2 = [[-2,-1,-1,1],[1,-1,-1,-2]]` to its Smith normal form
+`diag(1, 3)` — a row swap, one row transvection, five column transvections, one column negation
+(each unimodular; determinant `±1`). -/
+def tietzeBoundaryOfDimOneSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ ElementaryOperation.rowOperation (ElementaryRowOperation.swapRows 0 1)
+      , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 0 1 2)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 1 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 2 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 3 2)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 1 2 (-1))
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 1 3 (-1))
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1) ] }
+
+/-- The reduction certificate taking `d3` (`4 × 8`) to its Smith normal form `diag(1, 1, 0, 0)` — a row
+swap to a unit pivot, two row transvections, and ten column transvections / one column negation. -/
+def tietzeBoundaryOfDimTwoSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ ElementaryOperation.rowOperation (ElementaryRowOperation.swapRows 0 2)
+      , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 0 1 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 2 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 3 (-1))
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 4 (-1))
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 6 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 7 1)
+      , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 2 1)
+      , ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 3 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 1 3 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 1 5 1)
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 1 6 (-1))
+      , ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1) ] }
+
+/-- The Smith normal form of `d1` — `[[0, 0]]` (rank 0). -/
+def tietzeSmithNormalFormOfDimZero : IntMatrix := ⟨[[0, 0]]⟩
+
+/-- The Smith normal form of `d2` — `diag(1, 3)` = `[[1,0,0,0],[0,3,0,0]]`: rank 2, one UNIT factor and
+one factor `3 > 1` (★ the source of the `ZZ/3` torsion). -/
+def tietzeSmithNormalFormOfDimOne : IntMatrix := ⟨[[1, 0, 0, 0], [0, 3, 0, 0]]⟩
+
+/-- The Smith normal form of `d3` — `diag(1, 1, 0, 0)`: rank 2, both invariant factors UNITS. -/
+def tietzeSmithNormalFormOfDimTwo : IntMatrix :=
+  ⟨[ [1, 0, 0, 0, 0, 0, 0, 0]
+   , [0, 1, 0, 0, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0, 0, 0] ]⟩
+
+/-- **The `d1` certificate produces `tietzeSmithNormalFormOfDimZero`** — `rfl`. -/
+theorem tietzeDimZeroCertificateProducesSmithNormalForm :
+    tietzeBoundaryOfDimZero.applyOperations tietzeBoundaryOfDimZeroSmithCertificate.operations
+      = tietzeSmithNormalFormOfDimZero := rfl
+
+/-- ★ **The `d2` certificate produces `diag(1, 3)`** — `rfl`, the eight unimodular operations checked to
+land on the literal Smith normal form. -/
+theorem tietzeDimOneCertificateProducesSmithNormalForm :
+    tietzeBoundaryOfDimOne.applyOperations tietzeBoundaryOfDimOneSmithCertificate.operations
+      = tietzeSmithNormalFormOfDimOne := rfl
+
+/-- ★ **The `d3` certificate produces `diag(1, 1, 0, 0)`** — `rfl`, the thirteen unimodular operations
+checked to land on the literal Smith normal form. -/
+theorem tietzeDimTwoCertificateProducesSmithNormalForm :
+    tietzeBoundaryOfDimTwo.applyOperations tietzeBoundaryOfDimTwoSmithCertificate.operations
+      = tietzeSmithNormalFormOfDimTwo := rfl
+
+/-- **`d1` reduces to `[[0, 0]]`** — kernel-checked Smith normal form within the `1 × 2` window; rank 0. -/
+theorem tietzeBoundaryOfDimZeroReducesToSmith :
+    tietzeBoundaryOfDimZeroSmithCertificate.reducesToSmithForm tietzeBoundaryOfDimZero 1 2 :=
+  show tietzeSmithNormalFormOfDimZero.IsSmithNormalFormWithin 1 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 1 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex → tietzeSmithNormalFormOfDimZero.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow)) }
+
+/-- ★★ **`d2` reduces to `diag(1, 3)`** — kernel-checked Smith normal form within the `2 × 4` window;
+rank 2, invariant factors `[1, 3]`.  The `1 | 3` divisibility witness is explicit. -/
+theorem tietzeBoundaryOfDimOneReducesToSmith :
+    tietzeBoundaryOfDimOneSmithCertificate.reducesToSmithForm tietzeBoundaryOfDimOne 2 4 :=
+  show tietzeSmithNormalFormOfDimOne.IsSmithNormalFormWithin 2 4 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 4 →
+          rowIndex ≠ colIndex → tietzeSmithNormalFormOfDimOne.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨3, by decide⟩
+      | _ + 1, isSuccBelow =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isSuccBelow))) }
+
+/-- ★ **`d3` reduces to `diag(1, 1, 0, 0)`** — kernel-checked Smith normal form within the `4 × 8`
+window; rank 2, both invariant factors UNITS (`1 | 1`, `1 | 0`, `0 | 0` witnessed explicitly). -/
+theorem tietzeBoundaryOfDimTwoReducesToSmith :
+    tietzeBoundaryOfDimTwoSmithCertificate.reducesToSmithForm tietzeBoundaryOfDimTwo 4 8 :=
+  show tietzeSmithNormalFormOfDimTwo.IsSmithNormalFormWithin 4 8 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 4 → ∀ colIndex, colIndex < 8 →
+          rowIndex ≠ colIndex → tietzeSmithNormalFormOfDimTwo.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨1, by decide⟩
+      | 1, _ => ⟨0, by decide⟩
+      | 2, _ => ⟨0, by decide⟩
+      | _ + 3, isSuccBelow =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc isSuccBelow))))) }
+
+/-- The Smith data for `H1(expanded ZZ/3)`: `C_1 = 2`, `SNF(d_1) = [[0, 0]]` (window `1`),
+`SNF(d_2) = diag(1, 3)` (window `2`). -/
+def tietzeDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 2
+  , smithBoundaryIntoLower := tietzeSmithNormalFormOfDimZero
+  , windowIntoLower := 1
+  , smithBoundaryFromHigher := tietzeSmithNormalFormOfDimOne
+  , windowFromHigher := 2 }
+
+/-- `H1(expanded ZZ/3) = ZZ/3` as a `HomologyInvariant`: free rank `0`, torsion factor `[3]`. -/
+def tietzeDegreeOneHomologyInvariant : HomologyInvariant := ⟨0, [3]⟩
+
+/-- ★★ **`H1(expanded ZZ/3) = ZZ/3` — the invariant `(0, [3])` the round DEMANDS**, read off the SHIPPED
+generic `SmithHomologyData.homologyInvariant` with NO new reader: free rank `(2 − rank(SNF d1)) −
+rank(SNF d2) = (2 − 0) − 2 = 0`, torsion `nonUnit([3, 1]) = [3]`.  Exactly `H1(⟨s | sss⟩) = ZZ/3` through
+a genuinely different presentation. -/
+theorem tietzeDegreeOneHomologyIsZmodThree :
+    tietzeDegreeOneSmithData.homologyInvariant = tietzeDegreeOneHomologyInvariant := rfl
+
+/-- The Smith data for `H2(expanded ZZ/3)`: `C_2 = 4`, `SNF(d_2) = diag(1, 3)` (window `2`),
+`SNF(d_3) = diag(1, 1, 0, 0)` (window `4`). -/
+def tietzeDegreeTwoSmithData : SmithHomologyData :=
+  { chainBasisCount := 4
+  , smithBoundaryIntoLower := tietzeSmithNormalFormOfDimOne
+  , windowIntoLower := 2
+  , smithBoundaryFromHigher := tietzeSmithNormalFormOfDimTwo
+  , windowFromHigher := 4 }
+
+/-- `H2(expanded ZZ/3) = 0` as a `HomologyInvariant`: free rank `0`, no torsion. -/
+def tietzeDegreeTwoHomologyInvariant : HomologyInvariant := ⟨0, []⟩
+
+/-- ★ **`H2(expanded ZZ/3) = 0`**, read off the SHIPPED generic reader: free rank
+`(4 − rank(SNF d2)) − rank(SNF d3) = (4 − 2) − 2 = 0`, torsion `nonUnit([1, 1]) = []`.  Template
+continuity with `H2(⟨s | sss⟩) = 0`. -/
+theorem tietzeDegreeTwoHomologyIsZero :
+    tietzeDegreeTwoSmithData.homologyInvariant = tietzeDegreeTwoHomologyInvariant := rfl
+
+/-- ★ **The Smith handoff is INHABITED** — all three boundary Smith reductions are kernel-checked
+(`d1 → [[0,0]]`, `d2 → diag(1,3)`, `d3 → diag(1,1,0,0)`). -/
+def TietzeSmithHandoffStatement : Prop :=
+  tietzeBoundaryOfDimZeroSmithCertificate.reducesToSmithForm tietzeBoundaryOfDimZero 1 2 ∧
+  tietzeBoundaryOfDimOneSmithCertificate.reducesToSmithForm tietzeBoundaryOfDimOne 2 4 ∧
+  tietzeBoundaryOfDimTwoSmithCertificate.reducesToSmithForm tietzeBoundaryOfDimTwo 4 8
+
+/-- ★ **The handoff is inhabited** — the complete SNF input the homology read-offs consume. -/
+theorem tietzeSmithHandoff : TietzeSmithHandoffStatement :=
+  ⟨tietzeBoundaryOfDimZeroReducesToSmith,
+   tietzeBoundaryOfDimOneReducesToSmith,
+   tietzeBoundaryOfDimTwoReducesToSmith⟩
+
 end FX1Poly.Polygraph.Homology
