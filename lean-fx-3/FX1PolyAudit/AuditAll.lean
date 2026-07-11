@@ -854,6 +854,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcPairSeatedDesce
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapWindowSeedReadoff
 -- FC-3 r23 — the WORD-founded prefix descent master at the adjoint triple (the phantom-locked arc master re-founded)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDescent
+-- FC-3 r24 B1 — the located-prefix colour read truth-probed FALSE (AllCapArity does NOT imply prefixSharesWindowMode)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapWindowColourTruthProbe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
