@@ -876,6 +876,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPureCapArcReconstr
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyReassembly
 -- FC-3 r28 — the M2 string width telescopes (Piece-I length-determinacy core; capLengthEq/cupLengthEq)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineValleyWidthTelescope
+-- FC-3 r29 — M2a: the string survivor-top total is the mid-width (mid-width-from-matching leg of the mid-zero producer)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSurvivorTopTotalMidWidth
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
