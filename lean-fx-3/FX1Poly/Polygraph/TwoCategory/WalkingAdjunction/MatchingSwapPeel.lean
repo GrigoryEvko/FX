@@ -84,17 +84,17 @@ private theorem windowCommute (a b : Nat) : a + 2 + b = b + 2 + a := by
 Rides brick 2 (`matchingStepSim_twoCupSwap`, the positivity-free cup-cup core), downgrades it to the
 component carrier (`matchingComponentSim_ofStepSim`, `blockSwap` injective), and folds it through the shared
 tail via the sentinel-free suffix peel (`matchingComponentRenameRel_ofCoreSim_boundaryDiscipline`). -/
-theorem extractDiagram_eq_of_atomicCupSwap
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    {swapSourceMode swapMiddleLeft swapMiddleRight swapTargetMode : adjunctionGraph.Mode}
-    {oneCellFMid oneCellFHigh : ModalityPath adjunctionGraph swapSourceMode swapMiddleLeft}
-    {oneCellGLow oneCellGMid : ModalityPath adjunctionGraph swapMiddleRight swapTargetMode}
-    (generatorLeft : adjunctionModeSignature.twoCell oneCellFMid oneCellFHigh)
-    (generatorRight : adjunctionModeSignature.twoCell oneCellGLow oneCellGMid)
-    (leftAcc : ModalityPath adjunctionGraph overallSource swapSourceMode)
-    (inertPath : ModalityPath adjunctionGraph swapMiddleLeft swapMiddleRight)
-    (rightAcc : ModalityPath adjunctionGraph swapTargetMode overallTarget)
-    (rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+theorem extractDiagram_eq_of_atomicCupSwap {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {swapSourceMode swapMiddleLeft swapMiddleRight swapTargetMode : signature.graph.Mode}
+    {oneCellFMid oneCellFHigh : ModalityPath signature.graph swapSourceMode swapMiddleLeft}
+    {oneCellGLow oneCellGMid : ModalityPath signature.graph swapMiddleRight swapTargetMode}
+    (generatorLeft : signature.twoCell oneCellFMid oneCellFHigh)
+    (generatorRight : signature.twoCell oneCellGLow oneCellGMid)
+    (leftAcc : ModalityPath signature.graph overallSource swapSourceMode)
+    (inertPath : ModalityPath signature.graph swapMiddleLeft swapMiddleRight)
+    (rightAcc : ModalityPath signature.graph swapTargetMode overallTarget)
+    (rest : List (SpineAtom signature overallSource overallTarget))
     (state : WireState) (bottomCount boundaryLength : Nat)
     (fresh : WireStateFresh state) (forest : isUnionFindForest state.links)
     (belowFresh : bottomCount ≤ state.nextFresh)
@@ -120,16 +120,16 @@ theorem extractDiagram_eq_of_atomicCupSwap
               generatorRight, rightAcc⟩ ::
             ⟨swapSourceMode, swapMiddleLeft, leftAcc, oneCellFMid, oneCellFHigh, generatorLeft,
               composePath (composePath inertPath oneCellGMid) rightAcc⟩ :: rest)) := by
-  let atomA : SpineAtom adjunctionModeSignature overallSource overallTarget :=
+  let atomA : SpineAtom signature overallSource overallTarget :=
     ⟨swapSourceMode, swapMiddleLeft, leftAcc, oneCellFMid, oneCellFHigh, generatorLeft,
       composePath (composePath inertPath oneCellGLow) rightAcc⟩
-  let atomB : SpineAtom adjunctionModeSignature overallSource overallTarget :=
+  let atomB : SpineAtom signature overallSource overallTarget :=
     ⟨swapMiddleRight, swapTargetMode, composePath (composePath leftAcc oneCellFHigh) inertPath,
       oneCellGLow, oneCellGMid, generatorRight, rightAcc⟩
-  let atomBr : SpineAtom adjunctionModeSignature overallSource overallTarget :=
+  let atomBr : SpineAtom signature overallSource overallTarget :=
     ⟨swapMiddleRight, swapTargetMode, composePath (composePath leftAcc oneCellFMid) inertPath,
       oneCellGLow, oneCellGMid, generatorRight, rightAcc⟩
-  let atomAr : SpineAtom adjunctionModeSignature overallSource overallTarget :=
+  let atomAr : SpineAtom signature overallSource overallTarget :=
     ⟨swapSourceMode, swapMiddleLeft, leftAcc, oneCellFMid, oneCellFHigh, generatorLeft,
       composePath (composePath inertPath oneCellGMid) rightAcc⟩
   show extractDiagram bottomCount (processSpine state (atomA :: atomB :: rest))
@@ -219,10 +219,10 @@ the width-0 matching extract is invariant: from every fresh, forest-rooted, boun
 `bottomCount ≤ nextFresh`, both processed spines extract the same `DiagramType`.  Positivity-free — the swap
 node rides brick 2 (`matchingStepSim_twoCupSwap`) and the sentinel-free component fold, never
 `0 < nextFresh`. -/
-theorem extractDiagram_eq_of_atomicPureCupTraceEquiv
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    {firstList secondList : List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
-    (traceEquiv : AtomicTraceEquiv adjunctionModeSignature firstList secondList) :
+theorem extractDiagram_eq_of_atomicPureCupTraceEquiv {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {firstList secondList : List (SpineAtom signature overallSource overallTarget)}
+    (traceEquiv : AtomicTraceEquiv signature firstList secondList) :
     ∀ (state : WireState) (bottomCount boundaryLength : Nat),
       WireStateFresh state → isUnionFindForest state.links →
       bottomCount ≤ state.nextFresh →

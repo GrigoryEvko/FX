@@ -243,10 +243,12 @@ theorem spineHasCupCapAtoms_ofAllCapArity
   | cons hasCapDomArity hasCapCodArity _restAllCap restHas =>
       exact spineHasCupCapAtoms_cons (Or.inr ⟨hasCapDomArity, hasCapCodArity⟩) restHas
 
-/-- A pure-cup block satisfies the generic cup/cap arity discipline (every atom is a cup, the left disjunct). -/
-theorem spineHasCupCapAtoms_ofAllCupArity
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+/-- A pure-cup block satisfies the generic cup/cap arity discipline (every atom is a cup, the left disjunct).
+Signature-generic (the induction and `spineHasCupCapAtoms_cons` are signature-blind) so the matching
+fold-through peel can be stated at any signature — the walking-adjunction classifier is not needed. -/
+theorem spineHasCupCapAtoms_ofAllCupArity {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    (atoms : List (SpineAtom signature overallSource overallTarget))
     (pureCup : AllCupArity atoms) : SpineHasCupCapAtoms atoms := by
   induction pureCup with
   | nil => intro probeAtom probeMem; nomatch probeMem
