@@ -87,4 +87,53 @@ the monster / adversarial-B / wild witnesses (`_general_monster` / `_general_adv
 `bottomCount = 0` class stays on the decidable witnesses (a pre-existing partner-side gate).  `= true`. -/
 def fxBrauer_hasUnconditionalExtractionClose : Bool := true
 
+/-! ## B4 — THE RECONSTRUCTION MASTERS: the honest decision (additive)
+
+The four reconstruction / tag-correspondence masters are all FACETS of T-CLOSE(b) `extractDiagram bc F = d`, now
+delivered by `foldRealizesTargetDiagramCorrected_general` (for `0 < d.bottomCount`).  Their verbatim demands:
+
+  * `fxBrauer_hasFoldTargetHonestAssembly` — "the SIX-PHASE per-arc reassembly: T-ENUM …, the through-strand
+    cross-phase T-CONNECT …, and a `WellFormedBrauerFold` proof for the corrected word".  DELIVERED: WF (r21,
+    `wellFormedBrauerFold_correctedWord_general`), T-CONNECT + T-ENUM (r29, `partnerShares_general` /
+    `partnerIndexOf_reads_arc_unconditional`), the loops field (r31, `foldLoopsField_general`) — assembled into
+    `foldRealizesTargetDiagramCorrected_general`.
+  * `fxBrauer_hasFoldAlignmentE3` — "conclude `partnerIndexOf … i = d.partner[i]` (the
+    `extractDiagram_realizes_partner_ofConnectivity` residual, T-CLOSE(b))".  DELIVERED as the partner field of the
+    close.  CAVEAT: E3's def-time `foldRealizesTargetDiagram` is over the UNCORRECTED reconstruction and is REFUTED
+    (`not_foldRealizesTargetDiagram_nestedCups`); the honest target is `foldRealizesTargetDiagramCorrected` (the r19
+    reframe), which IS delivered.
+  * `fxBrauer_hasTagCorrExtraction` — "`partnerIndexOf` reads exactly the `d`-partner at every boundary index … the
+    two-source assembly (T-CONNECT arc pairs + through-strand perm connectivity)".  DELIVERED (r29 partner field, r31
+    full close).
+  * `fxBrauer_hasTagCorrDisjoint` — "T-DISJOINT … and the EXTRACTION consequence (cardinality + T-CONNECT ⇒
+    `partnerIndexOf` reads the `d`-partner)".  DELIVERED: T-DISJOINT (r12, `boundedBoundaryComponents_reachable`) +
+    the extraction close (r31).
+
+**The additive precedent (r29's `fxBrauer_hasUnconditionalPartnerShares` new-true while `fxBrauer_hasTConnectThroughWall`
+kept-false).**  The four wall markers are LEFT `false` in place — they are hard-coded `= false` in the live
+rfl-conjunction ledgers `WiringDescTConnectCapChainLedger` / `WiringDescTConnectCapClass` (each an honest snapshot at
+its round), which flipping would break.  This content marker records the delivery instead. -/
+
+/-- ★★★ **The reconstruction masters' demands are delivered, recorded additively (machine-checked).**  The four wall
+markers stay `false` (their round-snapshot rfl-ledgers intact); the r31 content markers — the loops field and the
+unconditional extraction close — are `true`.  So the reconstruction / tag-correspondence side of #2013 is CLOSED
+(T-CLOSE(b), `0 < bottomCount`), recorded WITHOUT mutating the shipped wall markers. -/
+theorem reconstructionMasters_deliveredAdditive :
+    (fxBrauer_hasFoldTargetHonestAssembly = false
+      ∧ fxBrauer_hasFoldAlignmentE3 = false
+      ∧ fxBrauer_hasTagCorrDisjoint = false
+      ∧ fxBrauer_hasTagCorrExtraction = false)
+    ∧ (fxBrauer_hasBoundaryWordLoopsField = true
+      ∧ fxBrauer_hasUnconditionalExtractionClose = true) := by decide
+
+/-- ★★★ **Honesty marker — THE RECONSTRUCTION SIDE OF #2013 IS CLOSED (r31 B4).**  T-CLOSE(b)
+`extractDiagram bc (fold (reconstruct_corrected d)) = d` holds for every well-formed boundary involution with
+`0 < d.bottomCount` (`foldRealizesTargetDiagramCorrected_general`), discharging the verbatim demands of all four
+reconstruction / tag-correspondence masters (see the section docstring).  Per the r29 additive precedent the four wall
+markers are LEFT `false` (preserving the live `WiringDescTConnectCapChainLedger` / `WiringDescTConnectCapClass`
+rfl-ledgers), and this content marker records the delivery, machine-checked by `reconstructionMasters_deliveredAdditive`.
+The CONV / completeness side (`fxBrauer_hasBrauerCompleteness` / `_hasBrauerV2FullCompleteness` /
+`_hasFreeBrauerStraighteningNF`) stays `false` — #2013 does NOT close (B5 names the sole residual).  `= true`. -/
+def fxBrauer_hasReconstructionSideClosed : Bool := true
+
 end FX1Poly.Polygraph

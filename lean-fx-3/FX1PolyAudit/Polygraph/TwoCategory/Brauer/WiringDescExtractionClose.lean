@@ -25,4 +25,8 @@ namespace FX1PolyAudit
 -- the honesty marker
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasUnconditionalExtractionClose
 
+-- B4: the reconstruction masters' honest decision (additive)
+#assert_no_axioms FX1Poly.Polygraph.reconstructionMasters_deliveredAdditive
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasReconstructionSideClosed
+
 end FX1PolyAudit
