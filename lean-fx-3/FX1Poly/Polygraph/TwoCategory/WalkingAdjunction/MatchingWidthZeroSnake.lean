@@ -32,8 +32,9 @@ to `windowLow`, not forward to `windowLow + 2`.  Rules out the degenerate snake 
 directions of the location induction.  Rides the width-0 partner involution
 (`matchingOfSpineListZero_partner_isInvolution`, b#1) — NO arc census, NO `0 < bottomCount`. -/
 theorem matchingForwardChordsNotAdjacent
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    (spine : List (SpineAtom signature overallSource overallTarget))
     (pureCup : AllCupArity spine)
     (windowLow : Nat)
     (lowInRange : 0 + windowLow < 0 + (matchingOfSpineList 0 spine).topCount)
