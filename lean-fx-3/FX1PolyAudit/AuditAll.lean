@@ -8,6 +8,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntFractionFree
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithNormalForm
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithCascadeTermination
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithWindowedDivisibility
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
