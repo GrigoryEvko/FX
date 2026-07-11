@@ -1175,4 +1175,64 @@ theorem smithReduceCompleteDriverOfLandedPivotDividesMinor
     SmithReduceCompleteDriverStatement :=
   smithReduceCompleteDriverOfSubBlockSeed (seedOfLandedPivotDividesMinor landedDivides)
 
+/-! ## The r22 arc ledger (H2-SMITH r22, B5, #2261) — the mandate assembly; the honest residual finalized
+
+**What r22 shipped (all zero-axiom, additive; the r18–r21 world byte-intact).**
+
+  * B1 — THE FIT CHECK.  `foldDescends` (the r21 NODE D diagonal-half descent) is a GENUINE three-part
+    delta, NOT a composition of the shipped pure-`Int` `smithRepairDecreasesPivotSize`.  Two deltas are
+    machine-refuted as theorems: `smithMinorAbsSumRaisesOnFoldWitness` (the minor-abs-sum measure RISES
+    `24 → 40` on a fold, so the cheapest budget-fitting measure fails) and
+    `smithZeroPivotFoldSaturatesBudgetWitness` (the zero-pivot fold lands `|pivot| = 4 =` the budget, so
+    no fixed-`K` lex-into-`Nat` measure both fits the budget AND descends — recon Δ1/Δ2 pinned).
+
+  * B2 — NODE 1, the gcd-ideal invariance forward-tower route.  `matrixEntriesDivisibleByWithinLoMono`
+    is the last plumbing piece; the backward tower (op inverses) is NOT needed — the pivot-`p` sweep is
+    confined below `p`, so the SHIPPED forward tower carries any minor-divisor across it.
+    `smithClearingSweepLandsMinorGcdOnConcreteWindow` exhibits the cascade landing `2 = gcd(6, 10, 8)` on
+    a gcd > 1 window (probe-first, as a theorem).
+
+  * B3 — NODE 2, the exit read-off.  `subBlockDiagonalDivisibleOfWithin` /
+    `subBlockOffDiagonalDivisibleOfWithin` extract BOTH r21 seed halves from ONE
+    `MatrixEntriesDivisibleByWithin` fact — the r21 two-keystone-sharing halves dissolved into a single
+    within-slice (the forward-tower output).
+
+  * B4 — THE KEYSTONE ASSEMBLED.  r21's `smithCascadeLandsPivotDividesFoldedPair` is REFUTED as stated
+    (`diag(15, 10, 6, 4)` lands `4 ∤ 15`).  The corrected, TRUE residual is
+    `SmithCascadeLandedPivotDividesMinor` (the landed pivot divides the INPUT minor — a common divisor of
+    the whole minor).  `seedOfLandedPivotDividesMinor` derives the WHOLE seed
+    `SmithCascadeLandsDivisibleSubBlock` from it (forward tower + lo-mono), and
+    `smithReduceCompleteDriverOfLandedPivotDividesMinor : SmithCascadeLandedPivotDividesMinor →
+    SmithReduceCompleteDriverStatement` collapses the entire corrected-driver totality onto that ONE
+    residual — strictly SHARPER than r21 (the whole-sub-block seed is now derived, not assumed).
+
+**THE MACHINE-CHECKED RESIDUAL, named EXACTLY (NOT prose).**  `SmithReduceCompleteDriverStatement` is
+inhabited GIVEN `SmithCascadeLandedPivotDividesMinor` — the SINGLE surviving obligation:
+
+    the pivot-`p` clearing position sweep lands, at the pivot, a divisor of every entry of the input's
+    `[p, ·)` minor (equivalently, its magnitude equals the minor gcd).
+
+This is the "min-abs Euclid cascade computes the gcd" correctness over the threaded work matrix — the
+r11+ wall, a STANDALONE MAJOR ARC (decisively not r22-sized).  It is TRUE (probe-verified on every
+fixture; `smithClearingSweepLandsMinorGcdOnConcreteWindow` is a machine-checked positive instance), just
+not yet proven in general.  No flip is fabricated.
+
+**The user close criterion, quoted verbatim.**  "every rectangular integer matrix, any size, zero kernel
+evaluation; the honest pair finalized" — i.e. `SmithReduceCompleteDriverStatement` inhabited
+HYPOTHESIS-FREE.  This is **NOT reached** in r22.  What r22 DELIVERS toward it: the seed residual is
+factored from r21's whole-sub-block `SmithCascadeLandsDivisibleSubBlock` down to the strictly-more-atomic
+`SmithCascadeLandedPivotDividesMinor` (landed-pivot-divides-input-minor), the r21 keystone NAME
+(`…FoldedPair`) is machine-refuted and corrected, and the diagonal/off-diagonal halves are unified onto
+one within-predicate.  The residual is a single, precise, TRUE Prop — the honest pair is
+`(SmithReduceCompleteDriverStatement inhabited ⟸ SmithCascadeLandedPivotDividesMinor,
+SmithCascadeLandedPivotDividesMinor open)`.
+
+**Honest verdict.**  r22 does not close the driver — the cascade-computes-gcd keystone stays open (a
+multi-round arc).  It DOES: (a) machine-refute the two false measure candidates naming why `foldDescends`
+is genuinely deep (B1); (b) route the off-diagonal ideal invariance through the shipped forward tower,
+retiring the backward-tower/inverse plan (B2); (c) unify the two seed halves into one within-slice (B3);
+(d) refute-and-correct the r21 keystone name and collapse the whole corrected-driver totality onto the
+ONE sharper residual `SmithCascadeLandedPivotDividesMinor` (B4).  `smithReduceFull`, its refutation, the
+certificate API, and the r18/r19/r20/r21 world stay byte-intact (additive only). -/
+
 end FX1Poly.ComputerAlgebra
