@@ -246,4 +246,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.type2MoveH1ClosedH2Walled
 #assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionR6LedgerResidual
 
+-- B1 (r7): the mechanicals — the SQUARE degree-2 assembly + the recipe with clearingBridge dissolved
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorRecipeReducesGenerically
+#assert_no_axioms FX1Poly.Polygraph.Homology.r2TietzeRecipeGenericallyReducesToBlockDiag
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionR7MechanicalsComplete
+
 end FX1PolyAudit

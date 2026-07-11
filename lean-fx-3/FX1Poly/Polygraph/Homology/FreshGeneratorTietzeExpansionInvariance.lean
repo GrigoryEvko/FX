@@ -2495,4 +2495,115 @@ general orientation/completion, the full homotopy) — the deep research wall, U
 `= true` records the r6 stance.  Read the meaning from THIS docstring. -/
 def freshGeneratorExpansionR6LedgerResidual : Bool := true
 
+/-! ## r7 — the mechanical completions: the SQUARE degree-2 assembly + the recipe with `clearingBridge`
+    pinned to the fresh-column shape
+
+The r6 residuals `freshGeneratorExpansionR6LedgerResidual` (preserved above byte-intact) named JOB 1b — the
+fresh-column clearing ACTION was made generic (`freshColumnClearingReducesToBlockDiag`, r6), but the
+per-instance `clearingBridge` hypothesis of `freshGeneratorRecipeReducesViaBlockLifting` still took the
+cleared-to-block identity as data.  r7 ships two mechanical completions, both ADDITIVE (the r4/r5/r6 decls
+are untouched):
+
+  * `freshGeneratorSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting` — the SQUARE degree-2
+    presentation-to-homology assembly.  r5 shipped the square degree-1 assembly
+    (`freshGeneratorSquareExpansionPreservesDegreeOneHomologyViaBlockLifting`); r6 shipped the NON-SQUARE
+    degree-2 assembly (`freshGeneratorNonSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting`).  The
+    square degree-2 case was the one remaining hole in the {square, non-square} × {deg 1, deg 2} matrix:
+    the into-lower (`d2`) diagonal facts are the SQUARE block read-offs (`blockDiagDiagonalBelow` below the
+    base window, `blockDiagDiagonalAtFreshSquare` at the fresh window — NO swap, the fresh unit already on
+    the diagonal), and the from-higher (`d3`) side stays the appended-zero-row hypotheses.
+  * `freshGeneratorRecipeReducesGenerically` — `freshGeneratorRecipeReducesViaBlockLifting` with the
+    per-instance `clearingBridge` DELETED, pinning `expandedD2 := expandedWithFreshColumn baseD2 freshColumn
+    width` and `clearingOps := buildFreshColumnClearing height 0 freshColumn ++ [negateColumn width]`, so
+    the r6 generic clearing action `freshColumnClearingReducesToBlockDiag` discharges the bridge INTERNALLY.
+    The hypothesis delta: `clearingBridge` ⟶ `(freshLen : freshColumn.length = height)` (a structural
+    length fact).  What STILL remains (named honestly): connecting the ACTUAL `computeBoundaryDimOne` of an
+    arbitrary base's fresh-generator expansion to the `expandedWithFreshColumn` shape — the arbitrary-base
+    abelianization reconstruction, the deeper bill. -/
+
+/-- ★★ **THE PRESENTATION-TO-HOMOLOGY ASSEMBLY (SQUARE case, degree 2), via block-lifting.**  For a SQUARE
+base `d2` Smith normal form (`dimension × dimension`), the two `intoLowerDiag…` hypotheses of the r4
+end-to-end degree-2 theorem are DERIVED from the block read-off (`blockDiagDiagonalBelow` below the base
+window; `blockDiagDiagonalAtFreshSquare` at the fresh window) — NOT discharged per instance by `decide`.
+The from-higher (`d3`) side stays the appended-zero-row hypotheses (`fromHigherDiag…`), byte-identical to
+the non-square degree-2 theorem — the `d3` gains a ZERO row, not a fresh unit.  The hypothesis delta versus
+the r6 non-square theorem: `height width` + `height < width` collapse to one `dimension`, the swapped block
+`(blockDiag baseSNF width).swapColumns height width` becomes the plain block `blockDiag baseSNF dimension`,
+and the two swap read-offs become the two square read-offs. -/
+theorem freshGeneratorSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting
+    (baseData expandedData : SmithHomologyData) (baseSNF : IntMatrix) (dimension : Nat)
+    (snfRect : baseSNF.IsRectangular dimension dimension)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (baseWindowIntoLowerIsDimension : baseData.windowIntoLower = dimension)
+    (expandedWindowIntoLowerIsSuccessor : expandedData.windowIntoLower = dimension + 1)
+    (windowFromHigherIsSuccessor : expandedData.windowFromHigher = baseData.windowFromHigher + 1)
+    (baseIntoLowerIsSNF : baseData.smithBoundaryIntoLower = baseSNF)
+    (expandedIntoLowerIsBlock :
+      expandedData.smithBoundaryIntoLower = blockDiagWithFreshUnit baseSNF dimension)
+    (fromHigherDiagAgreesBelow : ∀ position, position < baseData.windowFromHigher →
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt position
+        = baseData.smithBoundaryFromHigher.diagonalEntryAt position)
+    (fromHigherDiagZeroAtBaseWindow :
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt baseData.windowFromHigher = 0) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  refine freshGeneratorExpansionPreservesDegreeTwoHomologyOfBase baseData expandedData basisIsSuccessor
+    (by rw [expandedWindowIntoLowerIsSuccessor, baseWindowIntoLowerIsDimension])
+    windowFromHigherIsSuccessor ?_ ?_ fromHigherDiagAgreesBelow fromHigherDiagZeroAtBaseWindow
+  · intro position positionBelow
+    rw [baseWindowIntoLowerIsDimension] at positionBelow
+    rw [expandedIntoLowerIsBlock, baseIntoLowerIsSNF]
+    exact blockDiagDiagonalBelow baseSNF dimension dimension position snfRect positionBelow positionBelow
+  · rw [expandedIntoLowerIsBlock, baseWindowIntoLowerIsDimension]
+    exact blockDiagDiagonalAtFreshSquare baseSNF dimension snfRect
+
+/-- ★★ **THE RECIPE REDUCTION WITH `clearingBridge` DISSOLVED (JOB 1b).**  A generalisation of
+`freshGeneratorRecipeReducesViaBlockLifting` (preserved above byte-intact): the free `expandedD2`, the free
+`clearingOps`, and the per-instance `clearingBridge` are DELETED, replaced by pinning `expandedD2 :=
+expandedWithFreshColumn baseD2 freshColumn width` and `clearingOps := buildFreshColumnClearing height 0
+freshColumn ++ [negateColumn width]`, so the r6 generic clearing action
+`freshColumnClearingReducesToBlockDiag` discharges the cleared-to-block identity INTERNALLY (from just
+`freshLen : freshColumn.length = height`).  The recipe `clearing ++ baseCert` reduces the fresh-column form
+to `blockDiag (baseD2 reduced) width`.  What still remains: connecting an arbitrary base's ACTUAL
+`computeBoundaryDimOne` to the `expandedWithFreshColumn` shape (the arbitrary-base abelianization
+reconstruction). -/
+theorem freshGeneratorRecipeReducesGenerically
+    (baseD2 : IntMatrix) (freshColumn : IntRow) (baseCert : List ElementaryOperation)
+    (height width : Nat) (rect : baseD2.IsRectangular height width)
+    (freshLen : freshColumn.length = height)
+    (baseBounded : allOpsBounded height width baseCert = true) :
+    (expandedWithFreshColumn baseD2 freshColumn width).applyOperations
+        ((buildFreshColumnClearing height 0 freshColumn
+          ++ [ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn width)])
+          ++ baseCert)
+      = blockDiagWithFreshUnit (baseD2.applyOperations baseCert) width := by
+  rw [applyOperationsAppend,
+      freshColumnClearingReducesToBlockDiag baseD2 freshColumn height width rect freshLen]
+  exact blockRecipeReducesToBlockDiag baseD2 baseCert height width rect baseBounded
+
+/-- ★ **JOB 1b fires on the r2 Tietze instance (non-vacuous witness).**  The generic recipe
+`freshGeneratorRecipeReducesGenerically` applied to the r2 base `d2` (`2 × 4`), its fresh column `[1, 1]`
+of `st`, and the shipped r2 base certificate, reduces the fresh-column form to
+`blockDiagWithFreshUnit tietzeSmithNormalFormOfDimOne 4` — the block-diagonal of the base's Smith normal
+form `diag(1, 3)` — WITHOUT the per-instance `clearingBridge`, demonstrating the r6 clearing action
+subsumes the r5 concrete clearing `rfl`. -/
+theorem r2TietzeRecipeGenericallyReducesToBlockDiag :
+    (expandedWithFreshColumn tietzeBoundaryOfDimOne [1, 1] 4).applyOperations
+        ((buildFreshColumnClearing 2 0 [1, 1]
+          ++ [ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)])
+          ++ tietzeBoundaryOfDimOneSmithCertificate.operations)
+      = blockDiagWithFreshUnit tietzeSmithNormalFormOfDimOne 4 := by
+  have reduced := freshGeneratorRecipeReducesGenerically tietzeBoundaryOfDimOne [1, 1]
+    tietzeBoundaryOfDimOneSmithCertificate.operations 2 4 ⟨rfl, rfl, rfl, True.intro⟩ rfl (by decide)
+  rw [reduced, tietzeDimOneCertificateProducesSmithNormalForm]
+
+/-- ★ **The #2139 round-seven mechanicals marker.**  The {square, non-square} × {degree 1, degree 2}
+presentation-to-homology assembly matrix is now COMPLETE: r5 square deg-1, r6 non-square deg-1/deg-2, r7
+square deg-2 (`freshGeneratorSquareExpansionPreservesDegreeTwoHomologyViaBlockLifting`) — every cell
+derives its diagonal facts from the block (or block+swap) read-off.  The r6 clearing action is lifted into
+a recipe theorem with `clearingBridge` dissolved (`freshGeneratorRecipeReducesGenerically`), witnessed
+non-vacuously on the r2 instance.  What STILL remains: the arbitrary-base abelianization reconstruction
+(the ACTUAL `computeBoundaryDimOne` to the `expandedWithFreshColumn` shape) and the type-2 H2 / R1 walls.
+`= true` records the r7 mechanicals.  Read the meaning from THIS docstring. -/
+def freshGeneratorExpansionR7MechanicalsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
