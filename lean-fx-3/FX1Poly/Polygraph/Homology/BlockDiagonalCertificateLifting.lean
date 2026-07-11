@@ -978,4 +978,145 @@ theorem blockDiagDiagonalAtFreshSquare (matrix : IntMatrix) (width : Nat)
   rw [outerRead]
   exact freshRowPivotEntry width
 
+/-! ### Non-square swap read-off — the fresh unit moved onto the diagonal by ONE `swapColumns`
+
+For a base SNF of shape `height × width` with `height < width` (the r2 Tietze `2 × 4`), the block's fresh
+unit sits at the OFF-diagonal position `(height, width)`, invisible to the homology reader (which counts
+DIAGONAL positions only).  ONE `swapColumns height width` moves it onto `(height, height)`: base SNF
+column `height` is a zero column (past the base rank `height`), so the swap is clean.  The two targeted
+read-offs below (base diagonal below `height`, unit at `height`) discharge the non-square assembly's
+`fromHigherDiag…` hypotheses WITHOUT a full swapped-matrix equality.  Both are `height < width`-gated so
+the square case (`swapColumns width width` = identity) is never routed through them. -/
+
+/-- Reading a position DIFFERENT from the written index returns the original entry — a write is invisible
+off its own slot.  Structural on the list and both indices; the diagonal `0 ≠ 0` case is discharged by
+the hypothesis. -/
+theorem listGetReplaceAtNe {Entry : Type} (defaultEntry : Entry) :
+    ∀ (entries : List Entry) (writeIndex readIndex : Nat) (newEntry : Entry),
+      readIndex ≠ writeIndex →
+      listGetWithDefault defaultEntry (listReplaceAt entries writeIndex newEntry) readIndex
+        = listGetWithDefault defaultEntry entries readIndex
+  | [], 0, _, _, _ => rfl
+  | [], _ + 1, _, _, _ => rfl
+  | _ :: _, 0, 0, _, readNeWrite => absurd rfl readNeWrite
+  | _ :: _, 0, _ + 1, _, _ => rfl
+  | _ :: _, _ + 1, 0, _, _ => rfl
+  | _ :: tail, writeIndex + 1, readIndex + 1, newEntry, readNeWrite =>
+      listGetReplaceAtNe defaultEntry tail writeIndex readIndex newEntry
+        (fun readEqWrite => readNeWrite (congrArg (· + 1) readEqWrite))
+
+/-- Reading the WRITTEN index returns the new entry — the write lands exactly on its slot (in range).
+Structural on the list and index. -/
+theorem listGetReplaceAtSame {Entry : Type} (defaultEntry : Entry) :
+    ∀ (entries : List Entry) (index : Nat) (newEntry : Entry),
+      index < entries.length →
+      listGetWithDefault defaultEntry (listReplaceAt entries index newEntry) index = newEntry
+  | [], index, _, isBelow => absurd isBelow (Nat.not_lt_zero index)
+  | _ :: _, 0, _, _ => rfl
+  | _ :: tail, index + 1, newEntry, isBelow =>
+      listGetReplaceAtSame defaultEntry tail index newEntry (natLeOfSuccLeSucc isBelow)
+
+/-- `rowsAllHaveWidth` distributes over an append — structural on the left row list. -/
+theorem rowsAllHaveWidthAppend {width : Nat} :
+    ∀ (leftRows rightRows : List IntRow),
+      rowsAllHaveWidth width leftRows → rowsAllHaveWidth width rightRows →
+      rowsAllHaveWidth width (leftRows ++ rightRows)
+  | [], _, _, rightWidth => rightWidth
+  | _ :: tail, rightRows, leftWidth, rightWidth =>
+      ⟨leftWidth.left, rowsAllHaveWidthAppend tail rightRows leftWidth.right rightWidth⟩
+
+/-- The block-diagonal `[[A | 0]; [0 | +1]]` is rectangular of shape `(height + 1) × (width + 1)` — the
+extended base rows and the fresh unit row both have width `width + 1`. -/
+theorem blockDiagIsRectangular (matrix : IntMatrix) (height width : Nat)
+    (rect : matrix.IsRectangular height width) :
+    (blockDiagWithFreshUnit matrix width).IsRectangular (height + 1) (width + 1) :=
+  ⟨blockDiagRowsLength matrix width height width rect,
+   rowsAllHaveWidthAppend (mapAllRows extendRow matrix.rows) [freshUnitRow width]
+     (rowsAllHaveWidthMapAllRows extendRow
+       (fun row rowWidth => (appendSingletonLength (0 : Int) row).trans (congrArg (· + 1) rowWidth))
+       matrix.rows rect.right)
+     ⟨freshUnitRowLength width, True.intro⟩⟩
+
+/-- ★ **Below-window swap read-off.**  For a base SNF of shape `height × width` with `height < width`,
+reading a diagonal position `< height` of the block after `swapColumns height width` returns the BASE
+diagonal entry — column `position` (`≠ height`, `≠ width`) is untouched by the swap. -/
+theorem blockDiagSwapFreshDiagonalBelow (baseSNF : IntMatrix) (height width position : Nat)
+    (rect : baseSNF.IsRectangular height width) (heightBelowWidth : height < width)
+    (positionBelowHeight : position < height) :
+    ((blockDiagWithFreshUnit baseSNF width).swapColumns height width).diagonalEntryAt position
+      = baseSNF.diagonalEntryAt position := by
+  have positionBelowWidth : position < width := Nat.lt_trans positionBelowHeight heightBelowWidth
+  have baseRowWidth : (listGetWithDefault [] baseSNF.rows position).length = width :=
+    rowsAllHaveWidthGet width baseSNF.rows position rect.right (rect.left ▸ positionBelowHeight)
+  have mapLen : position < (mapAllRows extendRow baseSNF.rows).length := by
+    rw [mapAllRowsLength, rect.left]; exact positionBelowHeight
+  have mapLenSwap : position < (mapAllRows (fun row => swapEntriesWithinRow row height width)
+      (mapAllRows extendRow baseSNF.rows)).length := by rw [mapAllRowsLength]; exact mapLen
+  have extLen : (extendRow (listGetWithDefault [] baseSNF.rows position)).length = width + 1 := by
+    show ((listGetWithDefault [] baseSNF.rows position) ++ [0]).length = width + 1
+    rw [appendSingletonLength]; exact congrArg (· + 1) baseRowWidth
+  have heightExt : height < (extendRow (listGetWithDefault [] baseSNF.rows position)).length := by
+    rw [extLen]; exact Nat.le.step heightBelowWidth
+  have widthExt : width < (extendRow (listGetWithDefault [] baseSNF.rows position)).length := by
+    rw [extLen]; exact Nat.le.refl
+  have posNeHeight : position ≠ height := Nat.ne_of_lt positionBelowHeight
+  have posNeWidth : position ≠ width := Nat.ne_of_lt positionBelowWidth
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (mapAllRows (fun row => swapEntriesWithinRow row height width)
+          (mapAllRows extendRow baseSNF.rows ++ [freshUnitRow width])) position) position
+    = listGetWithDefault 0 (listGetWithDefault [] baseSNF.rows position) position
+  rw [mapAllRowsAppend (fun row => swapEntriesWithinRow row height width)
+        (mapAllRows extendRow baseSNF.rows) [freshUnitRow width],
+      listGetWithDefaultAppendLeft' [] (mapAllRows (fun row => swapEntriesWithinRow row height width)
+        (mapAllRows extendRow baseSNF.rows)) _ position mapLenSwap,
+      getMapAllRowsInRange (fun row => swapEntriesWithinRow row height width)
+        (mapAllRows extendRow baseSNF.rows) position mapLen,
+      getMapAllRowsInRange extendRow baseSNF.rows position (rect.left ▸ positionBelowHeight),
+      swapEntriesWithinRowOfBounded (extendRow (listGetWithDefault [] baseSNF.rows position))
+        height width heightExt widthExt,
+      listGetReplaceAtNe 0 _ width position _ posNeWidth,
+      listGetReplaceAtNe 0 (extendRow (listGetWithDefault [] baseSNF.rows position)) height position
+        _ posNeHeight]
+  show listGetWithDefault 0 ((listGetWithDefault [] baseSNF.rows position) ++ [0]) position
+    = listGetWithDefault 0 (listGetWithDefault [] baseSNF.rows position) position
+  exact listGetWithDefaultAppendLeft' 0 (listGetWithDefault [] baseSNF.rows position) [0] position
+    (baseRowWidth ▸ positionBelowWidth)
+
+/-- ★ **At-window swap read-off.**  For a base SNF of shape `height × width` with `height < width`, the
+block's diagonal entry at position `height` AFTER `swapColumns height width` is the unit `1` — the fresh
+pivot, moved from the off-diagonal `(height, width)` onto the diagonal. -/
+theorem blockDiagSwapFreshDiagonalAtHeight (baseSNF : IntMatrix) (height width : Nat)
+    (rect : baseSNF.IsRectangular height width) (heightBelowWidth : height < width) :
+    ((blockDiagWithFreshUnit baseSNF width).swapColumns height width).diagonalEntryAt height = 1 := by
+  have heightFresh : height < (freshUnitRow width).length := by
+    rw [freshUnitRowLength]; exact Nat.le.step heightBelowWidth
+  have widthFresh : width < (freshUnitRow width).length := by
+    rw [freshUnitRowLength]; exact Nat.le.refl
+  have heightNeWidth : height ≠ width := Nat.ne_of_lt heightBelowWidth
+  have leftLen : (mapAllRows (fun row => swapEntriesWithinRow row height width)
+      (mapAllRows extendRow baseSNF.rows)).length = height := by
+    rw [mapAllRowsLength, mapAllRowsLength, rect.left]
+  have outerRead : listGetWithDefault []
+        (mapAllRows (fun row => swapEntriesWithinRow row height width) (mapAllRows extendRow baseSNF.rows)
+          ++ mapAllRows (fun row => swapEntriesWithinRow row height width) [freshUnitRow width]) height
+      = swapEntriesWithinRow (freshUnitRow width) height width :=
+    (congrArg (fun idx => listGetWithDefault []
+        (mapAllRows (fun row => swapEntriesWithinRow row height width) (mapAllRows extendRow baseSNF.rows)
+          ++ mapAllRows (fun row => swapEntriesWithinRow row height width) [freshUnitRow width]) idx)
+        leftLen.symm).trans
+      (listGetAtLeftLengthReadsRightHead []
+        (mapAllRows (fun row => swapEntriesWithinRow row height width) (mapAllRows extendRow baseSNF.rows))
+        (mapAllRows (fun row => swapEntriesWithinRow row height width) [freshUnitRow width]))
+  show listGetWithDefault 0
+      (listGetWithDefault []
+        (mapAllRows (fun row => swapEntriesWithinRow row height width)
+          (mapAllRows extendRow baseSNF.rows ++ [freshUnitRow width])) height) height = 1
+  rw [mapAllRowsAppend (fun row => swapEntriesWithinRow row height width)
+        (mapAllRows extendRow baseSNF.rows) [freshUnitRow width], outerRead,
+      swapEntriesWithinRowOfBounded (freshUnitRow width) height width heightFresh widthFresh,
+      freshRowPivotEntry width, freshRowLowEntryZero width height heightBelowWidth,
+      listGetReplaceAtNe 0 (listReplaceAt (freshUnitRow width) height 1) width height 0 heightNeWidth,
+      listGetReplaceAtSame 0 (freshUnitRow width) height 1 heightFresh]
+
 end FX1Poly.Polygraph.Homology

@@ -76,4 +76,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.freshRowPivotEntry
 #assert_no_axioms FX1Poly.Polygraph.Homology.blockDiagDiagonalAtFreshSquare
 
+-- B2 (r6): the non-square swap read-off (fresh unit onto the diagonal by ONE `swapColumns`)
+#assert_no_axioms FX1Poly.Polygraph.Homology.listGetReplaceAtNe
+#assert_no_axioms FX1Poly.Polygraph.Homology.listGetReplaceAtSame
+#assert_no_axioms FX1Poly.Polygraph.Homology.rowsAllHaveWidthAppend
+#assert_no_axioms FX1Poly.Polygraph.Homology.blockDiagIsRectangular
+#assert_no_axioms FX1Poly.Polygraph.Homology.blockDiagSwapFreshDiagonalBelow
+#assert_no_axioms FX1Poly.Polygraph.Homology.blockDiagSwapFreshDiagonalAtHeight
+
 end FX1PolyAudit
