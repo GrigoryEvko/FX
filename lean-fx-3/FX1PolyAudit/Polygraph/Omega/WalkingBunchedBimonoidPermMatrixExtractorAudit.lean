@@ -40,8 +40,38 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidR11PairMatrixShared
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermOfWordSeparatesOrder
 
--- The marker.
+-- The B1 marker.
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_permMatrixExtractorCarrierAndPinsShipped
+
+-- B2.A — the propext-clean Nat-beq bridges.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidNatBeqSelf
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidNatEqOfBeqTrue
+
+-- B2.B — list extensionality + the append / range indexers.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidListExtByGet
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGetAppendLeft
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGetAppendSnoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAppendSnocCons
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRangeLoopAppend
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRangeSucc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRangeLoopLength
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRangeLength
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGetRange
+
+-- B2.C — natListGet / rowListGet commute with map.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGetMapNat
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGetMapRow
+
+-- B2.D — the entry formula + the injective read-off.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermMatrixEntryAt
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermMatrixInjective
+
+-- B2.E — the clean generic list-algebra.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMapApplyAdjacentSwapCommute
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFoldlApplyAdjacentSwapMapCommute
+
+-- The B2 marker.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_permMatrixInjectiveReadOffShipped
 
 -- Independent (non-fuel) axiom prints on the extractor pins, the matMul law, the derived r11 matrix-share, and
 -- the separation.
@@ -53,5 +83,14 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidR11PairMatrixShared
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidR11PairPermShared
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermOfWordSeparatesOrder
+
+-- Independent (non-fuel) axiom prints on the generic injective read-off, the entry formula, the range indexer,
+-- and the clean list-algebra.
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermMatrixInjective
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermMatrixEntryAt
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGetRange
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMapApplyAdjacentSwapCommute
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFoldlApplyAdjacentSwapMapCommute
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidNatEqOfBeqTrue
 
 end FX1PolyAudit

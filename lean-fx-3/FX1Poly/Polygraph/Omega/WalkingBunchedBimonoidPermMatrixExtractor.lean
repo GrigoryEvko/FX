@@ -201,4 +201,240 @@ Omega mirror of the Brauer `permutationDiagram`-read-off; the GENERIC extractor 
 bricks.  Zero-axiom (per-decl `#assert_no_axioms` + independent `#print axioms` in the twin). -/
 def fxBunchedBimonoid_permMatrixExtractorCarrierAndPinsShipped : Bool := true
 
+/-! # =========================================================================================
+    # B2 — THE INJECTIVE READ-OFF: `permMatrixOf width p = permMatrixOf width q -> p = q`
+    # =========================================================================================
+
+★ **The GENERIC injectivity — the Omega mirror of the Brauer `permutationDiagram_injective`.**  The concrete
+extractor pins (B1) reduce the star hypothesis `evalCell alpha = evalCell beta` to a `permMatrixOf`-equality; this
+brick proves that equality forces the underlying one-line permutations equal, by reading each row's unique `1` off
+the matrix with the propext-clean `bunchedBimonoidMatEntryAt` (the r10 lesson: NOT `List.getD`).  Together with the
+extractor pins, at any pinned width this gives `evalCell (permWord w1) = evalCell (permWord w2) -> permOfWord w1 =
+permOfWord w2` — the pure `List Nat` fact `combCanonicity` (portable, r12) then turns into `recComb`-equality.
+
+The clean generic list-algebra (`map` commuting through `applyAdjacentSwap` and through the fold) is shipped here
+too: it is the load-bearing congruence of the FUTURE generic extractor induction (the head `sigmaAt` relabels the
+one-line entries by `swapValue`), independent of the deferred matrix-arithmetic core. -/
+
+/-! ## B2.A — the propext-clean `Nat`-`beq` bridges -/
+
+/-- `(n == n) = true` for `Nat` — `decide_eq_true rfl`, propext-clean (Init's `beq_self` route leaks). -/
+theorem bunchedBimonoidNatBeqSelf (n : Nat) : (n == n) = true := decide_eq_true rfl
+
+/-- `a = b` from `(a == b) = true` for `Nat` — `of_decide_eq_true`, propext-clean (axiom-free, probed). -/
+theorem bunchedBimonoidNatEqOfBeqTrue (a b : Nat) (hbeq : (a == b) = true) : a = b :=
+  of_decide_eq_true hbeq
+
+/-! ## B2.B — list extensionality by `natListGet` + the append / range indexers (all propext-clean) -/
+
+/-- Two `List Nat` of equal length are equal if `bunchedBimonoidNatListGet` agrees at every in-range index —
+structural on both lists, propext-clean (avoids `List.ext_get`). -/
+theorem bunchedBimonoidListExtByGet : (left right : List Nat) → left.length = right.length →
+    (∀ index, index < left.length →
+      bunchedBimonoidNatListGet left index = bunchedBimonoidNatListGet right index) → left = right
+  | [], [], _, _ => rfl
+  | [], _ :: _, hLen, _ => Nat.noConfusion hLen
+  | _ :: _, [], hLen, _ => Nat.noConfusion hLen
+  | leftHead :: leftTail, rightHead :: rightTail, hLen, hGet => by
+      have hHead : leftHead = rightHead := hGet 0 (Nat.succ_pos _)
+      have hTailLen : leftTail.length = rightTail.length := Nat.succ.inj hLen
+      have hTail : leftTail = rightTail :=
+        bunchedBimonoidListExtByGet leftTail rightTail hTailLen
+          (fun index hIndex => hGet (index + 1) (Nat.succ_lt_succ hIndex))
+      exact hHead ▸ hTail ▸ rfl
+
+/-- `natListGet (front ++ back) index = natListGet front index` when `index < front.length` — structural on
+`front`, `index`. -/
+theorem bunchedBimonoidGetAppendLeft : (front back : List Nat) → (index : Nat) →
+    index < front.length →
+    bunchedBimonoidNatListGet (front ++ back) index = bunchedBimonoidNatListGet front index
+  | [], _, index, hIndex => absurd hIndex (Nat.not_lt_zero index)
+  | _ :: _, _, 0, _ => rfl
+  | _ :: frontTail, back, index + 1, hIndex =>
+      bunchedBimonoidGetAppendLeft frontTail back index (Nat.lt_of_succ_lt_succ hIndex)
+
+/-- `natListGet (front ++ [value]) front.length = value` — the appended element sits at the front's length. -/
+theorem bunchedBimonoidGetAppendSnoc : (front : List Nat) → (value : Nat) →
+    bunchedBimonoidNatListGet (front ++ [value]) front.length = value
+  | [], _ => rfl
+  | _ :: frontTail, value => bunchedBimonoidGetAppendSnoc frontTail value
+
+/-- `(front ++ mid) ++ back = front ++ (mid ++ back)` — cons-only structural copy (Init's `List.append_assoc`
+leaks propext). -/
+theorem bunchedBimonoidAppendSnocCons {alpha : Type _} :
+    (front rest : List alpha) → (value : alpha) → front ++ (value :: rest) = (front ++ [value]) ++ rest
+  | [], _, _ => rfl
+  | head :: tail, rest, value => congrArg (head :: ·) (bunchedBimonoidAppendSnocCons tail rest value)
+
+/-- `List.range.loop count acc = List.range.loop count [] ++ acc` — the accumulator factors out (propext-clean). -/
+theorem bunchedBimonoidRangeLoopAppend : (count : Nat) → (accumulated : List Nat) →
+    List.range.loop count accumulated = List.range.loop count [] ++ accumulated
+  | 0, _ => rfl
+  | count + 1, accumulated => by
+      show List.range.loop count (count :: accumulated)
+         = List.range.loop count (count :: []) ++ accumulated
+      rw [bunchedBimonoidRangeLoopAppend count (count :: accumulated),
+          bunchedBimonoidRangeLoopAppend count (count :: [])]
+      exact bunchedBimonoidAppendSnocCons (List.range.loop count []) accumulated count
+
+/-- `List.range (n + 1) = List.range n ++ [n]` — propext-clean replacement for Init's `List.range_succ`. -/
+theorem bunchedBimonoidRangeSucc (n : Nat) : List.range (n + 1) = List.range n ++ [n] :=
+  bunchedBimonoidRangeLoopAppend n (n :: [])
+
+/-- `(List.range.loop count acc).length = count + acc.length` — propext-clean. -/
+theorem bunchedBimonoidRangeLoopLength : (count : Nat) → (accumulated : List Nat) →
+    (List.range.loop count accumulated).length = count + accumulated.length
+  | 0, accumulated => (Nat.zero_add accumulated.length).symm
+  | count + 1, accumulated => by
+      show (List.range.loop count (count :: accumulated)).length = (count + 1) + accumulated.length
+      rw [bunchedBimonoidRangeLoopLength count (count :: accumulated)]
+      show count + (accumulated.length + 1) = (count + 1) + accumulated.length
+      rw [Nat.add_succ, Nat.succ_add]
+
+/-- `(List.range n).length = n`. -/
+theorem bunchedBimonoidRangeLength (n : Nat) : (List.range n).length = n :=
+  bunchedBimonoidRangeLoopLength n []
+
+/-- `natListGet (List.range width) index = index` when `index < width` — structural on `width` via `rangeSucc`. -/
+theorem bunchedBimonoidGetRange : (width index : Nat) → index < width →
+    bunchedBimonoidNatListGet (List.range width) index = index
+  | 0, index, hIndex => absurd hIndex (Nat.not_lt_zero index)
+  | width + 1, index, hIndex => by
+      rw [bunchedBimonoidRangeSucc width]
+      rcases Nat.lt_or_ge index width with hLt | hGe
+      · rw [bunchedBimonoidGetAppendLeft (List.range width) [width] index
+              (by rw [bunchedBimonoidRangeLength width]; exact hLt)]
+        exact bunchedBimonoidGetRange width index hLt
+      · have hEq : index = width := Nat.le_antisymm (Nat.le_of_lt_succ hIndex) hGe
+        subst hEq
+        have snoc := bunchedBimonoidGetAppendSnoc (List.range index) index
+        rw [bunchedBimonoidRangeLength index] at snoc
+        exact snoc
+
+/-! ## B2.C — `natListGet` / `rowListGet` commute with `List.map` (in range) -/
+
+/-- `natListGet (List.map f L) index = f (natListGet L index)` when `index < L.length` — structural. -/
+theorem bunchedBimonoidGetMapNat (f : Nat → Nat) : (list : List Nat) → (index : Nat) →
+    index < list.length →
+    bunchedBimonoidNatListGet (list.map f) index = f (bunchedBimonoidNatListGet list index)
+  | [], index, hIndex => absurd hIndex (Nat.not_lt_zero index)
+  | _ :: _, 0, _ => rfl
+  | _ :: listTail, index + 1, hIndex =>
+      bunchedBimonoidGetMapNat f listTail index (Nat.lt_of_succ_lt_succ hIndex)
+
+/-- `rowListGet (List.map f L) index = f (natListGet L index)` when `index < L.length` — the row-level analogue. -/
+theorem bunchedBimonoidGetMapRow (f : Nat → List Nat) : (list : List Nat) → (index : Nat) →
+    index < list.length →
+    bunchedBimonoidRowListGet (list.map f) index = f (bunchedBimonoidNatListGet list index)
+  | [], index, hIndex => absurd hIndex (Nat.not_lt_zero index)
+  | _ :: _, 0, _ => rfl
+  | _ :: listTail, index + 1, hIndex =>
+      bunchedBimonoidGetMapRow f listTail index (Nat.lt_of_succ_lt_succ hIndex)
+
+/-! ## B2.D — the permutation-matrix entry formula + the injective read-off -/
+
+/-- ★ **The permutation-matrix entry formula.**  For `rowIndex, colIndex < width`,
+`matEntryAt (permMatrixOf width perm) rowIndex colIndex` is `1` iff `perm[rowIndex] = colIndex`, else `0` —
+the two `List.range` maps read off by `getMapRow` / `getMapNat` / `getRange`. -/
+theorem bunchedBimonoidPermMatrixEntryAt (width : Nat) (perm : List Nat) (rowIndex colIndex : Nat)
+    (hRow : rowIndex < width) (hCol : colIndex < width) :
+    bunchedBimonoidMatEntryAt (bunchedBimonoidPermMatrixOf width perm) rowIndex colIndex
+      = (if bunchedBimonoidNatListGet perm rowIndex == colIndex then 1 else 0) := by
+  have rowEq : bunchedBimonoidRowListGet (bunchedBimonoidPermMatrixOf width perm).entries rowIndex
+      = (List.range width).map
+          (fun col => if bunchedBimonoidNatListGet perm rowIndex == col then 1 else 0) := by
+    show bunchedBimonoidRowListGet
+          ((List.range width).map (fun row =>
+            (List.range width).map (fun col => if bunchedBimonoidNatListGet perm row == col then 1 else 0)))
+          rowIndex
+        = (List.range width).map (fun col => if bunchedBimonoidNatListGet perm rowIndex == col then 1 else 0)
+    rw [bunchedBimonoidGetMapRow _ (List.range width) rowIndex
+          (by rw [bunchedBimonoidRangeLength width]; exact hRow),
+        bunchedBimonoidGetRange width rowIndex hRow]
+  show bunchedBimonoidNatListGet
+        (bunchedBimonoidRowListGet (bunchedBimonoidPermMatrixOf width perm).entries rowIndex) colIndex
+      = (if bunchedBimonoidNatListGet perm rowIndex == colIndex then 1 else 0)
+  rw [rowEq,
+      bunchedBimonoidGetMapNat _ (List.range width) colIndex
+        (by rw [bunchedBimonoidRangeLength width]; exact hCol),
+      bunchedBimonoidGetRange width colIndex hCol]
+
+/-- ★★ **THE INJECTIVE READ-OFF (generic).**  Two length-`width` one-line permutations whose entries are all
+`< width` and whose permutation matrices agree are EQUAL: each row's unique `1` sits at column `perm[rowIndex]`, so
+matrix-equality forces `perm[rowIndex] = perm'[rowIndex]` at every row, and `listExtByGet` concludes.  The Omega
+mirror of the Brauer `permutationDiagram_injective`. -/
+theorem bunchedBimonoidPermMatrixInjective (width : Nat) (perm otherPerm : List Nat)
+    (hLenLeft : perm.length = width) (hLenRight : otherPerm.length = width)
+    (hBoundLeft : ∀ index, index < width → bunchedBimonoidNatListGet perm index < width)
+    (matrixEq : bunchedBimonoidPermMatrixOf width perm = bunchedBimonoidPermMatrixOf width otherPerm) :
+    perm = otherPerm := by
+  apply bunchedBimonoidListExtByGet perm otherPerm (hLenLeft.trans hLenRight.symm)
+  intro rowIndex hRowLt
+  have hRow : rowIndex < width := hLenLeft ▸ hRowLt
+  have permEntryBound : bunchedBimonoidNatListGet perm rowIndex < width := hBoundLeft rowIndex hRow
+  have entryLeft : bunchedBimonoidMatEntryAt (bunchedBimonoidPermMatrixOf width perm) rowIndex
+      (bunchedBimonoidNatListGet perm rowIndex) = 1 := by
+    rw [bunchedBimonoidPermMatrixEntryAt width perm rowIndex (bunchedBimonoidNatListGet perm rowIndex)
+        hRow permEntryBound]
+    exact if_pos (bunchedBimonoidNatBeqSelf (bunchedBimonoidNatListGet perm rowIndex))
+  have entryRight : bunchedBimonoidMatEntryAt (bunchedBimonoidPermMatrixOf width otherPerm) rowIndex
+      (bunchedBimonoidNatListGet perm rowIndex)
+      = (if bunchedBimonoidNatListGet otherPerm rowIndex == bunchedBimonoidNatListGet perm rowIndex
+          then 1 else 0) :=
+    bunchedBimonoidPermMatrixEntryAt width otherPerm rowIndex (bunchedBimonoidNatListGet perm rowIndex)
+      hRow permEntryBound
+  have bridged : (if bunchedBimonoidNatListGet otherPerm rowIndex == bunchedBimonoidNatListGet perm rowIndex
+      then 1 else 0) = 1 := by
+    rw [← entryRight, ← matrixEq]; exact entryLeft
+  have beqTrue : (bunchedBimonoidNatListGet otherPerm rowIndex == bunchedBimonoidNatListGet perm rowIndex)
+      = true := by
+    cases hbeq : bunchedBimonoidNatListGet otherPerm rowIndex == bunchedBimonoidNatListGet perm rowIndex with
+    | true => rfl
+    | false => rw [hbeq] at bridged; exact Nat.noConfusion bridged
+  exact (bunchedBimonoidNatEqOfBeqTrue _ _ beqTrue).symm
+
+/-! ## B2.E — the clean generic list-algebra (the future extractor's congruence) -/
+
+/-- ★ **`List.map` commutes through one adjacent swap** — `map f (applyAdjacentSwap L k) = applyAdjacentSwap
+(map f L) k` (values relabel; the swap only moves positions).  Structural on `(L, k)`. -/
+theorem bunchedBimonoidMapApplyAdjacentSwapCommute (f : Nat → Nat) :
+    (list : List Nat) → (position : Nat) →
+    List.map f (bunchedBimonoidApplyAdjacentSwap list position)
+      = bunchedBimonoidApplyAdjacentSwap (List.map f list) position
+  | [], _ => rfl
+  | _ :: [], _ => rfl
+  | _ :: _ :: _, 0 => rfl
+  | first :: second :: rest, position + 1 =>
+      congrArg (f first :: ·)
+        (bunchedBimonoidMapApplyAdjacentSwapCommute f (second :: rest) position)
+
+/-- ★ **`List.map` commutes through the whole swap fold** — `foldl applyAdjacentSwap (map f L) positions = map f
+(foldl applyAdjacentSwap L positions)`.  Structural on `positions`, one step by the single-swap commute. -/
+theorem bunchedBimonoidFoldlApplyAdjacentSwapMapCommute (f : Nat → Nat) :
+    (positions : List Nat) → (list : List Nat) →
+    List.foldl bunchedBimonoidApplyAdjacentSwap (List.map f list) positions
+      = List.map f (List.foldl bunchedBimonoidApplyAdjacentSwap list positions)
+  | [], _ => rfl
+  | position :: rest, list => by
+      show List.foldl bunchedBimonoidApplyAdjacentSwap
+            (bunchedBimonoidApplyAdjacentSwap (List.map f list) position) rest
+          = List.map f (List.foldl bunchedBimonoidApplyAdjacentSwap
+              (bunchedBimonoidApplyAdjacentSwap list position) rest)
+      rw [← bunchedBimonoidMapApplyAdjacentSwapCommute f list position]
+      exact bunchedBimonoidFoldlApplyAdjacentSwapMapCommute f rest
+        (bunchedBimonoidApplyAdjacentSwap list position)
+
+/-! ## The B2 honesty marker -/
+
+/-- ★★ **ESTABLISHED (B2) — the injective read-off is GENERIC + zero-axiom.**  `= true` records
+`bunchedBimonoidPermMatrixInjective`: two length-`width` one-line permutations with entries `< width` and equal
+permutation matrices are equal (each row's unique `1` read off the propext-clean `bunchedBimonoidMatEntryAt`,
+`listExtByGet` concluding) — the Omega mirror of the Brauer `permutationDiagram_injective`, and the injectivity
+half of the read-off `evalCell (permWord w1) = evalCell (permWord w2) -> permOfWord w1 = permOfWord w2` (the
+extractor half is pinned concretely in B1; the GENERIC extractor is r12).  Also ships the clean generic
+list-algebra (`bunchedBimonoidMapApplyAdjacentSwapCommute`, `bunchedBimonoidFoldlApplyAdjacentSwapMapCommute` —
+`map` commuting through the swap fold), the congruence the future generic extractor rests on.  Zero-axiom
+(per-decl `#assert_no_axioms` + independent `#print axioms` in the twin). -/
+def fxBunchedBimonoid_permMatrixInjectiveReadOffShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
