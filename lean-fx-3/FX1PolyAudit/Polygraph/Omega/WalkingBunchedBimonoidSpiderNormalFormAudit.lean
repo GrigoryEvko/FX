@@ -40,8 +40,44 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPropCompositeTargetWidth
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propHomAndCompositionViewsTypeCheck
 
--- Independent confirmation (not fuel-based) of the B1 arity word + a hom-view fact.
+-- B2 — the spider building blocks (STRUCTURAL Nat recursions: the key propext / WellFounded check).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaFan
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuFold
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalar
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderAllOnesTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderCopyOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderTwoByThreeSample
+
+-- B2 — the building-block shape lemmas.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaFanZero_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaFanTwo_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaFanThree_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuFoldZero_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuFoldTwo_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuFoldThree_matrix
+
+-- B2 — the per-instance round-trips + the direct self-attacks.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarZeroRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarOneRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarTwoRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarThreeRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderEmptyRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderAllOnesTwoRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderTwoByThreeRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidZeroScalarSelfAttack
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMultiplicityTwoSelfAttack
+
+-- B2 — the markers.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderPerInstanceRoundTripShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderGeneralRoundTripReached
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderGeneralStageLemmasReached
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderGeneralRoutingReached
+
+-- Independent confirmation (not fuel-based) of the B1 arity word + a hom-view fact + the spider blocks / round-trip.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAPow
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPropCompositionPreservesDomain
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaFan
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuFold
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderAllOnesTwoRoundTrip
 
 end FX1PolyAudit
