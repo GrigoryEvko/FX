@@ -3625,4 +3625,43 @@ theorem smithReduceTotalSweepDiagonalizes (matrix : IntMatrix) (height width : N
     (matrix.applyOperations (smithReduceTotalSweep (Nat.min height width) matrix 0 height width))
     height width generalResult
 
+/-! ## The POLE-A arc ledger (H2-SMITH r12, B5) — what the driver-path Prop still owes; NO flip
+
+**Shipped this round (r12).**  The two bands around the remaining sub-block are closed as driver-path
+reachability facts, and the cross-clear driver's window-diagonal is assembled:
+
+  * B1 — `SmithPrefixSettled` (the settled frame outside `[p, ·)²`), the cross-clear forward pointwise
+    decode (`smithCrossIsClearPointwise`), the vacuous base and the `Nat.min` terminal
+    (`smithPrefixSettledAtMinIsWindowDiagonal`).
+  * B2 — `smithCascadeSweepPreservesAboveRightRowBandZero` / `…BelowLeftColBandZero` (+ seed forms): the
+    settled bands survive the whole cascade because the added multiples are of ZERO entries and the
+    move-swap permutes zero cells among themselves (the `…AtSecond` readers + the two zero-source clear
+    preservers).
+  * B3 — `smithCascadeStepSettlesThroughPivot`: one full driver step advances the frame `p → p+1`
+    (5-way region dispatch, sub-block never mentioned).
+  * B4 — `smithReduceTotalSweepSettlesThroughPivots` folds the step to the `Nat.min` cap, and
+    `smithReduceTotalSweepDiagonalizes` reads off `IsWindowDiagonal` of the TOTAL CROSS-CLEAR driver output.
+
+**Still owed toward `SmithNormalForm.SmithReduceFullDriverStatement` (UNINHABITED; NO flip).**  The two
+surviving hypotheses of `smithReduceFullDriverOfRepairInvariants` are about the REPAIR sweep
+(`smithDivisibilityRepairSweep`, = `fold + re-cascade`) layered on top of `smithReduceTotal`:
+
+  * `repairWindowDiagHolds` — `IsWindowDiagonal (repair ∘ reduceTotal) 0 height width`.  The repair fold
+    `addRowMultiple foundPos pivotIndex 1` MID-WAY re-breaks diagonality (POLE-B, refuted standalone on
+    `diag(30, 20, 12)`: off-diagonal residue `60` at `(2, 1)`), so r12's cross-clear window-diagonal does
+    NOT transport through it unchanged.  NAMED NODE: a `SmithPrefixSettled`-style frame transport for the
+    repair FOLD step (the band machinery of B2 re-applied to `addRowMultiple foundPos pivotIndex 1` + the
+    re-fired cascade), which the fold does NOT preserve pointwise — it needs the fold's OWN reachability
+    argument, not settled-prefix monotonicity.
+  * `repairChainHolds` — the invariant-factor chain `d_p ∣ d_{p+1}`.  A SEPARATE POLE-A conjunct (the
+    gcd-landing of the folded operands), refuted standalone (`SmithRepairChainDiagonalizesStatement` on
+    `diag(30, 20, 12)`), correct only along the min-abs-presorted driver path — its own later round.
+
+**Discipline honoured.**  Every r12 statement is quantified over the driver's OWN seed word
+(`smithCascadeSweep (smithMinorAbsSum …) …`) under `SmithPrefixSettled` + `IsRectangular` + pivot-in-range —
+the r7 reachability template; NONE quantifies over an arbitrary window-diagonal input, and NONE concludes
+"re-diagonalized" (they conclude "these zeros stay zero").  So the r12 family is immune to the r5/r6/POLE-A
+refuted-pole shape by construction.  `SmithReduceFullDriverStatement` is NOT flipped; the sub-block gcd
+chain and the repair-fold window-diagonal are the honest remaining walls. -/
+
 end FX1Poly.ComputerAlgebra
