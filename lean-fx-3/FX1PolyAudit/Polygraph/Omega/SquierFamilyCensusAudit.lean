@@ -48,4 +48,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierCapstoneRemainingFullBasisNormalizerR3
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_squierCapstoneClosedR3
 
+-- WP-EQUIV r1 (#2068) — the additive walking-equivalence census extension
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyEquivalenceWalker
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyEquivalenceWalkers
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyEquivalenceWalkerCountIsTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyEquivalenceWalkersExhaustive
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyEquivalenceStatus
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyEquivalenceWalkersPresentedStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyEquivalenceWalkersPresented
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_walkingEquivalenceWalkersPresentedInCensus
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_walkingEquivalenceFirstTwoObjectOmegaWalkerInCensus
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bareWalkingEquivalenceWordProblemOpenInCensus
+
 end FX1PolyAudit

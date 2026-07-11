@@ -3,6 +3,7 @@ import FX1Poly.Polygraph.Omega.MonadCoherentPresentation
 import FX1Poly.Polygraph.Omega.CyclicThreeDemonstrator
 import FX1Poly.Polygraph.Omega.IdempotentSemigroupDemonstrator
 import FX1Poly.Polygraph.Omega.PresentationOpDualityWithId
+import FX1Poly.Polygraph.Omega.WalkingEquivalencePresentation
 
 /-! # Polygraph/Omega/SquierFamilyCensus — the WP-SQUIER family census (the #2082 state, WP-SQUIER r2)
 
@@ -355,5 +356,76 @@ homotopy basis is unreached (the normalizer machine — obligations 1-5, orthogo
 wall — is the OMEGA-5 remainder).  Set `true` only when the adjunction is decided or permanently walled AND the
 full basis is reached. -/
 def fxOmega4_squierCapstoneClosedR3 : Bool := false
+
+/-! ## The WP-EQUIV extension — the two walking-equivalence walkers (additive, #2068)
+
+★ **The census EXTENSION for the walking equivalence — ADDITIVE, the shipped decided-9 census UNTOUCHED.**
+The walking equivalence is NOT one of the decided-9 (its BARE 2-cell word problem is the open winding
+problem, `fxEquiv_bareEquivalenceParallelUniquenessOpen`), so its two walkers are recorded here as a SEPARATE
+extension rather than grown into `allSquierFamilyDecidedWalkers` (whose count theorem
+`squierFamilyDecidedWalkerCountIsNine` keeps its name and meaning).  Both walkers have SHIPPED Omega-lane
+coherent presentations (`WalkingEquivalencePresentation.lean`): the walking equivalence (four iso-cancellation
+rows) and the walking adjoint equivalence (+ two triangle rows).  This is the FIRST two-object Omega walker —
+the genuine `modeCarrier := Bool` upgrade the r2 census's `fxOmega4_multiObjectWalkersOutsideDecidedNineR2`
+flagged as needed.  The capstone marker `fxOmega4_squierCapstoneClosedR3` is NOT flipped. -/
+
+/-- The two **walking-equivalence walkers** — the census extension (additive; NOT part of the decided-9). -/
+inductive SquierFamilyEquivalenceWalker
+  /-- The walking equivalence `<f, g | eta, etaInv, eps, epsInv | four iso-cancellations>`. -/
+  | walkingEquivalence
+  /-- The walking adjoint equivalence (+ two triangle rows). -/
+  | walkingAdjointEquivalence
+
+/-- The complete enumeration of the walking-equivalence walkers — TWO, listed. -/
+def allSquierFamilyEquivalenceWalkers : List SquierFamilyEquivalenceWalker :=
+  [.walkingEquivalence, .walkingAdjointEquivalence]
+
+/-- ★ **The walking-equivalence walker count is exactly TWO** — kernel-checked (`rfl`). -/
+theorem squierFamilyEquivalenceWalkerCountIsTwo : allSquierFamilyEquivalenceWalkers.length = 2 := rfl
+
+/-- ★ **The equivalence-walker enumeration is EXHAUSTIVE** — both walkers appear. -/
+theorem allSquierFamilyEquivalenceWalkersExhaustive :
+    ∀ walker : SquierFamilyEquivalenceWalker, walker ∈ allSquierFamilyEquivalenceWalkers
+  | .walkingEquivalence => List.Mem.head _
+  | .walkingAdjointEquivalence => List.Mem.tail _ (List.Mem.head _)
+
+/-- The coherent-presentation status of each equivalence walker — both SHIPPED in the Omega lane. -/
+def squierFamilyEquivalenceStatus :
+    SquierFamilyEquivalenceWalker → SquierFamilyCoherentPresentationStatus
+  | .walkingEquivalence => .shippedOmegaLane
+  | .walkingAdjointEquivalence => .shippedOmegaLane
+
+/-- ★ **The two-equivalence-walkers-presented statement.**  A `Prop` conjunction of the two shipped Omega-lane
+coherent presentations: the walking equivalence (four iso-cancellations) and the walking adjoint equivalence
+(+ two triangles). -/
+def SquierFamilyEquivalenceWalkersPresentedStatement : Prop :=
+  WalkingEquivalenceCoherentPresentationStatement ∧
+  WalkingAdjointEquivalenceCoherentPresentationStatement
+
+/-- ★★ **THE GROUNDED TWO-EQUIVALENCE-WALKERS CENSUS (#2068).**  Both shipped Omega-lane coherent
+presentations assembled into ONE machine-checked datum — so the census extension is proof-carrying, not a bare
+tally.  Each conjunct is the already-verified coherent presentation of its walker
+(`walkingEquivalenceCoherentPresentation`, `walkingAdjointEquivalenceCoherentPresentation`). -/
+theorem squierFamilyEquivalenceWalkersPresented : SquierFamilyEquivalenceWalkersPresentedStatement :=
+  ⟨walkingEquivalenceCoherentPresentation, walkingAdjointEquivalenceCoherentPresentation⟩
+
+/-- ★ **THE TWO WALKING-EQUIVALENCE WALKERS ARE PRESENTED IN THE CENSUS (#2068).**  `= true` records that both
+the walking equivalence and the walking adjoint equivalence have SHIPPED Omega-lane coherent presentations
+(`squierFamilyEquivalenceWalkersPresented`), machine-checked — the WP-EQUIV r1 census tie-in, recorded
+additively without touching the shipped decided-9. -/
+def fxOmega4_walkingEquivalenceWalkersPresentedInCensus : Bool := true
+
+/-- ★ **THE FIRST TWO-OBJECT OMEGA WALKER (census).**  `= true` records that the walking equivalence is the
+first Omega walker outside the single-mode (`modeCarrier := Unit`) family pattern — the genuine
+`modeCarrier := Bool` upgrade the r2 marker `fxOmega4_multiObjectWalkersOutsideDecidedNineR2` flagged as the
+missing datum for multi-object walkers.  Now landed for the two-object equivalence. -/
+def fxOmega4_walkingEquivalenceFirstTwoObjectOmegaWalkerInCensus : Bool := true
+
+/-- ★ **WALL — the BARE walking-equivalence word problem is OPEN (census, #2068, honest).**  `= false` records
+that the walking equivalence is NOT part of the DECIDED-9: its bare 2-cell parallel-uniqueness is the open
+winding word problem (`fxEquiv_bareEquivalenceParallelUniquenessOpen`), so its walkers are a census EXTENSION,
+not decided-9 members.  The ADJOINT walker's parallel-uniqueness is exercised (contractibility) but the full
+quantified decision is the OMEGA-5 normalizer handoff. -/
+def fxOmega4_bareWalkingEquivalenceWordProblemOpenInCensus : Bool := false
 
 end FX1Poly.Polygraph.Omega
