@@ -60,4 +60,23 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_blockExchangeSubKitShipped
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_blockExchangeInterchangeShipped
 
+-- B2 — the three r2-refused block-diagonal round-trips.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderDiag
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderDiagTwoThreeRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderThreeByTwoInteriorThree
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderThreeByTwoRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderTwoByFourZeroColumn
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderTwoByFourRoundTrip
+
+-- B2 — the singleton/identity well-formedness + the 1x1 identity units + the general diag(a,b) via interchange.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSingletonWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidIdentityOneWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidIdentityLeftUnitSingleton
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidIdentityRightUnitSingleton
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderDiagMatrix
+
+-- B2 — the markers.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderRefusedMatricesRoundTripShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderDiagGeneralViaInterchangeShipped
+
 end FX1PolyAudit

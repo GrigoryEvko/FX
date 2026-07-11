@@ -791,4 +791,145 @@ additive delivery, and the wall's residual denotation narrows to the arbitrary-`
 walled at the hexagon. -/
 def fxBunchedBimonoid_blockExchangeInterchangeShipped : Bool := true
 
+/-! # =========================================================================================
+    # B2 — THE r2-REFUSED MATRICES ROUND-TRIP + THE GENERAL diag(a, b) VIA THE INTERCHANGE
+    # =========================================================================================
+
+★ **The three r2-refused block-diagonal matrices round-trip, and `diag(a, b)` round-trips for ALL `a, b` through
+the block-exchange interchange.**  r2's per-instance round-trips were `rfl` on closed inputs but could NOT combine
+two non-identity blocks generically (the `diag(2,3)` blocker).  B2 probes the exact r2-refused matrices —
+`diag(2,3)`, a `3 x 2` with an interior `3`, a `2 x 4` with a zero column — each a concrete block-diagonal spider
+that round-trips `rfl`; then it lifts `diag(a, b)` to ALL `a, b` by INVOKING the interchange (the block-exchange
+splits the two scalar blocks onto the diagonal, the `1 x 1` identity units collapsing via `Nat.one_mul` /
+`Nat.mul_one`).  The fully-general arbitrary-`q x p` round-trip (overlapping output blocks) stays the star wall
+(B3): it needs the routing hexagon, not block-exchange. -/
+
+/-! ## The three r2-refused matrices — concrete block-diagonal spiders that round-trip (`rfl`) -/
+
+/-- The **diagonal spider** `diag(a, b)` — fan-fold scalar `a` beside scalar `b`, the block placement combining
+two `1 x 1` blocks: `vcomp (spiderScalar a |> col) (col <| spiderScalar b)`. -/
+def bunchedBimonoidSpiderDiag (leftScalar rightScalar : Nat) : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight (bunchedBimonoidSpiderScalar leftScalar) bunchedBimonoidAdditiveGen)
+    (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen (bunchedBimonoidSpiderScalar rightScalar))
+
+/-- ★★ **ROUND-TRIP (the r2 `diag(2,3)` blocker).**  The two non-unit `1 x 1` blocks `[[2]]`, `[[3]]` combine onto
+the `2 x 2` diagonal — `evalCell (spiderDiag 2 3) = [[2,0],[0,3]]`, `rfl` on the closed word (the exact matrix r2
+could not reach by combining two non-identity blocks). -/
+theorem bunchedBimonoidSpiderDiagTwoThreeRoundTrip :
+    bunchedBimonoidEvalCell (bunchedBimonoidSpiderDiag 2 3)
+      = { rows := 2, cols := 2, entries := [[2, 0], [0, 3]] } := rfl
+
+/-- The **`3 x 2`-with-interior-`3` spider** — `spiderScalar 3` beside `deltaFan 2` (block-diagonal `[[3]]` over
+the copy column `[[1],[1]]`), the reachable output-disjoint `3 x 2`. -/
+def bunchedBimonoidSpiderThreeByTwoInteriorThree : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight (bunchedBimonoidSpiderScalar 3) bunchedBimonoidAdditiveGen)
+    (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen (bunchedBimonoidDeltaFan 2))
+
+/-- ★★ **ROUND-TRIP (the `3 x 2` with an interior `3`).**  `evalCell = [[3,0],[0,1],[0,1]]` — a genuine `3 x 2`
+carrying a non-unit interior entry, round-tripping `rfl` because the two columns feed disjoint output blocks (no
+routing braid). -/
+theorem bunchedBimonoidSpiderThreeByTwoRoundTrip :
+    bunchedBimonoidEvalCell bunchedBimonoidSpiderThreeByTwoInteriorThree
+      = { rows := 3, cols := 2, entries := [[3, 0], [0, 1], [0, 1]] } := rfl
+
+/-- The **`2 x 4`-with-zero-column spider** — `spiderScalar 0` (a deleted input, the zero column) whiskered by
+`a^3` beside `muFold 3`, the reachable block-diagonal `2 x 4`. -/
+def bunchedBimonoidSpiderTwoByFourZeroColumn : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight (bunchedBimonoidSpiderScalar 0) (bunchedBimonoidAPow 3))
+    (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen (bunchedBimonoidMuFold 3))
+
+/-- ★★ **ROUND-TRIP (the `2 x 4` with a zero column).**  `evalCell = [[0,0,0,0],[0,1,1,1]]` — the leading column
+is all zeros (the deleted input `spiderScalar 0`), round-tripping `rfl`; the residual `1 x 3` fold block is
+block-diagonal, so no braid is needed. -/
+theorem bunchedBimonoidSpiderTwoByFourRoundTrip :
+    bunchedBimonoidEvalCell bunchedBimonoidSpiderTwoByFourZeroColumn
+      = { rows := 2, cols := 4, entries := [[0, 0, 0, 0], [0, 1, 1, 1]] } := rfl
+
+/-! ## Well-formedness of the singleton / identity-1 blocks + the `1 x 1` identity units -/
+
+/-- **Singleton well-formedness** — `{ rows := 1, cols := 1, entries := [[value]] }` is well-formed.  Its one row
+has length `1 = cols`; the row count `1 = rows`. -/
+theorem bunchedBimonoidSingletonWellFormed (value : Nat) :
+    bunchedBimonoidMatWellFormed { rows := 1, cols := 1, entries := [[value]] } :=
+  ⟨rfl, fun rowIndex below => by
+    cases rowIndex with
+    | zero => rfl
+    | succ predIndex => exact absurd (Nat.lt_of_succ_lt_succ below) (Nat.not_lt_zero predIndex)⟩
+
+/-- **Identity-1 well-formedness** — `identityMat 1` is well-formed (it reduces to the singleton `[[1]]`). -/
+theorem bunchedBimonoidIdentityOneWellFormed :
+    bunchedBimonoidMatWellFormed (bunchedBimonoidIdentityMat 1) :=
+  bunchedBimonoidSingletonWellFormed 1
+
+/-- **Left identity unit on a singleton** `matMul (identityMat 1) [[value]] = [[value]]` — the `1 x 1` identity is
+a left unit (contraction reads `1 * value + 0`).  Propext-clean (`Nat.one_mul` / `Nat.add_zero`). -/
+theorem bunchedBimonoidIdentityLeftUnitSingleton (value : Nat) :
+    bunchedBimonoidMatMul (bunchedBimonoidIdentityMat 1) { rows := 1, cols := 1, entries := [[value]] }
+      = { rows := 1, cols := 1, entries := [[value]] } := by
+  show ({ rows := 1, cols := 1, entries := [[1 * value + 0]] } : BunchedBimonoidMat)
+    = { rows := 1, cols := 1, entries := [[value]] }
+  rw [Nat.add_zero, Nat.one_mul]
+
+/-- **Right identity unit on a singleton** `matMul [[value]] (identityMat 1) = [[value]]` — the `1 x 1` identity is
+a right unit (contraction reads `value * 1 + 0`).  Propext-clean (`Nat.mul_one` / `Nat.add_zero`). -/
+theorem bunchedBimonoidIdentityRightUnitSingleton (value : Nat) :
+    bunchedBimonoidMatMul { rows := 1, cols := 1, entries := [[value]] } (bunchedBimonoidIdentityMat 1)
+      = { rows := 1, cols := 1, entries := [[value]] } := by
+  show ({ rows := 1, cols := 1, entries := [[value * 1 + 0]] } : BunchedBimonoidMat)
+    = { rows := 1, cols := 1, entries := [[value]] }
+  rw [Nat.add_zero, Nat.mul_one]
+
+/-! ## The general symbolic diag(a, b) round-trip — VIA the block-exchange interchange -/
+
+/-- ★★★ **GENERAL diag(a, b) ROUND-TRIP (via the interchange) — resolves the r2 blocker for ALL `a, b`.**
+`evalCell (spiderDiag a b) = [[a,0],[0,b]]` universally.  The proof INVOKES
+`bunchedBimonoidBlockExchangeInterchange`: `evalCell (spiderDiag a b)` reduces to `matMul (directSum (identityMat
+1) [[b]]) (directSum [[a]] (identityMat 1))`, the interchange splits it to `directSum (matMul (identityMat 1)
+[[a]]) (matMul [[b]] (identityMat 1))`, the `1 x 1` identity units collapse the blocks to `[[a]]` / `[[b]]`, and
+their `directSum` is the diagonal.  This lifts the r2 per-instance `diag(2,3)` (which combined two non-identity
+blocks — the r2 refusal) to the `forall a b` theorem, the block-exchange doing the combining. -/
+theorem bunchedBimonoidSpiderDiagMatrix (leftScalar rightScalar : Nat) :
+    bunchedBimonoidEvalCell (bunchedBimonoidSpiderDiag leftScalar rightScalar)
+      = { rows := 2, cols := 2, entries := [[leftScalar, 0], [0, rightScalar]] } := by
+  show bunchedBimonoidMatMul
+      (bunchedBimonoidMatDirectSum (bunchedBimonoidIdentityMat 1)
+        (bunchedBimonoidEvalCell (bunchedBimonoidSpiderScalar rightScalar)))
+      (bunchedBimonoidMatDirectSum (bunchedBimonoidEvalCell (bunchedBimonoidSpiderScalar leftScalar))
+        (bunchedBimonoidIdentityMat 1))
+    = { rows := 2, cols := 2, entries := [[leftScalar, 0], [0, rightScalar]] }
+  rw [bunchedBimonoidSpiderScalarMatrix leftScalar, bunchedBimonoidSpiderScalarMatrix rightScalar]
+  rw [bunchedBimonoidBlockExchangeInterchange (bunchedBimonoidIdentityMat 1)
+    { rows := 1, cols := 1, entries := [[rightScalar]] } { rows := 1, cols := 1, entries := [[leftScalar]] }
+    (bunchedBimonoidIdentityMat 1) bunchedBimonoidIdentityOneWellFormed
+    (bunchedBimonoidSingletonWellFormed rightScalar) (bunchedBimonoidSingletonWellFormed leftScalar)
+    bunchedBimonoidIdentityOneWellFormed rfl rfl]
+  rw [bunchedBimonoidIdentityLeftUnitSingleton leftScalar, bunchedBimonoidIdentityRightUnitSingleton rightScalar]
+  rfl
+
+/-! ## B2 truth-probe outputs -/
+
+#eval bunchedBimonoidEvalCell (bunchedBimonoidSpiderDiag 2 3)
+#eval bunchedBimonoidEvalCell bunchedBimonoidSpiderThreeByTwoInteriorThree
+#eval bunchedBimonoidEvalCell bunchedBimonoidSpiderTwoByFourZeroColumn
+
+/-! ## The B2 honesty markers -/
+
+/-- ★★ **ESTABLISHED (B2) — the three r2-refused block-diagonal matrices round-trip.**  `= true` records
+`bunchedBimonoidSpiderDiagTwoThreeRoundTrip` (the `diag(2,3)` blocker, two non-unit `1 x 1` blocks combined),
+`bunchedBimonoidSpiderThreeByTwoRoundTrip` (a `3 x 2` with an interior `3`, output-disjoint columns), and
+`bunchedBimonoidSpiderTwoByFourRoundTrip` (a `2 x 4` with a zero column, the deleted input) — each a concrete
+block-diagonal spider round-tripping `evalCell (spiderOf M) = M` by `rfl`.  These are exactly the shapes r2's
+per-instance round-trips could not combine generically. -/
+def fxBunchedBimonoid_spiderRefusedMatricesRoundTripShipped : Bool := true
+
+/-- ★★★ **ESTABLISHED (B2) — the general diag(a, b) round-trip is shipped VIA the interchange.**  `= true` records
+`bunchedBimonoidSpiderDiagMatrix`: `evalCell (spiderDiag a b) = [[a,0],[0,b]]` for ALL `a, b`, proven by INVOKING
+`bunchedBimonoidBlockExchangeInterchange` (the block-exchange combines the two scalar blocks onto the diagonal; the
+`1 x 1` identity units collapse via `Nat.one_mul` / `Nat.mul_one`).  This is the general resolution of the r2
+`diag(2,3)` blocker — the block-exchange interchange doing the combining r2 refused, for the whole diagonal
+family.  The block-diagonal round-trip for symbolic-DIMENSION blocks (`directSum (fanMatrix n) (rowMatrix m)`)
+additionally needs the general matMul identity-unit laws (Kronecker-delta contraction, the strict-law kit); the
+arbitrary non-diagonal `q x p` round-trip needs the routing hexagon — both are the B3 star wall. -/
+def fxBunchedBimonoid_spiderDiagGeneralViaInterchangeShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
