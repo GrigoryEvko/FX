@@ -3664,4 +3664,71 @@ the r7 reachability template; NONE quantifies over an arbitrary window-diagonal 
 refuted-pole shape by construction.  `SmithReduceFullDriverStatement` is NOT flipped; the sub-block gcd
 chain and the repair-fold window-diagonal are the honest remaining walls. -/
 
+/-! ## The repair-fold frame confinement (H2-SMITH r13, B1) — the fold touches only row `pivotIndex`
+
+r12's `smithCascadeStepSettlesThroughPivot` advances the settled frame `p → p+1` through the CROSS-CLEAR
+cascade, unconditionally, because the cascade always clears the cross at `p`.  The repair phase layers a
+FOLD (`addRowMultiple foundPos pivotIndex 1`) before each re-fired cascade, and POLE-B (eval-confirmed on
+`diag(30, 20, 12)`: the mid-fold cascade strands `20` at `(2, 1)`, and the terminal standalone repair keeps
+residue `60` at `(2, 1)`) shows the fold+re-cascade can DRAG a residue into the sub-block — the frame does
+NOT advance `p → p+1` through the repair for arbitrary settled inputs.
+
+This section ships the honest UNCONDITIONAL half: the fold PRESERVES the settled frame AT `p` (it does not
+break what is already settled).  The fold `addRowMultiple foundPos pivotIndex 1` writes ONLY row
+`pivotIndex`; a frame cell off that row is frozen (`addRowMultiplePreservesEntryOffTargetRow`), and a frame
+cell ON row `pivotIndex` is necessarily a settled COLUMN cell `(pivotIndex, colIndex)` with `colIndex <
+pivotIndex` (row `pivotIndex` is not `< pivotIndex`, so the frame disjunct fires on the column), whose new
+value `old(pivotIndex, colIndex) + 1 * old(foundPos, colIndex)` sums two settled-frame zeros
+(`colIndex < pivotIndex` makes both `(pivotIndex, colIndex)` and `(foundPos, colIndex)` frame cells).  This
+is the `foldPreservesSettledColumnZero` argument re-cast over the WEAKER `SmithPrefixSettled matrix
+pivotIndex` hypothesis (the r12 frame, not the full window-diagonal): the fold does not disturb the frame at
+`p`.  The genuinely-new content advancing `p → p+1` (clearing the new cross-strip at `p` WHEN the input's
+cross-strip there is dirty) is exactly the POLE-B wall — NOT this lemma.  `SmithReduceFullDriverStatement`
+stays uninhabited; NO flip. -/
+
+/-- **The repair fold preserves the settled frame at `pivotIndex`** — folding a later row `foundPos` into the
+pivot row (`addRowMultiple foundPos pivotIndex 1`) keeps `SmithPrefixSettled matrix pivotIndex` intact.  A
+frame cell off row `pivotIndex` is frozen by `addRowMultiplePreservesEntryOffTargetRow`; a frame cell on row
+`pivotIndex` has `colIndex < pivotIndex` (the disjunct forces the column, since `pivotIndex ≮ pivotIndex`),
+and its post-fold value `old(pivotIndex, colIndex) + 1 * old(foundPos, colIndex)` is `0 + 1 * 0` because both
+summand cells have column `< pivotIndex` (frame cells).  The r12 frame recast of
+`foldPreservesSettledColumnZero` over the weaker `SmithPrefixSettled` hypothesis.  This preserves the SAME
+frame (`p → p`); ADVANCING it (`p → p+1`) through the fold+re-cascade is the POLE-B wall. -/
+theorem smithRepairFoldPreservesSettledFrame (matrix : IntMatrix) (pivotIndex foundPos height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotInWindow : pivotIndex < height)
+    (pivotBelowFound : pivotIndex < foundPos) (foundInWindow : foundPos < height)
+    (isSettled : SmithPrefixSettled matrix pivotIndex height width) :
+    SmithPrefixSettled (matrix.addRowMultiple foundPos pivotIndex 1) pivotIndex height width := by
+  intro rowIndex colIndex rowLtHeight colLtWidth rowNeCol frameHolds
+  cases Nat.decEq rowIndex pivotIndex with
+  | isFalse rowNePivot =>
+      rw [addRowMultiplePreservesEntryOffTargetRow matrix foundPos pivotIndex 1 rowIndex colIndex rowNePivot]
+      exact isSettled rowIndex colIndex rowLtHeight colLtWidth rowNeCol frameHolds
+  | isTrue rowEqPivot =>
+      have colLtPivot : colIndex < pivotIndex :=
+        frameHolds.elim
+          (fun rowLtPivot =>
+            absurd (Eq.mp (congrArg (· < pivotIndex) rowEqPivot) rowLtPivot) (Nat.lt_irrefl pivotIndex))
+          id
+      have colLtFound : colIndex < foundPos := Nat.lt_trans colLtPivot pivotBelowFound
+      have foundNePivot : foundPos ≠ pivotIndex :=
+        fun foundEqPivot =>
+          Nat.lt_irrefl pivotIndex (Eq.mp (congrArg (pivotIndex < ·) foundEqPivot) pivotBelowFound)
+      have pivotEntryZero : matrix.entryAt pivotIndex colIndex = 0 :=
+        isSettled pivotIndex colIndex pivotInWindow colLtWidth
+          (fun pivotEqCol =>
+            Nat.lt_irrefl colIndex (Eq.mp (congrArg (colIndex < ·) pivotEqCol) colLtPivot))
+          (Or.inr colLtPivot)
+      have foundEntryZero : matrix.entryAt foundPos colIndex = 0 :=
+        isSettled foundPos colIndex foundInWindow colLtWidth
+          (fun foundEqCol =>
+            Nat.lt_irrefl colIndex (Eq.mp (congrArg (colIndex < ·) foundEqCol) colLtFound))
+          (Or.inr colLtPivot)
+      rw [rowEqPivot,
+        addRowMultipleEntryOnTargetRow matrix isRect foundPos pivotIndex colIndex 1 foundNePivot
+          foundInWindow pivotInWindow colLtWidth,
+        pivotEntryZero, foundEntryZero, intOneMul]
+      exact intZeroAdd 0
+
 end FX1Poly.ComputerAlgebra

@@ -154,4 +154,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalSweepSettlesThroughPivots
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalSweepDiagonalizes
 
+/- H2-SMITH r13 — the repair-fold frame confinement (B1): the repair fold `addRowMultiple foundPos
+   pivotIndex 1` preserves the settled frame AT `pivotIndex` (touches only row `pivotIndex`; the on-row
+   frame cells are settled columns that stay `0 + 1*0`).  The r12 frame recast of
+   `foldPreservesSettledColumnZero` over the weaker `SmithPrefixSettled` hypothesis; advancing the frame
+   `p → p+1` through the fold+re-cascade stays the POLE-B wall. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairFoldPreservesSettledFrame
+
 end FX1PolyAudit
