@@ -259,4 +259,136 @@ block at arbitrary width `k`, whiskered by `whiskerRightCongr` / `whiskerRightFu
 bracketing.  NOT "the word does not exist" (it does) — the two heavy lemmas above it. -/
 def fxBunchedBimonoid_wideCollisionConvGatedOnGenericNaturality : Bool := false
 
+/-! # =========================================================================================
+    # B3 — THE COXETER SORTED-NF SCAFFOLD: the position-indexed carrier + the fuel-structural sort
+    # =========================================================================================
+
+★ **The carrier the general `CoxeterWordUnique` bubble-sort (r9) stands on, plus its fuel-structural sort
+skeleton — the general confluence induction walled.**  The perm middle of the wide collision is a word in
+adjacent transpositions; this brick ships the position-indexed transposition letter `sigmaAt`, the word-as-cell
+fold `permWord`, a bounded determinism instance at the carrier (two braid words of one matrix), and a genuine
+FUEL-STRUCTURAL bubble sort (STRUCTURAL on an explicit `Nat` fuel = an inversion-count upper bound, NEVER
+`WellFounded.fix`).  The general lemma (two `sigma`-words of the same permutation matrix are convertible over the
+star scope, assembled from the five in-scope moves by the sort) is honestly r9. -/
+
+/-- ★ **THE POSITION-INDEXED TRANSPOSITION `sigmaAt wordWidth positionK`** — the adjacent transposition `s_k`
+acting at position `k` on a width-`wordWidth` word: `a^k <| (sigma |> a^(wordWidth - k - 2))`.  The elementary
+letter of a reduced `sigma`-word; `sigmaAt 3 0` is `s_1` (swap strands 0,1) and `sigmaAt 3 1` is `s_2` (swap
+strands 1,2).  Truncated subtraction keeps it total (out-of-range positions produce a harmless boundary cell). -/
+def bunchedBimonoidSigmaAt (wordWidth positionK : Nat) : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft (bunchedBimonoidAWordPow positionK)
+    (CellExpr.whiskerRight bunchedBimonoidAddSigmaGen (bunchedBimonoidAWordPow (wordWidth - positionK - 2)))
+
+/-- `sigmaAt 3 0` is the first transposition `s_1` — matrix `[[0,1,0],[1,0,0],[0,0,1]]` (swap strands 0,1),
+matching the shipped `sigmaWhiskerRight`. -/
+theorem bunchedBimonoidSigmaAtThreeZeroIsFirstTransposition :
+    bunchedBimonoidEvalCell (bunchedBimonoidSigmaAt 3 0)
+      = { rows := 3, cols := 3, entries := [[0, 1, 0], [1, 0, 0], [0, 0, 1]] } := rfl
+
+/-- `sigmaAt 3 1` is the second transposition `s_2` — matrix `[[1,0,0],[0,0,1],[0,1,0]]` (swap strands 1,2),
+matching the shipped `sigmaWhiskerLeft`. -/
+theorem bunchedBimonoidSigmaAtThreeOneIsSecondTransposition :
+    bunchedBimonoidEvalCell (bunchedBimonoidSigmaAt 3 1)
+      = { rows := 3, cols := 3, entries := [[1, 0, 0], [0, 0, 1], [0, 1, 0]] } := rfl
+
+/-- ★ **THE WORD-AS-CELL FOLD `permWord positions wordWidth`** — a list of transposition positions folded to a
+vertical composite of `sigmaAt` letters (right fold, structural on the list): `[]` is the width-`wordWidth`
+identity, `k :: rest` is `sigmaAt wordWidth k ; permWord rest wordWidth`.  A reduced word evaluates by this fold;
+the carrier the sort normalizes. -/
+def bunchedBimonoidPermWord : List Nat → Nat → CellExpr bunchedBimonoidOmegaComputad 2
+  | [], wordWidth => CellExpr.id (bunchedBimonoidAWordPow wordWidth)
+  | positionK :: remainingPositions, wordWidth =>
+      CellExpr.vcomp (bunchedBimonoidSigmaAt wordWidth positionK)
+        (bunchedBimonoidPermWord remainingPositions wordWidth)
+
+/-- The `s_1 s_2 s_1` braid word `permWord [0,1,0] 3` evaluates to the reversal `[[0,0,1],[0,1,0],[1,0,0]]`
+(`rfl`, single-sided literal — the double-sided form exceeds the heartbeat budget). -/
+theorem bunchedBimonoidPermWordBraidLeftMatrix :
+    bunchedBimonoidEvalCell (bunchedBimonoidPermWord [0, 1, 0] 3)
+      = { rows := 3, cols := 3, entries := [[0, 0, 1], [0, 1, 0], [1, 0, 0]] } := rfl
+
+/-- The `s_2 s_1 s_2` braid word `permWord [1,0,1] 3` evaluates to the SAME reversal (`rfl`, single-sided). -/
+theorem bunchedBimonoidPermWordBraidRightMatrix :
+    bunchedBimonoidEvalCell (bunchedBimonoidPermWord [1, 0, 1] 3)
+      = { rows := 3, cols := 3, entries := [[0, 0, 1], [0, 1, 0], [1, 0, 0]] } := rfl
+
+/-- The shipped `bunchedBimonoidYangBaxterLeftLeg` evaluates to the reversal too (`rfl`, single-sided) — the
+literal that bridges the `permWord` carrier to the r4 hexagon layer. -/
+theorem bunchedBimonoidYangBaxterLeftLegMatrix :
+    bunchedBimonoidEvalCell bunchedBimonoidYangBaxterLeftLeg
+      = { rows := 3, cols := 3, entries := [[0, 0, 1], [0, 1, 0], [1, 0, 0]] } := rfl
+
+/-- ★★ **BOUNDED DETERMINISM INSTANCE (the carrier).**  The two braid words `[0,1,0] = s_1 s_2 s_1` and
+`[1,0,1] = s_2 s_1 s_2` at width 3 share their `Mat(N)` map (both the reversal), composed from the two
+single-sided literals.  So two structurally-distinct `permWord`s of the same permutation exist at the carrier;
+their CONVERTIBILITY over the star scope is the Yang-Baxter row (modulo reassociation), the r9 sort's atomic
+step. -/
+theorem bunchedBimonoidPermWordBraidMatrixShared :
+    bunchedBimonoidEvalCell (bunchedBimonoidPermWord [0, 1, 0] 3)
+      = bunchedBimonoidEvalCell (bunchedBimonoidPermWord [1, 0, 1] 3) :=
+  bunchedBimonoidPermWordBraidLeftMatrix.trans bunchedBimonoidPermWordBraidRightMatrix.symm
+
+/-- ★ **THE CARRIER MEETS THE SHIPPED HEXAGON.**  `permWord [0,1,0] 3` (the `s_1 s_2 s_1` fold) shares its matrix
+with the shipped `bunchedBimonoidYangBaxterLeftLeg` (both the reversal, composed from the two literals) — the
+`permWord` carrier is semantically continuous with the r4 hexagon layer's Coxeter words. -/
+theorem bunchedBimonoidPermWordBraidMatchesYangBaxterLeft :
+    bunchedBimonoidEvalCell (bunchedBimonoidPermWord [0, 1, 0] 3)
+      = bunchedBimonoidEvalCell bunchedBimonoidYangBaxterLeftLeg :=
+  bunchedBimonoidPermWordBraidLeftMatrix.trans bunchedBimonoidYangBaxterLeftLegMatrix.symm
+
+/-- The **inversion-count fuel bound** for a reduced word of length `wordLength` — the number of adjacent-swap
+passes a bubble sort needs is at most `wordLength * wordLength` (an upper bound on the inversion count).  The
+explicit `Nat` the fuel-structural sort decrements. -/
+def bunchedBimonoidInversionFuelBound (wordLength : Nat) : Nat := wordLength * wordLength
+
+/-- The **single adjacent-swap pass** `bubbleSortOnePass fuel positions` — one left-to-right pass swapping
+out-of-order adjacent entries, STRUCTURAL on the fuel `Nat` (each recursive call decrements fuel, so the
+`carry-the-larger-forward` branch stays structural — no `WellFounded.fix`).  The `Nat.ble` comparison is matched
+as a `Bool` (full `true`/`false` enumeration, propext-clean). -/
+def bunchedBimonoidBubbleSortOnePass : Nat → List Nat → List Nat
+  | 0, positions => positions
+  | _fuel + 1, [] => []
+  | _fuel + 1, [singleton] => [singleton]
+  | fuel + 1, first :: second :: rest =>
+      match Nat.ble first second with
+      | true => first :: bunchedBimonoidBubbleSortOnePass fuel (second :: rest)
+      | false => second :: bunchedBimonoidBubbleSortOnePass fuel (first :: rest)
+
+/-- ★ **THE FUEL-STRUCTURAL BUBBLE SORT `bubbleSortFuel fuel positions`** — apply the one-pass `fuel` times,
+STRUCTURAL on the outer fuel `Nat` (NEVER `WellFounded.fix`).  With `fuel = inversionFuelBound positions.length`
+it fully sorts (each pass drives one inversion out).  The sort skeleton the r9 `CoxeterWordUnique` assembles into
+a convertibility via the five in-scope moves — here the DATA is shipped; the r9 lemma connects the sort trace to a
+CONV chain. -/
+def bunchedBimonoidBubbleSortFuel : Nat → List Nat → List Nat
+  | 0, positions => positions
+  | fuel + 1, positions =>
+      bunchedBimonoidBubbleSortFuel fuel (bunchedBimonoidBubbleSortOnePass fuel positions)
+
+/-! ## B3 truth-probe outputs (the fuel-structural sort computes) -/
+
+#eval bunchedBimonoidBubbleSortFuel (bunchedBimonoidInversionFuelBound 5) [2, 0, 1, 0, 2]
+#eval bunchedBimonoidBubbleSortFuel (bunchedBimonoidInversionFuelBound 2) [1, 0]
+
+/-! ## The B3 markers — the scaffold is shipped, the general confluence induction is walled -/
+
+/-- ★★ **ESTABLISHED (B3) — the Coxeter sorted-NF scaffold is shipped.**  `= true` records the position-indexed
+transposition carrier (`bunchedBimonoidSigmaAt`, `s_1` / `s_2` at width 3 by `rfl`), the word-as-cell fold
+(`bunchedBimonoidPermWord`, structural on the list), the bounded determinism instance
+(`bunchedBimonoidPermWordBraidMatrixShared` — two braid words of one matrix, continuous with the shipped
+Yang-Baxter via `bunchedBimonoidPermWordBraidMatchesYangBaxterLeft`), the inversion fuel bound, and the genuine
+FUEL-STRUCTURAL bubble sort (`bunchedBimonoidBubbleSort{OnePass,Fuel}`, structural on an explicit `Nat` fuel, NO
+`WellFounded.fix`, truth-probed to sort).  The r9 `CoxeterWordUnique` stands on exactly this carrier + sort. -/
+def fxBunchedBimonoid_coxeterSortNfScaffoldShipped : Bool := true
+
+/-- ★ **THE GENERAL `CoxeterWordUnique` STAYS WALLED (r9) — gated on a generic-width braid + the sort-to-CONV
+bridge, no flip.**  `= false` records the exact remaining node (the r6/r7
+`...coxeterWordUniqueBubbleSortStillUnbuilt` markers stay byte-intact, their denotation narrowing here): the
+carrier (`sigmaAt` / `permWord`) and the fuel-structural sort are now SHIPPED, and all five Coxeter / double-coset
+moves are in scope (r7 `bunchedBimonoidCoxeterMovesAllInScope`), but the general lemma (two `permWord`s of the
+same matrix are convertible over the star scope) needs (a) the braid / distant-commute / involution moves at
+GENERIC position/width — currently only width-3 `yangBaxter` and width-4 distant-commute are shipped — and (b) the
+bridge connecting the fuel-structural sort trace to a CONV chain (each swap step firing one in-scope move).  The
+fuel-recursive assembly is the genuine r9 work. -/
+def fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid : Bool := false
+
 end FX1Poly.Polygraph.Omega

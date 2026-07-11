@@ -48,4 +48,25 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuStage
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraNFMatchesCollisionTwoThree
 
+-- B3 — the Coxeter sorted-NF scaffold: the carrier + the fuel-structural sort.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAt
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtThreeZeroIsFirstTransposition
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtThreeOneIsSecondTransposition
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermWord
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermWordBraidLeftMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermWordBraidRightMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidYangBaxterLeftLegMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermWordBraidMatrixShared
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermWordBraidMatchesYangBaxterLeft
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidInversionFuelBound
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBubbleSortOnePass
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBubbleSortFuel
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_coxeterSortNfScaffoldShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid
+
+-- Independent (non-fuel) axiom prints on the fuel-structural sort defs (no WellFounded.fix leak) + the carrier.
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBubbleSortOnePass
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBubbleSortFuel
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermWord
+
 end FX1PolyAudit
