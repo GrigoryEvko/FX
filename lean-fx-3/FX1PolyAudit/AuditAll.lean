@@ -758,6 +758,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingDropLastCu
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainAppend
 -- FC-3 r16 B3 — the LEFT swap's boundary-WORD-chain preservation (W4)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainSwapLeft
+-- FC-3 r16 B1/B3 — the concrete three-cup width-0 port anti-vacuity truth-probe
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringScrambledThreeCupPortProbe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
