@@ -518,6 +518,145 @@ theorem permuteOfCrossingWord_permutationToCrossingWord (width : Nat) (order : L
         w 0 (List.range (w + 1)) (by rw [Nat.zero_add]) (rangeLengthConj (w + 1))
         (isDistinctList_range (w + 1)) (fun _ => rfl) (fun j hj => absurd hj (Nat.not_lt_zero j))
 
+/-! ## Section 9 — BRAUER r21 B1: the staircase POSITION-BOUND (`∀ pos ∈ staircase, pos + 2 ≤ width`)
+
+The `WellFormedBrauerFold` crossing-phase discharge (`wellFormedBrauerFold_crossingWord`) takes exactly the window
+hypothesis `∀ pos ∈ positions, pos + 2 ≤ width`.  For the corrected extractor's three crossing staircases
+(`bottomPerm` / `middle` / `topPerm`) that hypothesis is the range property of `permutationToCrossingWord`: every
+emitted adjacent-transposition position is `≤ endIndex - 1` for an `endIndex` that the roundtrip pins strictly below
+`width`.  A fresh induction reusing the SAME loop invariants as `realizerFoldEvalConj` MINUS distinctness and prefix
+agreement (the bound needs only boundedness of `order`): `currentPerm.length = width`, its membership set is
+`List.range width`, and the fuel accounting `position + fuel + 1 = width`. -/
+
+/-- The UPPER mirror of `descendingPositionsMemGeConj` — every member of a descending run is `≤ top`.  Structural on
+`count`, splitting the `top :: descendingPositions (top - 1) count` cons; the recursive step relaxes `top - 1 ≤ top`
+(`Nat.sub_le`). -/
+private theorem descendingPositionsMemLeTopConj : (count top target : Nat) →
+    memBool target (descendingPositions top count) = true → target ≤ top
+  | 0, _, _, hmem => Bool.noConfusion hmem
+  | count + 1, top, target, hmem => by
+      have split : memBool target (descendingPositions top (count + 1))
+          = (Nat.beq top target || memBool target (descendingPositions (top - 1) count)) := rfl
+      rw [split] at hmem
+      cases hbeq : Nat.beq top target with
+      | true => exact Nat.le_of_eq (eqOfNatBeqTrueConj top target hbeq).symm
+      | false =>
+          rw [hbeq, Bool.false_or] at hmem
+          exact Nat.le_trans (descendingPositionsMemLeTopConj count (top - 1) target hmem) (Nat.sub_le top 1)
+
+/-- A descending run with any member is non-empty (`0 < count`) — the emptiness a `descendingSwapPositions endIndex
+position` collapses to when `endIndex ≤ position`, ruled out by the mere existence of a member. -/
+private theorem descendingPositionsMemPosConj : (count top target : Nat) →
+    memBool target (descendingPositions top count) = true → 0 < count
+  | 0, _, _, hmem => Bool.noConfusion hmem
+  | count + 1, _, _, _ => Nat.succ_pos count
+
+/-- Append membership splits — a `propext`-free `List.mem_append`, structural on the left list. -/
+private theorem memAppendCasesConj : (listLeft listRight : List Nat) → (target : Nat) →
+    target ∈ listLeft ++ listRight → target ∈ listLeft ∨ target ∈ listRight
+  | [], _, _, mem => Or.inr mem
+  | head :: rest, listRight, target, mem => by
+      have memReduced : target ∈ head :: (rest ++ listRight) := mem
+      cases memReduced with
+      | head => exact Or.inl (List.Mem.head rest)
+      | tail _ memRest =>
+          cases memAppendCasesConj rest listRight target memRest with
+          | inl memLeft => exact Or.inl (List.Mem.tail head memLeft)
+          | inr memRight => exact Or.inr memRight
+
+/-- The realizer-fold POSITION BOUND (the fresh induction).  Under the same loop invariants the roundtrip threads
+MINUS distinctness/prefix, every emitted position of `permutationRealizerFold order fuel position currentPerm` is
+`+ 2 ≤ width`.  Each bubble `descendingSwapPositions endIndex position` emits positions `≤ endIndex - 1`, and
+`endIndex = natIndexOfValue currentPerm (natListGetAt order position)` is pinned `< width` by the roundtrip (the
+value is bounded, hence a member of `currentPerm` whose set is `List.range width`). -/
+private theorem realizerFoldPosBoundConj (order : List Nat) (width : Nat)
+    (orderBounded : ∀ index, index < width → natListGetAt order index < width) :
+    (fuel position : Nat) → (currentPerm : List Nat) →
+    position + fuel + 1 = width →
+    currentPerm.length = width →
+    (∀ value, memBool value currentPerm = memBool value (List.range width)) →
+    (pos : Nat) → pos ∈ permutationRealizerFold order fuel position currentPerm →
+    pos + 2 ≤ width
+  | 0, _position, _currentPerm, _hFuel, _hLen, _hMem, _pos, hposMem => nomatch hposMem
+  | fuel + 1, position, currentPerm, hFuel, hLen, hMem, pos, hposMem => by
+      rw [permutationRealizerFoldSuccConj order fuel position currentPerm] at hposMem
+      cases memAppendCasesConj _ _ pos hposMem with
+      | inl posInBubble =>
+          have hposLt : position < width := by
+            rw [← hFuel]
+            exact Nat.lt_of_le_of_lt (Nat.le_add_right position (fuel + 1)) (Nat.lt_succ_self _)
+          have hvalLt : natListGetAt order position < width := orderBounded position hposLt
+          have hvalMem : memBool (natListGetAt order position) currentPerm = true := by
+            rw [hMem]; exact memBoolRangeOfLtConj width (natListGetAt order position) hvalLt
+          have rt := natIndexOfValueRoundtripConj currentPerm (natListGetAt order position) hvalMem
+          have endLtWidth : natIndexOfValue currentPerm (natListGetAt order position) < width := by
+            rw [← hLen]; exact rt.2
+          have hbridge := descendingSwapPositionsBridgeConj
+            (natIndexOfValue currentPerm (natListGetAt order position)) position
+          have posBoolMem : memBool pos
+              (descendingSwapPositions (natIndexOfValue currentPerm (natListGetAt order position)) position) = true :=
+            memBoolOfMemConj _ pos posInBubble
+          rw [hbridge] at posBoolMem
+          have hxle : pos ≤ natIndexOfValue currentPerm (natListGetAt order position) - 1 :=
+            descendingPositionsMemLeTopConj
+              (natIndexOfValue currentPerm (natListGetAt order position) - position)
+              (natIndexOfValue currentPerm (natListGetAt order position) - 1) pos posBoolMem
+          have hcountpos : 0 < natIndexOfValue currentPerm (natListGetAt order position) - position :=
+            descendingPositionsMemPosConj
+              (natIndexOfValue currentPerm (natListGetAt order position) - position)
+              (natIndexOfValue currentPerm (natListGetAt order position) - 1) pos posBoolMem
+          have oneLeEnd : 1 ≤ natIndexOfValue currentPerm (natListGetAt order position) :=
+            Nat.lt_of_lt_of_le hcountpos
+              (Nat.sub_le (natIndexOfValue currentPerm (natListGetAt order position)) position)
+          have hpred : (natIndexOfValue currentPerm (natListGetAt order position) - 1) + 1
+              = natIndexOfValue currentPerm (natListGetAt order position) := by
+            have hc := addSubCancelLeConj oneLeEnd
+            rw [Nat.add_comm 1 (natIndexOfValue currentPerm (natListGetAt order position) - 1)] at hc
+            exact hc
+          have hxplus1 : pos + 1 ≤ natIndexOfValue currentPerm (natListGetAt order position) :=
+            hpred ▸ Nat.add_le_add_right hxle 1
+          show pos + 2 ≤ width
+          exact Nat.le_trans (Nat.add_le_add_right hxplus1 1) endLtWidth
+      | inr posInRest =>
+          refine realizerFoldPosBoundConj order width orderBounded fuel (position + 1)
+            ((descendingSwapPositions (natIndexOfValue currentPerm (natListGetAt order position)) position).foldl
+              applyAdjacentSwap currentPerm) ?_ ?_ ?_ pos posInRest
+          · have hAssoc : position + 1 + fuel = position + (fuel + 1) :=
+              (Nat.add_right_comm position 1 fuel).trans (Nat.add_assoc position fuel 1)
+            show position + 1 + fuel + 1 = width
+            rw [hAssoc]; exact hFuel
+          · rw [foldlAdjacentSwap_length]; exact hLen
+          · exact fun value => (memBoolFoldlSwapConj _ _ value).trans (hMem value)
+
+/-- ★ **Truth-probe (concrete conjugator outputs FIRST).**  The reversal staircase — the MAXIMAL crossing case where
+the very first bubble emits `width - 2` — has every emitted position `+ 2 ≤ width` at width four; the identity
+staircase (empty) and a width-4 3-cycle-shaped order confirm the bound on non-degenerate outputs.  Read straight off
+the kernel, before the general lemma. -/
+theorem permutationToCrossingWord_posBound_probe :
+    (permutationToCrossingWord 4 [3, 2, 1, 0]).all (fun pos => decide (pos + 2 ≤ 4)) = true
+      ∧ (permutationToCrossingWord 4 [2, 0, 3, 1]).all (fun pos => decide (pos + 2 ≤ 4)) = true
+      ∧ (permutationToCrossingWord 3 [0, 1, 2]).all (fun pos => decide (pos + 2 ≤ 3)) = true :=
+  ⟨by decide, by decide, by decide⟩
+
+/-- ★★ **THE STAIRCASE POSITION-BOUND (BRAUER r21 B1).**  Every adjacent-transposition position the
+`permutationToCrossingWord` staircase emits is `+ 2 ≤ width`, needing ONLY that `order` is `[0, width)`-bounded
+(distinctness and prefix agreement are NOT used).  This is the exact window hypothesis
+`wellFormedBrauerFold_crossingWord` consumes for the three crossing phases of the corrected word.  The bound is TIGHT:
+the reversal's first bubble emits `width - 2` (`permutationToCrossingWord_posBound_probe`). -/
+theorem permutationToCrossingWord_posBound (width : Nat) (order : List Nat)
+    (orderBounded : ∀ index, index < width → natListGetAt order index < width) :
+    ∀ pos, pos ∈ permutationToCrossingWord width order → pos + 2 ≤ width := by
+  cases width with
+  | zero =>
+      intro pos hposMem
+      have empty : permutationToCrossingWord 0 order = [] := rfl
+      rw [empty] at hposMem
+      exact nomatch hposMem
+  | succ w =>
+      intro pos hposMem
+      exact realizerFoldPosBoundConj order (w + 1) orderBounded w 0 (List.range (w + 1))
+        (by rw [Nat.zero_add]) (rangeLengthConj (w + 1)) (fun _ => rfl) pos hposMem
+
 /-! ## Honesty marker -/
 
 /-- ★★ **Honesty marker — the E2 conjugator-correctness roundtrip is SHIPPED (r14).**
@@ -529,5 +668,15 @@ E2 marker flip `fxBrauer_hasArcConjugatorLeg` (`Brauer/WiringDescArcEnumeration.
 specific extractor read-off orders satisfy the gate (T-CLOSE), so the masters stay `false` and #2013 does not close.
 `= true`. -/
 def fxBrauer_hasConjugatorRoundtrip : Bool := true
+
+/-- ★★ **Honesty marker — THE STAIRCASE POSITION-BOUND is SHIPPED (BRAUER r21 B1).**
+`permutationToCrossingWord_posBound` proves, zero-axiom and structural, that every position the
+`permutationToCrossingWord` selection-sort staircase emits satisfies `pos + 2 ≤ width` from ONLY the boundedness of
+`order` (a strict weakening of the roundtrip's `IsPermutationOfRange` gate — no distinctness, no prefix agreement).
+This is exactly the window hypothesis the `WellFormedBrauerFold` crossing-phase discharge
+(`wellFormedBrauerFold_crossingWord`) consumes, fed for the corrected word's three crossing staircases.  The bound is
+tight at the reversal's first bubble (`permutationToCrossingWord_posBound_probe`, the concrete-output truth-probe).
+`= true`. -/
+def fxBrauer_hasStaircasePositionBound : Bool := true
 
 end FX1Poly.Polygraph

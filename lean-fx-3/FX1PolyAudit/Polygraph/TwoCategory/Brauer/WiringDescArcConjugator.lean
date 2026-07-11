@@ -21,4 +21,9 @@ namespace FX1PolyAudit
 -- the honesty marker
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasConjugatorRoundtrip
 
+-- BRAUER r21 B1: the staircase position-bound (`∀ pos ∈ staircase, pos + 2 ≤ width`) + its concrete-output probe
+#assert_no_axioms FX1Poly.Polygraph.permutationToCrossingWord_posBound_probe
+#assert_no_axioms FX1Poly.Polygraph.permutationToCrossingWord_posBound
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasStaircasePositionBound
+
 end FX1PolyAudit
