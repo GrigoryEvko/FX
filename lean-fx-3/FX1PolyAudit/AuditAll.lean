@@ -1235,6 +1235,8 @@ import FX1PolyAudit.Polygraph.Omega.NotSpuriousTrioOverQuotientAdjudicationAudit
 import FX1PolyAudit.Polygraph.Omega.FrobeniusFourCountBlindAdjudicationAudit
 -- OMEGA SWEEP r2 — the walking comonad's op-dual over-quotient: 3 op'd bare-whisker rows transpose-separated (convertibility FREE via opConvWithId), transpose model sound on genuine comonad laws, KZ/co-KZ free-riders
 import FX1PolyAudit.Polygraph.Omega.ComonadOpDualOverQuotientAdjudicationAudit
+-- OMEGA SWEEP r2 — the finalized family over-quotient verdict: trio + comonad RESOLVED (bundle), Frobenius model-invisible, r4-bill shrunk; superseding markers additive (r4 ledger left intact)
+import FX1PolyAudit.Polygraph.Omega.OmegaHouseStyleFamilyVerdictFinalAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
