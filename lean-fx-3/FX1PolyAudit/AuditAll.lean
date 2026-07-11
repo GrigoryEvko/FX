@@ -885,6 +885,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineValleyWidthTe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSurvivorTopTotalMidWidth
 -- FC-3 r30 — B1: the string arc-engine boundary-census + token-frame perfect-matching fold transport (arc-engine floor of the M2c cap subtree)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcBoundaryCensusPerfectMatchingFold
+-- FC-3 r31 — B3: the string matchingOf partner-INVOLUTION + no-fixed-point transport (the involution floor above the r30 fold)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingPartnerInvolution
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
