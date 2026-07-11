@@ -185,4 +185,31 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.repairWindowDiagHoldsOfRepairStep
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverOfRepairStepAndChain
 
+/- H2-SMITH r14 — the ideal / Z-combination stability atom (B4, JAM 2-PRESERVE core): the three `Int`
+   divisibility atoms (`d ∣ 0`, `d ∣ -x`, `d ∣ a + c*b`), the three range-free slot-predicate preservers
+   (`listReplaceAt`/`listModifyAt`/`mapAllRows`), the row/matrix divisibility predicates, the six primitive
+   row/column-transform preservers, and the whole-matrix preservation under a single operation, a whole
+   certificate word, and the diagonal read-off — the refutation-immune UNCONDITIONAL PRESERVE half (the
+   sub-block ESTABLISH for `d_p`, `p > 0`, re-imports JAM 1; `SmithReduceFullDriverStatement` uninhabited). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.dividesExactlyZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.dividesExactlyNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.dividesExactlyAddScaled
+#assert_no_axioms FX1Poly.ComputerAlgebra.listReplaceAtPreservesSlotPredicate
+#assert_no_axioms FX1Poly.ComputerAlgebra.listModifyAtPreservesSlotPredicate
+#assert_no_axioms FX1Poly.ComputerAlgebra.mapAllRowsPreservesSlotPredicate
+#assert_no_axioms FX1Poly.ComputerAlgebra.RowSlotsDivisibleBy
+#assert_no_axioms FX1Poly.ComputerAlgebra.rowSlotsDivisibleByEmpty
+#assert_no_axioms FX1Poly.ComputerAlgebra.MatrixEntriesDivisibleBy
+#assert_no_axioms FX1Poly.ComputerAlgebra.matrixEntriesDivisibleByAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.rowSlotsDivisibleMapNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.rowSlotsDivisibleAddScaledEntries
+#assert_no_axioms FX1Poly.ComputerAlgebra.rowSlotsDivisibleSwapEntries
+#assert_no_axioms FX1Poly.ComputerAlgebra.rowSlotsDivisibleModifyNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.rowSlotsDivisibleAddScaledWithinRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.applyRowOperationPreservesEntriesDivisible
+#assert_no_axioms FX1Poly.ComputerAlgebra.applyColumnOperationPreservesEntriesDivisible
+#assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationPreservesEntriesDivisible
+#assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationsPreservesEntriesDivisible
+#assert_no_axioms FX1Poly.ComputerAlgebra.matrixEntriesDivisibleByDiagonal
+
 end FX1PolyAudit
