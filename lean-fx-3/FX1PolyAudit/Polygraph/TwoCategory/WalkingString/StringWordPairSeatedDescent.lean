@@ -18,4 +18,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringWordPairSeated_bubblesThroughPrefix
 #assert_no_axioms FX1Poly.Polygraph.fxString_hasWordPrefixDescentMaster
 
+-- B3 — the word→length chain projection (the named r24 length-chain consumer)
+#assert_no_axioms FX1Poly.Polygraph.spineBoundaryChained_ofWordChained
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasWordToLengthChainProjection
+
+-- B4 — the integration probes + the round ledger
+#assert_no_axioms FX1Poly.Polygraph.stringDescentProbeTarget
+#assert_no_axioms FX1Poly.Polygraph.stringDescentProbeState
+#assert_no_axioms FX1Poly.Polygraph.stringDescentProbeBoundaryWord
+#assert_no_axioms FX1Poly.Polygraph.stringWordToLengthProjection_fires
+#assert_no_axioms FX1Poly.Polygraph.stringWordDescentBaseCase_fires
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasWordDescentRoundLedger
+
 end FX1PolyAudit

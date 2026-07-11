@@ -362,6 +362,96 @@ theorem stringWordPairSeated_bubblesThroughPrefix
                 movedDomPin movedCodPin windowGap windowGapEq movedSeatSplit seatedStart
                 parityStart
 
+/-! ## The word→length chain projection (the named r24 length-chain consumer, §3) -/
+
+/-- ★ **The boundary WORD chain projects to the boundary LENGTH chain.**  A list word-chained at `boundaryWord`
+is length-chained at `boundaryWord.length`: each atom's domain word equals the running boundary word, so its
+domain-boundary LENGTH equals the running width, and likewise for the tail's cod word.  Signature-GENERIC,
+STRUCTURAL on the word chain; the per-atom bridge is `composePath_length` twice plus one `Nat.add_assoc`.  This
+is the reusable r24 length-chain supplier for the head-extraction pin's conjunct (2) — the length chain consumed
+from a WORD-bubbled list, which the descent produces at the word granularity only. -/
+theorem spineBoundaryChained_ofWordChained {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {boundaryWord : ModalityPath signature.graph sourceMode targetMode}
+    {atoms : List (SpineAtom signature sourceMode targetMode)}
+    (wordChained : SpineBoundaryWordChained boundaryWord atoms) :
+    SpineBoundaryChained boundaryWord.length atoms := by
+  induction wordChained with
+  | nil boundaryWordNil => exact SpineBoundaryChained.nil boundaryWordNil.length
+  | cons atom headWordFires _tailWordChained tailChainedIH =>
+      refine SpineBoundaryChained.cons atom ?_ ?_
+      · rw [headWordFires]
+        dsimp only [SpineAtom.domBoundaryLength]
+        rw [composePath_length, composePath_length]
+        exact Nat.add_assoc atom.leftContext.length atom.generatorDom.length
+          atom.rightContext.length
+      · have codEq : atom.codBoundaryLength
+            = (composePath atom.leftContext
+                (composePath atom.generatorCod atom.rightContext)).length := by
+          dsimp only [SpineAtom.codBoundaryLength]
+          rw [composePath_length, composePath_length]
+          exact Nat.add_assoc atom.leftContext.length atom.generatorCod.length
+            atom.rightContext.length
+        rw [codEq]
+        exact tailChainedIH
+
+/-! ## Integration probes — the descent fires end-to-end on a concrete cap spine -/
+
+/-- A concrete cap target: the lower counit `ε : G·F ⇒ id_tip` with empty whiskering (dom `G·F` length `2`, cod
+`id_tip` length `0`, window `0`, `leftMidMode = tip`). -/
+def stringDescentProbeTarget :
+    SpineAtom adjointTripleModeSignature AdjointTripleMode.tip AdjointTripleMode.tip :=
+  ⟨AdjointTripleMode.tip, AdjointTripleMode.tip,
+    ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.tip, stringGF,
+    ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.tip,
+    StringTwoCell.counitLower,
+    ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.tip⟩
+
+/-- A concrete arc-wire state whose two open wires `[0, 1]` are the target cap's below-fresh endpoints
+(fresh counter at `2`). -/
+def stringDescentProbeState : ArcWireState :=
+  ArcWireState.mk [0, 1] [] 2 0 [] []
+
+/-- The concrete target's SOURCE boundary word — the running boundary the single-cap spine is word-chained at. -/
+def stringDescentProbeBoundaryWord :
+    ModalityPath adjointTripleGraph AdjointTripleMode.tip AdjointTripleMode.tip :=
+  composePath stringDescentProbeTarget.leftContext
+    (composePath stringDescentProbeTarget.generatorDom stringDescentProbeTarget.rightContext)
+
+/-- ★ **The word→length projection fires on a concrete single-cap word chain.**  Projecting the boundary-word
+chain of `[stringDescentProbeTarget]` at its source word yields the boundary-LENGTH chain at that word's length —
+`spineBoundaryChained_ofWordChained` run end-to-end on a real cap. -/
+theorem stringWordToLengthProjection_fires :
+    SpineBoundaryChained stringDescentProbeBoundaryWord.length [stringDescentProbeTarget] :=
+  spineBoundaryChained_ofWordChained
+    (SpineBoundaryWordChained.cons stringDescentProbeTarget rfl (SpineBoundaryWordChained.nil _))
+
+/-- ★ **The descent master fires end-to-end at the empty prefix (the base case) on the concrete cap spine.**  A
+below-fresh pair `(0, 1)` seated at the front cap `ε : G·F` (already at the head, empty prefix) bubbles trivially:
+the master returns the `WordBubblesToFront.nil` witness, the preserved cap arities, the pair seated at the START
+state, and the window's `tip` parity — the whole descent conclusion, discharged by applying
+`stringWordPairSeated_bubblesThroughPrefix` to concrete `ArcWireState` / chain / seat data (the same-window-mode
+premise vacuous at the empty prefix).  A machine-checked non-vacuity witness that the master APPLIES to a real
+seated cap. -/
+theorem stringWordDescentBaseCase_fires :
+    ∃ (movedTarget :
+          SpineAtom adjointTripleModeSignature AdjointTripleMode.tip AdjointTripleMode.tip)
+      (movedPrefixAtoms :
+          List (SpineAtom adjointTripleModeSignature AdjointTripleMode.tip AdjointTripleMode.tip)),
+      WordBubblesToFront stringDescentProbeTarget [] movedTarget movedPrefixAtoms
+        ∧ movedTarget.generatorDom.length = 2
+        ∧ movedTarget.generatorCod.length = 0
+        ∧ ArcPairSeated 0 1 movedTarget.leftContext.length stringDescentProbeState
+        ∧ adjointTripleModeAtDistance AdjointTripleMode.tip movedTarget.leftContext.length
+            = stringDescentProbeTarget.leftMidMode :=
+  stringWordPairSeated_bubblesThroughPrefix stringDescentProbeTarget rfl rfl [] 0 1
+    [] stringDescentProbeState stringDescentProbeBoundaryWord
+    (Nat.le.step Nat.le.refl) Nat.le.refl
+    (SpineBoundaryChained.cons stringDescentProbeTarget rfl (SpineBoundaryChained.nil _))
+    (SpineBoundaryWordChained.cons stringDescentProbeTarget rfl (SpineBoundaryWordChained.nil _))
+    ⟨rfl, rfl, Nat.le.refl⟩
+    (fun _atom memberProof => nomatch memberProof)
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — the same-parity-generic cap-step gap-closing exclusion is machine-checked (FC-3 r23, B1).**
@@ -395,5 +485,43 @@ its window keeps `target.leftMidMode` parity (generalized from the arc's fixed `
   import closure avoids the three length-rigidity-locked arc files (`DisjointWindowFactorization`,
   `ArcBubbleToFront`, `ArcPrefixBubbleDescent`).  `= true`. -/
 def fxString_hasWordPrefixDescentMaster : Bool := true
+
+/-- **★ ESTABLISHED — the word→length chain projection is machine-checked (FC-3 r23, B3).**
+`spineBoundaryChained_ofWordChained` projects any boundary-WORD chain onto the boundary-LENGTH chain at the
+word's length (signature-generic, structural, per-atom bridge = `composePath_length` twice + `Nat.add_assoc`).
+This is the named r24 length-chain supplier (§3): the `StringCapHeadExtractionWordPin` conjunct (2) needs a
+LENGTH chain on the WORD-bubbled list, and the descent produces the WORD chain only — this lemma converts it,
+reusably, with no bespoke `WordBubblesToFront` length consumer.  `stringWordToLengthProjection_fires` runs it on
+a concrete single-cap word chain.  `= true`. -/
+def fxString_hasWordToLengthChainProjection : Bool := true
+
+/-- **★ LEDGER — FC-3 r23 the WORD DESCENT MASTER (P5), the pin-chain state.**  This round re-founds the
+phantom-locked arc prefix bubble descent (`arcPairSeated_bubblesThroughPrefix`) on the shared boundary word.
+Shipped, zero-axiom, each independently `#print axioms`-clean:
+
+  * B1 `stringArcPairSeated_beforeCapStep_ofSameParities` — the crux prerequisite, the tip hardwiring generalized
+    to any common window mode (the ONE genuine mathematical dualization the recon flagged);
+  * B2 `stringWordPairSeated_bubblesThroughPrefix` — the descent master ASSEMBLED, front-first structural
+    recursion, both chains threaded, `WordBubblesToFront` carrier via the two word assemblers;
+  * B3 `spineBoundaryChained_ofWordChained` — the word→length projection, the named r24 length-chain consumer;
+  * B4 probes `stringSameParityProbe_fires`, `stringWordToLengthProjection_fires`,
+    `stringWordDescentBaseCase_fires` — the exclusion, the projection, and the master's base case fired
+    end-to-end on concrete cap spines.
+
+  THE PIN-CHAIN STATE.  P5 SHIPPED ⟹ r24 is pure composition: the r20 window location (`StringArcPairCapWindow`,
+  seat seed) feeds the descent; the descent's `WordBubblesToFront` supplies the pin conjuncts (1)pre-cancel (via
+  `spineTraceEquiv_of_wordBubblesToFront` + r21 `stringCapAtom_eq_of_sharedDom_sameWindow`) and (3)pre-peel (via
+  `spineBoundaryWordChained_of_wordBubblesToFront` + tail); conjunct (2) rides B3; conjunct (4) is the re-based
+  arc equality.  Markers flip ONLY at literal delivery: `fxString_hasMidZeroValleyCapSort` / the completeness
+  flags stay as they were — this round ships the descent CORE, not the read-off wrapper nor
+  `StringCapHeadExtractionWordPin`'s inhabitant.
+
+  THE FLAGGED AUGMENTATION (the honest residual): the descent takes the threaded
+  `prefixSharesWindowMode : ∀ atom ∈ prefixAtoms, atom.leftMidMode = target.leftMidMode` premise, because the
+  un-threaded arc master is FALSE at the triple (opposite-colour gap-closing nested caps are realizable).
+  Discharging it from the r20 located pure-cap seat is r24's obligation (the AllCapArity augmentation — the
+  located spine's caps sharing the toucher's window colour).  Every jam this round was named by its descent case;
+  none survived.  `= true`. -/
+def fxString_hasWordDescentRoundLedger : Bool := true
 
 end FX1Poly.Polygraph
