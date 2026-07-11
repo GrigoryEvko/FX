@@ -337,4 +337,113 @@ word`) requires a transpose helper (the encoding risk); r1 keeps the perm-stage 
 `bunchedBimonoidMiddleSwap`; identity for the scalar / diagonal instances) and NAMES the general routing r2. -/
 def fxBunchedBimonoid_spiderGeneralRoutingReached : Bool := false
 
+/-! # =========================================================================================
+    # B3 — THE COMPLETENESS INSTANCES: distinct diagrams converge to the canonical spider (over SoundRow)
+    # =========================================================================================
+
+★ **Two hand-exhibited instances of "equal matrix implies convertible", each converged onto the canonical spider
+word THROUGH the SOUND sub-theory `BunchedBimonoidSoundRow` (NOT the over-quotienting
+`bunchedBimonoidOmegaBaseRel`).**  Instance 1 (flagship, sigma-mediated): the two bialgebra-B1 legs — the direct
+`delta_a . mu_a` and the 4-strand `(mu (x) mu) ; (1 (x) sigma (x) 1) ; (delta (x) delta)` — both converge to
+`bunchedBimonoidSpiderAllOnesTwo`, which evaluates to `[[1,1],[1,1]]`.  Instance 2 (sigma-mediated): the two
+cocommutativity legs — `sigma_a . delta_a` and `delta_a` — both converge to `bunchedBimonoidSpiderCopyOne` (=
+`delta_a`), which evaluates to `[[1],[1]]`.  The conversion scripts are EXPLICIT terms (`refl` for the identical
+leg, `ofRelation` fired on the genuine sound row for the other).  These are HAND-EXHIBITED convertibilities, NOT
+a general decision procedure. -/
+
+/-! ## Instance 1 — the bialgebra-B1 legs converge to the all-ones spider (the flagship) -/
+
+/-- ★ The **B1 right leg IS the spider** — convertibility over the sound sub-theory is `refl` (the 4-strand
+composite is `bunchedBimonoidSpiderAllOnesTwo` on the nose). -/
+theorem bunchedBimonoidBialgebraRightLegConvertibleToSpider :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+      bunchedBimonoidBialgebraProductRightLeg bunchedBimonoidSpiderAllOnesTwo :=
+  SaturatedConvOverWithId.refl _
+
+/-- ★★ The **B1 LEFT leg converts to the spider** through the SOUND congruence — `delta_a . mu_a` converts to the
+4-strand spider `(mu (x) mu) ; (1 (x) sigma (x) 1) ; (delta (x) delta)` by firing the genuine bialgebra-B1 sound
+row.  The conversion crosses the middle `sigma` (the identification mechanism). -/
+theorem bunchedBimonoidBialgebraLeftLegConvertibleToSpider :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+      bunchedBimonoidBialgebraProductLeftLeg bunchedBimonoidSpiderAllOnesTwo :=
+  SaturatedConvOverWithId.ofRelation BunchedBimonoidSoundRow.bialgebraProduct
+
+/-- ★ **DERIVED (not assumed): the B1 left leg shares the spider's matrix** — from the convertibility via the
+restored soundness `bunchedBimonoidMatrixSoundOverSound` (both `[[1,1],[1,1]]`). -/
+theorem bunchedBimonoidBialgebraLeftLegMatrixIsSpider :
+    bunchedBimonoidEvalCell bunchedBimonoidBialgebraProductLeftLeg
+      = bunchedBimonoidEvalCell bunchedBimonoidSpiderAllOnesTwo :=
+  bunchedBimonoidMatrixSoundOverSound bunchedBimonoidBialgebraLeftLegConvertibleToSpider
+
+/-- ★★ **COMPLETENESS INSTANCE 1 (the flagship).**  Two structurally-distinct diagrams (`delta_a . mu_a` and the
+4-strand composite) with the SAME matrix `[[1,1],[1,1]]` are BOTH convertible over the sound sub-theory to the
+canonical spider `bunchedBimonoidSpiderAllOnesTwo`, which evaluates to that matrix — a hand-exhibited
+"equal-matrix implies convertible" witness (sigma-mediated). -/
+theorem bunchedBimonoidBialgebraCompletenessInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidBialgebraProductLeftLeg bunchedBimonoidSpiderAllOnesTwo
+      ∧ SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidBialgebraProductRightLeg bunchedBimonoidSpiderAllOnesTwo
+      ∧ bunchedBimonoidEvalCell bunchedBimonoidSpiderAllOnesTwo
+        = { rows := 2, cols := 2, entries := [[1, 1], [1, 1]] } :=
+  ⟨bunchedBimonoidBialgebraLeftLegConvertibleToSpider,
+    bunchedBimonoidBialgebraRightLegConvertibleToSpider,
+    bunchedBimonoidSpiderAllOnesTwoRoundTrip⟩
+
+/-! ## Instance 2 — the cocommutativity legs converge to the copy spider (sigma-mediated) -/
+
+/-- The **copy spider evaluates to `[[1],[1]]`** — the round-trip for `bunchedBimonoidSpiderCopyOne` (= `delta_a`,
+spider of `[[1],[1]]`). -/
+theorem bunchedBimonoidSpiderCopyOneRoundTrip :
+    bunchedBimonoidEvalCell bunchedBimonoidSpiderCopyOne
+      = { rows := 2, cols := 1, entries := [[1], [1]] } := rfl
+
+/-- ★ The **cocommutativity right leg IS the copy spider** — convertibility over the sound sub-theory is `refl`
+(`delta_a` is `bunchedBimonoidSpiderCopyOne` on the nose). -/
+theorem bunchedBimonoidCocommRightLegConvertibleToSpiderCopy :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+      bunchedBimonoidCocommutativityRightLeg bunchedBimonoidSpiderCopyOne :=
+  SaturatedConvOverWithId.refl _
+
+/-- ★★ The **cocommutativity LEFT leg converts to the copy spider** through the SOUND congruence — `sigma_a .
+delta_a` converts to `delta_a` by firing the genuine cocommutativity sound row (the conversion crosses
+`sigma_a`). -/
+theorem bunchedBimonoidCocommLeftLegConvertibleToSpiderCopy :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+      bunchedBimonoidCocommutativityLeftLeg bunchedBimonoidSpiderCopyOne :=
+  SaturatedConvOverWithId.ofRelation BunchedBimonoidSoundRow.cocommutativity
+
+/-- ★ **DERIVED: the cocommutativity left leg shares the copy spider's matrix** — from the convertibility via
+restored soundness (both `[[1],[1]]`). -/
+theorem bunchedBimonoidCocommLeftLegMatrixIsSpiderCopy :
+    bunchedBimonoidEvalCell bunchedBimonoidCocommutativityLeftLeg
+      = bunchedBimonoidEvalCell bunchedBimonoidSpiderCopyOne :=
+  bunchedBimonoidMatrixSoundOverSound bunchedBimonoidCocommLeftLegConvertibleToSpiderCopy
+
+/-- ★★ **COMPLETENESS INSTANCE 2 (sigma-mediated).**  The two cocommutativity legs (`sigma_a . delta_a` and
+`delta_a`) with the SAME matrix `[[1],[1]]` are BOTH convertible over the sound sub-theory to the canonical copy
+spider `bunchedBimonoidSpiderCopyOne`, which evaluates to that matrix. -/
+theorem bunchedBimonoidCocommutativityCompletenessInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidCocommutativityLeftLeg bunchedBimonoidSpiderCopyOne
+      ∧ SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidCocommutativityRightLeg bunchedBimonoidSpiderCopyOne
+      ∧ bunchedBimonoidEvalCell bunchedBimonoidSpiderCopyOne
+        = { rows := 2, cols := 1, entries := [[1], [1]] } :=
+  ⟨bunchedBimonoidCocommLeftLegConvertibleToSpiderCopy,
+    bunchedBimonoidCocommRightLegConvertibleToSpiderCopy,
+    bunchedBimonoidSpiderCopyOneRoundTrip⟩
+
+/-! ## The B3 honesty marker -/
+
+/-- ★★ **ESTABLISHED (B3) — two completeness instances, each converged onto the canonical spider over the SOUND
+sub-theory.**  `= true` records `bunchedBimonoidBialgebraCompletenessInstance` (the flagship: the two B1 legs,
+same matrix `[[1,1],[1,1]]`, both convertible to `bunchedBimonoidSpiderAllOnesTwo`) and
+`bunchedBimonoidCocommutativityCompletenessInstance` (the two cocommutativity legs, same matrix `[[1],[1]]`, both
+convertible to `bunchedBimonoidSpiderCopyOne`).  Each conversion is an EXPLICIT term through
+`BunchedBimonoidSoundRow` (`refl` for the on-the-nose leg, `ofRelation` on the genuine sound row for the other),
+and the shared matrix is DERIVED from the convertibility via `bunchedBimonoidMatrixSoundOverSound`.
+HAND-EXHIBITED instances, NOT a general decision — see B4. -/
+def fxBunchedBimonoid_propCompletenessInstancesShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega

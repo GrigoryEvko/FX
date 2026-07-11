@@ -73,11 +73,30 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderGeneralStageLemmasReached
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderGeneralRoutingReached
 
--- Independent confirmation (not fuel-based) of the B1 arity word + a hom-view fact + the spider blocks / round-trip.
+-- B3 — completeness instance 1 (bialgebra-B1 legs converge to the all-ones spider).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraRightLegConvertibleToSpider
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraLeftLegConvertibleToSpider
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraLeftLegMatrixIsSpider
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraCompletenessInstance
+
+-- B3 — completeness instance 2 (cocommutativity legs converge to the copy spider).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderCopyOneRoundTrip
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCocommRightLegConvertibleToSpiderCopy
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCocommLeftLegConvertibleToSpiderCopy
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCocommLeftLegMatrixIsSpiderCopy
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCocommutativityCompletenessInstance
+
+-- B3 — the marker.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propCompletenessInstancesShipped
+
+-- Independent confirmation (not fuel-based) of the B1 arity word + a hom-view fact + the spider blocks /
+-- round-trip + the two completeness-instance convertibilities.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAPow
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPropCompositionPreservesDomain
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidDeltaFan
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMuFold
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderAllOnesTwoRoundTrip
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBialgebraCompletenessInstance
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCocommutativityCompletenessInstance
 
 end FX1PolyAudit
