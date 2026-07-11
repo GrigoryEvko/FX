@@ -681,4 +681,47 @@ theorem subBlockDiagonalDivisibleOfFindNone {height width : Nat} (matrix : IntMa
       rw [diagonalEntryAtBeyondWindowZero matrix isRect position positionGeMin]
       exact dividesExactlyZero (matrix.diagonalEntryAt pivotIndex)
 
+/-! ## The r20 arc ledger (H2-SMITH r20, B4, #2261) — the reduction is now a THEOREM; ONE residual left
+
+**What r20 flipped.**  r19's headline "seed ⟹ `repairChainHolds`" lived only in prose and the verifier
+REFUTED it.  r20 makes it a machine-checked Lean theorem chain, zero-axiom throughout:
+
+  * NODE A — `chainWindowedThroughPivots` (SHIPPED).  The seed propagates the windowed diagonal chain
+    `MatrixDiagonalChainWindowed` through the whole clearing repair sweep.  The load-bearing obligation
+    r19's prose glossed — the LOW-LOW FREEZE (`entryAt earlier earlier` is invariant under the later
+    sub-sweep, so the windowed divisor is stable) — is discharged by an ADDITIVE parallel confinement
+    `opFreezesBelow` / `allOpsFreezeBelow` (guarded negate arms, which the shipped `allOpsBoundedBelow`
+    lacks) + the entry-level freeze + a structural re-walk of the sweep.  Truth-probed on the r16
+    refuter diag(10,10,6,9): the split is real (whole sweep NOT bounded below 1), the confinement fires
+    at startPivot 1 non-trivially (34 ops), entry (0,0) frozen at value 1, diagonal lands 1|2|30|90.
+
+  * NODE B — `repairChainHoldsOfSeed` (SHIPPED).  A Lean `theorem` whose CONCLUSION is verbatim the
+    `repairChainHolds` hypothesis the shipped `smithReduceCompleteDriverOfChain` consumes; and
+    `smithReduceCompleteDriverOfSubBlockSeed : SmithCascadeLandsDivisibleSubBlock →
+    SmithReduceCompleteDriverStatement` collapses the corrected-driver totality onto the seed ALONE, as
+    a pure structural assembly term (no kernel evaluation — the 3×3/4×4 whole-driver defeq ceiling is
+    untouched).  The composition TYPECHECKS: the reduction is real, not prose.
+
+  * NODE C — the seed itself does NOT close (SHIPPED partials only).  The decomposition
+    `matrixEntriesDivisibleByWithinOfHalves` + the C2 diagonal bridge `subBlockDiagonalDivisibleOfFindNone`
+    are machine-checked.
+
+**THE MACHINE-CHECKED RESIDUAL, named EXACTLY** (NOT a prose chain).  `SmithReduceCompleteDriverStatement`
+is now inhabited GIVEN `SmithCascadeLandsDivisibleSubBlock` (the seed) — hypothesis-free totality is NOT
+yet reached.  The seed's remaining wall factors, via `matrixEntriesDivisibleByWithinOfHalves`, into:
+
+  1. `SubBlockOffDiagonalDivisibleFrom (M'.diagonalEntryAt p) (p+1) M'` for the sweep output `M'` — the
+     off-diagonal gcd-ideal invariance (pivot = ideal generator).  This is the SNF invariant-factor
+     theorem, a STANDALONE MAJOR ARC (recon C1, refuted as a diagonality decomposition); NOT r20-sized.
+  2. `SubBlockDiagonalDivisibleFrom (M'.diagonalEntryAt p) (p+1) M'` for the sweep output `M'` — the
+     diagonal half.  C2 (`subBlockDiagonalDivisibleOfFindNone`) discharges it FROM a find-`none` exit;
+     the residual here is the C3 fuel-adequacy that reaches the exit on the sweep output (unbuilt, and
+     the recon flags it does not finish the seed regardless of C1).
+
+**Honest verdict.**  r20 answers the r19 refutation: the seed ⟹ `repairChainHolds` reduction is a Lean
+theorem, and the corrected-driver totality residual count is honestly ONE
+(`SmithCascadeLandsDivisibleSubBlock`).  It does NOT claim driver totality — that would repeat the r19
+error one level up.  `smithReduceFull` and its refutation, the certificate API, and the r18/r19 world
+stay byte-intact (additive only). -/
+
 end FX1Poly.ComputerAlgebra
