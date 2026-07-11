@@ -1141,6 +1141,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingDistLawSortNFAudit
 import FX1PolyAudit.Polygraph.Omega.DistLawNoGoLedgerAudit
 -- WP-EQUIV r1 — the walking equivalence: two-object invertible-unit/counit presentation (B1)
 import FX1PolyAudit.Polygraph.Omega.WalkingEquivalencePresentationAudit
+-- WP-FROBMONAD r1 — the walking Frobenius monad: twelve-critical-pair presentation + four-count soundness
+import FX1PolyAudit.Polygraph.Omega.FrobeniusMonadPresentationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)

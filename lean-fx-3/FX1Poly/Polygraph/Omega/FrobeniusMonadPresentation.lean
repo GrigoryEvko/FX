@@ -1199,4 +1199,99 @@ cells share the invariant (`frobMonadOmegaFrobLeftCountShared`) and a non-conver
 sound only because the bare walking Frobenius monad has no special law `mu.delta = id`.  `= true`. -/
 def fxFrob_soundInvariantShipped : Bool := true
 
+/-! # =========================================================================================
+    # B4 — THE DECISION LEDGER (honest scope) + the ambijunction framing + the census feed
+    # =========================================================================================
+
+★ **The honest r1 scope: the soundness invariant is SHIPPED; completeness / decision is NAMED at the
+`TwoCategory/Frobenius` TL-bridge, NOT shipped; no 2Cob / TL overclaim.**
+
+## Soundness (SHIPPED, Omega lane)
+
+Convertible 2-cells ⟹ equal four-count (`frobMonadOmegaFourCountSound`).  Weak but genuine,
+congruence-respecting (`frobMonadOmegaFourCountAbsorbs`), machine-checked, exercised both ways.
+
+## Completeness (NOT shipped — NAMED at the TL / Cospan bridge, walled at TWO named nodes)
+
+The `TwoCategory/Frobenius/SpiderCompleteness` lane DECIDES a Frobenius word problem
+(`spiderConv_iff_extraEq` + `instDecidableSpiderConv`) via a corelation partition invariant — BUT for the
+EXTRASPECIAL-COMMUTATIVE theory (a symmetry `sigma` + commutativity / cocommutativity + special + bone).
+The bare walking Frobenius MONAD here is NON-COMMUTATIVE (no `sigma`), so that decision does NOT transfer.
+It is walled at two named nodes:
+
+  1. **Non-commutativity** — the `S_n` / comb leg-straightening the TwoCategory lane proves avoidable is
+     avoidable ONLY because of commutativity ("commutativity / cocommutativity make leg-permutations a
+     LOCAL bounded absorption"); without `sigma` this is the still-open `BRAUER-BREACH` node.
+  2. **Genus (2Cob)** — the plain (non-special) Frobenius PROP is `2Cob` = partition + genus-per-block, and
+     genus is UNBUILT in every lane (the TwoCategory lane ledgers `fxFrob_has2CobGenus = false`).  The
+     handle / genus operator is `epsilon . mu . delta . eta : id => id` (diagrammatic order); in the
+     commutative case `hom(id, id)` is free on this handle (Abrams NF), but the Omega walker is
+     non-commutative a priori, so completeness there is genuinely open.
+
+The full separating invariant is (a) a union-find port-partition engine — exactly the
+`TwoCategory/Frobenius/PartitionModel` (`extraSpiderDiagramOf`, Cospan(FinSet) / corelation) — NAMED, not
+rebuilt (importing it into Omega is forbidden); plus (b) a per-block genus counter — a shared future wall,
+not an r1 deliverable in ANY lane.
+
+## The ambijunction framing (Street 2004, NAMED)
+
+A Frobenius monad is exactly an AMBIDEXTROUS adjunction ("ambijunction"): `mu / eta` present `s.s -| s` while
+`delta / epsilon` present `s -| s.s`, and the Frobenius law is the compatibility making the two adjunctions
+share a unit / counit — Street, *Frobenius monads and pseudomonoids* (JMP 45, 2004).  The two Frobenius rows
+F1 / F2 shipped here ARE that compatibility.  This is the framing, NAMED (the ambijunction's biadjoint
+snake equations are the OMEGA-5 higher-coherence handoff, not an r1 deliverable).
+
+## Self-op-duality (docstring free-rider, per the walking-equivalence precedent)
+
+The walking Frobenius monad is SELF-OP-DUAL up to the relabeling `mu <-> delta`, `eta <-> epsilon`: `op`
+sends the monad-internal rows to the comonad-internal rows and fixes the two Frobenius rows (up to the
+relabeling), so the op-dual walker is a free-rider on the same presentation.  This is a docstring
+observation only — NOT an `op`-transport of the comonad rows (which would be a type mismatch: `op mu` is a
+mu-labeled cell, not the delta-labeled generator), exactly why the comonad half was declared natively in B2.
+
+## Census feed (B4)
+
+The single-object walking Frobenius MONAD is fed additively into `SquierFamilyCensus` (a
+`SquierFamilyFrobeniusWalker` entry grounded in `frobMonadWalkerCoherentPresentation`), WITHOUT touching the
+decided-9 count or the `fxOmega4_multiObjectWalkersOutsideDecidedNineR2` marker — that marker is correct for
+the multi-object Frobenius PROP but the single-object Frobenius MONAD is a DISTINCT walker, recorded by a NEW
+census marker. -/
+
+/-- ★★ **ESTABLISHED (r1 summary).**  The walking Frobenius monad
+`<s | mu, eta, delta, epsilon | monad + comonad + two Frobenius rows>` re-encoded as an `OmegaComputad`
+2-polygraph: FOUR 2-cell generators, TWELVE critical-pair rows (5 monad transported + 5 comonad op-mirror
+native + 2 Frobenius refl-joined), all coherently resolved modulo strict
+(`frobMonadWalkerCoherentPresentation`), the least-congruence UP
+(`frobMonadCriticalPairsIdentifiedInEveryModel`), and a machine-checked four-count soundness invariant
+(`frobMonadOmegaFourCountSound`).  `= true`. -/
+def fxFrob_walkingFrobeniusMonadPresentationShipped : Bool := true
+
+/-- ★ **NAMED-OUT (not shipped) — genus + matching completeness.**  `= false` records that the full
+separating (completeness-grade) invariant — the port-partition matching (`TwoCategory/Frobenius/PartitionModel`
+Cospan / corelation engine) plus a per-block genus counter — is NAMED to the `TwoCategory/Frobenius` bridge,
+NOT shipped in the Omega lane (importing the engine is forbidden; genus is unbuilt in every lane,
+`fxFrob_has2CobGenus = false` in the TwoCategory ledger).  The Omega r1 ships the WEAK four-count only. -/
+def fxFrob_genusMatchingCompletenessNamedNotShipped : Bool := false
+
+/-- ★ **WALL — the bare walker's decision stays walled (honest).**  `= false` records that the full 2-cell
+word-problem DECISION for the bare (non-commutative, non-special) walking Frobenius monad is NOT shipped:
+the `TwoCategory/Frobenius/SpiderCompleteness` decision (`instDecidableSpiderConv`) is for the
+EXTRASPECIAL-COMMUTATIVE theory and does NOT transfer, walled at two named nodes — non-commutativity (the
+open `BRAUER-BREACH`) and 2Cob-genus (`fxFrob_has2CobGenus = false`).  No 2Cob / TL overclaim. -/
+def fxFrob_completenessWalledAtNonCommutativityAndGenus : Bool := false
+
+/-- ★ **THE AMBIJUNCTION FRAMING (Street 2004, NAMED).**  `= true` records that the walking Frobenius monad
+is framed as an AMBIDEXTROUS adjunction: `mu / eta` present `s.s -| s`, `delta / epsilon` present `s -| s.s`,
+and the two shipped Frobenius rows F1 / F2 (`frobMonadTwoFrobeniusRowsResolved`) ARE the compatibility making
+the two adjunctions a Frobenius pair (Street, *Frobenius monads and pseudomonoids*).  The framing is NAMED;
+the ambijunction's higher snake coherences are the OMEGA-5 handoff. -/
+def fxFrob_ambijunctionFramingNamed : Bool := true
+
+/-- ★ **WALL / OMEGA-5 HANDOFF (honest).**  `= false` records that the FULL homotopy basis for the walking
+Frobenius monad — every parallel 2-path pair 3-cell-homotopic, by a structural length-fuel 2-path normalizer
+one dimension up — is NOT reached this round, exactly as every walker deferred it
+(`fxOmega4_walkingMonadFullHomotopyBasisReached`, `fxDistLaw_fullHomotopyBasisReached`).  The shipped content
+is the twelve generating 3-cells + their peak / valley joins, not the closure of every 2-sphere. -/
+def fxFrob_fullHomotopyBasisReached : Bool := false
+
 end FX1Poly.Polygraph.Omega
