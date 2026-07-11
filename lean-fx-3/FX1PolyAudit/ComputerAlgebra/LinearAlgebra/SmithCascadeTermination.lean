@@ -111,4 +111,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedPreservesPrefixOffDiagonal
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepPreservesPrefixOffDiagonal
 
+/- H2-SMITH r12 — the band-zero re-expression + the settled-through-`p` frame (B1): the `== 0`/`natAbs`
+   micro-atoms, the segment forward pointwise decode (the `= true → pointwise` converse), the cross-clear
+   band re-expression, the `SmithPrefixSettled` frame predicate, and its vacuous base + `Nat.min` terminal
+   (= full window-diagonal). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.natEqZeroOfBeqZeroTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.intOfNatAbsZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRowSegmentAllZeroPointwise
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColSegmentAllZeroPointwise
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCrossIsClearPointwise
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithPrefixSettled
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPrefixSettledZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPrefixSettledAtMinIsWindowDiagonal
+
 end FX1PolyAudit

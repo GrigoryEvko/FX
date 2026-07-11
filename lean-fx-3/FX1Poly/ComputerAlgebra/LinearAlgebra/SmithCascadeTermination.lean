@@ -2629,4 +2629,195 @@ theorem smithDivisibilityRepairSweepPreservesPrefixOffDiagonal (outerFuel : Nat)
         colIndex isRect rowLtPivot colLtPivot).trans
       (prefixOffDiagZero rowIndex colIndex rowLtPivot colLtPivot rowNeCol)
 
+/-! ## The band-zero re-expression + the settled-through-`p` frame (H2-SMITH r12, B1) — POLE-A driver path
+
+r11 closed the PREFIX conjunct (`r < p ∧ c < p`) of the driver's window-diagonal postcondition by pure
+low-low locality.  r12 opens the TWO BANDS around the remaining sub-block — the below-left `r ≥ p ∧ c < p`
+and above-right `r < p ∧ c ≥ p` — via the joint zero-propagation argument: the `p+1` cascade ops carry the
+settled band's zeros forward because the added multiples are of zero entries and the move-swap only permutes
+zero entries among themselves.  The clean carrier is the SETTLED FRAME around the sub-block: everything
+outside `[p, ·) × [p, ·)` is off-diagonal-zero.  This section re-expresses cross-clear as pointwise band
+zeros (the `= true → pointwise` forward decode the r9 reverse `…OfPointwiseZero` never shipped) and states
+`SmithPrefixSettled`, the decidable settled-frame predicate the single-step advances from `p` to `p+1`.
+
+Every atom is a FUNCTION-CORRECTNESS fact about a definite word / flag on ONE matrix under `IsRectangular`
++ pivot-in-range — refutation-immune, NEVER a re-diagonalization claim over arbitrary window-diagonal inputs
+(the r5/r6 refuted-pole shape).  The bands are the genuinely NEW content; the sub-block stays POLE-A-walled
+(`SmithReduceFullDriverStatement` uninhabited; no flip). -/
+
+/-- **Concrete truth probe for the band-zero re-expression** — on the settled `diag(3, 5, 7)` the pivot-`0`
+cross is clear (`smithCrossIsClear = true`) and its cross/band cell `(0, 2)` reads `0`, so the forward
+`= true → pointwise` decode `smithCrossIsClearPointwise` is non-vacuous on a genuine staged matrix.
+Anonymous, so it carries no axiom footprint. -/
+example : smithCrossIsClear ({ rows := [[3, 0, 0], [0, 5, 0], [0, 0, 7]] } : IntMatrix) 0 3 3 = true := by
+  decide
+
+example : ({ rows := [[3, 0, 0], [0, 5, 0], [0, 0, 7]] } : IntMatrix).entryAt 0 2 = 0 := by decide
+
+/-- **`m == 0` decodes to `m = 0`** — the `true`-direction converse of the shipped `natBeqZeroFalseOfNe`:
+the zero arm is `rfl`, the successor arm collapses `(succ _ == 0) = false` against the `true` hypothesis by
+`Bool.noConfusion`.  Feeds the segment forward decode. -/
+theorem natEqZeroOfBeqZeroTrue : ∀ magnitude : Nat, (magnitude == 0) = true → magnitude = 0
+  | 0, _ => rfl
+  | _ + 1, beqTrue => Bool.noConfusion beqTrue
+
+/-- **Zero magnitude forces the integer zero** — `value.natAbs = 0 → value = 0`, structural on the `Int`
+constructors: `ofNat 0` is `rfl`, and both `ofNat (m+1)` and `negSucc m` have magnitude `m+1`, refuted
+against the `= 0` hypothesis by `Nat.noConfusion`.  Converts the segment's magnitude-zero decode to an
+entry-zero fact (the band lemmas need the entry, not just its magnitude). -/
+theorem intOfNatAbsZero : ∀ value : Int, value.natAbs = 0 → value = 0
+  | .ofNat 0, _ => rfl
+  | .ofNat (_ + 1), natAbsZero => Nat.noConfusion natAbsZero
+  | .negSucc _, natAbsZero => Nat.noConfusion natAbsZero
+
+/-- **Row segment all-zero decodes to pointwise zero** — the forward `= true → ∀ entry = 0` converse of the
+shipped `smithRowSegmentAllZeroOfPointwiseZero`.  Structural on the column count: the head `== 0` guard
+splits `false` (contradicts the `&&`-`true` hypothesis by `Bool.noConfusion`) versus `true` (the head entry
+is zero by `natEqZeroOfBeqZeroTrue` + `intOfNatAbsZero`; the tail rides the IH).  The band-zero
+re-expression of a cleared row segment. -/
+theorem smithRowSegmentAllZeroPointwise (matrix : IntMatrix) (rowIndex : Nat) :
+    ∀ (colCount colStart : Nat),
+      smithRowSegmentAllZero matrix rowIndex colCount colStart = true →
+      ∀ col, colStart ≤ col → col < colStart + colCount →
+        matrix.entryAt rowIndex col = 0 := by
+  intro colCount
+  induction colCount with
+  | zero =>
+      intro colStart _ col colGe colLt
+      exact absurd
+        (Nat.lt_of_lt_of_le (Eq.mp (congrArg (col < ·) (Nat.add_zero colStart)) colLt) colGe)
+        (Nat.lt_irrefl col)
+  | succ colCount ih =>
+      intro colStart segTrue col colGe colLt
+      have segUnfold :
+          (((matrix.entryAt rowIndex colStart).natAbs == 0) &&
+            smithRowSegmentAllZero matrix rowIndex colCount (colStart + 1)) = true := segTrue
+      cases hGuard : (matrix.entryAt rowIndex colStart).natAbs == 0 with
+      | false =>
+          rw [hGuard] at segUnfold
+          exact Bool.noConfusion segUnfold
+      | true =>
+          rw [hGuard] at segUnfold
+          have restTrue : smithRowSegmentAllZero matrix rowIndex colCount (colStart + 1) = true := segUnfold
+          cases Nat.eq_or_lt_of_le colGe with
+          | inl colStartEqCol =>
+              exact intOfNatAbsZero (matrix.entryAt rowIndex col)
+                ((congrArg (fun position => (matrix.entryAt rowIndex position).natAbs) colStartEqCol).symm.trans
+                  (natEqZeroOfBeqZeroTrue _ hGuard))
+          | inr colStartLtCol =>
+              exact ih (colStart + 1) restTrue col colStartLtCol
+                (Eq.mp (congrArg (col < ·) (Nat.succ_add colStart colCount).symm) colLt)
+
+/-- **Column segment all-zero decodes to pointwise zero** — the row mirror of
+`smithRowSegmentAllZeroPointwise`, over `smithColSegmentAllZero`. -/
+theorem smithColSegmentAllZeroPointwise (matrix : IntMatrix) (colIndex : Nat) :
+    ∀ (rowCount rowStart : Nat),
+      smithColSegmentAllZero matrix colIndex rowCount rowStart = true →
+      ∀ row, rowStart ≤ row → row < rowStart + rowCount →
+        matrix.entryAt row colIndex = 0 := by
+  intro rowCount
+  induction rowCount with
+  | zero =>
+      intro rowStart _ row rowGe rowLt
+      exact absurd
+        (Nat.lt_of_lt_of_le (Eq.mp (congrArg (row < ·) (Nat.add_zero rowStart)) rowLt) rowGe)
+        (Nat.lt_irrefl row)
+  | succ rowCount ih =>
+      intro rowStart segTrue row rowGe rowLt
+      have segUnfold :
+          (((matrix.entryAt rowStart colIndex).natAbs == 0) &&
+            smithColSegmentAllZero matrix colIndex rowCount (rowStart + 1)) = true := segTrue
+      cases hGuard : (matrix.entryAt rowStart colIndex).natAbs == 0 with
+      | false =>
+          rw [hGuard] at segUnfold
+          exact Bool.noConfusion segUnfold
+      | true =>
+          rw [hGuard] at segUnfold
+          have restTrue : smithColSegmentAllZero matrix colIndex rowCount (rowStart + 1) = true := segUnfold
+          cases Nat.eq_or_lt_of_le rowGe with
+          | inl rowStartEqRow =>
+              exact intOfNatAbsZero (matrix.entryAt row colIndex)
+                ((congrArg (fun position => (matrix.entryAt position colIndex).natAbs) rowStartEqRow).symm.trans
+                  (natEqZeroOfBeqZeroTrue _ hGuard))
+          | inr rowStartLtRow =>
+              exact ih (rowStart + 1) restTrue row rowStartLtRow
+                (Eq.mp (congrArg (row < ·) (Nat.succ_add rowStart rowCount).symm) rowLt)
+
+/-- **Cross-clear re-expressed as pointwise band zeros** — `smithCrossIsClear = true` splits (structural
+`&&` case) into: row `pivotIndex` is zero across columns `(pivotIndex, width)` AND column `pivotIndex` is
+zero across rows `(pivotIndex, height)`.  The forward decode feeding the single-step's two cross-strip
+regions, riding `smithRowSegmentAllZeroPointwise` / `smithColSegmentAllZeroPointwise` through the window
+bridge `smithNatAddSubOfLe`.  (`pivotIndex < col` is `pivotIndex + 1 ≤ col` definitionally — the segment
+window's lower bound.) -/
+theorem smithCrossIsClearPointwise (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (crossClear : smithCrossIsClear matrix pivotIndex height width = true) :
+    (∀ col, pivotIndex < col → col < width → matrix.entryAt pivotIndex col = 0) ∧
+      (∀ row, pivotIndex < row → row < height → matrix.entryAt row pivotIndex = 0) := by
+  have crossUnfold :
+      (smithRowSegmentAllZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) &&
+        smithColSegmentAllZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1)) = true :=
+    crossClear
+  cases hRow : smithRowSegmentAllZero matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1) with
+  | false =>
+      rw [hRow] at crossUnfold
+      exact Bool.noConfusion crossUnfold
+  | true =>
+      rw [hRow] at crossUnfold
+      have colTrue :
+          smithColSegmentAllZero matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1) = true :=
+        crossUnfold
+      refine ⟨fun col pivotLtCol colLtWidth => ?_, fun row pivotLtRow rowLtHeight => ?_⟩
+      · exact smithRowSegmentAllZeroPointwise matrix pivotIndex (width - (pivotIndex + 1)) (pivotIndex + 1)
+          hRow col pivotLtCol
+          (Eq.mp (congrArg (col < ·) (smithNatAddSubOfLe (pivotIndex + 1) width pivotColInRange).symm)
+            colLtWidth)
+      · exact smithColSegmentAllZeroPointwise matrix pivotIndex (height - (pivotIndex + 1)) (pivotIndex + 1)
+          colTrue row pivotLtRow
+          (Eq.mp (congrArg (row < ·) (smithNatAddSubOfLe (pivotIndex + 1) height pivotRowInRange).symm)
+            rowLtHeight)
+
+/-- **The settled-through-`pivotIndex` frame** — every off-diagonal cell OUTSIDE the remaining sub-block
+`[pivotIndex, ·) × [pivotIndex, ·)` is zero: the prefix `r < p ∧ c < p` plus the two bands
+(`r ≥ p ∧ c < p`, `r < p ∧ c ≥ p`), captured uniformly by the disjunct `rowIndex < pivotIndex ∨ colIndex <
+pivotIndex`.  `SmithPrefixSettled matrix 0 …` is VACUOUS (the base) and `SmithPrefixSettled matrix (Nat.min
+height width) height width` IS the full window-diagonal (`smithPrefixSettledAtMinIsWindowDiagonal`) — the
+terminal frame `repairWindowDiagHolds` demands.  The single-step advances this frame `p → p+1`; the outer
+fold to `min` is the named r13 node. -/
+def SmithPrefixSettled (matrix : IntMatrix) (pivotIndex height width : Nat) : Prop :=
+  ∀ rowIndex colIndex, rowIndex < height → colIndex < width → rowIndex ≠ colIndex →
+    (rowIndex < pivotIndex ∨ colIndex < pivotIndex) →
+      matrix.entryAt rowIndex colIndex = 0
+
+/-- **The base frame is vacuous** — `SmithPrefixSettled matrix 0 height width` holds for every matrix: the
+disjunct `rowIndex < 0 ∨ colIndex < 0` never fires (`Nat.not_lt_zero`).  The induction's starting point. -/
+theorem smithPrefixSettledZero (matrix : IntMatrix) (height width : Nat) :
+    SmithPrefixSettled matrix 0 height width :=
+  fun _ _ _ _ _ frameHolds =>
+    frameHolds.elim (fun rowLt0 => absurd rowLt0 (Nat.not_lt_zero _))
+      (fun colLt0 => absurd colLt0 (Nat.not_lt_zero _))
+
+/-- **The frame at `Nat.min` is the full window-diagonal** — `SmithPrefixSettled matrix (Nat.min height
+width) height width` gives `IsWindowDiagonal`'s off-diagonal-vanishing over the whole `height × width`
+window.  Any in-window off-diagonal `(r, c)` has `r < height` and `c < width`; unfold `Nat.min` to its
+`if height ≤ width` and case `Nat.decLe` (the propext-clean route, mirroring `natMinLeLeft`; `Nat.min_eq_*`
+leak): the `if`-true branch collapses `min` to `height` so the always-true `r < height` fires the frame
+(`Or.inl`), the `if`-false branch collapses it to `width` so `c < width` fires it (`Or.inr`).  The terminal
+anchoring the r13 outer fold consumes. -/
+theorem smithPrefixSettledAtMinIsWindowDiagonal (matrix : IntMatrix) (height width : Nat)
+    (settledAtMin : SmithPrefixSettled matrix (Nat.min height width) height width) :
+    ∀ rowIndex colIndex, rowIndex < height → colIndex < width → rowIndex ≠ colIndex →
+      matrix.entryAt rowIndex colIndex = 0 :=
+  fun rowIndex colIndex rowLtHeight colLtWidth rowNeCol =>
+    settledAtMin rowIndex colIndex rowLtHeight colLtWidth rowNeCol (by
+      show rowIndex < (if height ≤ width then height else width) ∨
+        colIndex < (if height ≤ width then height else width)
+      cases Nat.decLe height width with
+      | isTrue heightLeWidth =>
+          rw [if_pos heightLeWidth]
+          exact Or.inl rowLtHeight
+      | isFalse heightGtWidth =>
+          rw [if_neg heightGtWidth]
+          exact Or.inr colLtWidth)
+
 end FX1Poly.ComputerAlgebra
