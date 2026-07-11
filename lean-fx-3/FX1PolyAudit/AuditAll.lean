@@ -1190,6 +1190,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingStrongMonadPresentationAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPresentationAudit
 -- WP-BI r2 — the Mat(N) matrix semantics: 13 respected rows + 9 broken op-commute rows + sigma/id separation
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemanticsAudit
+-- WP-BI r3 — the over-quotient adjudication: OUTCOME O (r1 22-row congruence over-quotients) + restored soundness
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidOverQuotientAdjudicationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
