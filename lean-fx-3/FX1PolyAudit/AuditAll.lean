@@ -1230,6 +1230,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingDistLawOverQuotientAdjudicationAudit
 import FX1PolyAudit.Polygraph.Omega.OmegaHouseStyleFamilyLedgerAudit
 -- OMEGA SWEEP r2 — the not-spurious trio's latent over-quotient: involution/cyclic-3/idempotent legs Mat(N)-separated, ledger "predicted clean" REFUTED, idempotent restored soundness
 import FX1PolyAudit.Polygraph.Omega.NotSpuriousTrioOverQuotientAdjudicationAudit
+-- OMEGA SWEEP r2 — the Frobenius latent rows are MODEL-INVISIBLE: four-count blind to the 6 latent rows + cheap Mat(N) bimonoid breaks F1 (unfaithful); ledger r4-bill Frobenius entry CONFIRMED
+import FX1PolyAudit.Polygraph.Omega.FrobeniusFourCountBlindAdjudicationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
