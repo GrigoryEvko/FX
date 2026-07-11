@@ -5376,4 +5376,39 @@ theorem smithReduceCompleteDriverOfClearingStepAndChain
     SmithReduceCompleteDriverStatement :=
   smithReduceCompleteDriverOfRepairInvariants (repairWindowDiagHoldsOfClearingStep stepSettles) repairChainHolds
 
+/-! ## The corrected-driver arc ledger (H2-SMITH r17, B4/B5, #2261) — the honest pair; a CONDITIONAL flip
+
+**#2261 state, exact.**  Two drivers now coexist, byte-disjoint:
+
+  * `smithReduceFull` — REFUTED.  `smithReduceFullDriverIsRefuted` : `¬ SmithReduceFullDriverStatement`,
+    witnessed on the rectangular `diag(10, 10, 6, 9)` (`smithReduceFullStrandsOffDiagonalWitness` pins the
+    stranded `entryAt 3 2 = 30`).  UNCHANGED this round (byte-intact, re-verified).
+  * `smithReduceComplete` — the CORRECTED driver (route (i): the divisibility-repair cross-clear fires
+    UNCONDITIONALLY at each pivot).  `SmithReduceCompleteDriverStatement` is reduced (NOT yet unconditionally
+    inhabited) to EXACTLY the two named residuals `{SmithRepairClearingStepSettles, repairChainHolds}` via
+    `smithReduceCompleteDriverOfClearingStepAndChain`; Phase A (`smithReduceTotalSweepDiagonalizes`) and
+    Phase C (`smithReduceCompleteDiagonalNonneg` + the sign preservers) are DISCHARGED.  The B4 battery pins
+    per-input correctness by kernel defeq: `smithReduceCompleteDriverRefuterLandsSmithForm`
+    (`diag(10,10,6,9) ↝ diag(1,2,30,90)` — the direct positive flip), the drag / unsorted / coprime
+    counterweights, and the RECTANGULAR `2 x 4` member.
+
+**The honest pair.**  On the smallest refuting input the OLD driver strands `30` off-diagonal
+(`smithReduceFullDriverIsRefuted`) while the corrected driver lands clean Smith normal form
+(`smithReduceCompleteDriverRefuterLandsSmithForm`).  This is a CONDITIONAL flip: the totality Prop is not
+unconditionally inhabited, but the r16 verdict "driver is FALSE, no surviving carrier" is superseded by
+"corrected driver, empirically clean, totality on two TRUE named residuals".
+
+**The crux flip.**  The r13 window-diagonal single-step `SmithRepairStepSettlesStatement` was REFUTABLE
+(POLE-B); its clearing analogue `SmithRepairClearingStepSettles` is TRUE over the SAME bare frame (route
+(i)'s `none`-branch = the hypothesis-free `smithCascadeStepSettlesThroughPivot`).  So the r13-r16 wall is
+gone; what remains is the r18 lift (the loop-frame-preservation + fuel-termination for Phase B-diag) and the
+Phase B-chain ESTABLISH promotion (PRESERVE shipped: `applyOperationsPreservesEntriesDivisible`).
+
+**Discipline.**  Additive only (532 insertions, 0 deletions in the two core files); `smithReduceFull` and its
+refutation byte-intact; the certificate API (`SmithReductionCertificate` / `IsSmithNormalFormWithin`,
+consumed by Homology through `IntMatrix`) untouched.  Zero-axiom (independent `#print axioms` clean per
+public decl).  The 5x5 whole-driver-defeq stack line respected: the largest battery member is the 4x4
+refuter at `maxRecDepth 200000`; the 5x5 companion is prose-only, NOT built.  NO fabricated battery pass, NO
+fabricated phase discharge. -/
+
 end FX1Poly.ComputerAlgebra
