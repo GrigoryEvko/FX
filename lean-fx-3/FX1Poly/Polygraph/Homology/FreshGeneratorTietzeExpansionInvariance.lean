@@ -1,11 +1,22 @@
 import FX1Poly.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
 
-/-! # FX1Poly/Polygraph/Homology/FreshGeneratorTietzeExpansionInvariance — the GENERIC
-    fresh-generator Tietze-expansion theorem: adjoining a fresh generator `t` with a defining rule
-    `t ⟹ w` (`w` free of `t`) to ANY decided single-object walker presentation preserves the
-    degree-1 AND degree-2 homology invariant, read through the shipped generic Smith reader, with the
-    two shipped instances (cyclic `ZZ/3`, the r2 Tietze presentation) and a fresh third instance
-    (walking involution `ZZ/2`) fed through the theorem (H2-SQUIER-NOGO r3, #2139)
+/-! # FX1Poly/Polygraph/Homology/FreshGeneratorTietzeExpansionInvariance — the fresh-generator Tietze
+    expansion (adjoin a fresh generator `t` with a defining rule `t ⟹ w`, `w` `t`-free): a GENERIC
+    presentation-carrier expansion (`expandWalkerPresentationWithFreshGenerator`, well-formed for ANY
+    base by `freshGeneratorExpansionIsWellFormedOfBase`), a structurally-`t`-free entry point
+    (`expandWalkerPresentationWithBaseWord`, whose word ranges over `Fin base.oneGeneratorCount` so
+    `t`-freeness is a CONSTRUCTION guarantee), the GENERIC reader-level preservation theorems
+    (`tietzeExpansionPreservesDegreeOne/TwoInvariant`), and the r4 END-TO-END composed theorems
+    `freshGeneratorExpansionPreservesDegreeOne/TwoHomologyOfBase`, which package those theorems' five
+    per-instance reader facts into STRUCTURAL diagonal relations between the base and expanded Smith forms
+    (fresh unit LAST, read order-insensitively — no divisibility sort).  The three r3 instances (cyclic
+    `ZZ/3`, r2 Tietze `ZZ/3` at degrees 1 AND 2, walking involution `ZZ/2`) are RE-FED through the
+    end-to-end theorem, and a FOURTH FRESH instance (involution `t ⟹ ss`) runs through the structural
+    entry point — each expansion reduced by a GENERIC recipe certificate (`clearing ++ negate ++ baseCert`
+    plus ONE generic `swapColumns` when `m < n`), no hand-designed reorder.  What STAYS walled: the fully
+    cert-free connection — removing even the per-instance `rfl` that ties the recipe to the actual
+    boundary — needs the arbitrary-base-cert block-lifting, whose entry-level matrix-operation lemmas live
+    in the certificate layer this lane must not import (H2-SQUIER-NOGO r4, #2139)
 
 ## What this file is — instance-to-theorem on the R1 wall
 
@@ -29,18 +40,30 @@ rule `t ⟹ w` — to a GENERIC theorem over an ARBITRARY base presentation:
     reduction certificate for the expanded `d2`, checked propext-cleanly against its ordered Smith
     normal form.
 
-## The scope adjudication (honest — the certificate stays per-instance)
+## The scope adjudication (honest — sort-dependence isolated to the ORDERED certificate only)
 
 The presentation-carrier expansion and the reader-level invariance are GENUINELY generic (Route A).
-The ORDERED-SNF certificate is NOT cleanly generic: the divisibility-ordering bubble that places the
-fresh unit after the existing unit block has data-dependent length, so re-deriving it generically would
-re-implement a Smith reduction (the certificate-first-forbidden territory — no `SmithNormalForm.lean`
-import).  Therefore the `reducesToSmithForm` certificate is shipped PER-INSTANCE (Route B): concrete
-operation words designed by the generic recipe, checked by `rfl` on `applyOperations`.
+The r4 key finding sharpens r3's honest boundary: the homology READER (`smithRankWithin` counts nonzero
+diagonal positions, `nonUnitInvariantFactors` strips units wherever they sit) is ORDER-INSENSITIVE, so
+the invariant needs NO divisibility sort — the fresh unit sits LAST (at the base window), and the r4
+END-TO-END theorem reads it with the reader congruences and NO reorder beyond a single generic
+`swapColumns m n` when `m < n`.  The data-dependent divisibility bubble is required ONLY for the ORDERED
+`IsSmithNormalFormWithin` certificate (`reducesToSmithForm`), which the homology reader never consumes;
+that ordered certificate is therefore the piece that stays PER-INSTANCE (Route B — re-deriving it
+generically would re-implement a Smith reduction, and the entry-level matrix-operation lemmas for a fully
+cert-free reduction live in `SmithNormalForm.lean`, which this lane must not import).
 
-`w`'s `t`-freeness cannot be a TYPE constraint (the carrier's word type is `List Nat`, which cannot
-structurally exclude the fresh index), so it is the honest explicit hypothesis
-`countGeneratorOccurrences base.oneGeneratorCount freshRuleWord = 0`.
+`w`'s `t`-freeness cannot be a TYPE constraint on the shipped `List Nat` constructor (the carrier's word
+type is `List Nat`, which cannot structurally exclude the fresh index `base.oneGeneratorCount`), and r3
+carried it NOWHERE: the shipped well-formedness / reader theorems gate on the base being free of its OWN
+fresh index (`baseFreshGeneratorRowIsZero`) and on per-instance Smith facts, never on `w`.  The r4
+structurally-`t`-free entry point `expandWalkerPresentationWithBaseWord` closes that gap — it ranges the
+word over `List (Fin base.oneGeneratorCount)` and embeds by `Fin.val`, so
+`embeddedBaseWordFreshCountIsZero` proves `countGeneratorOccurrences base.oneGeneratorCount w = 0` BY
+CONSTRUCTION, and `freshColumnPivotIsUnitOfFreshFree` consumes exactly that to make the fresh-column
+pivot the unit `-1`.  A `w` containing `t` (`w = [t]`) gives pivot `0`, no rank bump, and the invariant
+would NOT be preserved — but that attack is UNREPRESENTABLE through the entry point (no
+`Fin base.oneGeneratorCount` letter has value `base.oneGeneratorCount`).
 
 ## Zero-axiom design decisions
 
@@ -49,8 +72,11 @@ structurally exclude the fresh index), so it is the honest explicit hypothesis
   * `natSuccSubSuccEqSub` is the sole `Nat`-subtraction identity, proved by structural induction (no
     `Nat.succ_sub_succ` import); `Nat.add_comm` is the only arithmetic lemma (clean; never `add_mul` /
     `min_eq` / `le_max`).
-  * The `if diag = 0` reductions are on literal SNF matrices only; the ordered-SNF checks reuse the r2
-    file's propext-clean successor-peel discipline (`natEqZeroOfLeZero` / `natLeOfSuccLeSucc`).
+  * The per-instance `if diag = 0` reductions are on literal SNF matrices (`decide` / `rfl`); the ordered
+    SNF checks reuse the r2 file's propext-clean successor-peel discipline (`natEqZeroOfLeZero` /
+    `natLeOfSuccLeSucc`).  The r4 reader congruences (`smithRankWithinCongrBelow`,
+    `smithInvariantFactorsWithinCongrBelow`) handle SYMBOLIC diagonals: each top `if diag = 0` is
+    rewritten by the supplied diagonal agreement, never `decide`d on a non-literal entry.
 
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
 Per-declaration gated in `FX1PolyAudit/Polygraph/Homology/FreshGeneratorTietzeExpansionInvariance.lean`. -/
