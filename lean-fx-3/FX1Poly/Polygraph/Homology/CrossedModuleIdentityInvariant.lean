@@ -521,4 +521,93 @@ theorem boundaryResidueIsZero : ∀ gen : ConjugatedRelator,
       conjugationResidueZero conjugatorWord (invWord (relatorWord relatorIndex))
         (invRelatorResidueIsZero relatorIndex)
 
+/-! ## B3 — the Peiffer-invariance keystone
+
+The invariant is constant on Peiffer classes.  The `refl`/`symm`/`trans` cases are the equivalence
+closure; `congrAppend` is the append-homomorphism; the generating `peifferMove` is where the
+group-ring structure earns its keep — the flanking `a, a⁻¹` cancel additively
+(`groupRingCancelMiddle`) and the `^{∂a}` action shifts `b`'s conjugator by `residue (∂a) = 0`
+(`boundaryResidueIsZero`), invisible in `ZZ[G]`. -/
+
+/-- Flipping the sign negates the scaled value: `signScale (not sign) v = -(signScale sign v)`. -/
+theorem signScaleNotIsNeg : ∀ (sign : Bool) (value : GroupRingZmod3),
+    signScale (Bool.not sign) value = groupRingNeg (signScale sign value)
+  | true, _ => rfl
+  | false, value => (groupRingNegNeg value).symm
+
+/-- ★ **The invariant sends the formal inverse to negation**: `image (a⁻¹) = -(image a)`. -/
+theorem conjugatedRelatorImageInvGen (gen : ConjugatedRelator) :
+    conjugatedRelatorImage (invGen gen) = groupRingNeg (conjugatedRelatorImage gen) :=
+  signScaleNotIsNeg gen.isPositive (powerOfT (wordResidue gen.conjugator))
+
+/-- Coefficientwise congruence for the carrier addition. -/
+theorem groupRingAddCongr {leftA leftB rightA rightB : GroupRingZmod3}
+    (hLeft : leftA = rightA) (hRight : leftB = rightB) :
+    groupRingAdd leftA leftB = groupRingAdd rightA rightB :=
+  (congrArg (fun value => groupRingAdd value leftB) hLeft).trans
+    (congrArg (groupRingAdd rightA) hRight)
+
+/-- ★★ **The generating Peiffer move is invariant**: `image [a, b, a⁻¹] = image [^{∂a}b]`.  The `a`
+and `a⁻¹` terms cancel (`groupRingCancelMiddle` after `conjugatedRelatorImageInvGen`), leaving
+`image b`; and `^{∂a}b` has the same image as `b` because reduction preserves residue, residue is a
+`++`-homomorphism, and `residue (∂a) = 0` (`boundaryResidueIsZero`). -/
+theorem peifferMoveImage (firstGen secondGen : ConjugatedRelator) :
+    crossedModuleImage [firstGen, secondGen, invGen firstGen]
+      = crossedModuleImage [peifferConjugate firstGen secondGen] :=
+  let residueCrux :
+      wordResidue (reduceWord (conjugatedRelatorBoundary firstGen ++ secondGen.conjugator))
+        = wordResidue secondGen.conjugator :=
+    calc wordResidue (reduceWord (conjugatedRelatorBoundary firstGen ++ secondGen.conjugator))
+        = wordResidue (conjugatedRelatorBoundary firstGen ++ secondGen.conjugator) :=
+          reduceResiduePreserved _
+      _ = addZmod3 (wordResidue (conjugatedRelatorBoundary firstGen))
+            (wordResidue secondGen.conjugator) := wordResidueAppendAdd _ _
+      _ = addZmod3 ZmodThree.residue0 (wordResidue secondGen.conjugator) :=
+          congrArg (fun boundaryRes => addZmod3 boundaryRes (wordResidue secondGen.conjugator))
+            (boundaryResidueIsZero firstGen)
+      _ = wordResidue secondGen.conjugator := addZmod3ZeroLeft _
+  let peifferConjugateImage :
+      conjugatedRelatorImage (peifferConjugate firstGen secondGen)
+        = conjugatedRelatorImage secondGen :=
+    congrArg (fun residue => signScale secondGen.isPositive (powerOfT residue)) residueCrux
+  calc crossedModuleImage [firstGen, secondGen, invGen firstGen]
+      = groupRingAdd (conjugatedRelatorImage firstGen)
+          (groupRingAdd (conjugatedRelatorImage secondGen)
+            (conjugatedRelatorImage (invGen firstGen))) :=
+        congrArg (fun inner => groupRingAdd (conjugatedRelatorImage firstGen)
+          (groupRingAdd (conjugatedRelatorImage secondGen) inner))
+          (groupRingAddZero (conjugatedRelatorImage (invGen firstGen)))
+    _ = groupRingAdd (conjugatedRelatorImage firstGen)
+          (groupRingAdd (conjugatedRelatorImage secondGen)
+            (groupRingNeg (conjugatedRelatorImage firstGen))) :=
+        congrArg (fun inner => groupRingAdd (conjugatedRelatorImage firstGen)
+          (groupRingAdd (conjugatedRelatorImage secondGen) inner))
+          (conjugatedRelatorImageInvGen firstGen)
+    _ = conjugatedRelatorImage secondGen :=
+        groupRingCancelMiddle (conjugatedRelatorImage firstGen) (conjugatedRelatorImage secondGen)
+    _ = conjugatedRelatorImage (peifferConjugate firstGen secondGen) := peifferConjugateImage.symm
+    _ = crossedModuleImage [peifferConjugate firstGen secondGen] :=
+        (groupRingAddZero (conjugatedRelatorImage (peifferConjugate firstGen secondGen))).symm
+
+/-- ★★★ **THE PEIFFER-INVARIANCE LEMMA** — the invariant `crossedModuleImage` is constant on Peiffer
+classes: `PeifferEquiv x y → crossedModuleImage x = crossedModuleImage y`.  Structural recursion on
+the `PeifferEquiv` proof: `refl` is `rfl`, `symm`/`trans` close the equivalence, `congrAppend` uses
+the append-homomorphism, and the generating `peifferMove` is `peifferMoveImage`.  This is the
+soundness keystone that lets the invariant descend to the crossed module `C = E/PeifferEquiv`. -/
+theorem crossedModuleImageRespectsPeiffer :
+    ∀ {leftElement rightElement : PreCrossedElement},
+    PeifferEquiv leftElement rightElement →
+    crossedModuleImage leftElement = crossedModuleImage rightElement
+  | _, _, .refl _ => rfl
+  | _, _, .symm equivReversed => (crossedModuleImageRespectsPeiffer equivReversed).symm
+  | _, _, .trans equivLeftMid equivMidRight =>
+      (crossedModuleImageRespectsPeiffer equivLeftMid).trans
+        (crossedModuleImageRespectsPeiffer equivMidRight)
+  | _, _, .congrAppend equivLeftPair equivRightPair =>
+      (crossedModuleImageAppend _ _).trans
+        ((groupRingAddCongr (crossedModuleImageRespectsPeiffer equivLeftPair)
+            (crossedModuleImageRespectsPeiffer equivRightPair)).trans
+          (crossedModuleImageAppend _ _).symm)
+  | _, _, .peifferMove firstGen secondGen => peifferMoveImage firstGen secondGen
+
 end FX1Poly.Polygraph.Homology
