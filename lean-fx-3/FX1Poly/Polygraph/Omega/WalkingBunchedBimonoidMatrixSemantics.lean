@@ -839,4 +839,41 @@ interacting symbol.  This NAMES the target (uniform with r1's
 `Mat(N)` normalizer (walled, r3), so it is design-only here, not a proven theorem. -/
 def fxBunchedBimonoid_mixedTwoCellSplitsPerBlockDesignOnly : Bool := true
 
+/-! # =========================================================================================
+    # B5 — THE LEDGER: soundness shipped one direction, completeness NAMED at the spider-NF wall
+    # =========================================================================================
+
+★ **No overclaim: r2 ships the SOUND direction of the `Mat(N)` correspondence; completeness is the NAMED r3
+wall.**  The Lafont / Pirashvili / Fox theorem states that the free bicommutative bimonoid PROP is EXACTLY
+`Mat(N)` — a two-way correspondence.  r2 ships the SOUNDNESS half over the balanced sub-theory (convertible ⟹
+equal matrix, `bunchedBimonoidMatrixSoundOverBalanced`), which feeds the #2033 matrix-PROP table in ONE
+direction.  The COMPLETENESS half (equal matrix ⟹ convertible) is the diagram-to-matrix "spider" normal form
+— a genuine convergent normalizer, NOT shipped — and is the r3 arc (uniform with r1's
+`fxBunchedBimonoid_additiveConvergentNormalizerReached = false`).  Stating equal-matrix ⟹ convertible now would
+be a lie; the honest ledger records the one direction only. -/
+
+/-- ★ **WALL (honest, r3) — matrix COMPLETENESS (equal matrix ⟹ convertible) is the spider normal form, NOT
+shipped.**  `= false` records that the converse of `bunchedBimonoidMatrixSoundOverBalanced` — that two 2-cells
+with the same `Mat(N)` matrix are convertible — is the Lafont / Pirashvili diagram-to-matrix "spider" NF, the
+convergent `Mat(N)` normalizer, DEFERRED to r3.  r2 ships soundness (one direction) only; NO completeness
+overclaim. -/
+def fxBunchedBimonoid_matrixCompletenessIsSpiderNormalFormWall : Bool := false
+
+/-- ★★ **ESTABLISHED (B5) — the #2033 Mat(N) correspondence is fed in the SOUND direction.**  `= true` records
+that the additive-fragment feed to the #2033 matrix-PROP table (r1's
+`fxBunchedBimonoid_matrixPropCorrespondenceNamedForTable`, NAMED-only) is now MACHINE-CHECKED in the soundness
+direction: `bunchedBimonoidMatrixSoundOverBalanced` realises the functor `CellExpr -> Mat(N)` on the balanced
+congruence.  The other direction (completeness) is the r3 spider-NF wall
+(`fxBunchedBimonoid_matrixCompletenessIsSpiderNormalFormWall`) — so this is a one-direction feed, no overclaim. -/
+def fxBunchedBimonoid_matrixSoundnessFeedsMatNatCorrespondenceOneDirection : Bool := true
+
+/-- ★ **ESTABLISHED (B5) — the r2 honest scoreboard.**  `= true` records the complete r2 ledger: the matrix
+carrier + evaluation (B1), the 13-respected / 9-broken per-row partition (B1, the truth-probe verdict), the
+soundness fold over the balanced congruence + the proof-carrying `sigma != id` separator (B2), the width-2
+sigma-naturality completion (B3), the four-count-vs-matrix precision note + the 1-cell mixed splitter (B4), and
+the one-direction `Mat(N)` feed (B5).  Every wall is NAMED at its exact node: the strict-law extension
+(matMul-algebra Fubini kit, r3), completeness (spider NF, r3), the hexagon (S_3 Coxeter, r3), the 2-cell mixed
+decomposition (Amalgam, design-only). -/
+def fxBunchedBimonoid_matrixSemanticsRoundTwoLedgerShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega

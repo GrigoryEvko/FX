@@ -642,4 +642,20 @@ r2 (`fxBunchedBimonoid_additiveConvergentNormalizerReached`).  Its multiplicativ
 decision. -/
 def fxOmega4_bunchedBimonoidAdditiveDecisionWalledInCensus : Bool := false
 
+/-- ★★ **CENSUS (WP-BI r2, #2188) — the Mat(N) matrix semantics is SHIPPED in the Omega lane (additive).**
+`= true` records the r2 advance in `WalkingBunchedBimonoidMatrixSemantics`: the map-level `Mat(N)` evaluation
+functor, the honest 13-respected / 9-broken per-row partition (the truth-probe verdict that corrected the naive
+"sound over all 22"), the soundness fold over the balanced congruence, and the proof-carrying `sigma != id`
+separator — the map invariant complementary to r1's presentation-level four-count.  Recorded additively; the r1
+census and every prior extension UNTOUCHED. -/
+def fxOmega4_bunchedBimonoidMatrixSemanticsShippedInCensus : Bool := true
+
+/-- ★ **CENSUS (WP-BI r2, #2188) — the #2033 Mat(N) correspondence is fed one direction; completeness stays
+walled.**  `= true` records that the additive fragment now feeds the #2033 matrix-PROP table in the SOUNDNESS
+direction (convertible over the balanced sub-theory ⟹ equal `Mat(N)` matrix, machine-checked), while the
+COMPLETENESS direction (equal matrix ⟹ convertible, the Lafont / Pirashvili diagram-to-matrix spider normal
+form) remains the r3 wall (`fxBunchedBimonoid_matrixCompletenessIsSpiderNormalFormWall`).  A one-direction feed,
+no overclaim. -/
+def fxOmega4_bunchedBimonoidMatrixSoundnessOneDirectionInCensus : Bool := true
+
 end FX1Poly.Polygraph.Omega

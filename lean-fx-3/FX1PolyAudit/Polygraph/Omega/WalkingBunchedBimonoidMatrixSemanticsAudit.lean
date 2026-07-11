@@ -106,6 +106,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_oneCellMixedSplitterShipped
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_mixedTwoCellSplitsPerBlockDesignOnly
 
+-- B5 — the ledger: soundness one direction, completeness NAMED at the spider-NF r3 wall.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixCompletenessIsSpiderNormalFormWall
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixSoundnessFeedsMatNatCorrespondenceOneDirection
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixSemanticsRoundTwoLedgerShipped
+
 -- Independent confirmation (not fuel-based): the evaluation fold, a respected row, the probe-caught separation,
 -- the swap/identity separation, the soundness fold, and the proof-carrying separator are all axiom-free.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalCell
