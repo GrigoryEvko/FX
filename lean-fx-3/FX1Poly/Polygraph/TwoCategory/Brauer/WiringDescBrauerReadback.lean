@@ -449,6 +449,16 @@ private theorem stepWiring_crossing_loops (state : WireState) (position : Nat)
       ((List.range 2).map (· + state.nextFresh)) 2 [(0, 3), (1, 2)] 0 state.links).snd + 0 = state.loops
   rw [hsnd, Nat.add_zero]
 
+/-- ★ **(D1) The crossing loops-zero step, exported public.**  An in-range crossing on a fresh forest state closes
+NO loop — both of its arcs glue a fresh leg to an old wire, and neither pair is already same-component.  The private
+`stepWiring_crossing_loops` above (whose fresh-connectivity helpers are file-local), re-exported so the boundary-word
+loops-zero fold (`crossingWord_loops_zero`) can consume it.  Keeps its name-plus-suffix and its meaning. -/
+theorem stepWiring_crossing_loops_zero (state : WireState) (position : Nat)
+    (fresh : WiringDescStateFresh state) (nfPos : 0 < state.nextFresh)
+    (forest : isUnionFindForest state.links) (hrange : position + 2 ≤ state.openWires.length) :
+    (stepWiring state position crossingWiring).loops = state.loops :=
+  stepWiring_crossing_loops state position fresh nfPos forest hrange
+
 /-- The crossing step's open-wire list: the two consumed wires at `position` replaced by the two fresh legs. -/
 private theorem stepWiring_crossing_open (state : WireState) (position : Nat) :
     (stepWiring state position crossingWiring).openWires

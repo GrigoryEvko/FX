@@ -23,4 +23,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stateIsPermGraph_ofInRange
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasCrossingReadbackStateInvariant
 
+-- (D1) the crossing loops-zero step, exported public (BRAUER r31 B1)
+#assert_no_axioms FX1Poly.Polygraph.stepWiring_crossing_loops_zero
+
 end FX1PolyAudit
