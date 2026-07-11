@@ -226,4 +226,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithScanRowUpdateTieKeepsPosition
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithScanRowMinAbsTieKeepsBest
 
+/- H2-SMITH r14 — the true no-drag reachability invariant, correctly stated (B3): the suffix-min invariant
+   (the fold operand pair carries the suffix minimum), its EXCLUSION probe (the drag input `diag(30,20,12)`
+   violates it) and its on-path witness (the reduceTotal fixed point `diag(2,3)` satisfies it).  The
+   correctly-stated r14 wall replacing the B1-refuted pivot-is-min and the refutable bare frame; a genuine
+   non-vacuous strengthening, NOT a discharge (`SmithReduceFullDriverStatement` stays uninhabited; NO flip). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithSuffixMinRepairInvariant
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinDragInputViolates
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinReduceTotalOnPathProbe
+
 end FX1PolyAudit

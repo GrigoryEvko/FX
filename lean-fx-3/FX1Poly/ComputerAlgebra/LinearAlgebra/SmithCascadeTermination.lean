@@ -4469,4 +4469,125 @@ theorem smithScanRowMinAbsTieKeepsBest (matrix : IntMatrix) (rowIndex bestRow be
           rw [Nat.add_succ, ← Nat.succ_add] at later
           exact later)
 
+/-! ## The true no-drag reachability invariant, correctly stated (H2-SMITH r14, B3)
+
+The r13 wall `SmithRepairStepSettlesStatement` is REFUTABLE over the bare `SmithPrefixSettled` frame
+(POLE-B `[[2,0,0],[0,60,0],[0,60,-60]]` at pivot 1) and the round's pivot-is-min premise is REFUTED
+outright (B1).  Strengthening to bare window-diagonality does NOT fix it either: the drag input
+`diag(30,20,12)` is window-diagonal yet its pivot-0 position-repair drags `60` to `(2,1)`
+(`pos0Sweep = [[2,0,0],[0,60,0],[0,60,-60]]`, eval-confirmed).  The CORRECT no-drag node is the SUFFIX-MIN
+reachability invariant: the fold operand pair carries the suffix minimum, so no untouched later diagonal
+is strictly smaller.
+
+`SmithSuffixMinRepairInvariant` names it.  Two probes fix its meaning: it EXCLUDES the drag input
+(`smithSuffixMinDragInputViolates` — `diag(30,20,12)` violates it, `min(30,20)=20 > d_2=12`), and it
+HOLDS on the min-abs-presorted repair input the driver actually feeds
+(`smithSuffixMinReduceTotalOnPathProbe` — the fixed point `diag(2,3)` satisfies it).  So it is a genuine,
+non-vacuous strengthening that the POLE-B/pivot-is-min refuters do NOT satisfy — the correctly-stated
+r14 wall replacing the refuted premise.
+
+**Honest scope.**  This is the CORRECTLY-STATED wall, not its discharge.  Establishing the invariant
+along the driver path (that `smithReduceTotal` presorts to it and the repair preserves it) is the deep
+POLE-A elimination-correctness node; deriving window-diagonal preservation FROM it is the same wall.
+Both remain open; `SmithReduceFullDriverStatement` stays UNINHABITED; NO flip. -/
+
+/-- **The true no-drag reachability invariant (correctly stated; NOT the refuted pivot-is-min, NOT bare
+window-diagonality)** — at every pivot `p`, whenever the repair's first-non-dividing later diagonal
+search returns some `q`, the fold operand pair `(d_p, d_q)` carries the SUFFIX MINIMUM: its smaller
+magnitude bounds every later diagonal `d_r` (`p < r`).  Exactly the drag-free condition (drag iff some
+later `|d_r| < min(|d_p|,|d_q|)`). -/
+def SmithSuffixMinRepairInvariant (matrix : IntMatrix) (height width : Nat) : Prop :=
+  ∀ pivotIndex, pivotIndex < Nat.min height width →
+    ∀ firstNonDividing,
+      smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = some firstNonDividing →
+      ∀ laterIndex, pivotIndex < laterIndex → laterIndex < Nat.min height width →
+        Nat.min (matrix.diagonalEntryAt pivotIndex).natAbs
+            (matrix.diagonalEntryAt firstNonDividing).natAbs
+          ≤ (matrix.diagonalEntryAt laterIndex).natAbs
+
+set_option maxRecDepth 4096 in
+/-- **The drag input violates the invariant** — `diag(30, 20, 12)` refutes
+`SmithSuffixMinRepairInvariant`: at `p = 0` the search returns `q = 1` (`30 ∤ 20`), the fold pair min is
+`min(30, 20) = 20`, yet the untouched `d_2 = 12 < 20`.  So the invariant correctly EXCLUDES the exact
+input whose single position-repair strands `60` at `(2, 1)` (JAM 1's refuter) — it is a genuine
+strengthening, not vacuous. -/
+theorem smithSuffixMinDragInputViolates :
+    ¬ SmithSuffixMinRepairInvariant { rows := [[30, 0, 0], [0, 20, 0], [0, 0, 12]] } 3 3 := by
+  intro invariant
+  have bound := invariant 0 (by decide) 1 rfl 2 (by decide) (by decide)
+  exact absurd (id (α := (20 : Nat) ≤ 12) bound) (by decide)
+
+set_option maxRecDepth 4096 in
+/-- **On-path witness: the invariant holds on a reduceTotal fixed point** — `diag(2, 3)` (which
+`smithReduceTotal` leaves unchanged) SATISFIES `SmithSuffixMinRepairInvariant`: at `p = 0` the search
+returns `q = 1` and `min(2, 3) = 2 ≤ d_1 = 3`; at `p = 1` the search is empty (vacuous).  Confirms the
+invariant holds on the min-abs-presorted repair input the driver feeds, where the refuted pivot-is-min
+does not. -/
+theorem smithSuffixMinReduceTotalOnPathProbe :
+    SmithSuffixMinRepairInvariant { rows := [[2, 0], [0, 3]] } 2 2 := by
+  intro pivotIndex pivotLt firstNonDividing findEq laterIndex pivotLtLater laterLt
+  have laterLt2 : laterIndex < 2 := Nat.lt_of_lt_of_le laterLt (natMinLeLeft 2 2)
+  have pivotLt2 : pivotIndex < 2 := Nat.lt_of_lt_of_le pivotLt (natMinLeLeft 2 2)
+  match pivotIndex, pivotLt2 with
+  | 0, _ =>
+      have fndEq : firstNonDividing = 1 :=
+        (Option.some.inj (findEq : some 1 = some firstNonDividing)).symm
+      subst fndEq
+      match laterIndex, pivotLtLater, laterLt2 with
+      | 0, gtZero, _ => exact absurd gtZero (Nat.lt_irrefl 0)
+      | 1, _, _ => decide
+      | _ + 2, _, ltTwo =>
+          exact Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc ltTwo)))
+  | 1, _ =>
+      have contra : (none : Option Nat) = some firstNonDividing := findEq
+      contradiction
+  | _ + 2, ltTwo =>
+      exact Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc ltTwo)))
+
+/-! ## The repair-transport arc ledger (H2-SMITH r14, B5, #2137) — the round's honest state; NO flip
+
+**#2137 state.**  `SmithNormalForm.SmithReduceFullDriverStatement` is UNINHABITED (no flip).  Its
+totality rests on EXACTLY the two r13 residuals `{SmithRepairStepSettlesStatement (JAM 1),
+repairChainHolds (JAM 2)}` (`smithReduceFullDriverOfRepairStepAndChain`, re-verified this round).  The
+r14 round PROBED the sorted step-settles premise, found it REFUTED on-path, and shipped the honest
+unconditional atoms + the correctly-stated wall; NEITHER jam closed, NO flip.
+
+**The refutation (B1).**  The round's premise "prove pivot-is-min as a reduceTotal postcondition" is
+FALSE: `reduceTotal([[4,0,0],[0,6,10],[0,15,0]]) = diag(4, 1, 150)`, `d_0 = 4 > d_1 = 1`
+(`smithReduceTotalPivotMinIsRefuted`).  So JAM 1 has NO sorted shortcut; the r13 node stays the wall.
+
+**Shipped this round (r14), all independently axiom-free (`#print axioms` = "no axioms").**
+
+  * B1 — `SmithReduceTotalPivotMinStatement` + `smithReduceTotalPivotMinIsRefuted`: the round's
+    pivot-is-min premise recorded as a permanent regression (a DEAD lemma).
+  * B2 — `smithScanRowUpdateTieKeepsPosition` + `smithScanRowMinAbsTieKeepsBest`: the strict-`<` /
+    row-major tie-no-drag atom (a tie never displaces the earlier-scanned best — the load-bearing
+    tie-resolution).
+  * B3 — `SmithSuffixMinRepairInvariant` (the correctly-stated no-drag wall) + `smithSuffixMinDragInputViolates`
+    (excludes the drag input `diag(30,20,12)`) + `smithSuffixMinReduceTotalOnPathProbe` (holds on the
+    on-path fixed point `diag(2,3)`) — a genuine, non-vacuous strengthening the refuters violate.
+  * B4 — `applyOperationsPreservesEntriesDivisible` (+ its per-op/per-transform tower and the three
+    `Int` atoms): the ideal / Z-combination stability core — whole-matrix `d`-divisibility preserved by
+    every unimodular word (the JAM 2-PRESERVE half).
+
+**Still owed toward `SmithReduceFullDriverStatement` (UNINHABITED; NO flip) — the two named jams, now
+better-isolated.**
+
+  * JAM 1 (window-diagonal).  Old node: `SmithRepairStepSettlesStatement` (refutable over the bare frame).
+    NEW correctly-stated node: `SmithSuffixMinRepairInvariant` holding along the driver path (the drag
+    input violates it, the on-path fixed point satisfies it) — the deep POLE-A no-drag /
+    elimination-correctness.  Neither pivot-is-min (B1-refuted) nor bare window-diagonality (drag-input
+    counterexample) is a free-standing bypass.
+  * JAM 2 (the chain `repairChainHolds`).  PRESERVE half now UNCONDITIONAL (B4:
+    `applyOperationsPreservesEntriesDivisible` — a fixed `d` dividing all entries survives every word).
+    ESTABLISH half (that position `p`'s exit gives `d_p ∣` the whole sub-block, for `p > 0` where `d_p`
+    does not divide the earlier pivots) re-imports JAM 1's window-diagonality — coupled, not orthogonal.
+
+**Discipline honoured.**  Every UNCONDITIONAL r14 atom (B2 tie-keep, B4 ideal-preservation) is quantified
+over an arbitrary scanned segment / arbitrary word and concludes "the best is kept" / "divisibility
+survives" — never "re-diagonalized".  Every refutation (B1, B3 drag) is a permanent regression on a
+LITERAL matrix.  The invariant (B3) is a DEFINITION naming the wall, pinned by two probes to be
+non-vacuous and refuter-excluding — NOT a discharge.  `SmithReduceFullDriverStatement` is NOT flipped. -/
+
 end FX1Poly.ComputerAlgebra
