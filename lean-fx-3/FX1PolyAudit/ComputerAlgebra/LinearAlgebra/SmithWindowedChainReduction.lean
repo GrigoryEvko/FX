@@ -79,4 +79,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithMinorAbsSumRaisesOnFoldWitness
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithZeroPivotFoldSaturatesBudgetWitness
 
+/- H2-SMITH r22 — NODE 1 (B2): the gcd-ideal invariance forward-tower route — the sub-block floor
+   lo-monotonicity plumbing + the concrete gcd>1 window where the cascade lands the minor gcd (2). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.matrixEntriesDivisibleByWithinLoMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepLandsMinorGcdOnConcreteWindow
+
 end FX1PolyAudit

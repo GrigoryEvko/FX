@@ -1023,4 +1023,53 @@ theorem smithZeroPivotFoldSaturatesBudgetWitness :
         = smithMinorAbsSum matrix pivotIndex height width :=
   ⟨{ rows := [[0, 0], [0, 4]] }, 1, 0, 2, 2, by decide, by decide⟩
 
+/-! ## NODE 1 — the gcd-ideal invariance, forward-tower route (H2-SMITH r22, B2, #2261)
+
+The recon reclassified the "backward tower" (per-op inverses, `applyOperations (word ++
+reverseOperationWord word) = matrix`) as CONDITIONAL — likely NOT needed.  The off-diagonal ideal
+invariance rides the SHIPPED **forward** tower instead:
+
+  * The pivot-`p` clearing position sweep is confined to indices `≥ p`
+    (`smithRepairPositionSweepClearingBoundedBelow` with `lo := p`, `p ≤ p`).
+  * So for ANY divisor `g` that divides the whole `[p, ·)` minor of the INPUT
+    (`MatrixEntriesDivisibleByWithin g p input`), the forward tower
+    `applyOperationsPreservesEntriesDivisibleWithin` carries `g`-divisibility to the whole `[p, ·)`
+    block of the OUTPUT — interior fill-in included (each fill-in cell is a ℤ-combination of the
+    `g`-divisible input cells, so `g` divides it).
+
+`matrixEntriesDivisibleByWithinLoMono` (below) is the last plumbing piece: the `[p, ·)` block
+divisibility restricts UP to the `[p+1, ·)` sub-block the seed reads.  The forward-tower confinement at
+`lo := p` is exactly what turns "`g` divides the input minor" into "`g` divides the output sub-block"
+WITHOUT any inverse machinery — the whole of NODE 1, resting entirely on shipped confinement + tower.
+
+**Probe-first (r22 eval, a concrete gcd > 1 window).**  On `diag(6, 10, 8)` the pivot-0 clearing sweep
+LANDS `2 = gcd(6, 10, 8)` at the pivot (`smithClearingSweepLandsMinorGcdOnConcreteWindow`), and `2`
+divides every input-minor entry `6, 10, 8` — so the landed pivot IS a common divisor of the minor on a
+non-coprime window (the cascade-computes-gcd fact, exhibited concretely; the general statement is the
+keystone below). -/
+
+/-- **Sub-block divisibility restricts UP in the window floor** — the `[loSmall, ·)²` block being
+`divisor`-divisible implies the smaller `[loBig, ·)²` block is (`loSmall ≤ loBig`).  Both the row guard
+and the column guard weaken through `Nat.le_trans`.  The plumbing that turns the pivot-`p` forward-tower
+output `MatrixEntriesDivisibleByWithin g p M'` into the seed's `[p+1, ·)` sub-block. -/
+theorem matrixEntriesDivisibleByWithinLoMono {divisor : Int} {loSmall loBig : Nat} {matrix : IntMatrix}
+    (leMono : loSmall ≤ loBig)
+    (divisible : MatrixEntriesDivisibleByWithin divisor loSmall matrix) :
+    MatrixEntriesDivisibleByWithin divisor loBig matrix :=
+  fun rowIndex rowGe colIndex colGe =>
+    divisible rowIndex (Nat.le_trans leMono rowGe) colIndex (Nat.le_trans leMono colGe)
+
+set_option maxRecDepth 8000 in
+/-- **The cascade lands the minor gcd on a concrete gcd > 1 window** — the pivot-0 clearing position
+sweep of `diag(6, 10, 8)` lands `2 = gcd(6, 10, 8)` at the pivot.  A machine-checked positive instance
+of the keystone `SmithCascadeLandedPivotDividesMinor`: on this non-coprime window the landed pivot is a
+common divisor of the whole minor, so the seed's sub-block divisibility holds by NODE 1 (forward tower).
+Probe-first for B2. -/
+theorem smithClearingSweepLandsMinorGcdOnConcreteWindow :
+    (({ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } : IntMatrix).applyOperations
+        (smithRepairPositionSweepClearing
+          (smithMinorAbsSum { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3)
+          { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3)).diagonalEntryAt 0 = 2 := by
+  decide
+
 end FX1Poly.ComputerAlgebra
