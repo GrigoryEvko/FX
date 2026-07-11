@@ -859,6 +859,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDesc
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapWindowColourTruthProbe
 -- FC-3 r24 B2 — the COLOUR-FREE cap-step gap-closing exclusion (distinctness + pre-adjacency replaces the colour premise)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDistinctSeatCapExclusion
+-- FC-3 r24 B3 — the unconditional pure-cap sort marker held FALSE (pin uninhabited) + fresh-valley exclusion example
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringUnconditionalCapSortLedger
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
