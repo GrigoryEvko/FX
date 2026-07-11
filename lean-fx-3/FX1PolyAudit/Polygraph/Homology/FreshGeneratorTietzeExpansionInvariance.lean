@@ -199,4 +199,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.tietzeThirdGeneratorEndToEndDegreeOneViaBlockLifting
 #assert_no_axioms FX1Poly.Polygraph.Homology.tietzeThirdGeneratorEndToEndDegreeTwoViaBlockLifting
 
+-- B4 (r6): the type-2 H1 theorem (generic column-in-span clearing) + the permanent H2 wall
+#assert_no_axioms FX1Poly.Polygraph.Homology.appendScalarMultipleColumn
+#assert_no_axioms FX1Poly.Polygraph.Homology.mapAllRowsFuseUnderWidth
+#assert_no_axioms FX1Poly.Polygraph.Homology.listModifyAtAppendSingletonEnd
+#assert_no_axioms FX1Poly.Polygraph.Homology.appendThenClearRowIsExtend
+#assert_no_axioms FX1Poly.Polygraph.Homology.appendedScalarMultipleColumnClearsToZeroColumn
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeIsAppendScalarMultiple
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeInSpanColumnClearsGeneric
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeDegreeOneSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeExpandedBoundaryReducesToFromHigher
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeDegreeOneHomologyPreserved
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeDegreeOneHomologyIsZmodThree
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeH2PreservationHasNoTheorem
+
 end FX1PolyAudit

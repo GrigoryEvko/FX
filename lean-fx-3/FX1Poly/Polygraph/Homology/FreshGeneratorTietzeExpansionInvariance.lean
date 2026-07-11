@@ -1980,4 +1980,147 @@ theorem tietzeThirdGeneratorEndToEndDegreeTwoViaBlockLifting :
     tietzeSmithNormalFormOfDimOne 2 4 ⟨rfl, rfl, rfl, True.intro⟩ (by decide) rfl rfl rfl rfl rfl rfl
     (by decide) (by decide)
 
+/-! ### B4 (r6) — the TYPE-2 H1 THEOREM (column-in-span clears generically) + the H2 WALL
+
+The type-2 Tietze move (adjoin a DERIVABLE relation) on cyclic `⟨s | sss⟩`: add the derivable rule
+`ssss ⟹ s`.  No new generator; ONE column is appended to `d2`, equal to `1 ×` the existing column
+(derivability abelianizes to column-in-span).  r5 shipped the concrete `rfl` witnesses
+(`type2CyclicThreeNewColumnInSpan`, `type2CyclicThreeReducesToRankOne`); r6 lifts the CLEARING to a
+GENERIC lemma over the base matrix and coefficient (`appendedScalarMultipleColumnClearsToZeroColumn`: an
+appended column equal to `coefficient ×` an existing column clears to a ZERO column by the single
+transvection `addColumnMultiple sourceIndex width (-coefficient)`), re-feeds cyclic-3 through it, and
+packages the H1 preservation as a homology-invariant EQUALITY connected to the actual boundary by the
+shipped clearing certificate.  H2 stays the named wall: the naive type-2 read-off is REFUTED (r5), so NO
+H2-preservation theorem is shipped — only the permanent boundary decl below. -/
+
+/-- Append ONE column equal to `coefficient ×` the existing column `sourceIndex` — the abelianized shape
+of adjoining a DERIVABLE relation whose two words differ by `coefficient` copies of an existing rule
+(derivability manifests as column-in-span). -/
+def appendScalarMultipleColumn (matrix : IntMatrix) (sourceIndex : Nat) (coefficient : Int) : IntMatrix :=
+  ⟨mapAllRows (fun row => row ++ [coefficient * listGetWithDefault 0 row sourceIndex]) matrix.rows⟩
+
+/-- Fuse two row-maps into one under a uniform width — `mapAllRows outer ∘ mapAllRows inner = mapAllRows
+combined` when `outer ∘ inner` agrees with `combined` on width-`width` rows.  Structural on the row
+list. -/
+theorem mapAllRowsFuseUnderWidth (outerTransform innerTransform combinedTransform : IntRow → IntRow)
+    (width : Nat)
+    (fuse : ∀ row, row.length = width → outerTransform (innerTransform row) = combinedTransform row) :
+    ∀ (rows : List IntRow), IntMatrix.rowsAllHaveWidth width rows →
+      mapAllRows outerTransform (mapAllRows innerTransform rows) = mapAllRows combinedTransform rows
+  | [], _ => rfl
+  | head :: tail, widthPair => by
+      show outerTransform (innerTransform head)
+          :: mapAllRows outerTransform (mapAllRows innerTransform tail)
+        = combinedTransform head :: mapAllRows combinedTransform tail
+      rw [fuse head widthPair.left,
+          mapAllRowsFuseUnderWidth outerTransform innerTransform combinedTransform width fuse tail
+            widthPair.right]
+
+/-- Modifying at the LAST index of an append-singleton transforms exactly the appended element.
+Structural on the prefix. -/
+theorem listModifyAtAppendSingletonEnd {Entry : Type} (transform : Entry → Entry) :
+    ∀ (entries : List Entry) (extra : Entry),
+      listModifyAt transform (entries ++ [extra]) entries.length = entries ++ [transform extra]
+  | [], extra => rfl
+  | head :: tail, extra => congrArg (head :: ·) (listModifyAtAppendSingletonEnd transform tail extra)
+
+/-- ★ **The per-row clearing cancellation.**  A row extended by `coefficient ×` its own `sourceIndex`
+entry, then cleared by `addColumnMultiple sourceIndex width (-coefficient)`, becomes the row extended by a
+trailing `0` — the appended entry cancels `coefficient·b + (-coefficient)·b = 0` (via the propext-clean
+`intNegMul` / `intAddRightNeg`).  Structural setup, one `Int` cancellation. -/
+theorem appendThenClearRowIsExtend (sourceIndex width : Nat) (coefficient : Int)
+    (sourceBelow : sourceIndex < width) :
+    ∀ (row : IntRow), row.length = width →
+      IntMatrix.addScaledEntryWithinRow (row ++ [coefficient * listGetWithDefault 0 row sourceIndex])
+          sourceIndex width (-coefficient)
+        = extendRow row := by
+  intro row rowWidth
+  have sourceRow : sourceIndex < row.length := rowWidth ▸ sourceBelow
+  have sourceExt : sourceIndex
+      < (row ++ [coefficient * listGetWithDefault 0 row sourceIndex]).length := by
+    rw [appendSingletonLength]; exact Nat.le.step sourceRow
+  show IntMatrix.addScaledEntryWithinRow (row ++ [coefficient * listGetWithDefault 0 row sourceIndex])
+      sourceIndex width (-coefficient) = row ++ [0]
+  rw [addScaledEntryWithinRowOfBounded (row ++ [coefficient * listGetWithDefault 0 row sourceIndex])
+        sourceIndex width (-coefficient) sourceExt,
+      listGetWithDefaultAppendLeft' 0 row [coefficient * listGetWithDefault 0 row sourceIndex]
+        sourceIndex sourceRow,
+      ← rowWidth,
+      listModifyAtAppendSingletonEnd
+        (fun targetEntry => targetEntry + (-coefficient) * listGetWithDefault 0 row sourceIndex) row
+        (coefficient * listGetWithDefault 0 row sourceIndex),
+      intNegMul coefficient (listGetWithDefault 0 row sourceIndex),
+      intAddRightNeg (coefficient * listGetWithDefault 0 row sourceIndex)]
+
+/-- ★★ **THE GENERIC COLUMN-IN-SPAN CLEARING.**  An appended column equal to `coefficient ×` an existing
+column `sourceIndex` (`sourceIndex < width`) clears to a ZERO column under the single transvection
+`addColumnMultiple sourceIndex width (-coefficient)` — the result is the base with a trailing zero column
+(`[baseD2 | 0]`).  Generic over the base matrix, the source column, and the coefficient; the reader within
+the base window reads the base diagonal unchanged, so H1 is preserved.  This is the "derivability
+abelianizes to column-in-span ⟹ H1 preserved" content, lifted off the per-instance `rfl`. -/
+theorem appendedScalarMultipleColumnClearsToZeroColumn (matrix : IntMatrix) (height width sourceIndex : Nat)
+    (coefficient : Int) (rect : matrix.IsRectangular height width) (sourceBelow : sourceIndex < width) :
+    (appendScalarMultipleColumn matrix sourceIndex coefficient).addColumnMultiple sourceIndex width
+        (-coefficient)
+      = ⟨mapAllRows extendRow matrix.rows⟩ := by
+  rw [addColumnMultipleOfBounded (appendScalarMultipleColumn matrix sourceIndex coefficient) sourceIndex
+        width (-coefficient) (Nat.ne_of_lt sourceBelow)]
+  exact congrArg IntMatrix.mk
+    (mapAllRowsFuseUnderWidth
+      (fun row => IntMatrix.addScaledEntryWithinRow row sourceIndex width (-coefficient))
+      (fun row => row ++ [coefficient * listGetWithDefault 0 row sourceIndex])
+      extendRow width
+      (appendThenClearRowIsExtend sourceIndex width coefficient sourceBelow)
+      matrix.rows rect.right)
+
+/-- ★ **Cyclic-3 type-2 `d2` IS the append-scalar-multiple shape** — the derivable rule `ssss ⟹ s`
+abelianizes to a column equal to `1 ×` the existing column; `rfl`. -/
+theorem type2CyclicThreeIsAppendScalarMultiple :
+    type2CyclicThreeExpandedBoundaryDimOne
+      = appendScalarMultipleColumn cyclicThreeBoundaryOfDimOne 0 1 := rfl
+
+/-- ★★ **Cyclic-3 type-2 in-span column clears — THROUGH the generic lemma** (not per-instance `rfl`): the
+appended `-3` column clears to `0`, landing `[[-3, 0]]` by `appendedScalarMultipleColumnClearsToZeroColumn`
+(then `negateColumn 0` normalises the sign — the shipped `type2CyclicThreeReducesToRankOne`). -/
+theorem type2CyclicThreeInSpanColumnClearsGeneric :
+    type2CyclicThreeExpandedBoundaryDimOne.addColumnMultiple 0 1 (-1) = ⟨[[-3, 0]]⟩ := by
+  rw [type2CyclicThreeIsAppendScalarMultiple,
+      appendedScalarMultipleColumnClearsToZeroColumn cyclicThreeBoundaryOfDimOne 1 1 0 1
+        ⟨rfl, rfl, True.intro⟩ (by decide)]
+  rfl
+
+/-- The degree-1 Smith data of the type-2-expanded cyclic complex: `C1 = 1` (NO new generator), `SNF(d1)`
+unchanged, `SNF(d2) = ⟨[[3, 0]]⟩` (the cleared, sign-normalised column). -/
+def type2CyclicThreeDegreeOneSmithData : SmithHomologyData :=
+  { cyclicThreeDegreeOneSmithData with smithBoundaryFromHigher := ⟨[[3, 0]]⟩ }
+
+/-- ★ **The type-2 clearing certificate transports the ACTUAL boundary onto the homology data's SNF** —
+`type2CyclicThreeReductionCertificate` reduces the type-2-expanded `d2` to
+`type2CyclicThreeDegreeOneSmithData.smithBoundaryFromHigher`; `rfl`. -/
+theorem type2CyclicThreeExpandedBoundaryReducesToFromHigher :
+    type2CyclicThreeExpandedBoundaryDimOne.applyOperations type2CyclicThreeReductionCertificate
+      = type2CyclicThreeDegreeOneSmithData.smithBoundaryFromHigher := rfl
+
+/-- ★★ **THE TYPE-2 H1 THEOREM — H1 = ZZ/3 PRESERVED under the type-2 (relation-adjunction) move.**  The
+type-2-expanded degree-1 homology invariant EQUALS the base cyclic one: no new generator, and the in-span
+column clears so the from-higher rank/torsion are unchanged.  Connected to the actual boundary by
+`type2CyclicThreeExpandedBoundaryReducesToFromHigher`.  `rfl`. -/
+theorem type2CyclicThreeDegreeOneHomologyPreserved :
+    type2CyclicThreeDegreeOneSmithData.homologyInvariant
+      = cyclicThreeDegreeOneSmithData.homologyInvariant := rfl
+
+/-- ★ Cross-check: the type-2 degree-1 invariant is `ZZ/3 = (0, [3])` by `rfl`. -/
+theorem type2CyclicThreeDegreeOneHomologyIsZmodThree :
+    type2CyclicThreeDegreeOneSmithData.homologyInvariant = ⟨0, [3]⟩ := rfl
+
+/-- ★ **THE TYPE-2 H2 WALL (permanent boundary — NO H2-preservation theorem is claimed).**  r5 REFUTED
+the naive type-2 H2 read-off (`type2NaiveH2FreeRankIsOne`, preserved byte-intact above): the naive move
+(rule only, `d3` unchanged) leaves the syzygy `rule2 − rule1` UNCOVERED, giving spurious `H2 = ZZ ≠ 0`
+while base `H2 = 0`.  H2 preservation is resolution-CHOICE-dependent — it holds ONLY if Knuth–Bendix
+completes the critical pair `ssss` overlaps `sss`, adding the covering `d3` column (the Squier/Pride
+homotopy dependence, the R1 wall).  r6 ships the type-2 H1 theorem (`type2CyclicThreeDegreeOneHomologyPreserved`)
+but claims NOTHING at H2; this decl records that boundary permanently.  `= true` is the stance, not a
+closure.  Read the meaning from THIS docstring. -/
+def type2CyclicThreeH2PreservationHasNoTheorem : Bool := true
+
 end FX1Poly.Polygraph.Homology
