@@ -78,4 +78,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderIdentityBlockExtendedGeneralShipped
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall
 
+-- B4 — the widened completeness instances over the sound sub-theory (landing on spider stages).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaInvolutionLegsConvertibleOverSound
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaInvolutionMatrixSharedOverSound
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaInvolutionSpiderMatrixPin
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaInvolutionWidenedCompletenessInstance
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCommutativityLegsConvertibleOverSound
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCommutativityMatrixSharedOverSound
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCommutativitySpiderMatrixPin
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCommutativityWidenedCompletenessInstance
+
+-- B4 — the ledger markers.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderWidenedInstancesOverSoundShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderNormalFormStarNamedRThree
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderBiCrossArcDividendNameOnly
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderRoundTripRoundTwoLedgerShipped
+
 end FX1PolyAudit

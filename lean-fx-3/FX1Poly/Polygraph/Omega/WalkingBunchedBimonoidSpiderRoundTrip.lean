@@ -653,4 +653,134 @@ Fubini-kit wall as `fxBunchedBimonoid_matrixStrictLawExtensionReached` and the r
 B3 ships the identity-block-extended fragment (the routing-free primitive); the interchange is r3. -/
 def fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall : Bool := false
 
+/-! # =========================================================================================
+    # B4 — THE WIDENED INSTANCES (over the SOUND congruence) + THE LEDGER
+    # =========================================================================================
+
+★ **Two NEW completeness instances over the SOUND sub-theory `BunchedBimonoidSoundRow`, each converging onto a
+canonical form whose matrix IS a shipped spider stage — the r2 dividend tying the completeness instances to the
+general round-trip.**  Mirroring the r1 `bunchedBimonoid{Bialgebra,Cocommutativity}CompletenessInstance` (two
+structurally-distinct diagrams, same matrix, both convertible over `BunchedBimonoidSoundRow` to a canonical), r2
+adds the sigma-involution instance (both legs converge to `id`, matrix `identityMat 2` — the B3 identity-block
+base) and the commutativity instance (both legs converge to `mu`, matrix `rowMatrix 2` — the B2 mu-stage matrix
+`evalCell (muFold 2)`).  The conversions are EXPLICIT terms through the sound sub-theory (`refl` for the
+canonical leg, `ofRelation` on the genuine sound row for the other), and the shared matrix is DERIVED via
+`bunchedBimonoidMatrixSoundOverSound`, NOT assumed.  The general spider NF (the #2033 star) stays r3. -/
+
+/-! ## Widened instance A — sigma-involution converges to `id` (matrix `identityMat 2`, the B3 block base) -/
+
+/-- The **sigma-involution legs are convertible over the sound sub-theory** — `sigma.sigma ~ id` fired through
+`ofRelation` on the genuine involution row. -/
+theorem bunchedBimonoidSigmaInvolutionLegsConvertibleOverSound :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+      bunchedBimonoidSigmaInvolutionLeftLeg bunchedBimonoidSigmaInvolutionRightLeg :=
+  SaturatedConvOverWithId.ofRelation BunchedBimonoidSoundRow.sigmaInvolution
+
+/-- ★ **DERIVED (not assumed): the sigma-involution legs share their matrix** — from the convertibility via
+`bunchedBimonoidMatrixSoundOverSound` (both `identityMat 2`). -/
+theorem bunchedBimonoidSigmaInvolutionMatrixSharedOverSound :
+    bunchedBimonoidEvalCell bunchedBimonoidSigmaInvolutionLeftLeg
+      = bunchedBimonoidEvalCell bunchedBimonoidSigmaInvolutionRightLeg :=
+  bunchedBimonoidMatrixSoundOverSound bunchedBimonoidSigmaInvolutionLegsConvertibleOverSound
+
+/-- ★ The **canonical form's matrix is the identity-block base** — `evalCell (sigma-involution canonical) =
+identityMat 2`, the `2 x 2` identity that B3's `whiskerRight`/`whiskerLeft` diagonals extend.  `rfl`. -/
+theorem bunchedBimonoidSigmaInvolutionSpiderMatrixPin :
+    bunchedBimonoidEvalCell bunchedBimonoidSigmaInvolutionRightLeg = bunchedBimonoidIdentityMat 2 := rfl
+
+/-- ★★ **WIDENED COMPLETENESS INSTANCE A (sigma-involution).**  Two structurally-distinct diagrams
+(`sigma.sigma` and `id`) with the SAME matrix `identityMat 2` are BOTH convertible over the sound sub-theory to
+the canonical `id`, whose matrix is the B3 identity-block base — a hand-exhibited "equal-matrix implies
+convertible" witness over `BunchedBimonoidSoundRow`, tying the completeness instances to the spider round-trip's
+identity-block primitive. -/
+theorem bunchedBimonoidSigmaInvolutionWidenedCompletenessInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidSigmaInvolutionLeftLeg bunchedBimonoidSigmaInvolutionRightLeg
+      ∧ SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidSigmaInvolutionRightLeg bunchedBimonoidSigmaInvolutionRightLeg
+      ∧ bunchedBimonoidEvalCell bunchedBimonoidSigmaInvolutionRightLeg = bunchedBimonoidIdentityMat 2 :=
+  ⟨bunchedBimonoidSigmaInvolutionLegsConvertibleOverSound,
+    SaturatedConvOverWithId.refl _,
+    bunchedBimonoidSigmaInvolutionSpiderMatrixPin⟩
+
+/-! ## Widened instance B — commutativity converges to `mu` (matrix `rowMatrix 2`, the B2 mu-stage) -/
+
+/-- The **commutativity legs are convertible over the sound sub-theory** — `mu.sigma ~ mu` fired through
+`ofRelation` on the genuine commutativity row. -/
+theorem bunchedBimonoidCommutativityLegsConvertibleOverSound :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+      bunchedBimonoidCommutativityLeftLeg bunchedBimonoidCommutativityRightLeg :=
+  SaturatedConvOverWithId.ofRelation BunchedBimonoidSoundRow.commutativity
+
+/-- ★ **DERIVED (not assumed): the commutativity legs share their matrix** — from the convertibility via restored
+soundness (both `[[1,1]]`). -/
+theorem bunchedBimonoidCommutativityMatrixSharedOverSound :
+    bunchedBimonoidEvalCell bunchedBimonoidCommutativityLeftLeg
+      = bunchedBimonoidEvalCell bunchedBimonoidCommutativityRightLeg :=
+  bunchedBimonoidMatrixSoundOverSound bunchedBimonoidCommutativityLegsConvertibleOverSound
+
+/-- ★ The **canonical form's matrix IS the mu-stage matrix** — `evalCell (commutativity canonical) = rowMatrix 2
+= evalCell (muFold 2)`, the `1 x 2` all-ones fold row from B2.  `rfl` — the completeness instance's canonical
+matrix coincides with the shipped mu-stage on the nose. -/
+theorem bunchedBimonoidCommutativitySpiderMatrixPin :
+    bunchedBimonoidEvalCell bunchedBimonoidCommutativityRightLeg = bunchedBimonoidRowMatrix 2 := rfl
+
+/-- ★★ **WIDENED COMPLETENESS INSTANCE B (commutativity).**  Two structurally-distinct diagrams (`mu.sigma` and
+`mu`) with the SAME matrix `[[1,1]]` are BOTH convertible over the sound sub-theory to the canonical `mu`, whose
+matrix IS the B2 mu-stage `rowMatrix 2` — the completeness instance landing exactly on a shipped general stage
+lemma's value. -/
+theorem bunchedBimonoidCommutativityWidenedCompletenessInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidCommutativityLeftLeg bunchedBimonoidCommutativityRightLeg
+      ∧ SaturatedConvOverWithId bunchedBimonoidOmegaComputad BunchedBimonoidSoundRow
+        bunchedBimonoidCommutativityRightLeg bunchedBimonoidCommutativityRightLeg
+      ∧ bunchedBimonoidEvalCell bunchedBimonoidCommutativityRightLeg = bunchedBimonoidRowMatrix 2 :=
+  ⟨bunchedBimonoidCommutativityLegsConvertibleOverSound,
+    SaturatedConvOverWithId.refl _,
+    bunchedBimonoidCommutativitySpiderMatrixPin⟩
+
+/-! ## The B4 ledger -/
+
+/-- ★★ **ESTABLISHED (B4) — two widened completeness instances over the sound sub-theory, landing on spider
+stages.**  `= true` records `bunchedBimonoidSigmaInvolutionWidenedCompletenessInstance` (both `sigma.sigma` / `id`
+legs convertible over `BunchedBimonoidSoundRow` to the canonical `id`, matrix `identityMat 2` = the B3
+identity-block base) and `bunchedBimonoidCommutativityWidenedCompletenessInstance` (both `mu.sigma` / `mu` legs
+convertible to the canonical `mu`, matrix `rowMatrix 2` = the B2 mu-stage `evalCell (muFold 2)`).  Each conversion
+is an EXPLICIT term through the SOUND sub-theory (`refl` + `ofRelation` on the genuine sound row), the shared
+matrix DERIVED via `bunchedBimonoidMatrixSoundOverSound` — the r2 dividend tying the completeness instances to
+the general round-trip's stage matrices. -/
+def fxBunchedBimonoid_spiderWidenedInstancesOverSoundShipped : Bool := true
+
+/-- ★★ **THE #2033 STAR IS NOT CLAIMED — the general spider NF (equal matrix ⟹ convertible) is r3.**  `= false`
+records that the GENERAL matrix completeness — the NF induction "equal `Mat(N)` matrix implies convertible over
+`BunchedBimonoidSoundRow`" for ALL 2-cells — is the #2033 star and is NOT reached in r2.  r2 ships the SECTION
+(the diagram-to-matrix round-trip `evalCell ∘ spider = id` on the fan / row / scalar / identity-block families,
+plus the Fubini kit), never the RETRACTION (completeness).  This is the SAME wall already NAMED upstream:
+`fxBunchedBimonoid_propGeneralCompletenessStarReached` (spider NF, `= false`) and
+`fxBunchedBimonoid_spiderCompletenessTargetsSoundSubTheory` (adjudication, `= false`, target = the sound
+sub-theory) — neither name nor `= false` value edited; the NF induction is r3. -/
+def fxBunchedBimonoid_spiderNormalFormStarNamedRThree : Bool := false
+
+/-- ★ **CROSS-ARC DIVIDEND (name-only) — the Fubini kit feeds the WP-BI matrix strict-law wall.**  `= true`
+records that the B1 matMul-algebra Fubini kit built here (`bunchedBimonoidRangeMapConstIsReplicate`,
+`...NatListSumAppend`, the `getD`-at-range reads) is EXACTLY the kit the WP-BI r2/r3 wall
+`fxBunchedBimonoid_matrixStrictLawExtensionReached` names ("`matMul` associativity — a finite-sum Fubini over
+`List.range` — the identity-matrix unit laws, and block multiplicativity") and the r3 adjudication wall
+`fxBunchedBimonoid_fullIsolationNeedsStrictLawFubiniKit`.  The dividend: this round's kit is the shared substrate
+for lifting matrix soundness to `StrictAxiomRel union BunchedBimonoidSoundRow`.  Recorded NAME-ONLY; those wall
+markers keep their name and `= false` value byte-intact (cross-file, not edited). -/
+def fxBunchedBimonoid_spiderBiCrossArcDividendNameOnly : Bool := true
+
+/-- ★★ **ESTABLISHED (B4) — the r2 general spider round-trip ledger (honest scoreboard).**  `= true` records the
+complete r2 advance over the r1 opens: the B1 matMul-algebra Fubini kit (structural inductions, propext-clean);
+the B2 general stage lemmas (`deltaFan -> fanMatrix`, `muFold -> rowMatrix`, `spiderScalar -> [[n]]`, all `forall
+n`) + the general scalar round-trip; the B3 general 2D round-trips via routing-free identity-block placement
+(`diag(n,1)` / `diag(1,n)`, all `n`) + the `1 x 1` coherence self-attack + the zero-column / zero-row / empty
+edges; and the B4 widened completeness instances over the sound sub-theory landing on the spider stages.  Every
+wall NAMED at its exact node: the general `q x p` round-trip's block-exchange interchange (r3,
+`fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall`); the spider NF / #2033 star (r3,
+`fxBunchedBimonoid_spiderNormalFormStarNamedRThree`); the WP-BI strict-law Fubini isolation (r3, cross-arc
+dividend name-only).  Every r1 / r2 / r3 wall marker's name and `= false` value byte-intact. -/
+def fxBunchedBimonoid_spiderRoundTripRoundTwoLedgerShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
