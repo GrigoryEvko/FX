@@ -6,6 +6,7 @@ import FX1Poly.Polygraph.Omega.PresentationOpDualityWithId
 import FX1Poly.Polygraph.Omega.WalkingEquivalencePresentation
 import FX1Poly.Polygraph.Omega.FrobeniusMonadPresentation
 import FX1Poly.Polygraph.Omega.WalkingStrongMonadPresentation
+import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidPresentation
 
 /-! # Polygraph/Omega/SquierFamilyCensus — the WP-SQUIER family census (the #2082 state, WP-SQUIER r2)
 
@@ -570,5 +571,75 @@ word-problem decision is walled at the two-colour monotone-map model (the SAME n
 Parikh transport (`strongMonadConv_iffSameCount`), and the coherent presentation ships, but not the full
 2-cell decision. -/
 def fxOmega4_bareStrongMonadTwoCellDecisionWalledInCensus : Bool := false
+
+/-! ## The walking-bunched-bimonoid census extension (WP-BI r1, #2188) — ADDITIVE
+
+★ **The census EXTENSION for the walking bunched bimonoid — ADDITIVE, the shipped decided-9 census and every
+prior extension UNTOUCHED.**  The single-object walking bunched bimonoid
+`<a, m | bicommutative bimonoid on a + non-commutative monoid on m>` has a SHIPPED Omega-lane coherent
+presentation (`WalkingBunchedBimonoidPresentation.lean`, TWENTY-TWO critical pairs — 15 transported monoid-`m`
++ monoid-`a` + comonoid-`a`, plus 7 new bialgebra + (co)commutativity + sigma-involution rows, larger than any
+prior shipped walker).  It is NOT one of the decided-9: its full additive 2-cell word problem is NAMED at
+`Mat(N)` (the #2033 matrix PROP) with the convergent normalizer DEFERRED to r2
+(`fxBunchedBimonoid_additiveConvergentNormalizerReached`), so it is recorded here as a SEPARATE extension
+rather than grown into `allSquierFamilyDecidedWalkers` (whose count theorem
+`squierFamilyDecidedWalkerCountIsNine` keeps its name and meaning).  Its multiplicative `m` 2-cell decision IS
+decided by walking-monad Delta-transport, and its mixed `a/m` decision is the CLEAN alternating-block Amalgam
+transfer.  It is machine-separated from the Frobenius walker (`bunchedBimonoidFrobeniusFourCountBreaksOnBialgebra`,
+the four-count is unsound over the bialgebra). -/
+
+/-- The single **walking-bunched-bimonoid walker** — the census extension (additive; NOT part of the decided-9;
+the honest FULL bicommutative-bimonoid walker at Squier's convergent scope). -/
+inductive SquierFamilyBunchedWalker
+  /-- The single-object walking bunched bimonoid `<a, m | bicommutative bimonoid on a + monoid on m>`. -/
+  | walkingBunchedBimonoid
+
+/-- The complete enumeration of the walking-bunched-bimonoid walkers — ONE, listed. -/
+def allSquierFamilyBunchedWalkers : List SquierFamilyBunchedWalker := [.walkingBunchedBimonoid]
+
+/-- ★ **The walking-bunched-bimonoid walker count is exactly ONE** — kernel-checked (`rfl`). -/
+theorem squierFamilyBunchedWalkerCountIsOne : allSquierFamilyBunchedWalkers.length = 1 := rfl
+
+/-- ★ **The bunched-walker enumeration is EXHAUSTIVE** — the single walker appears. -/
+theorem allSquierFamilyBunchedWalkersExhaustive :
+    ∀ walker : SquierFamilyBunchedWalker, walker ∈ allSquierFamilyBunchedWalkers
+  | .walkingBunchedBimonoid => List.Mem.head _
+
+/-- The coherent-presentation status of the bunched-bimonoid walker — SHIPPED in the Omega lane. -/
+def squierFamilyBunchedStatus :
+    SquierFamilyBunchedWalker → SquierFamilyCoherentPresentationStatus
+  | .walkingBunchedBimonoid => .shippedOmegaLane
+
+/-- ★ **The walking-bunched-bimonoid-presented statement.**  The shipped Omega-lane coherent presentation: the
+twenty-two-critical-pair bundle (15 transported + 7 new). -/
+def SquierFamilyBunchedWalkerPresentedStatement : Prop :=
+  BunchedBimonoidWalkerCoherentPresentationStatement
+
+/-- ★★ **THE GROUNDED WALKING-BUNCHED-BIMONOID CENSUS (#2188).**  The shipped Omega-lane coherent presentation
+assembled as one machine-checked datum — so the census extension is proof-carrying, not a bare tally.  The
+conjunct is the already-verified coherent presentation of the walker
+(`bunchedBimonoidWalkerCoherentPresentation`, all twenty-two critical pairs resolved modulo strict). -/
+theorem squierFamilyBunchedWalkerPresented : SquierFamilyBunchedWalkerPresentedStatement :=
+  bunchedBimonoidWalkerCoherentPresentation
+
+/-- ★ **THE WALKING BUNCHED BIMONOID IS PRESENTED IN THE CENSUS (#2188).**  `= true` records that the
+single-object walking bunched bimonoid has a SHIPPED Omega-lane coherent presentation
+(`squierFamilyBunchedWalkerPresented`), machine-checked — the WP-BI r1 census tie-in, recorded additively
+without touching the shipped decided-9. -/
+def fxOmega4_walkingBunchedBimonoidPresentedInCensus : Bool := true
+
+/-- ★★ **THE BUNCHED BIMONOID IS DISTINCT FROM THE FROBENIUS WALKER (census, #2188).**  `= true` records the
+machine-checked separation: the bialgebra law relates convertible legs of unequal Frobenius four-count
+(`bunchedBimonoidFrobeniusFourCountBreaksOnBialgebra`), so the bunched bimonoid is `Mat(N)`, NOT the Frobenius
+`2Cob` — a genuinely distinct walker, not a duplicate.  Recorded additively in the census. -/
+def fxOmega4_bunchedBimonoidNotEqualFrobeniusInCensus : Bool := true
+
+/-- ★ **WALL — the additive bunched 2-cell DECISION stays walled at `Mat(N)` (census, #2188, honest).**
+`= false` records that the walking bunched bimonoid is NOT part of the DECIDED-9: its full additive 2-cell
+word-problem decision is NAMED at `Mat(N)` (the #2033 matrix PROP) with the convergent normalizer deferred to
+r2 (`fxBunchedBimonoid_additiveConvergentNormalizerReached`).  Its multiplicative side IS decided
+(Delta-transport) and its mixed side is the clean Amalgam transfer, but not the full additive 2-cell
+decision. -/
+def fxOmega4_bunchedBimonoidAdditiveDecisionWalledInCensus : Bool := false
 
 end FX1Poly.Polygraph.Omega

@@ -84,4 +84,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_singleObjectStrongMonadHasOmegaPresentation
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bareStrongMonadTwoCellDecisionWalledInCensus
 
+-- WP-BI r1 (#2188) — the additive walking-bunched-bimonoid census extension
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyBunchedWalker
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyBunchedWalkers
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyBunchedWalkerCountIsOne
+#assert_no_axioms FX1Poly.Polygraph.Omega.allSquierFamilyBunchedWalkersExhaustive
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyBunchedStatus
+#assert_no_axioms FX1Poly.Polygraph.Omega.SquierFamilyBunchedWalkerPresentedStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.squierFamilyBunchedWalkerPresented
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_walkingBunchedBimonoidPresentedInCensus
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bunchedBimonoidNotEqualFrobeniusInCensus
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxOmega4_bunchedBimonoidAdditiveDecisionWalledInCensus
+
 end FX1PolyAudit

@@ -1168,4 +1168,123 @@ homotopy basis (the higher coherences closing the polygraphic resolution).  Unif
 (`fxFrob_fullHomotopyBasisReached`, etc.) — the OMEGA-5 handoff. -/
 def fxBunchedBimonoid_fullHomotopyBasisReached : Bool := false
 
+/-! # =========================================================================================
+    # B4 — THE FROBENIUS-DISTINCTION SELF-ATTACK + the grade-algebra / matrix-PROP tie-ins
+    # =========================================================================================
+
+★ **The bialgebra law B1 is NOT the Frobenius law, on the SAME four (co)monoid generators — machine-checked
+via the Frobenius four-count (recon (4)).**  The Frobenius four-count `(#mu_a, #eta_a, #delta_a, #eps_a)` is a
+SOUND invariant over the walking *Frobenius* monad (its F1 / F2 legs both count `(1,0,1,0)`), but it is
+UNSOUND over the walking bunched *bimonoid*: the bialgebra B1 relates `delta_a . mu_a` (count `(1,0,1,0)`) to
+the 4-strand `(mu (x) mu).(1 (x) sigma (x) 1).(delta (x) delta)` (count `(2,0,2,0)`) — DIFFERENT counts on
+CONVERTIBLE legs.  So `BI != Frobenius`: the two theories are genuinely distinct (bare Frobenius = `2Cob` =
+partition + genus, non-matrix; bare bicommutative bimonoid = `Mat(N)`), and the guard against silently
+duplicating the Frobenius walker is a machine-checked refutation, not a docstring claim. -/
+
+/-- Componentwise addition on the four-count vector `(#mu_a, #eta_a, #delta_a, #eps_a)` — a distinctively-named
+local adder (NOT the Frobenius `fourAdd`, which is not imported). -/
+def bunchedBimonoidFourAdd :
+    Nat × Nat × Nat × Nat → Nat × Nat × Nat × Nat → Nat × Nat × Nat × Nat
+  | (a1, a2, a3, a4), (b1, b2, b3, b4) => (a1 + b1, a2 + b2, a3 + b3, a4 + b4)
+
+/-- The **four-tag** of a bunched generator label — `1` in the slot of the additive (co)monoid generator it
+names, `0` elsewhere.  The two 1-generators, the swap `sigma_a`, and BOTH multiplicative generators contribute
+`(0,0,0,0)` — exactly the Frobenius four-count's blind spots, which is what makes it unsound over the bialgebra.
+Full nine-arm split (constant-`Nat` motive, propext-free). -/
+def bunchedBimonoidLabelFourTag : BunchedBIGenLabel → Nat × Nat × Nat × Nat
+  | .additiveColour => (0, 0, 0, 0)
+  | .multColour => (0, 0, 0, 0)
+  | .addMult => (1, 0, 0, 0)
+  | .addUnit => (0, 1, 0, 0)
+  | .addComult => (0, 0, 1, 0)
+  | .addCounit => (0, 0, 0, 1)
+  | .addSwap => (0, 0, 0, 0)
+  | .multMult => (0, 0, 0, 0)
+  | .multUnit => (0, 0, 0, 0)
+
+/-- The **generator four-count** `(#mu_a, #eta_a, #delta_a, #eps_a)` of a cell — the Frobenius-analogous total
+structural fold (propext-free, like `cellSize`): identities / modes count zero, whiskering 1-cells are not
+counted, `vcomp` sums both factors, a `gen` node contributes its label's four-tag. -/
+def bunchedBimonoidGeneratorFourCount :
+    {dim : Nat} → CellExpr bunchedBimonoidOmegaComputad dim → Nat × Nat × Nat × Nat
+  | _, .ofMode _ => (0, 0, 0, 0)
+  | _, .gen label _ _ => bunchedBimonoidLabelFourTag label
+  | _, .id _ => (0, 0, 0, 0)
+  | _, .vcomp left right =>
+      bunchedBimonoidFourAdd (bunchedBimonoidGeneratorFourCount left)
+        (bunchedBimonoidGeneratorFourCount right)
+  | _, .whiskerLeft _ cell => bunchedBimonoidGeneratorFourCount cell
+  | _, .whiskerRight cell _ => bunchedBimonoidGeneratorFourCount cell
+
+/-- ★ The **B1 LEFT leg `delta_a . mu_a` has four-count `(1,0,1,0)`** — one `mu_a`, one `delta_a` (`rfl`). -/
+theorem bunchedBimonoidBialgebraProductLeftLeg_fourCount :
+    bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductLeftLeg = (1, 0, 1, 0) := rfl
+
+/-- ★ The **B1 RIGHT leg `(mu (x) mu).(1 (x) sigma (x) 1).(delta (x) delta)` has four-count `(2,0,2,0)`** — TWO
+`mu_a`, TWO `delta_a` (the swap `sigma_a` counts zero) (`rfl`).  The doubled (mu, delta) count is the exact
+signature of the bialgebra law that the Frobenius four-count cannot see. -/
+theorem bunchedBimonoidBialgebraProductRightLeg_fourCount :
+    bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductRightLeg = (2, 0, 2, 0) := rfl
+
+/-- ★★ **THE FROBENIUS FOUR-COUNT IS UNSOUND OVER THE BIALGEBRA (the `BI != Frobenius` refutation).**  The B1
+legs have DIFFERENT four-counts `(1,0,1,0) != (2,0,2,0)` — a `rfl`-reduced refutation.  Reusing the Frobenius
+four-count as this walker's soundness invariant would therefore be a lie: it relates unequal-count cells (the
+B1 legs are convertible, see below), so it does NOT respect the bunched-bimonoid congruence. -/
+theorem bunchedFourCountUnsoundForBialgebra :
+    bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductLeftLeg
+      ≠ bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductRightLeg := by
+  intro hcount
+  exact Nat.noConfusion (Nat.succ.inj (congrArg (fun fourVector => fourVector.1) hcount))
+
+/-- ★★ **`BI != Frobenius` — THE MACHINE-CHECKED SEPARATION.**  There EXIST two 2-cells that are CONVERTIBLE
+under the bunched-bimonoid congruence (the bialgebra B1 3-cell) yet have UNEQUAL Frobenius four-count.  Hence
+the four-count is not a congruence-respecting invariant here — unlike the walking Frobenius monad, where F1 /
+F2 preserve it (both `(1,0,1,0)`).  This is the guard against silently duplicating the Frobenius walker:
+the bunched bimonoid is a genuinely distinct theory (`Mat(N)`, not `2Cob`). -/
+theorem bunchedBimonoidFrobeniusFourCountBreaksOnBialgebra :
+    ∃ (leftLeg rightLeg : CellExpr bunchedBimonoidOmegaComputad 2),
+      SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidOmegaBaseRel leftLeg rightLeg ∧
+      bunchedBimonoidGeneratorFourCount leftLeg ≠ bunchedBimonoidGeneratorFourCount rightLeg :=
+  ⟨bunchedBimonoidBialgebraProductLeftLeg, bunchedBimonoidBialgebraProductRightLeg,
+    bunchedBimonoidBialgebraProductResolved.legsConvertible, bunchedFourCountUnsoundForBialgebra⟩
+
+/-! ## B4 non-vacuity probes -/
+
+#eval bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductLeftLeg
+#eval bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductRightLeg
+
+/-! ## The B4 honesty markers -/
+
+/-- ★★ **ESTABLISHED (B4) — the Frobenius four-count is UNSOUND here, shipped ONLY as a refuted invariant.**
+`= true` records that the Frobenius four-count `(#mu_a, #eta_a, #delta_a, #eps_a)` is NOT reused as this
+walker's soundness invariant (`bunchedFourCountUnsoundForBialgebra`, `bunchedBimonoidFrobeniusFourCountBreaks
+OnBialgebra`): the bialgebra B1 relates convertible legs of counts `(1,0,1,0)` and `(2,0,2,0)`, so the count
+breaks the congruence.  This is the machine-checked guard against silently duplicating the Frobenius walker. -/
+def fxBunchedBimonoid_frobeniusFourCountUnsoundHere : Bool := true
+
+/-- ★★ **`BI != FROBENIUS` (B4).**  `= true` records the theory separation: the bare bicommutative bimonoid is
+`Mat(N)` (partition/matrix, no genus), whereas the bare Frobenius monad is `2Cob` (partition + per-block
+genus) — two distinct PROPs.  Their defining laws differ on the same four (co)monoid generators (the bialgebra
+B1 `delta.mu = (mu (x) mu)(1 (x) sigma (x) 1)(delta (x) delta)` vs the Frobenius F1 / F2
+`(s <| delta)(mu |> s) = mu.delta`), machine-separated by the four-count mismatch.  Not a Frobenius duplicate. -/
+def fxBunchedBimonoid_biNotEqualFrobenius : Bool := true
+
+/-- ★ **GRADE-ALGEBRA TIE-IN NAMED (B4, docstring-only) — the FX §6.4 bunched/BI reading.**  `= true` records
+the tie-in: a bunched structure (O'Hearn-Pym) carries TWO non-interacting products — an additive bunch and a
+multiplicative bunch — exactly the FX §6.4 separation-logic-as-usage-grade reading, where the separating
+conjunction `*` IS the `+` of the usage grade algebra (the permission PCM `Frac`) and the multiplicative
+context is the ordinary product.  The additive `a` = the separating/BI bunch, the multiplicative `m` = the
+Cartesian bunch.  NAMED in the ledger, NOT imported: the `bunch` / `BI` markers live in
+`FX1Poly/Tier0/Mode/Linear.lean` (the §6.4 linear/BI exponential + separation-PCM markers) and importing them
+into the Omega lane is forbidden — this is the docstring cross-reference only. -/
+def fxBunchedBimonoid_gradeAlgebraTieInNamed : Bool := true
+
+/-- ★ **MATRIX-PROP CORRESPONDENCE NAMED FOR THE #2033 FEED (B4, docstring-only).**  `= true` records that the
+additive fragment feeds the #2033 matrix-PROP table: bicommutative bimonoids are `Mat(N)`
+(`fxBunchedBimonoid_additiveDecisionIsMatNat`), the same `Mat(N)` spine the TABLE / #2033 lane targets.  This
+NAMES the additive-side census/table feed — the correspondence is the r2 normalizer's target
+(`fxBunchedBimonoid_additiveConvergentNormalizerReached = false`), recorded additively without importing or
+touching the table lane. -/
+def fxBunchedBimonoid_matrixPropCorrespondenceNamedForTable : Bool := true
+
 end FX1Poly.Polygraph.Omega
