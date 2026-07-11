@@ -174,27 +174,6 @@ theorem allCupArity_prefix_ofAppend {signature : ModeSignature}
           exact AllCupArity.cons hasCupDomArity hasCupCodArity
             (allCupArity_prefix_ofAppend restPrefix suffixAtoms restAppendPureCup)
 
-/-- ★ **The last cup of a pure-cup append carries cup arity `(0, 2)`, classifier-free.**  Structural
-recursion on `prefixAtoms`: at `[]` the append is the singleton `[lastCup]`, whose sole cup witness a
-DIRECT `cases` reads as `lastCup`'s dom/cod arity; each cons peels the head and recurses on the shorter
-append.  Route B (the `cases`-on-`AllCupArity` pattern is `propext`-free, `scratchpad/probe.lean`),
-signature-generic — the string-usable replacement for the cap-count/`adjunctionSpineAtom_isCupOrCap`
-`singletonCupArity`, so the last-cup arity read-off no longer routes through the walking-adjunction
-classifier. -/
-theorem allCupArity_lastCup_arity {signature : ModeSignature}
-    {overallSource overallTarget : signature.graph.Mode} :
-    (prefixAtoms : List (SpineAtom signature overallSource overallTarget)) →
-    (lastCup : SpineAtom signature overallSource overallTarget) →
-    AllCupArity (prefixAtoms ++ [lastCup]) →
-    lastCup.generatorDom.length = 0 ∧ lastCup.generatorCod.length = 2
-  | [], lastCup, appendPureCup => by
-      cases appendPureCup with
-      | cons hasCupDomArity hasCupCodArity _ => exact ⟨hasCupDomArity, hasCupCodArity⟩
-  | headAtom :: restPrefix, lastCup, appendPureCup => by
-      cases appendPureCup with
-      | cons _ _ restAppendPureCup =>
-          exact allCupArity_lastCup_arity restPrefix lastCup restAppendPureCup
-
 /-! ## The chord-shift readoff — how a partner chord survives the last-cup drop
 
 The location induction peels the last cup `lastCup` (window `wlast`) off a pure-cup spine
