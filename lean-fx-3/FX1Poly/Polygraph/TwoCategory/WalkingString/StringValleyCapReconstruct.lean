@@ -188,4 +188,203 @@ theorem stringCapRestrict_loops_eq
       = (capRestrict (matchingOfSpineList bottomCount (capBlock ++ cupBlock))).loops :=
   (stringMatchingOf_loops_split bottomCount capBlock cupBlock cupPure).symm
 
+/-! ## Private membership plumbing (distinct `SVCR` suffix, keeping the umbrella build's global table duplicate-free
+against the walking-adjunction `Local` copies and the r31 `SMPI` copies) -/
+
+/-- An in-range positional read is a member (local copy). -/
+private theorem getAtMemOfLtSVCR : (wires : List Nat) → (index : Nat) →
+    index < wires.length → natListGetAt wires index ∈ wires
+  | [], _, indexInRange => absurd indexInRange (Nat.not_lt_zero _)
+  | _ :: _, 0, _ => List.Mem.head _
+  | _ :: rest, index + 1, indexInRange =>
+      List.Mem.tail _ (getAtMemOfLtSVCR rest index (Nat.lt_of_succ_lt_succ indexInRange))
+
+/-! ## The survivor-bottom partner-field agreement — the arithmetic keystone (prereq #1) -/
+
+/-- ★ **The SURVIVOR-BOTTOM partner-field agreement.**  For a survivor bottom port `survivor` of a valley
+`capBlock ++ cupBlock` (a bottom node that survives the cap block, hence a cap-block through-strand), the cap
+block's OWN partner of `survivor` equals `capRestrict`'s reconstructed value
+`bottomCount + survivorTopRank V (V.partner[survivor])`, where `V = matchingOf bc (capBlock ++ cupBlock)`.  All
+three shipped endpoints are routed through ONE cup-embedding `phi` (from
+`stringProcessSpine_wireOrderImageCover_ofAllCupArity`), so no coupling residue remains: the cap-alone partner is
+`bottomCount + rankCap` (`partnerIndexOf_survivor_eq_rank`), the whole-valley partner is `bottomCount + phi rankCap`
+(`partnerIndexOf_survivorUnlinked_eq_rank`), and `survivorTopRank V (bottomCount + phi rankCap) = rankCap`
+(`survivorTop_rankReadoff_ofStrictMono`). -/
+theorem stringCapRestrict_partner_survivorBottom
+    {overallSource overallTarget : adjointTripleGraph.Mode} (bottomCount : Nat)
+    (bottomPositive : 0 < bottomCount)
+    (capBlock cupBlock : List (SpineAtom adjointTripleModeSignature overallSource overallTarget))
+    (capPure : AllCapArity capBlock) (cupPure : AllCupArity cupBlock)
+    (capChained : SpineBoundaryChained bottomCount capBlock)
+    (cupChained : SpineBoundaryChained
+        (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires.length cupBlock)
+    {survivor : Nat}
+    (survivorMem : survivor ∈ (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires) :
+    natListGetAt (matchingOfSpineList bottomCount capBlock).partner survivor
+      = bottomCount + survivorTopRank (matchingOfSpineList bottomCount (capBlock ++ cupBlock))
+          (natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner survivor) := by
+  let capState := processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock
+  let wholeState := processSpine capState cupBlock
+  have wholeSplit : matchingOfSpineList bottomCount (capBlock ++ cupBlock)
+      = extractDiagram bottomCount wholeState := by
+    show extractDiagram bottomCount (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩
+        (capBlock ++ cupBlock)) = extractDiagram bottomCount wholeState
+    rw [processSpine_append capBlock cupBlock ⟨List.range bottomCount, [], bottomCount, 0⟩]
+  have survivorBelow : survivor < bottomCount :=
+    stringProcessSpine_openWires_below_ofAllCapArity_seed bottomCount bottomPositive capBlock capPure
+      survivor survivorMem
+  obtain ⟨rankCap, rankCapLt, survivorAtRankCap⟩ := mem_imp_getAt capState.openWires survivorMem
+  have survivorUnlinkedMid : ArcNodeUnlinked capState.links survivor :=
+    processSpine_openWires_unlinked_ofAllCapArity_seed bottomCount capBlock capPure capChained
+      survivor survivorMem
+  have capDistinct : WireListDistinct capState.openWires :=
+    processSpine_fromSeed_wireListDistinct bottomCount bottomPositive capBlock
+  have capAllUnlinked : ∀ wire ∈ capState.openWires, ArcNodeUnlinked capState.links wire :=
+    processSpine_openWires_unlinked_ofAllCapArity_seed bottomCount capBlock capPure capChained
+  have capNextFresh : capState.nextFresh = bottomCount :=
+    stringProcessSpine_nextFresh_ofAllCapArity_seed bottomCount capBlock capPure
+  obtain ⟨phi, embedding, cover⟩ := stringProcessSpine_wireOrderImageCover_ofAllCupArity bottomCount cupBlock cupPure
+    capState capState.openWires.length rfl (Nat.le_of_eq capNextFresh.symm) cupChained
+  have survivorUnlinkedWhole : ArcNodeUnlinked wholeState.links survivor :=
+    stringProcessSpine_preservesArcNodeUnlinked_ofAllCupArity cupBlock cupPure capState survivor
+      (by rw [capNextFresh]; exact survivorBelow) survivorUnlinkedMid
+  have wholeDistinct : WireListDistinct wholeState.openWires := by
+    have base : WireListDistinct
+        (processSpine (canonicalMatchingSeed bottomCount) (capBlock ++ cupBlock)).openWires :=
+      processSpine_fromSeed_wireListDistinct bottomCount bottomPositive (capBlock ++ cupBlock)
+    rw [show canonicalMatchingSeed bottomCount
+          = (⟨List.range bottomCount, [], bottomCount, 0⟩ : WireState) from rfl,
+      processSpine_append capBlock cupBlock ⟨List.range bottomCount, [], bottomCount, 0⟩] at base
+    exact base
+  have rankWholeLt : phi rankCap < wholeState.openWires.length := embedding.inRange rankCap rankCapLt
+  have survivorAtRankWhole : natListGetAt wholeState.openWires (phi rankCap) = survivor := by
+    rw [embedding.reads rankCap rankCapLt, survivorAtRankCap]
+  have wholePartnerEq :
+      natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner survivor
+        = bottomCount + phi rankCap := by
+    rw [wholeSplit, extractDiagram_partner_getAt bottomCount wholeState survivor
+      (Nat.lt_of_lt_of_le survivorBelow (Nat.le_add_right bottomCount wholeState.openWires.length))]
+    exact partnerIndexOf_survivorUnlinked_eq_rank wholeState.links bottomCount wholeState
+      survivorBelow survivorUnlinkedWhole wholeDistinct rankWholeLt survivorAtRankWhole
+  have capFresh : WireStateFresh capState :=
+    processSpine_wireStateFresh capBlock ⟨List.range bottomCount, [], bottomCount, 0⟩
+      (wireStateFresh_initial bottomCount) bottomPositive
+  have capEdgesBelow : ∀ edge ∈ capState.links, edge.1 < bottomCount ∧ edge.2 < bottomCount :=
+    stringProcessSpine_links_below_ofAllCapArity_seed bottomCount bottomPositive capBlock capPure
+  have capEdgesHomog : ∀ edge ∈ capState.links, edgeFloorHomogeneous bottomCount edge :=
+    fun edge edgeIn =>
+      ⟨fun floorLe => absurd floorLe (Nat.not_le.mpr (capEdgesBelow edge edgeIn).1),
+       fun _ => (capEdgesBelow edge edgeIn).2⟩
+  have wholeEdgesHomog : ∀ edge ∈ wholeState.links, edgeFloorHomogeneous bottomCount edge :=
+    stringProcessSpine_edgesFloorHomogeneous_ofAllCupArity bottomCount cupBlock cupPure capState
+      capFresh (Nat.le_of_eq capNextFresh.symm) capEdgesHomog
+  have rankReadoff :
+      survivorTopRank (matchingOfSpineList bottomCount (capBlock ++ cupBlock)) (bottomCount + phi rankCap)
+        = rankCap := by
+    rw [wholeSplit]
+    exact survivorTop_rankReadoff_ofStrictMono bottomCount wholeState capState.openWires
+      (fun node nodeBelow =>
+        unionFindRootOf_lt_of_edgesBelowFloor wholeState.links bottomCount
+          (fun edge edgeIn => (wholeEdgesHomog edge edgeIn).2) node nodeBelow)
+      (fun node nodeAbove =>
+        unionFindRootOf_ge_of_edgesPreserveFloor wholeState.links bottomCount
+          (fun edge edgeIn => (wholeEdgesHomog edge edgeIn).1) node nodeAbove)
+      embedding cover
+      (fun index indexLt =>
+        stringProcessSpine_openWires_below_ofAllCapArity_seed bottomCount bottomPositive capBlock capPure
+          (natListGetAt capState.openWires index) (getAtMemOfLtSVCR capState.openWires index indexLt))
+      rankCapLt
+  have capPartnerEq :
+      natListGetAt (matchingOfSpineList bottomCount capBlock).partner survivor
+        = bottomCount + rankCap := by
+    show natListGetAt (extractDiagram bottomCount capState).partner survivor = bottomCount + rankCap
+    rw [extractDiagram_partner_getAt bottomCount capState survivor
+      (Nat.lt_of_lt_of_le survivorBelow (Nat.le_add_right bottomCount capState.openWires.length))]
+    exact partnerIndexOf_survivor_eq_rank capState.links bottomCount capState
+      survivorBelow survivorUnlinkedMid capDistinct capAllUnlinked rankCapLt survivorAtRankCap
+  rw [capPartnerEq, wholePartnerEq, rankReadoff]
+
+/-! ## The cap-consumed partner agreement (prereq #3) -/
+
+/-- ★ **The cap-consumed partner agreement.**  For a valley `capBlock ++ cupBlock` (pure cup block) and a bottom
+port `k < bc` whose whole-valley partner is another bottom (`V.partner[k] < bc`, `≠ k` — a bottom-bottom cap arc),
+the cap block's OWN partner of `k` equals the whole valley's partner of `k`.  Both partner reads confine to the
+bottom prefix (`partnerIndexOf_eq_frontScan_ofFrontNe` via `frontScan_ne_ofPartnerBelow`), where the whole run and
+the cap-alone run agree candidate by candidate — the bottom-bottom connectivity frame
+`stringProcessSpine_isSameComponent_bottom_ofAllCupArity` fed through `findPartnerScan_congr_ofTestAgree`. -/
+theorem stringCapConsumed_partner_agree
+    {overallSource overallTarget : adjointTripleGraph.Mode} (bottomCount : Nat)
+    (bottomPositive : 0 < bottomCount)
+    (capBlock cupBlock : List (SpineAtom adjointTripleModeSignature overallSource overallTarget))
+    (cupPure : AllCupArity cupBlock)
+    {consumedPort : Nat} (portBelow : consumedPort < bottomCount)
+    (wholePartnerBelow :
+      natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner consumedPort < bottomCount)
+    (wholePartnerNe :
+      natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner consumedPort
+        ≠ consumedPort) :
+    natListGetAt (matchingOfSpineList bottomCount capBlock).partner consumedPort
+      = natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner consumedPort := by
+  let capState := processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock
+  let wholeState := processSpine capState cupBlock
+  have wholeSplit : matchingOfSpineList bottomCount (capBlock ++ cupBlock)
+      = extractDiagram bottomCount wholeState := by
+    show extractDiagram bottomCount (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩
+        (capBlock ++ cupBlock)) = extractDiagram bottomCount wholeState
+    rw [processSpine_append capBlock cupBlock ⟨List.range bottomCount, [], bottomCount, 0⟩]
+  have capConditions : MatchingSwapStateConditions bottomCount capState :=
+    matchingSwapStateConditions_processSpine bottomCount capBlock ⟨List.range bottomCount, [], bottomCount, 0⟩
+      (matchingSwapStateConditions_initial bottomCount bottomPositive)
+  have capRead : natListGetAt (matchingOfSpineList bottomCount capBlock).partner consumedPort
+      = partnerIndexOf capState.links (matchingBoundaryNodes bottomCount capState)
+          (bottomCount + capState.openWires.length) consumedPort :=
+    extractDiagram_partner_getAt bottomCount capState consumedPort
+      (Nat.lt_of_lt_of_le portBelow (Nat.le_add_right bottomCount capState.openWires.length))
+  have wholeRead : natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner consumedPort
+      = partnerIndexOf wholeState.links (matchingBoundaryNodes bottomCount wholeState)
+          (bottomCount + wholeState.openWires.length) consumedPort := by
+    rw [wholeSplit]
+    exact extractDiagram_partner_getAt bottomCount wholeState consumedPort
+      (Nat.lt_of_lt_of_le portBelow (Nat.le_add_right bottomCount wholeState.openWires.length))
+  rw [capRead, wholeRead]
+  rw [wholeRead] at wholePartnerBelow wholePartnerNe
+  have frontWholeNe := frontScan_ne_ofPartnerBelow wholeState.links bottomCount
+    wholeState.openWires.length wholeState wholePartnerBelow wholePartnerNe
+  have wholeEqFront := partnerIndexOf_eq_frontScan_ofFrontNe wholeState.links bottomCount
+    wholeState.openWires.length wholeState frontWholeNe
+  have frontsAgree :
+      findPartnerScan wholeState.links (matchingBoundaryNodes bottomCount wholeState)
+          (unionFindRootOf wholeState.links
+            (natListGetAt (matchingBoundaryNodes bottomCount wholeState) consumedPort))
+          consumedPort (List.range bottomCount)
+        = findPartnerScan capState.links (matchingBoundaryNodes bottomCount capState)
+          (unionFindRootOf capState.links
+            (natListGetAt (matchingBoundaryNodes bottomCount capState) consumedPort))
+          consumedPort (List.range bottomCount) :=
+    findPartnerScan_congr_ofTestAgree wholeState.links capState.links
+      (matchingBoundaryNodes bottomCount wholeState) (matchingBoundaryNodes bottomCount capState)
+      (unionFindRootOf wholeState.links
+        (natListGetAt (matchingBoundaryNodes bottomCount wholeState) consumedPort))
+      (unionFindRootOf capState.links
+        (natListGetAt (matchingBoundaryNodes bottomCount capState) consumedPort))
+      consumedPort (List.range bottomCount)
+      (fun candidate candidateMem => by
+        have candidateBelow : candidate < bottomCount := mem_range_imp_lt candidateMem
+        rw [matchingBoundaryNodes_getAt_bottom bottomCount wholeState candidate candidateBelow,
+          matchingBoundaryNodes_getAt_bottom bottomCount capState candidate candidateBelow,
+          matchingBoundaryNodes_getAt_bottom bottomCount wholeState consumedPort portBelow,
+          matchingBoundaryNodes_getAt_bottom bottomCount capState consumedPort portBelow]
+        exact congrArg (fun rootMatch => candidate != consumedPort && rootMatch)
+          (stringProcessSpine_isSameComponent_bottom_ofAllCupArity bottomCount cupBlock cupPure capState
+            capConditions candidate consumedPort candidateBelow portBelow))
+  have frontCapNe : findPartnerScan capState.links (matchingBoundaryNodes bottomCount capState)
+      (unionFindRootOf capState.links
+        (natListGetAt (matchingBoundaryNodes bottomCount capState) consumedPort))
+      consumedPort (List.range bottomCount) ≠ consumedPort := by
+    rw [← frontsAgree, ← wholeEqFront]
+    exact wholePartnerNe
+  have capEqFront := partnerIndexOf_eq_frontScan_ofFrontNe capState.links bottomCount
+    capState.openWires.length capState frontCapNe
+  rw [capEqFront, ← frontsAgree, ← wholeEqFront]
+
 end FX1Poly.Polygraph
