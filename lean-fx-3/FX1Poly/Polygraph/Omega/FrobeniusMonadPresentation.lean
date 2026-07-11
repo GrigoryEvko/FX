@@ -995,4 +995,208 @@ transported + 5 comonad-internal op-mirror + 2 Frobenius) are exhibited as gener
 (`frobMonadTwoFrobeniusRowsResolved`) — the genuinely-new mu-delta interaction.  `= true`. -/
 def fxFrob_twelveCriticalPairsShipped : Bool := true
 
+/-! # =========================================================================================
+    # B3 — THE SOUNDNESS INVARIANT (the four-count + the respects-congruence lemma)
+    # =========================================================================================
+
+★ **The generator four-count `(#mu, #eta, #delta, #epsilon)` — a machine-checked, congruence-respecting
+soundness invariant.**  A structural constant-`Nat` fold (propext-clean like `cellSize`) that counts the
+occurrences of each 2-cell generator, IGNORING identities (count zero) and whiskering 1-cells (not counted).
+The exact analogue of the walking monad's `(#eta, #mu)` cofork column and the Homology abelianization; the
+2GROUP-lane Peiffer-invariance pattern (an invariant map + a respects-congruence lemma via the
+least-congruence UP `SaturatedConvOverWithId.recInto`).
+
+## Why THIS fold respects the strict laws (the load-bearing design decision)
+
+`vcompUnitLeft a` rewrites `(id (src a)) . a  ~  a`, so identities MUST contribute the zero count (else the
+introduced `id (src a)` would change the total).  `whiskerLeftFunctorial w b c` rewrites
+`w <| (b.c)  ~  (w <| b) . (w <| c)`, so the whiskering cell `w` MUST NOT be counted (else it would be
+double-counted on the RHS).  With `count (id _) = 0` and whiskering cells uncounted, EVERY one of the eight
+strict axioms preserves the count (units / functoriality / whisker-unit by `refl`; associativity by
+`fourAdd`-associativity; interchange by `fourAdd`-commutativity) and EVERY one of the twelve critical rows
+relates equal-count legs (each carries the same generator multiset on both legs).  So the map factors
+through `SaturatedConvOverWithId.recInto` into the "equal four-count" congruence: convertible ⟹ equal count.
+
+## Honestly WEAK, and sound only because there is NO special law
+
+The four-count does not separate `mu.delta` from `delta.mu` (both `(1,0,1,0)`) — it is deliberately weak, the
+r1-shippable floor.  It is sound only BECAUSE the bare walking Frobenius monad has NO special law
+`mu . delta = id` (which would map `mu.delta -> 0`, breaking the count).  The special / commutative Frobenius
+PROP (`TwoCategory/Frobenius`) DOES have `mu . delta = id`, so the four-count is NOT sound there — a genuine
+distinction confirming the Omega walker is the PLAIN (non-special) one.  The full separating invariant
+(genus + boundary matching, the completeness grade) is NAMED-OUT to the `TwoCategory/Frobenius` Cospan /
+corelation engine in B4, with genus itself an open wall in every lane. -/
+
+/-! ## The componentwise four-vector monoid -/
+
+/-- Componentwise addition on the four-count vector `(#mu, #eta, #delta, #epsilon)`. -/
+def fourAdd : Nat × Nat × Nat × Nat → Nat × Nat × Nat × Nat → Nat × Nat × Nat × Nat
+  | (a1, a2, a3, a4), (b1, b2, b3, b4) => (a1 + b1, a2 + b2, a3 + b3, a4 + b4)
+
+/-- `fourAdd` left identity — the zero vector is a left unit (from `Nat.zero_add`). -/
+theorem fourAdd_zero_left (x : Nat × Nat × Nat × Nat) : fourAdd (0, 0, 0, 0) x = x := by
+  obtain ⟨x1, x2, x3, x4⟩ := x
+  show (0 + x1, 0 + x2, 0 + x3, 0 + x4) = (x1, x2, x3, x4)
+  rw [Nat.zero_add, Nat.zero_add, Nat.zero_add, Nat.zero_add]
+
+/-- `fourAdd` right identity — the zero vector is a right unit (`Nat.add_zero`, definitional). -/
+theorem fourAdd_zero_right (x : Nat × Nat × Nat × Nat) : fourAdd x (0, 0, 0, 0) = x := by
+  obtain ⟨x1, x2, x3, x4⟩ := x
+  show (x1 + 0, x2 + 0, x3 + 0, x4 + 0) = (x1, x2, x3, x4)
+  rw [Nat.add_zero, Nat.add_zero, Nat.add_zero, Nat.add_zero]
+
+/-- `fourAdd` associativity (componentwise `Nat.add_assoc`). -/
+theorem fourAdd_assoc (x y z : Nat × Nat × Nat × Nat) :
+    fourAdd (fourAdd x y) z = fourAdd x (fourAdd y z) := by
+  obtain ⟨x1, x2, x3, x4⟩ := x
+  obtain ⟨y1, y2, y3, y4⟩ := y
+  obtain ⟨z1, z2, z3, z4⟩ := z
+  show (x1 + y1 + z1, x2 + y2 + z2, x3 + y3 + z3, x4 + y4 + z4)
+    = (x1 + (y1 + z1), x2 + (y2 + z2), x3 + (y3 + z3), x4 + (y4 + z4))
+  rw [Nat.add_assoc, Nat.add_assoc, Nat.add_assoc, Nat.add_assoc]
+
+/-- `fourAdd` commutativity (componentwise `Nat.add_comm`). -/
+theorem fourAdd_comm (x y : Nat × Nat × Nat × Nat) : fourAdd x y = fourAdd y x := by
+  obtain ⟨x1, x2, x3, x4⟩ := x
+  obtain ⟨y1, y2, y3, y4⟩ := y
+  show (x1 + y1, x2 + y2, x3 + y3, x4 + y4) = (y1 + x1, y2 + x2, y3 + x3, y4 + x4)
+  rw [Nat.add_comm x1 y1, Nat.add_comm x2 y2, Nat.add_comm x3 y3, Nat.add_comm x4 y4]
+
+/-! ## The generator four-count fold -/
+
+/-- The **four-tag** of a generator label — `1` in the slot of the 2-cell generator it names, `0` elsewhere
+(the endo-1-generator `s` contributes nothing).  Full five-arm split — propext-free. -/
+def frobMonadLabelFourTag : FrobMonadGenLabel → Nat × Nat × Nat × Nat
+  | .sEndo => (0, 0, 0, 0)
+  | .muMult => (1, 0, 0, 0)
+  | .etaUnit => (0, 1, 0, 0)
+  | .deltaComult => (0, 0, 1, 0)
+  | .epsCounit => (0, 0, 0, 1)
+
+/-- ★ The **generator four-count** `(#mu, #eta, #delta, #epsilon)` of a cell — a total structural fold over
+all six constructors into the constant `Nat × Nat × Nat × Nat` motive (propext-free, like `cellSize`).
+Identities count ZERO (no recursion), whiskering 1-cells are NOT counted (only the whiskered cell recurses),
+`vcomp` sums both factors, and a `gen` node contributes its label's four-tag.  These choices are exactly what
+makes the count invariant under the strict laws. -/
+def frobMonadOmegaGeneratorFourCount :
+    {dim : Nat} → CellExpr frobMonadOmegaComputad dim → Nat × Nat × Nat × Nat
+  | _, .ofMode _ => (0, 0, 0, 0)
+  | _, .gen label _ _ => frobMonadLabelFourTag label
+  | _, .id _ => (0, 0, 0, 0)
+  | _, .vcomp left right =>
+      fourAdd (frobMonadOmegaGeneratorFourCount left) (frobMonadOmegaGeneratorFourCount right)
+  | _, .whiskerLeft _ cell => frobMonadOmegaGeneratorFourCount cell
+  | _, .whiskerRight cell _ => frobMonadOmegaGeneratorFourCount cell
+
+/-! ## The respects-congruence lemma (the four-count absorbs the base relation) -/
+
+/-- ★★ **THE FOUR-COUNT RESPECTS THE CONGRUENCE.**  The "equal four-count" relation absorbs the
+idCongr-extended saturated congruence over the Frobenius-monad base relation: every strict axiom preserves
+the count (units / whisker-functoriality / whisker-unit by `refl`; associativity via `fourAdd_assoc`;
+interchange via `fourAdd_comm`), every one of the twelve critical rows relates equal-count legs (each carries
+the same generator multiset on both legs, closed by `rfl`), and the congruence closures propagate
+componentwise.  This is the Peiffer-invariance datum — the map + the respects-congruence lemma the
+least-congruence UP folds. -/
+def frobMonadOmegaFourCountAbsorbs :
+    IsSaturatedCongruenceWithId frobMonadOmegaComputad frobMonadOmegaBaseRel
+      (fun {_dim : Nat} cellAlpha cellBeta =>
+        frobMonadOmegaGeneratorFourCount cellAlpha = frobMonadOmegaGeneratorFourCount cellBeta) where
+  ofRelation := by
+    intro _dim _cellAlpha _cellBeta row
+    cases row with
+    | inl strict =>
+        cases strict with
+        | vcompAssoc a b c => exact fourAdd_assoc _ _ _
+        | vcompUnitLeft a => exact fourAdd_zero_left _
+        | vcompUnitRight a => exact fourAdd_zero_right _
+        | whiskerLeftUnit w c => rfl
+        | whiskerRightUnit c w => rfl
+        | whiskerLeftFunctorial w b c => rfl
+        | whiskerRightFunctorial a b w => rfl
+        | interchange a b => exact fourAdd_comm _ _
+    | inr frob =>
+        cases frob with
+        | monadUnitUnit => rfl
+        | monadLeftUnitAssoc => rfl
+        | monadRightUnitAssoc => rfl
+        | monadPentagon => rfl
+        | monadRootUnitAssoc => rfl
+        | counitCounit => rfl
+        | leftCounitCoassoc => rfl
+        | rightCounitCoassoc => rfl
+        | copentagon => rfl
+        | rootCounitCoassoc => rfl
+        | frobLeft => rfl
+        | frobRight => rfl
+  vcompCongrLeft := by
+    intro _dim _cellAlpha _cellAlpha' cellBeta hconv
+    exact congrArg (fun z => fourAdd z (frobMonadOmegaGeneratorFourCount cellBeta)) hconv
+  vcompCongrRight := by
+    intro _dim cellAlpha _cellBeta _cellBeta' hconv
+    exact congrArg (fun z => fourAdd (frobMonadOmegaGeneratorFourCount cellAlpha) z) hconv
+  whiskerLeftCongr := by intro _dim _w _cellBeta _cellBeta' hconv; exact hconv
+  whiskerRightCongr := by intro _dim _cellAlpha _cellAlpha' _w hconv; exact hconv
+  idCongr := by intro _dim _cellAlpha _cellBeta _hconv; rfl
+  whiskerLeftWhiskerCongr := by intro _dim _wA _wA' _inner _hconv; rfl
+  whiskerRightWhiskerCongr := by intro _dim _inner _wA _wA' _hconv; rfl
+  refl := by intro _dim _cell; rfl
+  symm := by intro _dim _cellAlpha _cellBeta hconv; exact hconv.symm
+  trans := by intro _dim _cellAlpha _cellBeta _cellGamma hleft hright; exact hleft.trans hright
+
+/-! ## Soundness — convertible cells share the four-count -/
+
+/-- ★★ **SOUNDNESS: convertible ⟹ equal four-count.**  Any two cells convertible under the Frobenius-monad
+base congruence have the identical generator four-count `(#mu, #eta, #delta, #epsilon)` — the fold of the
+respects-congruence lemma through the least-congruence UP `SaturatedConvOverWithId.recInto`.  Machine-checked,
+cheap, honestly weak. -/
+theorem frobMonadOmegaFourCountSound {dim : Nat}
+    {cellAlpha cellBeta : CellExpr frobMonadOmegaComputad dim}
+    (conv : SaturatedConvOverWithId frobMonadOmegaComputad frobMonadOmegaBaseRel cellAlpha cellBeta) :
+    frobMonadOmegaGeneratorFourCount cellAlpha = frobMonadOmegaGeneratorFourCount cellBeta :=
+  SaturatedConvOverWithId.recInto frobMonadOmegaFourCountAbsorbs conv
+
+/-! ## Exercised — two convertible cells share the invariant, a non-convertible candidate is separated -/
+
+/-- ★ **EXERCISED (convertible ⟹ shared).**  The Frobenius F1 left leg `(s <| delta).(mu |> s)` and the
+shared middle `mu . delta` are convertible (the F1 3-cell), so soundness DERIVES their equal four-count —
+both `(1, 0, 1, 0)` (one `mu`, one `delta`), obtained from the convertibility, not assumed. -/
+theorem frobMonadOmegaFrobLeftCountShared :
+    frobMonadOmegaGeneratorFourCount frobMonadOmegaFrobLeftLeg
+      = frobMonadOmegaGeneratorFourCount frobMonadOmegaFrobMiddle :=
+  frobMonadOmegaFourCountSound frobMonadOmegaFrobLeftThreeCell
+
+/-- ★ **EXERCISED (convertible ⟹ shared, F2).**  The F2 leg and the shared middle share the four-count. -/
+theorem frobMonadOmegaFrobRightCountShared :
+    frobMonadOmegaGeneratorFourCount frobMonadOmegaFrobRightLeg
+      = frobMonadOmegaGeneratorFourCount frobMonadOmegaFrobMiddle :=
+  frobMonadOmegaFourCountSound frobMonadOmegaFrobRightThreeCell
+
+/-- ★ The multiplication and the comultiplication have DIFFERENT four-counts (`(1,0,0,0)` vs `(0,0,1,0)`) —
+the `#mu` slot separates them. -/
+theorem frobMonadOmegaMuDeltaCountDiffers :
+    frobMonadOmegaGeneratorFourCount frobMonadOmegaMuGen
+      ≠ frobMonadOmegaGeneratorFourCount frobMonadOmegaDeltaGen := by
+  intro hcount
+  exact Nat.noConfusion (congrArg (fun fourVector => fourVector.1) hcount)
+
+/-- ★★ **EXERCISED (separation).**  `mu` and `delta` are NOT convertible under the Frobenius-monad
+congruence — the four-count separates them (were they convertible, soundness would force equal counts, but
+`(1,0,0,0) ≠ (0,0,1,0)`).  The soundness invariant is genuinely discriminating: it refutes a candidate
+convertibility. -/
+theorem frobMonadOmegaMuDeltaNotConvertible :
+    ¬ SaturatedConvOverWithId frobMonadOmegaComputad frobMonadOmegaBaseRel
+        frobMonadOmegaMuGen frobMonadOmegaDeltaGen :=
+  fun conv => frobMonadOmegaMuDeltaCountDiffers (frobMonadOmegaFourCountSound conv)
+
+/-! ## The B3 honesty marker -/
+
+/-- ★ **ESTABLISHED (B3).**  The generator four-count `(#mu, #eta, #delta, #epsilon)`
+(`frobMonadOmegaGeneratorFourCount`) is a machine-checked, congruence-respecting soundness invariant: the
+respects-congruence lemma (`frobMonadOmegaFourCountAbsorbs`) folds through the least-congruence UP into
+soundness (`frobMonadOmegaFourCountSound`, convertible ⟹ equal count), exercised BOTH ways — two convertible
+cells share the invariant (`frobMonadOmegaFrobLeftCountShared`) and a non-convertible candidate is separated
+(`frobMonadOmegaMuDeltaNotConvertible`).  Honestly weak (does not separate `mu.delta` from `delta.mu`) and
+sound only because the bare walking Frobenius monad has no special law `mu.delta = id`.  `= true`. -/
+def fxFrob_soundInvariantShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
