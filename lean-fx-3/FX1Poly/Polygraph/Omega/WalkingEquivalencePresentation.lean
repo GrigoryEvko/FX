@@ -958,4 +958,145 @@ interchange bracketing is the genuine hand-computation; it is NAMED, NOT axiomat
 Everything else in the promotion is machine-checked. -/
 def fxEquiv_promotionIdempotencyFromLeftTriangleWalled : Bool := true
 
+/-! # =========================================================================================
+    # B4 — THE DECISION: parallel-uniqueness for the adjoint walker (contractibility exercised)
+    # =========================================================================================
+
+★ **The decision content of the walking equivalence, adjudicated adjoint-vs-bare.**  Unlike the walking
+ADJUNCTION — whose 2-cell decision rides a non-crossing-matching engine because `generatorCount` is a
+conv-invariant (`AdjunctionTriangleObstruction`) — the equivalence's cancellations DROP the generator count
+(`eta . eta^{-1} ~ id`), so that invariant is UNAVAILABLE.  The decision splits:
+
+  * **ADJOINT equivalence (b): parallel-uniqueness is TRUE (contractibility).**  Everything is invertible AND
+    the triangles STRAIGHTEN every zig-zag to the identity, so any two parallel 2-cells are convertible over
+    `walkingAdjEquivBaseRel` — the decision is `isTrue` always, its content the DERIVATION (no matching engine).
+    Reachable r1: the contractibility EXERCISED on concrete parallel pairs (below); the full quantified
+    "every parallel pair" needs a small 2-cell normalizer (the OMEGA-5 full-basis obligation, walled uniformly
+    across the walker family).
+
+  * **BARE equivalence (a): parallel-uniqueness is an HONEST OPEN.**  Without the triangles the zig-zags are
+    NOT straightened: the left zig-zag `φ_f = (eta |> f) . (f <| eps)` and `id f` are (modulo units) parallel
+    but NOT forced convertible by the four cancellation rows alone (the winding word problem — a free-groupoid
+    object, NOT r1).  The concrete candidate distinguishing pair is `(φ_f, id f)` over `walkingEquivBaseRel`.
+    We do NOT claim to decide it; we name it and wall it.
+
+## What is MECHANIZED here
+
+The contractibility EXERCISES: distinct parallel 2-cell WORDS convertible over the adjoint base relation — the
+unit loop `eta . eta^{-1} ~ id (id A)` (a literally-parallel `id A => id A` pair, holds even bare), the left and
+right zig-zags `φ_f ~ id f` / `ψ_g ~ id g` (the triangle 3-cells straightening the loops), and the DOUBLED
+left zig-zag `φ_f . φ_f ~ id f` (a genuine contractibility witness: the doubled loop still collapses).  Each is
+a `SaturatedConvOverWithId` term over `walkingAdjEquivBaseRel`. -/
+
+/-! ## The concrete contractibility exercises (distinct parallel 2-cell words, convertible) -/
+
+/-- ★ **THE UNIT LOOP IS CONTRACTIBLE.**  `eta . eta^{-1} ~ id (id A)` — a literally-parallel `id A => id A`
+pair of distinct 2-cell words, convertible (the E1a cancellation; holds over the bare relation too). -/
+theorem walkingAdjEquivUnitLoopContractible :
+    SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivEtaEtaInv walkingEquivIdIdA :=
+  SaturatedConvOverWithId.ofRelation (Or.inr (Or.inl WalkingEquivCancellationRow.unitCancelForward))
+
+/-- ★ **THE LEFT ZIG-ZAG IS CONTRACTIBLE.**  `φ_f ~ id f` over the adjoint base relation — the left triangle
+straightens the left zig-zag loop (unavailable over the bare relation; this is what the triangle ADDS). -/
+theorem walkingAdjEquivLeftZigzagContractible :
+    SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivLeftTriangleLeg walkingEquivIdF :=
+  walkingEquivLeftTriangleThreeCell
+
+/-- ★ **THE RIGHT ZIG-ZAG IS CONTRACTIBLE.**  `ψ_g ~ id g` — the right triangle straightens the right loop. -/
+theorem walkingAdjEquivRightZigzagContractible :
+    SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivRightTriangleLeg walkingEquivIdG :=
+  walkingEquivRightTriangleThreeCell
+
+/-- ★★ **THE DOUBLED LEFT ZIG-ZAG IS CONTRACTIBLE.**  `φ_f . φ_f ~ id f` — even the DOUBLED zig-zag loop
+collapses to the identity (fire the left triangle twice, then absorb the trailing identity).  A genuine
+contractibility witness: two structurally very different parallel 2-cell words (`φ_f . φ_f` versus `id f`) are
+convertible, so the hom is contracted to a point by the triangle. -/
+theorem walkingAdjEquivDoubledLeftZigzagContractible :
+    SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+      (CellExpr.vcomp walkingEquivLeftTriangleLeg walkingEquivLeftTriangleLeg) walkingEquivIdF :=
+  SaturatedConvOverWithId.trans
+    (SaturatedConvOverWithId.vcompCongrLeft walkingEquivLeftTriangleLeg walkingEquivLeftTriangleThreeCell)
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.vcompCongrRight walkingEquivIdF walkingEquivLeftTriangleThreeCell)
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft walkingEquivIdF))))
+
+/-! ## The bundled contractibility-exercises statement -/
+
+/-- ★ **The adjoint-walker contractibility-exercises statement.**  A `Prop` conjunction of the four concrete
+parallel-uniqueness exercises — the reachable r1 content of the decision. -/
+def WalkingAdjEquivContractibilityExercisesStatement : Prop :=
+  SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivEtaEtaInv walkingEquivIdIdA ∧
+  SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivLeftTriangleLeg walkingEquivIdF ∧
+  SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivRightTriangleLeg walkingEquivIdG ∧
+  SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+    (CellExpr.vcomp walkingEquivLeftTriangleLeg walkingEquivLeftTriangleLeg) walkingEquivIdF
+
+/-- ★★ **THE ADJOINT-WALKER CONTRACTIBILITY, EXERCISED.**  All four concrete parallel-uniqueness exercises,
+machine-checked: the unit loop, the two triangle-straightened zig-zags, and the doubled zig-zag all convertible
+to identities over `walkingAdjEquivBaseRel`.  The reachable decision content — the full quantified
+parallel-uniqueness is the OMEGA-5 normalizer handoff (below). -/
+theorem walkingAdjEquivContractibilityExercised : WalkingAdjEquivContractibilityExercisesStatement :=
+  ⟨walkingAdjEquivUnitLoopContractible, walkingAdjEquivLeftZigzagContractible,
+    walkingAdjEquivRightZigzagContractible, walkingAdjEquivDoubledLeftZigzagContractible⟩
+
+/-! ## The bare-walker winding candidate (the honest OPEN) -/
+
+/-- The **bare-walker winding candidate pair** `(φ_f, id f)` — the concrete distinguishing pair whose
+convertibility over the BARE cancellation relation `walkingEquivBaseRel` (no triangle) is the OPEN winding word
+problem.  Over `walkingAdjEquivBaseRel` (with the triangle) it IS convertible
+(`walkingAdjEquivLeftZigzagContractible`); over the bare relation it is the free-groupoid decision we do NOT
+claim.  Named as data, not decided. -/
+def walkingEquivBareWindingCandidate : CellExpr walkingEquivComputad 2 × CellExpr walkingEquivComputad 2 :=
+  (walkingEquivLeftTriangleLeg, walkingEquivIdF)
+
+/-! ## B4 non-vacuity -/
+
+/-- The doubled left zig-zag is structurally DISTINCT from `id f` (so the doubled-loop contractibility is
+non-vacuous — a genuinely different word collapsing to the identity). -/
+theorem walkingAdjEquivDoubledLeftZigzag_distinct :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq
+      (CellExpr.vcomp walkingEquivLeftTriangleLeg walkingEquivLeftTriangleLeg) walkingEquivIdF = false := rfl
+
+/-- The winding-candidate pair is a pair of structurally DISTINCT 2-cells (the open decision is between genuinely
+different words). -/
+theorem walkingEquivBareWindingCandidate_distinct :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq
+      walkingEquivBareWindingCandidate.1 walkingEquivBareWindingCandidate.2 = false := rfl
+
+/-! ## B4 non-vacuity probe -/
+
+#eval cellBeq walkingEquivModeBeq walkingEquivGenBeq
+  (CellExpr.vcomp walkingEquivLeftTriangleLeg walkingEquivLeftTriangleLeg) walkingEquivIdF
+
+/-! ## B4 honesty markers -/
+
+/-- ★ **THE ADJOINT PARALLEL-UNIQUENESS IS EXERCISED (B4).**  `= true` records the decision content reached:
+the adjoint walker's contractibility is EXERCISED on four concrete distinct parallel 2-cell words
+(`walkingAdjEquivContractibilityExercised`) — the unit loop, the two triangle-straightened zig-zags, and the
+doubled zig-zag, all convertible to identities.  Unlike the walking adjunction (matching-engine decision), the
+equivalence's decision is `isTrue`-flavored: the triangles straighten every zig-zag. -/
+def fxEquiv_adjointParallelUniquenessExercised : Bool := true
+
+/-- ★ **WALL — the FULL quantified adjoint parallel-uniqueness (B4, OMEGA-5 handoff).**  `= false` records that
+the fully quantified "EVERY pair of parallel 2-cells is convertible" is NOT reached this round: it needs a small
+2-cell normalizer (a `TwoPath` NF over the invertible generators, straightening arbitrary zig-zag words), the
+same OMEGA-5 full-homotopy-basis obligation walled uniformly across the walker family
+(`fxOmega4_*FullHomotopyBasisReached = false`).  The shipped content is the concrete contractibility exercises,
+not the closure of every parallel hom. -/
+def fxEquiv_adjointParallelUniquenessFullyQuantifiedReached : Bool := false
+
+/-- ★ **WALL — the BARE-equivalence parallel-uniqueness is OPEN (B4, honest).**  `= false` records that the
+bare walker's parallel-uniqueness is NOT decided: without the triangle, the winding loop `φ_f` and `id f` (the
+named candidate `walkingEquivBareWindingCandidate`) are parallel modulo units but NOT forced convertible by the
+four cancellation rows — a free-groupoid / winding word problem, a research object.  We name the candidate and
+wall the decision; we do NOT claim convertibility (false over the bare relation) NOR non-convertibility (needs a
+distinguishing model). -/
+def fxEquiv_bareEquivalenceParallelUniquenessOpen : Bool := false
+
 end FX1Poly.Polygraph.Omega

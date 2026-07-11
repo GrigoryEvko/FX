@@ -160,4 +160,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_promotionReducedToIdempotency
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_promotionIdempotencyFromLeftTriangleWalled
 
+-- B4 — the decision: the concrete contractibility exercises
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivUnitLoopContractible
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivLeftZigzagContractible
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivRightZigzagContractible
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivDoubledLeftZigzagContractible
+#assert_no_axioms FX1Poly.Polygraph.Omega.WalkingAdjEquivContractibilityExercisesStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivContractibilityExercised
+
+-- B4 — the bare-walker winding candidate and the non-vacuity witnesses
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivBareWindingCandidate
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivDoubledLeftZigzag_distinct
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivBareWindingCandidate_distinct
+
+-- B4 — the honesty markers
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_adjointParallelUniquenessExercised
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_adjointParallelUniquenessFullyQuantifiedReached
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_bareEquivalenceParallelUniquenessOpen
+
 end FX1PolyAudit
