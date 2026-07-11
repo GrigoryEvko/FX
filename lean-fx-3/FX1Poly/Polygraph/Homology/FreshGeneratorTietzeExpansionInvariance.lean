@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
+import FX1Poly.Polygraph.Homology.BlockDiagonalCertificateLifting
 
 /-! # FX1Poly/Polygraph/Homology/FreshGeneratorTietzeExpansionInvariance — the fresh-generator Tietze
     expansion (adjoin a fresh generator `t` with a defining rule `t ⟹ w`, `w` `t`-free): a GENERIC
@@ -1600,5 +1601,270 @@ whose entry-level operation lemmas live in the no-import certificate layer) rema
 records the r4 stance: the reader gate dissolved; the connection `rfl` and the R1 wall remain.  Read the
 meaning from THIS docstring. -/
 def freshGeneratorExpansionEndToEndButConnectionRflRemains : Bool := true
+
+/-! ## r5 — the block-lifting DISSOLVES the base-certificate half of the connection `rfl`
+
+The r4 residual (`freshGeneratorExpansionEndToEndButConnectionRflRemains`, preserved above byte-intact)
+named the fully cert-free block-lifting `liftedBaseCertAgreesOnBlock` as the walled node.  r5 ships it
+(`FX1Poly/Polygraph/Homology/BlockDiagonalCertificateLifting`, re-derived in-lane against the `IntMatrix`
+primitives only, no `SmithNormalForm` import) and re-feeds the instances through it, so the base-certificate
+half of the per-instance `…RecipeProducesUnitLast` `rfl` becomes GENERIC; only the CLEARING wrapper stays
+per instance.  The r4 `…RecipeProducesUnitLast` / `…EndToEnd…` decls are all preserved byte-intact — the
+r5 theorems below are ADDITIVE, proving the same statements THROUGH block-lifting. -/
+
+/-! ### B2 (r5) — the generic recipe reduction, base-cert half via block-lifting -/
+
+/-- ★★ **The generic recipe reduction via block-lifting.**  Given a base `d2` rectangular of shape
+`height × width`, a bounded base certificate, and the per-instance CLEARING bridge (the expanded `d2`
+cleared to the block-diagonal `[[baseD2 | 0]; [0 | +1]]`), the recipe `clearingOps ++ baseCert` reduces
+the expanded `d2` to `blockDiag (baseD2 reduced) width`.  The base-certificate half of the r4 per-instance
+connection `rfl` is now GENERIC (the block-lifting `blockRecipeReducesToBlockDiag`); only the clearing
+bridge stays per instance. -/
+theorem freshGeneratorRecipeReducesViaBlockLifting
+    (baseD2 expandedD2 : IntMatrix) (clearingOps baseCert : List ElementaryOperation)
+    (height width : Nat) (rect : baseD2.IsRectangular height width)
+    (baseBounded : allOpsBounded height width baseCert = true)
+    (clearingBridge : expandedD2.applyOperations clearingOps = blockDiagWithFreshUnit baseD2 width) :
+    expandedD2.applyOperations (clearingOps ++ baseCert)
+      = blockDiagWithFreshUnit (baseD2.applyOperations baseCert) width := by
+  rw [applyOperationsAppend, clearingBridge]
+  exact blockRecipeReducesToBlockDiag baseD2 baseCert height width rect baseBounded
+
+/-- ★ **Cyclic `ZZ/3` recipe-produces-unit-last, THROUGH block-lifting** (base-cert half generic; the r4
+`expandedCyclicThreeRecipeProducesUnitLast` `rfl` is preserved above). -/
+theorem expandedCyclicThreeRecipeViaBlockLifting :
+    expandedCyclicThreeBoundaryOfDimOne.applyOperations expandedCyclicThreeRecipeCertificate.operations
+      = expandedCyclicThreeUnitLastSmithNormalForm :=
+  freshGeneratorRecipeReducesViaBlockLifting cyclicThreeBoundaryOfDimOne
+    expandedCyclicThreeBoundaryOfDimOne
+    [ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 1),
+     ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)]
+    cyclicThreeBoundaryOfDimOneSmithCertificate.operations 1 1
+    ⟨rfl, rfl, True.intro⟩ (by decide) rfl
+
+/-- ★ **Walking involution `ZZ/2` recipe-produces-unit-last, THROUGH block-lifting.** -/
+theorem expandedInvolutionRecipeViaBlockLifting :
+    expandedInvolutionBoundaryOfDimOne.applyOperations expandedInvolutionRecipeCertificate.operations
+      = expandedInvolutionUnitLastSmithNormalForm :=
+  freshGeneratorRecipeReducesViaBlockLifting involutionBoundaryOfDimOne
+    expandedInvolutionBoundaryOfDimOne
+    [ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 1),
+     ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)]
+    involutionBoundaryOfDimOneSmithCertificate.operations 1 1
+    ⟨rfl, rfl, True.intro⟩ (by decide) rfl
+
+/-- ★ **The FRESH involution `t ⟹ ss` recipe-produces-unit-last, THROUGH block-lifting.** -/
+theorem freshInvolutionRecipeViaBlockLifting :
+    freshInvolutionExpansion.computeBoundaryDimOne.applyOperations
+        freshInvolutionRecipeCertificate.operations
+      = freshInvolutionUnitLastSmithNormalForm :=
+  freshGeneratorRecipeReducesViaBlockLifting involutionBoundaryOfDimOne
+    freshInvolutionExpansion.computeBoundaryDimOne
+    [ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 2),
+     ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)]
+    involutionBoundaryOfDimOneSmithCertificate.operations 1 1
+    ⟨rfl, rfl, True.intro⟩ (by decide) rfl
+
+/-- ★ **The r2 Tietze `ZZ/3` (m < n) recipe-produces-unit-last, THROUGH block-lifting** — the block
+gives the fresh unit at the off-diagonal `(2, 4)`; the ONE generic `swapColumns 2 4` (applied AFTER the
+block-lifting, valid on the `3 × 5` block, where `4 < 5`) moves it onto the diagonal. -/
+theorem expandedTietzeThirdGeneratorRecipeViaBlockLifting :
+    expandedTietzeThirdGeneratorBoundaryOfDimOne.applyOperations
+        expandedTietzeThirdGeneratorRecipeCertificateOfDimOne.operations
+      = expandedTietzeThirdGeneratorUnitLastSmithNormalFormOfDimOne := by
+  have viaLift := freshGeneratorRecipeReducesViaBlockLifting tietzeBoundaryOfDimOne
+    expandedTietzeThirdGeneratorBoundaryOfDimOne
+    [ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 0 1),
+     ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 1 1),
+     ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)]
+    tietzeBoundaryOfDimOneSmithCertificate.operations 2 4
+    ⟨rfl, rfl, rfl, True.intro⟩ (by decide) rfl
+  have split :
+      expandedTietzeThirdGeneratorBoundaryOfDimOne.applyOperations
+          expandedTietzeThirdGeneratorRecipeCertificateOfDimOne.operations
+        = (expandedTietzeThirdGeneratorBoundaryOfDimOne.applyOperations
+            ([ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 0 1),
+              ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 1 1),
+              ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)]
+             ++ tietzeBoundaryOfDimOneSmithCertificate.operations)).applyOperations
+            [ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 2 4)] :=
+    applyOperationsAppend
+      ([ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 0 1),
+        ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 1 1),
+        ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)]
+       ++ tietzeBoundaryOfDimOneSmithCertificate.operations)
+      [ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 2 4)]
+      expandedTietzeThirdGeneratorBoundaryOfDimOne
+  rw [split, viaLift]
+  rfl
+
+/-! ### B3 (r5) — the presentation-to-homology assembly (square case), diagonal facts via block-lifting
+
+The r4 end-to-end theorem `freshGeneratorExpansionPreservesDegreeOneHomologyOfBase` took the two
+`fromHigherDiag…` facts as per-instance `(by decide)` arguments.  For the SQUARE base case (`m = n`:
+cyclic/involution — one generator, one rule), those two `decide`s are here DERIVED from the block-lifting
+diagonal read-off.  The r4 `…EndToEndDegreeOne` decls (which pass the two facts by `decide`) are preserved
+byte-intact; the `…ViaBlockLifting` decls below are ADDITIVE.  The non-square (r2 Tietze, `m < n`)
+homology re-feed stays on the r4 `decide` path — a generic swap-diagonal read-off is the r6 residual. -/
+
+/-- ★★ **THE PRESENTATION-TO-HOMOLOGY ASSEMBLY (square case), via block-lifting.**  For a SQUARE base
+`d2` Smith normal form (`dimension × dimension`), the two diagonal hypotheses of the r4 end-to-end theorem
+are DERIVED from the block read-off (`blockDiagDiagonalBelow` below the base window;
+`blockDiagDiagonalAtFreshSquare` at the fresh window) — NOT discharged per instance by `decide`.  The
+hypothesis delta: the two `fromHigherDiag…` `decide`s ⟶ (a square base SNF, its rectangularity, and the
+block identity `expandedSNF = blockDiag baseSNF dimension`). -/
+theorem freshGeneratorSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+    (baseData expandedData : SmithHomologyData) (baseSNF : IntMatrix) (dimension : Nat)
+    (snfRect : baseSNF.IsRectangular dimension dimension)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (baseWindowIsDimension : baseData.windowFromHigher = dimension)
+    (expandedWindowIsSuccessor : expandedData.windowFromHigher = dimension + 1)
+    (baseFromHigherIsSNF : baseData.smithBoundaryFromHigher = baseSNF)
+    (expandedFromHigherIsBlock :
+      expandedData.smithBoundaryFromHigher = blockDiagWithFreshUnit baseSNF dimension)
+    (expandedIntoLowerAllZero : ∀ position, position < expandedData.windowIntoLower →
+      expandedData.smithBoundaryIntoLower.diagonalEntryAt position = 0)
+    (baseIntoLowerAllZero : ∀ position, position < baseData.windowIntoLower →
+      baseData.smithBoundaryIntoLower.diagonalEntryAt position = 0) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  refine freshGeneratorExpansionPreservesDegreeOneHomologyOfBase baseData expandedData basisIsSuccessor
+    (by rw [expandedWindowIsSuccessor, baseWindowIsDimension]) expandedIntoLowerAllZero
+    baseIntoLowerAllZero ?_ ?_
+  · intro position positionBelow
+    rw [baseWindowIsDimension] at positionBelow
+    rw [expandedFromHigherIsBlock, baseFromHigherIsSNF]
+    exact blockDiagDiagonalBelow baseSNF dimension dimension position snfRect positionBelow positionBelow
+  · rw [expandedFromHigherIsBlock, baseWindowIsDimension]
+    exact blockDiagDiagonalAtFreshSquare baseSNF dimension snfRect
+
+/-- ★★ **Cyclic `ZZ/3` degree-1 homology preserved, THROUGH block-lifting** — the two diagonal `decide`s
+of the r4 `cyclicThreeEndToEndDegreeOne` call are now the block read-off. -/
+theorem cyclicThreeEndToEndDegreeOneViaBlockLifting :
+    expandedCyclicThreeUnitLastDegreeOneSmithData.homologyInvariant
+      = cyclicThreeDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+    cyclicThreeDegreeOneSmithData expandedCyclicThreeUnitLastDegreeOneSmithData
+    cyclicThreeSmithNormalFormOfDimOne 1 ⟨rfl, rfl, True.intro⟩ rfl rfl rfl rfl rfl
+    (by decide) (by decide)
+
+/-- ★★ **Walking involution `ZZ/2` degree-1 homology preserved, THROUGH block-lifting.** -/
+theorem involutionEndToEndDegreeOneViaBlockLifting :
+    expandedInvolutionUnitLastDegreeOneSmithData.homologyInvariant
+      = involutionDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+    involutionDegreeOneSmithData expandedInvolutionUnitLastDegreeOneSmithData
+    involutionSmithNormalFormOfDimOne 1 ⟨rfl, rfl, True.intro⟩ rfl rfl rfl rfl rfl
+    (by decide) (by decide)
+
+/-- ★★ **The FRESH involution `t ⟹ ss` degree-1 homology preserved, THROUGH block-lifting** — the
+structural-entry-point instance, its recipe generic and its diagonal facts from the block read-off. -/
+theorem freshInvolutionEndToEndDegreeOneViaBlockLifting :
+    freshInvolutionUnitLastDegreeOneSmithData.homologyInvariant
+      = involutionDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+    involutionDegreeOneSmithData freshInvolutionUnitLastDegreeOneSmithData
+    involutionSmithNormalFormOfDimOne 1 ⟨rfl, rfl, True.intro⟩ rfl rfl rfl rfl rfl
+    (by decide) (by decide)
+
+/-! ### B4 (r5) — the TYPE-2 spike: H1 preserved (column-in-span), the naive H2 read-off REFUTED
+
+The type-2 Tietze move (adjoin a DERIVABLE relation) on cyclic `⟨s | sss⟩`: add the derivable rule
+`ssss ⟹ s`.  No new generator; a COLUMN is added to `d2`.  The new column `#s(s) − #s(ssss) = 1 − 4 = -3`
+equals the existing column `-3` (`type2CyclicThreeNewColumnInSpan`) — derivability manifests as
+column-in-span.  Clearing it (`addColumnMultiple 0 1 (-1)`) then `negateColumn 0` lands on `[[3, 0]]`:
+rank `1`, torsion `[3]`, so H1 = ZZ/3 is PRESERVED (a clean generic target: column-in-span ⟹ H1
+preserved).
+
+The HONEST FINDING at degree 2: the naive type-2 move (rule only, `d3` unchanged) leaves the new syzygy
+`rule2 − rule1` (`ker d2` gains rank one) UNCOVERED, so the naive H2 free rank
+`= nullity(d2) − rank(d3) = (2 − 1) − 0 = 1` gives H2 = ZZ ≠ 0 — but base H2 = 0.  The naive read-off is
+REFUTED (`type2NaiveH2FreeRankIsOne`).  H2 preservation is resolution-CHOICE-dependent: it holds only if
+the Knuth–Bendix critical-pair completion (`ssss` overlaps `sss`) is performed, adding the covering `d3`
+column — the Squier/Pride homotopy dependence the ledger walls.  NO type-2 H2-preservation theorem is
+shipped; only the H1 instance and the honest H2 refutation. -/
+
+/-- The cyclic-3 `d2` extended by the DERIVABLE rule `ssss ⟹ s` — one generator, TWO rules; the new
+rule column `-3` equals the existing column `-3`. -/
+def type2CyclicThreeExpandedBoundaryDimOne : IntMatrix := ⟨[[-3, -3]]⟩
+
+/-- The reduction certificate clearing the in-span new column: `addColumnMultiple 0 1 (-1)` then
+`negateColumn 0`. -/
+def type2CyclicThreeReductionCertificate : List ElementaryOperation :=
+  [ ElementaryOperation.columnOperation (ElementaryColumnOperation.addColumnMultiple 0 1 (-1))
+  , ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 0) ]
+
+/-- ★ **Derivability manifests as column-in-span** — the new rule column equals `1 ×` the existing
+column, so it clears to zero; `rfl`. -/
+theorem type2CyclicThreeNewColumnInSpan :
+    type2CyclicThreeExpandedBoundaryDimOne.entryAt 0 1
+      = type2CyclicThreeExpandedBoundaryDimOne.entryAt 0 0 := rfl
+
+/-- ★★ **The type-2 `d2` reduces to `[[3, 0]]`** — rank `1`, the in-span column cleared; `rfl`. -/
+theorem type2CyclicThreeReducesToRankOne :
+    type2CyclicThreeExpandedBoundaryDimOne.applyOperations type2CyclicThreeReductionCertificate
+      = ⟨[[3, 0]]⟩ := rfl
+
+/-- The type-2 `d2` rank within the `1 × 2` window is `1` (unchanged from base). -/
+theorem type2CyclicThreeRankIsOne : smithRankWithin ⟨[[3, 0]]⟩ 1 = 1 := rfl
+
+/-- The type-2 `d2` torsion factor is `[3]` (unchanged from base). -/
+theorem type2CyclicThreeTorsionIsThree : smithInvariantFactorsWithin ⟨[[3, 0]]⟩ 1 = [3] := rfl
+
+/-- ★★ **H1 = ZZ/3 PRESERVED under the type-2 move** — free rank `(C1 − rank d1) − rank d2
+= (1 − 0) − 1 = 0`, torsion `[3]`; `rfl`. -/
+theorem type2CyclicThreeH1FreeRankIsZero : (1 - 0) - smithRankWithin ⟨[[3, 0]]⟩ 1 = 0 := rfl
+
+/-- The NAIVE type-2 H2 free rank `= nullity(d2) − rank(d3) = (C2 − rank d2) − 0 = (2 − 1) − 0` — the
+uncovered syzygy `rule2 − rule1`. -/
+def type2NaiveH2FreeRank : Nat := (2 - smithRankWithin ⟨[[3, 0]]⟩ 1) - 0
+
+/-- ★★ **The naive type-2 H2 read-off is REFUTED** — `type2NaiveH2FreeRank = 1` gives H2 = ZZ ≠ 0 while
+base H2 = 0.  H2 preservation is resolution-choice-dependent (needs Knuth–Bendix completion); no
+type-2 H2-preservation theorem is claimed.  `rfl`. -/
+theorem type2NaiveH2FreeRankIsOne : type2NaiveH2FreeRank = 1 := rfl
+
+/-! ## B5 (r5) — the ledger: the block-lifting wall PAID, the residuals re-named -/
+
+/-- The number of expansion instances whose recipe-reduction has its BASE-CERTIFICATE half derived
+generically through `liftedBaseCertAgreesOnBlock` (the r4 per-instance `rfl` dissolved for the base cert):
+cyclic `ZZ/3`, walking involution `ZZ/2`, the r2 Tietze `ZZ/3` (`m < n`, with the generic swap), and the
+FRESH involution `t ⟹ ss` — a running additive count. -/
+def recipeViaBlockLiftingInstanceCount : Nat := 4
+
+/-- The additive census value: `4` recipes reduced with the base-cert half via block-lifting, by `rfl`. -/
+theorem recipeViaBlockLiftingInstanceCountValue : recipeViaBlockLiftingInstanceCount = 4 := rfl
+
+/-- The number of degree-1 homology re-feeds whose two `fromHigherDiag…` facts are DERIVED from the block
+read-off (not per-instance `decide`): the three SQUARE instances (cyclic `ZZ/3`, walking involution
+`ZZ/2`, fresh involution `t ⟹ ss`).  The non-square r2 Tietze stays on the r4 `decide` path. -/
+def homologyViaBlockLiftingSquareInstanceCount : Nat := 3
+
+/-- The additive census value: `3` square homology re-feeds via block-lifting, by `rfl`. -/
+theorem homologyViaBlockLiftingSquareInstanceCountValue :
+    homologyViaBlockLiftingSquareInstanceCount = 3 := rfl
+
+/-- ★ **The #2139 round-five marker: the block-lifting wall is PAID.**  `liftedBaseCertAgreesOnBlock`
+(the r4 named wall) is proved GENERICALLY in `BlockDiagonalCertificateLifting`, re-derived in-lane against
+the `IntMatrix` primitives only (no `SmithNormalForm` / `SmithCascadeTermination` import), and the base
+certificate half of the r4 per-instance connection `rfl` is DISSOLVED for all four instances
+(`…RecipeViaBlockLifting`), with the three SQUARE homology re-feeds deriving their diagonal facts from the
+block read-off (`…EndToEndDegreeOneViaBlockLifting`).  The r4 marker
+`freshGeneratorExpansionEndToEndButConnectionRflRemains` is preserved above byte-intact; this marker
+records the r5 payment.  Read the meaning from THIS docstring. -/
+def freshGeneratorExpansionBlockLiftingWallPaid : Bool := true
+
+/-- ★ **The r5 residual marker (the exact nodes newly named).**  What STAYS after r5:
+(1) the CLEARING wrapper — the expanded `d2` cleared to `[[baseD2 | 0]; [0 | +1]]` via `clearingOps ++
+[negateColumn width]` — is still a per-instance `rfl` (`freshGeneratorRecipeReducesViaBlockLifting` takes
+it as the `clearingBridge` hypothesis); its GENERIC form needs the abelianization structure of the
+expansion (the r6 bill);
+(2) the NON-SQUARE (r2 Tietze, `m < n`) degree-1 homology re-feed stays on the r4 `decide` path — a
+generic swap-diagonal read-off (moving the block's off-diagonal `(height, width)` unit onto the diagonal)
+is the r6 residual;
+(3) the TYPE-2 move preserves H1 (column-in-span, `type2CyclicThreeH1FreeRankIsZero`) but its naive H2
+read-off is REFUTED (`type2NaiveH2FreeRankIsOne` — spurious ZZ); H2 preservation is resolution-choice
+dependent (needs Knuth–Bendix completion), the Squier/Pride homotopy wall (R1, unchanged).  `= true`
+records the r5 stance.  Read the meaning from THIS docstring. -/
+def freshGeneratorExpansionBlockLiftingResidual : Bool := true
 
 end FX1Poly.Polygraph.Homology

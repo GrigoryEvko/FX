@@ -161,4 +161,36 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.endToEndHomologyPreservationInstanceCountValue
 #assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionEndToEndButConnectionRflRemains
 
+-- B2 (r5): the generic recipe reduction via block-lifting + 4 re-feeds
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorRecipeReducesViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedCyclicThreeRecipeViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedInvolutionRecipeViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionRecipeViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorRecipeViaBlockLifting
+
+-- B3 (r5): the square homology assembly via block-lifting + 3 square re-feeds
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorSquareExpansionPreservesDegreeOneHomologyViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeEndToEndDegreeOneViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.involutionEndToEndDegreeOneViaBlockLifting
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionEndToEndDegreeOneViaBlockLifting
+
+-- B4 (r5): the type-2 spike — H1 preserved (column-in-span), naive H2 REFUTED
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeExpandedBoundaryDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeReductionCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeNewColumnInSpan
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeReducesToRankOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeRankIsOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeTorsionIsThree
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeH1FreeRankIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2NaiveH2FreeRank
+#assert_no_axioms FX1Poly.Polygraph.Homology.type2NaiveH2FreeRankIsOne
+
+-- B5 (r5): the ledger
+#assert_no_axioms FX1Poly.Polygraph.Homology.recipeViaBlockLiftingInstanceCount
+#assert_no_axioms FX1Poly.Polygraph.Homology.recipeViaBlockLiftingInstanceCountValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.homologyViaBlockLiftingSquareInstanceCount
+#assert_no_axioms FX1Poly.Polygraph.Homology.homologyViaBlockLiftingSquareInstanceCountValue
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionBlockLiftingWallPaid
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionBlockLiftingResidual
+
 end FX1PolyAudit
