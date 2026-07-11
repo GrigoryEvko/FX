@@ -890,6 +890,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSurvivorTopTotalMi
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcBoundaryCensusPerfectMatchingFold
 -- FC-3 r31 — B3: the string matchingOf partner-INVOLUTION + no-fixed-point transport (the involution floor above the r30 fold)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingPartnerInvolution
+-- FC-3 r32 — B4: the string cap-side restriction capRestrict RECONSTRUCTS the cap block + the cap-block splitter (the cap-side DiagramType.ext)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCapReconstruct
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
