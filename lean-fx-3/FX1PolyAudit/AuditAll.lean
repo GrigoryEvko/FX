@@ -1211,6 +1211,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingStrongMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking distributive law's latent over-quotient: 6 monad-internal rows separated, 14-row genuine sub-theory (Beck matrix-respected)
 import FX1PolyAudit.Polygraph.Omega.WalkingDistLawOverQuotientAdjudicationAudit
+-- OMEGA HOUSE-STYLE SWEEP r4 — the family census: decidable shape predicate, 3 confirmed over-quotients, not-spurious trio UNRESOLVED, equivalence positive example, homology no-impact
+import FX1PolyAudit.Polygraph.Omega.OmegaHouseStyleFamilyLedgerAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
