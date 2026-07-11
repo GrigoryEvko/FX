@@ -4857,4 +4857,75 @@ theorem smithUnsortedMinorDriverReducesToSmithForm :
           Nat.noConfusion (natEqZeroOfLeZero
             (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
 
+/-! ## The repair-transport arc ledger (H2-SMITH r15, B4/B5, #2137) — the round's honest state; NO flip
+
+**#2137 state.**  `SmithNormalForm.SmithReduceFullDriverStatement` is UNINHABITED (no flip).  Its
+totality rests on EXACTLY the two r13 residuals `{SmithRepairStepSettlesStatement (JAM 1),
+repairChainHolds (JAM 2)}` via `smithReduceFullDriverOfRepairStepAndChain` (re-verified this round,
+UNCHANGED — it composes `repairWindowDiagHoldsOfRepairStep` onto `smithReduceFullDriverOfRepairInvariants`
+and rests on the two named jams verbatim).  The r15 round PROBED the r14 suffix-min wall on a genuine
+multi-pivot driver path, found it REFUTED (both preservation and establishment), and shipped the honest
+double refutation + the positive counterweight; NEITHER jam closed, NO flip.
+
+**The refutation (B1/B3, R2 — the crux).**  The r14 footer's conjecture "`smithReduceTotal` presorts to
+[the suffix-min invariant] AND the repair preserves it" is FALSE on its PRESERVE half.  On the genuine
+witness `smithReduceTotal(diag(60,90,150,210,105)) = diag(60,90,105,150,210)`
+(`smithSuffixMinRepairWitnessMatchesReduceTotalDiagonal`) the invariant HOLDS
+(`smithSuffixMinRepairWitnessEstablishes`), yet one pivot-0 divisibility-repair sweep lands
+`diag(15,-180,-210,150,210)`, which VIOLATES it at pivot 1 (`min(180,210)=180 > untouched d_3=150`) —
+the pivot-p lcm inflation drags a magnitude-smaller ALREADY-divided entry below the index-first fold
+pair.  So `SmithSuffixMinRepairPreservesStatement` is refuted (`smithSuffixMinRepairDoesNotPreserve`).
+
+**The refutation (B2, R1).**  The invariant is also over-strong on rank-deficient inputs:
+`diag(4,1,150,0)` refutes it (`smithSuffixMinEstablishFailsOnRankDeficient` —
+`min(4,1)=1 > trailing d_3=0`), since the def quantifies its suffix bound over all later diagonals
+including zeros.  So it is not even ESTABLISHABLE as a reduceTotal postcondition without excluding
+zeros.  (This is a false alarm for the drag purpose — a `0` cannot be dragged into a smaller nonzero
+residue — but it refutes the invariant AS WRITTEN.)
+
+**The discharge wiring (B4).**  The r14/r15 hope was an adapter
+`SmithSuffixMinRepairInvariant (along the driver path) -> SmithRepairStepSettlesStatement`.  That adapter
+is IMPOSSIBLE: its antecedent is FALSE on the driver path (the repair does not preserve the invariant,
+R2), so no total function can produce it.  The discharge wiring is therefore UNCHANGED from r13
+(`smithReduceFullDriverOfRepairStepAndChain` unmodified); the suffix-min invariant supplies ZERO
+shortcut, and `SmithRepairStepSettlesStatement` stays the JAM-1 wall — to be discharged by the cascade
+min-abs-landing (the TRUE no-drag carrier, r16+), not by any suffix-min node.
+
+**The JAM-2-ESTABLISH re-audit (B4, conjunct map).**  JAM 2 =
+`{applyOperationsPreservesEntriesDivisible (PRESERVE — landed r14, UNCONDITIONAL: a fixed `d` dividing
+all entries survives every unimodular word, refutation-immune) + `d_p |` sub-block (ESTABLISH — position
+`p`'s exit gives `d_p |` the whole sub-block for `p > 0`, re-importing JAM 1's window-diagonality —
+COUPLED, not orthogonal)}`.  This round's probe does NOT touch JAM 2's coupling — it kills a proposed
+JAM-1 BYPASS (the suffix-min node), not the chain.  UNCHANGED from r14.
+
+**Shipped this round (r15), all independently axiom-free (`#print axioms` = "no axioms").**
+
+  * B1/B3 — `smithSuffixMinRefuterInput` / `smithSuffixMinRepairWitness` (the witness pair),
+    `smithSuffixMinRepairWitnessEstablishes` (the invariant holds on the witness, pinning non-vacuity),
+    `smithSuffixMinRepairWitnessMatchesReduceTotalDiagonal` (the witness is the genuine reduceTotal
+    output, per-diagonal by defeq), `SmithSuffixMinRepairPreservesStatement` (the deeper node) +
+    `smithSuffixMinRepairDoesNotPreserve` (the preservation refutation, R2).
+  * B2 — `smithSuffixMinEstablishFailsOnRankDeficient` (the rank-deficient establishment refutation, R1).
+  * B1-positive — `smithDragDiagonalDriverReducesToSmithForm` (`diag(30,20,12) -> diag(2,60,60)`) +
+    `smithUnsortedMinorDriverReducesToSmithForm` (`[[4,0,0],[0,6,10],[0,15,0]] -> diag(1,2,300)`): the
+    exact r14 refuters still land valid Smith normal form — the invariant is NOT necessary.
+
+**Dead-node retirement.**  `SmithSuffixMinRepairInvariant` joins `SmithReduceTotalPivotMinStatement` as a
+DEAD node (both refuted).  It keeps its name and meaning (the r14 docstrings verbatim-intact); its r14
+pins are now understood as VACUOUS FOR PRESERVATION — `smithSuffixMinReduceTotalOnPathProbe` (`diag(2,3)`)
+is a 2x2 with no multi-pivot evolution, and matrix 21 (5x5) is the first genuine test, which refutes.
+`smithSuffixMinDragInputViolates` remains a correct exclusion probe.
+
+**Still owed toward `SmithReduceFullDriverStatement` (UNINHABITED; NO flip) — the two named jams.**
+
+  * JAM 1 (window-diagonal).  NAMED NODE: `SmithRepairStepSettlesStatement` (refutable over the bare
+    `SmithPrefixSettled` frame; POLE-B).  NO suffix-min bypass (this round's double refutation).  The
+    true discharge is the cascade min-abs-landing elimination-correctness — "the re-fired
+    `smithCascadeSweep` lands the sub-minor's min-abs at the pivot AND re-diagonalizes the sub-block"
+    (r13 `smithRepairFoldCascadeReachesCrossClear` gives the cross-clear half; the missing half is
+    min-abs-at-pivot + sub-block-diagonal).  The r16+ wall.
+  * JAM 2 (the chain `repairChainHolds`).  PRESERVE UNCONDITIONAL (r14); ESTABLISH coupled to JAM 1.
+
+`SmithReduceFullDriverStatement` is NOT flipped. -/
+
 end FX1Poly.ComputerAlgebra
