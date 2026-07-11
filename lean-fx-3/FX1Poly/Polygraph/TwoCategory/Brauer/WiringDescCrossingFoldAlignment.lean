@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescArcReadOffCount
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescFunctoriality
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescStandardForm
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescBrauerReadback
 
 /-! # BRAUER-MIDDLE r17 — the E3 OPENING: the fold-alignment target invariant + the crossing-staircase width brick
 
@@ -36,6 +37,14 @@ arc, routed into `partnerIndexOf_readsPartner_reachable`) is the union-find `ste
     position in range (`pos + 2 ≤ width`), leaves the open-wire count at `width`.  Structural induction over the
     positions, reusing the shipped `stepWiring_openWires_length_fits` per crossing.  This is the width invariant the
     connectivity correspondence and `extractDiagram` (which reads `topCount := openWires.length`) both rest on.
+
+  * **`crossingWord_openWire_sameComponent_bottomPort`** (r18) — the E3 wall's EXACT stated crossing-phase goal, LANDED:
+    after an in-range crossing-only word, the open wire at position `j` shares a union-find component with bottom port
+    `natListGetAt (permuteOfCrossingWord bottomCount positions) j`.  Derived — NOT re-proved — from the shipped
+    crossing-only readback state invariant `stateIsPermGraph_ofInRange.boundView` (`WiringDescBrauerReadback`, where the
+    union-find `stepWiring` long-pole was discharged via `crossing_lift` + boundary coherence): the wall's claim is the
+    top-index / bottom-index specialization of `boundView`.  Flips `fxBrauer_hasCrossingStaircaseConnectivity`; the
+    six-phase `foldRealizesTargetDiagram` (T-CLOSE(b) per-arc routing) stays OPEN, `fxBrauer_hasFoldAlignmentE3` honest.
 
 Raw Lean 4 + Init.  Per-declaration `#assert_no_axioms` in the audit twin. -/
 
@@ -102,6 +111,191 @@ theorem crossingWordFold_openWires_length_probe :
           | head => decide
           | tail _ nilMem => nomatch nilMem)
 
+/-! ## The E3 crossing-phase connectivity correspondence — the wall's exact stated goal, from the shipped boundView
+
+The E3 wall names its crossing-phase open goal verbatim: after the crossing phase, the open wire at position `j`
+shares a union-find component with bottom port `natListGetAt (permuteOfCrossingWord bottomCount …) j`.  That
+correspondence is ALREADY established at full strength by the shipped crossing-only readback state invariant
+`stateIsPermGraph_ofInRange` (`WiringDescBrauerReadback`): its `boundView` field says every boundary-index pair shares
+a component exactly when it carries the same through-strand — the union-find `stepWiring` long-pole was discharged
+there (via `crossing_lift` + boundary coherence, folded from the seed).  The wall's `openWires[j] ~ bottom-port
+perm[j]` is the TOP-index / BOTTOM-index specialization of that view, so NO new union-find induction is needed; this
+section LANDS the wall's exact statement as a corollary. -/
+
+/-- `n + a - n = a` — structural, propext-free (mirrors the readback layer's local subtraction cancel). -/
+private theorem addSubCancelLeftAlign : (n a : Nat) → n + a - n = a
+  | 0, a => by rw [Nat.zero_add, Nat.sub_zero]
+  | n + 1, a => by
+      rw [Nat.add_right_comm n 1 a]
+      show (n + a).succ - (n).succ = a
+      rw [Nat.succ_sub_succ]
+      exact addSubCancelLeftAlign n a
+
+/-- `natListGetAt entries index ∈ entries` for `index < entries.length` — structural. -/
+private theorem getAtMemAlign : (entries : List Nat) → (index : Nat) → index < entries.length →
+    natListGetAt entries index ∈ entries
+  | [], index, indexBelow => absurd indexBelow (Nat.not_lt_zero index)
+  | _ :: rest, 0, _ => List.Mem.head rest
+  | head :: rest, index + 1, indexBelow =>
+      List.Mem.tail head (getAtMemAlign rest index (Nat.lt_of_succ_lt_succ indexBelow))
+
+/-- `Nat.beq value value = true` — structural on the digit, propext-free (`==`'s decide-reflexivity, done by hand). -/
+private theorem beqSelfAlign : (value : Nat) → Nat.beq value value = true
+  | 0 => rfl
+  | value + 1 => beqSelfAlign value
+
+/-- `Nat.beq leftValue rightValue = true → leftValue = rightValue` — structural, propext-free. -/
+private theorem natBeqEqAlign : (leftValue rightValue : Nat) → Nat.beq leftValue rightValue = true →
+    leftValue = rightValue
+  | 0, 0, _ => rfl
+  | 0, _ + 1, h => Bool.noConfusion h
+  | _ + 1, 0, h => Bool.noConfusion h
+  | leftValue + 1, rightValue + 1, h => congrArg (· + 1) (natBeqEqAlign leftValue rightValue h)
+
+/-- `value ∈ entries → memBool value entries = true` — structural on the membership witness. -/
+private theorem memBoolOfMemAlign : (entries : List Nat) → (value : Nat) → value ∈ entries →
+    memBool value entries = true
+  | [], _, memNil => nomatch memNil
+  | head :: rest, value, memCons => by
+      show (Nat.beq head value || memBool value rest) = true
+      cases memCons with
+      | head => rw [beqSelfAlign head, Bool.true_or]
+      | tail _ memRest => rw [memBoolOfMemAlign rest value memRest, Bool.or_true]
+
+/-- `memBool value entries = true → value ∈ entries` — the converse, structural on the `Nat.beq` head test. -/
+private theorem memOfMemBoolAlign : (entries : List Nat) → (value : Nat) → memBool value entries = true →
+    value ∈ entries
+  | [], _, memTrue => Bool.noConfusion memTrue
+  | head :: rest, value, memTrue => by
+      cases hbeq : Nat.beq head value with
+      | true => exact (natBeqEqAlign head value hbeq) ▸ List.Mem.head rest
+      | false =>
+          have memRest : memBool value rest = true := by
+            have combined : (Nat.beq head value || memBool value rest) = true := memTrue
+            rw [hbeq, Bool.false_or] at combined
+            exact combined
+          exact List.Mem.tail head (memOfMemBoolAlign rest value memRest)
+
+/-- Membership is invariant across the whole adjacent-swap fold (each `applyAdjacentSwap` only permutes) — reusing
+the shipped per-swap `memBool_applyAdjacentSwap`.  Structural on the position list. -/
+private theorem memBoolFoldlSwapAlign : (positions initial : List Nat) → (value : Nat) →
+    memBool value (positions.foldl applyAdjacentSwap initial) = memBool value initial
+  | [], _, _ => rfl
+  | position :: rest, initial, value => by
+      show memBool value (rest.foldl applyAdjacentSwap (applyAdjacentSwap initial position))
+        = memBool value initial
+      rw [memBoolFoldlSwapAlign rest (applyAdjacentSwap initial position) value,
+        memBool_applyAdjacentSwap value initial position]
+
+/-- The realized permutation carries exactly the identity's membership set (`List.range bottomCount`). -/
+private theorem memBoolPermuteAlign (bottomCount : Nat) (positions : List Nat) (value : Nat) :
+    memBool value (permuteOfCrossingWord bottomCount positions) = memBool value (List.range bottomCount) :=
+  memBoolFoldlSwapAlign positions (List.range bottomCount) value
+
+/-- ★ Every entry of the realized permutation is a bottom port:
+`natListGetAt (permuteOfCrossingWord bottomCount positions) index < bottomCount` for `index < bottomCount`.  Its
+membership set is `List.range bottomCount`, so every read entry occurs in the range and is below the bound. -/
+private theorem permGetAtLtAlign (bottomCount : Nat) (positions : List Nat) (index : Nat)
+    (indexBelow : index < bottomCount) :
+    natListGetAt (permuteOfCrossingWord bottomCount positions) index < bottomCount := by
+  have lengthEq : (permuteOfCrossingWord bottomCount positions).length = bottomCount :=
+    permuteOfCrossingWord_length bottomCount positions
+  have indexInRange : index < (permuteOfCrossingWord bottomCount positions).length := by
+    rw [lengthEq]; exact indexBelow
+  have memBoolTrue : memBool (natListGetAt (permuteOfCrossingWord bottomCount positions) index)
+      (permuteOfCrossingWord bottomCount positions) = true :=
+    memBoolOfMemAlign _ _ (getAtMemAlign (permuteOfCrossingWord bottomCount positions) index indexInRange)
+  rw [memBoolPermuteAlign bottomCount positions] at memBoolTrue
+  exact mem_range_imp_lt (memOfMemBoolAlign (List.range bottomCount) _ memBoolTrue)
+
+/-- ★★ **The E3 crossing-phase correspondence over any permutation-graph state.**  If `state`'s union-find boundary
+view IS the permutation graph of `permuteOfCrossingWord bottomCount positions` (the shipped `StateIsPermGraph`), then
+for every bottom port `j` the open wire at position `j` shares a component with bottom port
+`natListGetAt (permuteOfCrossingWord bottomCount positions) j`.  The TOP-index / BOTTOM-index specialization of
+`boundView`: index `bottomCount + j` reads the open wire at `j` and carries strand `perm[j]`; the bottom index
+`perm[j]` reads node `perm[j]` and carries strand `perm[j]` (it is a bottom port, `permGetAtLtAlign`), so `boundView`
+collapses to `decide (perm[j] = perm[j]) = true`. -/
+theorem stateIsPermGraph_openWire_sameComponent_bottomPort
+    (bottomCount : Nat) (positions : List Nat) (state : WireState)
+    (permGraph : StateIsPermGraph bottomCount positions state)
+    (j : Nat) (jBelow : j < bottomCount) :
+    isSameComponent state.links (natListGetAt state.openWires j)
+        (natListGetAt (permuteOfCrossingWord bottomCount positions) j)
+      = true := by
+  have pjBelow : natListGetAt (permuteOfCrossingWord bottomCount positions) j < bottomCount :=
+    permGetAtLtAlign bottomCount positions j jBelow
+  have topLt : bottomCount + j < bottomCount + bottomCount := Nat.add_lt_add_left jBelow bottomCount
+  have botLt : natListGetAt (permuteOfCrossingWord bottomCount positions) j < bottomCount + bottomCount :=
+    Nat.lt_of_lt_of_le pjBelow (Nat.le_add_right bottomCount bottomCount)
+  have boundEq := permGraph.boundView (bottomCount + j)
+    (natListGetAt (permuteOfCrossingWord bottomCount positions) j) topLt botLt
+  have topNode : boundaryNodeAt bottomCount state (bottomCount + j) = natListGetAt state.openWires j := by
+    show (if bottomCount + j < bottomCount then bottomCount + j
+          else natListGetAt state.openWires (bottomCount + j - bottomCount)) = natListGetAt state.openWires j
+    rw [if_neg (Nat.not_lt.mpr (Nat.le_add_right bottomCount j)), addSubCancelLeftAlign bottomCount j]
+  have botNode : boundaryNodeAt bottomCount state (natListGetAt (permuteOfCrossingWord bottomCount positions) j)
+      = natListGetAt (permuteOfCrossingWord bottomCount positions) j := by
+    show (if natListGetAt (permuteOfCrossingWord bottomCount positions) j < bottomCount
+            then natListGetAt (permuteOfCrossingWord bottomCount positions) j
+          else natListGetAt state.openWires
+            (natListGetAt (permuteOfCrossingWord bottomCount positions) j - bottomCount))
+        = natListGetAt (permuteOfCrossingWord bottomCount positions) j
+    rw [if_pos pjBelow]
+  have topStrand : boundaryStrand bottomCount (permuteOfCrossingWord bottomCount positions) (bottomCount + j)
+      = natListGetAt (permuteOfCrossingWord bottomCount positions) j := by
+    show (if bottomCount + j < bottomCount then bottomCount + j
+          else natListGetAt (permuteOfCrossingWord bottomCount positions) (bottomCount + j - bottomCount))
+        = natListGetAt (permuteOfCrossingWord bottomCount positions) j
+    rw [if_neg (Nat.not_lt.mpr (Nat.le_add_right bottomCount j)), addSubCancelLeftAlign bottomCount j]
+  have botStrand : boundaryStrand bottomCount (permuteOfCrossingWord bottomCount positions)
+        (natListGetAt (permuteOfCrossingWord bottomCount positions) j)
+      = natListGetAt (permuteOfCrossingWord bottomCount positions) j := by
+    show (if natListGetAt (permuteOfCrossingWord bottomCount positions) j < bottomCount
+            then natListGetAt (permuteOfCrossingWord bottomCount positions) j
+          else natListGetAt (permuteOfCrossingWord bottomCount positions)
+            (natListGetAt (permuteOfCrossingWord bottomCount positions) j - bottomCount))
+        = natListGetAt (permuteOfCrossingWord bottomCount positions) j
+    rw [if_pos pjBelow]
+  rw [topNode, botNode, topStrand, botStrand] at boundEq
+  rw [boundEq]
+  exact decide_eq_true rfl
+
+/-- ★★ **The E3 crossing-phase connectivity correspondence — the wall's EXACT stated goal.**  Running an in-range
+crossing-only word from the seed reaches a state where the open wire at each bottom port `j` shares a union-find
+component with bottom port `natListGetAt (permuteOfCrossingWord bottomCount positions) j`.  The exact
+`isSameComponent` correspondence the E3 wall names — obtained from the shipped `stateIsPermGraph_ofInRange`, NOT a new
+`stepWiring` induction.  (The six-phase per-arc routing into `partnerIndexOf` — T-CLOSE(b) — remains the residual;
+this is the crossing PHASE, one of the six.) -/
+theorem crossingWord_openWire_sameComponent_bottomPort
+    (bottomCount : Nat) (bottomPos : 0 < bottomCount) (positions : List Nat)
+    (inRange : ∀ position, position ∈ positions → position + 2 ≤ bottomCount)
+    (j : Nat) (jBelow : j < bottomCount) :
+    isSameComponent (processBrauer (brauerSeed bottomCount) (crossingWord positions)).links
+        (natListGetAt (processBrauer (brauerSeed bottomCount) (crossingWord positions)).openWires j)
+        (natListGetAt (permuteOfCrossingWord bottomCount positions) j)
+      = true :=
+  stateIsPermGraph_openWire_sameComponent_bottomPort bottomCount positions
+    (processBrauer (brauerSeed bottomCount) (crossingWord positions))
+    (stateIsPermGraph_ofInRange bottomCount bottomPos positions inRange) j jBelow
+
+/-- ★ **Non-vacuity — the crossing-phase correspondence fires on a concrete non-commuting two-crossing word.**  Over
+three bottom wires, `crossingWord [0, 1]` sends the open wire at position `1` into the component of bottom port
+`natListGetAt (permuteOfCrossingWord 3 [0, 1]) 1 = 2` (the recon's hand-traced staircase). -/
+theorem crossingWord_openWire_sameComponent_bottomPort_probe :
+    isSameComponent (processBrauer (brauerSeed 3) (crossingWord [0, 1])).links
+        (natListGetAt (processBrauer (brauerSeed 3) (crossingWord [0, 1])).openWires 1)
+        (natListGetAt (permuteOfCrossingWord 3 [0, 1]) 1)
+      = true :=
+  crossingWord_openWire_sameComponent_bottomPort 3 (by decide) [0, 1]
+    (fun position posMem => by
+      cases posMem with
+      | head => decide
+      | tail _ tailMem =>
+          cases tailMem with
+          | head => decide
+          | tail _ nilMem => nomatch nilMem)
+    1 (by decide)
+
 /-! ## Honesty markers -/
 
 /-- ★★ **Honesty marker — the E3 crossing-staircase WIDTH invariant is the first fold-alignment brick (r17).**
@@ -111,16 +305,28 @@ structural, reusing `stepWiring_openWires_length_fits`), firing on a concrete st
 invariant precisely, TRUE on the adversarial-B instance (`foldRealizesTargetDiagram_adversarialB`).  `= true`. -/
 def fxBrauer_hasCrossingFoldWidthInvariant : Bool := true
 
-/-- **Honesty WALL marker — the E3 fold-alignment (the union-find `stepWiring` long-pole) is OPEN.**  The width brick
-`crossingWordFold_openWires_length` is landed, but the E3 alignment proper is a CONNECTIVITY correspondence, not a
-length or an equality: the recon's literal `openWires = permuteOfCrossingWord` is FALSE (the crossing fold allocates
-FRESH node ids `nextFresh + k`, never the values `0 … bottomCount - 1`).  The exact OPEN goal: after the `bottomPerm`
-crossing phase, the open wire at position `j` shares a union-find component with bottom port
-`natListGetAt (permuteOfCrossingWord bottomCount form.bottomPerm) j` — an `isSameComponent` correspondence routed per
-arc through the `bottomPerm` / `topPerm` conjugators into `partnerIndexOf_readsPartner_reachable`, closing
-`foldRealizesTargetDiagram` for every gated `d`.  That, and the T-CLOSE(b) field reassembly, are UNBUILT, so the
-tag-correspondence masters `fxBrauer_hasTagCorrDisjoint` / `fxBrauer_hasTagCorrExtraction` stay honestly `false`;
-#2013 does NOT close.  `= false`. -/
+/-- ★★ **Honesty marker — the E3 crossing-phase connectivity correspondence is LANDED (r18).**
+`crossingWord_openWire_sameComponent_bottomPort` proves the E3 wall's EXACT stated crossing-phase goal — after an
+in-range crossing-only word, the open wire at position `j` shares a union-find component with bottom port
+`natListGetAt (permuteOfCrossingWord bottomCount positions) j` — as the top-index / bottom-index specialization of the
+shipped `stateIsPermGraph_ofInRange.boundView` (the union-find `stepWiring` long-pole was discharged there via
+`crossing_lift` + boundary coherence, folded from the seed; NO new induction).  Fires on the recon's concrete
+non-commuting staircase (`crossingWord_openWire_sameComponent_bottomPort_probe`).  Zero-axiom, structural.  This is the
+crossing PHASE of the six-phase E3 target; the per-arc T-CLOSE(b) routing is the residual (`fxBrauer_hasFoldAlignmentE3`).
+`= true`. -/
+def fxBrauer_hasCrossingStaircaseConnectivity : Bool := true
+
+/-- **Honesty WALL marker — the E3 fold-alignment (the six-phase `foldRealizesTargetDiagram`) is OPEN; the crossing
+PHASE is now landed.**  The crossing-staircase connectivity correspondence — the wall's stated crossing-phase goal
+"the open wire at position `j` shares a component with bottom port `natListGetAt (permuteOfCrossingWord bottomCount
+form.bottomPerm) j`" — is LANDED (`crossingWord_openWire_sameComponent_bottomPort`, r18, from the shipped
+`boundView`).  What stays OPEN is the SIX-PHASE assembly `foldRealizesTargetDiagram`: composing the `bottomPerm`
+crossing phase (landed) with the cap / cup / `middle` / `topPerm` / loop phases and routing EACH enumerated arc
+`(i, d.partner[i])` — bottom↔bottom via `bottomPerm` + `capThenCupFold_connects`, top↔top via `topPerm`, through via
+`bottomPerm`+`middle`+`topPerm`, loops via `circleWord` — into `partnerIndexOf_readsPartner_reachable` to conclude
+`partnerIndexOf … i = d.partner[i]` (the `extractDiagram_realizes_partner_ofConnectivity` residual, T-CLOSE(b)).  Until
+that six-phase per-arc reassembly binds, the tag-correspondence masters `fxBrauer_hasTagCorrDisjoint` /
+`fxBrauer_hasTagCorrExtraction` stay honestly `false`; #2013 does NOT close.  `= false`. -/
 def fxBrauer_hasFoldAlignmentE3 : Bool := false
 
 end FX1Poly.Polygraph
