@@ -571,4 +571,114 @@ theorem smithReduceCompleteDriverOfSubBlockSeed (seed : SmithCascadeLandsDivisib
     SmithReduceCompleteDriverStatement :=
   smithReduceCompleteDriverOfChain (repairChainHoldsOfSeed seed)
 
+/-! ## NODE C — the seed decomposition (honest partials; the seed does NOT close in r20)
+
+The recon adjudicated the seed `SmithCascadeLandsDivisibleSubBlock` decisively:
+
+  * C1 (diagonality-at-exit) is REFUTED as a decomposition — the position sweep's final Euclid cascade
+    move-swaps and column-clears interior cells (`smithCrossIsClear` checks only the pivot cross, never
+    the `[p+1,·)²` interior), so the landed sub-block is generally NON-diagonal.  The seed's off-diagonal
+    content is genuine gcd-ideal invariance (pivot = ideal generator) — the SNF invariant-factor theorem,
+    a standalone major arc, NOT r20-sized.
+  * C2 (the diagonal bridging lemma) is SHIPPED here: from the find-loop `none`-exit + rectangularity,
+    the pivot divides every later DIAGONAL of the sub-block (`subBlockDiagonalDivisibleOfFindNone`, over
+    the shipped `smithFindNonDividingLaterDiagonalNoneDividesAll` + the beyond-window diagonal-zero fact).
+  * C3 (fuel-adequacy descent, connecting the sweep OUTPUT's find to a `none`-exit) remains an honest
+    residual — NOT built (the recon flags it does not finish the seed regardless, since C1's off-diagonal
+    ideal content is unavoidable).
+
+This section ships the machine-checked partials: the seed's diagonal / off-diagonal DECOMPOSITION
+(`matrixEntriesDivisibleByWithinOfHalves`, a clean tautological split naming WHERE the wall is), the
+beyond-window diagonal-zero fact, and the C2 diagonal bridge.  It does NOT fabricate the seed. -/
+
+/-- The sub-block DIAGONAL half — the pivot divides every diagonal at `≥ lo`. -/
+def SubBlockDiagonalDivisibleFrom (divisor : Int) (lo : Nat) (matrix : IntMatrix) : Prop :=
+  ∀ position, lo ≤ position → dividesExactly divisor (matrix.diagonalEntryAt position)
+
+/-- The sub-block OFF-DIAGONAL half — the pivot divides every off-diagonal cell of the `[lo, ·)²`
+quadrant.  THIS is the gcd-ideal-invariance wall (C1); NOT proven in r20. -/
+def SubBlockOffDiagonalDivisibleFrom (divisor : Int) (lo : Nat) (matrix : IntMatrix) : Prop :=
+  ∀ rowIndex colIndex, lo ≤ rowIndex → lo ≤ colIndex → rowIndex ≠ colIndex →
+    dividesExactly divisor (matrix.entryAt rowIndex colIndex)
+
+/-- **The seed splits into its diagonal and off-diagonal halves** — a cell of the `[lo, ·)²` quadrant
+is either on the diagonal (`SubBlockDiagonalDivisibleFrom`) or off it (`SubBlockOffDiagonalDivisibleFrom`).
+The clean decomposition that names EXACTLY where the seed's wall lies. -/
+theorem matrixEntriesDivisibleByWithinOfHalves (divisor : Int) (lo : Nat) (matrix : IntMatrix)
+    (diagDivisible : SubBlockDiagonalDivisibleFrom divisor lo matrix)
+    (offDiagDivisible : SubBlockOffDiagonalDivisibleFrom divisor lo matrix) :
+    MatrixEntriesDivisibleByWithin divisor lo matrix := by
+  intro rowIndex rowGe colIndex colGe
+  cases Nat.decEq rowIndex colIndex with
+  | isTrue rowEqCol =>
+      rw [← rowEqCol]
+      exact diagDivisible rowIndex rowGe
+  | isFalse rowNeCol =>
+      exact offDiagDivisible rowIndex colIndex rowGe colGe rowNeCol
+
+/-- The disjunction `Nat.min h w ≤ n → h ≤ n ∨ w ≤ n` — propext-clean via the `if h ≤ w` unfold of
+`Nat.min` (the `Nat.min_eq_left` route leaks propext). -/
+theorem natMinLeToOr (height width position : Nat) (minLe : Nat.min height width ≤ position) :
+    height ≤ position ∨ width ≤ position := by
+  have minLeUnfold : (if height ≤ width then height else width) ≤ position := minLe
+  cases Nat.decLe height width with
+  | isTrue isLe => rw [if_pos isLe] at minLeUnfold; exact Or.inl minLeUnfold
+  | isFalse isNotLe => rw [if_neg isNotLe] at minLeUnfold; exact Or.inr minLeUnfold
+
+/-- **A cell beyond the matrix window reads zero** — for a rectangular matrix, an entry whose row is at
+`≥ height` or whose column is at `≥ width` is the default `0`. -/
+theorem entryAtBeyondZero {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width) (rowIndex colIndex : Nat)
+    (beyond : height ≤ rowIndex ∨ width ≤ colIndex) :
+    matrix.entryAt rowIndex colIndex = 0 := by
+  cases beyond with
+  | inl rowGe =>
+      show listGetWithDefault 0 (listGetWithDefault [] matrix.rows rowIndex) colIndex = 0
+      rw [listGetWithDefaultGe [] matrix.rows rowIndex (by rw [isRect.1]; exact rowGe)]
+      exact listGetWithDefaultGe 0 [] colIndex (Nat.zero_le colIndex)
+  | inr colGe =>
+      cases Nat.lt_or_ge rowIndex matrix.rows.length with
+      | inl rowLt =>
+          show listGetWithDefault 0 (listGetWithDefault [] matrix.rows rowIndex) colIndex = 0
+          exact listGetWithDefaultGe 0 (listGetWithDefault [] matrix.rows rowIndex) colIndex
+            (by rw [listGetWithDefaultHasWidth matrix.rows rowIndex isRect.2 rowLt]; exact colGe)
+      | inr rowGe2 =>
+          show listGetWithDefault 0 (listGetWithDefault [] matrix.rows rowIndex) colIndex = 0
+          rw [listGetWithDefaultGe [] matrix.rows rowIndex rowGe2]
+          exact listGetWithDefaultGe 0 [] colIndex (Nat.zero_le colIndex)
+
+/-- **A diagonal beyond the `Nat.min height width` window reads zero** — the diagonal cell
+`(position, position)` at `position ≥ Nat.min height width` is beyond the rows (if `min = height`) or
+beyond the row width (if `min = width`). -/
+theorem diagonalEntryAtBeyondWindowZero {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width) (position : Nat)
+    (positionGe : Nat.min height width ≤ position) :
+    matrix.diagonalEntryAt position = 0 :=
+  entryAtBeyondZero matrix isRect position position (natMinLeToOr height width position positionGe)
+
+/-- **C2 — the diagonal bridging lemma: find-loop `none`-exit ⟹ the diagonal half.**  When the driver's
+non-dividing scan over the window `[pivotIndex+1, Nat.min height width)` reports `none`, the pivot
+diagonal divides every later diagonal of the `[pivotIndex+1, ·)` sub-block: window diagonals via the
+shipped `smithFindNonDividingLaterDiagonalNoneDividesAll`, beyond-window diagonals via
+`diagonalEntryAtBeyondWindowZero` (they are `0`).  The DIAGONAL half of the seed, from the exit
+condition alone — non-vacuous; `findNone` is the genuine loop-terminal predicate the (unbuilt) C3
+fuel-adequacy would establish for the sweep output. -/
+theorem subBlockDiagonalDivisibleOfFindNone {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width) (pivotIndex : Nat)
+    (findNone : smithFindNonDividingLaterDiagonal matrix pivotIndex
+      (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none) :
+    SubBlockDiagonalDivisibleFrom (matrix.diagonalEntryAt pivotIndex) (pivotIndex + 1) matrix := by
+  intro position positionGe
+  cases Nat.lt_or_ge position (Nat.min height width) with
+  | inl positionLtMin =>
+      have pivotSuccLeMin : pivotIndex + 1 ≤ Nat.min height width :=
+        Nat.le_of_lt (Nat.lt_of_le_of_lt positionGe positionLtMin)
+      exact smithFindNonDividingLaterDiagonalNoneDividesAll matrix pivotIndex
+        (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) findNone position positionGe
+        (Eq.mp (congrArg (position < ·)
+          (smithNatAddSubOfLe (pivotIndex + 1) (Nat.min height width) pivotSuccLeMin).symm) positionLtMin)
+  | inr positionGeMin =>
+      rw [diagonalEntryAtBeyondWindowZero matrix isRect position positionGeMin]
+      exact dividesExactlyZero (matrix.diagonalEntryAt pivotIndex)
+
 end FX1Poly.ComputerAlgebra

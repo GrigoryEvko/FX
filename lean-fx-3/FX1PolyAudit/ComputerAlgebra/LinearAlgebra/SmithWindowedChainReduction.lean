@@ -49,4 +49,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.repairChainHoldsOfSeed
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfSubBlockSeed
 
+/- H2-SMITH r20 — NODE C (B3): the seed decomposition (diagonal / off-diagonal halves) + the C2
+   diagonal bridging lemma from the find-loop none-exit.  The seed does NOT close (C1's off-diagonal
+   ideal content is a separate major arc); these are the honest machine-checked partials. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SubBlockDiagonalDivisibleFrom
+#assert_no_axioms FX1Poly.ComputerAlgebra.SubBlockOffDiagonalDivisibleFrom
+#assert_no_axioms FX1Poly.ComputerAlgebra.matrixEntriesDivisibleByWithinOfHalves
+#assert_no_axioms FX1Poly.ComputerAlgebra.natMinLeToOr
+#assert_no_axioms FX1Poly.ComputerAlgebra.entryAtBeyondZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.diagonalEntryAtBeyondWindowZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.subBlockDiagonalDivisibleOfFindNone
+
 end FX1PolyAudit
