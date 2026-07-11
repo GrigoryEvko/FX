@@ -2949,4 +2949,134 @@ def SmithReduceCompleteDriverStatement : Prop :=
   ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
     (smithReduceComplete matrix height width).reducesToSmithForm matrix height width
 
+/-! ## The corrected driver — PHASE-C assembly (H2-SMITH r17, B2/B4, #2261)
+
+The r7 sign-phase closure transports VERBATIM to the corrected driver: `smithReduceComplete` differs from
+`smithReduceFull` only in the middle phase, and the SIGN phase (`smithDiagonalSignSweep`) is the last phase
+in BOTH.  So the SNF-glue (`isSmithNormalFormOfWindowDiagonalChainNonneg`), the nonnegativity read-off
+(`signSweepDiagonalNonnegReached`), and the two sign preservers (`smithSignSweepPreservesWindowDiagonal`,
+`smithSignSweepPreservesChain`) apply UNCHANGED to `smithReduceComplete`'s `afterRepair`.
+
+`smithReduceCompleteApplied` performs the `diagOps ++ repairOpsClearing ++ signOps` phase split;
+`smithReduceCompleteDiagonalNonneg` discharges Phase C outright; `smithReduceCompleteDriverOfRepairInvariants`
+then reduces the WHOLE totality `SmithReduceCompleteDriverStatement` to EXACTLY TWO invariants on the
+UNCONDITIONAL-clearing repair output — window-diagonality at 0 and the full prefix chain (the Phase-B
+survivors, the r17 crux; SmithCascadeTermination footer names their exact goals).  This is the r7
+`smithReduceFullDriverOfRepairInvariants` structure with `smithDivisibilityRepairSweepClearing` in place of
+the refuted `smithDivisibilityRepairSweep` — over a driver that is EMPIRICALLY CORRECT (the B4 battery), not
+refuted. -/
+
+/-- **`applyOperations` phase split for the corrected driver** — the `smithReduceFullApplied` twin, splitting
+`diagOps ++ repairOpsClearing ++ signOps` across the two `++` boundaries. -/
+theorem smithReduceCompleteApplied (matrix : IntMatrix) (height width : Nat) :
+    matrix.applyOperations (smithReduceComplete matrix height width).operations
+      = (((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+            (smithDivisibilityRepairSweepClearing (Nat.min height width)
+              (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+              0 height width)).applyOperations
+          (smithDiagonalSignSweep (Nat.min height width)
+            ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+              (smithDivisibilityRepairSweepClearing (Nat.min height width)
+                (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+                0 height width))
+            0 height width)) := by
+  show matrix.applyOperations
+      ((smithReduceTotal matrix height width).operations
+        ++ smithDivisibilityRepairSweepClearing (Nat.min height width)
+              (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width
+        ++ smithDiagonalSignSweep (Nat.min height width)
+              ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+                (smithDivisibilityRepairSweepClearing (Nat.min height width)
+                  (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+                  0 height width))
+              0 height width) = _
+  rw [applyOperationsAppend, applyOperationsAppend]
+
+/-- **`nonnegHolds` for the corrected driver (Phase C)** — the diagonal of the full corrected-driver output
+is nonnegative at every window position.  The `smithReduceFullDiagonalNonneg` twin: the applied output splits
+off the sign phase (`smithReduceCompleteApplied`), whose input `afterRepair` stays rectangular
+(`applyOperationsPreservesRectangular`); `signSweepDiagonalNonnegReached` delivers nonnegativity. -/
+theorem smithReduceCompleteDiagonalNonneg :
+    ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      ∀ position, position < Nat.min height width →
+        0 ≤ (matrix.applyOperations
+              (smithReduceComplete matrix height width).operations).diagonalEntryAt position := by
+  intro matrix height width isRect position positionBelow
+  show 0 ≤ (matrix.applyOperations
+      (smithReduceComplete matrix height width).operations).entryAt position position
+  rw [smithReduceCompleteApplied matrix height width]
+  have afterDiagRect :
+      (matrix.applyOperations (smithReduceTotal matrix height width).operations).IsRectangular height width :=
+    applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect
+  have afterRepairRect :
+      ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+        (smithDivisibilityRepairSweepClearing (Nat.min height width)
+          (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+          0 height width)).IsRectangular height width :=
+    applyOperationsPreservesRectangular _ _ afterDiagRect
+  have positionBelowShifted : position < 0 + Nat.min height width :=
+    (Nat.zero_add (Nat.min height width)).symm ▸ positionBelow
+  have positionBelowHeight : position < height :=
+    natLeTrans positionBelow (natMinLeLeft height width)
+  exact signSweepDiagonalNonnegReached (Nat.min height width) _ 0 height width position
+    afterRepairRect (natZeroLe position) positionBelowShifted positionBelowHeight positionBelow
+
+/-- **The corrected-driver totality reduced to the two Phase-B invariants** — `SmithReduceCompleteDriverStatement`
+follows from just TWO invariant obligations on the UNCONDITIONAL-clearing repair output `afterRepair`: that it
+is window-diagonal at 0, and that its full prefix chain divides.  Phase C (`nonnegHolds`) is discharged
+internally (`smithReduceCompleteDiagonalNonneg`); the sign phase carries window-diagonality and the chain from
+`afterRepair` to the full output (`smithSignSweepPreservesWindowDiagonal` / `smithSignSweepPreservesChain`
+composed with `smithReduceCompleteApplied`).  The `smithReduceFullDriverOfRepairInvariants` structure over the
+CORRECTED repair sweep; the two survivors are the r17 crux (Phase B, SmithCascadeTermination footer).  Unlike
+the r7 version — whose underlying driver is now REFUTED — this conditional sits over an empirically-correct
+driver (the B4 battery), so the two invariants are TRUE (not refutable), pending the per-pivot ESTABLISH
+induction. -/
+theorem smithReduceCompleteDriverOfRepairInvariants
+    (repairWindowDiagHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      IsWindowDiagonal
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweepClearing (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        0 height width)
+    (repairChainHolds : ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      SmithChainPrefix
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweepClearing (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        (Nat.min height width) height width) :
+    SmithReduceCompleteDriverStatement :=
+  fun matrix height width isRect =>
+    isSmithNormalFormOfWindowDiagonalChainNonneg
+      (matrix.applyOperations (smithReduceComplete matrix height width).operations) height width
+      (by
+        have afterDiagRect :
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations).IsRectangular height width :=
+          applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect
+        have afterRepairRect :
+            ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+              (smithDivisibilityRepairSweepClearing (Nat.min height width)
+                (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+                0 height width)).IsRectangular height width :=
+          applyOperationsPreservesRectangular _ _ afterDiagRect
+        rw [smithReduceCompleteApplied matrix height width]
+        exact smithSignSweepPreservesWindowDiagonal (Nat.min height width) _ 0 height width
+          afterRepairRect (repairWindowDiagHolds matrix height width isRect))
+      (smithReduceCompleteDiagonalNonneg matrix height width isRect)
+      (by
+        have afterDiagRect :
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations).IsRectangular height width :=
+          applyOperationsPreservesRectangular (smithReduceTotal matrix height width).operations matrix isRect
+        have afterRepairRect :
+            ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+              (smithDivisibilityRepairSweepClearing (Nat.min height width)
+                (matrix.applyOperations (smithReduceTotal matrix height width).operations)
+                0 height width)).IsRectangular height width :=
+          applyOperationsPreservesRectangular _ _ afterDiagRect
+        rw [smithReduceCompleteApplied matrix height width]
+        exact smithSignSweepPreservesChain _ height width
+          afterRepairRect (repairChainHolds matrix height width isRect))
+
 end FX1Poly.ComputerAlgebra

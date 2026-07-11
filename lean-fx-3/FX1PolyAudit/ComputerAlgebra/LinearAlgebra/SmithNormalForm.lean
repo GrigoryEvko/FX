@@ -157,4 +157,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceComplete
 #assert_no_axioms FX1Poly.ComputerAlgebra.SmithReduceCompleteDriverStatement
 
+/- H2-SMITH r17 — the corrected driver PHASE-C assembly (B2/B4): the `diagOps ++ repairOpsClearing ++ signOps`
+   phase split, the Phase-C nonnegativity read-off (discharged outright), and the conditional totality assembly
+   reducing `SmithReduceCompleteDriverStatement` to EXACTLY the two Phase-B invariants (window-diagonal + chain)
+   on the UNCONDITIONAL-clearing repair output — the r7 sign machinery transported verbatim to the corrected
+   (empirically-correct) driver. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteApplied
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDiagonalNonneg
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfRepairInvariants
+
 end FX1PolyAudit
