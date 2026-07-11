@@ -66,11 +66,24 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixPerRowPartitionThirteenSoundNineBroken
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixSeparatesSwapFromIdentity
 
+-- B2 — the soundness fold over the 13 balanced rows + the proof-carrying separator.
+#assert_no_axioms FX1Poly.Polygraph.Omega.BunchedBimonoidBalancedRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixEq
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixEvalAbsorbs
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSoundOverBalanced
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaInvolutionConvertibleOverBalanced
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaInvolutionMatrixSharedOverBalanced
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSwapNotConvertibleToIdentityOverBalanced
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixSoundOverBalancedThirteen
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixStrictLawExtensionReached
+
 -- Independent confirmation (not fuel-based): the evaluation fold, a respected row, the probe-caught separation,
--- and the swap/identity separation are all axiom-free.
+-- the swap/identity separation, the soundness fold, and the proof-carrying separator are all axiom-free.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalCell
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsBialgebraProduct
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesComonoidRightCounitCoassoc
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesSwapFromIdentity
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSoundOverBalanced
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSwapNotConvertibleToIdentityOverBalanced
 
 end FX1PolyAudit
