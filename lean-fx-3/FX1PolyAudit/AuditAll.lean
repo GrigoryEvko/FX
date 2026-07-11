@@ -204,6 +204,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutMidPathSeamLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutEndoModeTransport
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreePathInversion
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFinestPairs
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallFreeCellConverse
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
