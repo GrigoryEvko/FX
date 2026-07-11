@@ -1,5 +1,8 @@
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldGlue
-import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldPhasesLedger
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldPhases
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescStagedDescent
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescCorrectedFold
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescExtractorLedger
 
 /-! # BRAUER-MIDDLE r5 B3 + B4 + B5 — the TAG-CORRESPONDENCE decomposition (named), the roundtrip WALL, and the
 machine-checked terminal r5 ledger
