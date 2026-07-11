@@ -238,6 +238,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerRightAppendFold
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeCanonicalWhiskerRight
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWallShiftStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutInteriorOrdinalReanchor
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFiringBlockProducer
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
@@ -1228,6 +1229,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPresentationAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemanticsAudit
 -- WP-BI r3 — the over-quotient adjudication: OUTCOME O (r1 22-row congruence over-quotients) + restored soundness
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidOverQuotientAdjudicationAudit
+-- WP-PROP r1 — the matrix PROP opens: carrier VIEW (arity words/hom/composition) + staged spider + per-instance round-trip + two completeness instances over the sound sub-theory
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderNormalFormAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
