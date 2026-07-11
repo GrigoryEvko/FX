@@ -1077,6 +1077,380 @@ theorem smithRankWithinAllZeroDiagonalIsZero (matrix : IntMatrix) :
           smithRankWithinAllZeroDiagonalIsZero matrix windowSize
             (fun position isBelow => allZero position (Nat.le.step isBelow))]
 
+/-- ★ **Top-zero rank stability.**  A zero top diagonal entry (the appended `d3` zero row) leaves the
+Smith rank unchanged across the window bump — the from-higher rank does NOT gain from the fresh rule. -/
+theorem smithRankWithinTopZeroIsStable (matrix : IntMatrix) (windowSize : Nat)
+    (topIsZero : matrix.diagonalEntryAt windowSize = 0) :
+    smithRankWithin matrix (windowSize + 1) = smithRankWithin matrix windowSize := by
+  show (if matrix.diagonalEntryAt windowSize = 0 then 0 else 1) + smithRankWithin matrix windowSize
+      = smithRankWithin matrix windowSize
+  rw [topIsZero, if_pos rfl]
+  exact natZeroAddEqSelf _
+
+/-- ★ **Top-zero invariant-factor stability.**  A zero top diagonal entry contributes no invariant
+factor — the appended `d3` zero row adds no torsion.  `rfl` after the `if_pos`. -/
+theorem smithInvariantFactorsWithinTopZeroIsStable (matrix : IntMatrix) (windowSize : Nat)
+    (topIsZero : matrix.diagonalEntryAt windowSize = 0) :
+    smithInvariantFactorsWithin matrix (windowSize + 1)
+      = smithInvariantFactorsWithin matrix windowSize := by
+  show (if matrix.diagonalEntryAt windowSize = 0 then []
+          else [matrix.diagonalEntryAt windowSize]) ++ smithInvariantFactorsWithin matrix windowSize
+      = smithInvariantFactorsWithin matrix windowSize
+  rw [topIsZero, if_pos rfl]
+  rfl
+
+/-! ## B4 (r4) — the END-TO-END homology-preservation theorem (no per-instance reader `rfl` gate)
+
+The r3 preservation theorems (`tietzeExpansionPreservesDegreeOne/TwoInvariant`) took FIVE reader-level
+Smith facts, discharged per instance by `rfl` on the shipped literal SNFs.  The r4 END-TO-END theorem
+below packages those five facts into STRUCTURAL diagonal relations between the base SNF and the expanded
+SNF — "the expanded diagonal equals the base diagonal below the base window, plus a fresh UNIT at the
+base window (degree 1: `d2` gains the fresh pivot; degree 2: `d3` gains an appended ZERO)".  Those
+diagonal relations are discharged generically from the base's certified Smith data through the reader
+congruences `smithRankWithinCongrBelow` / `smithInvariantFactorsWithinCongrBelow` and the shipped
+successor/stability peels — the order-insensitive reader needs NO divisibility sort, so the fresh unit
+sits LAST (at the base window position), not bubbled into the ordered unit block. -/
+
+/-- ★★ **THE END-TO-END DEGREE-1 THEOREM.**  For a base and its fresh-generator expansion presented as
+Smith data `baseData` / `expandedData` such that (a) the chain basis and the from-higher window each bump
+by one, (b) both into-lower boundaries have an all-zero diagonal (the `d1` loop row, rank `0`), and (c)
+the expanded `d2` Smith diagonal EQUALS the base one below the base window and is the fresh UNIT `1` AT
+the base window, the expanded degree-1 homology invariant EQUALS the base one.  The five reader facts of
+`tietzeExpansionPreservesDegreeOneInvariant` are derived here from the diagonal relations — no
+per-instance rank/torsion `rfl`. -/
+theorem freshGeneratorExpansionPreservesDegreeOneHomologyOfBase
+    (baseData expandedData : SmithHomologyData)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (windowFromHigherIsSuccessor : expandedData.windowFromHigher = baseData.windowFromHigher + 1)
+    (expandedIntoLowerAllZero : ∀ position, position < expandedData.windowIntoLower →
+      expandedData.smithBoundaryIntoLower.diagonalEntryAt position = 0)
+    (baseIntoLowerAllZero : ∀ position, position < baseData.windowIntoLower →
+      baseData.smithBoundaryIntoLower.diagonalEntryAt position = 0)
+    (fromHigherDiagAgreesBelow : ∀ position, position < baseData.windowFromHigher →
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt position
+        = baseData.smithBoundaryFromHigher.diagonalEntryAt position)
+    (fromHigherDiagUnitAtBaseWindow :
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt baseData.windowFromHigher = 1) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  have expandedIntoLowerRankZero :
+      smithRankWithin expandedData.smithBoundaryIntoLower expandedData.windowIntoLower = 0 :=
+    smithRankWithinAllZeroDiagonalIsZero _ _ expandedIntoLowerAllZero
+  have baseIntoLowerRankZero :
+      smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower = 0 :=
+    smithRankWithinAllZeroDiagonalIsZero _ _ baseIntoLowerAllZero
+  have expandedRankBelowAgrees :
+      smithRankWithin expandedData.smithBoundaryFromHigher baseData.windowFromHigher
+        = smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher :=
+    smithRankWithinCongrBelow _ _ baseData.windowFromHigher fromHigherDiagAgreesBelow
+  have topNonzero :
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt baseData.windowFromHigher ≠ 0 := by
+    rw [fromHigherDiagUnitAtBaseWindow]; decide
+  have fromHigherRankSucc :
+      smithRankWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher
+        = smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher + 1 := by
+    rw [windowFromHigherIsSuccessor,
+        smithRankWithinTopNonzeroIsSuccessor expandedData.smithBoundaryFromHigher
+          baseData.windowFromHigher topNonzero, expandedRankBelowAgrees]
+  have expandedFactorsBelowAgrees :
+      smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher baseData.windowFromHigher
+        = smithInvariantFactorsWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher :=
+    smithInvariantFactorsWithinCongrBelow _ _ baseData.windowFromHigher fromHigherDiagAgreesBelow
+  have fromHigherTorsionAgrees :
+      nonUnitInvariantFactors
+          (smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher
+            expandedData.windowFromHigher)
+        = nonUnitInvariantFactors
+          (smithInvariantFactorsWithin baseData.smithBoundaryFromHigher
+            baseData.windowFromHigher) := by
+    rw [windowFromHigherIsSuccessor]
+    show nonUnitInvariantFactors
+        ((if expandedData.smithBoundaryFromHigher.diagonalEntryAt baseData.windowFromHigher = 0
+            then [] else [expandedData.smithBoundaryFromHigher.diagonalEntryAt baseData.windowFromHigher])
+          ++ smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher baseData.windowFromHigher)
+      = nonUnitInvariantFactors
+          (smithInvariantFactorsWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher)
+    rw [fromHigherDiagUnitAtBaseWindow, if_neg (by decide : ¬((1 : Int) = 0))]
+    show nonUnitInvariantFactors
+        ((1 : Int) :: smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher
+          baseData.windowFromHigher)
+      = nonUnitInvariantFactors
+          (smithInvariantFactorsWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher)
+    rw [nonUnitInvariantFactorsUnitConsIsStable, expandedFactorsBelowAgrees]
+  exact tietzeExpansionPreservesDegreeOneInvariant baseData expandedData basisIsSuccessor
+    (expandedIntoLowerRankZero.trans baseIntoLowerRankZero.symm)
+    baseIntoLowerRankZero fromHigherRankSucc fromHigherTorsionAgrees
+
+/-- ★★ **THE END-TO-END DEGREE-2 THEOREM.**  For a base and its fresh-generator expansion presented as
+Smith data such that (a) the chain basis and both windows bump by one, (b) the into-lower (`d2`) Smith
+diagonal equals the base one below the base window and is the fresh UNIT `1` at the base window (the `d2`
+pivot), and (c) the from-higher (`d3`) Smith diagonal equals the base one below the base window and is
+ZERO at the base window (the appended fresh-rule zero row), the expanded degree-2 homology invariant
+EQUALS the base one.  The `d3` zero contributes no rank and no torsion; the `d2` fresh unit bumps the
+image rank by one — exactly cancelling the `C2 + 1` basis bump. -/
+theorem freshGeneratorExpansionPreservesDegreeTwoHomologyOfBase
+    (baseData expandedData : SmithHomologyData)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (windowIntoLowerIsSuccessor : expandedData.windowIntoLower = baseData.windowIntoLower + 1)
+    (windowFromHigherIsSuccessor : expandedData.windowFromHigher = baseData.windowFromHigher + 1)
+    (intoLowerDiagAgreesBelow : ∀ position, position < baseData.windowIntoLower →
+      expandedData.smithBoundaryIntoLower.diagonalEntryAt position
+        = baseData.smithBoundaryIntoLower.diagonalEntryAt position)
+    (intoLowerDiagUnitAtBaseWindow :
+      expandedData.smithBoundaryIntoLower.diagonalEntryAt baseData.windowIntoLower = 1)
+    (fromHigherDiagAgreesBelow : ∀ position, position < baseData.windowFromHigher →
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt position
+        = baseData.smithBoundaryFromHigher.diagonalEntryAt position)
+    (fromHigherDiagZeroAtBaseWindow :
+      expandedData.smithBoundaryFromHigher.diagonalEntryAt baseData.windowFromHigher = 0) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  have intoLowerRankBelowAgrees :
+      smithRankWithin expandedData.smithBoundaryIntoLower baseData.windowIntoLower
+        = smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower :=
+    smithRankWithinCongrBelow _ _ baseData.windowIntoLower intoLowerDiagAgreesBelow
+  have intoLowerTopNonzero :
+      expandedData.smithBoundaryIntoLower.diagonalEntryAt baseData.windowIntoLower ≠ 0 := by
+    rw [intoLowerDiagUnitAtBaseWindow]; decide
+  have intoLowerRankSucc :
+      smithRankWithin expandedData.smithBoundaryIntoLower expandedData.windowIntoLower
+        = smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower + 1 := by
+    rw [windowIntoLowerIsSuccessor,
+        smithRankWithinTopNonzeroIsSuccessor expandedData.smithBoundaryIntoLower
+          baseData.windowIntoLower intoLowerTopNonzero, intoLowerRankBelowAgrees]
+  have fromHigherRankBelowAgrees :
+      smithRankWithin expandedData.smithBoundaryFromHigher baseData.windowFromHigher
+        = smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher :=
+    smithRankWithinCongrBelow _ _ baseData.windowFromHigher fromHigherDiagAgreesBelow
+  have fromHigherRankAgrees :
+      smithRankWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher
+        = smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher := by
+    rw [windowFromHigherIsSuccessor,
+        smithRankWithinTopZeroIsStable expandedData.smithBoundaryFromHigher
+          baseData.windowFromHigher fromHigherDiagZeroAtBaseWindow, fromHigherRankBelowAgrees]
+  have fromHigherFactorsBelowAgrees :
+      smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher baseData.windowFromHigher
+        = smithInvariantFactorsWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher :=
+    smithInvariantFactorsWithinCongrBelow _ _ baseData.windowFromHigher fromHigherDiagAgreesBelow
+  have fromHigherTorsionAgrees :
+      nonUnitInvariantFactors
+          (smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher
+            expandedData.windowFromHigher)
+        = nonUnitInvariantFactors
+          (smithInvariantFactorsWithin baseData.smithBoundaryFromHigher
+            baseData.windowFromHigher) := by
+    rw [windowFromHigherIsSuccessor,
+        smithInvariantFactorsWithinTopZeroIsStable expandedData.smithBoundaryFromHigher
+          baseData.windowFromHigher fromHigherDiagZeroAtBaseWindow, fromHigherFactorsBelowAgrees]
+  exact tietzeExpansionPreservesDegreeTwoInvariant baseData expandedData basisIsSuccessor
+    intoLowerRankSucc fromHigherRankAgrees fromHigherTorsionAgrees
+
+/-! ### The three regressions RE-FED through the END-TO-END theorem + one FRESH instance
+
+Each of the three r3 regressions is now driven through `freshGeneratorExpansionPreservesDegreeOneHomologyOfBase`
+with the fresh unit placed LAST (at the base window position) — the order-insensitive reader needs no
+divisibility sort, so the generic RECIPE certificate is `clearing ++ [negateColumn n] ++ baseCert
+(++ [swapColumns m n] when m < n)`, with NO hand-designed reorder beyond the single generic swap.  Each
+recipe certificate is connected to the ACTUAL expanded boundary by `rfl` (`…RecipeProducesUnitLast`), so
+the end-to-end theorem's diagonal hypotheses discharge by `decide` on the certified reduced form.  The
+FOURTH instance is FRESH — the walking involution adjoined `t ⟹ ss` through the structurally-`t`-free
+entry point `expandWalkerPresentationWithBaseWord`, so its `t`-freeness is a construction guarantee (no
+phantom hypothesis) and its expansion certificate is the same generic recipe. -/
+
+/-! #### Regression 1 re-fed — cyclic `ZZ/3` (`t ⟹ s`), unit last -/
+
+/-- The unit-LAST Smith normal form of the expanded cyclic `d2` — `diag(3, 1)` (torsion first, fresh
+UNIT last), the order the end-to-end reader consumes with NO divisibility sort. -/
+def expandedCyclicThreeUnitLastSmithNormalForm : IntMatrix := ⟨[[3, 0], [0, 1]]⟩
+
+/-- The GENERIC recipe certificate for the expanded cyclic `d2`: clear the `v`-column
+(`addRowMultiple 1 0 1`), normalise the `-1` pivot (`negateColumn 1`), LIFT the base cyclic certificate
+UNCHANGED — NO reorder (`m = n = 1`, the fresh unit already sits on the diagonal). -/
+def expandedCyclicThreeRecipeCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 1)
+        :: ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)
+        :: cyclicThreeBoundaryOfDimOneSmithCertificate.operations }
+
+/-- ★ The recipe certificate lands the ACTUAL expanded cyclic `d2` on the unit-last `diag(3, 1)` — `rfl`,
+the certified connection to the presentation the end-to-end theorem reads. -/
+theorem expandedCyclicThreeRecipeProducesUnitLast :
+    expandedCyclicThreeBoundaryOfDimOne.applyOperations
+        expandedCyclicThreeRecipeCertificate.operations
+      = expandedCyclicThreeUnitLastSmithNormalForm := rfl
+
+/-- The unit-last degree-1 Smith data of the expanded cyclic complex. -/
+def expandedCyclicThreeUnitLastDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 2, smithBoundaryIntoLower := ⟨[[0, 0]]⟩, windowIntoLower := 1
+  , smithBoundaryFromHigher := expandedCyclicThreeUnitLastSmithNormalForm, windowFromHigher := 2 }
+
+/-- ★★ **Cyclic `ZZ/3` through the END-TO-END theorem** — the six diagonal hypotheses discharge by
+`rfl`/`decide`, NOT five per-instance reader `rfl`s.  `H1 = ZZ/3` preserved. -/
+theorem cyclicThreeEndToEndDegreeOne :
+    expandedCyclicThreeUnitLastDegreeOneSmithData.homologyInvariant
+      = cyclicThreeDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorExpansionPreservesDegreeOneHomologyOfBase
+    cyclicThreeDegreeOneSmithData expandedCyclicThreeUnitLastDegreeOneSmithData
+    rfl rfl (by decide) (by decide) (by decide) (by decide)
+
+/-- ★ Cross-check: the end-to-end expanded cyclic invariant is `ZZ/3 = (0, [3])` by `rfl`. -/
+theorem cyclicThreeEndToEndDegreeOneIsZmodThree :
+    expandedCyclicThreeUnitLastDegreeOneSmithData.homologyInvariant = ⟨0, [3]⟩ := rfl
+
+/-! #### Regression 3 re-fed — walking involution `ZZ/2` (`t ⟹ s`), unit last -/
+
+/-- The unit-LAST Smith normal form of the expanded involution `d2` — `diag(2, 1)`. -/
+def expandedInvolutionUnitLastSmithNormalForm : IntMatrix := ⟨[[2, 0], [0, 1]]⟩
+
+/-- The GENERIC recipe certificate for the expanded involution `d2` (same recipe as cyclic, `m = n = 1`,
+no reorder). -/
+def expandedInvolutionRecipeCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 1)
+        :: ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)
+        :: involutionBoundaryOfDimOneSmithCertificate.operations }
+
+/-- ★ The recipe certificate lands the ACTUAL expanded involution `d2` on the unit-last `diag(2, 1)` —
+`rfl`. -/
+theorem expandedInvolutionRecipeProducesUnitLast :
+    expandedInvolutionBoundaryOfDimOne.applyOperations
+        expandedInvolutionRecipeCertificate.operations
+      = expandedInvolutionUnitLastSmithNormalForm := rfl
+
+/-- The unit-last degree-1 Smith data of the expanded involution complex. -/
+def expandedInvolutionUnitLastDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 2, smithBoundaryIntoLower := ⟨[[0, 0]]⟩, windowIntoLower := 1
+  , smithBoundaryFromHigher := expandedInvolutionUnitLastSmithNormalForm, windowFromHigher := 2 }
+
+/-- ★★ **Walking involution `ZZ/2` through the END-TO-END theorem** — `H1 = ZZ/2` preserved (torsion `2`
+intact, fresh unit last). -/
+theorem involutionEndToEndDegreeOne :
+    expandedInvolutionUnitLastDegreeOneSmithData.homologyInvariant
+      = involutionDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorExpansionPreservesDegreeOneHomologyOfBase
+    involutionDegreeOneSmithData expandedInvolutionUnitLastDegreeOneSmithData
+    rfl rfl (by decide) (by decide) (by decide) (by decide)
+
+/-! #### Regression 2 re-fed — r2 Tietze `ZZ/3` (`u ⟹ st`), unit last (`m < n`: one generic swap) -/
+
+/-- The unit-LAST Smith normal form of the expanded r2 `d2` — `diag(1, 3, 1)`: base `diag(1, 3)` below
+the base window, fresh UNIT last (moved onto the diagonal by the single generic `swapColumns 2 4`). -/
+def expandedTietzeThirdGeneratorUnitLastSmithNormalFormOfDimOne : IntMatrix :=
+  ⟨[[1, 0, 0, 0, 0], [0, 3, 0, 0, 0], [0, 0, 1, 0, 0]]⟩
+
+/-- The GENERIC recipe certificate for the expanded r2 `d2`: clear the `v = [1, 1]` column, normalise the
+`-1` pivot (`negateColumn 4`), LIFT the base r2 certificate UNCHANGED, then the ONE generic reorder
+`swapColumns 2 4` (`m = 2 < n = 4`, moving the fresh unit from `(2, 4)` onto the diagonal). -/
+def expandedTietzeThirdGeneratorRecipeCertificateOfDimOne : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 0 1)
+        :: ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 1 1)
+        :: ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)
+        :: tietzeBoundaryOfDimOneSmithCertificate.operations
+        ++ [ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 2 4)] }
+
+/-- ★ The recipe certificate lands the ACTUAL expanded r2 `d2` on the unit-last `diag(1, 3, 1)` — `rfl`. -/
+theorem expandedTietzeThirdGeneratorRecipeProducesUnitLastOfDimOne :
+    expandedTietzeThirdGeneratorBoundaryOfDimOne.applyOperations
+        expandedTietzeThirdGeneratorRecipeCertificateOfDimOne.operations
+      = expandedTietzeThirdGeneratorUnitLastSmithNormalFormOfDimOne := rfl
+
+/-- The unit-last degree-1 Smith data of the expanded r2 complex. -/
+def expandedTietzeThirdGeneratorUnitLastDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 3, smithBoundaryIntoLower := ⟨[[0, 0, 0]]⟩, windowIntoLower := 1
+  , smithBoundaryFromHigher := expandedTietzeThirdGeneratorUnitLastSmithNormalFormOfDimOne
+  , windowFromHigher := 3 }
+
+/-- ★★ **The r2 Tietze `ZZ/3` through the END-TO-END theorem** — a THREE-generator instance, `H1 = ZZ/3`
+preserved through the generic degree-1 composition. -/
+theorem tietzeThirdGeneratorEndToEndDegreeOne :
+    expandedTietzeThirdGeneratorUnitLastDegreeOneSmithData.homologyInvariant
+      = tietzeDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorExpansionPreservesDegreeOneHomologyOfBase
+    tietzeDegreeOneSmithData expandedTietzeThirdGeneratorUnitLastDegreeOneSmithData
+    rfl rfl (by decide) (by decide) (by decide) (by decide)
+
+/-! #### Regression 2 degree-2 re-fed — r2 Tietze `H2 = 0` (d2 fresh unit + d3 zero row) -/
+
+/-- The unit-last degree-2 Smith data of the expanded r2 complex: the fresh `d2` unit into-lower, the
+appended `d3` zero row from-higher (the SHIPPED `expandedTietzeThirdGeneratorSmithNormalFormOfDimTwo`,
+`diag(1, 1, 0, 0, 0)`, whose window-`4` diagonal is the appended zero). -/
+def expandedTietzeThirdGeneratorUnitLastDegreeTwoSmithData : SmithHomologyData :=
+  { chainBasisCount := 5
+  , smithBoundaryIntoLower := expandedTietzeThirdGeneratorUnitLastSmithNormalFormOfDimOne
+  , windowIntoLower := 3
+  , smithBoundaryFromHigher := expandedTietzeThirdGeneratorSmithNormalFormOfDimTwo
+  , windowFromHigher := 5 }
+
+/-- ★★ **The r2 Tietze `H2 = 0` through the END-TO-END DEGREE-2 theorem** — the `d2` fresh unit bumps the
+image rank, the appended `d3` zero row adds no rank or torsion; `H2 = 0` preserved. -/
+theorem tietzeThirdGeneratorEndToEndDegreeTwo :
+    expandedTietzeThirdGeneratorUnitLastDegreeTwoSmithData.homologyInvariant
+      = tietzeDegreeTwoSmithData.homologyInvariant :=
+  freshGeneratorExpansionPreservesDegreeTwoHomologyOfBase
+    tietzeDegreeTwoSmithData expandedTietzeThirdGeneratorUnitLastDegreeTwoSmithData
+    rfl rfl rfl (by decide) (by decide) (by decide) (by decide)
+
+/-! #### The FRESH instance — walking involution `t ⟹ ss` through the STRUCTURAL ENTRY POINT
+
+The fourth instance is NOT in r3: the walking involution adjoined `t ⟹ ss` (`w = ss`) via
+`expandWalkerPresentationWithBaseWord`, whose word ranges over `Fin involution.oneGeneratorCount`.  The
+`t`-freeness is therefore a CONSTRUCTION guarantee (`freshInvolutionWordIsStructurallyFreshFree`, no
+phantom hypothesis), and the expansion certificate is the same generic recipe. -/
+
+/-- The fresh base word `ss` over the involution's single generator (`Fin 1`), embedded to `[0, 0]`. -/
+def freshInvolutionBaseWord : List (Fin involutionWalkerPresentation.oneGeneratorCount) :=
+  [⟨0, by decide⟩, ⟨0, by decide⟩]
+
+/-- The FRESH expansion: the walking involution adjoined `t ⟹ ss`, built through the structurally-`t`-free
+entry point. -/
+def freshInvolutionExpansion : WalkerPresentation :=
+  expandWalkerPresentationWithBaseWord involutionWalkerPresentation freshInvolutionBaseWord
+
+/-- ★ The block builder COMPUTES the fresh expanded `d2` — `[[-2, 2], [0, -1]]` (the `v = [2]` column of
+`ss`, the `-1` pivot) — `rfl`. -/
+theorem freshInvolutionExpansionComputesBoundaryDimOne :
+    freshInvolutionExpansion.computeBoundaryDimOne = ⟨[[-2, 2], [0, -1]]⟩ := rfl
+
+/-- ★★ The fresh word is `t`-free BY CONSTRUCTION — the entry-point guarantee, not a phantom hypothesis. -/
+theorem freshInvolutionWordIsStructurallyFreshFree :
+    countGeneratorOccurrences involutionWalkerPresentation.oneGeneratorCount
+        (embedBaseWord involutionWalkerPresentation.oneGeneratorCount freshInvolutionBaseWord) = 0 :=
+  expandWalkerPresentationWithBaseWordIsFreshFree involutionWalkerPresentation freshInvolutionBaseWord
+
+/-- The unit-LAST Smith normal form of the fresh expanded `d2` — `diag(2, 1)`. -/
+def freshInvolutionUnitLastSmithNormalForm : IntMatrix := ⟨[[2, 0], [0, 1]]⟩
+
+/-- The GENERIC recipe certificate for the fresh expanded `d2` (`v = 2`, `m = n = 1`, no reorder). -/
+def freshInvolutionRecipeCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 2)
+        :: ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)
+        :: involutionBoundaryOfDimOneSmithCertificate.operations }
+
+/-- ★ The recipe certificate lands the ACTUAL fresh expanded `d2` on the unit-last `diag(2, 1)` — `rfl`. -/
+theorem freshInvolutionRecipeProducesUnitLast :
+    freshInvolutionExpansion.computeBoundaryDimOne.applyOperations
+        freshInvolutionRecipeCertificate.operations
+      = freshInvolutionUnitLastSmithNormalForm := rfl
+
+/-- The unit-last degree-1 Smith data of the fresh expanded complex. -/
+def freshInvolutionUnitLastDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 2, smithBoundaryIntoLower := ⟨[[0, 0]]⟩, windowIntoLower := 1
+  , smithBoundaryFromHigher := freshInvolutionUnitLastSmithNormalForm, windowFromHigher := 2 }
+
+/-- ★★ **The FRESH instance through the END-TO-END theorem** — `t ⟹ ss` via the structural entry point,
+`H1 = ZZ/2` preserved, with NO phantom `t`-freeness hypothesis and NO hand-designed certificate (the
+recipe is generic; only its `rfl` connection to the actual boundary is per instance). -/
+theorem freshInvolutionEndToEndDegreeOne :
+    freshInvolutionUnitLastDegreeOneSmithData.homologyInvariant
+      = involutionDegreeOneSmithData.homologyInvariant :=
+  freshGeneratorExpansionPreservesDegreeOneHomologyOfBase
+    involutionDegreeOneSmithData freshInvolutionUnitLastDegreeOneSmithData
+    rfl rfl (by decide) (by decide) (by decide) (by decide)
+
+/-- ★ Cross-check: the fresh instance's degree-1 invariant is `ZZ/2 = (0, [2])` by `rfl`. -/
+theorem freshInvolutionEndToEndIsZmodTwo :
+    freshInvolutionUnitLastDegreeOneSmithData.homologyInvariant = ⟨0, [2]⟩ := rfl
+
 /-! ## B5 — the ledger: what r3 landed, the r2 beyond-expansion frame, the R1 wall re-stated
 
 ### What r3 LANDED (shipped, zero-axiom)

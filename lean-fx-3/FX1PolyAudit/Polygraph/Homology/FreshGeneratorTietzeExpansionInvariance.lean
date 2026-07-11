@@ -109,6 +109,48 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.smithRankWithinCongrBelow
 #assert_no_axioms FX1Poly.Polygraph.Homology.smithInvariantFactorsWithinCongrBelow
 #assert_no_axioms FX1Poly.Polygraph.Homology.smithRankWithinAllZeroDiagonalIsZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.smithRankWithinTopZeroIsStable
+#assert_no_axioms FX1Poly.Polygraph.Homology.smithInvariantFactorsWithinTopZeroIsStable
+
+-- B4 (r4): the END-TO-END homology-preservation theorems (no per-instance reader rfl gate)
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionPreservesDegreeOneHomologyOfBase
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshGeneratorExpansionPreservesDegreeTwoHomologyOfBase
+
+-- B4 (r4): regression 1 re-fed — cyclic ZZ/3, unit last
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedCyclicThreeUnitLastSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedCyclicThreeRecipeCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedCyclicThreeRecipeProducesUnitLast
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedCyclicThreeUnitLastDegreeOneSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeEndToEndDegreeOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeEndToEndDegreeOneIsZmodThree
+
+-- B4 (r4): regression 3 re-fed — walking involution ZZ/2, unit last
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedInvolutionUnitLastSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedInvolutionRecipeCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedInvolutionRecipeProducesUnitLast
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedInvolutionUnitLastDegreeOneSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.involutionEndToEndDegreeOne
+
+-- B4 (r4): regression 2 re-fed — r2 Tietze ZZ/3, unit last (m<n one generic swap), degree 1 and 2
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorUnitLastSmithNormalFormOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorRecipeCertificateOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorRecipeProducesUnitLastOfDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorUnitLastDegreeOneSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeThirdGeneratorEndToEndDegreeOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorUnitLastDegreeTwoSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeThirdGeneratorEndToEndDegreeTwo
+
+-- B4 (r4): the FRESH instance — involution t => ss through the structural entry point
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionBaseWord
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionExpansion
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionExpansionComputesBoundaryDimOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionWordIsStructurallyFreshFree
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionUnitLastSmithNormalForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionRecipeCertificate
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionRecipeProducesUnitLast
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionUnitLastDegreeOneSmithData
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionEndToEndDegreeOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshInvolutionEndToEndIsZmodTwo
 
 -- B5: the ledger
 #assert_no_axioms FX1Poly.Polygraph.Homology.walkersWithFreshGeneratorExpansionInvarianceCount
