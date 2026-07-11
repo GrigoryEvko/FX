@@ -5869,4 +5869,53 @@ theorem smithReduceCompleteDriverOfChain
     SmithReduceCompleteDriverStatement :=
   smithReduceCompleteDriverOfClearingStepAndChain smithRepairClearingStepSettlesHolds repairChainHolds
 
+/-! ## The corrected-driver arc ledger (H2-SMITH r18, B4/B5, #2261) — the honest pair; ONE residual left
+
+**#2261 state, exact.**  Two drivers coexist, byte-disjoint:
+
+  * `smithReduceFull` — REFUTED, UNCHANGED (byte-intact).  `smithReduceFullDriverIsRefuted` :
+    `¬ SmithReduceFullDriverStatement`, witnessed on rectangular `diag(10, 10, 6, 9)`
+    (`smithReduceFullStrandsOffDiagonalWitness` pins the stranded `entryAt 3 2 = 30`).
+  * `smithReduceComplete` — the CORRECTED driver (route (i): the divisibility-repair cross-clear fires
+    UNCONDITIONALLY at each pivot).  After r18, `SmithReduceCompleteDriverStatement` is reduced to EXACTLY
+    ONE residual `repairChainHolds` via `smithReduceCompleteDriverOfChain` — a material advance past r17's
+    TWO residuals `{SmithRepairClearingStepSettles, repairChainHolds}`.
+
+**RESIDUAL 1 — DISCHARGED (r18, B1).**  `smithRepairClearingStepSettlesHolds : SmithRepairClearingStepSettles`
+is inhabited UNCONDITIONALLY (zero-axiom), so `repairWindowDiagHoldsForClearing` (the driver's window-diagonal
+repair invariant) is now unconditional.  The r17 crux flip is CLOSED: NO Euclid measure was needed — the
+strong invariant `frame pivotIndex + 1` self-threads at every iteration boundary because every branch of
+`smithRepairPositionSweepClearing` ends by firing the hypothesis-free `smithCascadeStepSettlesThroughPivot`
+(the `none`-branch fix).  Phase A (`smithReduceTotalSweepDiagonalizes`) and Phase C
+(`smithReduceCompleteDiagonalNonneg` + the sign preservers) were already discharged; residual 1 completes the
+window-diagonal leg.
+
+**RESIDUAL 2 — the SINGLE surviving wall.**  `repairChainHolds` (the invariant-factor chain of the corrected
+repair output) is TRUE over the empirically-clean driver — the r17 whole-driver battery lands valid Smith
+normal form (`smithReduceCompleteDriverRefuterLandsSmithForm` : `diag(10,10,6,9) -> diag(1,2,30,90)`; the
+drag / unsorted / coprime / rectangular members), and the chain is clean on every probed input INCLUDING the
+rank-deficient zero-trailing cases (`diag(12,18,0,0) -> [6,36,0,0]`, `diag(6,0,10) -> [2,30,0]`).  r18 ships
+its ESTABLISH SEMANTIC CORE zero-axiom: `smithPivotDividesEntryDecode` (Bool test → `dividesExactly`) and
+`smithFindNonDividingLaterDiagonalNoneDividesAll` (find-loop exit ⟹ pivot divides every later diagonal).
+The NAMED remaining nodes (NOT fabricated): (i) the middle-loop FUEL-ADEQUACY — the position sweep reaches a
+`none`-exit before `smithMinorAbsSum` runs out (the r10-analogue riding `smithRepairDecreasesPivotSize`, with
+the `d_p = 0` zero-pivot bootstrap wrinkle); (ii) a WINDOWED sub-block divisibility preserve tower (the
+shipped whole-matrix `applyOperationsPreservesEntriesDivisible` cannot cross later pivots since `d_p` does not
+divide the prefix `d_0..d_{p-1}`); (iii) the cross-pivot chain induction threading "each settled `d_i`
+divides the sub-block `>= i+1`" through `smithDivisibilityRepairSweepClearingSettlesThroughPivots`.
+
+**The honest pair.**  On the smallest refuting input the OLD driver strands `30` off-diagonal
+(`smithReduceFullDriverIsRefuted`) while the corrected driver lands clean Smith normal form
+(`smithReduceCompleteDriverRefuterLandsSmithForm`).  The totality Prop is not yet unconditionally inhabited,
+but the r17 verdict "reduced to two residuals" is superseded by "residual 1 PROVEN, driver totality on
+`repairChainHolds` ALONE, empirically clean" — the flip is real: one residual, not two.
+
+**Discipline.**  Additive only (no deletions in the two core files); `smithReduceFull` and its refutation
+byte-intact; the certificate API (`SmithReductionCertificate` / `IsSmithNormalFormWithin`, consumed by
+Homology through `IntMatrix`) untouched.  Zero-axiom (independent `#print axioms` clean per new public decl,
+gated in the mirrored audit file).  The 5x5 whole-driver-defeq stack line respected: the largest battery
+member is the 4x4 refuter at `maxRecDepth 200000`; the general `smithReduceCompleteDriverOfChain` is a
+structural assembly term needing NO kernel evaluation.  NO fabricated battery pass, NO fabricated phase
+discharge. -/
+
 end FX1Poly.ComputerAlgebra
