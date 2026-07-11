@@ -587,4 +587,274 @@ through wire at `idx`) are the two CONNECTIVITY seams of the five-phase THROUGH 
 `cupChainS4Width`.  Fired on the width-12 monster.  A NEW ingredient marker; it flips NO master.  `= true`. -/
 def fxBrauer_hasThroughTrackerSeams : Bool := true
 
+/-! ## THE WELD — the general per-arc THROUGH-class T-CONNECT (five phases chained) -/
+
+/-- ★★★ **THE THROUGH-CLASS PER-ARC T-CONNECT (GENERAL).**  For EVERY well-formed boundary involution `d` (with
+`0 < d.bottomCount`) and every through-top rank `topRank < |throughStrandTops|`, the through arc's bottom foot
+`i = partner[bottomCount + throughStrandTops[topRank]]` and its read top open wire `F.openWires[throughStrandTops[topRank]]`
+share a union-find component in the corrected six-phase fold state `F`.  The five-phase node-survival WELD: the seed
+`bottomPerm` tracker + P1 decode (`throughReadOffBottom_reads_throughFoot`) land `i` on S1's slot `|capArcFeet| + r`;
+`throughCapSurvival` (P2) survives it across the cap block to S2's slot `r`; `throughMiddleTracker` (P3) routes S3's
+through wire to S2's slot `r`; `throughCupSurvival` (P4) survives S3's slot `topRank` across the interior cup block to
+S4; `throughTopTracker` (P5) routes S5's read top port back to S4's slot `topRank`; and `circleFold_openWires` carries
+the target past the circle phase.  Every fact transported to `F.links` by `processBrauer_isSameComponent_ofBase`
+through `foldFactorsThroughCap` / `foldFactorsThroughCup` / `standardFormFold_appendSplit`, then welded by
+`isSameComponent_trans` / `_flip`.  The THIRD (and last) of the three per-arc classes, with a FIXED SEED NODE at the
+left endpoint — the append-LEFT sibling of the CUP weld. -/
+theorem throughArcConnect_general (d : DiagramType) (bottomPos : 0 < d.bottomCount)
+    (wf : IsBoundaryInvolution (d.bottomCount + d.topCount) d.partner)
+    (topRank : Nat) (topRankLt : topRank < (throughStrandTops d.bottomCount d.topCount d.partner).length) :
+    isSameComponent
+        (processBrauer (brauerSeed d.bottomCount)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected d))).links
+        (natListGetAt d.partner
+          (d.bottomCount + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank))
+        (natListGetAt (processBrauer (brauerSeed d.bottomCount)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected d))).openWires
+          (natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank)) = true := by
+  have hTopRankLtBottoms : topRank < (throughStrandBottoms d.bottomCount d.partner).length := by
+    rw [throughStrandBottoms_length_eq_throughStrandTops d.bottomCount d.topCount d.partner wf]
+    exact topRankLt
+  -- forests
+  have forestS1 : isUnionFindForest (processBrauer (brauerSeed d.bottomCount)
+      (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm)).links :=
+    processBrauer_links_isUnionFindForest _ (brauerSeed d.bottomCount) isUnionFindForest_nil
+  have forestS3 : isUnionFindForest (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+      (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+      (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+      (crossingWord (reconstructStandardFormExt5Corrected d).middle)).links :=
+    processBrauer_links_isUnionFindForest _ _ (processBrauer_links_isUnionFindForest _ _
+      (processBrauer_links_isUnionFindForest _ (brauerSeed d.bottomCount) isUnionFindForest_nil))
+  have forestS5 : isUnionFindForest (processBrauer (processBrauer (processBrauer (processBrauer
+      (processBrauer (brauerSeed d.bottomCount)
+      (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+      (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+      (crossingWord (reconstructStandardFormExt5Corrected d).middle))
+      (cupWord (reconstructStandardFormExt5Corrected d).cupBlock))
+      (crossingWord (reconstructStandardFormExt5Corrected d).topPerm)).links :=
+    processBrauer_links_isUnionFindForest _ _ (processBrauer_links_isUnionFindForest _ _
+      (processBrauer_links_isUnionFindForest _ _ (processBrauer_links_isUnionFindForest _ _
+        (processBrauer_links_isUnionFindForest _ (brauerSeed d.bottomCount) isUnionFindForest_nil))))
+  -- transport equalities to F
+  have hFS1 : processBrauer (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+        (capWord (reconstructStandardFormExt5Corrected d).capBlock
+          ++ (crossingWord (reconstructStandardFormExt5Corrected d).middle
+            ++ cupWord (reconstructStandardFormExt5Corrected d).cupBlock
+            ++ crossingWord (reconstructStandardFormExt5Corrected d).topPerm
+            ++ circleWord (reconstructStandardFormExt5Corrected d).loops))
+      = processBrauer (brauerSeed d.bottomCount)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected d)) := by
+    rw [processBrauer_append (capWord (reconstructStandardFormExt5Corrected d).capBlock)
+      (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+      (crossingWord (reconstructStandardFormExt5Corrected d).middle
+        ++ cupWord (reconstructStandardFormExt5Corrected d).cupBlock
+        ++ crossingWord (reconstructStandardFormExt5Corrected d).topPerm
+        ++ circleWord (reconstructStandardFormExt5Corrected d).loops)]
+    exact (foldFactorsThroughCap (reconstructStandardFormExt5Corrected d)).symm
+  have hFS3 : processBrauer (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+        (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+        (crossingWord (reconstructStandardFormExt5Corrected d).middle))
+        (cupWord (reconstructStandardFormExt5Corrected d).cupBlock
+          ++ crossingWord (reconstructStandardFormExt5Corrected d).topPerm
+          ++ circleWord (reconstructStandardFormExt5Corrected d).loops)
+      = processBrauer (brauerSeed d.bottomCount)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected d)) :=
+    (foldFactorsThroughCup (reconstructStandardFormExt5Corrected d)).symm
+  have hFS5 : processBrauer (processBrauer (processBrauer (processBrauer (processBrauer
+          (processBrauer (brauerSeed d.bottomCount)
+            (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+          (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+          (crossingWord (reconstructStandardFormExt5Corrected d).middle))
+          (cupWord (reconstructStandardFormExt5Corrected d).cupBlock))
+          (crossingWord (reconstructStandardFormExt5Corrected d).topPerm))
+        (circleWord (reconstructStandardFormExt5Corrected d).loops)
+      = processBrauer (brauerSeed d.bottomCount)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected d)) :=
+    (standardFormFold_appendSplit (reconstructStandardFormExt5Corrected d)).symm
+  -- P1 at S1 : S1.ow[|capArcFeet| + r] ~ i
+  have hP1 : isSameComponent (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm)).links
+        (natListGetAt (processBrauer (brauerSeed d.bottomCount)
+          (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm)).openWires
+          ((capArcFeet d.bottomCount d.partner).length
+            + natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank))
+        (natListGetAt d.partner
+          (d.bottomCount + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank)) = true := by
+    have hseed := crossingWordFold_openWire_sameComponent_incomingPort_seed d.bottomCount bottomPos
+      (reconstructStandardFormExt5Corrected d).bottomPerm
+      (fun pos posMem => permutationToCrossingWord_posBound d.bottomCount
+        (capArcFeet d.bottomCount d.partner ++ throughStrandBottoms d.bottomCount d.partner)
+        (readOffBottomOrder_isPermutationOfRange d.bottomCount d.topCount d.partner wf).isBounded pos posMem)
+      ((capArcFeet d.bottomCount d.partner).length
+        + natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank)
+    rw [correctedBottomPerm_decodesReadOff d wf,
+      throughReadOffBottom_reads_throughFoot d wf topRank topRankLt] at hseed
+    exact hseed
+  -- transport P1 to F
+  have fA0 : isSameComponent (processBrauer (brauerSeed d.bottomCount)
+        (standardFormWordExt5 (reconstructStandardFormExt5Corrected d))).links
+        (natListGetAt (processBrauer (brauerSeed d.bottomCount)
+          (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm)).openWires
+          ((capArcFeet d.bottomCount d.partner).length
+            + natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank))
+        (natListGetAt d.partner
+          (d.bottomCount + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank)) = true := by
+    rw [← hFS1]
+    exact processBrauer_isSameComponent_ofBase (capWord (reconstructStandardFormExt5Corrected d).capBlock
+        ++ (crossingWord (reconstructStandardFormExt5Corrected d).middle
+          ++ cupWord (reconstructStandardFormExt5Corrected d).cupBlock
+          ++ crossingWord (reconstructStandardFormExt5Corrected d).topPerm
+          ++ circleWord (reconstructStandardFormExt5Corrected d).loops))
+      (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm)) forestS1 _ _ hP1
+  -- P2 equality
+  have hP2 := throughCapSurvival d wf (natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank)
+  rw [hP2] at fA0
+  have fA := isSameComponent_flip _ _ _ fA0
+  -- P3 at S3, transport to F
+  have hP3 := throughMiddleTracker d bottomPos wf topRank hTopRankLtBottoms
+  have fB0 : isSameComponent (processBrauer (brauerSeed d.bottomCount)
+        (standardFormWordExt5 (reconstructStandardFormExt5Corrected d))).links
+        (natListGetAt (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+          (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+          (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+          (crossingWord (reconstructStandardFormExt5Corrected d).middle)).openWires topRank)
+        (natListGetAt (processBrauer (processBrauer (brauerSeed d.bottomCount)
+          (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+          (capWord (reconstructStandardFormExt5Corrected d).capBlock)).openWires
+          (natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank)) = true := by
+    rw [← hFS3]
+    exact processBrauer_isSameComponent_ofBase (cupWord (reconstructStandardFormExt5Corrected d).cupBlock
+        ++ crossingWord (reconstructStandardFormExt5Corrected d).topPerm
+        ++ circleWord (reconstructStandardFormExt5Corrected d).loops)
+      (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+        (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+        (crossingWord (reconstructStandardFormExt5Corrected d).middle)) forestS3 _ _ hP3
+  have fB := isSameComponent_flip _ _ _ fB0
+  -- P4 equality, P5 at S5 transport to F
+  have hP4 := throughCupSurvival d wf topRank hTopRankLtBottoms
+  have hP5 := throughTopTracker d bottomPos wf topRank topRankLt
+  have fC0 : isSameComponent (processBrauer (brauerSeed d.bottomCount)
+        (standardFormWordExt5 (reconstructStandardFormExt5Corrected d))).links
+        (natListGetAt (processBrauer (processBrauer (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+          (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+          (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+          (crossingWord (reconstructStandardFormExt5Corrected d).middle))
+          (cupWord (reconstructStandardFormExt5Corrected d).cupBlock))
+          (crossingWord (reconstructStandardFormExt5Corrected d).topPerm)).openWires
+          (natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank))
+        (natListGetAt (processBrauer (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+          (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+          (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+          (crossingWord (reconstructStandardFormExt5Corrected d).middle))
+          (cupWord (reconstructStandardFormExt5Corrected d).cupBlock)).openWires topRank) = true := by
+    rw [← hFS5]
+    exact processBrauer_isSameComponent_ofBase (circleWord (reconstructStandardFormExt5Corrected d).loops)
+      (processBrauer (processBrauer (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+        (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+        (crossingWord (reconstructStandardFormExt5Corrected d).middle))
+        (cupWord (reconstructStandardFormExt5Corrected d).cupBlock))
+        (crossingWord (reconstructStandardFormExt5Corrected d).topPerm)) forestS5 _ _ hP5
+  rw [← hP4] at fC0
+  have fC := isSameComponent_flip _ _ _ fC0
+  -- circle carries F.openWires = S5.openWires
+  have hFow : (processBrauer (brauerSeed d.bottomCount)
+        (standardFormWordExt5 (reconstructStandardFormExt5Corrected d))).openWires
+      = (processBrauer (processBrauer (processBrauer (processBrauer (processBrauer (brauerSeed d.bottomCount)
+        (crossingWord (reconstructStandardFormExt5Corrected d).bottomPerm))
+        (capWord (reconstructStandardFormExt5Corrected d).capBlock))
+        (crossingWord (reconstructStandardFormExt5Corrected d).middle))
+        (cupWord (reconstructStandardFormExt5Corrected d).cupBlock))
+        (crossingWord (reconstructStandardFormExt5Corrected d).topPerm)).openWires :=
+    (congrArg (fun state => state.openWires) hFS5).symm.trans
+      (circleFold_openWires (reconstructStandardFormExt5Corrected d).loops _ forestS5)
+  rw [hFow]
+  exact isSameComponent_trans _ _ _ _ (isSameComponent_trans _ _ _ _ fA fB) fC
+
+/-- ★★★ **The THROUGH-class per-arc T-CONNECT, in the boundary-matching form (the `partnerShares` datum).**  A through
+arc has one bottom foot `i = partner[bottomCount + t] < bottomCount` (its partner `t = throughStrandTops[topRank]` is a
+top port, so `i` is a through bottom) and one top foot `bottomCount + t`, so
+`matchingSameComponent bottomCount F i (bottomCount + t)` reduces to node connectivity
+(`matchingSameComponent_bottomTop_eq_isSameComponent`), which `throughArcConnect_general` supplies — the exact per-arc
+datum the r22 routing collapse consumes, discharged in general for the THROUGH class. -/
+theorem throughArcMatching_general (d : DiagramType) (bottomPos : 0 < d.bottomCount)
+    (wf : IsBoundaryInvolution (d.bottomCount + d.topCount) d.partner)
+    (topRank : Nat) (topRankLt : topRank < (throughStrandTops d.bottomCount d.topCount d.partner).length) :
+    matchingSameComponent d.bottomCount
+        (processBrauer (brauerSeed d.bottomCount)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected d)))
+        (natListGetAt d.partner
+          (d.bottomCount + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank))
+        (d.bottomCount + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank) = true := by
+  have tMem : natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank
+      ∈ throughStrandTops d.bottomCount d.topCount d.partner :=
+    natListGetAtMemCap (throughStrandTops d.bottomCount d.topCount d.partner) topRank topRankLt
+  have iMem : natListGetAt d.partner (d.bottomCount
+        + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank)
+      ∈ throughStrandBottoms d.bottomCount d.partner :=
+    throughStrandTop_partner_memThroughBottoms d.bottomCount d.topCount d.partner wf
+      (natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank) tMem
+  have iLt : natListGetAt d.partner (d.bottomCount
+        + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank) < d.bottomCount :=
+    (throughStrandBottoms_mem_sound d.bottomCount d.partner _ iMem).1
+  rw [matchingSameComponent_bottomTop_eq_isSameComponent d.bottomCount
+    (processBrauer (brauerSeed d.bottomCount)
+      (standardFormWordExt5 (reconstructStandardFormExt5Corrected d)))
+    (natListGetAt d.partner
+      (d.bottomCount + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank))
+    (natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank) iLt]
+  exact throughArcConnect_general d bottomPos wf topRank topRankLt
+
+/-! ## B3 firings — the general THROUGH weld FIRES on the width-12 monster (both throughs) -/
+
+/-- ★★ **The GENERAL THROUGH weld FIRES on the monster through rank `0`** (`throughStrandTops[0] = 0`,
+`partner[6] = 4` = the bottom foot) — the arc `4↔top0` (`monsterWidth12Arcs` conjunct `(4, 6)`), exercised (not
+`decide`d) through all five seams of the general weld. -/
+theorem throughArcMatching_firesMonster_zero :
+    matchingSameComponent 6 (processBrauer (brauerSeed 6)
+        (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram)))
+      (natListGetAt monsterDiagram.partner (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 0))
+      (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 0) = true :=
+  throughArcMatching_general monsterDiagram (by decide) monster_isBoundaryInvolution 0 (by decide)
+
+/-- ★★ **The GENERAL THROUGH weld FIRES on the monster through rank `1`** (`throughStrandTops[1] = 1`,
+`partner[7] = 5`) — the arc `5↔top1` (`monsterWidth12Arcs` conjunct `(5, 7)`), the second through strand. -/
+theorem throughArcMatching_firesMonster_one :
+    matchingSameComponent 6 (processBrauer (brauerSeed 6)
+        (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram)))
+      (natListGetAt monsterDiagram.partner (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 1))
+      (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 1) = true :=
+  throughArcMatching_general monsterDiagram (by decide) monster_isBoundaryInvolution 1 (by decide)
+
+/-- ★★ **The GENERAL THROUGH weld FIRES on the mutually-crossing 3-through diagram, rank `2`** (a genuine 3-cycle
+middle permutation) — the append-LEFT weld exercised on a NON-trivial through routing. -/
+theorem throughArcMatching_fires3Through_two :
+    matchingSameComponent 3 (processBrauer (brauerSeed 3)
+        (standardFormWordExt5 (reconstructStandardFormExt5Corrected threeThroughCrossingDiagram)))
+      (natListGetAt threeThroughCrossingDiagram.partner
+        (3 + natListGetAt (throughStrandTops 3 3 threeThroughCrossingDiagram.partner) 2))
+      (3 + natListGetAt (throughStrandTops 3 3 threeThroughCrossingDiagram.partner) 2) = true :=
+  throughArcMatching_general threeThroughCrossingDiagram (by decide) isBoundaryInvolution_threeThroughCrossing
+    2 (by decide)
+
+/-- ★★★ **Honesty marker — the GENERAL per-arc THROUGH-class T-CONNECT is SHIPPED (r28 B3, the weld assembled).**
+`throughArcConnect_general` proves, zero-axiom and structural, that for EVERY well-formed boundary involution (with
+`0 < bottomCount`) the through arc's bottom foot and its read top open wire share a union-find component in the
+corrected six-phase fold; `throughArcMatching_general` lifts it to the boundary-matching `partnerShares` datum the r22
+routing collapse consumes.  The assembly is the five-phase node-survival WELD — the seed tracker + P1 decode, the P2
+cap-survival read, the P3 middle tracker, the P4 cup-survival read, the P5 top tracker + r26 keystone — every fact
+transported to `F.links` and welded by `isSameComponent_trans` / `_flip`, a direct scale of `cupArcConnectViaState`
+with a FIXED SEED NODE left endpoint and an append-LEFT through-block right read.  This is the THIRD (and last) of the
+three per-arc classes (after CAP r24 and CUP r26); with all three `…ArcMatching_general` now shipped, the all-class
+dispatch is the natural same/next-round consumer.  Fired on both monster through strands and the 3-cycle 3-through.
+This marker supersedes the FROZEN r27 snapshot `fxBrauer_hasThroughClassGeneral` (kept `false` to preserve
+`fxBrauer_r27GrandLedger`).  A NEW ingredient marker; it flips NO master — `fxBrauer_hasTConnectThroughWall` stays
+`false` until the all-class dispatch lands, and `#2013` closes only after T-CLOSE(b).  `= true`. -/
+def fxBrauer_hasThroughArcGeneral : Bool := true
+
 end FX1Poly.Polygraph

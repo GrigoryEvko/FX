@@ -25,5 +25,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.throughMiddleTracker_firesMonster
 #assert_no_axioms FX1Poly.Polygraph.throughTopTracker_firesMonster
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasThroughTrackerSeams
+#assert_no_axioms FX1Poly.Polygraph.throughArcConnect_general
+#assert_no_axioms FX1Poly.Polygraph.throughArcMatching_general
+#assert_no_axioms FX1Poly.Polygraph.throughArcMatching_firesMonster_zero
+#assert_no_axioms FX1Poly.Polygraph.throughArcMatching_firesMonster_one
+#assert_no_axioms FX1Poly.Polygraph.throughArcMatching_fires3Through_two
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasThroughArcGeneral
 
 end FX1PolyAudit

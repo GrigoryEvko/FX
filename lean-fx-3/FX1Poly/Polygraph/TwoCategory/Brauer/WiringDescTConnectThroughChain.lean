@@ -180,15 +180,17 @@ the S1 → S2 → S3 → S4 → S5 → F transport (P2 cap-survival read, P3 mid
 `false` (no fabricated flip).  A NEW ingredient marker; it flips NO master.  `= true`. -/
 def fxBrauer_hasThroughReadOffFoot : Bool := true
 
-/-- **Honesty WALL marker — the THROUGH GENERAL five-phase node-survival is UNBUILT (the r26 risk pole).**  Every
-per-seam ingredient is shipped — the seed `bottomPerm` tracker (P1), the cap-survival `dropFrontPairs` read (P2), the
-interior `middle` tracker + `correctedMiddle_decodesReadOff` + the P3 rank glue `throughStrandPerm[topRank] = r`, the
-cup-survival append-left read (P4), the interior `topPerm` tracker + `correctedTopPerm_decodesInverseReadOff` + the r26
-rank↔position keystone `natListGetAtPermInverse_natListGetAt_ofPermutationOfRange` (P5, the SAME keystone the CUP
-general used) — but the five-phase composition tracking the through wire's node from the seed to its read top port is
-NOT assembled.  So `fxBrauer_hasTConnectThroughWall` stays honestly `false`, and with it `fxBrauer_hasFoldAlignmentE3`,
-`fxBrauer_hasFoldTargetHonestAssembly`, the tag-correspondence and completeness masters; #2013 does NOT close.
-`= false`. -/
+/-- **FROZEN r27 snapshot marker — SUPERSEDED at r28 (see `fxBrauer_hasThroughArcGeneral`).**  At r27 the THROUGH
+general five-phase node-survival was UNBUILT; every per-seam ingredient was shipped — the seed `bottomPerm` tracker
+(P1), the cap-survival `dropFrontPairs` read (P2), the interior `middle` tracker + `correctedMiddle_decodesReadOff` +
+the P3 rank glue `throughStrandPerm[topRank] = r`, the cup-survival append-left read (P4), the interior `topPerm`
+tracker + `correctedTopPerm_decodesInverseReadOff` + the r26 rank↔position keystone
+`natListGetAtPermInverse_natListGetAt_ofPermutationOfRange` (P5, the SAME keystone the CUP general used) — but the
+five-phase composition was not assembled.  **r28 ASSEMBLED it** (`throughArcConnect_general` /
+`throughArcMatching_general` in `Brauer/WiringDescTConnectThroughWeld`, `fxBrauer_hasThroughArcGeneral = true`); this
+snapshot is deliberately kept `false` to preserve the r27 grand ledger `fxBrauer_r27GrandLedger` as a faithful
+historical record.  `fxBrauer_hasTConnectThroughWall` still stays `false` until the all-class dispatch lands, and
+`#2013` closes only after T-CLOSE(b).  `= false`. -/
 def fxBrauer_hasThroughClassGeneral : Bool := false
 
 end FX1Poly.Polygraph
