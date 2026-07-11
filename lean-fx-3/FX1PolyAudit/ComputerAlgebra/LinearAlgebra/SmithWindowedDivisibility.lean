@@ -36,4 +36,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationPreservesEntriesDivisibleWithin
 #assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationsPreservesEntriesDivisibleWithin
 
+/- H2-SMITH r19 — the CONFINEMENT discharge: the later-pivot repair operations are bounded below the
+   start pivot (truth-probed by `#eval`).  The monotone/append kit, the per-generator boundedness
+   (clear-column/row, move, sign), and the cascade / position-sweep / whole-sweep structural lifts. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.boolAndBothTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.allOpsBoundedBelowMatchBool
+#assert_no_axioms FX1Poly.ComputerAlgebra.allOpsBoundedBelowAppend
+#assert_no_axioms FX1Poly.ComputerAlgebra.opIsBoundedBelowMonotone
+#assert_no_axioms FX1Poly.ComputerAlgebra.allOpsBoundedBelowMonotone
+#assert_no_axioms FX1Poly.ComputerAlgebra.opBoundedBelowAddRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.opBoundedBelowAddColumn
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearColumnBelowStepsBoundedBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearRowRightStepsBoundedBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMoveToPivotOpsBoundedBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSignNormalizeOpsBoundedBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepBoundedBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepClearingBoundedBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepClearingOpsBoundedBelow
+
 end FX1PolyAudit
