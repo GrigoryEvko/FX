@@ -2123,4 +2123,324 @@ but claims NOTHING at H2; this decl records that boundary permanently.  `= true`
 closure.  Read the meaning from THIS docstring. -/
 def type2CyclicThreeH2PreservationHasNoTheorem : Bool := true
 
+/-! ### B1 (r6) — the GENERIC CLEARING WRAPPER: the builder, the truth probe, the action lemma
+
+r5 left the CLEARING wrapper per-instance (`freshGeneratorRecipeReducesViaBlockLifting` takes the
+`clearingBridge : expandedD2.applyOperations clearingOps = blockDiagWithFreshUnit baseD2 width` as a
+hypothesis, discharged by `rfl` per instance).  r6 lifts the CLEARING itself to a GENERIC builder
+(`buildFreshColumnClearing`) over the abelianized fresh-column shape (`expandedWithFreshColumn`): each base
+row's fresh-column entry `v[i]` is cleared to `0` by `addRowMultiple height i v[i]` (SOURCE = the fresh
+pivot row `[0,…,0,−1]`, inert on the base block since it is zero on every base column), then one
+`negateColumn width` flips the pivot `−1 ↦ +1`.  The TRUTH PROBE below fires the generic builder on the
+concrete r2 clearing list FIRST (by `rfl`), confirming the builder is exact.  The GENERIC action lemma
+`freshColumnClearingReducesToBlockDiag` proves it symbolically for ANY base + fresh column.  What STAYS
+the r7 bill: connecting the ACTUAL `computeBoundaryDimOne` to the `expandedWithFreshColumn` shape (the
+abelianization reconstruction, JOB 1b) — so `clearingBridge` is re-expressed through this generic shape,
+not yet removed. -/
+
+/-- The fresh PIVOT row `[0,…,0,−1]` — `width` zeros then the `−1` pivot (the fresh generator's own `d2`
+column before sign normalisation).  Distinct from `freshUnitRow` (which ends in `+1`). -/
+def freshPivotRow (width : Nat) : IntRow := List.replicate width 0 ++ [(-1 : Int)]
+
+/-- Attach one fresh-column entry to each base row (zip base rows with the fresh column; ragged tail
+extends by `0`). -/
+def attachFreshColumnEntries : List IntRow → IntRow → List IntRow
+  | [], _ => []
+  | baseRow :: baseRows, [] => (baseRow ++ [0]) :: attachFreshColumnEntries baseRows []
+  | baseRow :: baseRows, entry :: entries =>
+      (baseRow ++ [entry]) :: attachFreshColumnEntries baseRows entries
+
+/-- The abelianized expanded `d2` in fresh-column form: each base row extended by its fresh-column entry,
+then the fresh pivot row `[0,…,0,−1]` appended. -/
+def expandedWithFreshColumn (baseD2 : IntMatrix) (freshColumn : IntRow) (width : Nat) : IntMatrix :=
+  ⟨attachFreshColumnEntries baseD2.rows freshColumn ++ [freshPivotRow width]⟩
+
+/-- The GENERIC fresh-column clearing word: for each base row (indexed from `rowIndex`), emit
+`addRowMultiple height rowIndex entry` (SOURCE `height` = the fresh pivot row, TARGET the base row).
+Recurses on the fresh column, incrementing the target index. -/
+def buildFreshColumnClearing (height : Nat) : Nat → IntRow → List ElementaryOperation
+  | _, [] => []
+  | rowIndex, entry :: entries =>
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple height rowIndex entry)
+        :: buildFreshColumnClearing height (rowIndex + 1) entries
+
+/-- ★★ **THE TRUTH PROBE (fired FIRST, by `rfl`).**  The GENERIC builder applied to the concrete r2 Tietze
+clearing list (`height = 2`, fresh column `v = [1, 1]` of `st`) lands the block-diagonal
+`blockDiagWithFreshUnit tietzeBoundaryOfDimOne 4` — kernel-checked BEFORE any symbolic proof.  Confirms
+`expandedWithFreshColumn` / `buildFreshColumnClearing` are the exact abelianization of the expanded `d2`
+and that the clearing + `negateColumn 4` land the block. -/
+theorem r2TietzeConcreteClearingLandsBlockDiag :
+    (expandedWithFreshColumn tietzeBoundaryOfDimOne [1, 1] 4).applyOperations
+        (buildFreshColumnClearing 2 0 [1, 1]
+          ++ [ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)])
+      = blockDiagWithFreshUnit tietzeBoundaryOfDimOne 4 := rfl
+
+/-- The concrete r2 expanded `d2` IS the fresh-column form — `expandedWithFreshColumn tietzeBoundaryOfDimOne
+[1, 1] 4 = expandedTietzeThirdGeneratorBoundaryOfDimOne`; `rfl`. -/
+theorem expandedTietzeThirdGeneratorIsFreshColumnForm :
+    expandedWithFreshColumn tietzeBoundaryOfDimOne [1, 1] 4
+      = expandedTietzeThirdGeneratorBoundaryOfDimOne := rfl
+
+/-! #### The GENERIC clearing action lemma (JOB 1a) — the clearing proved for ANY base + fresh column
+
+The truth probe fires the builder concretely; below it is proved symbolically.  What STAYS the r7 bill
+(JOB 1b): connecting the ACTUAL `computeBoundaryDimOne` to the `expandedWithFreshColumn` shape (the
+abelianization reconstruction).  With that, `clearingBridge` would become a theorem; here it is
+re-expressed through this generic clearing action. -/
+
+/-- The all-zero column has length `n`. -/
+theorem replicateZeroRowLength : ∀ (n : Nat), (List.replicate n (0 : Int)).length = n
+  | 0 => rfl
+  | n + 1 => congrArg (· + 1) (replicateZeroRowLength n)
+
+/-- The fresh pivot row has `width + 1` entries. -/
+theorem freshPivotRowLength (width : Nat) : (freshPivotRow width).length = width + 1 := by
+  show (List.replicate width 0 ++ [(-1 : Int)]).length = width + 1
+  rw [appendSingletonLength, replicateZeroRowLength]
+
+/-- `prefixList ++ (x :: suffixList) = (prefixList ++ [x]) ++ suffixList` — structural on the prefix. -/
+theorem appendConsAssoc {Entry : Type} (element : Entry) :
+    ∀ (prefixList suffixList : List Entry),
+      prefixList ++ (element :: suffixList) = (prefixList ++ [element]) ++ suffixList
+  | [], _ => rfl
+  | head :: tail, suffixList => congrArg (head :: ·) (appendConsAssoc element tail suffixList)
+
+/-- Modifying at index `= prefixList.length` of an append modifies the head of the suffix. -/
+theorem listModifyAtAppendAtLeftLength {Entry : Type} (transform : Entry → Entry) :
+    ∀ (prefixList suffixList : List Entry),
+      listModifyAt transform (prefixList ++ suffixList) prefixList.length
+        = prefixList ++ listModifyAt transform suffixList 0
+  | [], _ => rfl
+  | head :: tail, suffixList =>
+      congrArg (head :: ·) (listModifyAtAppendAtLeftLength transform tail suffixList)
+
+/-- Adding a multiple of an all-zero row leaves the target untouched (`entry + coeff·0 = entry`). -/
+theorem addScaledEntriesReplicateZeroInert (coefficient : Int) :
+    ∀ (row : IntRow) (n : Nat), row.length = n →
+      IntMatrix.addScaledEntries coefficient (List.replicate n 0) row = row
+  | [], 0, _ => rfl
+  | [], _ + 1, lengthEq => Nat.noConfusion lengthEq
+  | _ :: _, 0, lengthEq => Nat.noConfusion lengthEq
+  | entry :: rest, n + 1, lengthEq => by
+      show (entry + coefficient * 0) :: IntMatrix.addScaledEntries coefficient (List.replicate n 0) rest
+        = entry :: rest
+      rw [intMulZero, intAddZero,
+          addScaledEntriesReplicateZeroInert coefficient rest n (congrArg Nat.pred lengthEq)]
+
+/-- ★ **The per-row clearing.**  A base row extended by its own fresh entry `coefficient`, cleared by
+`coefficient ×` the fresh pivot row `[0,…,0,−1]`, becomes the row extended by a trailing `0` — the base
+block is inert (pivot zero on every base column) and the fresh entry cancels
+`coefficient + coefficient·(−1) = 0`. -/
+theorem addScaledEntriesFreshPivotClears (coefficient : Int) (width : Nat) (baseRow : IntRow)
+    (baseWidth : baseRow.length = width) :
+    IntMatrix.addScaledEntries coefficient (freshPivotRow width) (baseRow ++ [coefficient])
+      = extendRow baseRow := by
+  show IntMatrix.addScaledEntries coefficient (List.replicate width 0 ++ [(-1 : Int)])
+      (baseRow ++ [coefficient]) = baseRow ++ [0]
+  rw [addScaledEntriesAppend coefficient (List.replicate width 0) baseRow [(-1 : Int)] [coefficient]
+        (by rw [replicateZeroRowLength]; exact baseWidth.symm),
+      addScaledEntriesReplicateZeroInert coefficient baseRow width baseWidth]
+  show baseRow ++ [coefficient + coefficient * (-1)] = baseRow ++ [0]
+  rw [intMulNeg coefficient 1, intMulOne coefficient, intAddRightNeg coefficient]
+
+/-- Attaching one fresh-column entry per base row preserves the row count. -/
+theorem attachFreshColumnEntriesLength :
+    ∀ (baseRows : List IntRow) (freshColumn : IntRow),
+      baseRows.length = freshColumn.length →
+      (attachFreshColumnEntries baseRows freshColumn).length = baseRows.length
+  | [], [], _ => rfl
+  | [], _ :: _, lengthEq => Nat.noConfusion lengthEq
+  | _ :: _, [], lengthEq => Nat.noConfusion lengthEq
+  | _ :: baseRows, _ :: freshColumn, lengthEq =>
+      congrArg (· + 1) (attachFreshColumnEntriesLength baseRows freshColumn (congrArg Nat.pred lengthEq))
+
+/-- ★ **One fresh-column clearing step, factored.**  Applying `addRowMultiple height targetIndex coeff`
+(SOURCE `height` = the fresh pivot row) to `⟨rows ++ [freshPivotRow width]⟩` modifies row `targetIndex` by
+adding `coeff ×` the pivot, pivot inert. -/
+theorem expandedFreshColumnSingleClear (width height targetIndex : Nat) (coefficient : Int)
+    (rows : List IntRow) (rowsLen : rows.length = height) (targetBelow : targetIndex < height) :
+    (⟨rows ++ [freshPivotRow width]⟩ : IntMatrix).addRowMultiple height targetIndex coefficient
+      = ⟨listModifyAt (fun targetRow =>
+          IntMatrix.addScaledEntries coefficient (freshPivotRow width) targetRow) rows targetIndex
+          ++ [freshPivotRow width]⟩ := by
+  have heightNeTarget : height ≠ targetIndex := (Nat.ne_of_lt targetBelow).symm
+  have rowsFullLen : (rows ++ [freshPivotRow width]).length = height + 1 := by
+    rw [appendSingletonLength, rowsLen]
+  have sourceBelow : height < (rows ++ [freshPivotRow width]).length := by
+    rw [rowsFullLen]; exact Nat.le.refl
+  have targetBelowFull : targetIndex < (rows ++ [freshPivotRow width]).length := by
+    rw [rowsFullLen]; exact Nat.le.step targetBelow
+  have targetBelowRows : targetIndex < rows.length := rowsLen ▸ targetBelow
+  have pivotRead : listGetWithDefault [] (rows ++ [freshPivotRow width]) height = freshPivotRow width :=
+    (congrArg (listGetWithDefault [] (rows ++ [freshPivotRow width])) rowsLen.symm).trans
+      (listGetAtLeftLengthReadsRightHead [] rows [freshPivotRow width])
+  rw [addRowMultipleOfBounded ⟨rows ++ [freshPivotRow width]⟩ height targetIndex coefficient
+        heightNeTarget sourceBelow targetBelowFull]
+  show IntMatrix.mk (listModifyAt (fun targetRow =>
+        IntMatrix.addScaledEntries coefficient
+          (listGetWithDefault [] (rows ++ [freshPivotRow width]) height) targetRow)
+        (rows ++ [freshPivotRow width]) targetIndex)
+    = ⟨listModifyAt (fun targetRow =>
+        IntMatrix.addScaledEntries coefficient (freshPivotRow width) targetRow) rows targetIndex
+        ++ [freshPivotRow width]⟩
+  rw [pivotRead,
+      listModifyAtAppendLeft (fun targetRow =>
+        IntMatrix.addScaledEntries coefficient (freshPivotRow width) targetRow) rows
+        [freshPivotRow width] targetIndex targetBelowRows]
+
+/-- `(leftList ++ rightList).length = leftList.length + rightList.length` — structural, no
+`List.length_append`. -/
+theorem listAppendLength {Entry : Type} :
+    ∀ (leftList rightList : List Entry),
+      (leftList ++ rightList).length = leftList.length + rightList.length
+  | [], rightList => (natZeroAddEqSelf rightList.length).symm
+  | _ :: tail, rightList =>
+      (congrArg (· + 1) (listAppendLength tail rightList)).trans
+        (natSuccAddEqAddSucc tail.length rightList.length).symm
+
+/-- `base < base + (extra + 1)` — the target index sits strictly below the height. -/
+theorem natLtAddSucc : ∀ (base extra : Nat), base < base + (extra + 1)
+  | _, 0 => Nat.le.refl
+  | base, extra + 1 => Nat.le.step (natLtAddSucc base extra)
+
+/-- Modifying at index `= n` of `replicate n filler ++ [extra]` transforms the appended element. -/
+theorem listModifyAtReplicateAppendEnd {Entry : Type} (transform : Entry → Entry) (filler extra : Entry) :
+    ∀ (n : Nat),
+      listModifyAt transform (List.replicate n filler ++ [extra]) n
+        = List.replicate n filler ++ [transform extra]
+  | 0 => rfl
+  | n + 1 => congrArg (filler :: ·) (listModifyAtReplicateAppendEnd transform filler extra n)
+
+/-- ★ **The head clearing step assembled.**  Clearing the first uncleared base row (`prefix ++ (baseRow ++
+[coeff]) :: rest`) by `addRowMultiple height prefix.length coeff` extends that row and leaves the rest and
+the pivot untouched. -/
+theorem headClearLemma (width height : Nat) (coefficient : Int) (baseRow : IntRow)
+    (baseWidth : baseRow.length = width) (prefixRows restRows : List IntRow)
+    (rowsLen : (prefixRows ++ (baseRow ++ [coefficient]) :: restRows).length = height)
+    (targetBelow : prefixRows.length < height) :
+    (⟨prefixRows ++ (baseRow ++ [coefficient]) :: restRows ++ [freshPivotRow width]⟩ : IntMatrix).addRowMultiple
+        height prefixRows.length coefficient
+      = ⟨prefixRows ++ extendRow baseRow :: restRows ++ [freshPivotRow width]⟩ := by
+  rw [expandedFreshColumnSingleClear width height prefixRows.length coefficient
+        (prefixRows ++ (baseRow ++ [coefficient]) :: restRows) rowsLen targetBelow,
+      listModifyAtAppendAtLeftLength (fun targetRow =>
+        IntMatrix.addScaledEntries coefficient (freshPivotRow width) targetRow) prefixRows
+        ((baseRow ++ [coefficient]) :: restRows)]
+  show (⟨prefixRows ++ IntMatrix.addScaledEntries coefficient (freshPivotRow width) (baseRow ++ [coefficient])
+        :: restRows ++ [freshPivotRow width]⟩ : IntMatrix)
+    = ⟨prefixRows ++ extendRow baseRow :: restRows ++ [freshPivotRow width]⟩
+  rw [addScaledEntriesFreshPivotClears coefficient width baseRow baseWidth]
+
+/-- ★★ **THE CLEARING INDUCTION.**  Applying the fresh-column clearing word to
+`⟨prefix ++ attachFreshColumnEntries baseRows freshColumn ++ [pivot]⟩` extends every base row (fresh entry
+cleared to `0`), the pivot inert — a clean multi-row induction, each step the head clearing above with the
+already-cleared rows accumulated into the prefix. -/
+theorem clearFreshColumnFrom (width height : Nat) :
+    ∀ (prefixRows baseRows : List IntRow) (freshColumn : IntRow),
+      baseRows.length = freshColumn.length →
+      IntMatrix.rowsAllHaveWidth width baseRows →
+      prefixRows.length + baseRows.length = height →
+      (⟨prefixRows ++ attachFreshColumnEntries baseRows freshColumn ++ [freshPivotRow width]⟩
+          : IntMatrix).applyOperations (buildFreshColumnClearing height prefixRows.length freshColumn)
+        = ⟨prefixRows ++ mapAllRows extendRow baseRows ++ [freshPivotRow width]⟩
+  | _, [], [], _, _, _ => rfl
+  | _, [], _ :: _, lengthEq, _, _ => Nat.noConfusion lengthEq
+  | _, _ :: _, [], lengthEq, _, _ => Nat.noConfusion lengthEq
+  | prefixRows, baseRow :: baseRowsTail, entry :: restColumn, lengthEq, widthPair, sumEq => by
+      have restLen : baseRowsTail.length = restColumn.length := congrArg Nat.pred lengthEq
+      have baseWidth : baseRow.length = width := widthPair.left
+      have tailWidth : IntMatrix.rowsAllHaveWidth width baseRowsTail := widthPair.right
+      have attachLen : (attachFreshColumnEntries baseRowsTail restColumn).length = baseRowsTail.length :=
+        attachFreshColumnEntriesLength baseRowsTail restColumn restLen
+      have rowsLen :
+          (prefixRows ++ (baseRow ++ [entry]) :: attachFreshColumnEntries baseRowsTail restColumn).length
+            = height := by
+        rw [listAppendLength]
+        show prefixRows.length
+            + ((attachFreshColumnEntries baseRowsTail restColumn).length + 1) = height
+        rw [attachLen]; exact sumEq
+      have targetBelow : prefixRows.length < height :=
+        sumEq ▸ natLtAddSucc prefixRows.length baseRowsTail.length
+      have prefixLen : (prefixRows ++ [extendRow baseRow]).length = prefixRows.length + 1 :=
+        appendSingletonLength (extendRow baseRow) prefixRows
+      have sumEq' : (prefixRows ++ [extendRow baseRow]).length + baseRowsTail.length = height := by
+        rw [prefixLen]
+        exact (natSuccAddEqAddSucc prefixRows.length baseRowsTail.length).trans sumEq
+      show ((⟨prefixRows ++ (baseRow ++ [entry]) :: attachFreshColumnEntries baseRowsTail restColumn
+                ++ [freshPivotRow width]⟩ : IntMatrix).addRowMultiple height prefixRows.length entry).applyOperations
+            (buildFreshColumnClearing height (prefixRows.length + 1) restColumn)
+        = ⟨prefixRows ++ extendRow baseRow :: mapAllRows extendRow baseRowsTail ++ [freshPivotRow width]⟩
+      rw [headClearLemma width height entry baseRow baseWidth prefixRows
+            (attachFreshColumnEntries baseRowsTail restColumn) rowsLen targetBelow,
+          appendConsAssoc (extendRow baseRow) prefixRows
+            (attachFreshColumnEntries baseRowsTail restColumn),
+          appendConsAssoc (extendRow baseRow) prefixRows (mapAllRows extendRow baseRowsTail),
+          ← prefixLen]
+      exact clearFreshColumnFrom width height (prefixRows ++ [extendRow baseRow]) baseRowsTail restColumn
+        restLen tailWidth sumEq'
+
+/-- Negating column `width` of an extended base row is inert (the trailing `0` maps to `−0 = 0`). -/
+theorem negateColumnExtendRowInert (width : Nat) (row : IntRow) (rowWidth : row.length = width) :
+    listModifyAt (fun e => -e) (extendRow row) width = extendRow row := by
+  show listModifyAt (fun e => -e) (row ++ [0]) width = row ++ [0]
+  rw [← rowWidth, listModifyAtAppendSingletonEnd (fun e => -e) row 0]
+  show row ++ [-(0 : Int)] = row ++ [0]
+  rw [intNegZero]
+
+/-- Negating column `width` flips the fresh pivot row `[0,…,0,−1]` to the fresh UNIT row `[0,…,0,+1]`. -/
+theorem negateColumnFreshPivotIsUnit (width : Nat) :
+    listModifyAt (fun e => -e) (freshPivotRow width) width = freshUnitRow width := by
+  show listModifyAt (fun e => -e) (List.replicate width 0 ++ [(-1 : Int)]) width
+    = List.replicate width 0 ++ [1]
+  rw [listModifyAtReplicateAppendEnd (fun e => -e) (0 : Int) (-1) width]
+  show List.replicate width 0 ++ [-(-1 : Int)] = List.replicate width 0 ++ [1]
+  rw [intNegNeg]
+
+/-- ★★ **THE GENERIC CLEARING ACTION LEMMA (JOB 1a).**  For ANY base `d2` rectangular of shape
+`height × width` and ANY fresh column of length `height`, the generic clearing word
+`buildFreshColumnClearing height 0 freshColumn ++ [negateColumn width]` reduces the fresh-column form
+`expandedWithFreshColumn baseD2 freshColumn width` to the block-diagonal `blockDiagWithFreshUnit baseD2
+width`.  The clearing induction extends every base row (fresh entries cancelled), then the final
+`negateColumn width` flips the pivot `−1 ↦ +1`.  This is the r5 per-instance clearing `rfl` lifted to a
+theorem over the base and the fresh column; what remains (JOB 1b, r7) is connecting the ACTUAL boundary to
+this fresh-column shape. -/
+theorem freshColumnClearingReducesToBlockDiag (baseD2 : IntMatrix) (freshColumn : IntRow)
+    (height width : Nat) (rect : baseD2.IsRectangular height width)
+    (freshLen : freshColumn.length = height) :
+    (expandedWithFreshColumn baseD2 freshColumn width).applyOperations
+        (buildFreshColumnClearing height 0 freshColumn
+          ++ [ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn width)])
+      = blockDiagWithFreshUnit baseD2 width := by
+  rw [applyOperationsAppend]
+  have clearing :
+      (expandedWithFreshColumn baseD2 freshColumn width).applyOperations
+          (buildFreshColumnClearing height 0 freshColumn)
+        = ⟨mapAllRows extendRow baseD2.rows ++ [freshPivotRow width]⟩ :=
+    clearFreshColumnFrom width height [] baseD2.rows freshColumn (rect.left.trans freshLen.symm)
+      rect.right ((natZeroAddEqSelf baseD2.rows.length).trans rect.left)
+  rw [clearing]
+  show (⟨mapAllRows extendRow baseD2.rows ++ [freshPivotRow width]⟩ : IntMatrix).negateColumn width
+    = ⟨mapAllRows extendRow baseD2.rows ++ [freshUnitRow width]⟩
+  show IntMatrix.mk (mapAllRows (fun row => listModifyAt (fun e => -e) row width)
+      (mapAllRows extendRow baseD2.rows ++ [freshPivotRow width]))
+    = ⟨mapAllRows extendRow baseD2.rows ++ [freshUnitRow width]⟩
+  rw [mapAllRowsAppend (fun row => listModifyAt (fun e => -e) row width) (mapAllRows extendRow baseD2.rows)
+        [freshPivotRow width],
+      mapAllRowsFuseUnderWidth (fun row => listModifyAt (fun e => -e) row width) extendRow extendRow width
+        (fun row rowWidth => negateColumnExtendRowInert width row rowWidth) baseD2.rows rect.right]
+  show IntMatrix.mk (mapAllRows extendRow baseD2.rows
+      ++ [listModifyAt (fun e => -e) (freshPivotRow width) width])
+    = ⟨mapAllRows extendRow baseD2.rows ++ [freshUnitRow width]⟩
+  rw [negateColumnFreshPivotIsUnit width]
+
+/-- ★★ **The r2 Tietze clearing THROUGH the generic action lemma** — the truth probe re-proved via
+`freshColumnClearingReducesToBlockDiag` (not a bespoke `rfl`), demonstrating the generic lemma subsumes the
+concrete clearing bridge. -/
+theorem r2TietzeClearingViaGenericLemma :
+    (expandedWithFreshColumn tietzeBoundaryOfDimOne [1, 1] 4).applyOperations
+        (buildFreshColumnClearing 2 0 [1, 1]
+          ++ [ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)])
+      = blockDiagWithFreshUnit tietzeBoundaryOfDimOne 4 :=
+  freshColumnClearingReducesToBlockDiag tietzeBoundaryOfDimOne [1, 1] 2 4 ⟨rfl, rfl, rfl, True.intro⟩ rfl
+
 end FX1Poly.Polygraph.Homology

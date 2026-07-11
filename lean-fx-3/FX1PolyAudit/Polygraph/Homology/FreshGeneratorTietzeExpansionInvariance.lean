@@ -213,4 +213,29 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeDegreeOneHomologyIsZmodThree
 #assert_no_axioms FX1Poly.Polygraph.Homology.type2CyclicThreeH2PreservationHasNoTheorem
 
+-- B1 (r6): the generic clearing wrapper — builder + truth probe + generic action lemma
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshPivotRow
+#assert_no_axioms FX1Poly.Polygraph.Homology.attachFreshColumnEntries
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedWithFreshColumn
+#assert_no_axioms FX1Poly.Polygraph.Homology.buildFreshColumnClearing
+#assert_no_axioms FX1Poly.Polygraph.Homology.r2TietzeConcreteClearingLandsBlockDiag
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedTietzeThirdGeneratorIsFreshColumnForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.replicateZeroRowLength
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshPivotRowLength
+#assert_no_axioms FX1Poly.Polygraph.Homology.appendConsAssoc
+#assert_no_axioms FX1Poly.Polygraph.Homology.listModifyAtAppendAtLeftLength
+#assert_no_axioms FX1Poly.Polygraph.Homology.addScaledEntriesReplicateZeroInert
+#assert_no_axioms FX1Poly.Polygraph.Homology.addScaledEntriesFreshPivotClears
+#assert_no_axioms FX1Poly.Polygraph.Homology.attachFreshColumnEntriesLength
+#assert_no_axioms FX1Poly.Polygraph.Homology.expandedFreshColumnSingleClear
+#assert_no_axioms FX1Poly.Polygraph.Homology.listAppendLength
+#assert_no_axioms FX1Poly.Polygraph.Homology.natLtAddSucc
+#assert_no_axioms FX1Poly.Polygraph.Homology.listModifyAtReplicateAppendEnd
+#assert_no_axioms FX1Poly.Polygraph.Homology.headClearLemma
+#assert_no_axioms FX1Poly.Polygraph.Homology.clearFreshColumnFrom
+#assert_no_axioms FX1Poly.Polygraph.Homology.negateColumnExtendRowInert
+#assert_no_axioms FX1Poly.Polygraph.Homology.negateColumnFreshPivotIsUnit
+#assert_no_axioms FX1Poly.Polygraph.Homology.freshColumnClearingReducesToBlockDiag
+#assert_no_axioms FX1Poly.Polygraph.Homology.r2TietzeClearingViaGenericLemma
+
 end FX1PolyAudit
