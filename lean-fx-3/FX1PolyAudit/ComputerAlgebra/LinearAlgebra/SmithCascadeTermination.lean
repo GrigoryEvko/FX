@@ -140,4 +140,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedPreservesAboveRightRowBandZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedPreservesBelowLeftColBandZero
 
+/- H2-SMITH r12 — the single-step composed postcondition (B3): one full driver step advances the settled
+   frame `p → p+1` (the induction step body, a 5-way region dispatch over r10 cross-clear + r11 low-low + the
+   two B2 bands). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeStepSettlesThroughPivot
+
+/- H2-SMITH r12 — the descending-pivot induction skeleton (B4): the frame monotonicity, the propext-clean
+   `Nat.min` idempotence, the growing-frame outer fold to the `Nat.min` cap, and its driver-level top —
+   the total CROSS-CLEAR driver output is window-diagonal (POLE-A driver path; the repair phase's
+   `repairWindowDiagHolds`/`repairChainHolds` stay walled; NO flip). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPrefixSettledMonotone
+#assert_no_axioms FX1Poly.ComputerAlgebra.natMinSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalSweepSettlesThroughPivots
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalSweepDiagonalizes
+
 end FX1PolyAudit

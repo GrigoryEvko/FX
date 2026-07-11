@@ -3398,4 +3398,231 @@ theorem smithCascadeSweepSeedPreservesBelowLeftColBandZero (matrix : IntMatrix)
   smithCascadeSweepPreservesBelowLeftColBandZero (smithMinorAbsSum matrix pivotIndex height width) matrix
     pivotIndex height width lowCol isRect pivotRowInRange pivotColInRange lowColLtPivot bandZero
 
+/-! ## The single-step composed postcondition (H2-SMITH r12, B3) — the induction step body
+
+One full driver step at `pivotIndex` under the settled-prefix precondition advances the settled frame from
+`pivotIndex` to `pivotIndex + 1`.  The conclusion cell `(r, c)` of the advanced frame is dispatched into the
+five regions the r12 gap audit named: prefix (r11 low-low), the two bands (r12 keystones), and the two new
+cross strips (r10 cross-clear, decoded pointwise).  Assembled from r10 + r11 + B1 + B2; it NEVER mentions
+the sub-block `[p+1, ·)²`, so it is immune to the r5/r6/POLE-A refutation by construction. -/
+
+/-- **Concrete truth probe for the single step** — on `[[3, 0, 0], [0, 5, 6], [0, 7, 4]]` the seed cascade at
+pivot `1` clears its cross, so the two new cross-strip cells `(1, 2)` and `(2, 1)` — the frame cells that
+`pivotIndex → pivotIndex + 1` newly settles — read zero.  Anonymous, no axiom footprint. -/
+example :
+    (({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix).applyOperations
+        (smithCascadeSweep
+          (smithMinorAbsSum ({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix) 1 3 3)
+          ({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix) 1 3 3)).entryAt 1 2 = 0 := by decide
+
+example :
+    (({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix).applyOperations
+        (smithCascadeSweep
+          (smithMinorAbsSum ({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix) 1 3 3)
+          ({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix) 1 3 3)).entryAt 2 1 = 0 := by decide
+
+/-- **One driver step advances the settled frame `p → p+1`** (H2-SMITH r12, B3) — the induction step body.
+Under `SmithPrefixSettled matrix pivotIndex`, the seed cascade at `pivotIndex` leaves the matrix
+`SmithPrefixSettled` at `pivotIndex + 1`.  The advanced-frame cell `(r, c)` dispatches (cases on `r`, `c`
+versus `pivotIndex`) into:
+
+  * **prefix** `r < p ∧ c < p`: r11 `smithCascadeSweepSeedPreservesLowLowEntry` freezes the input zero;
+  * **above-right band** `r < p ∧ c ≥ p`: B2 `…SeedPreservesAboveRightRowBandZero` (band-zero from
+    `isSettled`);
+  * **below-left band** `r ≥ p ∧ c < p`: B2 `…SeedPreservesBelowLeftColBandZero`;
+  * **row cross** `r = p ∧ c > p` / **column cross** `c = p ∧ r > p`: r10
+    `smithCascadeSweepSeedReachesCrossClear` decoded by `smithCrossIsClearPointwise`.
+
+The sub-block `r > p ∧ c > p` is OUTSIDE the advanced frame (neither `≤ p`) — never required, so POLE-A is
+untouched.  `SmithReduceFullDriverStatement` stays uninhabited; NO flip. -/
+theorem smithCascadeStepSettlesThroughPivot (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (isSettled : SmithPrefixSettled matrix pivotIndex height width) :
+    SmithPrefixSettled
+      (matrix.applyOperations
+        (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+          matrix pivotIndex height width))
+      (pivotIndex + 1) height width := by
+  intro rowIndex colIndex rowLtHeight colLtWidth rowNeCol frameHolds
+  cases Nat.lt_or_ge rowIndex pivotIndex with
+  | inl rowLtPivot =>
+      cases Nat.lt_or_ge colIndex pivotIndex with
+      | inl colLtPivot =>
+          exact (smithCascadeSweepSeedPreservesLowLowEntry matrix pivotIndex height width rowIndex colIndex
+              isRect pivotRowInRange pivotColInRange rowLtPivot colLtPivot).trans
+            (isSettled rowIndex colIndex rowLtHeight colLtWidth rowNeCol (Or.inl rowLtPivot))
+      | inr colGePivot =>
+          exact smithCascadeSweepSeedPreservesAboveRightRowBandZero matrix pivotIndex height width rowIndex
+            isRect pivotRowInRange pivotColInRange rowLtPivot
+            (fun bandCol pivotLeBandCol bandColLtWidth =>
+              isSettled rowIndex bandCol rowLtHeight bandColLtWidth
+                (Nat.ne_of_lt (Nat.lt_of_lt_of_le rowLtPivot pivotLeBandCol)) (Or.inl rowLtPivot))
+            colIndex colGePivot colLtWidth
+  | inr rowGePivot =>
+      cases Nat.lt_or_ge colIndex pivotIndex with
+      | inl colLtPivot =>
+          exact smithCascadeSweepSeedPreservesBelowLeftColBandZero matrix pivotIndex height width colIndex
+            isRect pivotRowInRange pivotColInRange colLtPivot
+            (fun bandRow pivotLeBandRow bandRowLtHeight =>
+              isSettled bandRow colIndex bandRowLtHeight colLtWidth
+                (Nat.ne_of_lt (Nat.lt_of_lt_of_le colLtPivot pivotLeBandRow)).symm (Or.inr colLtPivot))
+            rowIndex rowGePivot rowLtHeight
+      | inr colGePivot =>
+          have crossClear :
+              smithCrossIsClear
+                  (matrix.applyOperations
+                    (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+                      matrix pivotIndex height width))
+                  pivotIndex height width = true :=
+            smithCascadeSweepSeedReachesCrossClear matrix pivotIndex height width isRect pivotRowInRange
+              pivotColInRange
+          have crossPointwise :=
+            smithCrossIsClearPointwise
+              (matrix.applyOperations
+                (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+                  matrix pivotIndex height width))
+              pivotIndex height width pivotRowInRange pivotColInRange crossClear
+          cases frameHolds with
+          | inl rowLtSucc =>
+              have rowEqPivot : rowIndex = pivotIndex :=
+                Nat.le_antisymm (Nat.le_of_lt_succ rowLtSucc) rowGePivot
+              have pivotLtCol : pivotIndex < colIndex :=
+                Nat.lt_of_le_of_ne colGePivot
+                  (fun pivotEqCol => rowNeCol (rowEqPivot.trans pivotEqCol))
+              rw [rowEqPivot]
+              exact crossPointwise.1 colIndex pivotLtCol colLtWidth
+          | inr colLtSucc =>
+              have colEqPivot : colIndex = pivotIndex :=
+                Nat.le_antisymm (Nat.le_of_lt_succ colLtSucc) colGePivot
+              have pivotLtRow : pivotIndex < rowIndex :=
+                Nat.lt_of_le_of_ne rowGePivot
+                  (fun pivotEqRow => rowNeCol (pivotEqRow.symm.trans colEqPivot.symm))
+              rw [colEqPivot]
+              exact crossPointwise.2 rowIndex pivotLtRow rowLtHeight
+
+/-! ## The descending-pivot induction skeleton (H2-SMITH r12, B4) — the growing-frame fold to `Nat.min`
+
+The single-step advances the settled frame `p → p+1`.  The outer `smithReduceTotalSweep` fold threads it
+across pivots: from `SmithPrefixSettled matrix pivotIndex` the whole sweep reaches `SmithPrefixSettled` at
+`Nat.min (Nat.min height width) (pivotIndex + outerFuel)` — capped at `Nat.min height width` because the
+sub-block is POLE-A-walled.  Structural on `outerFuel`: the guard-true step chains B3 (afterPivot settled at
+`pivotIndex + 1`) with the IH on the advanced pivot; the guard-false / fuel-exhausted branches drop to the
+capped frame by monotonicity.  At the driver start (`pivotIndex = 0`, `outerFuel = Nat.min height width`)
+the cap collapses to `Nat.min height width`, giving `IsWindowDiagonal` of the total cross-clear driver's
+output — a genuine POLE-A driver-path window-diagonal result, distinct from (and consistent with) the r4
+refutation `smithReduceTotalIsNotFullyReducing` (which refutes only the divisibility CHAIN, not
+off-diagonal vanishing).  It does NOT close `repairWindowDiagHolds` (that governs the repair phase, which
+re-breaks diagonality per POLE-B); `SmithReduceFullDriverStatement` stays uninhabited; NO flip. -/
+
+/-- **The settled frame is monotone down** — `SmithPrefixSettled matrix pivotIndex` implies
+`SmithPrefixSettled matrix lowerIndex` for `lowerIndex ≤ pivotIndex` (a smaller frame is a weaker claim: its
+disjunct `r < lowerIndex ∨ c < lowerIndex` implies `r < pivotIndex ∨ c < pivotIndex`).  Lets the outer fold
+drop a fuel-exhausted or guard-stopped result to the capped frame index. -/
+theorem smithPrefixSettledMonotone (matrix : IntMatrix) (pivotIndex height width lowerIndex : Nat)
+    (isSettled : SmithPrefixSettled matrix pivotIndex height width) (lowerLe : lowerIndex ≤ pivotIndex) :
+    SmithPrefixSettled matrix lowerIndex height width :=
+  fun rowIndex colIndex rowLtHeight colLtWidth rowNeCol frameLower =>
+    isSettled rowIndex colIndex rowLtHeight colLtWidth rowNeCol
+      (frameLower.elim (fun rowLtLower => Or.inl (Nat.lt_of_lt_of_le rowLtLower lowerLe))
+        (fun colLtLower => Or.inr (Nat.lt_of_lt_of_le colLtLower lowerLe)))
+
+/-- **`Nat.min` of a value with itself** — the propext-clean idempotence (`Nat.min_self` may leak): unfold to
+the `if value ≤ value` and take the reflexive branch. -/
+theorem natMinSelf (value : Nat) : Nat.min value value = value := by
+  show (if value ≤ value then value else value) = value
+  rw [if_pos (Nat.le_refl value)]
+
+/-- **The total cross-clear sweep advances the settled frame** (H2-SMITH r12, B4) — from
+`SmithPrefixSettled matrix pivotIndex` the whole `smithReduceTotalSweep outerFuel` reaches
+`SmithPrefixSettled` at `Nat.min (Nat.min height width) (pivotIndex + outerFuel)`.  Structural on
+`outerFuel`, the growing-frame outer transport: the guard-true step composes `smithCascadeStepSettlesThroughPivot`
+(the frame `p → p+1` advance) with the IH on the advanced pivot; the base and guard-false branches drop to
+the capped frame by `smithPrefixSettledMonotone`. -/
+theorem smithReduceTotalSweepSettlesThroughPivots :
+    ∀ (outerFuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      matrix.IsRectangular height width →
+      SmithPrefixSettled matrix pivotIndex height width →
+      SmithPrefixSettled
+        (matrix.applyOperations (smithReduceTotalSweep outerFuel matrix pivotIndex height width))
+        (Nat.min (Nat.min height width) (pivotIndex + outerFuel)) height width := by
+  intro outerFuel
+  induction outerFuel with
+  | zero =>
+      intro matrix pivotIndex height width _ isSettled
+      exact smithPrefixSettledMonotone matrix pivotIndex height width _ isSettled
+        (natMinLeRight (Nat.min height width) (pivotIndex + 0))
+  | succ outerFuel ih =>
+      intro matrix pivotIndex height width isRect isSettled
+      show SmithPrefixSettled (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width
+              ++ smithReduceTotalSweep outerFuel
+                  (matrix.applyOperations
+                    (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                      height width))
+                  (pivotIndex + 1) height width
+           else []))
+        (Nat.min (Nat.min height width) (pivotIndex + (outerFuel + 1))) height width
+      split
+      · rename_i guardTrue
+        have pivotRowInRange : pivotIndex < height := natLeTrans guardTrue (natMinLeLeft height width)
+        have pivotColInRange : pivotIndex < width := natLeTrans guardTrue (natMinLeRight height width)
+        have afterPivotSettled :
+            SmithPrefixSettled
+              (matrix.applyOperations
+                (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width))
+              (pivotIndex + 1) height width :=
+          smithCascadeStepSettlesThroughPivot matrix pivotIndex height width isRect pivotRowInRange
+            pivotColInRange isSettled
+        have afterPivotRect :
+            (matrix.applyOperations
+                (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width)).IsRectangular height width :=
+          applyOperationsPreservesRectangular _ matrix isRect
+        have ihResult := ih
+          (matrix.applyOperations
+            (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height
+              width))
+          (pivotIndex + 1) height width afterPivotRect afterPivotSettled
+        rw [Nat.succ_add pivotIndex outerFuel] at ihResult
+        rw [applyOperationsAppend]
+        exact ihResult
+      · rename_i guardFalse
+        have minLePivot : Nat.min height width ≤ pivotIndex :=
+          Nat.le_of_lt_succ (Nat.not_le.1 guardFalse)
+        exact smithPrefixSettledMonotone matrix pivotIndex height width _ isSettled
+          (Nat.le_trans (natMinLeLeft (Nat.min height width) (pivotIndex + (outerFuel + 1))) minLePivot)
+
+/-- **Concrete truth probe for the total cross-clear window-diagonal** — on `[[3, 0, 0], [0, 5, 6], [0, 7,
+4]]` the full driver `smithReduceTotalSweep 3 … 0 3 3` zeros every off-diagonal window cell (probed at
+`(0, 1)` and `(1, 2)`); the input is genuinely non-diagonal, so the driver really works.  Anonymous, no
+axiom footprint. -/
+example :
+    (({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix).applyOperations
+        (smithReduceTotalSweep 3 ({ rows := [[3, 0, 0], [0, 5, 6], [0, 7, 4]] } : IntMatrix)
+          0 3 3)).entryAt 1 2 = 0 := by decide
+
+/-- **The total cross-clear driver output is window-diagonal** (H2-SMITH r12, B4 top) — every off-diagonal
+cell of the `height × width` window vanishes after `smithReduceTotalSweep (Nat.min height width) matrix 0`
+(the operations of `smithReduceTotal`).  Instantiate the growing-frame fold at the driver start; the cap
+`Nat.min (Nat.min height width) (0 + Nat.min height width)` collapses to `Nat.min height width`
+(`natMinSelf`), and `smithPrefixSettledAtMinIsWindowDiagonal` reads off the window-diagonal.  A POLE-A
+driver-path result on the cross-clear phase ONLY — the repair phase's `repairWindowDiagHolds` /
+`repairChainHolds` stay walled; NO flip. -/
+theorem smithReduceTotalSweepDiagonalizes (matrix : IntMatrix) (height width : Nat)
+    (isRect : matrix.IsRectangular height width) :
+    ∀ rowIndex colIndex, rowIndex < height → colIndex < width → rowIndex ≠ colIndex →
+      (matrix.applyOperations
+          (smithReduceTotalSweep (Nat.min height width) matrix 0 height width)).entryAt rowIndex colIndex
+        = 0 := by
+  have generalResult :=
+    smithReduceTotalSweepSettlesThroughPivots (Nat.min height width) matrix 0 height width isRect
+      (smithPrefixSettledZero matrix height width)
+  rw [Nat.zero_add, natMinSelf] at generalResult
+  exact smithPrefixSettledAtMinIsWindowDiagonal
+    (matrix.applyOperations (smithReduceTotalSweep (Nat.min height width) matrix 0 height width))
+    height width generalResult
+
 end FX1Poly.ComputerAlgebra
