@@ -435,7 +435,7 @@ theorem stringPureCapSpine_sort (headExtract : StringCapHeadExtractionWordPin)
 
 /-- A concrete CAP spine atom: the lower counit `ε : G·F ⇒ id_tip` with empty whiskering contexts.  Dom
 `G·F` (length `2`), cod `id_tip` (length `0`), window `0` — a genuine cap. -/
-def stringProbeCapAtom :
+def stringCapSortProbeAtom :
     SpineAtom adjointTripleModeSignature AdjointTripleMode.tip AdjointTripleMode.tip :=
   ⟨AdjointTripleMode.tip, AdjointTripleMode.tip,
     ModalityPath.nil (graph := adjointTripleGraph) AdjointTripleMode.tip, stringGF,
@@ -447,14 +447,14 @@ def stringProbeCapAtom :
 word, equal window, both dom length `2`) runs `stringCapAtom_eq_of_sharedDom_sameWindow` — hence the r10 keystone —
 on a genuine cap, a machine-checked non-vacuity witness that the DOM word pin applies to a real cap (dom length 2),
 NOT a vacuous statement. -/
-theorem stringProbeCapAtom_pinFires : stringProbeCapAtom = stringProbeCapAtom :=
-  stringCapAtom_eq_of_sharedDom_sameWindow stringProbeCapAtom stringProbeCapAtom rfl rfl rfl rfl
+theorem stringCapSortProbeAtom_pinFires : stringCapSortProbeAtom = stringCapSortProbeAtom :=
+  stringCapAtom_eq_of_sharedDom_sameWindow stringCapSortProbeAtom stringCapSortProbeAtom rfl rfl rfl rfl
 
 /-- A concrete three-CAP spine (three copies of `ε` at `tip`), a genuine multi-cap witness for the count/transfer
 kit. -/
 def stringProbeThreeCapSpine :
     List (SpineAtom adjointTripleModeSignature AdjointTripleMode.tip AdjointTripleMode.tip) :=
-  [stringProbeCapAtom, stringProbeCapAtom, stringProbeCapAtom]
+  [stringCapSortProbeAtom, stringCapSortProbeAtom, stringCapSortProbeAtom]
 
 /-- The three-cap probe is pure cap (`AllCapArity`) — each `ε` has cap arity `(2, 0)`. -/
 theorem stringProbeThreeCap_allCap : AllCapArity stringProbeThreeCapSpine :=
@@ -463,7 +463,7 @@ theorem stringProbeThreeCap_allCap : AllCapArity stringProbeThreeCapSpine :=
 /-- ★ **The head cap arity FIRES on the three-cap probe.**  `stringHeadCapArity` reads the head `ε`'s cap arity
 `(2, 0)` off the concrete `AllCapArity` witness — the peel-first head read-off, machine-checked. -/
 theorem stringProbeThreeCap_headArity :
-    stringProbeCapAtom.generatorDom.length = 2 ∧ stringProbeCapAtom.generatorCod.length = 0 :=
+    stringCapSortProbeAtom.generatorDom.length = 2 ∧ stringCapSortProbeAtom.generatorCod.length = 0 :=
   stringHeadCapArity stringProbeThreeCap_allCap
 
 /-- ★ **The arc-transfer FIRES on the three-cap probe (reflexive arc).**  Transferring the pure-cap regime across
@@ -501,7 +501,7 @@ arc COUNT/TRANSFER/BASE clones (`stringCapCountReflect`, `stringCupCountReflect`
 `stringPureCapSpine_sort_nil`), the CAP WORD PIN `stringCapAtom_eq_of_sharedDom_sameWindow` (the direct r10-keystone
 call — caps share DOM, so NO adapter, unlike the r17 cup pin), and the fuel-driver skeleton
 `stringPureCapSpineSortFueled` / `stringPureCapSpine_sort` all land, zero-axiom.  The concrete probes
-(`stringProbeCapAtom_pinFires`, `stringProbeThreeCap_headArity`, `stringProbeThreeCap_transferReflexive`,
+(`stringCapSortProbeAtom_pinFires`, `stringProbeThreeCap_headArity`, `stringProbeThreeCap_transferReflexive`,
 `stringProbeThreeCap_sameLengthReflexive`, `stringProbeCapSortNilFires`) fire the pin, the head read-off, the
 transfer, the length reflection, and the base concretely on the lower counit `ε`.  The peel-first cap recursion is
 proven to ASSEMBLE around the ONE colour-keyed discharge.

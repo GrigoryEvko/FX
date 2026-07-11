@@ -26,7 +26,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringPureCapSpine_sort_nil
 #assert_no_axioms FX1Poly.Polygraph.stringCapAtom_eq_of_sharedDom_sameWindow
 #assert_no_axioms FX1Poly.Polygraph.stringPureCapSpine_sort
-#assert_no_axioms FX1Poly.Polygraph.stringProbeCapAtom_pinFires
+#assert_no_axioms FX1Poly.Polygraph.stringCapSortProbeAtom_pinFires
 #assert_no_axioms FX1Poly.Polygraph.stringProbeThreeCap_allCap
 #assert_no_axioms FX1Poly.Polygraph.stringProbeThreeCap_headArity
 #assert_no_axioms FX1Poly.Polygraph.stringProbeThreeCap_transferReflexive
