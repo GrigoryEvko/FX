@@ -14,4 +14,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringSameParityProbe_fires
 #assert_no_axioms FX1Poly.Polygraph.fxString_hasCapStepSameParityExclusion
 
+-- B2 — the WORD-founded prefix descent master (the private assemblers are covered transitively)
+#assert_no_axioms FX1Poly.Polygraph.stringWordPairSeated_bubblesThroughPrefix
+#assert_no_axioms FX1Poly.Polygraph.fxString_hasWordPrefixDescentMaster
+
 end FX1PolyAudit
