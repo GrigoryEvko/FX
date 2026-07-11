@@ -4989,4 +4989,73 @@ theorem smithReduceFullDriverIsRefuted : ¬ SmithReduceFullDriverStatement := by
       (by decide) (by decide) (by decide)
   exact absurd offDiagonalVanishesAt32 (by decide)
 
+/-! ## The JAM-1 wall ledger, RETRACTED to a driver refutation (H2-SMITH r16, B2/B3/B5, #2137); NO flip
+
+**#2137 state — driver-totality, exact.**  `SmithNormalForm.SmithReduceFullDriverStatement` is REFUTED
+(FALSE), witnessed by `smithReduceFullDriverIsRefuted` on the rectangular `diag(10, 10, 6, 9)`.  The r13
+totality assembly `smithReduceFullDriverOfRepairStepAndChain` (UNCHANGED, re-verified) still rests on the
+two named jams `{SmithRepairStepSettlesStatement (JAM 1), repairChainHolds (JAM 2)}` — but that assembly
+is now moot AS A ROUTE TO TRUTH: since the global Prop is false, NO precondition can rescue it, and
+neither jam can be discharged into a total driver.  The r13/r14/r15 "uninhabited wall pending JAM-1
+discharge" framing is RETRACTED.
+
+**The four dead candidates + their refuters.**  Every window-diagonal carrier for JAM 1 is refuted:
+
+  1. pivot-is-min (r14 `SmithReduceTotalPivotMinStatement`) — DEAD via `smithReduceTotalPivotMinIsRefuted`
+     (`reduceTotal([[4,0,0],[0,6,10],[0,15,0]]) = diag(4,1,150)`, `d_0=4 > d_1=1`).
+  2. suffix-min (r15 `SmithSuffixMinRepairInvariant` / `SmithSuffixMinRepairPreservesStatement`) — DEAD
+     via `smithSuffixMinRepairDoesNotPreserve` (the pivot-0 repair of diag(60,90,105,150,210) breaks the
+     min-abs order) and `smithSuffixMinEstablishFailsOnRankDeficient` (over-strong on trailing zeros).
+  3. frame-advance (`SmithRepairStepSettlesStatement` over `SmithPrefixSettled` — the JAM-1 node itself) —
+     DEAD: it survives the r16 24-matrix curated battery (the frame at `p+1` does not constrain the
+     sub-block the drag lands in) but the 400-matrix random stress breaks it 4x, and the global refutation
+     moots it outright.
+  4. per-step window-diagonality (whole-matrix or `(p+1..)`-suffix) — DEAD: the complete pivot-1 repair of
+     the drag family diag(15,-180,-210,150,210) strands `-1050` at (3,2), a later pivot's cross-strip, so
+     full window-diagonality cannot be a per-step invariant.
+
+  The r15 footer named "the cascade min-abs-landing" as the r16 carrier; the r16 probe found it is NOT a
+  distinct carrier — the per-position repair `smithRepairPositionSweep` ALREADY includes the re-cascade and
+  the fold-then-re-cascade loop `SmithSuffixMinRepairPreservesStatement` measured, so it supplies no new
+  precondition.  There is no surviving carrier.
+
+**The elimination-correctness route (an algorithmic bug, not a proof wall).**  `smithReduceFull` composes
+`diagOps ++ repairOps ++ signOps` with `repairOps = smithDivisibilityRepairSweep`; the per-pivot cross-clear
+inside `smithRepairPositionSweep` fires only when `smithFindNonDividingLaterDiagonal` returns `some` — a
+pivot whose diagonal already divides all its successors is SKIPPED.  When an earlier pivot's push-down
+lcm-inflates a residue into such a later-pivot cross-strip (here `30 | 90`, so pivot 2 is skipped), the
+strand is never re-cleared and survives to the output.  The MINIMAL fix is to run the divisibility-repair
+cross-clear UNCONDITIONALLY at each pivot (drop the `smithFindNonDividingLaterDiagonal`-nonempty gate), OR
+append a second `smithReduceTotal` cross-clear pass after `repairOps`.  `smithReduceTotal`'s
+window-diagonalization (r12 `smithReduceTotalSweepDiagonalizes`) and the JAM-2 PRESERVE core (r14
+`applyOperationsPreservesEntriesDivisible`) are CORRECT and untouched — the bug is isolated to the
+divisibility-REPAIR phase's gating.
+
+**Park-and-pivot (B3).**  This arc PARKS: the total-correctness goal `SmithReduceFullDriverStatement` is
+retired as a refuted Prop, not a wall.  The named lane successor is WP-ENDO #2255, which must inherit
+EITHER a FIXED driver (unconditional per-pivot cross-clear, or a second `smithReduceTotal` pass) OR the
+per-input-only correctness contract (the B4 battery: `smithReduceFull` as an untrusted producer whose only
+guarantee is the kernel-checked literal reductions).  It must NOT inherit a "discharge JAM 1" mandate —
+there is nothing to discharge into.
+
+**The named jams, mooted (B5).**  Both jams keep their names and exact goals; both are now unreachable:
+
+  * JAM 1 — `SmithRepairStepSettlesStatement`: exact goal = the frame advance `SmithPrefixSettled p ->
+    SmithPrefixSettled (p+1)` after a complete position sweep; refutable over the bare frame (POLE-B) and
+    mooted by the global refutation.
+  * JAM 2 — `repairChainHolds`: PRESERVE half UNCONDITIONAL (r14 `applyOperationsPreservesEntriesDivisible`),
+    ESTABLISH half coupled to JAM 1; mooted with it.
+
+**Counterweights (B4).**  The historical refuters still land VALID Smith normal form (untouched, re-pinned
+axiom-free this round): `smithDragDiagonalDriverReducesToSmithForm` (`diag(30,20,12) -> diag(2,60,60)`) and
+`smithUnsortedMinorDriverReducesToSmithForm` (`[[4,0,0],[0,6,10],[0,15,0]] -> diag(1,2,300)`).  The bug is
+input-specific, not a total failure.
+
+**Discipline honoured.**  The refutation is a permanent regression on a LITERAL rectangular matrix,
+non-vacuity pinned both directions (rectangular input + nonzero strand).  No carrier is fabricated; the
+statement is NOT flipped.  The 3x3-scale defeq ceiling is respected: the 4x4 witness is the SMALLEST
+genuine refuter and its full-driver defeq reduces at `maxRecDepth 200000`; the 5x5 companion
+diag(-9,-7,-6,4,9) (stranding (4,3)=36 / (3,4)=126) is recorded in prose only, NOT built, to stay under
+the r15 5x5 stack-overflow line. -/
+
 end FX1Poly.ComputerAlgebra
