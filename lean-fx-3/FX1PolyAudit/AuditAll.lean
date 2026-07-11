@@ -800,6 +800,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcStrandClosureFo
 -- FC-3 r20 THE CLONE CAMPAIGN — the cap head-cancellation arc tower ported to the adjoint-triple seed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcComponentShiftFold
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapBoundaryReads
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcHeadFoldedCorr
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
