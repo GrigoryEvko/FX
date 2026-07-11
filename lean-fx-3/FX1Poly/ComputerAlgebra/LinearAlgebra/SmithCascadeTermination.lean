@@ -4383,4 +4383,37 @@ theorem matrixEntriesDivisibleByDiagonal {divisor : Int} {matrix : IntMatrix}
     dividesExactly divisor (matrix.diagonalEntryAt position) :=
   matrixEntriesDivisibleByAt matrixDivisible position position
 
+/-! ## The pivot-is-min premise is REFUTED on-path (H2-SMITH r14, B1 — permanent regression)
+
+The r14 round's central premise — "prove pivot-is-min-abs-of-tail as a `smithReduceTotal`
+postcondition" — is FALSE on the driver's own path, and this permanently records it.  `smithReduceTotal`
+is a selection sort ONLY on already-diagonal minors: when a pivot's cross is already clear it sits
+UNREDUCED while a LATER pivot Euclid-reduces its disconnected sub-block below it.
+`reduceTotal([[4,0,0],[0,6,10],[0,15,0]]) = diag(4, 1, 150)` — `d_0 = 4 > d_1 = 1` — so the reduceTotal
+diagonal is NOT magnitude-nondecreasing.  (Zeros compound it: `reduceTotal(diag(1,54,0)) = diag(1,54,0)`,
+`|0| = 0` smallest yet last.)  Any lemma "reduceTotal output is magnitude-sorted / pivot-is-min" is a
+DEAD lemma; the true no-drag invariant is `SmithSuffixMinRepairInvariant` (B3), not sortedness. -/
+
+/-- **Pivot-is-min AS a `smithReduceTotal` postcondition** — the (refuted) claim that the reduceTotal
+diagonal is magnitude-nondecreasing: every pivot's magnitude bounds every later diagonal's. -/
+def SmithReduceTotalPivotMinStatement : Prop :=
+  ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
+    ∀ pivotIndex laterIndex, pivotIndex ≤ laterIndex → laterIndex < Nat.min height width →
+      ((matrix.applyOperations (smithReduceTotal matrix height width).operations).diagonalEntryAt
+          pivotIndex).natAbs
+        ≤ ((matrix.applyOperations (smithReduceTotal matrix height width).operations).diagonalEntryAt
+          laterIndex).natAbs
+
+set_option maxRecDepth 16384 in
+/-- **Pivot-is-min is REFUTED on-path** — `SmithReduceTotalPivotMinStatement` is FALSE:
+`smithReduceTotal` reduces `[[4,0,0],[0,6,10],[0,15,0]]` (rectangular) to `diag(4, 1, 150)`, whose
+`|d_0| = 4 ≤ |d_1| = 1` is false.  So the round's pivot-is-min premise is a DEAD lemma; the discharge of
+JAM 1 cannot go through it.  The two reduceTotal diagonals compute by defeq (`4` and `1`); `4 ≤ 1` is
+absurd. -/
+theorem smithReduceTotalPivotMinIsRefuted : ¬ SmithReduceTotalPivotMinStatement := by
+  intro isPivotMin
+  have pivotMinAt := isPivotMin { rows := [[4, 0, 0], [0, 6, 10], [0, 15, 0]] } 3 3
+    ⟨rfl, rfl, rfl, rfl, True.intro⟩ 0 1 (by decide) (by decide)
+  exact absurd (id (α := (4 : Nat) ≤ 1) pivotMinAt) (by decide)
+
 end FX1Poly.ComputerAlgebra

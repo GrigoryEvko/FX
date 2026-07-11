@@ -212,4 +212,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.applyOperationsPreservesEntriesDivisible
 #assert_no_axioms FX1Poly.ComputerAlgebra.matrixEntriesDivisibleByDiagonal
 
+/- H2-SMITH r14 — the pivot-is-min premise refuted on-path (B1): the (refuted) pivot-is-min-abs
+   reduceTotal-postcondition statement and its refutation via the driver-computed `diag(4, 1, 150)`
+   (`d_0 = 4 > d_1 = 1`) — a permanent regression recording that the round's central premise is a DEAD
+   lemma; the true no-drag invariant is the suffix-min property (B3), not sortedness. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithReduceTotalPivotMinStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalPivotMinIsRefuted
+
 end FX1PolyAudit
