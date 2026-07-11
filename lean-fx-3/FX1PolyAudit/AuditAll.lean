@@ -878,6 +878,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringUnconditionalCapSo
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapDualR24Ledger
 -- FC-3 r25 B1 — the FORWARD adjacency invariant substrate (disjoint-cap seat push + below-fresh membership monotonicity)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringConsecutiveUntouchedSeat
+-- FC-3 r25 B2 — the DISTINCTNESS-founded prefix descent master (drops the false prefixSharesWindowMode premise)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDescentOfDistinct
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
