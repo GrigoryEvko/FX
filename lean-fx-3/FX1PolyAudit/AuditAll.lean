@@ -754,6 +754,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingLastCupSho
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingWidthZeroChordShift
 -- FC-3 r16 PORT 3 — the width-0 drop-injectivity linchpin at the adjoint-triple seed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingDropLastCup
+-- FC-3 r16 B3 — the boundary-WORD-chain append / peel / snoc substrate (W1-W3)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordChainAppend
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
