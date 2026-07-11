@@ -499,12 +499,10 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlide
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideSoundness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideExtract
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideReadback
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupSlideLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcDescent
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcDescentFold
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcDescentLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcAnchor
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcAnchorLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcMiddle
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcMiddleLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcExtractor
@@ -517,8 +515,6 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldInterior
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldGlue
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStagedDescent
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCorrectedFold
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCorrectedLedger
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldPhasesLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldR5Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryComponents
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGeneratorBridge
@@ -538,28 +534,21 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescWellFormedFoldWidth
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapClass
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTracker
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTrackerInterior
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTrackerLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapChain
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapChainLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBasePermuteBridge
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescThroughStrandPerm
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR25Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescRankPositionDuality
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCupChain
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectThroughChain
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescThroughStrandRoundtrip
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR26Ledger
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR27Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectThroughWeld
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR28Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescMatchingSymm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescPartnerSharesDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFoldLoops
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCircleLoops
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescOpenEndsDistinct
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingDistinct
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR29Ledger
-import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBrauerR30Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
@@ -880,6 +869,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapDualR24Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringConsecutiveUntouchedSeat
 -- FC-3 r25 B2 — the DISTINCTNESS-founded prefix descent master (drops the false prefixSharesWindowMode premise)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDescentOfDistinct
+-- FC-3 r25 B3 — the AllCapArity-augmented cap-head pin-prime + the conditional sort consuming it
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapHeadExtractionWordPinPrime
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
