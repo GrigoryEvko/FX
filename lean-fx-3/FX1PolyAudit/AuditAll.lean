@@ -515,6 +515,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapClass
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTracker
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTrackerInterior
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTrackerLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapChain
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
