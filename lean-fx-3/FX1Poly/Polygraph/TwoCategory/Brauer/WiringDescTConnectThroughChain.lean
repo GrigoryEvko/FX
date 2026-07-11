@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescTConnectCupChain
+import FX1Poly.Polygraph.TwoCategory.Brauer.WiringDescThroughStrandRoundtrip
 
 /-! # BRAUER r26 — THE THROUGH CHAIN: the width-12 monster probe + the honest 5-phase scope
 
@@ -88,6 +89,77 @@ theorem monsterWidth12NonArcs :
         (standardFormWordExt5 (reconstructStandardFormExt5Corrected monsterDiagram))) 8 10 = false) :=
   ⟨by decide, by decide, by decide⟩
 
+/-! ## The P1 seam decode read-off (crux-consuming) — the bottom read-off lands on the through foot -/
+
+/-- Reading a `map` in range commutes with the function — the getAt-map fusion the P1 rank decode consumes. -/
+private theorem natListGetAtMapRT (mapFn : Nat → Nat) : (entries : List Nat) → (index : Nat) →
+    index < entries.length → natListGetAt (entries.map mapFn) index = mapFn (natListGetAt entries index)
+  | [], index, indexBelow => absurd indexBelow (Nat.not_lt_zero index)
+  | _ :: _, 0, _ => rfl
+  | _ :: rest, index + 1, indexBelow => natListGetAtMapRT mapFn rest index (Nat.lt_of_succ_lt_succ indexBelow)
+
+/-- ★★★ **THE P1 SEAM DECODE READ-OFF (general, crux-consuming).**  For every well-formed boundary involution and every
+through-top rank `topRank < |throughStrandTops|`, reading the bottom read-off order `capArcFeet ++ throughStrandBottoms`
+at the through wire's slot `|capArcFeet| + throughStrandPerm[topRank]` reads back the through arc's bottom foot
+`partner[bottomCount + throughStrandTops[topRank]]`.  This is the exact node the seed `bottomPerm` tracker lands on at
+S1 (the P1 seam of the five-phase THROUGH chain): the append-right read past the cap feet reaches
+`throughStrandBottoms[throughStrandPerm[topRank]]`, the rank `throughStrandPerm[topRank]` factors as
+`arcMiddleCountBelow throughStrandBottoms i` (through-strand-perm map factorization + getAt-map), and the r27
+ROUNDTRIP CRUX (`throughStrandBottoms_getAt_arcMiddleCountBelow`) collapses it to `i`.  The genuine crux-into-fold-decode
+leg. -/
+theorem throughReadOffBottom_reads_throughFoot (d : DiagramType)
+    (wf : IsBoundaryInvolution (d.bottomCount + d.topCount) d.partner)
+    (topRank : Nat) (topRankLt : topRank < (throughStrandTops d.bottomCount d.topCount d.partner).length) :
+    natListGetAt (capArcFeet d.bottomCount d.partner ++ throughStrandBottoms d.bottomCount d.partner)
+        ((capArcFeet d.bottomCount d.partner).length
+          + natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank)
+      = natListGetAt d.partner (d.bottomCount
+          + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank) := by
+  have tMem : natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank
+      ∈ throughStrandTops d.bottomCount d.topCount d.partner :=
+    natListGetAtMemCap (throughStrandTops d.bottomCount d.topCount d.partner) topRank topRankLt
+  have iMem : natListGetAt d.partner (d.bottomCount
+        + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank)
+      ∈ throughStrandBottoms d.bottomCount d.partner :=
+    throughStrandTop_partner_memThroughBottoms d.bottomCount d.topCount d.partner wf
+      (natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank) tMem
+  have hr : natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank
+      = arcMiddleCountBelow (throughStrandBottoms d.bottomCount d.partner)
+          (natListGetAt d.partner (d.bottomCount
+            + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank)) := by
+    rw [throughStrandPerm_eq_throughStrandTops_map,
+      natListGetAtMapRT (fun topIndex => arcMiddleCountBelow (throughStrandBottoms d.bottomCount d.partner)
+        (natListGetAt d.partner (d.bottomCount + topIndex)))
+        (throughStrandTops d.bottomCount d.topCount d.partner) topRank topRankLt]
+  rw [natListGetAtAppendRightCup (capArcFeet d.bottomCount d.partner)
+      (throughStrandBottoms d.bottomCount d.partner)
+      (natListGetAt (throughStrandPerm d.bottomCount d.topCount d.partner) topRank), hr]
+  exact throughStrandBottoms_getAt_arcMiddleCountBelow d.bottomCount d.partner
+    (natListGetAt d.partner (d.bottomCount
+      + natListGetAt (throughStrandTops d.bottomCount d.topCount d.partner) topRank)) iMem
+
+/-- ★★ **The P1 decode read-off FIRES on the width-12 monster** (through-top rank `0`: slot `|capArcFeet| = 4`,
+`throughStrandPerm[0] = 0`, reads `throughStrandBottoms[0] = 4 = partner[6] = i`). -/
+theorem throughReadOffBottom_reads_throughFoot_firesMonster :
+    natListGetAt (capArcFeet 6 monsterDiagram.partner ++ throughStrandBottoms 6 monsterDiagram.partner)
+        ((capArcFeet 6 monsterDiagram.partner).length
+          + natListGetAt (throughStrandPerm 6 6 monsterDiagram.partner) 0)
+      = natListGetAt monsterDiagram.partner (6 + natListGetAt (throughStrandTops 6 6 monsterDiagram.partner) 0) :=
+  throughReadOffBottom_reads_throughFoot monsterDiagram monster_isBoundaryInvolution 0 (by decide)
+
+/-- ★★ **The P1 decode read-off FIRES on the mutually-crossing 3-through diagram** (rank `2`: `throughStrandPerm[2] = 1`,
+reads `throughStrandBottoms[1] = 1 = partner[3 + throughStrandTops[2]]`) — the genuine 3-cycle middle-permutation
+witness, exercising the crux at a NON-trivial rank. -/
+theorem throughReadOffBottom_reads_throughFoot_fires3Through :
+    natListGetAt (capArcFeet 3 threeThroughCrossingDiagram.partner
+        ++ throughStrandBottoms 3 threeThroughCrossingDiagram.partner)
+        ((capArcFeet 3 threeThroughCrossingDiagram.partner).length
+          + natListGetAt (throughStrandPerm 3 3 threeThroughCrossingDiagram.partner) 2)
+      = natListGetAt threeThroughCrossingDiagram.partner
+          (3 + natListGetAt (throughStrandTops 3 3 threeThroughCrossingDiagram.partner) 2) :=
+  throughReadOffBottom_reads_throughFoot threeThroughCrossingDiagram
+    isBoundaryInvolution_threeThroughCrossing 2 (by decide)
+
 /-! ## Honesty markers -/
 
 /-- ★★ **Honesty marker — the THROUGH width-12 monster is PROBED (r26, eval FIRST).**  `monsterWidth12Arcs` /
@@ -95,6 +167,18 @@ theorem monsterWidth12NonArcs :
 arc classes plus a loop (the recon self-attack #5), with both THROUGH strands `4↔top0`, `5↔top1` same-component and
 the through–through cross disconnected.  A NEW ingredient marker; it flips NO master.  `= true`. -/
 def fxBrauer_hasThroughWidth12Probe : Bool := true
+
+/-- ★★ **Honesty marker — the P1 SEAM DECODE READ-OFF is SHIPPED GENERAL (r27, the crux consumed in the fold decode).**
+`throughReadOffBottom_reads_throughFoot` proves, zero-axiom and structural, that for EVERY well-formed boundary
+involution the bottom read-off order `capArcFeet ++ throughStrandBottoms` at the through wire's slot
+`|capArcFeet| + throughStrandPerm[topRank]` reads back the through arc's bottom foot — the exact node the seed
+`bottomPerm` tracker lands on at S1.  It consumes the r27 ROUNDTRIP CRUX
+(`throughStrandBottoms_getAt_arcMiddleCountBelow`) through the through-strand-perm map factorization + getAt-map, fired
+on the monster and the 3-cycle 3-through witness.  This is the P1 leg of the five-phase THROUGH chain in general form;
+the S1 → S2 → S3 → S4 → S5 → F transport (P2 cap-survival read, P3 middle tracker, P4 cup-survival read, P5 top tracker
++ keystone, the final trans/flip weld) is NOT yet assembled, so `fxBrauer_hasThroughClassGeneral` stays honestly
+`false` (no fabricated flip).  A NEW ingredient marker; it flips NO master.  `= true`. -/
+def fxBrauer_hasThroughReadOffFoot : Bool := true
 
 /-- **Honesty WALL marker — the THROUGH GENERAL five-phase node-survival is UNBUILT (the r26 risk pole).**  Every
 per-seam ingredient is shipped — the seed `bottomPerm` tracker (P1), the cap-survival `dropFrontPairs` read (P2), the
