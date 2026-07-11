@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.Omega.CongruenceWithId
 import FX1Poly.Polygraph.Omega.StrictAxioms
+import FX1Poly.Polygraph.Omega.PresentationOpDualityWithId
 
 /-! # Polygraph/Omega/WalkingEquivalencePresentation — the walking equivalence as a two-object
 invertible-unit/counit presentation (WP-EQUIV r1, B1)
@@ -419,5 +420,288 @@ def fxEquiv_cancellationRowsLiterallyGlobularBothBoundaries : Bool := true
 with real `Bool` mode and six-label tag comparators separating the two objects and the six generators
 (`walkingEquivObjects_distinct`, `walkingEquivFG_distinct`). -/
 def fxEquiv_firstTwoObjectOmegaWalker : Bool := true
+
+/-! # =========================================================================================
+    # B2 — THE WALKING ADJOINT EQUIVALENCE (the two triangle rows added) + the op-duality note
+    # =========================================================================================
+
+★ **The walking adjoint equivalence = the walking equivalence (B1) + the two triangle-identity rows.**  A bare
+equivalence becomes an ADJOINT equivalence by imposing the two triangle identities (the zig-zag laws).  Over
+the shipped carrier they are the standard whiskerings:
+
+  * Left triangle (for `f`): `(eta |> f) . (f <| eps) ~ id f` — a 2-cell `f => f`.
+  * Right triangle (for `g`): `(g <| eta) . (eps |> g) ~ id g` — a 2-cell `g => g`.
+
+Each is a critical pair MODULO the strict UNIT laws: the triangle leg's boundaries are `(id A . f)` / `(f . id
+B)` (left) and `(g . id A)` / `(id B . g)` (right), joined to `f` / `g` by `vcompUnitLeft` / `vcompUnitRight`.
+So — unlike the B1 iso-cancellations, which are literally globular on both boundaries — the triangle rows are
+modulo-strict at both boundaries, exactly the monad / idempotent situation.
+
+## The op-duality note (recon §4)
+
+The equivalence is SELF-OP-DUAL up to the label involution `colourF <-> colourG`, `etaUnit <-> epsCounit`,
+`etaInv <-> epsInv`.  Under the COOP involution `opCellExpr` (reverse cells, flip `vcomp`, swap whisker kinds)
+the presentation maps to an equivalence of the SAME SHAPE with the two objects and the two 1-generators
+swapped; the four cancellation rows and the two triangle rows are closed under `op` (up to relabeling).  So the
+op-dual walker is a FREE-RIDER: its resolutions are `op`-transports of the originals through the shipped
+generic machine `opCriticalPairResolved` (a machine-checked truth-probe below), NOT a new walker.  This is a
+POSITIVE of self-duality — contrast the adjunction, which is also self-dual but yields nothing new.  (The
+duality is UP TO RELABELING: `opCellExpr` preserves generator LABELS while swapping boundaries, so `op f` is a
+colourF-labeled `B => A` cell, distinct on the nose from `g`; the presentations are isomorphic under the label
+involution, not literally identical.) -/
+
+/-! ## The two triangle legs and the identity 2-cells they collapse to -/
+
+/-- `id f : f => f` — the left triangle's target. -/
+def walkingEquivIdF : CellExpr walkingEquivComputad 2 := CellExpr.id walkingEquivFGen
+
+/-- `id g : g => g` — the right triangle's target. -/
+def walkingEquivIdG : CellExpr walkingEquivComputad 2 := CellExpr.id walkingEquivGGen
+
+/-- ★ The **left triangle leg** `(eta |> f) . (f <| eps) : (id A . f) => (f . id B)` — the left zig-zag for
+`f`, whose collapse to `id f` is the left triangle identity. -/
+def walkingEquivLeftTriangleLeg : CellExpr walkingEquivComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight walkingEquivEtaGen walkingEquivFGen)
+    (CellExpr.whiskerLeft walkingEquivFGen walkingEquivEpsGen)
+
+/-- ★ The **right triangle leg** `(g <| eta) . (eps |> g) : (g . id A) => (id B . g)` — the right zig-zag for
+`g`, whose collapse to `id g` is the right triangle identity. -/
+def walkingEquivRightTriangleLeg : CellExpr walkingEquivComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft walkingEquivGGen walkingEquivEtaGen)
+    (CellExpr.whiskerRight walkingEquivEpsGen walkingEquivGGen)
+
+/-- The left triangle leg's source boundary is `id A . f` (joined to `f` by the left unit). -/
+theorem walkingEquivLeftTriangleLeg_boundarySource :
+    boundarySource walkingEquivLeftTriangleLeg =
+      CellExpr.vcomp walkingEquivIdA walkingEquivFGen := rfl
+
+/-- The left triangle leg's target boundary is `f . id B` (joined to `f` by the right unit). -/
+theorem walkingEquivLeftTriangleLeg_boundaryTarget :
+    boundaryTarget walkingEquivLeftTriangleLeg =
+      CellExpr.vcomp walkingEquivFGen walkingEquivIdB := rfl
+
+/-- The right triangle leg's source boundary is `g . id A` (joined to `g` by the right unit). -/
+theorem walkingEquivRightTriangleLeg_boundarySource :
+    boundarySource walkingEquivRightTriangleLeg =
+      CellExpr.vcomp walkingEquivGGen walkingEquivIdA := rfl
+
+/-- The right triangle leg's target boundary is `id B . g` (joined to `g` by the left unit). -/
+theorem walkingEquivRightTriangleLeg_boundaryTarget :
+    boundaryTarget walkingEquivRightTriangleLeg =
+      CellExpr.vcomp walkingEquivIdB walkingEquivGGen := rfl
+
+/-! ## The two triangle rows and the adjoint base relation (= B1 rows + triangles) -/
+
+/-- ★ The **two triangle-identity rows** — the left and right zig-zag laws.  Adding these two rows to the four
+iso-cancellation rows (B1) presents the walking ADJOINT equivalence. -/
+inductive WalkingEquivTriangleRow :
+    {d : Nat} → CellExpr walkingEquivComputad d → CellExpr walkingEquivComputad d → Prop where
+  /-- The left triangle identity `(eta |> f) . (f <| eps) ~ id f`. -/
+  | leftTriangle : WalkingEquivTriangleRow walkingEquivLeftTriangleLeg walkingEquivIdF
+  /-- The right triangle identity `(g <| eta) . (eps |> g) ~ id g`. -/
+  | rightTriangle : WalkingEquivTriangleRow walkingEquivRightTriangleLeg walkingEquivIdG
+
+/-- The adjoint-equivalence presentation rows: the four iso-cancellations united with the two triangles. -/
+def walkingAdjEquivPresentationRow : CellRelOver walkingEquivComputad :=
+  unionCellRel walkingEquivComputad WalkingEquivCancellationRow WalkingEquivTriangleRow
+
+/-- ★ The **walking adjoint equivalence base relation** — the strict omega laws united with (the four
+iso-cancellations + the two triangle rows).  This is `walkingEquivBaseRel` extended by the two triangles. -/
+def walkingAdjEquivBaseRel : CellRelOver walkingEquivComputad :=
+  unionCellRel walkingEquivComputad (StrictAxiomRel walkingEquivComputad) walkingAdjEquivPresentationRow
+
+/-! ## The two triangle generating 3-cells -/
+
+/-- ★ **THE LEFT-TRIANGLE GENERATING 3-CELL.** -/
+def walkingEquivLeftTriangleThreeCell :
+    SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivLeftTriangleLeg walkingEquivIdF :=
+  SaturatedConvOverWithId.ofRelation (Or.inr (Or.inr WalkingEquivTriangleRow.leftTriangle))
+
+/-- ★ **THE RIGHT-TRIANGLE GENERATING 3-CELL.** -/
+def walkingEquivRightTriangleThreeCell :
+    SaturatedConvOverWithId walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivRightTriangleLeg walkingEquivIdG :=
+  SaturatedConvOverWithId.ofRelation (Or.inr (Or.inr WalkingEquivTriangleRow.rightTriangle))
+
+/-! ## The six per-pair resolutions over the adjoint base relation (generic `CriticalPairResolvedOver`)
+
+The four iso-cancellations re-fire over `walkingAdjEquivBaseRel` (peak / valley `refl`, literally globular);
+the two triangles join their peak / valley MODULO the strict unit laws (`vcompUnitLeft` / `vcompUnitRight`). -/
+
+/-- (E1a) resolved over the adjoint base relation (peak refl, valley refl). -/
+theorem walkingAdjEquivUnitCancelForwardResolved :
+    CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivEtaEtaInv walkingEquivIdIdA :=
+  ⟨SaturatedConvOverWithId.refl _,
+    SaturatedConvOverWithId.ofRelation (Or.inr (Or.inl WalkingEquivCancellationRow.unitCancelForward)),
+    SaturatedConvOverWithId.refl _⟩
+
+/-- (E1b) resolved over the adjoint base relation. -/
+theorem walkingAdjEquivUnitCancelBackwardResolved :
+    CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivEtaInvEta walkingEquivIdUnitA :=
+  ⟨SaturatedConvOverWithId.refl _,
+    SaturatedConvOverWithId.ofRelation (Or.inr (Or.inl WalkingEquivCancellationRow.unitCancelBackward)),
+    SaturatedConvOverWithId.refl _⟩
+
+/-- (E2a) resolved over the adjoint base relation. -/
+theorem walkingAdjEquivCounitCancelForwardResolved :
+    CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivEpsEpsInv walkingEquivIdUnitB :=
+  ⟨SaturatedConvOverWithId.refl _,
+    SaturatedConvOverWithId.ofRelation (Or.inr (Or.inl WalkingEquivCancellationRow.counitCancelForward)),
+    SaturatedConvOverWithId.refl _⟩
+
+/-- (E2b) resolved over the adjoint base relation. -/
+theorem walkingAdjEquivCounitCancelBackwardResolved :
+    CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivEpsInvEps walkingEquivIdIdB :=
+  ⟨SaturatedConvOverWithId.refl _,
+    SaturatedConvOverWithId.ofRelation (Or.inr (Or.inl WalkingEquivCancellationRow.counitCancelBackward)),
+    SaturatedConvOverWithId.refl _⟩
+
+/-- ★ **THE LEFT TRIANGLE IS COHERENTLY RESOLVED** — peak `id A . f ~ f` (left unit), valley `f . id B ~ f`
+(right unit), legs the generating 3-cell.  Modulo-strict at both boundaries. -/
+theorem walkingEquivLeftTriangleResolved :
+    CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivLeftTriangleLeg walkingEquivIdF :=
+  ⟨SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft walkingEquivFGen)),
+    walkingEquivLeftTriangleThreeCell,
+    SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight walkingEquivFGen))⟩
+
+/-- ★ **THE RIGHT TRIANGLE IS COHERENTLY RESOLVED** — peak `g . id A ~ g` (right unit), valley `id B . g ~ g`
+(left unit), legs the generating 3-cell. -/
+theorem walkingEquivRightTriangleResolved :
+    CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+      walkingEquivRightTriangleLeg walkingEquivIdG :=
+  ⟨SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight walkingEquivGGen)),
+    walkingEquivRightTriangleThreeCell,
+    SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft walkingEquivGGen))⟩
+
+/-! ## The adjoint-equivalence coherent presentation and its least-congruence UP -/
+
+/-- ★ **The walking adjoint-equivalence coherent-presentation statement.**  All SIX rows (four
+iso-cancellations + two triangles) coherently resolved over `walkingAdjEquivBaseRel`. -/
+def WalkingAdjointEquivalenceCoherentPresentationStatement : Prop :=
+  CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivEtaEtaInv walkingEquivIdIdA ∧
+  CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivEtaInvEta walkingEquivIdUnitA ∧
+  CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivEpsEpsInv walkingEquivIdUnitB ∧
+  CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivEpsInvEps walkingEquivIdIdB ∧
+  CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivLeftTriangleLeg walkingEquivIdF ∧
+  CriticalPairResolvedOver walkingEquivComputad walkingAdjEquivBaseRel
+    walkingEquivRightTriangleLeg walkingEquivIdG
+
+/-- ★★ **THE WALKING ADJOINT EQUIVALENCE (six rows: four iso-cancellations + two triangles).**  The walking
+adjoint equivalence `<f, g | eta, etaInv, eps, epsInv | four iso-cancellations + two triangles>` re-encoded as
+a two-object `OmegaComputad` 2-polygraph: all six rows exhibited as generating 3-cells, the cancellations
+joined on the nose and the triangles joined modulo the strict units. -/
+theorem walkingAdjointEquivalenceCoherentPresentation :
+    WalkingAdjointEquivalenceCoherentPresentationStatement :=
+  ⟨walkingAdjEquivUnitCancelForwardResolved, walkingAdjEquivUnitCancelBackwardResolved,
+    walkingAdjEquivCounitCancelForwardResolved, walkingAdjEquivCounitCancelBackwardResolved,
+    walkingEquivLeftTriangleResolved, walkingEquivRightTriangleResolved⟩
+
+/-- ★ **THE SIX ADJOINT 3-CELLS GENERATE THE IDENTIFICATION (least-congruence UP).**  For any relation
+`targetRel` absorbing the adjoint base relation, the two sides of every adjoint presentation row (the four
+cancellations + the two triangles) are `targetRel`-related — the six generating 3-cells fold through
+`SaturatedConvOverWithId.recInto` to identify each row in EVERY model. -/
+theorem walkingAdjEquivRowsIdentifiedInEveryModel {targetRel : CellRelOver walkingEquivComputad}
+    (absorbs : IsSaturatedCongruenceWithId walkingEquivComputad walkingAdjEquivBaseRel targetRel)
+    {d : Nat} {leftLeg rightLeg : CellExpr walkingEquivComputad d}
+    (row : walkingAdjEquivPresentationRow leftLeg rightLeg) : targetRel leftLeg rightLeg :=
+  SaturatedConvOverWithId.recInto absorbs (SaturatedConvOverWithId.ofRelation (Or.inr row))
+
+/-! ## The two-row triangle census (adjoint total = four cancellations + two triangles = six) -/
+
+/-- The two triangle-row labels. -/
+inductive WalkingEquivTriangleLabel
+  /-- The left triangle (for `f`). -/
+  | leftTriangle
+  /-- The right triangle (for `g`). -/
+  | rightTriangle
+
+/-- The complete enumeration of the triangle rows — TWO, listed. -/
+def allWalkingEquivTriangles : List WalkingEquivTriangleLabel := [.leftTriangle, .rightTriangle]
+
+/-- ★ **The triangle-row count is exactly TWO** — kernel-checked (`rfl`). -/
+theorem walkingEquivTriangleCountIsTwo : allWalkingEquivTriangles.length = 2 := rfl
+
+/-- ★ **The adjoint-equivalence total row count is exactly SIX** — four iso-cancellations + two triangles,
+kernel-checked (`rfl`). -/
+theorem walkingAdjEquivRowCountIsSix :
+    allWalkingEquivCancellations.length + allWalkingEquivTriangles.length = 6 := rfl
+
+/-! ## The op-duality note — the transported resolution truth-probe (self-op-dual free-rider) -/
+
+/-- ★ **THE OP-DUAL TRANSPORT TRUTH-PROBE (left triangle).**  The left-triangle resolution transported through
+the COOP involution `opCellExpr` via the shipped generic machine `opCriticalPairResolved`: a coherent
+resolution of the op'd legs over `opCellRelOver walkingAdjEquivBaseRel`, with peak and valley SWAPPED.  The
+machine fires on a real shipped resolution — confirming the walking equivalence is a self-op-dual free-rider
+(its op-dual presentation's resolutions ARE the op-transports of the originals, no re-derivation). -/
+theorem walkingEquivLeftTriangleResolvedOpTransported :
+    CriticalPairResolvedOver walkingEquivComputad (opCellRelOver walkingAdjEquivBaseRel)
+      (opCellExpr walkingEquivLeftTriangleLeg) (opCellExpr walkingEquivIdF) :=
+  opCriticalPairResolved walkingEquivLeftTriangleResolved
+
+/-- ★ **THE OP-DUAL TRANSPORT TRUTH-PROBE (unit-cancel-forward).**  The literally-globular E1a resolution
+transported through `op` — confirming the machine fires on the cancellation rows too. -/
+theorem walkingEquivUnitCancelForwardResolvedOpTransported :
+    CriticalPairResolvedOver walkingEquivComputad (opCellRelOver walkingAdjEquivBaseRel)
+      (opCellExpr walkingEquivEtaEtaInv) (opCellExpr walkingEquivIdIdA) :=
+  opCriticalPairResolved walkingAdjEquivUnitCancelForwardResolved
+
+/-! ## B2 non-vacuity — the triangle legs are genuinely distinct and modulo-strict -/
+
+/-- The left triangle legs are structurally DISTINCT (`vcomp` of whiskers vs `id f`). -/
+theorem walkingEquivLeftTriangleLegs_distinct :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq walkingEquivLeftTriangleLeg walkingEquivIdF = false := rfl
+
+/-- The right triangle legs are structurally DISTINCT. -/
+theorem walkingEquivRightTriangleLegs_distinct :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq walkingEquivRightTriangleLeg walkingEquivIdG = false := rfl
+
+/-- ★ **THE LEFT TRIANGLE IS MODULO-STRICT AT THE SOURCE** — the leg source `id A . f` and `id f`'s source `f`
+are structurally DISTINCT (differ by the left unit), so the triangle peak joins only MODULO strict (contrast
+the B1 cancellations, literally globular). -/
+theorem walkingEquivLeftTriangleLegs_notLiterallyParallelSource :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq
+      (boundarySource walkingEquivLeftTriangleLeg) (boundarySource walkingEquivIdF) = false := rfl
+
+/-- ★ **THE LEFT TRIANGLE IS MODULO-STRICT AT THE TARGET** — `f . id B` and `f` differ by the right unit. -/
+theorem walkingEquivLeftTriangleLegs_notLiterallyParallelTarget :
+    cellBeq walkingEquivModeBeq walkingEquivGenBeq
+      (boundaryTarget walkingEquivLeftTriangleLeg) (boundaryTarget walkingEquivIdF) = false := rfl
+
+/-! ## B2 non-vacuity probes -/
+
+#eval cellBeq walkingEquivModeBeq walkingEquivGenBeq walkingEquivLeftTriangleLeg walkingEquivIdF
+#eval cellBeq walkingEquivModeBeq walkingEquivGenBeq walkingEquivRightTriangleLeg walkingEquivIdG
+#eval cellBeq walkingEquivModeBeq walkingEquivGenBeq
+  (boundarySource walkingEquivLeftTriangleLeg) (boundarySource walkingEquivIdF)
+#eval allWalkingEquivTriangles.length
+
+/-! ## B2 honesty markers -/
+
+/-- ★ **ESTABLISHED (B2).**  The walking ADJOINT equivalence adds the two triangle-identity rows to the B1
+presentation: the two triangle legs (`walkingEquivLeftTriangleLeg` / `walkingEquivRightTriangleLeg`), the two
+generating 3-cells, and the six-row coherent presentation
+(`walkingAdjointEquivalenceCoherentPresentation`) with the four cancellations joined on the nose and the two
+triangles joined modulo the strict units.  `= true`. -/
+def fxEquiv_walkingAdjointEquivalenceTrianglesShipped : Bool := true
+
+/-- ★ **THE EQUIVALENCE IS A SELF-OP-DUAL FREE-RIDER.**  `= true` records that the walking equivalence is
+self-op-dual up to the label involution (`colourF <-> colourG`, `etaUnit <-> epsCounit`, `etaInv <-> epsInv`):
+its resolutions transport through the shipped generic `opCriticalPairResolved`
+(`walkingEquivLeftTriangleResolvedOpTransported`, `walkingEquivUnitCancelForwardResolvedOpTransported`), so
+the op-dual walker is a free-rider on the same presentation — a POSITIVE of self-duality (contrast the
+adjunction, self-dual but yielding nothing).  The duality is UP TO RELABELING (`opCellExpr` preserves labels
+while swapping boundaries), not literal identity. -/
+def fxEquiv_equivalenceSelfOpDualFreeRider : Bool := true
 
 end FX1Poly.Polygraph.Omega

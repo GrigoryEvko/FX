@@ -93,4 +93,56 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_cancellationRowsLiterallyGlobularBothBoundaries
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_firstTwoObjectOmegaWalker
 
+-- B2 — the adjoint equivalence: the two triangle legs and their identity 2-cells
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivIdF
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivIdG
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightTriangleLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleLeg_boundarySource
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleLeg_boundaryTarget
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightTriangleLeg_boundarySource
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightTriangleLeg_boundaryTarget
+
+-- B2 — the two triangle rows and the adjoint base relation
+#assert_no_axioms FX1Poly.Polygraph.Omega.WalkingEquivTriangleRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivPresentationRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivBaseRel
+
+-- B2 — the two triangle generating 3-cells
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleThreeCell
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightTriangleThreeCell
+
+-- B2 — the six per-pair resolutions over the adjoint base relation
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivUnitCancelForwardResolved
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivUnitCancelBackwardResolved
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivCounitCancelForwardResolved
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivCounitCancelBackwardResolved
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleResolved
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightTriangleResolved
+
+-- B2 — the adjoint coherent presentation and the least-congruence UP
+#assert_no_axioms FX1Poly.Polygraph.Omega.WalkingAdjointEquivalenceCoherentPresentationStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjointEquivalenceCoherentPresentation
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivRowsIdentifiedInEveryModel
+
+-- B2 — the triangle census
+#assert_no_axioms FX1Poly.Polygraph.Omega.WalkingEquivTriangleLabel
+#assert_no_axioms FX1Poly.Polygraph.Omega.allWalkingEquivTriangles
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivTriangleCountIsTwo
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingAdjEquivRowCountIsSix
+
+-- B2 — the op-duality transport truth-probes
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleResolvedOpTransported
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivUnitCancelForwardResolvedOpTransported
+
+-- B2 — the triangle non-vacuity / modulo-strict witnesses
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleLegs_distinct
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivRightTriangleLegs_distinct
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleLegs_notLiterallyParallelSource
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivLeftTriangleLegs_notLiterallyParallelTarget
+
+-- B2 — the honesty markers
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_walkingAdjointEquivalenceTrianglesShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_equivalenceSelfOpDualFreeRider
+
 end FX1PolyAudit
