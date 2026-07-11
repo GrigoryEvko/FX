@@ -788,6 +788,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPureCapSpineSort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcPairLocateTouch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcComponentPersistence
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcHalfTouchKill
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcPairCapWindow
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
