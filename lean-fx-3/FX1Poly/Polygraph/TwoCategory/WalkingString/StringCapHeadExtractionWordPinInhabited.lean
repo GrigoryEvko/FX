@@ -474,4 +474,47 @@ theorem stringCapHeadExtractionWordPinInhabited : StringCapHeadExtractionWordPin
           compositeAgree
       exact ⟨movedPrefixAtoms ++ suffixAtoms, conjunct1, conjunct2, conjunct3, conjunct4⟩
 
+/-! ## The UNCONDITIONAL pure-cap sort -/
+
+/-- ★★ **The string pure-cap sort, now UNCONDITIONAL.**  Feeding the pin-prime inhabitant to the r25 conditional
+sort `stringPureCapSpine_sort_ofPrime` discharges the last hypothesis: two boundary-chained AND
+boundary-word-chained pure-cap string spines over a bottom boundary with EQUAL arc structure are trace-equivalent,
+with NO discharge hypothesis.  This is the wrapper the r25 `StringUnconditionalCapSortLedger` marker named as its
+target — now genuinely achieved. -/
+theorem stringPureCapSpine_sort_unconditional
+    {overallSource overallTarget : adjointTripleGraph.Mode} (bottomCount : Nat)
+    (bottomWord : ModalityPath adjointTripleGraph overallSource overallTarget)
+    (firstList secondList :
+      List (SpineAtom adjointTripleModeSignature overallSource overallTarget))
+    (chainedFirst : SpineBoundaryChained bottomCount firstList)
+    (chainedSecond : SpineBoundaryChained bottomCount secondList)
+    (firstWordChained : SpineBoundaryWordChained bottomWord firstList)
+    (secondWordChained : SpineBoundaryWordChained bottomWord secondList)
+    (firstPureCap : AllCapArity firstList)
+    (secondPureCap : AllCapArity secondList)
+    (arcEqual : arcStructureOfSpineList bottomCount firstList
+      = arcStructureOfSpineList bottomCount secondList) :
+    SpineTraceEquiv adjointTripleModeSignature firstList secondList :=
+  stringPureCapSpine_sort_ofPrime stringCapHeadExtractionWordPinInhabited bottomCount bottomWord
+    firstList secondList chainedFirst chainedSecond firstWordChained secondWordChained
+    firstPureCap secondPureCap arcEqual
+
+/-! ## Honesty marker -/
+
+/-- **★ ESTABLISHED — the AllCapArity-augmented cap-head pin-prime is INHABITED and the pure-cap sort is now
+UNCONDITIONAL (FC-3 r26).**  `stringCapHeadExtractionWordPinInhabited` builds the four-conjunct discharge as a
+closed, axiom-free term — the port of `spineArcHeadExtractionChained_ofCapArity` with the length-rigid identify
+swapped for the DOM word pin and the word-chain conjunct threaded through the WORD bubble.  The route: LOCATE
+(`stringArcPairCapWindow_ofCapHeadExtractEq`), SEAT + DESCEND (`stringWordPairSeated_bubblesThroughPrefix_ofDistinct`,
+the re-founded distinctness descent), IDENTIFY (`stringCapAtom_eq_of_sharedDom_sameWindow`, both firing at
+`bottomWord`), REALIZE + CANCEL (the WORD-bubble consumers + the r21 `stringArcCapHeadFolded_extractArc_cancel` fed
+the pin-prime's `AllCapArity`).  The located certificate's swapped-read branch is refuted by order-preservation of
+the pure-cap split open-wires (`stringCapFoldAdjIncreasing` — a pure-cap fold from the sorted `range` seed keeps
+`openWires` adjacently strictly increasing).  Feeding the inhabitant to `stringPureCapSpine_sort_ofPrime` yields
+`stringPureCapSpine_sort_unconditional`, the unconditional pure-cap sort.  This flips
+`fxString_hasUnconditionalPureCapSort` (`StringUnconditionalCapSortLedger`) to `true`.  What this does NOT flip:
+`fxString_hasAdjointTripleCompleteness` stays `false` — the mid-zero valley wiring (the (ii) sub-producer
+`StringMidZeroValleyTraceEquiv` + the telescope/floor-0 reconstruct) is separate.  `= true`. -/
+def fxString_hasCapHeadExtractionWordPinInhabited : Bool := true
+
 end FX1Poly.Polygraph
