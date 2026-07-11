@@ -861,6 +861,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapWindowColourTru
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDistinctSeatCapExclusion
 -- FC-3 r24 B3 — the unconditional pure-cap sort marker held FALSE (pin uninhabited) + fresh-valley exclusion example
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringUnconditionalCapSortLedger
+-- FC-3 r24 B4 — the valley-program ledger (r17 cup arm / NOW cap arm modulo one discharge / verbatim owed + wiring bill)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapDualR24Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
