@@ -649,4 +649,45 @@ theorem smithChainPrefixOfDiagonalChainWindowed (matrix : IntMatrix) (pivotIndex
       exact matrixEntriesDivisibleByWithinAt (windowed earlierIndex earlierLt)
         laterIndex laterIndex earlierLtLater earlierLtLater
 
+/-! ## The single surviving wall, named precisely (H2-SMITH r19, B4/B5, #2261)
+
+`repairChainHolds` (the corrected driver's sole residual, consumed by the SHIPPED
+`smithReduceCompleteDriverOfChain`) is reduced by r19 to EXACTLY ONE structural obligation: the
+per-pivot ESTABLISH seed below.  The reduction chain, all zero-axiom shipped this round:
+
+  1. `smithChainPrefixOfDiagonalChainWindowed` — the windowed diagonal chain yields `SmithChainPrefix`
+     (read-off, §Node 3).
+  2. `applyOperationsPreservesEntriesDivisibleWithin` — the windowed tower PROPAGATES each settled
+     `d_earlier`'s sub-block divisibility across any word confined to indices `≥ earlier + 1` (§Node 1).
+  3. `smithDivisibilityRepairSweepClearingOpsBoundedBelow` — the later-pivot repair ops ARE so
+     confined (§Node 1 confinement, truth-probed).
+
+What remains — the ESTABLISH SEED `SmithCascadeLandsDivisibleSubBlock` — is the statement that each
+pivot's clearing position sweep LANDS a `d_p`-divisible sub-block `≥ p+1`.  Semantically this is the
+gcd-ideal invariance (the gcd of the pivot minor is preserved by the unimodular cascade, and the
+cascade lands that gcd at the pivot), which the shipped cascade properties (cross-clear, low-low,
+band-zero) do NOT yet supply — the cascade's interior is transient, guaranteed cross-clear but not
+divisible-interior.  This is the genuine r20 arc (the recon's standing POLE-A-adjacent node); r19
+reduces to it and names it, WITHOUT fabricating it.  Building it plus the cross-pivot carrier (a
+sweep-split + the `d_earlier` low-low freeze threading the motive `ChainWindowedThroughPivots`) closes
+`repairChainHolds` and, via `smithReduceCompleteDriverOfChain`, flips
+`SmithReduceCompleteDriverStatement` to unconditionally inhabited. -/
+
+/-- **The ESTABLISH seed — the single surviving `repairChainHolds` residual.**  After pivot
+`pivotIndex`'s clearing position sweep, the landed pivot diagonal `d_p` divides the WHOLE sub-block at
+indices `≥ pivotIndex + 1` (off-diagonals included, not merely the later diagonals the shipped
+`smithFindNonDividingLaterDiagonalNoneDividesAll` supplies).  The gcd-ideal-invariance content the
+cascade does not yet prove; the r20 arc onto which r19 reduces `repairChainHolds`. -/
+def SmithCascadeLandsDivisibleSubBlock : Prop :=
+  ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
+    matrix.IsRectangular height width → pivotIndex < height → pivotIndex < width →
+    MatrixEntriesDivisibleByWithin
+      ((matrix.applyOperations
+          (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width)).diagonalEntryAt pivotIndex)
+      (pivotIndex + 1)
+      (matrix.applyOperations
+        (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+          matrix pivotIndex height width))
+
 end FX1Poly.ComputerAlgebra

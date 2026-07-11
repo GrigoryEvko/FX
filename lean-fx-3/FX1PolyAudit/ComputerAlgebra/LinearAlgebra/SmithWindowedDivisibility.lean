@@ -60,4 +60,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.MatrixDiagonalChainWindowed
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithChainPrefixOfDiagonalChainWindowed
 
+/- H2-SMITH r19 — B4: the single surviving `repairChainHolds` residual, named precisely.  The gcd-
+   ideal-invariance ESTABLISH seed (each pivot's clearing position sweep lands a d_p-divisible
+   sub-block >= p+1) onto which r19 reduces the chain; the genuine r20 arc, NOT fabricated. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithCascadeLandsDivisibleSubBlock
+
 end FX1PolyAudit
