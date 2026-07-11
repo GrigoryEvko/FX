@@ -60,4 +60,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.diagonalEntryAtBeyondWindowZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.subBlockDiagonalDivisibleOfFindNone
 
+/- H2-SMITH r21 — NODE D (B1/B2): the C3 fuel-adequacy DESCENT REDUCTION (fold/terminal step helpers +
+   rectangularity preservation + the fuel-counting induction reducing find-none-on-output to the two
+   named cascade residuals) + the seed's DIAGONAL half from the descent. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingFoldStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingTerminalStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingFoldStepPreservesRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepReachesFindNoneOfDescent
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepDiagonalHalfOfDescent
+
+/- H2-SMITH r21 — NODE E (B3): route (i) of the C1 adjudication refuted, machine-checked (a diagonal
+   4x4 whose single-pivot clearing sweep leaves a nonzero interior off-diagonal). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepInteriorNotDiagonalWitness
+
 end FX1PolyAudit

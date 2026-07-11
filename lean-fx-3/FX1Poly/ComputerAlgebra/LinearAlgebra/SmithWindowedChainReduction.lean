@@ -681,6 +681,186 @@ theorem subBlockDiagonalDivisibleOfFindNone {height width : Nat} (matrix : IntMa
       rw [diagonalEntryAtBeyondWindowZero matrix isRect position positionGeMin]
       exact dividesExactlyZero (matrix.diagonalEntryAt pivotIndex)
 
+/-! ## NODE D — the C3 fuel-adequacy DESCENT REDUCTION (H2-SMITH r21, B1/B2, #2261)
+
+C2 (`subBlockDiagonalDivisibleOfFindNone`) reduces the seed's DIAGONAL half to a single fact: the
+clearing position-sweep OUTPUT satisfies the find-loop `none`-exit.  NODE D discharges the FUEL-COUNTING
+half of that fact — the descent induction on the sweep fuel — as a Lean theorem, ISOLATING the two
+irreducible cascade-output residuals (the r11+ wall) as explicit named hypotheses.
+
+The two steps a genuine fold iteration takes are named as helpers (`smithClearingFoldStep`,
+`smithClearingTerminalStep`), byte-mirroring the loop's `some`- and `none`-branch bodies.  The reduction
+`smithClearingSweepReachesFindNoneOfDescent` takes:
+
+  * `measure : IntMatrix -> Nat` — the descent measure of the work matrix;
+  * `measureBaseFindNone` — measure `0` forces the find-loop `none`-exit (the fuel-`0` base);
+  * `terminalKeepsFindNone` — the `none`-branch terminal cascade PRESERVES the find-`none` exit (cascade
+    residual (2));
+  * `foldDescends` — a genuine `some`-fold strictly drops the measure (cascade residual (1): rides
+    `smithRepairDecreasesPivotSize`'s gcd-of-pair drop THROUGH the cascade output, the r11+ wall);
+
+and concludes, by structural induction on the fuel, that the sweep output satisfies find-`none` whenever
+`measure matrix <= fuel`.  The fuel-counting is MECHANICAL and complete; the cascade residuals are
+NAMED, not fabricated.  This is the r20 reduce-to-named-residual pattern applied to C3.
+
+**Truth-probed** (r21 eval, read-only) — the descent is real with a HUGE margin.  On the r16 refuter
+`diag(6,9,10,10)` at pivot 0 the pivot magnitude descends `6 -> 3 -> 1` in two `some`-folds before the
+`none`-exit, against fuel `smithMinorAbsSum = 35`; at pivot 1 it descends `18 -> 10 -> 2` against fuel
+`58`.  The `outputFindNone = none` target holds on every fixture (the diagonal half is TRUE per input).
+The probe ALSO reveals the descent measure is NOT plain `|pivot|`: a zero pivot BOOTSTRAPS non-monotonically
+(`diag(0,4)` jumps `|pivot| 0 -> 4` on step 1, then `none`), so `foldDescends`'s witness measure is
+lexicographic — its existence is exactly the cascade-output-magnitude content. -/
+
+/-- **One clearing fold+cascade step** — the `some`-branch body of `smithRepairPositionSweepClearing`:
+fold the found row into the pivot row, then fire the standalone Euclid cascade.  Byte-mirrors the loop. -/
+def smithClearingFoldStep (work : IntMatrix) (foundPos pivotIndex height width : Nat) : IntMatrix :=
+  let afterFold := work.applyOperations
+    [ ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+  afterFold.applyOperations
+    (smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width) afterFold pivotIndex height width)
+
+/-- **The clearing terminal cascade** — the `none`-branch body: fire the standalone Euclid cascade on
+the current matrix (the r17 fix that clears an earlier pivot's stranded cross residue). -/
+def smithClearingTerminalStep (work : IntMatrix) (pivotIndex height width : Nat) : IntMatrix :=
+  work.applyOperations
+    (smithCascadeSweep (smithMinorAbsSum work pivotIndex height width) work pivotIndex height width)
+
+/-- The fold step preserves rectangularity (two confined `applyOperations`). -/
+theorem smithClearingFoldStepPreservesRectangular {height width : Nat}
+    (work : IntMatrix) (foundPos pivotIndex : Nat) (isRect : work.IsRectangular height width) :
+    (smithClearingFoldStep work foundPos pivotIndex height width).IsRectangular height width :=
+  applyOperationsPreservesRectangular _ _
+    (applyOperationsPreservesRectangular _ work isRect)
+
+/-- **NODE D — the fuel-adequacy descent reduction.**  GIVEN a descent `measure` whose base forces the
+find-`none` exit, whose terminal cascade preserves find-`none`, and whose genuine fold strictly drops it,
+the clearing position sweep started with any `fuel >= measure matrix` lands the find-`none` exit on its
+output.  Structural induction on the fuel: the `none`-branch discharges via `terminalKeepsFindNone`; the
+`some`-branch rewrites the output through `applyOperationsAppend` to `smithClearingFoldStep`-then-recursion
+and rides the IH at the dropped measure (`foldDescends` + `Nat.le_of_lt_succ`); the `fuel = 0` base rides
+`measureBaseFindNone` (the loop emits `[]`, output = input).  The mechanical fuel-counting; the cascade
+residuals `terminalKeepsFindNone` / `foldDescends` are the r11+ wall, NAMED not fabricated. -/
+theorem smithClearingSweepReachesFindNoneOfDescent
+    (pivotIndex height width : Nat)
+    (measure : IntMatrix → Nat)
+    (measureBaseFindNone : ∀ (work : IntMatrix),
+        measure work = 0 →
+        smithFindNonDividingLaterDiagonal work pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none)
+    (terminalKeepsFindNone : ∀ (work : IntMatrix), work.IsRectangular height width →
+        pivotIndex < height → pivotIndex < width →
+        smithFindNonDividingLaterDiagonal work pivotIndex
+            (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none →
+          smithFindNonDividingLaterDiagonal (smithClearingTerminalStep work pivotIndex height width)
+            pivotIndex (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none)
+    (foldDescends : ∀ (work : IntMatrix), work.IsRectangular height width →
+        pivotIndex < height → pivotIndex < width →
+        ∀ foundPos, smithFindNonDividingLaterDiagonal work pivotIndex
+            (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = some foundPos →
+          measure (smithClearingFoldStep work foundPos pivotIndex height width) < measure work) :
+    ∀ (fuel : Nat) (matrix : IntMatrix), matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width → measure matrix ≤ fuel →
+      smithFindNonDividingLaterDiagonal
+        (matrix.applyOperations (smithRepairPositionSweepClearing fuel matrix pivotIndex height width))
+        pivotIndex (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix _ _ _ measureLe
+      exact measureBaseFindNone matrix (Nat.le_antisymm measureLe (Nat.zero_le _))
+  | succ fuel ih =>
+      intro matrix isRect pRowLt pColLt measureLe
+      cases hFind : smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+      | none =>
+          rw [smithRepairPositionSweepClearingSucc, hFind]
+          exact terminalKeepsFindNone matrix isRect pRowLt pColLt hFind
+      | some foundPos =>
+          rw [smithRepairPositionSweepClearingSucc, hFind, applyOperationsAppend, applyOperationsAppend]
+          exact ih (smithClearingFoldStep matrix foundPos pivotIndex height width)
+            (smithClearingFoldStepPreservesRectangular matrix foundPos pivotIndex isRect)
+            pRowLt pColLt
+            (Nat.le_of_lt_succ
+              (Nat.lt_of_lt_of_le (foldDescends matrix isRect pRowLt pColLt foundPos hFind) measureLe))
+
+/-- **NODE D — the seed's DIAGONAL half from the descent reduction.**  Compose the NODE D reduction (at
+the driver's fuel `smithMinorAbsSum matrix pivotIndex height width`) with the shipped C2 bridge
+`subBlockDiagonalDivisibleOfFindNone`.  GIVEN the descent hypotheses AND the fuel-budget bound
+`measure matrix <= smithMinorAbsSum matrix pivotIndex height width`, the sweep output satisfies the seed's
+`SubBlockDiagonalDivisibleFrom` — the DIAGONAL half of `SmithCascadeLandsDivisibleSubBlock` at this pivot.
+The off-diagonal half remains C1 (NODE E).  This is B2's "diagonal half end-to-end" AS A LEAN THEOREM,
+modulo the three named cascade/measure residuals (no fabrication). -/
+theorem smithClearingSweepDiagonalHalfOfDescent
+    (pivotIndex height width : Nat)
+    (measure : IntMatrix → Nat)
+    (measureBaseFindNone : ∀ (work : IntMatrix),
+        measure work = 0 →
+        smithFindNonDividingLaterDiagonal work pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none)
+    (terminalKeepsFindNone : ∀ (work : IntMatrix), work.IsRectangular height width →
+        pivotIndex < height → pivotIndex < width →
+        smithFindNonDividingLaterDiagonal work pivotIndex
+            (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none →
+          smithFindNonDividingLaterDiagonal (smithClearingTerminalStep work pivotIndex height width)
+            pivotIndex (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = none)
+    (foldDescends : ∀ (work : IntMatrix), work.IsRectangular height width →
+        pivotIndex < height → pivotIndex < width →
+        ∀ foundPos, smithFindNonDividingLaterDiagonal work pivotIndex
+            (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = some foundPos →
+          measure (smithClearingFoldStep work foundPos pivotIndex height width) < measure work)
+    (matrix : IntMatrix) (isRect : matrix.IsRectangular height width)
+    (pRowLt : pivotIndex < height) (pColLt : pivotIndex < width)
+    (measureBudget : measure matrix ≤ smithMinorAbsSum matrix pivotIndex height width) :
+    SubBlockDiagonalDivisibleFrom
+      ((matrix.applyOperations (smithRepairPositionSweepClearing
+          (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width)).diagonalEntryAt
+        pivotIndex)
+      (pivotIndex + 1)
+      (matrix.applyOperations (smithRepairPositionSweepClearing
+        (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width)) :=
+  subBlockDiagonalDivisibleOfFindNone
+    (matrix.applyOperations (smithRepairPositionSweepClearing
+      (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width))
+    (applyOperationsPreservesRectangular _ matrix isRect)
+    pivotIndex
+    (smithClearingSweepReachesFindNoneOfDescent pivotIndex height width measure
+      measureBaseFindNone terminalKeepsFindNone foldDescends
+      (smithMinorAbsSum matrix pivotIndex height width) matrix isRect pRowLt pColLt measureBudget)
+
+/-! ## NODE E — route (i) of the C1 adjudication REFUTED, machine-checked (H2-SMITH r21, B3, #2261)
+
+The r17 route (i) hoped to close the seed's OFF-diagonal half by proving the single-pivot clearing sweep
+leaves the trailing sub-block DIAGONAL (so every off-diagonal is `0`, divisible by anything — the
+"sub-block-stays-diagonal" bridging lemma).  r20 refuted this in PROSE (the settles kit delivers only the
+L-frame `SmithPrefixSettled (p+1)`, never the trailing interior).  NODE E upgrades that to a THEOREM: a
+concrete DIAGONAL rectangular input whose single-pivot sweep output carries a NONZERO interior
+off-diagonal cell.
+
+Witness (r21 eval-found): `diag(15, 10, 6, 4)`, pivot `0`, cell `(3, 1)` lands `-20`.  A `4x4` single-pivot
+kernel pin (within the defeq ceiling; `decide` at `maxRecDepth 8000`, ~0.6s).  So the bridging lemma of
+route (i) CANNOT exist — the off-diagonal half genuinely needs route (ii), the gcd-ideal invariance
+(the fill-in IS divisible by the landed pivot `d_p = 1`, but only via the SNF invariant-factor argument,
+NOT via diagonality).  Truth-probed further: a `3x3` diagonal input keeps its `2x2` interior diagonal
+(fill-in needs a `>=3x3` interior); the WHOLE sweep (all pivots) DOES restore full diagonality — but the
+seed is stated PER pivot, where the interior is generally non-diagonal. -/
+
+set_option maxRecDepth 8000 in
+/-- **NODE E — route (i) refuted.**  A diagonal rectangular matrix whose single-pivot clearing sweep
+output has a nonzero interior off-diagonal entry (`diag(15,10,6,4)`, pivot `0`, cell `(3,1) = -20`).  So
+"the single-pivot sweep output is sub-block-diagonal" is FALSE; the seed's off-diagonal half is the
+gcd-ideal (SNF invariant-factor) major arc, not a diagonality bridge. -/
+theorem smithClearingSweepInteriorNotDiagonalWitness :
+    ∃ (matrix : IntMatrix) (pivotIndex height width rowIndex colIndex : Nat),
+      matrix.IsRectangular height width ∧
+      pivotIndex < height ∧ pivotIndex < width ∧
+      pivotIndex < rowIndex ∧ pivotIndex < colIndex ∧ rowIndex ≠ colIndex ∧
+      (matrix.applyOperations (smithRepairPositionSweepClearing
+        (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width)).entryAt
+        rowIndex colIndex ≠ 0 :=
+  ⟨{ rows := [[15, 0, 0, 0], [0, 10, 0, 0], [0, 0, 6, 0], [0, 0, 0, 4]] }, 0, 4, 4, 3, 1,
+   ⟨rfl, rfl, rfl, rfl, rfl, trivial⟩,
+   by decide, by decide, by decide, by decide, by decide, by decide⟩
+
 /-! ## The r20 arc ledger (H2-SMITH r20, B4, #2261) — the reduction is now a THEOREM; ONE residual left
 
 **What r20 flipped.**  r19's headline "seed ⟹ `repairChainHolds`" lived only in prose and the verifier
