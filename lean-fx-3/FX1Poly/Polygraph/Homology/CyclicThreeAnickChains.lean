@@ -721,4 +721,58 @@ and backed by the general uniqueness theorem; the general length-collapse is the
 the meaning from THIS docstring.  `= true`. -/
 def anickGeneralDerivedCountCollapseIsNamedNode : Bool := true
 
+/-! ## B4 (r2) — THE CROWN BRICK: the computable per-degree RANK-ORACLE interface, and the honest
+    unbounded-rank r3 node (the multi-obstruction Anick carrier) — the `S_1` wall stays UNMOVED
+
+The recon adjudication (item 4): the cyclic-3 Anick count is constant `1` (maximally FINITE), but the
+`S_1` obstruction-3 wall (`SquierNoGoInterface.carrierDegreeThreeChainIsAlwaysFinite`) wants the OPPOSITE —
+`basisCount → ∞` (unbounded per-degree rank) at one degree.  So this round supplies NEITHER the `S_1`
+non-finiteness witness NOR any escape of the rank-finiteness wall.  What it CAN honestly supply: (i) the
+computable, uniqueness-certified per-degree rank ORACLE (`anickMinimalChainsAtDegree k · |>.length`) — the
+exact per-degree rank-data SHAPE the finiteness machinery reads, returning `1` for the single-letter
+walkers but structurally identical machinery for any presentation; and (ii) a NAMED r3 node — the
+multi-obstruction Anick carrier whose per-degree rank is UNBOUNDED.  NO overclaim on the wall. -/
+
+/-- ★ **THE COMPUTABLE RANK-ORACLE INTERFACE.**  The per-degree Anick-generator count as an executable
+`Nat → Nat` oracle: enumerate the candidate space, filter by the decidable guard, take the length.  This
+is the honest rank-data interface the finiteness machinery consumes — decidable, uniqueness-certified
+(§B2), tip-length-generic.  For the single-letter walkers it returns `1`; the SAME code pointed at a
+presentation with unbounded overlap towers would return an unbounded sequence (the r3 node). -/
+def anickMinimalChainRankOracle (tipLength degree : Nat) : Nat :=
+  (anickMinimalChainsAtDegree tipLength degree).length
+
+/-- **The rank oracle IS the derived count** — the interface coincides with the enumeration count of §B3,
+for every `tipLength` and degree.  `rfl`. -/
+theorem anickRankOracleEqualsDerivedCount (tipLength degree : Nat) :
+    anickMinimalChainRankOracle tipLength degree = anickChainCountAtDegreeDerived tipLength degree := rfl
+
+/-- ★ **The cyclic-3 rank oracle returns the FINITE constant `1` (the wrong shape for `S_1`)** at degrees
+1–6 — maximally finite, the opposite of the `basisCount → ∞` the `S_1` obstruction-3 wall consumes.  The
+oracle reproduces the constant-1 finiteness anchor; it does NOT move the wall.  `rfl` per degree. -/
+theorem cyclicThreeRankOracleIsOneThroughDegreeSix :
+    anickMinimalChainRankOracle 3 1 = 1 ∧
+    anickMinimalChainRankOracle 3 2 = 1 ∧
+    anickMinimalChainRankOracle 3 3 = 1 ∧
+    anickMinimalChainRankOracle 3 4 = 1 ∧
+    anickMinimalChainRankOracle 3 5 = 1 ∧
+    anickMinimalChainRankOracle 3 6 = 1 :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- ★★ **THE NAMED r3 NODE: the multi-obstruction Anick carrier (unbounded per-degree rank).**  The
+`S_1` non-finiteness witness the wall wants (`carrierDegreeThreeChainIsAlwaysFinite`, obligation 3) needs a
+per-degree chain count that GROWS without bound — structurally unreachable from this file's SINGLE-obstruction
+carrier (`tipLength : Nat`, one word `sᵏ`), which is constant-`1` by construction.  The honest r3 node is a
+MULTI-OBSTRUCTION Anick carrier: a list of obstruction words / general monomial ideal whose minimal overlaps
+BRANCH, so the Anick n-chain count grows with `n`.  Concrete candidate (per the recon): a two-generator
+monomial system `k⟨x, y⟩ / (monomial relations)` whose minimal overlaps branch so the Anick chain count is
+unbounded in `n` (single-obstruction degenerates to the constant `1` of this file).  The enumerator's SHAPE
+ports VERBATIM — fueled candidate generation + a decidable minimal-overlap guard + `.length`; only the guard
+(multi-obstruction minimal-overlap) and the example are new.  Squier's actual `S_1` is neither single-letter
+nor purely monomial, so the honest bridge is "monomial analog with unbounded Betti numbers first, then the
+FDT / `FP_3` separation."  Net: r2 delivers the rank oracle through which a future infinite-rank example is
+read, and NAMES this r3 node — NOT any movement of the `S_1` wall
+(`squierWitnessLedger.homologicalNonFinitenessStatus` unchanged).  Read the meaning from THIS docstring.
+`= true`. -/
+def multiObstructionAnickCarrierIsNamedNode : Bool := true
+
 end FX1Poly.Polygraph.Homology

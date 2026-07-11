@@ -89,4 +89,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeAnickDerivedCountMatchesPeriodicTowerBasis
 #assert_no_axioms FX1Poly.Polygraph.Homology.anickGeneralDerivedCountCollapseIsNamedNode
 
+-- B4 (r2): the computable rank-oracle interface + the named multi-obstruction r3 node
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickMinimalChainRankOracle
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickRankOracleEqualsDerivedCount
+#assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeRankOracleIsOneThroughDegreeSix
+#assert_no_axioms FX1Poly.Polygraph.Homology.multiObstructionAnickCarrierIsNamedNode
+
 end FX1PolyAudit
