@@ -787,6 +787,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPureCapSpineSort
 -- FC-3 r19 THE CAP-HEAD DISCHARGE PORT — LOCATE substrate, head-location scan floor
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcPairLocateTouch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcComponentPersistence
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcHalfTouchKill
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
