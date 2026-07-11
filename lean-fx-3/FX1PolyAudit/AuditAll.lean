@@ -591,6 +591,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPeelSignatureCeiling
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommuteRefutation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshnessInvariant
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshGatedPartitionCommute
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneFaithful
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCanonicalization
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingDecisionAssembly
@@ -1214,6 +1215,7 @@ import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickChains
 import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickBoundaryHomology
 import FX1PolyAudit.Polygraph.Homology.AnickTelescopeAugmentationAndMonomialFiniteness
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleTowerHopfBridge
+import FX1PolyAudit.Polygraph.Homology.HopfShadowCokerSmithCertificate
 import FX1PolyAudit.Polygraph.Homology.AcyclicObstructionTruncationCertificate
 import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
 import FX1PolyAudit.Polygraph.Homology.BlockDiagonalCertificateLifting
@@ -1341,6 +1343,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCoxeterUniquenessAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarAssemblyAudit
 -- WP-PROP r8 — the general wideSwap(m,n) riffle word BUILT (the r7 unbuilt wall falls): the three-layer nested shuffle blockPastBlock/riffleIn/wideSwap, matrix-correct at the transpose permutation q=(p%n)*m+(p/n) (pinned rfl at (1,1),(2,1),(1,2),(2,2),(3,2), matches middleSwap at (2,2)); the staged bialgebra NF (deltaStage;wideSwap;muStage) matched to the collision at generic width; the Coxeter sorted-NF scaffold (sigmaAt/permWord carrier + fuel-structural bubble-sort skeleton); the honest star partial narrowed to two named lemmas (generic-width naturality slide + CoxeterWordUnique), NO star flip, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRiffleAssemblyAudit
+-- WP-PROP r9 — the position-generic move library: the firing combinator bunchedBimonoidFireAtPosition wraps ANY base convertibility in a whiskerLeft leftPad (whiskerRight _ rightPad) frame via the two one-hole congruences (whnf-free, no matrix eval), and the seven shipped base moves (five Coxeter/double-coset + two naturality slides) fire at generic position; the two naturality slides DELIVER the wide-collision recursion's gate (a) [the generic-width naturality slide the r8 marker named]; the (m,n) recursion stays gated on gate (b) Coxeter + the induction glue, the star does NOT flip, zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPositionGenericMovesAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
