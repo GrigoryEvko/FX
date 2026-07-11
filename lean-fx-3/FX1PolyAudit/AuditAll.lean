@@ -833,6 +833,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapHeadLoops
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapHeadDiagram
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapHeadStructure
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapHeadCancellation
+-- FC-3 r22 B2 P1 — the adjoint-triple mode-parity substrate (the descent's seat/refute bookkeeping)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointTripleModeParity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
