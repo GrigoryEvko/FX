@@ -54,4 +54,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepClearingBoundedBelow
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepClearingOpsBoundedBelow
 
+/- H2-SMITH r19 — NODE 3 read-off: the windowed sub-block diagonal chain yields `SmithChainPrefix`
+   (the second conjunct of the cross-pivot motive; the bridge from the windowed tower's output to the
+   chain the corrected-driver totality consumes). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.MatrixDiagonalChainWindowed
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithChainPrefixOfDiagonalChainWindowed
+
 end FX1PolyAudit

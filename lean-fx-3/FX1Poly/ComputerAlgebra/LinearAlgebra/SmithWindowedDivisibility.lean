@@ -617,4 +617,36 @@ theorem smithDivisibilityRepairSweepClearingOpsBoundedBelow :
             (smithDivisibilityRepairSweepClearingOpsBoundedBelow outerFuel _ (startPivot + 1) height width))
       · rfl
 
+/-! ## The windowed sub-block predicate yields the invariant-factor chain (Node 3 read-off)
+
+The chain `SmithChainPrefix` reads only the diagonal.  A prefix in which every settled `d_earlier`
+divides its OWN `[earlier+1, ·) × [earlier+1, ·)` sub-block yields the chain directly: every later
+diagonal `d_later` (`later > earlier`) sits at `(later, later)` inside that sub-block, so
+`d_earlier ∣ d_later`; the `later = earlier` case is the trivial self-divisibility.  This is the exact
+second conjunct of the Node-3 motive `ChainWindowedThroughPivots` — the windowed preserve tower
+propagates it, the confinement bounds the propagating ops, and the ONLY residual is the ESTABLISH seed
+(each pivot's cascade LANDS a `d_p`-divisible sub-block; the gcd-ideal-invariance wall). -/
+
+/-- **The windowed diagonal chain** — every settled prefix diagonal `d_earlier` divides its own
+`[earlier+1, ·)` sub-block.  The (a) invariant that DIRECTLY implies `SmithChainPrefix`, and (b) is
+preserved by the confined later-pivot repair ops via the windowed tower. -/
+def MatrixDiagonalChainWindowed (matrix : IntMatrix) (pivotIndex : Nat) : Prop :=
+  ∀ earlierIndex, earlierIndex < pivotIndex →
+    MatrixEntriesDivisibleByWithin (matrix.diagonalEntryAt earlierIndex) (earlierIndex + 1) matrix
+
+/-- **The windowed diagonal chain yields `SmithChainPrefix`** — the Node-3 read-off.  For
+`earlier < later`, the later diagonal `(later, later)` lies in `d_earlier`'s sub-block
+(`earlier + 1 ≤ later`), so it is `d_earlier`-divisible; the `earlier = later` case is `d ∣ d`. -/
+theorem smithChainPrefixOfDiagonalChainWindowed (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (windowed : MatrixDiagonalChainWindowed matrix pivotIndex) :
+    SmithChainPrefix matrix pivotIndex height width := by
+  intro earlierIndex earlierLt laterIndex earlierLeLater _laterLtMin
+  cases Nat.eq_or_lt_of_le earlierLeLater with
+  | inl earlierEqLater =>
+      rw [← earlierEqLater]
+      exact ⟨1, (intMulOne (matrix.diagonalEntryAt earlierIndex)).symm⟩
+  | inr earlierLtLater =>
+      exact matrixEntriesDivisibleByWithinAt (windowed earlierIndex earlierLt)
+        laterIndex laterIndex earlierLtLater earlierLtLater
+
 end FX1Poly.ComputerAlgebra
