@@ -3825,4 +3825,138 @@ theorem smithRepairPositionSweepReachesCrossClear :
           exact ih afterClear pivotIndex height width afterClearRect pivotRowInRange pivotColInRange
             afterClearCrossClear
 
+/-! ## The composed repair postcondition (H2-SMITH r13, B3) — the conditional fold to window-diagonal
+
+r12's cross-clear window-diagonal (`smithReduceTotalSweepDiagonalizes`) is assembled UNCONDITIONALLY because
+its single-step `smithCascadeStepSettlesThroughPivot` advances the settled frame `p → p+1` for every settled
+input: the cross-clear cascade always clears the cross at `p`.  The recon's honest adjudication (§2c) is that
+the REPAIR single-step is NOT one-step-unconditional: the fold+re-cascade can DRAG a residue into the
+sub-block (POLE-B, eval-confirmed) and the repair fires only on DIAGONAL non-divisibility, so a dirty
+cross-strip at `p` that the diagonal already divides is left UNCLEARED — the frame does not advance for
+arbitrary settled inputs.
+
+So B3 ships the FULL-RE-RUN shape as a CONDITIONAL assembly, isolating the wall to ONE named `Prop`.
+`SmithRepairStepSettlesStatement` is the repair analogue of `smithCascadeStepSettlesThroughPivot` (the
+per-position repair sweep advances the settled frame `p → p+1`).  The growing-frame fold
+`smithDivisibilityRepairSweepSettlesThroughPivots` — a verbatim mirror of the r12 cross-clear
+`smithReduceTotalSweepSettlesThroughPivots`, with the single-step CALL replaced by the named HYPOTHESIS —
+threads it across pivots; `smithDivisibilityRepairSweepDiagonalizes` reads off `IsWindowDiagonal` of the whole
+repair output at the driver start.  Pure structural transport, propext-clean, no new math: the reusable
+machinery that closes the repair window-diagonal THE MOMENT the single-step is available.
+
+**Honest scope (retained, like POLE-B).**  `SmithRepairStepSettlesStatement` is REFUTABLE over the bare
+`SmithPrefixSettled` frame: the eval-confirmed standalone `[[2, 0, 0], [0, 60, 0], [0, 60, -60]]` (the
+pivot-0 repair output on the UNSORTED `diag(30, 20, 12)`) is `SmithPrefixSettled` at `1` and rectangular with
+pivot `1` in range, yet the pivot-`1` repair sweep does NOTHING (`60 ∣ -60`, so `find` returns `none`),
+leaving the frame-`2` cell `(2, 1) = 60 ≠ 0`.  Closing it needs a STRICTLY STRONGER driver-path invariant than
+`SmithPrefixSettled` — the min-magnitude/pre-sort property of `smithReduceTotal`'s output that forbids the drag
+(the deep POLE-A elimination-correctness).  So the fold is honest reusable transport, not a discharge;
+`SmithReduceFullDriverStatement` stays uninhabited; NO flip. -/
+
+/-- **The repair single-step advance (named, refutable over the bare frame)** — the per-position repair sweep
+advances the settled frame `p → p+1`.  The repair analogue of the UNCONDITIONALLY-true cross-clear step
+`smithCascadeStepSettlesThroughPivot`; here it is a HYPOTHESIS, REFUTED over the bare `SmithPrefixSettled`
+frame by the POLE-B eval (`[[2,0,0],[0,60,0],[0,60,-60]]` at pivot `1`).  Isolates the repair-fold
+window-diagonal wall to exactly this one `Prop`; discharging it needs the driver-path min-magnitude invariant,
+not frame monotonicity. -/
+def SmithRepairStepSettlesStatement : Prop :=
+  ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
+    matrix.IsRectangular height width →
+    pivotIndex < height → pivotIndex < width →
+    SmithPrefixSettled matrix pivotIndex height width →
+    SmithPrefixSettled
+      (matrix.applyOperations
+        (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width)
+          matrix pivotIndex height width))
+      (pivotIndex + 1) height width
+
+/-- **The divisibility-repair sweep advances the settled frame (conditional)** — GIVEN the repair single-step
+`SmithRepairStepSettlesStatement`, from `SmithPrefixSettled matrix pivotIndex` the whole
+`smithDivisibilityRepairSweep outerFuel` reaches `SmithPrefixSettled` at
+`Nat.min (Nat.min height width) (pivotIndex + outerFuel)`.  A verbatim mirror of the r12 cross-clear fold
+`smithReduceTotalSweepSettlesThroughPivots` — structural on `outerFuel`, the guard-true step chains the
+hypothesised single-step (afterPosition settled at `pivotIndex + 1`) with the IH on the advanced pivot; the
+base and guard-false branches drop to the capped frame by `smithPrefixSettledMonotone`.  The single-step is
+the ONLY wall (refutable over the bare frame; NO flip). -/
+theorem smithDivisibilityRepairSweepSettlesThroughPivots
+    (stepSettles : SmithRepairStepSettlesStatement) :
+    ∀ (outerFuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      matrix.IsRectangular height width →
+      SmithPrefixSettled matrix pivotIndex height width →
+      SmithPrefixSettled
+        (matrix.applyOperations (smithDivisibilityRepairSweep outerFuel matrix pivotIndex height width))
+        (Nat.min (Nat.min height width) (pivotIndex + outerFuel)) height width := by
+  intro outerFuel
+  induction outerFuel with
+  | zero =>
+      intro matrix pivotIndex height width _ isSettled
+      exact smithPrefixSettledMonotone matrix pivotIndex height width _ isSettled
+        (natMinLeRight (Nat.min height width) (pivotIndex + 0))
+  | succ outerFuel ih =>
+      intro matrix pivotIndex height width isRect isSettled
+      show SmithPrefixSettled (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                height width
+              ++ smithDivisibilityRepairSweep outerFuel
+                  (matrix.applyOperations
+                    (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix
+                      pivotIndex height width))
+                  (pivotIndex + 1) height width
+           else []))
+        (Nat.min (Nat.min height width) (pivotIndex + (outerFuel + 1))) height width
+      split
+      · rename_i guardTrue
+        have pivotRowInRange : pivotIndex < height := natLeTrans guardTrue (natMinLeLeft height width)
+        have pivotColInRange : pivotIndex < width := natLeTrans guardTrue (natMinLeRight height width)
+        have afterPositionSettled :
+            SmithPrefixSettled
+              (matrix.applyOperations
+                (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width))
+              (pivotIndex + 1) height width :=
+          stepSettles matrix pivotIndex height width isRect pivotRowInRange pivotColInRange isSettled
+        have afterPositionRect :
+            (matrix.applyOperations
+                (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width)).IsRectangular height width :=
+          applyOperationsPreservesRectangular _ matrix isRect
+        have ihResult := ih
+          (matrix.applyOperations
+            (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+              height width))
+          (pivotIndex + 1) height width afterPositionRect afterPositionSettled
+        rw [Nat.succ_add pivotIndex outerFuel] at ihResult
+        rw [applyOperationsAppend]
+        exact ihResult
+      · rename_i guardFalse
+        have minLePivot : Nat.min height width ≤ pivotIndex :=
+          Nat.le_of_lt_succ (Nat.not_le.1 guardFalse)
+        exact smithPrefixSettledMonotone matrix pivotIndex height width _ isSettled
+          (Nat.le_trans (natMinLeLeft (Nat.min height width) (pivotIndex + (outerFuel + 1))) minLePivot)
+
+/-- **The repair output is window-diagonal (conditional)** — GIVEN the repair single-step
+`SmithRepairStepSettlesStatement`, every off-diagonal cell of the `height × width` window vanishes after
+`smithDivisibilityRepairSweep (Nat.min height width) matrix 0`, for ANY rectangular `matrix`.  Instantiate the
+conditional fold at the driver start (`pivotIndex = 0`, vacuous base `smithPrefixSettledZero`); the cap
+`Nat.min (Nat.min height width) (0 + Nat.min height width)` collapses to `Nat.min height width` (`natMinSelf`),
+and `smithPrefixSettledAtMinIsWindowDiagonal` reads off the window-diagonal.  This is EXACTLY the driver's
+`repairWindowDiagHolds` shape (instantiated at `matrix := smithReduceTotal output` in B4); the single-step is
+the ONLY residual (NO flip). -/
+theorem smithDivisibilityRepairSweepDiagonalizes
+    (stepSettles : SmithRepairStepSettlesStatement)
+    (matrix : IntMatrix) (height width : Nat)
+    (isRect : matrix.IsRectangular height width) :
+    ∀ rowIndex colIndex, rowIndex < height → colIndex < width → rowIndex ≠ colIndex →
+      (matrix.applyOperations
+          (smithDivisibilityRepairSweep (Nat.min height width) matrix 0 height width)).entryAt rowIndex colIndex
+        = 0 := by
+  have generalResult :=
+    smithDivisibilityRepairSweepSettlesThroughPivots stepSettles (Nat.min height width) matrix 0 height width
+      isRect (smithPrefixSettledZero matrix height width)
+  rw [Nat.zero_add, natMinSelf] at generalResult
+  exact smithPrefixSettledAtMinIsWindowDiagonal
+    (matrix.applyOperations (smithDivisibilityRepairSweep (Nat.min height width) matrix 0 height width))
+    height width generalResult
+
 end FX1Poly.ComputerAlgebra

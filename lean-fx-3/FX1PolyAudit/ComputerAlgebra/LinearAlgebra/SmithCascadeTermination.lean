@@ -167,4 +167,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairFoldCascadeReachesCrossClear
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepReachesCrossClear
 
+/- H2-SMITH r13 — the composed repair postcondition (B3): the named repair single-step `Prop` (refutable over
+   the bare `SmithPrefixSettled` frame per POLE-B), the conditional growing-frame fold (verbatim mirror of the
+   r12 cross-clear `smithReduceTotalSweepSettlesThroughPivots`, single-step CALL replaced by HYPOTHESIS), and
+   the conditional window-diagonal read-off at the driver start.  Reusable structural transport isolating the
+   repair-fold window-diagonal wall to ONE named `Prop`; `SmithReduceFullDriverStatement` stays uninhabited. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithRepairStepSettlesStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepSettlesThroughPivots
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepDiagonalizes
+
 end FX1PolyAudit
