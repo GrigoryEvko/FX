@@ -413,26 +413,30 @@ def fxBrauer_hasCorrectedTargetWildExercise : Bool := true
 
 /-! ## B5 — the #2013 endgame ledger after r20 -/
 
-/-- **Honesty WALL marker — the GENERAL `WellFormedBrauerFold`-for-corrected-word (hence the general corrected
-target) stays OPEN after r20.**  This round shipped the connectivity-free half of the r19 wall's third residual: the
-four per-phase discharge lemmas (`wellFormedBrauerFold_crossingWord` / `_cupWord` / `_capZeros` / `_circleWord`) and
-the six-phase reduction (`wellFormedBrauerFold_standardFormWordExt5_ofPhases`) that assembles the corrected word from
-six per-phase width obligations, plus the word-level append-split (`wellFormedBrauerFold_append` / `_appendSplit`).
-What stays OPEN is FEEDING the six obligations from the corrected extractor's fields:
+/-- ★★★ **Honesty marker — the GENERAL `WellFormedBrauerFold`-for-corrected-word is SHIPPED (BRAUER r21).**  The r20
+scaffold — the four per-phase discharge lemmas (`wellFormedBrauerFold_crossingWord` / `_cupWord` / `_capZeros` /
+`_circleWord`), the six-phase reduction (`wellFormedBrauerFold_standardFormWordExt5_ofPhases`), and the word-level
+append-split (`wellFormedBrauerFold_append` / `_appendSplit`) — is now FED from the corrected extractor's fields by
+`wellFormedBrauerFold_correctedWord_general` (`Brauer/WiringDescWellFormedFoldWidth.lean`): for EVERY well-formed
+boundary involution `d`, the corrected word `standardFormWordExt5 (reconstructStandardFormExt5Corrected d)` is
+well-formed at the seed.  The feeding bridges (all zero-axiom, structural):
 
-  * the three crossing phases need the staircase POSITION-BOUND
-    `∀ pos ∈ permutationToCrossingWord n perm, pos + 2 ≤ n` (a range property of the descending-swap selection sort);
-  * the cap phase (`wellFormedBrauerFold_capZeros`) needs `#capFeet + #capFeet ≤ bottomCount` AND the phase-boundary
-    WIDTH being `bottomCount`, and the cup phase (`wellFormedBrauerFold_cupWord`) needs the phase-boundary width being
-    `#through` — i.e. the counting identities `2·#capFeet + #through = bottomCount`, `#through + 2·#cupArcs = topCount`
-    threaded through the cap/cup width-accounting.
+  * the staircase POSITION-BOUND `permutationToCrossingWord_posBound` on the two range-permutation read-offs
+    (bottom / top crossing phases) and on ★ `throughStrandPerm_isBounded` (A′ — the middle order's `[0, #through)`
+    boundedness, each emitted rank strict via the involution);
+  * the crossing width-preservation `crossingWordFold_openWires_length` + the cap SHRINK / cup GROW block laws
+    (`capBlockOpenWiresShrinkWidth` / `cupBlockOpenWiresGrowWidth`);
+  * the two cruxes `capArcFeetTwiceThroughSumsToBottom` / `cupArcTwiceThroughSumsToTop` and ★ the through-count
+    symmetry `throughStrandBottoms_length_eq_throughStrandTops` (the phase-boundary-width residual the two cruxes
+    did NOT jointly close), fixing the phase-boundary widths.
 
-Those two — the staircase position-bound and the phase-boundary width-accounting — are the standing width residual.
-And BEYOND `WellFormedBrauerFold`, the r19 wall's OTHER two residuals — the through-strand cross-phase T-CONNECT
-(exercised here only as the eval-first `throughStrandConnects_probe`, not proven at boundary-index granularity over
-arbitrary interior-crossing states) and T-ENUM / E3 fold-alignment — stay unbuilt.  So `fxBrauer_hasFoldAlignmentE3`,
-the tag-correspondence masters `fxBrauer_hasTagCorrDisjoint` / `fxBrauer_hasTagCorrExtraction`, and the r19 wall
-`fxBrauer_hasFoldTargetHonestAssembly` all stay honestly `false`; #2013 does NOT close.  `= false`. -/
-def fxBrauer_hasWellFormedFoldGeneralAssembly : Bool := false
+This is the connectivity-free half of the r19 wall's third residual, DISCHARGED — a straight-line width-accounting
+assembly, NO induction over the diagram, NO connectivity, NO arc classification.  BEYOND `WellFormedBrauerFold`, the
+r19 wall's OTHER two residuals stay unbuilt: the through-strand cross-phase T-CONNECT (at boundary-index granularity
+over arbitrary interior-crossing states — exercised here only as the eval-first `throughStrandConnects_probe`) and
+T-ENUM / E3 fold-alignment.  So `fxBrauer_hasFoldAlignmentE3`, the tag-correspondence masters
+`fxBrauer_hasTagCorrDisjoint` / `fxBrauer_hasTagCorrExtraction`, and the r19 wall
+`fxBrauer_hasFoldTargetHonestAssembly` all stay honestly `false`; #2013 does NOT close.  `= true`. -/
+def fxBrauer_hasWellFormedFoldGeneralAssembly : Bool := true
 
 end FX1Poly.Polygraph
