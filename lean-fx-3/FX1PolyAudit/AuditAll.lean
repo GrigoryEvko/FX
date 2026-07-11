@@ -872,6 +872,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDistinctSeatCapExc
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringUnconditionalCapSortLedger
 -- FC-3 r24 B4 — the valley-program ledger (r17 cup arm / NOW cap arm modulo one discharge / verbatim owed + wiring bill)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapDualR24Ledger
+-- FC-3 r25 B1 — the FORWARD adjacency invariant substrate (disjoint-cap seat push + below-fresh membership monotonicity)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringConsecutiveUntouchedSeat
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
