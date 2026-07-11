@@ -857,6 +857,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapWindowSeedRe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDescent
 -- FC-3 r24 B1 — the located-prefix colour read truth-probed FALSE (AllCapArity does NOT imply prefixSharesWindowMode)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapWindowColourTruthProbe
+-- FC-3 r24 B2 — the COLOUR-FREE cap-step gap-closing exclusion (distinctness + pre-adjacency replaces the colour premise)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDistinctSeatCapExclusion
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
