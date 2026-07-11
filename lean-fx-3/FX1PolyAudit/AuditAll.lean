@@ -1129,6 +1129,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingDistLawPresentationAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingDistLawSortNFAudit
 -- WP-DISTLAW r1 — the no-go / free-theory boundary ledger + census feed (B4 + B5)
 import FX1PolyAudit.Polygraph.Omega.DistLawNoGoLedgerAudit
+-- WP-EQUIV r1 — the walking equivalence: two-object invertible-unit/counit presentation (B1)
+import FX1PolyAudit.Polygraph.Omega.WalkingEquivalencePresentationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
