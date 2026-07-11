@@ -1361,6 +1361,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRiffleAssemblyAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPositionGenericMovesAudit
 -- WP-PROP r10 — the Coxeter-free collision canon form: the (m,n) wide collision retracts to the staged bialgebra NF (collisionCanonForm := bialgebraNF, matrix-correct at (2,1),(1,2),(2,2),(3,2)); the flagship (2,2) collision-to-staged-NF convertibility DELIVERED zero-Coxeter (peel-to-generator unit strips + the shipped width-2 bialgebra brick + one vcompAssoc, NO Yang-Baxter/CoxeterWordUnique/bubble-sort); the integer bubble-sort machine-refuted as a sort-to-CONV bridge (permWord [1,0] 3 != permWord [0,1] 3 -- adjacent generators do not commute); the general (m+2,n+2) arm stays gated on the bracket-match Coxeter content, the star does NOT flip, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCollisionCanonFormAudit
+-- WP-PROP r11 — the permutation-matrix read-off: pure List Nat symmetric-group engine + permMatrixOf + concrete extractor pins (evalCell (permWord) = permMatrixOf (permOfWord)) + r11-pair reduction; the Omega mirror of the Brauer permutationDiagram read-off
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
