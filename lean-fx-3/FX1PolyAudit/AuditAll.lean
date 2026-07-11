@@ -1054,6 +1054,7 @@ import FX1PolyAudit.Polygraph.Homology.PeriodicTowerChainComplex
 import FX1PolyAudit.Polygraph.Homology.FreeGroupReducedWord
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleCyclicThree
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleIdentityInvariant
+import FX1PolyAudit.Polygraph.Homology.CyclicThreeAnickChains
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
