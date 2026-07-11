@@ -447,13 +447,19 @@ theorem pigeonholeHoldsOverNonBinaryCarrier :
 module ships `listOverCarrierRepeats` (the classical finite-carrier walk pigeonhole, alphabet-agnostic,
 zero-axiom), which is r10's named ingredient (i) of `generalGraphLongestPathBoundIsNamedNode`.  The
 general statement `isAcyclicUfnarovskiGraph edges vertexCount = true ==> ∀ degree, vertexCount ≤ degree
-==> multiObstructionChainRankOracle edges degree = 0` still needs the following, recorded honestly:
+==> multiObstructionChainRankOracle edges degree = 0` still needs the following (residual (0) now
+DELIVERED in r12; (ii)/(iii)/assembly still open), recorded honestly:
 
-  (0) **the n-ary alphabet enumerator** — NEW prerequisite surfaced by FINDING A (the truth-probes): the
-      shipped `allWordsOfLength` / `multiObstructionChainRankOracle` are BINARY-hardwired (blind to
-      letters `≥ 2`), so the pigeonhole cannot connect to the census at any alphabet `> {0, 1}` until an
-      `allWordsOverAlphabet` + a re-based census oracle exist.  The general node has FOUR ingredients, not
-      the three r10 recorded.
+  (0) **the n-ary alphabet enumerator** — DELIVERED (r12,
+      `FX1Poly.Polygraph.Homology.NaryAlphabetObstructionChainEnumerator`).  The shipped
+      `allWordsOfLength` / `multiObstructionChainRankOracle` were BINARY-hardwired (blind to letters
+      `≥ 2`) — the wall FINDING A named — so the pigeonhole could not connect to the census at any
+      alphabet `> {0, 1}`.  r12 ships `allWordsOverAlphabet` + the re-based census oracle
+      `multiObstructionChainRankOracleOver`, PROVEN to subsume the binary enumerator
+      (`binaryEnumeratorAgrees` / `binaryOracleAgrees`, so no regression), with the reconnection
+      corollaries healing the alphabet-blind censuses (the DAG chain / diamond truncating at their TRUE
+      longest path, the 3-cycle constant).  The general node has FOUR ingredients, not the three r10
+      recorded — this one now supplied.
   (ii) **checker saturation** — FINDING B: `isAcyclicUfnarovskiGraph edges vertexCount = true` is sound
       only at saturating fuel (a length-`L` cycle is caught only at `fuel ≥ L - 1`); proving `fuel =
       vertexCount` captures every cycle is a separate hard lemma the pigeonhole does not touch.
@@ -469,10 +475,12 @@ def generalGraphSoundnessResidualsAfterPigeonhole : Bool := true
 finite-carrier walk pigeonhole `listOverCarrierRepeats` (r10 named ingredient (i)), STRUCTURAL on the
 carrier via `removeAllVertexOccurrences` + the additive `removeAllLengthPlusCount` (no `Nat.sub`) + the
 `List.Mem`-constructor membership transport, with the three hostile-graph verdicts pinned as `rfl`
-truth-probes and an alphabet-agnostic ship-gate witness.  Ingredient (i) DELIVERED; residuals (0) n-ary
-alphabet enumerator (FINDING A), (ii) checker saturation (FINDING B), (iii) topological-sort longest-path
-bound, plus assembly — all NAMED in `generalGraphSoundnessResidualsAfterPigeonhole`, never papered.  Read
-the meaning from THIS docstring (the honest-record convention). -/
+truth-probes and an alphabet-agnostic ship-gate witness.  Ingredient (i) DELIVERED; residual (0) n-ary
+alphabet enumerator (FINDING A) DELIVERED in r12
+(`FX1Poly.Polygraph.Homology.NaryAlphabetObstructionChainEnumerator`); residuals (ii) checker saturation
+(FINDING B), (iii) topological-sort longest-path bound, plus assembly — all NAMED in
+`generalGraphSoundnessResidualsAfterPigeonhole`, never papered.  Read the meaning from THIS docstring
+(the honest-record convention). -/
 def finiteCarrierWalkPigeonholeIsShipped : Bool := true
 
 end FX1Poly.Polygraph.Homology
