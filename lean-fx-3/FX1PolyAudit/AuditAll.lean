@@ -242,6 +242,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutInteriorOrdinalReanchor
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFiringBlockProducer
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeCanonical
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutIdentityLayoutCollapse
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutPayloadZipProbeVerdict
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalFactorizeProbes
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutInteriorProducerStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
