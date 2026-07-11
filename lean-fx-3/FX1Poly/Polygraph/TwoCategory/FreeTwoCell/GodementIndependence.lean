@@ -511,14 +511,17 @@ per-port `internalCupCounts` / `internalCapCounts` remain.  The fold-threading a
 discharged.  `= true`. -/
 def fxMode_hasArcGodementReducedToPartitionCommute : Bool := true
 
-/-- **Honesty marker — the union-find PARTITION independence is the standing obligation.**
-`ArcGodementPartitionCommute` states that transposing the two horizontally-disjoint middle blocks preserves the
-boundary partner matching, the loop count, and the per-port internal cup/cap arc data — i.e. the union-find
-PARTITION the extract reads off is unchanged.  TRUE (disjoint port-support merge sequences induce the same
-connected components up to the fresh-id renaming) and computationally confirmed on the obstruction witnesses; its
-general zero-axiom proof (a partition-isomorphism simulation between the two run orders) is the one remaining
-soundness obligation, shared with the matching route's `fxMode_hasMatchingGodementIndependenceProof`.
-`= false`. -/
+/-- **Honesty marker — the union-find PARTITION independence, REFUTED AS STATED (the standing residual is the
+freshness-conditioned one).**  `ArcGodementPartitionCommute` states that transposing the two horizontally-disjoint
+middle blocks preserves the boundary partner matching, the loop count, and the per-port internal cup/cap arc
+data — i.e. the union-find PARTITION the extract reads off is unchanged.  As STATED (over EVERY `ArcWireState`)
+this is FALSE, not merely unproven: `not_arcGodementPartitionCommute`
+(`FreeTwoCellArcPartitionCommuteRefutation`) refutes it zero-axiom at an adversarial state whose `links` names an
+id `≥ nextFresh` — the two run orders then extract different `.diagram`s, the parent-level sharpening of the
+sibling's `not_arcGodementSamePartition`.  So this flag stays `false` and CANNOT be flipped; the genuine,
+provable residual is the FRESHNESS-conditioned `ArcGodementSamePartitionFresh`
+(`fxMode_hasArcGodementSamePartitionFreshProof`), which under `ArcStateFresh state` DOES hold (the disjoint fresh
+ranges stay disjoint).  `= false`. -/
 def fxMode_hasArcPartitionCommuteProof : Bool := false
 
 end FX1Poly.Polygraph
