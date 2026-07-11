@@ -1199,6 +1199,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPresentationAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemanticsAudit
 -- WP-BI r3 — the over-quotient adjudication: OUTCOME O (r1 22-row congruence over-quotients) + restored soundness
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidOverQuotientAdjudicationAudit
+-- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
+import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
