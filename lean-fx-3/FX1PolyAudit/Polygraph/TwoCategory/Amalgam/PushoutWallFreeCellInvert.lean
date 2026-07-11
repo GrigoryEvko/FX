@@ -28,5 +28,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.monadPathWord_composePath
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.mapAppendDistrib
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.pathInvert_composePath
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvert
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.tRunTwoWallFreeJoin
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvert_id_size
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvert_gen_size
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.probeVcomp
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvert_vcomp_size
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.probeWhiskerLeft
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvertWhiskerLeftProbe
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.probeWhiskerRight
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.wallFreeCellInvertWhiskerRightProbe
 
 end FX1PolyAudit

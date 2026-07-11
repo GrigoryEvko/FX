@@ -141,13 +141,19 @@ theorem monadInterpOfPushoutInterp
 2-generator at the `pathInvert` boundary — the CONVERSE of `interpretWordFrom_map`.  The index is
 `retractRightTwoGen generator.val`; the two interpreter conjuncts are `monadInterpOfPushoutInterp` applied to the
 generator's stored `lhs` / `rhs` words (rewritten from the pushout 2-generator table by `pushoutGetRetract`).  NO
-2-cell equality is decided.  This is the r11-scoped `gen` case, delivered. -/
+2-cell equality is decided.  This is the r11-scoped `gen` case, delivered.  The boundary modes are universally
+quantified (the whisker case of `wallFreeCellInvert` supplies an existential middle mode); both collapse to
+`monadPushMode` by the singleton `pushoutModeUnique` (`subst`, propext-free), after which the monadPushMode-specific
+`monadInterpOfPushoutInterp` fires. -/
 def wallFreeGenInvert
-    {sourcePath targetPath : ModalityPath involutionMonadPushout.toModeGraph monadPushMode monadPushMode}
+    {sourceMode targetMode : Fin involutionMonadPushout.modeCount}
+    {sourcePath targetPath : ModalityPath involutionMonadPushout.toModeGraph sourceMode targetMode}
     (generator : involutionMonadPushout.ReconstructedTwoCell sourcePath targetPath)
     (wfS : pathWallFree sourcePath) (wfT : pathWallFree targetPath) :
-    monadComputad.ReconstructedTwoCell (pathInvert sourcePath wfS) (pathInvert targetPath wfT) :=
-  ⟨retractRightTwoGen generator.val,
+    monadComputad.ReconstructedTwoCell (pathInvert sourcePath wfS) (pathInvert targetPath wfT) := by
+  obtain rfl := pushoutModeUnique sourceMode
+  obtain rfl := pushoutModeUnique targetMode
+  exact ⟨retractRightTwoGen generator.val,
     monadInterpOfPushoutInterp
       (monadComputad.twoCellGenerators.get (retractRightTwoGen generator.val)).lhs sourcePath wfS
       (pushoutGetLhsWord generator.val ▸ generator.property.1),
@@ -248,5 +254,116 @@ theorem pathInvert_composePath
       monadEmbedInvert_word first wfFirst,
       monadEmbedInvert_word second wfSecond]
   exact pushoutPathWord_composePath first second
+
+/-! ## The four-case structural recursion `wallFreeCellInvert` -/
+
+/-- ★★★ **THE WALL-FREE CELL CONVERSE.**  A wall-free-boundary pushout 2-cell reconstructs a MONAD 2-cell at the
+`pathInvert` boundary.  Structural on the cell, mirroring `mapCellAlong` with `pathInvert` in place of `mapPath`:
+
+  * **`gen`** — the crux `wallFreeGenInvert`;
+  * **`id`** — `id (pathInvert path _)` (proof-irrelevant `pathInvert`, so source/target coincide);
+  * **`vcomp`** — recurse on both halves, the middle 1-cell's wall-freeness from `wallFreeMiddleOfCell` (cast-free —
+    `pathInvert` of the shared middle is one term);
+  * **`whiskerLeft` / `whiskerRight`** — split the composite boundary (`pathWallFree_composePath_split`), whisker the
+    `pathInvert`-frame over the recursively-inverted core, and reconcile through the single `castBoundary
+    (pathInvert_composePath …)` — byte-for-byte `mapCellAlong`'s whisker shape.
+
+The pushout middle mode never enters the output (`pathInvert` is fixed endo at `monadOnlyMode`), so there is no
+`Eq.rec`-through-a-type-level-function; the boundaries carry by `pathInvert`.  This is the r11-scoped forward cell
+converse, delivered. -/
+def wallFreeCellInvert :
+    {sourceMode targetMode : Fin involutionMonadPushout.modeCount} →
+    {sourcePath targetPath : ModalityPath involutionMonadPushout.toModeSignature.graph sourceMode targetMode} →
+    RawTwoCellExpr involutionMonadPushout.toModeSignature sourcePath targetPath →
+    (wfS : pathWallFree sourcePath) → (wfT : pathWallFree targetPath) →
+    RawTwoCellExpr monadComputad.toModeSignature (pathInvert sourcePath wfS) (pathInvert targetPath wfT)
+  | _, _, _, _, .gen generator, wfS, wfT => RawTwoCellExpr.gen (wallFreeGenInvert generator wfS wfT)
+  | _, _, _, _, .id path, wfS, _wfT =>
+      RawTwoCellExpr.id (signature := monadComputad.toModeSignature) (pathInvert path wfS)
+  | _, _, _, _, .vcomp cellAlpha cellBeta, wfS, wfT =>
+      RawTwoCellExpr.vcomp (wallFreeCellInvert cellAlpha wfS (wallFreeMiddleOfCell cellAlpha wfS))
+        (wallFreeCellInvert cellBeta (wallFreeMiddleOfCell cellAlpha wfS) wfT)
+  | _, _, _, _, @RawTwoCellExpr.whiskerLeft _ _ _ _ oneCell bodyDom bodyCod body, wfS, wfT =>
+      RawTwoCellExpr.castBoundary
+        (pathInvert_composePath oneCell bodyDom wfS
+          (pathWallFree_composePath_split oneCell bodyDom wfS).1
+          (pathWallFree_composePath_split oneCell bodyDom wfS).2).symm
+        (pathInvert_composePath oneCell bodyCod wfT
+          (pathWallFree_composePath_split oneCell bodyDom wfS).1
+          (pathWallFree_composePath_split oneCell bodyCod wfT).2).symm
+        (RawTwoCellExpr.whiskerLeft
+          (pathInvert oneCell (pathWallFree_composePath_split oneCell bodyDom wfS).1)
+          (wallFreeCellInvert body
+            (pathWallFree_composePath_split oneCell bodyDom wfS).2
+            (pathWallFree_composePath_split oneCell bodyCod wfT).2))
+  | _, _, _, _, @RawTwoCellExpr.whiskerRight _ _ _ _ bodyDom bodyCod oneCell body, wfS, wfT =>
+      RawTwoCellExpr.castBoundary
+        (pathInvert_composePath bodyDom oneCell wfS
+          (pathWallFree_composePath_split bodyDom oneCell wfS).1
+          (pathWallFree_composePath_split bodyDom oneCell wfS).2).symm
+        (pathInvert_composePath bodyCod oneCell wfT
+          (pathWallFree_composePath_split bodyCod oneCell wfT).1
+          (pathWallFree_composePath_split bodyDom oneCell wfS).2).symm
+        (RawTwoCellExpr.whiskerRight
+          (pathInvert oneCell (pathWallFree_composePath_split bodyDom oneCell wfS).2)
+          (wallFreeCellInvert body
+            (pathWallFree_composePath_split bodyDom oneCell wfS).1
+            (pathWallFree_composePath_split bodyCod oneCell wfT).1))
+
+/-! ## Forward probes — the cell converse fires on a concrete cell of every constructor -/
+
+/-- The wall-free witness for the endo path `t·t` at the pushout, via the join law. -/
+def tRunTwoWallFreeJoin : pathWallFree (composePath monadPushTPath monadPushTPath) :=
+  pathWallFree_composePath_join monadPushTPath monadPushTPath monadPushTPath_wallFree monadPushTPath_wallFree
+
+/-- ★★ **PROBE (id).**  Inverting the identity 2-cell on `t` yields the identity on `pathInvert t` — size `1`. -/
+theorem wallFreeCellInvert_id_size :
+    (wallFreeCellInvert (RawTwoCellExpr.id (signature := involutionMonadPushout.toModeSignature) monadPushTPath)
+        monadPushTPath_wallFree monadPushTPath_wallFree).size = 1 := rfl
+
+/-- ★★ **PROBE (gen).**  Inverting the pushout unit cell `eta` yields a bare generator — size `1`. -/
+theorem wallFreeCellInvert_gen_size :
+    (wallFreeCellInvert pushoutEta True.intro monadPushTPath_wallFree).size = 1 := rfl
+
+/-- A concrete wall-free vertical composite `id_t ⊟ id_t : t ⇒ t`. -/
+def probeVcomp :
+    RawTwoCellExpr involutionMonadPushout.toModeSignature monadPushTPath monadPushTPath :=
+  RawTwoCellExpr.vcomp (RawTwoCellExpr.id (signature := involutionMonadPushout.toModeSignature) monadPushTPath)
+    (RawTwoCellExpr.id (signature := involutionMonadPushout.toModeSignature) monadPushTPath)
+
+/-- ★★ **PROBE (vcomp).**  Inverting `id_t ⊟ id_t` yields a vertical composite of two inverted identities — size
+`1 + 1 + 1 = 3`. -/
+theorem wallFreeCellInvert_vcomp_size :
+    (wallFreeCellInvert probeVcomp monadPushTPath_wallFree monadPushTPath_wallFree).size = 3 := rfl
+
+/-- A concrete wall-free left whiskering `t ⊳ id_t : t·t ⇒ t·t`. -/
+def probeWhiskerLeft :
+    RawTwoCellExpr involutionMonadPushout.toModeSignature
+      (composePath monadPushTPath monadPushTPath) (composePath monadPushTPath monadPushTPath) :=
+  RawTwoCellExpr.whiskerLeft (signature := involutionMonadPushout.toModeSignature) monadPushTPath
+    (RawTwoCellExpr.id (signature := involutionMonadPushout.toModeSignature) monadPushTPath)
+
+/-- ★★ **PROBE (whiskerLeft).**  Inverting `t ⊳ id_t` typechecks at the `pathInvert` boundary — the whisker frame is
+reconciled through `pathInvert_composePath`.  A genuine reduction of the whisker arm on concrete data. -/
+def wallFreeCellInvertWhiskerLeftProbe :
+    RawTwoCellExpr monadComputad.toModeSignature
+      (pathInvert (composePath monadPushTPath monadPushTPath) tRunTwoWallFreeJoin)
+      (pathInvert (composePath monadPushTPath monadPushTPath) tRunTwoWallFreeJoin) :=
+  wallFreeCellInvert probeWhiskerLeft tRunTwoWallFreeJoin tRunTwoWallFreeJoin
+
+/-- A concrete wall-free right whiskering `id_t ⊲ t : t·t ⇒ t·t`. -/
+def probeWhiskerRight :
+    RawTwoCellExpr involutionMonadPushout.toModeSignature
+      (composePath monadPushTPath monadPushTPath) (composePath monadPushTPath monadPushTPath) :=
+  RawTwoCellExpr.whiskerRight (signature := involutionMonadPushout.toModeSignature) monadPushTPath
+    (RawTwoCellExpr.id (signature := involutionMonadPushout.toModeSignature) monadPushTPath)
+
+/-- ★★ **PROBE (whiskerRight).**  Inverting `id_t ⊲ t` typechecks at the `pathInvert` boundary — the whisker arm on
+concrete data. -/
+def wallFreeCellInvertWhiskerRightProbe :
+    RawTwoCellExpr monadComputad.toModeSignature
+      (pathInvert (composePath monadPushTPath monadPushTPath) tRunTwoWallFreeJoin)
+      (pathInvert (composePath monadPushTPath monadPushTPath) tRunTwoWallFreeJoin) :=
+  wallFreeCellInvert probeWhiskerRight tRunTwoWallFreeJoin tRunTwoWallFreeJoin
 
 end FX1Poly.Polygraph.Amalgam
