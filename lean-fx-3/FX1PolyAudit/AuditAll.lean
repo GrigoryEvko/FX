@@ -229,6 +229,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalityMasterReAud
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerMergeIntoHead
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerRightAppend
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalFiringBlockReader
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutVcompSkeletonAlignment
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
@@ -1202,6 +1203,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemanticsAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
+-- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
+import FX1PolyAudit.Polygraph.Omega.WalkingStrongMonadOverQuotientAdjudicationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
