@@ -858,6 +858,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringConsecutiveUntouch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDescentOfDistinct
 -- FC-3 r25 B3 — the AllCapArity-augmented cap-head pin-prime + the conditional sort consuming it
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapHeadExtractionWordPinPrime
+-- FC-3 r26 — inhabiting the AllCapArity-augmented cap-head pin-prime (LOCATE + seat/descend + identify + cancel)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapHeadExtractionWordPinInhabited
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
@@ -1199,6 +1201,7 @@ import FX1PolyAudit.Polygraph.Homology.CrossedModuleFreeGroupMeasureInduction
 import FX1PolyAudit.Polygraph.Homology.CyclicThreeAnickChains
 import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickChains
 import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickBoundaryHomology
+import FX1PolyAudit.Polygraph.Homology.AnickTelescopeAugmentationAndMonomialFiniteness
 import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
 import FX1PolyAudit.Polygraph.Homology.BlockDiagonalCertificateLifting
 import FX1PolyAudit.Polygraph.Homology.FreshGeneratorTietzeExpansionInvariance
