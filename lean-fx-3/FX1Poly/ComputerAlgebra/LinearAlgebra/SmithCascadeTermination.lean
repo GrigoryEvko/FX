@@ -2553,4 +2553,80 @@ theorem smithDivisibilityRepairSweepPreservesLowLowEntry :
             (Nat.lt_trans readColLtPivot (Nat.lt_succ_self pivotIndex))).trans positionPreserves
       · rfl
 
+/-! ## The sub-block postcondition + the named walls (H2-SMITH r11, B3) — the prefix conjunct only
+
+`SmithNormalForm`'s `repairWindowDiagHolds` demands `IsWindowDiagonal (repair ∘ reduceTotal) 0 height
+width` — EVERY off-diagonal cell of the window zero.  Partition the window by the pivot `p` being
+processed (the recon gap audit):
+
+  | region                              | who clears it                                              |
+  | ----------------------------------- | ---------------------------------------------------------- |
+  | **prefix** `r < p ∧ c < p`          | ✅ **r11 (below)** — pure low-low locality monotonicity     |
+  | **cross strip at `p`**              | ✅ r10 `smithCascadeSweepSeedReachesCrossClear`             |
+  | **below-left band** `r ≥ p ∧ c < p` | ❌ NOT locality — a row op touches `(r ≥ p, c < p)`; needs   |
+  |                                     |    the INV-DIAG-fed "reads-only-zeros" argument (r7 driver-path reachability) |
+  | **above-right band** `r < p ∧ c ≥ p`| ❌ NOT locality — mirror of the below-left band             |
+  | **sub-block** `[p+1,·) × [p+1,·)`   | ❌ **POLE-A** — the cascade must RE-DIAGONALIZE the folded   |
+  |                                     |    sub-block; refuted as a standalone pole (`SmithCascadeReDiagonalizesPostFoldStatement`), correct only along the min-abs-presorted driver path |
+
+r11 delivers the **prefix conjunct ONLY**.  The two corollaries below transport the settled-prefix
+off-diagonal ZEROS through the seed cascade and through the whole divisibility-repair sweep — the
+"settled prefix stays settled" monotonicity the outer INV-DIAG induction consumes.  They do NOT close
+`repairWindowDiagHolds` (the bands + sub-block are the named walls) nor `repairChainHolds` (the
+invariant-factor gcd-chain — a SEPARATE POLE-A conjunct, its own later round).
+`SmithReduceFullDriverStatement` stays uninhabited; NO flip. -/
+
+/-- **Concrete truth probe for the prefix-off-diagonal transport** — on the `4 × 4`
+`[[3,0,0,0],[0,4,0,0],[0,0,5,6],[0,0,7,4]]` (top-left `2 × 2` diagonal, so the prefix `[0, 2)²`
+off-diagonal `(0, 1)`/`(1, 0)` is already zero) the seed cascade at pivot `2` FIRES a genuine 8-letter
+word on the nonzero sub-minor `[[5, 6], [7, 4]]`, yet the prefix off-diagonal cell `(0, 1)` stays `0`.
+Anonymous, so it carries no axiom footprint. -/
+example :
+    (({ rows := [[3,0,0,0],[0,4,0,0],[0,0,5,6],[0,0,7,4]] } : IntMatrix).applyOperations
+        (smithCascadeSweep
+          (smithMinorAbsSum ({ rows := [[3,0,0,0],[0,4,0,0],[0,0,5,6],[0,0,7,4]] } : IntMatrix) 2 4 4)
+          ({ rows := [[3,0,0,0],[0,4,0,0],[0,0,5,6],[0,0,7,4]] } : IntMatrix) 2 4 4)).entryAt 0 1 = 0 := by
+  decide
+
+/-- **The seed cascade preserves the settled prefix's off-diagonal zeros** — if the prefix
+`[0, pivotIndex) × [0, pivotIndex)` off-diagonal is zero on input, it stays zero after the seed cascade at
+`pivotIndex`.  Each prefix cell is low-low (`< pivotIndex` in both coordinates), so
+`smithCascadeSweepSeedPreservesLowLowEntry` freezes it at its zero input value.  The PREFIX conjunct of the
+cascade's driver-path window postcondition — the bands + sub-block are the named walls above. -/
+theorem smithCascadeSweepSeedPreservesPrefixOffDiagonal (matrix : IntMatrix)
+    (pivotIndex height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (prefixOffDiagZero : ∀ rowIndex colIndex, rowIndex < pivotIndex → colIndex < pivotIndex →
+      rowIndex ≠ colIndex → matrix.entryAt rowIndex colIndex = 0) :
+    ∀ rowIndex colIndex, rowIndex < pivotIndex → colIndex < pivotIndex → rowIndex ≠ colIndex →
+      (matrix.applyOperations
+          (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width)).entryAt rowIndex colIndex = 0 :=
+  fun rowIndex colIndex rowLtPivot colLtPivot rowNeCol =>
+    (smithCascadeSweepSeedPreservesLowLowEntry matrix pivotIndex height width rowIndex colIndex isRect
+        pivotRowInRange pivotColInRange rowLtPivot colLtPivot).trans
+      (prefixOffDiagZero rowIndex colIndex rowLtPivot colLtPivot rowNeCol)
+
+/-- **The divisibility-repair sweep preserves the settled prefix's off-diagonal zeros** — if the prefix
+`[0, pivotIndex) × [0, pivotIndex)` off-diagonal is zero on input, it stays zero after the whole
+`smithDivisibilityRepairSweep` starting at `pivotIndex`.  Each prefix cell is low-low, frozen by
+`smithDivisibilityRepairSweepPreservesLowLowEntry`.  At the driver's top-level start `pivotIndex = 0` this
+is VACUOUS — the honest gap: `repairWindowDiagHolds` at window-start `0` demands the WHOLE window
+(sub-block + bands POLE-A-walled), which settled-prefix monotonicity does not reach.  This is the outer
+INV-DIAG induction's "prefix stays settled" STEP, not a discharge of the obligation. -/
+theorem smithDivisibilityRepairSweepPreservesPrefixOffDiagonal (outerFuel : Nat) (matrix : IntMatrix)
+    (pivotIndex height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (prefixOffDiagZero : ∀ rowIndex colIndex, rowIndex < pivotIndex → colIndex < pivotIndex →
+      rowIndex ≠ colIndex → matrix.entryAt rowIndex colIndex = 0) :
+    ∀ rowIndex colIndex, rowIndex < pivotIndex → colIndex < pivotIndex → rowIndex ≠ colIndex →
+      (matrix.applyOperations
+          (smithDivisibilityRepairSweep outerFuel matrix pivotIndex height width)).entryAt rowIndex colIndex
+        = 0 :=
+  fun rowIndex colIndex rowLtPivot colLtPivot rowNeCol =>
+    (smithDivisibilityRepairSweepPreservesLowLowEntry outerFuel matrix pivotIndex height width rowIndex
+        colIndex isRect rowLtPivot colLtPivot).trans
+      (prefixOffDiagZero rowIndex colIndex rowLtPivot colLtPivot rowNeCol)
+
 end FX1Poly.ComputerAlgebra

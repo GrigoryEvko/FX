@@ -105,4 +105,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepPreservesLowLowEntry
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepPreservesLowLowEntry
 
+/- H2-SMITH r11 — the sub-block postcondition (B3): the settled-prefix off-diagonal-zero transport
+   through the seed cascade and the whole divisibility-repair sweep (the prefix conjunct of
+   repairWindowDiagHolds; the bands + sub-block stay POLE-A-walled). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedPreservesPrefixOffDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepPreservesPrefixOffDiagonal
+
 end FX1PolyAudit
