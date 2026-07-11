@@ -262,4 +262,252 @@ theorem tietzeExpansionPreservesDegreeTwoInvariant
         (smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower))
   · exact fromHigherTorsionAgrees
 
+/-! ## B4 — the regressions: three instances fed through the generic theorem
+
+Both shipped instances — cyclic `ZZ/3` (`t ⟹ s`) and the r2 Tietze `ZZ/3` (`u ⟹ st`) — plus a FRESH
+third instance — the walking involution `ZZ/2` (`t ⟹ s`, exercising the `−1` pivot with nonempty torsion
+`2`) — Tietze-expanded and fed through `tietzeExpansionPreservesDegreeOneInvariant`.  Each ships an
+EXPLICIT unimodular reduction certificate for the expanded `d2`, lifting the base certificate UNCHANGED
+(index-stable) between the fresh-column clearing and the divisibility-ordering reorder. -/
+
+/-! ### Regression 1 (shipped instance) — cyclic `ZZ/3` expanded by `t ⟹ s` -/
+
+/-- The cyclic-order-three presentation Tietze-expanded by the fresh generator `t ⟹ s` (`w = [0]`). -/
+def expandedCyclicThreePresentation : WalkerPresentation :=
+  expandWalkerPresentationWithFreshGenerator cyclicThreeWalkerPresentation [0]
+
+/-- The expanded cyclic `d2` `[[-3,1],[0,-1]]` — the base `[[-3]]`, the `v = [1]` abelianization column
+of `s`, the `-1` pivot on the fresh generator. -/
+def expandedCyclicThreeBoundaryOfDimOne : IntMatrix := ⟨[[-3, 1], [0, -1]]⟩
+
+/-- ★ The block builder COMPUTES the expanded cyclic `d2` — `rfl`. -/
+theorem expandedCyclicThreeComputesBoundaryDimOne :
+    expandedCyclicThreePresentation.computeBoundaryDimOne = expandedCyclicThreeBoundaryOfDimOne := rfl
+
+/-- The ordered Smith normal form of the expanded cyclic `d2` — `diag(1, 3)`: one fresh UNIT, the `3`
+torsion factor intact. -/
+def expandedCyclicThreeSmithNormalFormOfDimOne : IntMatrix := ⟨[[1, 0], [0, 3]]⟩
+
+/-- The reduction certificate for the expanded cyclic `d2`: clear the `v`-column (`addRowMultiple 1 0 1`),
+normalise the `-1` pivot (`negateColumn 1`), LIFT the base cyclic certificate UNCHANGED, then reorder the
+fresh unit onto the divisibility-ordered diagonal (`swapRows 0 1`, `swapColumns 0 1`). -/
+def expandedCyclicThreeBoundaryOfDimOneSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 1)
+        :: ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)
+        :: cyclicThreeBoundaryOfDimOneSmithCertificate.operations
+        ++ [ ElementaryOperation.rowOperation (ElementaryRowOperation.swapRows 0 1)
+           , ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 0 1) ] }
+
+/-- ★ The certificate lands the expanded cyclic `d2` on `diag(1, 3)` — `rfl`. -/
+theorem expandedCyclicThreeCertificateProducesSmithNormalForm :
+    expandedCyclicThreeBoundaryOfDimOne.applyOperations
+        expandedCyclicThreeBoundaryOfDimOneSmithCertificate.operations
+      = expandedCyclicThreeSmithNormalFormOfDimOne := rfl
+
+/-- ★ The expanded cyclic `d2` reduces to `diag(1, 3)` within the `2 × 2` window — kernel-checked. -/
+theorem expandedCyclicThreeBoundaryOfDimOneReducesToSmith :
+    expandedCyclicThreeBoundaryOfDimOneSmithCertificate.reducesToSmithForm
+      expandedCyclicThreeBoundaryOfDimOne 2 2 :=
+  show expandedCyclicThreeSmithNormalFormOfDimOne.IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          expandedCyclicThreeSmithNormalFormOfDimOne.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨3, by decide⟩
+      | _ + 1, isSuccBelow =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isSuccBelow))) }
+
+/-- The degree-1 Smith data of the expanded cyclic complex: `C1 = 2`, `SNF(d1) = [[0,0]]` (window `1`),
+`SNF(d2) = diag(1, 3)` (window `2`). -/
+def expandedCyclicThreeDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 2
+  , smithBoundaryIntoLower := ⟨[[0, 0]]⟩
+  , windowIntoLower := 1
+  , smithBoundaryFromHigher := expandedCyclicThreeSmithNormalFormOfDimOne
+  , windowFromHigher := 2 }
+
+/-- ★★ **Cyclic `ZZ/3` survives the fresh-generator expansion — THROUGH THE GENERIC THEOREM.**  The
+expanded degree-1 invariant equals `cyclicThreeDegreeOneHomologyInvariant = ZZ/3` by
+`tietzeExpansionPreservesDegreeOneInvariant` (all five reader-level hypotheses `rfl`), then the shipped
+base read-off. -/
+theorem cyclicThreeFreshExpansionPreservesDegreeOneInvariant :
+    expandedCyclicThreeDegreeOneSmithData.homologyInvariant = cyclicThreeDegreeOneHomologyInvariant :=
+  (tietzeExpansionPreservesDegreeOneInvariant cyclicThreeDegreeOneSmithData
+    expandedCyclicThreeDegreeOneSmithData rfl rfl rfl rfl rfl).trans
+    cyclicThreeDegreeOneSmithDataComputesInvariant
+
+/-- ★ The direct cross-check: the expanded cyclic degree-1 invariant is `ZZ/3 = (0, [3])` by `rfl`. -/
+theorem expandedCyclicThreeDegreeOneHomologyIsZmodThree :
+    expandedCyclicThreeDegreeOneSmithData.homologyInvariant = ⟨0, [3]⟩ := rfl
+
+/-! ### Regression 2 (shipped instance) — the r2 Tietze `ZZ/3` expanded by a fresh THIRD gen `u ⟹ st` -/
+
+/-- The r2 Tietze presentation of `ZZ/3` expanded by a fresh THIRD generator `u ⟹ st` (`w = [0, 1]`, a
+multi-letter word exercising `v = [1, 1]`). -/
+def expandedTietzeThirdGeneratorPresentation : WalkerPresentation :=
+  expandWalkerPresentationWithFreshGenerator tietzeZmodThreePresentation [0, 1]
+
+/-- The expanded r2 `d2` `3 × 5` — the r2 `2 × 4` block, the `v = [1, 1]` column of `st`, the `-1`
+pivot. -/
+def expandedTietzeThirdGeneratorBoundaryOfDimOne : IntMatrix :=
+  ⟨[[-2, -1, -1, 1, 1], [1, -1, -1, -2, 1], [0, 0, 0, 0, -1]]⟩
+
+/-- ★ The block builder COMPUTES the expanded r2 `d2` — `rfl`. -/
+theorem expandedTietzeThirdGeneratorComputesBoundaryDimOne :
+    expandedTietzeThirdGeneratorPresentation.computeBoundaryDimOne
+      = expandedTietzeThirdGeneratorBoundaryOfDimOne := rfl
+
+/-- The ordered Smith normal form of the expanded r2 `d2` — `diag(1, 1, 3)`: TWO units, the `3` torsion
+factor intact. -/
+def expandedTietzeThirdGeneratorSmithNormalFormOfDimOne : IntMatrix :=
+  ⟨[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 3, 0, 0]]⟩
+
+/-- The reduction certificate for the expanded r2 `d2`: clear the `v = [1, 1]` column (`addRowMultiple
+2 0 1`, `addRowMultiple 2 1 1`), normalise the `-1` pivot (`negateColumn 4`), LIFT the shipped r2 `d2`
+certificate UNCHANGED (index-stable — the base block sits at rows `0,1` / columns `0..3`), then reorder
+onto the divisibility-ordered diagonal (`swapColumns 2 4`, `swapRows 1 2`, `swapColumns 1 2`). -/
+def expandedTietzeThirdGeneratorBoundaryOfDimOneSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 0 1)
+        :: ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 2 1 1)
+        :: ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 4)
+        :: tietzeBoundaryOfDimOneSmithCertificate.operations
+        ++ [ ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 2 4)
+           , ElementaryOperation.rowOperation (ElementaryRowOperation.swapRows 1 2)
+           , ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 1 2) ] }
+
+/-- ★ The certificate lands the expanded r2 `d2` on `diag(1, 1, 3)` — `rfl`. -/
+theorem expandedTietzeThirdGeneratorCertificateProducesSmithNormalForm :
+    expandedTietzeThirdGeneratorBoundaryOfDimOne.applyOperations
+        expandedTietzeThirdGeneratorBoundaryOfDimOneSmithCertificate.operations
+      = expandedTietzeThirdGeneratorSmithNormalFormOfDimOne := rfl
+
+/-- ★ The expanded r2 `d2` reduces to `diag(1, 1, 3)` within the `3 × 5` window — kernel-checked. -/
+theorem expandedTietzeThirdGeneratorBoundaryOfDimOneReducesToSmith :
+    expandedTietzeThirdGeneratorBoundaryOfDimOneSmithCertificate.reducesToSmithForm
+      expandedTietzeThirdGeneratorBoundaryOfDimOne 3 5 :=
+  show expandedTietzeThirdGeneratorSmithNormalFormOfDimOne.IsSmithNormalFormWithin 3 5 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 5 →
+          rowIndex ≠ colIndex →
+          expandedTietzeThirdGeneratorSmithNormalFormOfDimOne.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨1, by decide⟩
+      | 1, _ => ⟨3, by decide⟩
+      | _ + 2, isSuccBelow =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+            (natLeOfSuccLeSucc isSuccBelow)))) }
+
+/-- The degree-1 Smith data of the expanded r2 complex: `C1 = 3`, `SNF(d1) = [[0,0,0]]` (window `1`),
+`SNF(d2) = diag(1, 1, 3)` (window `3`). -/
+def expandedTietzeThirdGeneratorDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 3
+  , smithBoundaryIntoLower := ⟨[[0, 0, 0]]⟩
+  , windowIntoLower := 1
+  , smithBoundaryFromHigher := expandedTietzeThirdGeneratorSmithNormalFormOfDimOne
+  , windowFromHigher := 3 }
+
+/-- ★★ **The r2 Tietze `ZZ/3` survives a SECOND fresh-generator expansion — THROUGH THE GENERIC
+THEOREM.**  Adjoining `u ⟹ st` to the already-Tietze-expanded `⟨s, t | …⟩` preserves `H1 = ZZ/3`, by
+`tietzeExpansionPreservesDegreeOneInvariant` then the r2 base read-off — a THREE-generator instance of
+the fresh-generator theorem. -/
+theorem expandedTietzeThirdGeneratorPreservesDegreeOneInvariant :
+    expandedTietzeThirdGeneratorDegreeOneSmithData.homologyInvariant = tietzeDegreeOneHomologyInvariant :=
+  (tietzeExpansionPreservesDegreeOneInvariant tietzeDegreeOneSmithData
+    expandedTietzeThirdGeneratorDegreeOneSmithData rfl rfl rfl rfl rfl).trans
+    tietzeDegreeOneHomologyIsZmodThree
+
+/-- ★ The direct cross-check: the expanded r2 degree-1 invariant is `ZZ/3 = (0, [3])` by `rfl`. -/
+theorem expandedTietzeThirdGeneratorDegreeOneHomologyIsZmodThree :
+    expandedTietzeThirdGeneratorDegreeOneSmithData.homologyInvariant = ⟨0, [3]⟩ := rfl
+
+/-! ### Regression 3 (FRESH instance) — the walking involution `ZZ/2` expanded by `t ⟹ s` -/
+
+/-- The walking-involution presentation of `ZZ/2` expanded by the fresh generator `t ⟹ s` (`w = [0]`) —
+the fresh third instance, exercising a nonempty torsion factor `2` under the `-1` pivot. -/
+def expandedInvolutionPresentation : WalkerPresentation :=
+  expandWalkerPresentationWithFreshGenerator involutionWalkerPresentation [0]
+
+/-- The expanded involution `d2` `[[-2,1],[0,-1]]` — the base `[[-2]]`, the `v = [1]` column, the `-1`
+pivot. -/
+def expandedInvolutionBoundaryOfDimOne : IntMatrix := ⟨[[-2, 1], [0, -1]]⟩
+
+/-- ★ The block builder COMPUTES the expanded involution `d2` — `rfl`. -/
+theorem expandedInvolutionComputesBoundaryDimOne :
+    expandedInvolutionPresentation.computeBoundaryDimOne = expandedInvolutionBoundaryOfDimOne := rfl
+
+/-- The ordered Smith normal form of the expanded involution `d2` — `diag(1, 2)`: one fresh UNIT, the `2`
+torsion factor intact. -/
+def expandedInvolutionSmithNormalFormOfDimOne : IntMatrix := ⟨[[1, 0], [0, 2]]⟩
+
+/-- The reduction certificate for the expanded involution `d2` (same recipe as cyclic): clear `v`
+(`addRowMultiple 1 0 1`), normalise the `-1` pivot (`negateColumn 1`), LIFT the base involution
+certificate UNCHANGED, then reorder (`swapRows 0 1`, `swapColumns 0 1`). -/
+def expandedInvolutionBoundaryOfDimOneSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple 1 0 1)
+        :: ElementaryOperation.columnOperation (ElementaryColumnOperation.negateColumn 1)
+        :: involutionBoundaryOfDimOneSmithCertificate.operations
+        ++ [ ElementaryOperation.rowOperation (ElementaryRowOperation.swapRows 0 1)
+           , ElementaryOperation.columnOperation (ElementaryColumnOperation.swapColumns 0 1) ] }
+
+/-- ★ The certificate lands the expanded involution `d2` on `diag(1, 2)` — `rfl`. -/
+theorem expandedInvolutionCertificateProducesSmithNormalForm :
+    expandedInvolutionBoundaryOfDimOne.applyOperations
+        expandedInvolutionBoundaryOfDimOneSmithCertificate.operations
+      = expandedInvolutionSmithNormalFormOfDimOne := rfl
+
+/-- ★ The expanded involution `d2` reduces to `diag(1, 2)` within the `2 × 2` window — kernel-checked. -/
+theorem expandedInvolutionBoundaryOfDimOneReducesToSmith :
+    expandedInvolutionBoundaryOfDimOneSmithCertificate.reducesToSmithForm
+      expandedInvolutionBoundaryOfDimOne 2 2 :=
+  show expandedInvolutionSmithNormalFormOfDimOne.IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          expandedInvolutionSmithNormalFormOfDimOne.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨2, by decide⟩
+      | _ + 1, isSuccBelow =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isSuccBelow))) }
+
+/-- The degree-1 Smith data of the expanded involution complex: `C1 = 2`, `SNF(d1) = [[0,0]]` (window
+`1`), `SNF(d2) = diag(1, 2)` (window `2`). -/
+def expandedInvolutionDegreeOneSmithData : SmithHomologyData :=
+  { chainBasisCount := 2
+  , smithBoundaryIntoLower := ⟨[[0, 0]]⟩
+  , windowIntoLower := 1
+  , smithBoundaryFromHigher := expandedInvolutionSmithNormalFormOfDimOne
+  , windowFromHigher := 2 }
+
+/-- ★★ **The walking involution `ZZ/2` survives the fresh-generator expansion — THROUGH THE GENERIC
+THEOREM.**  The FRESH third instance: adjoining `t ⟹ s` preserves `H1 = ZZ/2` (torsion factor `2`
+intact under the `-1` pivot), by `tietzeExpansionPreservesDegreeOneInvariant` then the shipped
+involution read-off. -/
+theorem involutionFreshExpansionPreservesDegreeOneInvariant :
+    expandedInvolutionDegreeOneSmithData.homologyInvariant
+      = walkingInvolutionDegreeOneHomologyInvariant :=
+  (tietzeExpansionPreservesDegreeOneInvariant involutionDegreeOneSmithData
+    expandedInvolutionDegreeOneSmithData rfl rfl rfl rfl rfl).trans
+    involutionDegreeOneSmithDataComputesInvariant
+
+/-- ★ The direct cross-check: the expanded involution degree-1 invariant is `ZZ/2 = (0, [2])` by
+`rfl`. -/
+theorem expandedInvolutionDegreeOneHomologyIsZmodTwo :
+    expandedInvolutionDegreeOneSmithData.homologyInvariant = ⟨0, [2]⟩ := rfl
+
 end FX1Poly.Polygraph.Homology
