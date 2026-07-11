@@ -1525,7 +1525,39 @@ but the residual is real and named:
 
 No overclaim: r3 ships a GENERIC single-fresh-generator invariance theorem and three instances through
 it, moving the R1 down-payment from one coincidence to a theorem — but NOT the general invariance,
-NOT relation moves, NOT completion, NOT the homotopy machinery. -/
+NOT relation moves, NOT completion, NOT the homotopy machinery.
+
+### What r4 LANDED (additive, zero-axiom)
+
+  * **B1 — the two r3 docstring defects fixed** (accuracy only): the PHANTOM `t`-freeness hypothesis
+    (which named a guard no theorem carried) and the HEADLINE overclaim (read as one end-to-end theorem
+    that did not exist) — both corrected against the shipped body.
+  * **B2 — the structurally-`t`-free entry point**: `expandWalkerPresentationWithBaseWord` +
+    ★ `embeddedBaseWordFreshCountIsZero` — `t`-freeness BY CONSTRUCTION, the `w = [t]` attack a type error.
+  * **B3 — the certificate-extension engine primitives**: ★★ `freshColumnPivotIsUnitOfFreshFree` (the
+    pivot is the unit `-1` from `t`-freeness), and the order-insensitive reader congruences
+    (`smithRankWithinCongrBelow`, `smithInvariantFactorsWithinCongrBelow`,
+    `smithRankWithinAllZeroDiagonalIsZero`, the two top-zero stabilities).
+  * **B4 — the END-TO-END theorem**: ★★ `freshGeneratorExpansionPreservesDegreeOne/TwoHomologyOfBase`
+    package the FIVE per-instance reader `rfl`s of r3 into STRUCTURAL diagonal relations, proved from the
+    B3 congruences.  All three r3 regressions are RE-FED through it (cyclic `ZZ/3`, involution `ZZ/2`,
+    r2 Tietze `ZZ/3` at degrees 1 AND 2), and a FOURTH FRESH instance (involution `t ⟹ ss`) runs through
+    the structural entry point — no phantom hypothesis, no hand-designed reorder (generic recipe).
+
+### The r4 residual (the exact node newly named)
+
+r4 removes r3's five per-instance reader `rfl` gates, replacing them with the generic composed theorem —
+but the connection of the generic recipe certificate to the ACTUAL expanded boundary is still checked by a
+per-instance `rfl` (`…RecipeProducesUnitLast`).  Removing even that `rfl` — deriving the reduced diagonal
+generically for an ARBITRARY base certificate — is the block-lifting lemma `liftedBaseCertAgreesOnBlock`:
+an induction over the base certificate's operation list proving each unimodular op acts on the
+block-diagonal `[base d2 | 0; 0 | +1]` exactly as on `base d2`, with the fresh row/column inert.  Its
+entry-level matrix-operation lemmas (`entryAt`-after-`swapRows` / `addRowMultiple` / `mapAllRows`, etc.)
+already exist — but ONLY in `ComputerAlgebra/LinearAlgebra/SmithNormalForm.lean` /
+`SmithCascadeTermination.lean`, which this lane must NOT import (the certificate-first design boundary).
+Re-deriving them in-lane is the named r4 wall; the ORDERED `IsSmithNormalFormWithin` certificate
+(`reducesToSmithForm`) stays per-instance for the same reason.  Above that: type-2 relation moves, general
+orientation/completion, and the Squier/Pride homotopy machinery remain the R1 research wall (unchanged). -/
 
 /-- The number of decided walkers whose homology is verified invariant under fresh-generator expansion
 THROUGH the generic theorem: cyclic `ZZ/3`, the r2 Tietze `ZZ/3`, and the walking involution `ZZ/2` — a
@@ -1550,5 +1582,23 @@ wall.**  The single-fresh-generator move is now a generic invariance theorem, bu
 invariance (relation moves, completion, homotopy) stays the R1 research wall.  `= true` records the
 stance, not a closure. -/
 def freshGeneratorExpansionEnrichesButNoWallMoved : Bool := true
+
+/-- The number of expansion INSTANCES driven through the r4 END-TO-END theorem
+`freshGeneratorExpansionPreservesDegreeOne/TwoHomologyOfBase`: cyclic `ZZ/3`, walking involution `ZZ/2`,
+the r2 Tietze `ZZ/3` (degrees 1 and 2), and the FRESH involution `t ⟹ ss` through the structural entry
+point — a running additive count, distinct from the r3 census `walkersWithFreshGeneratorExpansionInvarianceCount`. -/
+def endToEndHomologyPreservationInstanceCount : Nat := 4
+
+/-- The additive census value: `4` instances driven through the end-to-end theorem, by `rfl`. -/
+theorem endToEndHomologyPreservationInstanceCountValue :
+    endToEndHomologyPreservationInstanceCount = 4 := rfl
+
+/-- ★ **The #2139 round-four residual marker.**  The five per-instance reader `rfl` gates of r3 are gone
+— replaced by `freshGeneratorExpansionPreservesDegreeOne/TwoHomologyOfBase` — but the recipe-to-boundary
+connection stays a per-instance `rfl`, and the fully cert-free block-lifting (`liftedBaseCertAgreesOnBlock`,
+whose entry-level operation lemmas live in the no-import certificate layer) remains walled.  `= true`
+records the r4 stance: the reader gate dissolved; the connection `rfl` and the R1 wall remain.  Read the
+meaning from THIS docstring. -/
+def freshGeneratorExpansionEndToEndButConnectionRflRemains : Bool := true
 
 end FX1Poly.Polygraph.Homology
