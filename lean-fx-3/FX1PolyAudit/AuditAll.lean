@@ -1321,6 +1321,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixReconstructionAu
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarRetractionCensusAudit
 -- WP-PROP r6 (B1) — the wide bialgebra collision lifted from a matrix witness to a CONV witness at the width-2 base (one-step bialgebraProduct fire) + the degenerate (1,n)/(m,1) unit collapses (boundary source/target lemmas), the general (m,n) routing recursion + wideSwap riffle word walled, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidWideCollisionAudit
+-- WP-PROP r6 (B2) — the perm-middle determinism adjudicated as a Coxeter word-problem (NOT free): the width-2 involution + width-3 Yang-Baxter determinism instances lifted to the star scope (both perm-words of the same matrix converge), the delta/mu stages matrix-forced, the minimal CoxeterWordUnique lemma + Node C transpose walled, zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMiddleDeterminismAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
