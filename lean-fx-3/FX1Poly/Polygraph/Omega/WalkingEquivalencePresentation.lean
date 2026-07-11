@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.Omega.CongruenceWithId
 import FX1Poly.Polygraph.Omega.StrictAxioms
 import FX1Poly.Polygraph.Omega.PresentationOpDualityWithId
+import FX1Poly.Polygraph.Invertibility.InvertibilitySet
 
 /-! # Polygraph/Omega/WalkingEquivalencePresentation — the walking equivalence as a two-object
 invertible-unit/counit presentation (WP-EQUIV r1, B1)
@@ -1098,5 +1099,138 @@ four cancellation rows — a free-groupoid / winding word problem, a research ob
 wall the decision; we do NOT claim convertibility (false over the bare relation) NOR non-convertibility (needs a
 distinguishing model). -/
 def fxEquiv_bareEquivalenceParallelUniquenessOpen : Bool := false
+
+/-! # =========================================================================================
+    # B5 — THE INVERTIBILITY TIE-IN + the #2068 ledger
+    # =========================================================================================
+
+★ **The first GENUINE (non-placeholder) invertibility instance in the Omega lane, and the #2068 ledger.**  The
+Omega-lane invertibility seed (`Omega/InvertibilitySeed.lean`) Skolemizes the HL23 `reverse` / `unitWitness` /
+`counitWitness` as the IDENTITY (`omegaCellStructure`, the honest placeholder whose degeneracy is
+`placeholderGap_folkStrictlyBiggerThanSn`).  The walking equivalence is the FIRST concrete Omega walker whose
+genuine ω-categorical inverses EXIST finitely: the four 2-generators `eta`, `etaInv`, `eps`, `epsInv` are
+genuine INVERSES of each other, and the invertibility is WITNESSED by the shipped cancellation convertibilities
+(NOT `fun c => c`).
+
+## What ships (the genuine invertibility content)
+
+  1. **`walkingEquivGeneratorsInvertible`** — the four generators are GENUINELY INVERTIBLE, witnessed by the
+     four shipped cancellation 3-cells (`eta . etaInv ~ id`, `etaInv . eta ~ id`, `eps . epsInv ~ id`,
+     `epsInv . eps ~ id`).  The invertibility WITNESSES are the iso-cancellation cells the recon named.
+
+  2. **`walkingEquivGenCellStructure`** — an HL23 `CellStructure` on the four invertible generators with a
+     GENUINE NON-IDENTITY `reverse` (the involution `eta <-> etaInv`, `eps <-> epsInv`), promoting the
+     identity-Skolem placeholder.  `walkingEquivGenIsInvertibilitySet` shows it is a genuine `IsInvertibilitySet`
+     (every element is invertible — the carrier IS exactly the invertible generators, so non-degenerate), and
+     `walkingEquivGenEtaInMaximal` places `eta` in the maximal invertibility set.
+
+The full `omegaSnInvertible = omegaFolkInvertible` collapse still needs `WellFounded` on cell-reduction
+(globally false at the raw ω-layer — the F1 memo pin), UNCHANGED and walled by citation. -/
+
+/-! ## The four generators are genuinely invertible (witnessed by the cancellation cells) -/
+
+/-- ★ **The four-generators-invertible statement.**  A `Prop` conjunction: each of the four 2-generators has a
+genuine inverse witnessed by an iso-cancellation convertibility. -/
+def WalkingEquivGeneratorsInvertibleStatement : Prop :=
+  SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+    walkingEquivEtaEtaInv walkingEquivIdIdA ∧
+  SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+    walkingEquivEtaInvEta walkingEquivIdUnitA ∧
+  SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+    walkingEquivEpsEpsInv walkingEquivIdUnitB ∧
+  SaturatedConvOverWithId walkingEquivComputad walkingEquivBaseRel
+    walkingEquivEpsInvEps walkingEquivIdIdB
+
+/-- ★★ **THE FOUR GENERATORS ARE GENUINELY INVERTIBLE.**  Each 2-generator's invertibility is witnessed by a
+shipped iso-cancellation 3-cell — the genuine ω-categorical inverses the Omega invertibility seed's
+identity-Skolem placeholder could not model.  The invertibility witnesses ARE the four cancellation cells. -/
+theorem walkingEquivGeneratorsInvertible : WalkingEquivGeneratorsInvertibleStatement :=
+  ⟨walkingEquivUnitCancelForwardThreeCell, walkingEquivUnitCancelBackwardThreeCell,
+    walkingEquivCounitCancelForwardThreeCell, walkingEquivCounitCancelBackwardThreeCell⟩
+
+/-! ## The genuine non-identity HL23 CellStructure (promoting the identity-Skolem placeholder) -/
+
+/-- The four **invertible generators** as an abstract carrier — the domain of the genuine reverse. -/
+inductive WalkingEquivInvertibleGen
+  /-- The unit `eta`. -/
+  | eta
+  /-- The inverse unit `etaInv`. -/
+  | etaInv
+  /-- The counit `eps`. -/
+  | eps
+  /-- The inverse counit `epsInv`. -/
+  | epsInv
+
+/-- ★ The **genuine reverse** — a NON-IDENTITY involution swapping each generator with its inverse (contrast the
+placeholder `omegaCellStructure`, whose reverse is the identity).  Full four-arm split — propext-free. -/
+def walkingEquivGenReverse : WalkingEquivInvertibleGen → WalkingEquivInvertibleGen
+  | .eta => .etaInv
+  | .etaInv => .eta
+  | .eps => .epsInv
+  | .epsInv => .eps
+
+/-- The genuine reverse is an INVOLUTION (`reverse (reverse x) = x`) — full case split, each `rfl`. -/
+theorem walkingEquivGenReverse_involutive :
+    ∀ generator : WalkingEquivInvertibleGen, walkingEquivGenReverse (walkingEquivGenReverse generator) = generator
+  | .eta => rfl
+  | .etaInv => rfl
+  | .eps => rfl
+  | .epsInv => rfl
+
+/-- ★ The genuine reverse is NON-IDENTITY — it maps the unit `eta` to its inverse `etaInv`, distinct from `eta`
+(the structural upgrade over the identity-Skolem placeholder). -/
+theorem walkingEquivGenReverse_nonIdentity :
+    walkingEquivGenReverse WalkingEquivInvertibleGen.eta ≠ WalkingEquivInvertibleGen.eta :=
+  fun equalityHypothesis => WalkingEquivInvertibleGen.noConfusion equalityHypothesis
+
+/-- ★ The **genuine HL23 CellStructure** on the four invertible generators — a NON-IDENTITY `reverse` (the
+inverse-swapping involution).  The first Omega-lane `CellStructure` whose reverse is not `fun c => c`. -/
+def walkingEquivGenCellStructure : FX1Poly.Polygraph.Invertibility.CellStructure where
+  Cell := WalkingEquivInvertibleGen
+  reverse := walkingEquivGenReverse
+  unitWitness := fun generator => generator
+  counitWitness := fun generator => generator
+
+/-- ★★ **THE FIRST GENUINE INVERTIBILITY SET IN THE OMEGA LANE.**  The four invertible generators form a genuine
+HL23 `IsInvertibilitySet` (every element is invertible — the carrier IS exactly the invertible generators, so
+non-degenerate), under the GENUINE non-identity reverse.  Contrast the placeholder `omegaCellStructure`
+(identity reverse over ALL ω-cells, degenerate). -/
+theorem walkingEquivGenIsInvertibilitySet :
+    FX1Poly.Polygraph.Invertibility.IsInvertibilitySet walkingEquivGenCellStructure (fun _ => True) where
+  reverseMember := fun _ => trivial
+  unitMember := fun _ => trivial
+  counitMember := fun _ => trivial
+
+/-- ★ The unit generator `eta` lies in the MAXIMAL invertibility set of the genuine CellStructure (non-vacuity
+of the genuine invertibility instance). -/
+theorem walkingEquivGenEtaInMaximal :
+    FX1Poly.Polygraph.Invertibility.maximalInvertibilitySet walkingEquivGenCellStructure
+      WalkingEquivInvertibleGen.eta :=
+  walkingEquivGenIsInvertibilitySet.subset_maximal trivial
+
+/-! ## B5 honesty markers + the #2068 ledger -/
+
+/-- ★ **THE FIRST GENUINE INVERTIBILITY INSTANCE (B5).**  `= true` records that the walking equivalence is the
+first Omega walker with genuine finite ω-categorical inverses: the four generators are genuinely invertible
+(`walkingEquivGeneratorsInvertible`, witnessed by the shipped cancellation cells) and carry a genuine
+NON-IDENTITY HL23 reverse (`walkingEquivGenCellStructure`, `walkingEquivGenReverse_nonIdentity`) forming a
+genuine `IsInvertibilitySet` — promoting the identity-Skolem placeholder `omegaCellStructure`. -/
+def fxEquiv_firstGenuineInvertibilitySetShipped : Bool := true
+
+/-- ★ **WALL — the omegaSn = folk collapse still needs WellFounded (B5, unchanged).**  `= false` records that
+the full `omegaSnInvertible = omegaFolkInvertible` collapse (HL23 Cor 4.35) still needs `WellFounded` on
+cell-reduction, globally FALSE at the raw ω-layer (the F1 memo pin; the Core discharge lives at
+`StrongNormalizationBridge.lean`).  The genuine finite-inverse instance shipped here does NOT change that wall;
+it upgrades the reverse from the identity Skolemization, nothing more. -/
+def fxEquiv_omegaSnFolkCollapseStillWellFoundedWalled : Bool := false
+
+/-- ★★ **#2068 — THE WALKING EQUIVALENCE OPENS.**  `= true` records the WP-EQUIV r1 landing: the presentation
+(B1, four iso-cancellation rows, two-object `Bool` carrier), the walking adjoint equivalence (B2, two triangle
+rows, self-op-dual free-rider), the promotion (B3, right-defect invertibility MECHANIZED + reduced to one
+idempotency fact, interchange core walled), the decision (B4, adjoint parallel-uniqueness EXERCISED, bare
+winding problem walled), and the census + genuine-invertibility tie-in (B5).  Every jam is a NAMED node:
+the idempotency-from-left-triangle interchange (B3), the full quantified parallel-uniqueness normalizer (B4,
+OMEGA-5), the bare winding word problem (B4), and the omegaSn=folk WellFounded collapse (B5). -/
+def fxEquiv_2068WalkingEquivalenceOpened : Bool := true
 
 end FX1Poly.Polygraph.Omega

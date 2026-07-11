@@ -178,4 +178,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_adjointParallelUniquenessFullyQuantifiedReached
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_bareEquivalenceParallelUniquenessOpen
 
+-- B5 — the invertibility tie-in: the four generators genuinely invertible
+#assert_no_axioms FX1Poly.Polygraph.Omega.WalkingEquivGeneratorsInvertibleStatement
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivGeneratorsInvertible
+
+-- B5 — the genuine non-identity HL23 CellStructure
+#assert_no_axioms FX1Poly.Polygraph.Omega.WalkingEquivInvertibleGen
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivGenReverse
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivGenReverse_involutive
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivGenReverse_nonIdentity
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivGenCellStructure
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivGenIsInvertibilitySet
+#assert_no_axioms FX1Poly.Polygraph.Omega.walkingEquivGenEtaInMaximal
+
+-- B5 — the honesty markers + the #2068 ledger
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_firstGenuineInvertibilitySetShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_omegaSnFolkCollapseStillWellFoundedWalled
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxEquiv_2068WalkingEquivalenceOpened
+
 end FX1PolyAudit
