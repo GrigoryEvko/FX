@@ -1282,6 +1282,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderNormalFormAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderRoundTripAudit
 -- WP-PROP r3 — the block-exchange interchange: route-(iii) quadrant reads + block contractions + row assemblies + the general interchange (the exact r2 wall goal, no matrix extensionality)
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderBlockExchangeAudit
+-- WP-PROP r4 — the width-3 hexagon rows (Yang-Baxter + mu/delta wide-symmetry naturality) added additively over BunchedBimonoidSoundRow, matrix-sound + two completeness instances
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidHexagonAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
