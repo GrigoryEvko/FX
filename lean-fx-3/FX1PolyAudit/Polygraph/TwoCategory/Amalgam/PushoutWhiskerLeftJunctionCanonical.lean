@@ -21,5 +21,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.gapCodLayout_spliceFrameIntoLayout
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.spliceFrameIntoLayout_probeSlotCount
 #assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasWhiskerLeftLayoutSplice
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.whiskerLeftFiringBlockMerge
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.whiskerLeftFiringBlockMergeAtFrame
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.whiskerLeftJunctionCanonical
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.whiskerLeftJunctionMuWitness
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.whiskerLeftJunctionMuSlotCount
+#assert_no_axioms FX1Poly.Polygraph.Amalgam.fxAmalg_hasWhiskerLeftJunctionCanonical
 
 end FX1PolyAudit

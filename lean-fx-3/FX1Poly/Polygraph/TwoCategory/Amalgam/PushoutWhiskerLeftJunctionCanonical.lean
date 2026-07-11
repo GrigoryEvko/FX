@@ -214,6 +214,205 @@ theorem spliceFrameIntoLayout_probeSlotCount :
 #eval (spliceFrameIntoLayout (firingBlockLayout unitSplitsWallDom)
         [interleavedAssocGapPair, interleavedLeftUnitGapPair]).length
 
+/-! ## THE CONV-LEVEL whiskerLeft JUNCTION MERGE (threading r17 through the r19 producer) -/
+
+/-- ★★★ **THE CONV-LEVEL whiskerLeft JUNCTION MERGE.**  For an ALL-IDENTITY frame block list, `whiskerLeft
+(gapDomLayout nil frameBlocks) (gapVcompLayout finalWall bodyPairs)` is saturated-convertible to the layout splice
+`gapVcompLayout finalWall (spliceFrameIntoLayout frameBlocks bodyPairs)` (up to the boundary-distribution cast) — the
+frame's `s`-walls open fresh leading slots and its trailing gap FUSES into the body head.
+
+Structural on the `AllIdBlocks` witness.  The SINGLE-block case is the r17 cell-level merge
+`whiskerLeft_conv_mergeFrameIntoHead` (the whole one-block frame folds into the head — the junction).  The cons case
+PEELS the head frame block by `whiskerLeftComp` (twice: `composePath wall (composePath gap ·)`), threads the IH on the
+frame tail, pushes the IH cast out (`whiskerLeftCastBoundaryEq`), unfolds the peeled `gap`-whisker to
+`hcomp (vcomp (id gap) (id gap)) ·` (`whiskerLeft_conv_hcompIdLeading` + `vcompIdLeft`), and re-folds the leading
+`wall`-whisker (`whiskerLeft_conv_hcompIdLeading`) into `hcomp (id wall) ·` — exactly the head block
+`idBlockPair wall gap`.  The per-block associator casts merge into the single boundary-distribution cast by
+`castBoundary_trans` + `Eq` proof irrelevance. -/
+theorem whiskerLeftFiringBlockMerge
+    (finalWall : ModalityPath involutionMonadPushout.toModeGraph monadPushMode monadPushMode) :
+    (frameBlocks : List (VcompGapPair involutionMonadPushout.toModeSignature monadPushMode)) →
+    (allId : AllIdBlocks frameBlocks) → (hne : frameBlocks ≠ []) →
+    (bodyPairs : List (VcompGapPair involutionMonadPushout.toModeSignature monadPushMode)) →
+    SaturatedConvOver involutionMonadPushout.toModeSignature crossPairRealPushoutRel
+      (RawTwoCellExpr.whiskerLeft
+        (gapDomLayout (ModalityPath.nil (graph := involutionMonadPushout.toModeGraph) monadPushMode) frameBlocks)
+        (gapVcompLayout finalWall bodyPairs))
+      (RawTwoCellExpr.castBoundary
+        (gapDomLayout_spliceFrameIntoLayout finalWall frameBlocks hne bodyPairs)
+        (gapCodLayout_spliceFrameIntoLayout finalWall frameBlocks allId hne bodyPairs)
+        (gapVcompLayout finalWall (spliceFrameIntoLayout frameBlocks bodyPairs)))
+  | _, AllIdBlocks.nil, hne, _ => absurd rfl hne
+  | _, AllIdBlocks.cons wall gap rest hrest, _, bodyPairs => by
+    cases hrest with
+    | nil =>
+        exact whiskerLeft_conv_mergeFrameIntoHead finalWall
+          (gapDomLayout (ModalityPath.nil (graph := involutionMonadPushout.toModeGraph) monadPushMode)
+            [idBlockPair wall gap]) bodyPairs
+    | cons wall2 gap2 tailFrame2 hrest2 =>
+      have ih := whiskerLeftFiringBlockMerge finalWall (idBlockPair wall2 gap2 :: tailFrame2)
+        (AllIdBlocks.cons wall2 gap2 tailFrame2 hrest2) (List.cons_ne_nil _ _) bodyPairs
+      have gapToZ := SaturatedConvOver.trans
+        (whiskerLeft_conv_hcompIdLeading (baseRel := crossPairRealPushoutRel) gap
+          (gapVcompLayout finalWall (spliceFrameIntoLayout (idBlockPair wall2 gap2 :: tailFrame2) bodyPairs)))
+        (SaturatedConvOver.symm (SaturatedConvOver.hcompCongrLeft
+          (SaturatedConvOver.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdLeft (RawTwoCellExpr.id gap))))
+          (gapVcompLayout finalWall (spliceFrameIntoLayout (idBlockPair wall2 gap2 :: tailFrame2) bodyPairs))))
+      have innerStep := SaturatedConvOver.whiskerLeftCongr gap ih
+      rw [whiskerLeftCastBoundaryEq] at innerStep
+      have innerG := SaturatedConvOver.trans innerStep
+        (SaturatedConvOver.castBoundaryCongr _ _ gapToZ)
+      have midStep := SaturatedConvOver.trans
+        (SaturatedConvOver.ofFull (TwoCellConvFull.whiskerLeftComp gap
+          (gapDomLayout (ModalityPath.nil (graph := involutionMonadPushout.toModeGraph) monadPushMode)
+            (idBlockPair wall2 gap2 :: tailFrame2)) (gapVcompLayout finalWall bodyPairs)))
+        (SaturatedConvOver.castBoundaryCongr _ _ innerG)
+      rw [RawTwoCellExpr.castBoundary_trans] at midStep
+      have outerStep := SaturatedConvOver.whiskerLeftCongr wall midStep
+      rw [whiskerLeftCastBoundaryEq] at outerStep
+      have outerG := SaturatedConvOver.trans outerStep
+        (SaturatedConvOver.castBoundaryCongr _ _
+          (whiskerLeft_conv_hcompIdLeading wall
+            (RawTwoCellExpr.hcomp (RawTwoCellExpr.vcomp (RawTwoCellExpr.id gap) (RawTwoCellExpr.id gap))
+              (gapVcompLayout finalWall (spliceFrameIntoLayout (idBlockPair wall2 gap2 :: tailFrame2) bodyPairs)))))
+      have result := SaturatedConvOver.trans
+        (SaturatedConvOver.ofFull (TwoCellConvFull.whiskerLeftComp wall
+          (composePath gap
+            (gapDomLayout (ModalityPath.nil (graph := involutionMonadPushout.toModeGraph) monadPushMode)
+              (idBlockPair wall2 gap2 :: tailFrame2)))
+          (gapVcompLayout finalWall bodyPairs)))
+        (SaturatedConvOver.castBoundaryCongr _ _ outerG)
+      rw [RawTwoCellExpr.castBoundary_trans] at result
+      exact result
+
+/-- ★★ **THE whiskerLeft JUNCTION MERGE at a NAMED frame 1-cell.**  The frame of `whiskerLeftFiringBlockMerge` is
+intrinsically `gapDomLayout nil frameBlocks`; this wrapper re-states it at ANY frame `frameCell` propositionally equal
+to that layout (the r19 round-trip `oneCell = gapDomLayout nil (firingBlockLayout oneCell)`), the boundary casts
+supplied at `frameCell`.  `subst` on the frame equality (`frameCell` and `frameBlocks` are independent here — no
+circularity) reduces it to `whiskerLeftFiringBlockMerge`; the caller's casts reconcile by proof irrelevance. -/
+theorem whiskerLeftFiringBlockMergeAtFrame
+    (finalWall frameCell : ModalityPath involutionMonadPushout.toModeGraph monadPushMode monadPushMode)
+    (frameBlocks : List (VcompGapPair involutionMonadPushout.toModeSignature monadPushMode))
+    (allId : AllIdBlocks frameBlocks) (hne : frameBlocks ≠ [])
+    (bodyPairs : List (VcompGapPair involutionMonadPushout.toModeSignature monadPushMode))
+    (hframe : frameCell
+      = gapDomLayout (ModalityPath.nil (graph := involutionMonadPushout.toModeGraph) monadPushMode) frameBlocks)
+    (hDom : gapDomLayout finalWall (spliceFrameIntoLayout frameBlocks bodyPairs)
+      = composePath frameCell (gapDomLayout finalWall bodyPairs))
+    (hCod : gapCodLayout finalWall (spliceFrameIntoLayout frameBlocks bodyPairs)
+      = composePath frameCell (gapCodLayout finalWall bodyPairs)) :
+    SaturatedConvOver involutionMonadPushout.toModeSignature crossPairRealPushoutRel
+      (RawTwoCellExpr.whiskerLeft frameCell (gapVcompLayout finalWall bodyPairs))
+      (RawTwoCellExpr.castBoundary hDom hCod
+        (gapVcompLayout finalWall (spliceFrameIntoLayout frameBlocks bodyPairs))) := by
+  subst hframe
+  exact whiskerLeftFiringBlockMerge finalWall frameBlocks allId hne bodyPairs
+
+/-! ## THE whiskerLeft JUNCTION CANONICAL FACTORIZATION (arm b) -/
+
+/-- ★★★ **THE whiskerLeft JUNCTION CANONICAL FACTORIZATION (arm b, the recon deliverable).**  Given a
+`CanonicalFactorization` of `body`, `whiskerLeft oneCell body` has a `CanonicalFactorization` whose `pairs` are the
+layout splice `spliceFrameIntoLayout (firingBlockLayout oneCell) bodyFact.pairs` — the frame's own firing blocks
+spliced into the body, junction fused.  The slot count is the CANONICAL `wallCount(oneCell) + bodyFact.pairs.length =
+wallCount(composePath oneCell (dom body)) + 1` (via `spliceFrameIntoLayout_firingBlockLayout_length` + the body's slot
+spec + `pushoutPathWallCount_composePath`), the boundary equalities are the splice distributions re-anchored by the r19
+round-trip `gapDomLayout_firingBlockLayout`, and the convertibility threads `bodyFact.conv` under `whiskerLeftCongr`
+then `whiskerLeftFiringBlockMerge`, the per-side casts reconciled by `castBoundary_trans` + `Eq` proof irrelevance. -/
+def whiskerLeftJunctionCanonical
+    (oneCell : ModalityPath involutionMonadPushout.toModeGraph monadPushMode monadPushMode)
+    {sourcePath targetPath : ModalityPath involutionMonadPushout.toModeGraph monadPushMode monadPushMode}
+    {body : RawTwoCellExpr involutionMonadPushout.toModeSignature sourcePath targetPath}
+    (bodyFact : CanonicalFactorization body) :
+    CanonicalFactorization (RawTwoCellExpr.whiskerLeft oneCell body) := by
+  have hpairs : bodyFact.1.pairs ≠ [] := by
+    intro hnil
+    have hzero := bodyFact.2.symm.trans (congrArg List.length hnil)
+    rw [finestGapWidths_pushoutPathTags_length] at hzero
+    exact Nat.noConfusion hzero
+  refine ⟨{ finalWall := bodyFact.1.finalWall
+            pairs := spliceFrameIntoLayout (firingBlockLayout oneCell) bodyFact.1.pairs
+            domEq := ?_
+            codEq := ?_
+            conv := ?_ }, ?_⟩
+  · rw [gapDomLayout_spliceFrameIntoLayout _ (firingBlockLayout oneCell)
+        (firingBlockLayoutAux_ne_nil _ _ oneCell) bodyFact.1.pairs,
+        gapDomLayout_firingBlockLayout, ← bodyFact.1.domEq]
+  · rw [gapCodLayout_spliceFrameIntoLayout _ (firingBlockLayout oneCell)
+        (firingBlockLayoutAux_allIdBlocks _ _ oneCell)
+        (firingBlockLayoutAux_ne_nil _ _ oneCell) bodyFact.1.pairs,
+        gapDomLayout_firingBlockLayout, ← bodyFact.1.codEq]
+  · have junctionDom : gapDomLayout bodyFact.1.finalWall
+        (spliceFrameIntoLayout (firingBlockLayout oneCell) bodyFact.1.pairs)
+        = composePath oneCell (gapDomLayout bodyFact.1.finalWall bodyFact.1.pairs) :=
+      (gapDomLayout_spliceFrameIntoLayout bodyFact.1.finalWall (firingBlockLayout oneCell)
+        (firingBlockLayoutAux_ne_nil _ _ oneCell) bodyFact.1.pairs).trans
+        (congrArg (fun frameDom => composePath frameDom (gapDomLayout bodyFact.1.finalWall bodyFact.1.pairs))
+          (gapDomLayout_firingBlockLayout oneCell))
+    have junctionCod : gapCodLayout bodyFact.1.finalWall
+        (spliceFrameIntoLayout (firingBlockLayout oneCell) bodyFact.1.pairs)
+        = composePath oneCell (gapCodLayout bodyFact.1.finalWall bodyFact.1.pairs) :=
+      (gapCodLayout_spliceFrameIntoLayout bodyFact.1.finalWall (firingBlockLayout oneCell)
+        (firingBlockLayoutAux_allIdBlocks _ _ oneCell) (firingBlockLayoutAux_ne_nil _ _ oneCell)
+        bodyFact.1.pairs).trans
+        (congrArg (fun frameDom => composePath frameDom (gapCodLayout bodyFact.1.finalWall bodyFact.1.pairs))
+          (gapDomLayout_firingBlockLayout oneCell))
+    have merge := whiskerLeftFiringBlockMergeAtFrame bodyFact.1.finalWall oneCell (firingBlockLayout oneCell)
+      (firingBlockLayoutAux_allIdBlocks _ _ oneCell) (firingBlockLayoutAux_ne_nil _ _ oneCell) bodyFact.1.pairs
+      (gapDomLayout_firingBlockLayout oneCell).symm junctionDom junctionCod
+    have chain := SaturatedConvOver.trans (SaturatedConvOver.whiskerLeftCongr oneCell bodyFact.1.conv) merge
+    rw [whiskerLeftCastBoundaryEq] at chain
+    have reconciled := SaturatedConvOver.castBoundaryCongr junctionDom.symm junctionCod.symm chain
+    rw [RawTwoCellExpr.castBoundary_trans, RawTwoCellExpr.castBoundary_trans] at reconciled
+    exact reconciled
+  · have rhs : (finestGapWidths (pushoutPathTags (composePath oneCell sourcePath))).length
+        = pushoutPathWallCount oneCell + (pushoutPathWallCount sourcePath + 1) := by
+      rw [finestGapWidths_pushoutPathTags_length, pushoutPathWallCount_composePath, Nat.add_assoc]
+    exact (spliceFrameIntoLayout_firingBlockLayout_length oneCell bodyFact.1.pairs hpairs).trans
+      ((congrArg (pushoutPathWallCount oneCell + ·)
+        (bodyFact.2.trans (finestGapWidths_pushoutPathTags_length sourcePath))).trans rhs.symm)
+
+/-! ## Witness + probe (a wall-frame over the wire-changing `mu`) -/
+
+/-- ★★★ **THE whiskerLeft JUNCTION WITNESS — an `s`-wall frame over the wire-changing `mu`.**  `whiskerLeft s
+(gen mu)` (`gen mu : t·t ⇒ t`, framed by the `s`-wall) factors CANONICALLY via `whiskerLeftJunctionCanonical` on the
+`gen` arm `mulCanonicalFactorization` — the `s`-wall opens ONE fresh leading slot, the `mu` firing sits in the fused
+junction gap UNTOUCHED.  A non-vacuous inhabitant at the REAL pushout signature, over a WIRE-CHANGING body. -/
+def whiskerLeftJunctionMuWitness :
+    CanonicalFactorization (RawTwoCellExpr.whiskerLeft monadPushSPath (RawTwoCellExpr.gen pushoutMonadMult)) :=
+  whiskerLeftJunctionCanonical monadPushSPath mulCanonicalFactorization
+
+/-- ★★★ **PROBE (junction witness slot count — TWO slots, the canonical count).**  `whiskerLeftJunctionMuWitness.1.
+pairs.length = 2` (`rfl`): the `s`-wall opens one fresh slot, the `mu` junction gap is the second — `wallCount(s) +
+wallCount(t·t) + 1 = 1 + 0 + 1 = 2`.  Contrast the r17 merge arm (whole `s·t·t` frame buried in one head wall → `1`
+slot).  The canonical firing-block count, over a wire-changing body. -/
+theorem whiskerLeftJunctionMuSlotCount : whiskerLeftJunctionMuWitness.1.pairs.length = 2 := rfl
+
+/-! ## Observability -/
+
+-- The junction witness slot count (expect `2`: the `s`-wall slot + the `mu` junction gap).
+#eval whiskerLeftJunctionMuWitness.1.pairs.length
+
+/-! ## Honesty markers -/
+
+/-- ★★★ **Honesty marker — the CONV-level whiskerLeft JUNCTION MERGE + its CANONICAL FACTORIZATION SHIP (WP-AMALG-2
+r21, B1, arm b).**  `= true`.  `whiskerLeftFiringBlockMerge` proves `whiskerLeft (gapDomLayout nil frameBlocks)
+(gapVcompLayout finalWall bodyPairs)` saturated-convertible to the layout splice (up to the boundary-distribution cast),
+structurally on the frame's `AllIdBlocks` witness — the SINGLE-block case the r17 cell merge
+`whiskerLeft_conv_mergeFrameIntoHead`, the cons case peeling the head frame block by `whiskerLeftComp` + threading the
+IH + re-folding the head block via `whiskerLeft_conv_hcompIdLeading` + `vcompIdLeft`.  `whiskerLeftFiringBlockMergeAtFrame`
+re-anchors it to a named frame 1-cell (the r19 round-trip `oneCell = gapDomLayout nil (firingBlockLayout oneCell)`), and
+`whiskerLeftJunctionCanonical` assembles the `CanonicalFactorization (whiskerLeft oneCell body)` from a body factorization
+— `pairs = spliceFrameIntoLayout (firingBlockLayout oneCell) bodyFact.pairs`, the CANONICAL slot count
+`wallCount(oneCell) + wallCount(dom body) + 1`, the boundary distributions re-anchored, the conv threading `bodyFact.conv`
+under `whiskerLeftCongr` then the merge, casts reconciled by `castBoundary_trans` + proof irrelevance.  Non-vacuous over a
+WIRE-CHANGING body: `whiskerLeftJunctionMuWitness` (`s`-wall over `gen mu`) reads `2` canonical slots
+(`whiskerLeftJunctionMuSlotCount`, `rfl`).
+
+This is the recon's arm-b deliverable.  It does NOT flip `fxAmalg_whiskerJunctionMergeStaysWalled` by itself — that flips
+only when BOTH arm b AND arm b' (the whiskerRight dual) literally ship (tracked in the ceiling ledger).  #2043 does NOT
+close.  `= true`. -/
+def fxAmalg_hasWhiskerLeftJunctionCanonical : Bool := true
+
 /-! ## Honesty marker (the DATA-level scaffolding; the conv is tracked separately) -/
 
 /-- ★★★ **Honesty marker — the LAYOUT-level frame-block splice + slot count + boundary distribution SHIP (WP-AMALG-2
