@@ -10,6 +10,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithNormalForm
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithCascadeTermination
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithWindowedDivisibility
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithWindowedChainReduction
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithOperationRoundTrip
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
