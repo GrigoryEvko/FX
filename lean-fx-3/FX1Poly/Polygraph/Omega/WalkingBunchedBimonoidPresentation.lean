@@ -410,4 +410,692 @@ UNAVOIDABLE (the B1 bialgebra law needs the middle swap of the inner two strands
 intrinsically braided territory. -/
 def fxBunchedBimonoid_swapSymmetryLawProbed : Bool := true
 
+/-! # =========================================================================================
+    # B2 — THE 22 CRITICAL-PAIR RESOLUTIONS (15 transported + 7 new), joinable modulo strict
+    # =========================================================================================
+
+★ **The walking bunched bimonoid = 5 monoid-`m` + 5 monoid-`a` + 5 comonoid-`a` + 4 bialgebra + 2 (co)comm +
+1 sigma-involution = 22 critical-pair rows.**  The 15 transported rows reuse the walking-monad / Frobenius-
+comonad leg shapes verbatim (colour `m` / colour `a`); the 7 new rows are the DELTA.  Every row joins modulo
+strict at peak and valley: the transported rows by the standard monad / comonad joins, the bialgebra product /
+(co)comm / sigma-involution rows by `refl` on both boundaries, and the counit-of-product / delta-of-unit rows
+by one strict unit (their `eps (x) eps` / `eta (x) eta` composites land in `id.id`). -/
+
+/-! ## The five monoid-`m` legs (over `m`, `eta_m`, `mu_m`) — the walking monad's five leg shapes -/
+
+/-- monoid-`m` `unitUnit` left leg `eta_m |> m`. -/
+def bunchedBimonoidMultMonadUnitUnitLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidMultEtaGen bunchedBimonoidMultGen
+
+/-- monoid-`m` `unitUnit` right leg `m <| eta_m`. -/
+def bunchedBimonoidMultMonadUnitUnitRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidMultGen bunchedBimonoidMultEtaGen
+
+/-- monoid-`m` `leftUnitAssoc` left leg `mu_m |> m`. -/
+def bunchedBimonoidMultMonadLeftUnitAssocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidMultMuGen bunchedBimonoidMultGen
+
+/-- monoid-`m` `leftUnitAssoc` right leg `m <| mu_m`. -/
+def bunchedBimonoidMultMonadLeftUnitAssocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidMultGen bunchedBimonoidMultMuGen
+
+/-- monoid-`m` `rightUnitAssoc` left leg `eta_m |> m.m`. -/
+def bunchedBimonoidMultMonadRightUnitAssocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidMultEtaGen bunchedBimonoidMmWord
+
+/-- monoid-`m` `rightUnitAssoc` right leg `m.m <| eta_m`. -/
+def bunchedBimonoidMultMonadRightUnitAssocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidMmWord bunchedBimonoidMultEtaGen
+
+/-- monoid-`m` `pentagon` left leg `(mu_m |> m.m) . (m <| mu_m)`. -/
+def bunchedBimonoidMultMonadPentagonLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight bunchedBimonoidMultMuGen bunchedBimonoidMmWord)
+    (CellExpr.whiskerLeft bunchedBimonoidMultGen bunchedBimonoidMultMuGen)
+
+/-- monoid-`m` `pentagon` right leg `(m.m <| mu_m) . (mu_m |> m)`. -/
+def bunchedBimonoidMultMonadPentagonRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft bunchedBimonoidMmWord bunchedBimonoidMultMuGen)
+    (CellExpr.whiskerRight bunchedBimonoidMultMuGen bunchedBimonoidMultGen)
+
+/-- monoid-`m` `rootUnitAssoc` left leg `(mu_m |> id) . (m <| eta_m)`. -/
+def bunchedBimonoidMultMonadRootUnitAssocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight bunchedBimonoidMultMuGen bunchedBimonoidIdOne)
+    (CellExpr.whiskerLeft bunchedBimonoidMultGen bunchedBimonoidMultEtaGen)
+
+/-- monoid-`m` `rootUnitAssoc` right leg `(m.m <| eta_m) . (mu_m |> m)`. -/
+def bunchedBimonoidMultMonadRootUnitAssocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft bunchedBimonoidMmWord bunchedBimonoidMultEtaGen)
+    (CellExpr.whiskerRight bunchedBimonoidMultMuGen bunchedBimonoidMultGen)
+
+/-! ## The five monoid-`a` legs (over `a`, `eta_a`, `mu_a`) — the same five leg shapes, colour `a` -/
+
+/-- monoid-`a` `unitUnit` left leg `eta_a |> a`. -/
+def bunchedBimonoidAddMonadUnitUnitLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidAddEtaGen bunchedBimonoidAdditiveGen
+
+/-- monoid-`a` `unitUnit` right leg `a <| eta_a`. -/
+def bunchedBimonoidAddMonadUnitUnitRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddEtaGen
+
+/-- monoid-`a` `leftUnitAssoc` left leg `mu_a |> a`. -/
+def bunchedBimonoidAddMonadLeftUnitAssocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidAddMuGen bunchedBimonoidAdditiveGen
+
+/-- monoid-`a` `leftUnitAssoc` right leg `a <| mu_a`. -/
+def bunchedBimonoidAddMonadLeftUnitAssocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddMuGen
+
+/-- monoid-`a` `rightUnitAssoc` left leg `eta_a |> a.a`. -/
+def bunchedBimonoidAddMonadRightUnitAssocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidAddEtaGen bunchedBimonoidAaWord
+
+/-- monoid-`a` `rightUnitAssoc` right leg `a.a <| eta_a`. -/
+def bunchedBimonoidAddMonadRightUnitAssocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidAaWord bunchedBimonoidAddEtaGen
+
+/-- monoid-`a` `pentagon` left leg `(mu_a |> a.a) . (a <| mu_a)`. -/
+def bunchedBimonoidAddMonadPentagonLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight bunchedBimonoidAddMuGen bunchedBimonoidAaWord)
+    (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddMuGen)
+
+/-- monoid-`a` `pentagon` right leg `(a.a <| mu_a) . (mu_a |> a)`. -/
+def bunchedBimonoidAddMonadPentagonRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft bunchedBimonoidAaWord bunchedBimonoidAddMuGen)
+    (CellExpr.whiskerRight bunchedBimonoidAddMuGen bunchedBimonoidAdditiveGen)
+
+/-- monoid-`a` `rootUnitAssoc` left leg `(mu_a |> id) . (a <| eta_a)`. -/
+def bunchedBimonoidAddMonadRootUnitAssocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight bunchedBimonoidAddMuGen bunchedBimonoidIdOne)
+    (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddEtaGen)
+
+/-- monoid-`a` `rootUnitAssoc` right leg `(a.a <| eta_a) . (mu_a |> a)`. -/
+def bunchedBimonoidAddMonadRootUnitAssocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft bunchedBimonoidAaWord bunchedBimonoidAddEtaGen)
+    (CellExpr.whiskerRight bunchedBimonoidAddMuGen bunchedBimonoidAdditiveGen)
+
+/-! ## The five comonoid-`a` legs (over `a`, `eps_a`, `delta_a`) — the Frobenius comonad's op-mirror shapes -/
+
+/-- comonoid-`a` `counitCounit` left leg `eps_a |> a`. -/
+def bunchedBimonoidComonoidCounitCounitLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidAddEpsGen bunchedBimonoidAdditiveGen
+
+/-- comonoid-`a` `counitCounit` right leg `a <| eps_a`. -/
+def bunchedBimonoidComonoidCounitCounitRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddEpsGen
+
+/-- comonoid-`a` `leftCounitCoassoc` left leg `delta_a |> a`. -/
+def bunchedBimonoidComonoidLeftCounitCoassocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidAddDeltaGen bunchedBimonoidAdditiveGen
+
+/-- comonoid-`a` `leftCounitCoassoc` right leg `a <| delta_a`. -/
+def bunchedBimonoidComonoidLeftCounitCoassocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddDeltaGen
+
+/-- comonoid-`a` `rightCounitCoassoc` left leg `eps_a |> a.a`. -/
+def bunchedBimonoidComonoidRightCounitCoassocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidAddEpsGen bunchedBimonoidAaWord
+
+/-- comonoid-`a` `rightCounitCoassoc` right leg `a.a <| eps_a`. -/
+def bunchedBimonoidComonoidRightCounitCoassocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidAaWord bunchedBimonoidAddEpsGen
+
+/-- comonoid-`a` `copentagon` left leg `(delta_a |> a) . (a.a <| delta_a)`. -/
+def bunchedBimonoidComonoidCopentagonLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight bunchedBimonoidAddDeltaGen bunchedBimonoidAdditiveGen)
+    (CellExpr.whiskerLeft bunchedBimonoidAaWord bunchedBimonoidAddDeltaGen)
+
+/-- comonoid-`a` `copentagon` right leg `(a <| delta_a) . (delta_a |> a.a)`. -/
+def bunchedBimonoidComonoidCopentagonRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddDeltaGen)
+    (CellExpr.whiskerRight bunchedBimonoidAddDeltaGen bunchedBimonoidAaWord)
+
+/-- comonoid-`a` `rootCounitCoassoc` left leg `(delta_a |> a) . (a.a <| eps_a)`. -/
+def bunchedBimonoidComonoidRootCounitCoassocLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight bunchedBimonoidAddDeltaGen bunchedBimonoidAdditiveGen)
+    (CellExpr.whiskerLeft bunchedBimonoidAaWord bunchedBimonoidAddEpsGen)
+
+/-- comonoid-`a` `rootCounitCoassoc` right leg `(a <| eps_a) . (delta_a |> id)`. -/
+def bunchedBimonoidComonoidRootCounitCoassocRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddEpsGen)
+    (CellExpr.whiskerRight bunchedBimonoidAddDeltaGen bunchedBimonoidIdOne)
+
+/-! ## The 22 critical-pair rows and the base relation -/
+
+/-- ★ The **twenty-two walking-bunched-bimonoid critical-pair rows** — 5 monoid-`m` + 5 monoid-`a` + 5
+comonoid-`a` (transported) + 4 bialgebra + 2 (co)commutativity + 1 sigma-involution (new).  A `CellRelOver`
+firing on each overlap's two reduction legs: the walking bunched bimonoid's homotopy basis at Squier's
+convergent scope. -/
+inductive BunchedBimonoidCriticalRow :
+    {d : Nat} → CellExpr bunchedBimonoidOmegaComputad d → CellExpr bunchedBimonoidOmegaComputad d → Prop where
+  /-- monoid-`m` `unitUnit`. -/
+  | multMonadUnitUnit : BunchedBimonoidCriticalRow bunchedBimonoidMultMonadUnitUnitLeftLeg
+      bunchedBimonoidMultMonadUnitUnitRightLeg
+  /-- monoid-`m` `leftUnitAssoc`. -/
+  | multMonadLeftUnitAssoc : BunchedBimonoidCriticalRow bunchedBimonoidMultMonadLeftUnitAssocLeftLeg
+      bunchedBimonoidMultMonadLeftUnitAssocRightLeg
+  /-- monoid-`m` `rightUnitAssoc`. -/
+  | multMonadRightUnitAssoc : BunchedBimonoidCriticalRow bunchedBimonoidMultMonadRightUnitAssocLeftLeg
+      bunchedBimonoidMultMonadRightUnitAssocRightLeg
+  /-- monoid-`m` `pentagon`. -/
+  | multMonadPentagon : BunchedBimonoidCriticalRow bunchedBimonoidMultMonadPentagonLeftLeg
+      bunchedBimonoidMultMonadPentagonRightLeg
+  /-- monoid-`m` `rootUnitAssoc`. -/
+  | multMonadRootUnitAssoc : BunchedBimonoidCriticalRow bunchedBimonoidMultMonadRootUnitAssocLeftLeg
+      bunchedBimonoidMultMonadRootUnitAssocRightLeg
+  /-- monoid-`a` `unitUnit`. -/
+  | addMonadUnitUnit : BunchedBimonoidCriticalRow bunchedBimonoidAddMonadUnitUnitLeftLeg
+      bunchedBimonoidAddMonadUnitUnitRightLeg
+  /-- monoid-`a` `leftUnitAssoc`. -/
+  | addMonadLeftUnitAssoc : BunchedBimonoidCriticalRow bunchedBimonoidAddMonadLeftUnitAssocLeftLeg
+      bunchedBimonoidAddMonadLeftUnitAssocRightLeg
+  /-- monoid-`a` `rightUnitAssoc`. -/
+  | addMonadRightUnitAssoc : BunchedBimonoidCriticalRow bunchedBimonoidAddMonadRightUnitAssocLeftLeg
+      bunchedBimonoidAddMonadRightUnitAssocRightLeg
+  /-- monoid-`a` `pentagon`. -/
+  | addMonadPentagon : BunchedBimonoidCriticalRow bunchedBimonoidAddMonadPentagonLeftLeg
+      bunchedBimonoidAddMonadPentagonRightLeg
+  /-- monoid-`a` `rootUnitAssoc`. -/
+  | addMonadRootUnitAssoc : BunchedBimonoidCriticalRow bunchedBimonoidAddMonadRootUnitAssocLeftLeg
+      bunchedBimonoidAddMonadRootUnitAssocRightLeg
+  /-- comonoid-`a` `counitCounit`. -/
+  | comonoidCounitCounit : BunchedBimonoidCriticalRow bunchedBimonoidComonoidCounitCounitLeftLeg
+      bunchedBimonoidComonoidCounitCounitRightLeg
+  /-- comonoid-`a` `leftCounitCoassoc`. -/
+  | comonoidLeftCounitCoassoc : BunchedBimonoidCriticalRow bunchedBimonoidComonoidLeftCounitCoassocLeftLeg
+      bunchedBimonoidComonoidLeftCounitCoassocRightLeg
+  /-- comonoid-`a` `rightCounitCoassoc`. -/
+  | comonoidRightCounitCoassoc : BunchedBimonoidCriticalRow bunchedBimonoidComonoidRightCounitCoassocLeftLeg
+      bunchedBimonoidComonoidRightCounitCoassocRightLeg
+  /-- comonoid-`a` `copentagon`. -/
+  | comonoidCopentagon : BunchedBimonoidCriticalRow bunchedBimonoidComonoidCopentagonLeftLeg
+      bunchedBimonoidComonoidCopentagonRightLeg
+  /-- comonoid-`a` `rootCounitCoassoc`. -/
+  | comonoidRootCounitCoassoc : BunchedBimonoidCriticalRow bunchedBimonoidComonoidRootCounitCoassocLeftLeg
+      bunchedBimonoidComonoidRootCounitCoassocRightLeg
+  /-- bialgebra B1 (delta-of-product with the middle swap). -/
+  | bialgebraProduct : BunchedBimonoidCriticalRow bunchedBimonoidBialgebraProductLeftLeg
+      bunchedBimonoidBialgebraProductRightLeg
+  /-- bialgebra B2 (counit-of-product). -/
+  | bialgebraCounit : BunchedBimonoidCriticalRow bunchedBimonoidBialgebraCounitLeftLeg
+      bunchedBimonoidBialgebraCounitRightLeg
+  /-- bialgebra B3 (delta-of-unit). -/
+  | bialgebraUnit : BunchedBimonoidCriticalRow bunchedBimonoidBialgebraUnitLeftLeg
+      bunchedBimonoidBialgebraUnitRightLeg
+  /-- bialgebra B4 (the bone `eps.eta = id`). -/
+  | bialgebraBone : BunchedBimonoidCriticalRow bunchedBimonoidBialgebraBoneLeftLeg
+      bunchedBimonoidBialgebraBoneRightLeg
+  /-- commutativity `mu.sigma = mu`. -/
+  | commutativity : BunchedBimonoidCriticalRow bunchedBimonoidCommutativityLeftLeg
+      bunchedBimonoidCommutativityRightLeg
+  /-- cocommutativity `sigma.delta = delta`. -/
+  | cocommutativity : BunchedBimonoidCriticalRow bunchedBimonoidCocommutativityLeftLeg
+      bunchedBimonoidCocommutativityRightLeg
+  /-- sigma-involution `sigma.sigma = id`. -/
+  | sigmaInvolution : BunchedBimonoidCriticalRow bunchedBimonoidSigmaInvolutionLeftLeg
+      bunchedBimonoidSigmaInvolutionRightLeg
+
+/-- The base relation the 3-cells resolve: the strict omega laws united with the 22 critical-pair rows. -/
+def bunchedBimonoidOmegaBaseRel : CellRelOver bunchedBimonoidOmegaComputad :=
+  unionCellRel bunchedBimonoidOmegaComputad (StrictAxiomRel bunchedBimonoidOmegaComputad)
+    BunchedBimonoidCriticalRow
+
+/-! ## The assembled per-pair resolution datum -/
+
+/-- ★ A **coherent resolution** of one bunched-bimonoid critical pair, joinable MODULO the strict congruence:
+the two leg SOURCES are convertible (peak), the two legs are convertible (the generating 3-cell), and the two
+leg TARGETS are convertible (valley).  Parameterised by the two legs so all 22 pairs share one datum shape. -/
+structure BunchedBimonoidCriticalPairResolved {d : Nat}
+    (leftLeg rightLeg : CellExpr bunchedBimonoidOmegaComputad (d + 1)) : Prop where
+  /-- The two leg SOURCES are convertible (the peak join). -/
+  peakJoined : SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidOmegaBaseRel
+    (boundarySource leftLeg) (boundarySource rightLeg)
+  /-- The two legs are convertible (the generating 3-cell). -/
+  legsConvertible : SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidOmegaBaseRel
+    leftLeg rightLeg
+  /-- The two leg TARGETS are convertible (the valley join). -/
+  valleyJoined : SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidOmegaBaseRel
+    (boundaryTarget leftLeg) (boundaryTarget rightLeg)
+
+/-- Build a per-pair resolution from a single critical row plus its peak / valley joins — the generating 3-cell
+is the row fired through `ofRelation`. -/
+def bunchedBimonoidResolveRow {d : Nat}
+    {leftLeg rightLeg : CellExpr bunchedBimonoidOmegaComputad (d + 1)}
+    (peakJoin : SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidOmegaBaseRel
+      (boundarySource leftLeg) (boundarySource rightLeg))
+    (row : BunchedBimonoidCriticalRow leftLeg rightLeg)
+    (valleyJoin : SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidOmegaBaseRel
+      (boundaryTarget leftLeg) (boundaryTarget rightLeg)) :
+    BunchedBimonoidCriticalPairResolved leftLeg rightLeg :=
+  ⟨peakJoin, SaturatedConvOverWithId.ofRelation (Or.inr row), valleyJoin⟩
+
+/-! ## The 22 per-pair resolutions (peak + 3-cell + valley, assembled) -/
+
+/-- monoid-`m` `unitUnit` resolved (peak units, valley refl). -/
+theorem bunchedBimonoidMultMonadUnitUnitResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadUnitUnitLeftLeg
+      bunchedBimonoidMultMonadUnitUnitRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidMultGen)))
+      (SaturatedConvOverWithId.symm
+        (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight bunchedBimonoidMultGen)))))
+    BunchedBimonoidCriticalRow.multMonadUnitUnit
+    (SaturatedConvOverWithId.refl _)
+
+/-- monoid-`m` `leftUnitAssoc` resolved (peak assoc, valley refl). -/
+theorem bunchedBimonoidMultMonadLeftUnitAssocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadLeftUnitAssocLeftLeg
+      bunchedBimonoidMultMonadLeftUnitAssocRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.ofRelation
+      (Or.inl (StrictAxiomRel.vcompAssoc bunchedBimonoidMultGen bunchedBimonoidMultGen bunchedBimonoidMultGen)))
+    BunchedBimonoidCriticalRow.multMonadLeftUnitAssoc
+    (SaturatedConvOverWithId.refl _)
+
+/-- monoid-`m` `rightUnitAssoc` resolved (peak units, valley assoc). -/
+theorem bunchedBimonoidMultMonadRightUnitAssocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadRightUnitAssocLeftLeg
+      bunchedBimonoidMultMonadRightUnitAssocRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidMmWord)))
+      (SaturatedConvOverWithId.symm
+        (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight bunchedBimonoidMmWord)))))
+    BunchedBimonoidCriticalRow.multMonadRightUnitAssoc
+    (SaturatedConvOverWithId.symm
+      (SaturatedConvOverWithId.ofRelation
+        (Or.inl (StrictAxiomRel.vcompAssoc bunchedBimonoidMultGen bunchedBimonoidMultGen
+          bunchedBimonoidMultGen))))
+
+/-- monoid-`m` `pentagon` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidMultMonadPentagonResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadPentagonLeftLeg
+      bunchedBimonoidMultMonadPentagonRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.multMonadPentagon (SaturatedConvOverWithId.refl _)
+
+/-- monoid-`m` `rootUnitAssoc` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidMultMonadRootUnitAssocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadRootUnitAssocLeftLeg
+      bunchedBimonoidMultMonadRootUnitAssocRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.multMonadRootUnitAssoc (SaturatedConvOverWithId.refl _)
+
+/-- monoid-`a` `unitUnit` resolved (peak units, valley refl). -/
+theorem bunchedBimonoidAddMonadUnitUnitResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadUnitUnitLeftLeg
+      bunchedBimonoidAddMonadUnitUnitRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidAdditiveGen)))
+      (SaturatedConvOverWithId.symm
+        (SaturatedConvOverWithId.ofRelation
+          (Or.inl (StrictAxiomRel.vcompUnitRight bunchedBimonoidAdditiveGen)))))
+    BunchedBimonoidCriticalRow.addMonadUnitUnit
+    (SaturatedConvOverWithId.refl _)
+
+/-- monoid-`a` `leftUnitAssoc` resolved (peak assoc, valley refl). -/
+theorem bunchedBimonoidAddMonadLeftUnitAssocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadLeftUnitAssocLeftLeg
+      bunchedBimonoidAddMonadLeftUnitAssocRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.ofRelation
+      (Or.inl (StrictAxiomRel.vcompAssoc bunchedBimonoidAdditiveGen bunchedBimonoidAdditiveGen
+        bunchedBimonoidAdditiveGen)))
+    BunchedBimonoidCriticalRow.addMonadLeftUnitAssoc
+    (SaturatedConvOverWithId.refl _)
+
+/-- monoid-`a` `rightUnitAssoc` resolved (peak units, valley assoc). -/
+theorem bunchedBimonoidAddMonadRightUnitAssocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadRightUnitAssocLeftLeg
+      bunchedBimonoidAddMonadRightUnitAssocRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidAaWord)))
+      (SaturatedConvOverWithId.symm
+        (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight bunchedBimonoidAaWord)))))
+    BunchedBimonoidCriticalRow.addMonadRightUnitAssoc
+    (SaturatedConvOverWithId.symm
+      (SaturatedConvOverWithId.ofRelation
+        (Or.inl (StrictAxiomRel.vcompAssoc bunchedBimonoidAdditiveGen bunchedBimonoidAdditiveGen
+          bunchedBimonoidAdditiveGen))))
+
+/-- monoid-`a` `pentagon` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidAddMonadPentagonResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadPentagonLeftLeg
+      bunchedBimonoidAddMonadPentagonRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.addMonadPentagon (SaturatedConvOverWithId.refl _)
+
+/-- monoid-`a` `rootUnitAssoc` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidAddMonadRootUnitAssocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadRootUnitAssocLeftLeg
+      bunchedBimonoidAddMonadRootUnitAssocRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.addMonadRootUnitAssoc (SaturatedConvOverWithId.refl _)
+
+/-- comonoid-`a` `counitCounit` resolved (peak refl, valley units). -/
+theorem bunchedBimonoidComonoidCounitCounitResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidCounitCounitLeftLeg
+      bunchedBimonoidComonoidCounitCounitRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.comonoidCounitCounit
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidAdditiveGen)))
+      (SaturatedConvOverWithId.symm
+        (SaturatedConvOverWithId.ofRelation
+          (Or.inl (StrictAxiomRel.vcompUnitRight bunchedBimonoidAdditiveGen)))))
+
+/-- comonoid-`a` `leftCounitCoassoc` resolved (peak refl, valley assoc). -/
+theorem bunchedBimonoidComonoidLeftCounitCoassocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidLeftCounitCoassocLeftLeg
+      bunchedBimonoidComonoidLeftCounitCoassocRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.comonoidLeftCounitCoassoc
+    (SaturatedConvOverWithId.ofRelation
+      (Or.inl (StrictAxiomRel.vcompAssoc bunchedBimonoidAdditiveGen bunchedBimonoidAdditiveGen
+        bunchedBimonoidAdditiveGen)))
+
+/-- comonoid-`a` `rightCounitCoassoc` resolved (peak assoc, valley units). -/
+theorem bunchedBimonoidComonoidRightCounitCoassocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidRightCounitCoassocLeftLeg
+      bunchedBimonoidComonoidRightCounitCoassocRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.symm
+      (SaturatedConvOverWithId.ofRelation
+        (Or.inl (StrictAxiomRel.vcompAssoc bunchedBimonoidAdditiveGen bunchedBimonoidAdditiveGen
+          bunchedBimonoidAdditiveGen))))
+    BunchedBimonoidCriticalRow.comonoidRightCounitCoassoc
+    (SaturatedConvOverWithId.trans
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidAaWord)))
+      (SaturatedConvOverWithId.symm
+        (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitRight bunchedBimonoidAaWord)))))
+
+/-- comonoid-`a` `copentagon` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidComonoidCopentagonResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidCopentagonLeftLeg
+      bunchedBimonoidComonoidCopentagonRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.comonoidCopentagon (SaturatedConvOverWithId.refl _)
+
+/-- comonoid-`a` `rootCounitCoassoc` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidComonoidRootCounitCoassocResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidRootCounitCoassocLeftLeg
+      bunchedBimonoidComonoidRootCounitCoassocRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.comonoidRootCounitCoassoc (SaturatedConvOverWithId.refl _)
+
+/-- ★★ bialgebra B1 (delta-of-product with the middle swap) resolved (peak refl, valley refl — the tamed
+4-strand row is globular `a.a => a.a`). -/
+theorem bunchedBimonoidBialgebraProductResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraProductLeftLeg
+      bunchedBimonoidBialgebraProductRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.bialgebraProduct (SaturatedConvOverWithId.refl _)
+
+/-- ★ bialgebra B2 (counit-of-product) resolved (peak refl, valley one strict unit: `id ~ id.id`). -/
+theorem bunchedBimonoidBialgebraCounitResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraCounitLeftLeg
+      bunchedBimonoidBialgebraCounitRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.bialgebraCounit
+    (SaturatedConvOverWithId.symm
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidIdOne))))
+
+/-- ★ bialgebra B3 (delta-of-unit) resolved (peak one strict unit: `id ~ id.id`, valley refl). -/
+theorem bunchedBimonoidBialgebraUnitResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraUnitLeftLeg
+      bunchedBimonoidBialgebraUnitRightLeg :=
+  bunchedBimonoidResolveRow
+    (SaturatedConvOverWithId.symm
+      (SaturatedConvOverWithId.ofRelation (Or.inl (StrictAxiomRel.vcompUnitLeft bunchedBimonoidIdOne))))
+    BunchedBimonoidCriticalRow.bialgebraUnit (SaturatedConvOverWithId.refl _)
+
+/-- ★ bialgebra B4 (the bone `eps.eta = id`) resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidBialgebraBoneResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraBoneLeftLeg
+      bunchedBimonoidBialgebraBoneRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.bialgebraBone (SaturatedConvOverWithId.refl _)
+
+/-- ★ commutativity `mu.sigma = mu` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidCommutativityResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidCommutativityLeftLeg
+      bunchedBimonoidCommutativityRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.commutativity (SaturatedConvOverWithId.refl _)
+
+/-- ★ cocommutativity `sigma.delta = delta` resolved (peak refl, valley refl). -/
+theorem bunchedBimonoidCocommutativityResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidCocommutativityLeftLeg
+      bunchedBimonoidCocommutativityRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.cocommutativity (SaturatedConvOverWithId.refl _)
+
+/-- ★★ sigma-involution `sigma.sigma = id` resolved (peak refl, valley refl) — the swap's own symmetry law. -/
+theorem bunchedBimonoidSigmaInvolutionResolved :
+    BunchedBimonoidCriticalPairResolved bunchedBimonoidSigmaInvolutionLeftLeg
+      bunchedBimonoidSigmaInvolutionRightLeg :=
+  bunchedBimonoidResolveRow (SaturatedConvOverWithId.refl _)
+    BunchedBimonoidCriticalRow.sigmaInvolution (SaturatedConvOverWithId.refl _)
+
+/-! ## The coherent-presentation bundle (the honest-scope statement) -/
+
+/-- ★ **The walking-bunched-bimonoid coherent-presentation statement (honest scope).**  All 22 critical pairs
+are coherently resolved modulo the strict congruence — a `Prop` conjunction of the 22 per-pair resolutions
+(5 monoid-`m` + 5 monoid-`a` + 5 comonoid-`a` + 4 bialgebra + 2 (co)comm + 1 sigma-involution). -/
+def BunchedBimonoidWalkerCoherentPresentationStatement : Prop :=
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadUnitUnitLeftLeg
+    bunchedBimonoidMultMonadUnitUnitRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadLeftUnitAssocLeftLeg
+    bunchedBimonoidMultMonadLeftUnitAssocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadRightUnitAssocLeftLeg
+    bunchedBimonoidMultMonadRightUnitAssocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadPentagonLeftLeg
+    bunchedBimonoidMultMonadPentagonRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidMultMonadRootUnitAssocLeftLeg
+    bunchedBimonoidMultMonadRootUnitAssocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadUnitUnitLeftLeg
+    bunchedBimonoidAddMonadUnitUnitRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadLeftUnitAssocLeftLeg
+    bunchedBimonoidAddMonadLeftUnitAssocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadRightUnitAssocLeftLeg
+    bunchedBimonoidAddMonadRightUnitAssocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadPentagonLeftLeg
+    bunchedBimonoidAddMonadPentagonRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidAddMonadRootUnitAssocLeftLeg
+    bunchedBimonoidAddMonadRootUnitAssocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidCounitCounitLeftLeg
+    bunchedBimonoidComonoidCounitCounitRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidLeftCounitCoassocLeftLeg
+    bunchedBimonoidComonoidLeftCounitCoassocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidRightCounitCoassocLeftLeg
+    bunchedBimonoidComonoidRightCounitCoassocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidCopentagonLeftLeg
+    bunchedBimonoidComonoidCopentagonRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidComonoidRootCounitCoassocLeftLeg
+    bunchedBimonoidComonoidRootCounitCoassocRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraProductLeftLeg
+    bunchedBimonoidBialgebraProductRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraCounitLeftLeg
+    bunchedBimonoidBialgebraCounitRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraUnitLeftLeg
+    bunchedBimonoidBialgebraUnitRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraBoneLeftLeg
+    bunchedBimonoidBialgebraBoneRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidCommutativityLeftLeg
+    bunchedBimonoidCommutativityRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidCocommutativityLeftLeg
+    bunchedBimonoidCocommutativityRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidSigmaInvolutionLeftLeg
+    bunchedBimonoidSigmaInvolutionRightLeg
+
+/-- ★★ **THE WALKING BUNCHED BIMONOID COHERENT PRESENTATION (22 critical pairs, joinable modulo strict).**
+The walking bunched bimonoid `<a, m | bicommutative bimonoid on a + non-commutative monoid on m>` re-encoded as
+an `OmegaComputad` 2-polygraph has all 22 Squier critical pairs exhibited as generating 3-cells, each
+joinable-modulo-strict at peak and valley — 15 transported (5 monoid-`m` + 5 monoid-`a` + 5 comonoid-`a`) and
+7 new (4 bialgebra + 2 (co)commutativity + 1 sigma-involution, the genuinely-new additive content). -/
+theorem bunchedBimonoidWalkerCoherentPresentation :
+    BunchedBimonoidWalkerCoherentPresentationStatement :=
+  ⟨bunchedBimonoidMultMonadUnitUnitResolved, bunchedBimonoidMultMonadLeftUnitAssocResolved,
+    bunchedBimonoidMultMonadRightUnitAssocResolved, bunchedBimonoidMultMonadPentagonResolved,
+    bunchedBimonoidMultMonadRootUnitAssocResolved, bunchedBimonoidAddMonadUnitUnitResolved,
+    bunchedBimonoidAddMonadLeftUnitAssocResolved, bunchedBimonoidAddMonadRightUnitAssocResolved,
+    bunchedBimonoidAddMonadPentagonResolved, bunchedBimonoidAddMonadRootUnitAssocResolved,
+    bunchedBimonoidComonoidCounitCounitResolved, bunchedBimonoidComonoidLeftCounitCoassocResolved,
+    bunchedBimonoidComonoidRightCounitCoassocResolved, bunchedBimonoidComonoidCopentagonResolved,
+    bunchedBimonoidComonoidRootCounitCoassocResolved, bunchedBimonoidBialgebraProductResolved,
+    bunchedBimonoidBialgebraCounitResolved, bunchedBimonoidBialgebraUnitResolved,
+    bunchedBimonoidBialgebraBoneResolved, bunchedBimonoidCommutativityResolved,
+    bunchedBimonoidCocommutativityResolved, bunchedBimonoidSigmaInvolutionResolved⟩
+
+/-- ★ **The seven-new-additive-rows statement (the genuinely-new content over disjoint monoid + comonoid).**
+A `Prop` conjunction of the four bialgebra + two (co)commutativity + one sigma-involution resolutions — the
+content that distinguishes the bunched bimonoid from a bare monoid + comonoid + monoid. -/
+def BunchedBimonoidSevenNewRowsResolvedStatement : Prop :=
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraProductLeftLeg
+    bunchedBimonoidBialgebraProductRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraCounitLeftLeg
+    bunchedBimonoidBialgebraCounitRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraUnitLeftLeg
+    bunchedBimonoidBialgebraUnitRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidBialgebraBoneLeftLeg
+    bunchedBimonoidBialgebraBoneRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidCommutativityLeftLeg
+    bunchedBimonoidCommutativityRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidCocommutativityLeftLeg
+    bunchedBimonoidCocommutativityRightLeg ∧
+  BunchedBimonoidCriticalPairResolved bunchedBimonoidSigmaInvolutionLeftLeg
+    bunchedBimonoidSigmaInvolutionRightLeg
+
+/-- ★★ **THE SEVEN NEW ADDITIVE ROWS, COHERENTLY RESOLVED MODULO STRICT.**  The four bialgebra rows (incl. the
+tamed B1 4-strand delta-of-product with the middle swap), the two (co)commutativity rows, and the
+sigma-involution row exhibited as generating 3-cells, each joinable-modulo-strict — the genuinely-new content
+of the bicommutative bimonoid over the disjoint monoid + comonoid. -/
+theorem bunchedBimonoidSevenNewRowsResolved : BunchedBimonoidSevenNewRowsResolvedStatement :=
+  ⟨bunchedBimonoidBialgebraProductResolved, bunchedBimonoidBialgebraCounitResolved,
+    bunchedBimonoidBialgebraUnitResolved, bunchedBimonoidBialgebraBoneResolved,
+    bunchedBimonoidCommutativityResolved, bunchedBimonoidCocommutativityResolved,
+    bunchedBimonoidSigmaInvolutionResolved⟩
+
+/-! ## The least-congruence universal property (map-out) -/
+
+/-- ★ **THE 22 3-CELLS GENERATE THE IDENTIFICATION (least-congruence UP).**  For any relation `targetRel`
+absorbing the bunched-bimonoid base relation (a congruence containing the strict laws and the 22 critical-pair
+rows), the two legs of EVERY critical row are `targetRel`-related — so the 22 generating 3-cells are the datum
+whose fold through `SaturatedConvOverWithId.recInto` identifies each critical pair in EVERY model.  Uniform in
+the row (one statement covering all 22, keyed on `BunchedBimonoidCriticalRow`). -/
+theorem bunchedBimonoidCriticalPairsIdentifiedInEveryModel
+    {targetRel : CellRelOver bunchedBimonoidOmegaComputad}
+    (absorbs : IsSaturatedCongruenceWithId bunchedBimonoidOmegaComputad bunchedBimonoidOmegaBaseRel targetRel)
+    {d : Nat} {leftLeg rightLeg : CellExpr bunchedBimonoidOmegaComputad d}
+    (row : BunchedBimonoidCriticalRow leftLeg rightLeg) : targetRel leftLeg rightLeg :=
+  SaturatedConvOverWithId.recInto absorbs (SaturatedConvOverWithId.ofRelation (Or.inr row))
+
+/-! ## The 22-row census -/
+
+/-- The twenty-two critical-pair labels — 5 monoid-`m` + 5 monoid-`a` + 5 comonoid-`a` + 4 bialgebra +
+2 (co)comm + 1 sigma-involution. -/
+inductive BunchedBimonoidCriticalPairLabel
+  /-- monoid-`m` `unitUnit`. -/
+  | multMonadUnitUnit
+  /-- monoid-`m` `leftUnitAssoc`. -/
+  | multMonadLeftUnitAssoc
+  /-- monoid-`m` `rightUnitAssoc`. -/
+  | multMonadRightUnitAssoc
+  /-- monoid-`m` `pentagon`. -/
+  | multMonadPentagon
+  /-- monoid-`m` `rootUnitAssoc`. -/
+  | multMonadRootUnitAssoc
+  /-- monoid-`a` `unitUnit`. -/
+  | addMonadUnitUnit
+  /-- monoid-`a` `leftUnitAssoc`. -/
+  | addMonadLeftUnitAssoc
+  /-- monoid-`a` `rightUnitAssoc`. -/
+  | addMonadRightUnitAssoc
+  /-- monoid-`a` `pentagon`. -/
+  | addMonadPentagon
+  /-- monoid-`a` `rootUnitAssoc`. -/
+  | addMonadRootUnitAssoc
+  /-- comonoid-`a` `counitCounit`. -/
+  | comonoidCounitCounit
+  /-- comonoid-`a` `leftCounitCoassoc`. -/
+  | comonoidLeftCounitCoassoc
+  /-- comonoid-`a` `rightCounitCoassoc`. -/
+  | comonoidRightCounitCoassoc
+  /-- comonoid-`a` `copentagon`. -/
+  | comonoidCopentagon
+  /-- comonoid-`a` `rootCounitCoassoc`. -/
+  | comonoidRootCounitCoassoc
+  /-- bialgebra B1 (delta-of-product with swap). -/
+  | bialgebraProduct
+  /-- bialgebra B2 (counit-of-product). -/
+  | bialgebraCounit
+  /-- bialgebra B3 (delta-of-unit). -/
+  | bialgebraUnit
+  /-- bialgebra B4 (the bone). -/
+  | bialgebraBone
+  /-- commutativity. -/
+  | commutativity
+  /-- cocommutativity. -/
+  | cocommutativity
+  /-- sigma-involution. -/
+  | sigmaInvolution
+
+/-- The complete enumeration of the bunched-bimonoid critical pairs — TWENTY-TWO, listed. -/
+def allBunchedBimonoidCriticalPairs : List BunchedBimonoidCriticalPairLabel :=
+  [.multMonadUnitUnit, .multMonadLeftUnitAssoc, .multMonadRightUnitAssoc, .multMonadPentagon,
+    .multMonadRootUnitAssoc, .addMonadUnitUnit, .addMonadLeftUnitAssoc, .addMonadRightUnitAssoc,
+    .addMonadPentagon, .addMonadRootUnitAssoc, .comonoidCounitCounit, .comonoidLeftCounitCoassoc,
+    .comonoidRightCounitCoassoc, .comonoidCopentagon, .comonoidRootCounitCoassoc, .bialgebraProduct,
+    .bialgebraCounit, .bialgebraUnit, .bialgebraBone, .commutativity, .cocommutativity, .sigmaInvolution]
+
+/-- ★ **The critical-pair count is exactly TWENTY-TWO** — kernel-checked (`rfl`): 15 transported + 7 new. -/
+theorem bunchedBimonoidCriticalPairCountIsTwentyTwo : allBunchedBimonoidCriticalPairs.length = 22 := rfl
+
+/-- The seven NEW additive critical pairs — the DELTA over the transported monoid / comonoid. -/
+def allBunchedBimonoidNewRows : List BunchedBimonoidCriticalPairLabel :=
+  [.bialgebraProduct, .bialgebraCounit, .bialgebraUnit, .bialgebraBone,
+    .commutativity, .cocommutativity, .sigmaInvolution]
+
+/-- ★ **The new-additive-row count is exactly SEVEN** — kernel-checked (`rfl`): 4 bialgebra + 2 (co)comm +
+1 sigma-involution. -/
+theorem bunchedBimonoidNewRowCountIsSeven : allBunchedBimonoidNewRows.length = 7 := rfl
+
+/-! ## B2 non-vacuity — a sample of transported legs are genuinely distinct 2-cells -/
+
+/-- The monoid-`m` `unitUnit` legs are structurally DISTINCT (`eta_m |> m` vs `m <| eta_m`). -/
+theorem bunchedBimonoidMultMonadUnitUnitLegs_distinct :
+    cellBeq bunchedBimonoidOmegaModeBeq bunchedBimonoidOmegaGenBeq
+      bunchedBimonoidMultMonadUnitUnitLeftLeg bunchedBimonoidMultMonadUnitUnitRightLeg = false := rfl
+
+/-- The comonoid-`a` `copentagon` legs are structurally DISTINCT (the two Godement whisker orders of
+`delta * delta`). -/
+theorem bunchedBimonoidComonoidCopentagonLegs_distinct :
+    cellBeq bunchedBimonoidOmegaModeBeq bunchedBimonoidOmegaGenBeq
+      bunchedBimonoidComonoidCopentagonLeftLeg bunchedBimonoidComonoidCopentagonRightLeg = false := rfl
+
+/-! ## B2 non-vacuity probes -/
+
+#eval allBunchedBimonoidCriticalPairs.length
+#eval allBunchedBimonoidNewRows.length
+#eval cellBeq bunchedBimonoidOmegaModeBeq bunchedBimonoidOmegaGenBeq
+  bunchedBimonoidMultMonadUnitUnitLeftLeg bunchedBimonoidMultMonadUnitUnitRightLeg
+
+/-- ★ **ESTABLISHED (B2).**  The walking bunched bimonoid's 22 Squier critical pairs (15 transported: 5
+monoid-`m` + 5 monoid-`a` + 5 comonoid-`a`; 7 new: 4 bialgebra + 2 (co)comm + 1 sigma-involution) are
+exhibited as generating 3-cells over `bunchedBimonoidOmegaBaseRel`, each coherently resolved modulo strict at
+peak and valley (`bunchedBimonoidWalkerCoherentPresentation`), with the 22-row census
+(`bunchedBimonoidCriticalPairCountIsTwentyTwo`) and the least-congruence UP
+(`bunchedBimonoidCriticalPairsIdentifiedInEveryModel`).  The seven new rows are the genuinely-new content over
+the disjoint monoid + comonoid (`bunchedBimonoidSevenNewRowsResolved`).  `= true`. -/
+def fxBunchedBimonoid_twentyTwoCriticalPairsShipped : Bool := true
+
+/-- ★ **THE BIALGEBRA MIDDLE-SWAP ROW IS THE STAR (B2).**  `= true` records that the bialgebra B1 row (the
+delta-of-product with the middle swap `1 (x) sigma (x) 1`) is the genuinely-new braided content: it CANNOT be
+stated without the self-braiding `sigma_a`, and its 4-strand right leg is TAMED to a globular `a.a => a.a` row
+(peak / valley `refl`) by the free carrier's extrinsic vcomp composability — the recon's sole flagged
+correctness risk, discharged. -/
+def fxBunchedBimonoid_bialgebraMiddleSwapRowIsTheStar : Bool := true
+
 end FX1Poly.Polygraph.Omega
