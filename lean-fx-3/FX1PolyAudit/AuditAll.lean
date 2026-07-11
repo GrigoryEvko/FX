@@ -1286,6 +1286,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderBlockExchangeAud
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidHexagonAudit
 -- WP-PROP r4 — the perm-layer general-spiderOf adjudication: three-stage NF (delta/perm/mu), permutation-word NF (swap = sigma, reversal = Yang-Baxter word), perm layer irreducible, general routing walled
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermStageAudit
+-- WP-PROP r4 — the NF-induction census (per CellExpr ctor) + the #2033 star NAMED at scope StrictAxiom-union-Sound-union-Hexagon (unproven, r5, no flip) + the vcomp perm-of-a-diagonal witness
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidNormalFormCensusAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
