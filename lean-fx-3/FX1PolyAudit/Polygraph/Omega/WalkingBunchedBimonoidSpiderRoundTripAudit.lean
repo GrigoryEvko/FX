@@ -68,4 +68,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderStageLemmasGeneralShipped
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderScalarRoundTripGeneralShipped
 
+-- B3 — the coherence self-attack + the identity-block 2D round-trips + the edges + the markers.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarIsFanFoldComposite
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarWhiskeredRightMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarWhiskeredLeftMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderZeroColumnEdge
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderZeroRowEdge
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderEmptyEdge
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderIdentityBlockExtendedGeneralShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall
+
 end FX1PolyAudit

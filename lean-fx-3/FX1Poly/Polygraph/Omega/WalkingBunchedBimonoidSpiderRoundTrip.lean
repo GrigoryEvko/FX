@@ -536,4 +536,121 @@ the finite-sum Fubini / matMul-associativity kit"), whose name and `= false` val
 matrix round-trip (arbitrary `q x p` via the column-peel constructor) is B3. -/
 def fxBunchedBimonoid_spiderScalarRoundTripGeneralShipped : Bool := true
 
+/-! # =========================================================================================
+    # B3 — THE GENERAL CONSTRUCTOR + ROUND-TRIP: identity-block placement (column-peel primitive)
+    # =========================================================================================
+
+★ **The general round-trip advances into genuine 2D matrices through IDENTITY-BLOCK PLACEMENT — the recon's
+column-peel primitive — WITHOUT the walled routing braid.**  The recon's decisive verdict (§3): the general
+`spiderOf` is a column-peel whose routing dissolves into incremental identity-block `directSum` placements, never
+a whiskered-`sigma` permutation word (which would breach the NAMED hexagon wall `matrixHexagonReached`).  This
+brick ships that primitive as a general round-trip: whiskering a scalar spider by the additive colour places its
+`[[n]]` block beside an identity block, evaluating DEFINITIONALLY (via `evalWhiskerRight` /`evalWhiskerLeft`) to a
+`directSum` — NO `matMul`, hence no interchange — and the B2 scalar round-trip finishes it.  The `1 x 1`
+coherence self-attack (`spiderScalar n` IS the column-peel base `vcomp (deltaFan n) (muFold n)`) and the
+zero-column / zero-row / empty edges (via the B2 stage lemmas at `0`) are shipped.
+
+The general `q x p` round-trip (combining TWO non-identity blocks) is the sole remaining jam: it needs the
+matMul-directSum block-exchange interchange (4-way directSum reads + the `List.range (m+n)` split + matrix
+extensionality) — the r3 wall, NAMED with its exact goal below. -/
+
+/-! ## The coherence self-attack — spiderScalar IS the column-peel `1 x 1` base -/
+
+/-- ★ **COHERENCE (`1 x 1` self-attack) — `spiderScalar n` IS the fan-then-fold composite.**  The scalar spider
+is DEFINITIONALLY `vcomp (deltaFan n) (muFold n)` — one input fanned into `n` copies then merged into one output
+— which is exactly the column-peel constructor's `1 x 1` base (`spiderOf [[n]]`).  With
+`bunchedBimonoidSpiderScalarMatrix` (B2, `evalCell = [[n]]`) this is the general `1 x 1` round-trip on the nose,
+validating the constructor's base case against the shipped r1 `spiderScalar` family. -/
+theorem bunchedBimonoidSpiderScalarIsFanFoldComposite (dimension : Nat) :
+    bunchedBimonoidSpiderScalar dimension
+      = CellExpr.vcomp (bunchedBimonoidDeltaFan dimension) (bunchedBimonoidMuFold dimension) := rfl
+
+/-! ## The identity-block placement — general 2D round-trips WITHOUT interchange -/
+
+/-- ★★ **GENERAL 2D ROUND-TRIP (right identity-block) — `evalCell (spiderScalar n |> a) = diag(n, 1)` for ALL
+`n`.**  Whiskering the scalar spider on the RIGHT by the additive colour places its `[[n]]` block in the upper
+left of a `2 x 2` block-diagonal with an identity `[[1]]` lower right — the column-peel identity-block primitive.
+`evalCell (whiskerRight cell a)` reduces DEFINITIONALLY to `directSum (evalCell cell) (identityMat 1)` (no
+`matMul`, no interchange), and `bunchedBimonoidSpiderScalarMatrix` collapses the scalar block, leaving the `2 x 2`
+diagonal `[[n,0],[0,1]]` by `rfl`.  A genuinely two-dimensional general round-trip reached via the routing-free
+block placement. -/
+theorem bunchedBimonoidSpiderScalarWhiskeredRightMatrix (dimension : Nat) :
+    bunchedBimonoidEvalCell (CellExpr.whiskerRight (bunchedBimonoidSpiderScalar dimension) bunchedBimonoidAdditiveGen)
+      = { rows := 2, cols := 2, entries := [[dimension, 0], [0, 1]] } := by
+  show bunchedBimonoidMatDirectSum (bunchedBimonoidEvalCell (bunchedBimonoidSpiderScalar dimension))
+    (bunchedBimonoidIdentityMat 1) = { rows := 2, cols := 2, entries := [[dimension, 0], [0, 1]] }
+  rw [bunchedBimonoidSpiderScalarMatrix]
+  rfl
+
+/-- ★★ **GENERAL 2D ROUND-TRIP (left identity-block) — `evalCell (a <| spiderScalar n) = diag(1, n)` for ALL
+`n`.**  The mirror placement: whiskering on the LEFT puts the identity `[[1]]` block upper left and the scalar
+`[[n]]` lower right, evaluating definitionally to `directSum (identityMat 1) (evalCell cell)` and (via B2) to the
+`2 x 2` diagonal `[[1,0],[0,n]]`.  With the right-whisker form these witness that block placement is genuinely
+position-sensitive AND general in `n`. -/
+theorem bunchedBimonoidSpiderScalarWhiskeredLeftMatrix (dimension : Nat) :
+    bunchedBimonoidEvalCell (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen (bunchedBimonoidSpiderScalar dimension))
+      = { rows := 2, cols := 2, entries := [[1, 0], [0, dimension]] } := by
+  show bunchedBimonoidMatDirectSum (bunchedBimonoidIdentityMat 1)
+    (bunchedBimonoidEvalCell (bunchedBimonoidSpiderScalar dimension))
+      = { rows := 2, cols := 2, entries := [[1, 0], [0, dimension]] }
+  rw [bunchedBimonoidSpiderScalarMatrix]
+  rfl
+
+/-! ## The zero-column / zero-row / empty edges (via the B2 general stage lemmas) -/
+
+/-- ★ **EDGE (zero column) — `evalCell (deltaFan 0) = 0 x 1`.**  A deleted input (the fan of `0` copies = `eps`)
+is the `0 x 1` empty column, obtained from the general stage lemma `bunchedBimonoidDeltaFanMatrix` at `0`
+(`fanMatrix 0 = { rows := 0, cols := 1, entries := [] }`) — the r1 per-instance `deltaFanZero_matrix` now
+SUBSUMED by the general lemma. -/
+theorem bunchedBimonoidSpiderZeroColumnEdge :
+    bunchedBimonoidEvalCell (bunchedBimonoidDeltaFan 0) = { rows := 0, cols := 1, entries := [] } :=
+  bunchedBimonoidDeltaFanMatrix 0
+
+/-- ★ **EDGE (zero row) — `evalCell (muFold 0) = 1 x 0`.**  A created output (the fold of `0` wires = `eta`) is
+the `1 x 0` empty row, from `bunchedBimonoidMuFoldMatrix` at `0` (`rowMatrix 0 = { rows := 1, cols := 0, entries
+:= [[]] }`) — the r1 `muFoldZero_matrix` subsumed by the general lemma. -/
+theorem bunchedBimonoidSpiderZeroRowEdge :
+    bunchedBimonoidEvalCell (bunchedBimonoidMuFold 0) = { rows := 1, cols := 0, entries := [[]] } :=
+  bunchedBimonoidMuFoldMatrix 0
+
+/-- ★ **EDGE (empty `0 x 0`) — `evalCell (id emptyword) = 0 x 0`.**  The identity 2-cell on the empty 1-word is
+the `0 x 0` matrix — the base of the column-peel (both dimensions zero), reaffirmed `rfl`. -/
+theorem bunchedBimonoidSpiderEmptyEdge :
+    bunchedBimonoidEvalCell (CellExpr.id bunchedBimonoidIdOne) = { rows := 0, cols := 0, entries := [] } := rfl
+
+/-! ## B3 truth-probe outputs -/
+
+#eval bunchedBimonoidEvalCell (CellExpr.whiskerRight (bunchedBimonoidSpiderScalar 5) bunchedBimonoidAdditiveGen)
+#eval bunchedBimonoidEvalCell (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen (bunchedBimonoidSpiderScalar 5))
+
+/-! ## The B3 honesty markers -/
+
+/-- ★★ **ESTABLISHED (B3) — the general constructor extends to 2D through routing-free identity-block
+placement.**  `= true` records: the `1 x 1` coherence self-attack (`bunchedBimonoidSpiderScalarIsFanFoldComposite`
+— `spiderScalar n` IS the column-peel base `vcomp (deltaFan n) (muFold n)`, with the B2 `[[n]]` round-trip); the
+general 2D diagonal round-trips via identity-block placement
+(`bunchedBimonoidSpiderScalarWhiskered{Right,Left}Matrix` — `diag(n,1)` / `diag(1,n)` for ALL `n`, evaluating
+definitionally to a `directSum` with NO `matMul` / interchange, the recon's column-peel primitive that dissolves
+routing into block placements rather than a walled `sigma` braid); and the zero-column / zero-row / empty edges
+(`bunchedBimonoidSpiderZero{Column,Row}Edge`, `...EmptyEdge` — via the B2 stage lemmas at `0`).  The genuine `q x
+p` general round-trip is walled ONLY at the block-exchange interchange (below). -/
+def fxBunchedBimonoid_spiderIdentityBlockExtendedGeneralShipped : Bool := true
+
+/-- ★ **WALL (honest, r3) — the GENERAL `q x p` round-trip needs the matMul-directSum block-exchange
+interchange.**  `= false` records the EXACT remaining jam.  The column-peel round-trip `evalCell (spiderOf M) =
+M` for an ARBITRARY `q x p` matrix (combining TWO non-identity blocks, e.g. `diag(a, b)` with both `a, b != 1`,
+or any peel step composing a running spider with a new column's fan) requires the interchange
+
+  `matMul (directSum topLeft bottomRight) (directSum leftFactor rightFactor)
+     = directSum (matMul topLeft leftFactor) (matMul bottomRight rightFactor)`   (composable blocks),
+
+whose proof needs the 4-way `directSum` entry reads, the `List.range (m + n)` split (a further hand-rolled range
+lemma, the additive analogue of `bunchedBimonoidRangeSuccSnoc`), and — the recon's single riskiest member — the
+`List (List Nat)` matrix extensionality `A = B` from equal dimensions + equal entries (which the B2 stage lemmas
+DELIBERATELY avoid by keeping every matrix in `List.range` / `List.replicate` normal form).  This is the same
+Fubini-kit wall as `fxBunchedBimonoid_matrixStrictLawExtensionReached` and the r2
+`fxBunchedBimonoid_spiderGeneralRoutingReached`; those markers keep their name and `= false` value byte-intact.
+B3 ships the identity-block-extended fragment (the routing-free primitive); the interchange is r3. -/
+def fxBunchedBimonoid_spiderGeneralRoundTripBlockExchangeWall : Bool := false
+
 end FX1Poly.Polygraph.Omega
