@@ -871,6 +871,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringConsecutiveUntouch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWordPairSeatedDescentOfDistinct
 -- FC-3 r25 B3 — the AllCapArity-augmented cap-head pin-prime + the conditional sort consuming it
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapHeadExtractionWordPinPrime
+-- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCapDualR25Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
