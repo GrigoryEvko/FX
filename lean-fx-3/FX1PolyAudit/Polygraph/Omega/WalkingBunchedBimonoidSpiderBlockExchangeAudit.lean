@@ -79,4 +79,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderRefusedMatricesRoundTripShipped
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_spiderDiagGeneralViaInterchangeShipped
 
+-- B3 — the star census witnesses (the anti-diagonal swap obstruction + the strict-law self-attack pair).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSwapMatrixPin
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSwapUnreachableByDiagonal
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSpiderScalarTwoMatchesDirectMultiplicity
+
+-- B3 — the star walls (NO fake flip) + the honest block-diagonal-only scope marker.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starVcompCoherenceHexagonWall
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starStrictLawExtensionWall
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starHeldBlockDiagonalOnly
+
 end FX1PolyAudit

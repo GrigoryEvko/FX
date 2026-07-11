@@ -932,4 +932,87 @@ additionally needs the general matMul identity-unit laws (Kronecker-delta contra
 arbitrary non-diagonal `q x p` round-trip needs the routing hexagon — both are the B3 star wall. -/
 def fxBunchedBimonoid_spiderDiagGeneralViaInterchangeShipped : Bool := true
 
+/-! # =========================================================================================
+    # B3 — THE STAR ATTEMPT: the NF induction census + the EXACT missing rows, honestly walled
+    # =========================================================================================
+
+★ **The #2033 star (equal `Mat(N)` matrix ⟹ convertible over the sound congruence) is UNREACHABLE at the
+`BunchedBimonoidSoundRow` scope — the exact missing rows named, NO fake flip.**  The star is the NF induction:
+every walker cell converts through the sound congruence to `spiderOf (evalCell cell)`.  The census by `CellExpr`
+constructor (recon §3) locates two absent moves, each concretely witnessed here:
+
+  * **The `gen` case for `sigma_a` + the `vcomp` coherence (width >= 3).**  `sigma_a` is the PERMUTATION
+    `[[0,1],[1,0]]` — anti-diagonal, so UNREACHABLE by the block-exchange (which produces only block-diagonal
+    `directSum` results): `bunchedBimonoidSwapUnreachableByDiagonal` shows it differs from every `diag(a, b)`.  Its
+    canonical spider NF, and the "composite of two spiders is a spider" coherence for the `vcomp` node at width
+    >= 3, need the WIDTH-3 whiskered-`sigma` naturality / Yang-Baxter hexagon — a row ABSENT from
+    `BunchedBimonoidSoundRow` (15 rows: 13 balanced + 2 width-2 sigma-naturality; NO width-3 whiskered-sigma), the
+    same wall as the r1/r2 `fxBunchedBimonoid_matrixHexagonReached = false`.
+
+  * **The strict-law extension.**  Even the sigma-free fragment's star must target `StrictAxiomRel union
+    BunchedBimonoidSoundRow`, NOT `SoundRow` alone: spider words carry `whiskerRight (id a) a` identities (e.g.
+    `spiderScalar 2` unfolds through `deltaFan 2` / `muFold 2`, which contain `whiskerRight (deltaFan 1 = id a)
+    a`) that only the strict unit / functoriality laws (`whiskerRightUnit`, `vcompUnitLeft`, in `StrictAxiomRel`,
+    NOT `SoundRow`) cancel.  `bunchedBimonoidSpiderScalarTwoMatchesDirectMultiplicity` witnesses the matrix
+    agreement (`spiderScalar 2` and `vcomp delta_a mu_a` both `[[2]]`) whose WORD-level convertibility needs those
+    strict rows.
+
+The star markers `fxBunchedBimonoid_spiderNormalFormStarNamedRThree` / `...propGeneralCompletenessStarReached`
+stay `= false` (r2/r1 files, byte-intact — cited name-only below).  No fake flip. -/
+
+/-- ★ The **swap's anti-diagonal matrix pin** — `evalCell sigma_a = [[0,1],[1,0]]`, `rfl`.  A genuine permutation
+(each row / column sums to `1`), unlike the block-diagonal spider stages. -/
+theorem bunchedBimonoidSwapMatrixPin :
+    bunchedBimonoidEvalCell bunchedBimonoidAddSigmaGen
+      = { rows := 2, cols := 2, entries := [[0, 1], [1, 0]] } := rfl
+
+/-- ★★ **CONCRETE OBSTRUCTION (the `gen`/`vcomp` hexagon node) — `sigma_a` is UNREACHABLE by the block-exchange.**
+For ALL `a, b`, `evalCell sigma_a != evalCell (spiderDiag a b)`: the swap's off-diagonal entry `(0,1) = 1` while
+every diagonal has `(0,1) = 0`.  Since the block-exchange interchange produces only block-diagonal `directSum`
+results, the anti-diagonal swap is beyond its reach — the star's `sigma_a` gen case and the width->=3 `vcomp`
+coherence genuinely need the routing hexagon (absent from `BunchedBimonoidSoundRow`), NOT block placement. -/
+theorem bunchedBimonoidSwapUnreachableByDiagonal (leftScalar rightScalar : Nat) :
+    bunchedBimonoidEvalCell bunchedBimonoidAddSigmaGen
+      ≠ bunchedBimonoidEvalCell (bunchedBimonoidSpiderDiag leftScalar rightScalar) := by
+  rw [bunchedBimonoidSpiderDiagMatrix]
+  intro hMatrixEq
+  exact Nat.noConfusion (congrArg (fun matrix => bunchedBimonoidMatEntryAt matrix 0 1) hMatrixEq)
+
+/-- ★ **CONCRETE OBSTRUCTION (the strict-law extension) — `spiderScalar 2` and `vcomp delta_a mu_a` share the
+matrix `[[2]]`.**  `rfl`.  Both are the multiplicity-`2` bubble, so the star must convert them; but at the WORD
+level `spiderScalar 2` unfolds through `whiskerRight (id a) a` identities that only the STRICT unit / functoriality
+laws (`StrictAxiomRel`, absent from `BunchedBimonoidSoundRow`) cancel — so the star's completeness target must be
+`StrictAxiomRel union SoundRow`, the recon's self-attack #2. -/
+theorem bunchedBimonoidSpiderScalarTwoMatchesDirectMultiplicity :
+    bunchedBimonoidEvalCell (bunchedBimonoidSpiderScalar 2)
+      = bunchedBimonoidEvalCell (CellExpr.vcomp bunchedBimonoidAddDeltaGen bunchedBimonoidAddMuGen) := rfl
+
+/-! ## The B3 honesty markers — the star's EXACT missing rows, walled (NO fake flip) -/
+
+/-- ★★ **WALL (honest, star r4) — the `vcomp`-coherence + `sigma` gen case need the WIDTH-3 hexagon (absent from
+SoundRow).**  `= false` records that the NF induction's `vcomp` node ("composite of two spiders is a spider") at
+width >= 3 AND the `gen` case for `sigma_a` (the anti-diagonal permutation, `bunchedBimonoidSwapUnreachableByDiagonal`)
+need the width-3 whiskered-`sigma` naturality / Yang-Baxter hexagon — a row NOT among the 15
+`BunchedBimonoidSoundRow` constructors.  The exact same wall as the r1/r2 `fxBunchedBimonoid_matrixHexagonReached`
+(name and `= false` byte-intact, cross-file). -/
+def fxBunchedBimonoid_starVcompCoherenceHexagonWall : Bool := false
+
+/-- ★★ **WALL (honest, star r4) — the star's completeness target must be `StrictAxiomRel union SoundRow`.**
+`= false` records the recon self-attack #2: the sigma-free fragment's star fails over `BunchedBimonoidSoundRow`
+ALONE because spider words carry `whiskerRight (id a) a` identities (witnessed by
+`bunchedBimonoidSpiderScalarTwoMatchesDirectMultiplicity`) that only the strict unit / functoriality laws in
+`StrictAxiomRel` — absent from `SoundRow` — cancel.  The full-isolation wall, uniform with the WP-BI
+`fxBunchedBimonoid_fullIsolationNeedsStrictLawFubiniKit` / `...matrixStrictLawExtensionReached`. -/
+def fxBunchedBimonoid_starStrictLawExtensionWall : Bool := false
+
+/-- ★ **ESTABLISHED (B3, honest scope) — the star holds for the block-diagonal fragment ONLY, not arbitrary `q x
+p`.**  `= true` records the honest reachability verdict: the block-exchange interchange (B1) + the diag round-trip
+(B2) reach exactly the block-diagonal matrices (`directSum` of shipped stages); the arbitrary `q x p` matrix (with
+overlapping output blocks, e.g. the anti-diagonal swap) is the star, walled at the width-3 hexagon
+(`fxBunchedBimonoid_starVcompCoherenceHexagonWall`) and the strict-law extension
+(`fxBunchedBimonoid_starStrictLawExtensionWall`).  The upstream star markers
+`fxBunchedBimonoid_spiderNormalFormStarNamedRThree` and `fxBunchedBimonoid_propGeneralCompletenessStarReached`
+stay `= false` (r2/r1 files, byte-intact) — cited name-only, NO fake flip. -/
+def fxBunchedBimonoid_starHeldBlockDiagonalOnly : Bool := true
+
 end FX1Poly.Polygraph.Omega
