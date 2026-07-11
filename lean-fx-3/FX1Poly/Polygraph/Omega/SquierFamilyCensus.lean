@@ -625,7 +625,16 @@ theorem squierFamilyBunchedWalkerPresented : SquierFamilyBunchedWalkerPresentedS
 /-- ★ **THE WALKING BUNCHED BIMONOID IS PRESENTED IN THE CENSUS (#2188).**  `= true` records that the
 single-object walking bunched bimonoid has a SHIPPED Omega-lane coherent presentation
 (`squierFamilyBunchedWalkerPresented`), machine-checked — the WP-BI r1 census tie-in, recorded additively
-without touching the shipped decided-9. -/
+without touching the shipped decided-9.
+
+★★ **DEFECT + FEED RESCOPE (WP-BI r3, #2188, OUTCOME O — docstring correction only; this decl's NAME and
+`= true` value are UNTOUCHED).**  The presented statement is TRUE (the 22 rows resolve in their own congruence)
+but that congruence OVER-QUOTIENTS 9 op-commute rows against the faithful `Mat(N)` model
+(`WalkingBunchedBimonoidOverQuotientAdjudication.bunchedBimonoidBaseRelStrictlyOverQuotientsSound`).  So the
+census DECISION / spider-completeness feed reads from the SOUND sub-theory `BunchedBimonoidSoundRow` (13 balanced
++ 2 sigma-mediated), NOT the r1 22-row congruence — see
+`fxBunchedBimonoid_censusFeedIsSoundSubTheoryNotTwentyTwo`.  The 22-row presentation stays a true (over-quotient)
+statement; retracting the 9 rows needs user green-light (kept additive). -/
 def fxOmega4_walkingBunchedBimonoidPresentedInCensus : Bool := true
 
 /-- ★★ **THE BUNCHED BIMONOID IS DISTINCT FROM THE FROBENIUS WALKER (census, #2188).**  `= true` records the

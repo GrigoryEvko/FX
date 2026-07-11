@@ -934,7 +934,19 @@ def BunchedBimonoidWalkerCoherentPresentationStatement : Prop :=
 The walking bunched bimonoid `<a, m | bicommutative bimonoid on a + non-commutative monoid on m>` re-encoded as
 an `OmegaComputad` 2-polygraph has all 22 Squier critical pairs exhibited as generating 3-cells, each
 joinable-modulo-strict at peak and valley — 15 transported (5 monoid-`m` + 5 monoid-`a` + 5 comonoid-`a`) and
-7 new (4 bialgebra + 2 (co)commutativity + 1 sigma-involution, the genuinely-new additive content). -/
+7 new (4 bialgebra + 2 (co)commutativity + 1 sigma-involution, the genuinely-new additive content).
+
+★★ **DEFECT (WP-BI r3, #2188, OUTCOME O — docstring correction only; this decl's NAME and STATEMENT are
+UNTOUCHED).**  This theorem is TRUE as stated — the 22 rows ARE resolved in the congruence they generate — but
+that congruence `bunchedBimonoidOmegaBaseRel` OVER-QUOTIENTS: 9 of the 22 rows (the single-operation
+whisker-commute pairs `op |> x` vs `x <| op` — `multMonad{UnitUnit,LeftUnitAssoc,RightUnitAssoc}`,
+`addMonad{...}`, `comonoid{CounitCounit,LeftCounitCoassoc,RightCounitCoassoc}`) equate parallel-but-DISTINCT
+cofaces that the FAITHFUL `Mat(N)` model separates (Lafont / Pirashvili / Fox).  So this is NOT the faithful
+walking bicommutative bimonoid; the SOUND sub-congruence is `BunchedBimonoidSoundRow` (13 balanced + 2 width-2
+sigma-mediated corrections), machine-decided in `WalkingBunchedBimonoidOverQuotientAdjudication`
+(`bunchedBimonoidBaseRelStrictlyOverQuotientsSound`).  The a-side rows are sigma-repairable (width-2 half
+shipped); the m-side rows are irreparable (no swap).  Retracting the 9 rows needs user green-light (kept
+additive per house rules). -/
 theorem bunchedBimonoidWalkerCoherentPresentation :
     BunchedBimonoidWalkerCoherentPresentationStatement :=
   ⟨bunchedBimonoidMultMonadUnitUnitResolved, bunchedBimonoidMultMonadLeftUnitAssocResolved,
@@ -1114,7 +1126,16 @@ wall, which was blocked BECAUSE the swap is a shared/interacting cell).  These a
 records that the multiplicative bunch is a bare non-commutative monoid on the single colour `m`, whose 2-cell
 word problem is the walking-monad decision — monotone maps / the augmented simplex category Delta (the
 `List Nat` / `monadPath_normalForm` model shipped upstream in `MonadCoherentPresentation` / `MonotoneMap`).
-Single-colour, so the two-colour DistLaw wall does NOT apply; transported verbatim, DECIDABLE. -/
+Single-colour, so the two-colour DistLaw wall does NOT apply; transported verbatim, DECIDABLE.
+
+★★ **RESCOPE (WP-BI r3, #2188 — docstring correction only; this decl's NAME and `= true` value are UNTOUCHED).**
+The shipped Delta decision (`monadDecideSaturatedConvViaMonotoneMap`) decides the monad-LAW congruence
+`MonadSaturatedTwoCellConv` (leftUnit / rightUnit / assoc), which does NOT contain the r1 m-critical-rows
+`multMonad{UnitUnit,LeftUnitAssoc,RightUnitAssoc}` — in fact Delta REFUTES them (delta_0 != delta_1), matching
+the in-lane `Mat(N)` separation.  So "Delta decides the multiplicative congruence" is true only when scoped to
+the monad-LAW congruence; the 3 m-critical-rows are the over-quotient, retracted from the decided congruence.
+The additive rescope + in-lane machine backing are in
+`WalkingBunchedBimonoidOverQuotientAdjudication.fxBunchedBimonoid_multiplicativeMarkerRescopedToMonadLawCongruence`. -/
 def fxBunchedBimonoid_multiplicativeDecisionIsMonotoneMapsDelta : Bool := true
 
 /-- ★ **NAMED — the additive `a` fragment corresponds to `Mat(N)`, the matrix PROP (#2033 feed).**  `= true`
