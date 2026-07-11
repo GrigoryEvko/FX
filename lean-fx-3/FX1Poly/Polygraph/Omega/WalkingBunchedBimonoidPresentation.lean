@@ -1098,4 +1098,74 @@ stated without the self-braiding `sigma_a`, and its 4-strand right leg is TAMED 
 correctness risk, discharged. -/
 def fxBunchedBimonoid_bialgebraMiddleSwapRowIsTheStar : Bool := true
 
+/-! # =========================================================================================
+    # B3 — THE DECISION LEDGER (honest scope) — the three fragments at their honest status
+    # =========================================================================================
+
+★ **The bunched bimonoid decomposes into two non-interacting bunches, so its decision splits into three
+fragments (recon (3)): the multiplicative `m`, the additive `a`, and their mixed free product.**  The
+multiplicative side is DECIDED (single-colour, transported); the additive side is NAMED at `Mat(N)` but its
+convergent normalizer is r2; the mixed side is the CLEAN case (the Amalgam disjoint-signature transfer applies
+precisely because `a` and `m` share NO interacting symbol — the exact inverse of the DistLaw / strong-monad
+wall, which was blocked BECAUSE the swap is a shared/interacting cell).  These are honest NAMED ledger markers
+(the house style of the Frobenius / strong-monad decision ledgers), not fabricated flips. -/
+
+/-- ★ **DECIDED — the multiplicative `m` 2-cell decision is monotone-maps / augmented simplex Delta.**  `= true`
+records that the multiplicative bunch is a bare non-commutative monoid on the single colour `m`, whose 2-cell
+word problem is the walking-monad decision — monotone maps / the augmented simplex category Delta (the
+`List Nat` / `monadPath_normalForm` model shipped upstream in `MonadCoherentPresentation` / `MonotoneMap`).
+Single-colour, so the two-colour DistLaw wall does NOT apply; transported verbatim, DECIDABLE. -/
+def fxBunchedBimonoid_multiplicativeDecisionIsMonotoneMapsDelta : Bool := true
+
+/-- ★ **NAMED — the additive `a` fragment corresponds to `Mat(N)`, the matrix PROP (#2033 feed).**  `= true`
+records the correspondence (Lafont / Pirashvili / Fox): bicommutative bimonoids are exactly `Mat(N)`, the PROP
+of natural-number matrices under matrix-multiplication composition (equivalently `Span(FinSet)` up to iso).
+The additive 2-cell decision is therefore matrix equality — decidable IN PRINCIPLE.  This NAMES the target of
+the #2033 matrix-PROP correspondence; the full diagram-to-matrix "spider" normalizer is the r2 deliverable
+(`fxBunchedBimonoid_additiveConvergentNormalizerReached = false`). -/
+def fxBunchedBimonoid_additiveDecisionIsMatNat : Bool := true
+
+/-- ★ **WALL (honest, r2 / OMEGA-5) — the additive convergent `Mat(N)` normalizer is NOT shipped.**  `= false`
+records that the full convergent bialgebra normalizer (diagram -> matrix "spider" normal form, the additive
+2-cell decision procedure) is LARGE and DEFERRED to r2 / OMEGA-5.  r1 ships the presentation + the 22 resolved
+critical pairs + the `Mat(N)` correspondence NAMED, not the normalizer. -/
+def fxBunchedBimonoid_additiveConvergentNormalizerReached : Bool := false
+
+/-- ★ **CLEAN — the mixed `a/m` decision is the alternating-block free product `Mat(N) (union) Delta`.**
+`= true` records that the mixed fragment is the free product / PROP coproduct of the two bunches, whose normal
+form is ALTERNATING BLOCKS (each `a`-block a matrix, each `m`-block a monotone map).  It is DECIDABLE RELATIVE
+to the two per-bunch decisions via the Amalgam lane's disjoint-signature combination (Pigozzi 1974;
+Baader-Tinelli 1998) — which transfers here PRECISELY because there is NO interacting symbol between `a` and
+`m` (the exact inverse of the DistLaw / strong-monad wall, which was blocked because the swap is a
+shared/interacting cell).  So the mixed COMBINATION is the easy part; the only hard component is the additive
+`Mat(N)` normalizer itself. -/
+def fxBunchedBimonoid_mixedDecisionIsAlternatingBlockAmalgam : Bool := true
+
+/-- ★ **DECIDED (trivial) — the 1-cell theory is the free monoid on `{a, m}`, literal-equality decidable.**
+`= true` records that at the 1-cell level both bunches are single-colour endo-1-generators with NO relations,
+so the mixed 1-cell theory is the free monoid on the two colours `{a, m}`: two 1-cell words are convertible iff
+literally equal (a decidable structural equality, the tag comparator `bunchedBimonoidLabelBeq` separates the
+colours).  No cross-braiding at the 1-cell level. -/
+def fxBunchedBimonoid_oneCellDecisionIsFreeMonoidLiteralEquality : Bool := true
+
+/-- ★ **WALL (honest, r2) — Yang-Baxter / the hexagon on `a.a.a` is NOT shipped.**  `= false` records that at
+one generator the braiding hexagon degenerates to the Yang-Baxter / braid relation
+`sigma_{12} . sigma_{23} . sigma_{12} ~ sigma_{23} . sigma_{12} . sigma_{23}` on `a.a.a` — the non-trivial S_3
+Coxeter relation, a genuine modulo-`interchange` 3-strand overlap.  It is the strong-monad B4's named
+braided-base wall, one strand of the additive side wider, and is DEFERRED to r2 (`sigma^2 = id` is trivial and
+IS shipped; Yang-Baxter is the genuine 3-strand cost). -/
+def fxBunchedBimonoid_yangBaxterHexagonReached : Bool := false
+
+/-- ★ **WALL (honest, r2) — the sigma-naturality-vs-`mu/eta/delta/eps` rows are NOT shipped.**  `= false`
+records that the Beck-shaped swap-naturality critical pairs (the self-braiding commuting past each of the four
+(co)monoid operations) are DEFERRED to r2 — they may be partly subsumed by the shipped (co)commutativity and
+bialgebra rows, but the full naturality tail is not exhibited in r1. -/
+def fxBunchedBimonoid_sigmaNaturalityRowsShipped : Bool := false
+
+/-- ★ **WALL (honest, OMEGA-5, uniform with the family) — the full homotopy basis is NOT reached.**  `= false`
+records that r1 ships the 22 generating 3-cells (Squier's convergent-scope critical pairs) but NOT the full
+homotopy basis (the higher coherences closing the polygraphic resolution).  Uniform with every shipped walker
+(`fxFrob_fullHomotopyBasisReached`, etc.) — the OMEGA-5 handoff. -/
+def fxBunchedBimonoid_fullHomotopyBasisReached : Bool := false
+
 end FX1Poly.Polygraph.Omega
