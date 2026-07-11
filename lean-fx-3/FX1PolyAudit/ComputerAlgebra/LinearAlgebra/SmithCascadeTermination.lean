@@ -266,4 +266,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullStrandsOffDiagonalWitness
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverIsRefuted
 
+/- H2-SMITH r17 — the corrected driver lands the refuter (B1 battery): the corrected `smithReduceComplete`
+   reduces the exact rectangular `diag(10, 10, 6, 9)` refuter to `diag(1, 2, 30, 90)` (the positive flip of
+   `smithReduceFullDriverIsRefuted`), re-lands the drag / unsorted / coprime counterweights, and a
+   RECTANGULAR `2 x 4` member — each kernel-checked by whole-driver defeq to the literal Smith normal form. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverRefuterLandsSmithForm
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDragDiagonalByCompleteDriver
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithUnsortedMinorByCompleteDriver
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCoprimeByCompleteDriver
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRectangularByCompleteDriver
+
 end FX1PolyAudit

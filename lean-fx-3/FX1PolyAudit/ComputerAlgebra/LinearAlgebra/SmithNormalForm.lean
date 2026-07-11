@@ -148,4 +148,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithSignSweepPreservesChain
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceFullDriverOfRepairInvariants
 
+/- H2-SMITH r17 — the CORRECTED driver (B1): the UNCONDITIONAL-clearing per-position + outer repair sweeps,
+   the corrected total driver `smithReduceComplete`, and its ∀-form totality target.  The r17 successor to
+   the REFUTED `smithReduceFull`/`SmithReduceFullDriverStatement` (both byte-intact); route (i) fires the
+   divisibility-repair cross-clear at every pivot (the `none`-branch standalone cascade). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepClearing
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepClearing
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithReduceCompleteDriverStatement
+
 end FX1PolyAudit

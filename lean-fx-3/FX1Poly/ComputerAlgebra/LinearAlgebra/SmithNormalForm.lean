@@ -2865,4 +2865,88 @@ theorem smithReducedPresortBreakerByFullDriver :
             (natEqZeroOfLeZero
               (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
 
+/-! ## The CORRECTED driver `smithReduceComplete` (H2-SMITH r17, B1, #2261)
+
+`smithReduceFull` is REFUTED (`smithReduceFullDriverIsRefuted`, SmithCascadeTermination footer): its
+per-pivot cross-clear inside `smithRepairPositionSweep` fires ONLY when
+`smithFindNonDividingLaterDiagonal` returns `some`, so a pivot whose diagonal already divides all its
+successors is SKIPPED — and an earlier pivot's push-down `lcm` can strand a residue in such a skipped
+pivot's cross-strip that is never re-cleared (`diag(10, 10, 6, 9)` strands `entryAt 3 2 = 30`).
+
+The MINIMAL fix (route (i) of the r17 adjudication): run the divisibility-repair cross-clear
+UNCONDITIONALLY at each pivot.  `smithRepairPositionSweepClearing` demotes the `find` result to
+selecting only the Euclid-fold TARGET; the `none` terminal branch (nothing left to fold) now fires the
+standalone `smithCascadeSweep` cross-clear instead of returning `[]`.  The `some` branch is byte-identical
+to `smithRepairPositionSweep`'s.  The other two phases (`smithReduceTotal`, `smithDiagonalSignSweep`) are
+REUSED VERBATIM — only the repair phase's gating changes.  `smithReduceFull` + its refutation stay
+byte-intact; this is a NEW function.  STRUCTURAL fuel throughout (no `WellFounded.fix`): the `none`-branch
+cross-clear is the position-loop TERMINAL (consumes no loop fuel), and `smithCascadeSweep` carries its own
+shipped-adequate inner fuel.
+
+Empirically clean: `diag(10, 10, 6, 9) -> diag(1, 2, 30, 90)`, the drag / unsorted / coprime / rectangular
+counterweights all land valid Smith normal form (the B4 battery, SmithCascadeTermination footer). -/
+
+/-- One position's UNCONDITIONAL divisibility repair (route (i)): while a later diagonal entry is not
+divided by the pivot, fold that row into the pivot row and re-fire the Euclid cascade (the `some` branch,
+verbatim from `smithRepairPositionSweep`); when the pivot already divides all successors, fire the Euclid
+cascade STANDALONE to clear any residue an earlier pivot's push-down stranded in this pivot's cross-strip
+(the `none` branch, the r17 fix).  Structural on `fuel`. -/
+def smithRepairPositionSweepClearing : Nat → IntMatrix → Nat → Nat → Nat → List ElementaryOperation
+  | 0, _, _, _, _ => []
+  | fuel + 1, matrix, pivotIndex, height, width =>
+      match smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+      | none =>
+          smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width
+      | some foundPos =>
+          let foldOps :=
+            [ ElementaryOperation.rowOperation
+                (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+          let afterFold := matrix.applyOperations foldOps
+          let clearOps :=
+            smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+              afterFold pivotIndex height width
+          let afterClear := afterFold.applyOperations clearOps
+          foldOps ++ clearOps ++
+            smithRepairPositionSweepClearing fuel afterClear pivotIndex height width
+
+/-- The top-down UNCONDITIONAL-clearing divisibility-repair sweep: at each pivot run the clearing position
+repair, thread the reduced matrix, recurse on the next pivot.  Structural on `outerFuel` (the pivot
+budget).  The `smithDivisibilityRepairSweep` twin with `smithRepairPositionSweepClearing` in place of
+`smithRepairPositionSweep`. -/
+def smithDivisibilityRepairSweepClearing : Nat → IntMatrix → Nat → Nat → Nat → List ElementaryOperation
+  | 0, _, _, _, _ => []
+  | outerFuel + 1, matrix, pivotIndex, height, width =>
+      if pivotIndex + 1 ≤ Nat.min height width then
+        let positionOps :=
+          smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width
+        let afterPosition := matrix.applyOperations positionOps
+        positionOps ++
+          smithDivisibilityRepairSweepClearing outerFuel afterPosition (pivotIndex + 1) height width
+      else []
+
+/-- **The corrected total driver** — the cross-clearing `smithReduceTotal`, then the UNCONDITIONAL-clearing
+divisibility-repair sweep, then the final sign sweep.  Byte-for-byte `smithReduceFull` except the middle
+phase uses `smithDivisibilityRepairSweepClearing`.  The driver whose B4 battery lands the rectangular
+`diag(10, 10, 6, 9)` the refuted `smithReduceFull` strands. -/
+def smithReduceComplete (matrix : IntMatrix) (height width : Nat) : SmithReductionCertificate :=
+  let diagOps := (smithReduceTotal matrix height width).operations
+  let afterDiag := matrix.applyOperations diagOps
+  let repairOps :=
+    smithDivisibilityRepairSweepClearing (Nat.min height width) afterDiag 0 height width
+  let afterRepair := afterDiag.applyOperations repairOps
+  let signOps := smithDiagonalSignSweep (Nat.min height width) afterRepair 0 height width
+  { operations := diagOps ++ repairOps ++ signOps }
+
+/-- **The corrected totality target** — that the corrected driver `smithReduceComplete` emits a certificate
+reducing every rectangular integer matrix to Smith normal form.  The ∀-form goal (needs NO kernel
+evaluation — its inhabitant is a structural assembly; the defeq ceiling applies only to the per-input B4
+battery).  The r17 successor to the REFUTED `SmithReduceFullDriverStatement`; the honest pair is juxtaposed
+in the SmithCascadeTermination ledger. -/
+def SmithReduceCompleteDriverStatement : Prop :=
+  ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
+    (smithReduceComplete matrix height width).reducesToSmithForm matrix height width
+
 end FX1Poly.ComputerAlgebra

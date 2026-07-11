@@ -5058,4 +5058,143 @@ genuine refuter and its full-driver defeq reduces at `maxRecDepth 200000`; the 5
 diag(-9,-7,-6,4,9) (stranding (4,3)=36 / (3,4)=126) is recorded in prose only, NOT built, to stay under
 the r15 5x5 stack-overflow line. -/
 
+/-! ## The corrected driver lands the refuter — the B4 battery (H2-SMITH r17, B1, #2261)
+
+`smithReduceComplete` (the UNCONDITIONAL-clearing driver, SmithNormalForm §"The CORRECTED driver") lands
+VALID Smith normal form on exactly the input `smithReduceFull` was REFUTED on, plus the historical
+counterweights, plus a RECTANGULAR member.  Each closed against its literal Smith normal form by defeq
+(the driver computes to the literal; off-diagonal + nonnegativity via `decide` on the LITERAL, chain via
+hand-built witnesses).  The honest pair juxtaposed: `smithReduceFullDriverIsRefuted` (the OLD driver
+strands `entryAt 3 2 = 30`) versus `smithReduceCompleteDriverRefuterLandsSmithForm` (the corrected driver
+lands `diag(1, 2, 30, 90)`) — a genuine flip on the SMALLEST refuting input.
+
+The r15 5x5 whole-driver-defeq stack line is respected: the largest member is the 4x4 refuter, reducing at
+`maxRecDepth 200000`; the 5x5 companion is recorded in prose only (SmithNormalForm/ledger), NOT built. -/
+
+set_option maxRecDepth 200000 in
+/-- **The refuter LANDS — the corrected driver on `diag(10, 10, 6, 9)`.**  Where `smithReduceFull` strands
+`entryAt 3 2 = 30` (`smithReduceFullStrandsOffDiagonalWitness`), `smithReduceComplete` reduces the same
+rectangular `diag(10, 10, 6, 9)` to the clean Smith normal form `diag(1, 2, 30, 90)`: the `none`-branch
+cross-clear at the SKIPPED pivot 2 (`30 | 90`) clears the stranded residue.  All three fields hold — the
+chain `1 | 2 | 30 | 90` is the hand-built `2 = 1*2`, `30 = 2*15`, `90 = 30*3`.  The direct positive flip of
+`smithReduceFullDriverIsRefuted`. -/
+theorem smithReduceCompleteDriverRefuterLandsSmithForm :
+    (smithReduceFullDriverRefuterInput.applyOperations
+        (smithReduceComplete smithReduceFullDriverRefuterInput 4 4).operations).IsSmithNormalFormWithin
+      4 4 :=
+  show ({ rows := [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 30, 0], [0, 0, 0, 90]] } : IntMatrix).IsSmithNormalFormWithin
+      4 4 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 4 → ∀ colIndex, colIndex < 4 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 30, 0], [0, 0, 0, 90]] } : IntMatrix).entryAt
+              rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨2, rfl⟩
+      | 1, _ => ⟨15, rfl⟩
+      | 2, _ => ⟨3, rfl⟩
+      | _ + 3, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+                (natLeOfSuccLeSucc isBeyondDiagonal))))) }
+
+set_option maxRecDepth 16384 in
+/-- **Counterweight — the drag `diag(30, 20, 12)` through the corrected driver.**  Re-lands `diag(2, 60, 60)`
+(the r14/r15 `smithReduceFull` counterweight, now through `smithReduceComplete`).  Chain `2 | 60 | 60`. -/
+theorem smithDragDiagonalByCompleteDriver :
+    (({ rows := [[30, 0, 0], [0, 20, 0], [0, 0, 12]] } : IntMatrix).applyOperations
+        (smithReduceComplete { rows := [[30, 0, 0], [0, 20, 0], [0, 0, 12]] } 3 3).operations).IsSmithNormalFormWithin
+      3 3 :=
+  show ({ rows := [[2, 0, 0], [0, 60, 0], [0, 0, 60]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0, 0], [0, 60, 0], [0, 0, 60]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨30, rfl⟩
+      | 1, _ => ⟨1, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
+set_option maxRecDepth 16384 in
+/-- **Counterweight — the unsorted minor `[[4,0,0],[0,6,10],[0,15,0]]` through the corrected driver.**
+Re-lands `diag(1, 2, 300)` (the r14/r15 counterweight).  Chain `1 | 2 | 300`. -/
+theorem smithUnsortedMinorByCompleteDriver :
+    (({ rows := [[4, 0, 0], [0, 6, 10], [0, 15, 0]] } : IntMatrix).applyOperations
+        (smithReduceComplete { rows := [[4, 0, 0], [0, 6, 10], [0, 15, 0]] } 3 3).operations).IsSmithNormalFormWithin
+      3 3 :=
+  show ({ rows := [[1, 0, 0], [0, 2, 0], [0, 0, 300]] } : IntMatrix).IsSmithNormalFormWithin 3 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 3 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0, 0], [0, 2, 0], [0, 0, 300]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨2, rfl⟩
+      | 1, _ => ⟨150, rfl⟩
+      | _ + 2, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal)))) }
+
+set_option maxRecDepth 16384 in
+/-- **Counterweight — the coprime `diag(2, 3)` through the corrected driver.**  Lands `diag(1, 6)` (the
+`smithReduceTotal` cross-only driver leaves `2 ∤ 3` in place; the repair Euclid-clears to `gcd = 1`, `lcm = 6`).
+Chain `1 | 6`. -/
+theorem smithCoprimeByCompleteDriver :
+    (({ rows := [[2, 0], [0, 3]] } : IntMatrix).applyOperations
+        (smithReduceComplete { rows := [[2, 0], [0, 3]] } 2 2).operations).IsSmithNormalFormWithin 2 2 :=
+  show ({ rows := [[1, 0], [0, 6]] } : IntMatrix).IsSmithNormalFormWithin 2 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[1, 0], [0, 6]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨6, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
+set_option maxRecDepth 16384 in
+/-- **The RECTANGULAR member — the `2 x 4` `[[6,0,0,0],[0,10,0,0]]` through the corrected driver.**  Lands
+`[[2,0,0,0],[0,30,0,0]]`: `Nat.min 2 4 = 2` diagonal positions, `gcd(6, 10) = 2` at pivot 0, `lcm = 30`
+pushed to pivot 1.  Confirms the fix preserves rectangular handling (the guard `pivotIndex + 1 ≤ Nat.min`
+is untouched).  Chain `2 | 30` on the single interior step. -/
+theorem smithRectangularByCompleteDriver :
+    (({ rows := [[6, 0, 0, 0], [0, 10, 0, 0]] } : IntMatrix).applyOperations
+        (smithReduceComplete { rows := [[6, 0, 0, 0], [0, 10, 0, 0]] } 2 4).operations).IsSmithNormalFormWithin
+      2 4 :=
+  show ({ rows := [[2, 0, 0, 0], [0, 30, 0, 0]] } : IntMatrix).IsSmithNormalFormWithin 2 4 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 4 →
+          rowIndex ≠ colIndex →
+          ({ rows := [[2, 0, 0, 0], [0, 30, 0, 0]] } : IntMatrix).entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨15, rfl⟩
+      | _ + 1, isBeyondDiagonal =>
+          Nat.noConfusion
+            (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyondDiagonal))) }
+
 end FX1Poly.ComputerAlgebra
