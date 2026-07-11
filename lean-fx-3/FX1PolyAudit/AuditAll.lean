@@ -248,6 +248,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCeilingLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCanonicalFactorizeProbes
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutInteriorProducerStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerLeftJunctionMerge
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutWhiskerLeftJunctionCanonical
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
@@ -1264,6 +1265,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidOverQuotientAdjudicati
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderNormalFormAudit
 -- WP-PROP r2 — the general spider round-trip: the matMul-algebra Fubini kit + general stage lemmas + general scalar round-trip
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderRoundTripAudit
+-- WP-PROP r3 — the block-exchange interchange: route-(iii) quadrant reads + block contractions + row assemblies + the general interchange (the exact r2 wall goal, no matrix extensionality)
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderBlockExchangeAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
