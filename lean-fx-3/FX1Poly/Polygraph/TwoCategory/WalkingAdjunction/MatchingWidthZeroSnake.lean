@@ -78,17 +78,14 @@ private theorem singletonCupArity {overallSource overallTarget : adjunctionGraph
 /-- ★ **Folding a trailing cup onto a pure-cup width-0 spine grows the processed open-wire count by exactly
 two** (the cup's two fresh legs).  Plain-carrier port of `openWiresCupEndSplit`. -/
 theorem matchingOpenWiresCupEndSplit
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    (prefixAtoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
-    (lastCup : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    (prefixAtoms : List (SpineAtom signature overallSource overallTarget))
+    (lastCup : SpineAtom signature overallSource overallTarget)
     (pureCup : AllCupArity (prefixAtoms ++ [lastCup])) :
     (processSpine ⟨List.range 0, [], 0, 0⟩ (prefixAtoms ++ [lastCup])).openWires.length
       = (processSpine ⟨List.range 0, [], 0, 0⟩ prefixAtoms).openWires.length + 2 := by
-  have lastCapZero : capAtomCount (prefixAtoms ++ [lastCup]) = 0 :=
-    capAtomCount_ofAllCupArity (prefixAtoms ++ [lastCup]) pureCup
-  have sumZero : capAtomCount prefixAtoms + capAtomCount [lastCup] = 0 :=
-    (capAtomCount_append prefixAtoms [lastCup]).symm.trans lastCapZero
-  obtain ⟨lastDom, lastCod⟩ := singletonCupArity lastCup (addRightVanish sumZero)
+  obtain ⟨lastDom, lastCod⟩ := allCupArity_lastCup_arity prefixAtoms lastCup pureCup
   rw [processSpine_append prefixAtoms [lastCup] ⟨List.range 0, [], 0, 0⟩]
   show (stepAtom (processSpine ⟨List.range 0, [], 0, 0⟩ prefixAtoms) lastCup).openWires.length
     = (processSpine ⟨List.range 0, [], 0, 0⟩ prefixAtoms).openWires.length + 2
