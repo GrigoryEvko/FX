@@ -21,4 +21,14 @@ namespace FX1PolyAudit
    landed pivot 2 divides the interior fill-in 30, 8 on the gcd>1 window). -/
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepExitInteriorEvenOnConcreteWindow
 
+/- THE ASSEMBLY (B4) — the output-side residual, the inverse-transport equivalence (both directions +
+   the Iff), the driver reduction from the output-side residual, and the ℤ-equivalence witness fired on
+   the battery hostiles. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithCascadeOutputMinorDivides
+#assert_no_axioms FX1Poly.ComputerAlgebra.keystoneOfOutputMinorDivides
+#assert_no_axioms FX1Poly.ComputerAlgebra.outputDividesOfKeystone
+#assert_no_axioms FX1Poly.ComputerAlgebra.outputMinorDividesIffLandedPivotDividesMinor
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfOutputMinorDivides
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSweepRoundTripsOnBatteryHostiles
+
 end FX1PolyAudit
