@@ -105,4 +105,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_r17Ledger
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBrauerMiddleR17Complete
 
+-- ★ BRAUER r25 GAP γ (witness): the throughStrandPerm factorization, the through-top-partner membership, the
+-- distinctness (rank injectivity) and the width-length symmetry.  Transitively covers the private strict-monotone /
+-- rank-injectivity / filterMap-payload-map count helpers.
+#assert_no_axioms FX1Poly.Polygraph.throughStrandPerm_eq_throughStrandTops_map
+#assert_no_axioms FX1Poly.Polygraph.throughStrandTop_partner_memThroughBottoms
+#assert_no_axioms FX1Poly.Polygraph.throughStrandPerm_isDistinct
+#assert_no_axioms FX1Poly.Polygraph.throughStrandPerm_length_eq_throughStrandBottoms
+
 end FX1PolyAudit

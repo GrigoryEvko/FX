@@ -2074,4 +2074,183 @@ completeness flags stay `false`, and #2013 does not close — every residual a R
 arXiv:1207.5889 Thm 2.6).  `= false`. -/
 def fxBrauer_hasBrauerMiddleR17Complete : Bool := false
 
+/-! ## Section 25 — BRAUER r25 GAP γ (witness): `throughStrandPerm` DISTINCTNESS + WIDTH (the range-permutation content)
+
+The middle through-strand decode the THROUGH chain consumes is the shipped conjugator roundtrip
+`permuteOfCrossingWord_permutationToCrossingWord` applied to `throughStrandPerm`, which needs the
+`IsPermutationOfRange (throughStrandBottoms …).length (throughStrandPerm …)` gate — a 3-field bundle whose `isBounded`
+is the shipped `throughStrandPerm_isBounded` (downstream, `WiringDescWellFormedFoldWidth`).  This section closes the two
+FIELDS whose proof lives on the count machinery here: `hasWidthLength` (the filterMap-length symmetry) and `isDistinct`
+(the genuine content).
+
+`isDistinct` factors `throughStrandPerm = throughStrandTops.map keyFn` (same guard, payload the rank), then reuses the
+map-distinct-with-injectivity lemma `mapDistinctOfInjOnCount`.  The key `keyFn t = arcMiddleCountBelow throughBottoms
+(partner (bc + t))` is injective on through-tops because: each through-top's bottom partner is a through-BOTTOM
+(`throughStrandTop_partner_memThroughBottoms`), the rank is STRICTLY MONOTONE on members
+(`arcMiddleCountBelowStrictMonoOfMemCount`, hence injective — `arcMiddleCountBelow_inj_ofMemCount`), and the involution
+is injective at the offset ports (`involutionInjectiveCount`).  All propext-free — the `*Count` blt/beq kit exactly. -/
+
+/-- `cond (Nat.blt head lower) 1 0 ≤ cond (Nat.blt head upper) 1 0` when `lower ≤ upper` — a smaller bound counts no
+more heads.  Propext-free via the `*Count` blt kit. -/
+private theorem condBltLeOfLeCount (head lower upper : Nat) (hle : lower ≤ upper) :
+    cond (Nat.blt head lower) 1 0 ≤ cond (Nat.blt head upper) 1 0 := by
+  cases hb : Nat.blt head lower with
+  | false => exact Nat.zero_le _
+  | true =>
+      rw [natBltOfLtCount head upper (Nat.lt_of_lt_of_le (natLtOfBltCount head lower hb) hle)]
+      exact Nat.le_refl _
+
+/-- `arcMiddleCountBelow` is monotone in the bound. -/
+private theorem arcMiddleCountBelowMonoCount : (entries : List Nat) → (lower upper : Nat) → lower ≤ upper →
+    arcMiddleCountBelow entries lower ≤ arcMiddleCountBelow entries upper
+  | [], _, _, _ => Nat.le_refl 0
+  | head :: rest, lower, upper, hle =>
+      Nat.add_le_add (condBltLeOfLeCount head lower upper hle)
+        (arcMiddleCountBelowMonoCount rest lower upper hle)
+
+/-- ★ **`arcMiddleCountBelow` is STRICTLY monotone on members.**  If `lower < upper` and `lower ∈ entries` then
+`arcMiddleCountBelow entries lower < arcMiddleCountBelow entries upper` — the member equal to `lower` is uncounted
+below `lower` but counted below `upper`.  Propext-free (`*Count` blt/beq kit). -/
+private theorem arcMiddleCountBelowStrictMonoOfMemCount : (entries : List Nat) → (lower upper : Nat) →
+    lower < upper → lower ∈ entries →
+    arcMiddleCountBelow entries lower < arcMiddleCountBelow entries upper
+  | [], _, _, _, memNil => nomatch memNil
+  | head :: rest, lower, upper, hlt, member => by
+      show cond (Nat.blt head lower) 1 0 + arcMiddleCountBelow rest lower
+        < cond (Nat.blt head upper) 1 0 + arcMiddleCountBelow rest upper
+      cases hb : Nat.beq head lower with
+      | true =>
+          have headEq : head = lower := eqOfNatBeqTrueCount head lower hb
+          have blt1 : Nat.blt head lower = false := by
+            rw [headEq]; exact natBltFalseOfLeCount lower lower (Nat.le_refl lower)
+          have blt2 : Nat.blt head upper = true := by rw [headEq]; exact natBltOfLtCount lower upper hlt
+          rw [blt1, blt2]
+          show (0 : Nat) + arcMiddleCountBelow rest lower < 1 + arcMiddleCountBelow rest upper
+          rw [Nat.zero_add, Nat.add_comm 1 (arcMiddleCountBelow rest upper)]
+          exact Nat.lt_succ_of_le (arcMiddleCountBelowMonoCount rest lower upper (Nat.le_of_lt hlt))
+      | false =>
+          have ne : head ≠ lower := neOfNatBeqFalseCount head lower hb
+          have memRest : lower ∈ rest := by
+            cases member with
+            | head => exact absurd rfl ne
+            | tail _ hr => exact hr
+          exact Nat.add_lt_add_of_le_of_lt (condBltLeOfLeCount head lower upper (Nat.le_of_lt hlt))
+            (arcMiddleCountBelowStrictMonoOfMemCount rest lower upper hlt memRest)
+
+/-- ★ **The rank is INJECTIVE on members.**  Two members with the same `arcMiddleCountBelow` rank are equal — the
+strict-monotone-on-members contrapositive. -/
+private theorem arcMiddleCountBelow_inj_ofMemCount (entries : List Nat) (left right : Nat)
+    (leftMem : left ∈ entries) (rightMem : right ∈ entries)
+    (rankEq : arcMiddleCountBelow entries left = arcMiddleCountBelow entries right) : left = right := by
+  cases Nat.lt_or_ge left right with
+  | inl hlt => exact absurd rankEq (Nat.ne_of_lt (arcMiddleCountBelowStrictMonoOfMemCount entries left right hlt leftMem))
+  | inr hge =>
+      cases Nat.lt_or_ge right left with
+      | inl hlt =>
+          exact absurd rankEq.symm (Nat.ne_of_lt (arcMiddleCountBelowStrictMonoOfMemCount entries right left hlt rightMem))
+      | inr hge2 => exact Nat.le_antisymm hge2 hge
+
+/-- The guard-payload `filterMap` factors through `map`: emitting `some (payload x)` under a guard equals emitting
+`some x` under the guard then mapping `payload`.  Structural on the source, via the `*Count` `filterMap` cons kit. -/
+private theorem filterMapGuardPayloadEqMapCount (guard : Nat → Bool) (payload : Nat → Nat) :
+    (source : List Nat) →
+    source.filterMap (fun candidate => match guard candidate with | true => some (payload candidate) | false => none)
+      = (source.filterMap (guardIdentityTransform guard)).map payload
+  | [] => rfl
+  | head :: rest => by
+      cases hg : guard head with
+      | true =>
+          have hLeft : (fun candidate => match guard candidate with | true => some (payload candidate) | false => none) head
+              = some (payload head) := by
+            show (match guard head with | true => some (payload head) | false => none) = some (payload head)
+            rw [hg]
+          rw [filterMapConsSomeCount
+                (fun candidate => match guard candidate with | true => some (payload candidate) | false => none)
+                head (payload head) rest hLeft,
+              filterMapConsSomeCount (guardIdentityTransform guard) head head rest
+                (guardIdentityTransform_true guard head hg)]
+          show payload head :: rest.filterMap
+              (fun candidate => match guard candidate with | true => some (payload candidate) | false => none)
+            = payload head :: (rest.filterMap (guardIdentityTransform guard)).map payload
+          rw [filterMapGuardPayloadEqMapCount guard payload rest]
+      | false =>
+          have hLeft : (fun candidate => match guard candidate with | true => some (payload candidate) | false => none) head
+              = none := by
+            show (match guard head with | true => some (payload head) | false => none) = none
+            rw [hg]
+          rw [filterMapConsNoneCount
+                (fun candidate => match guard candidate with | true => some (payload candidate) | false => none)
+                head rest hLeft,
+              filterMapConsNoneCount (guardIdentityTransform guard) head rest
+                (guardIdentityTransform_false guard head hg)]
+          exact filterMapGuardPayloadEqMapCount guard payload rest
+
+/-- ★ **`throughStrandPerm` factors as `throughStrandTops.map keyFn`.**  Both are `filterMap` over `range topCount` with
+the through-top guard; the perm's payload is the rank `arcMiddleCountBelow throughBottoms (partner (bc + topIndex))`. -/
+theorem throughStrandPerm_eq_throughStrandTops_map (bottomCount topCount : Nat) (partner : List Nat) :
+    throughStrandPerm bottomCount topCount partner
+      = (throughStrandTops bottomCount topCount partner).map
+          (fun topIndex => arcMiddleCountBelow (throughStrandBottoms bottomCount partner)
+            (natListGetAt partner (bottomCount + topIndex))) :=
+  filterMapGuardPayloadEqMapCount (throughTopGuard bottomCount partner)
+    (fun topIndex => arcMiddleCountBelow (throughStrandBottoms bottomCount partner)
+      (natListGetAt partner (bottomCount + topIndex))) (List.range topCount)
+
+/-- ★ **A through-top's bottom partner is a through-BOTTOM.**  For a through-top `topIndex`, its partner
+`partner (bottomCount + topIndex)` is below `bottomCount` and (by the involution) its own partner is the top port
+`≥ bottomCount`, so it lands in `throughStrandBottoms`. -/
+theorem throughStrandTop_partner_memThroughBottoms (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) (topIndex : Nat)
+    (member : topIndex ∈ throughStrandTops bottomCount topCount partner) :
+    natListGetAt partner (bottomCount + topIndex) ∈ throughStrandBottoms bottomCount partner := by
+  have sound := throughStrandTops_mem_sound bottomCount topCount partner topIndex member
+  have portLt : bottomCount + topIndex < bottomCount + topCount := Nat.add_lt_add_left sound.1 bottomCount
+  have selfInv : natListGetAt partner (natListGetAt partner (bottomCount + topIndex)) = bottomCount + topIndex :=
+    wf.isSelfInverse (bottomCount + topIndex) portLt
+  refine memFilterMapGuardComplete (throughBottomGuard bottomCount partner) (List.range bottomCount)
+    (natListGetAt partner (bottomCount + topIndex))
+    (memRangeOfLtCount (natListGetAt partner (bottomCount + topIndex)) bottomCount sound.2) ?_
+  show Nat.ble bottomCount (natListGetAt partner (natListGetAt partner (bottomCount + topIndex))) = true
+  rw [selfInv]
+  exact natBleOfLeCount bottomCount (bottomCount + topIndex) (Nat.le_add_right bottomCount topIndex)
+
+/-- ★★ **GAP γ (distinctness) — `throughStrandPerm` is a DISTINCT list.**  Via the `throughStrandTops.map keyFn`
+factorization + `mapDistinctOfInjOnCount`; the key is injective on through-tops (rank injectivity on members +
+involution injectivity). -/
+theorem throughStrandPerm_isDistinct (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    isDistinctList (throughStrandPerm bottomCount topCount partner) = true := by
+  rw [throughStrandPerm_eq_throughStrandTops_map]
+  refine mapDistinctOfInjOnCount
+    (fun topIndex => arcMiddleCountBelow (throughStrandBottoms bottomCount partner)
+      (natListGetAt partner (bottomCount + topIndex)))
+    (throughStrandTops bottomCount topCount partner)
+    (filterMapGuardIdentityDistinctCount (throughTopGuard bottomCount partner) (List.range topCount)
+      (isDistinctListRangeCount topCount)) ?_
+  intro left right leftMem rightMem eqMap
+  have partnerEq : natListGetAt partner (bottomCount + left) = natListGetAt partner (bottomCount + right) :=
+    arcMiddleCountBelow_inj_ofMemCount (throughStrandBottoms bottomCount partner)
+      (natListGetAt partner (bottomCount + left)) (natListGetAt partner (bottomCount + right))
+      (throughStrandTop_partner_memThroughBottoms bottomCount topCount partner wf left leftMem)
+      (throughStrandTop_partner_memThroughBottoms bottomCount topCount partner wf right rightMem) eqMap
+  have leftSound := throughStrandTops_mem_sound bottomCount topCount partner left leftMem
+  have rightSound := throughStrandTops_mem_sound bottomCount topCount partner right rightMem
+  have portEq : bottomCount + left = bottomCount + right :=
+    involutionInjectiveCount (bottomCount + topCount) partner wf (bottomCount + left) (bottomCount + right)
+      (Nat.add_lt_add_left leftSound.1 bottomCount) (Nat.add_lt_add_left rightSound.1 bottomCount) partnerEq
+  exact natAddLeftCancelTop bottomCount left right portEq
+
+/-- ★★ **GAP γ (width) — `throughStrandPerm` has exactly `#throughStrandBottoms` entries.**  Via the factorization
+(`map` preserves length) + the r17 through-count symmetry `throughStrandBottoms_length_eq_throughStrandTops`. -/
+theorem throughStrandPerm_length_eq_throughStrandBottoms (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    (throughStrandPerm bottomCount topCount partner).length
+      = (throughStrandBottoms bottomCount partner).length := by
+  rw [throughStrandPerm_eq_throughStrandTops_map,
+    mapLengthCount
+      (fun topIndex => arcMiddleCountBelow (throughStrandBottoms bottomCount partner)
+        (natListGetAt partner (bottomCount + topIndex)))
+      (throughStrandTops bottomCount topCount partner),
+    throughStrandBottoms_length_eq_throughStrandTops bottomCount topCount partner wf]
+
 end FX1Poly.Polygraph
