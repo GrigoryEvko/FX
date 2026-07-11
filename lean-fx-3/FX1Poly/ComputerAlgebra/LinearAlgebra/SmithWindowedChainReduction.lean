@@ -1072,4 +1072,33 @@ theorem smithClearingSweepLandsMinorGcdOnConcreteWindow :
           { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3)).diagonalEntryAt 0 = 2 := by
   decide
 
+/-! ## NODE 2 — the exit read-off: both r21 seed halves from ONE within-predicate (H2-SMITH r22, B3)
+
+r21 split the seed `SmithCascadeLandsDivisibleSubBlock` into a DIAGONAL half
+(`SubBlockDiagonalDivisibleFrom`, reached from a find-`none` exit via C2) and an OFF-DIAGONAL half
+(`SubBlockOffDiagonalDivisibleFrom`, the gcd-ideal wall).  r22 UNIFIES them: BOTH are read off a SINGLE
+`MatrixEntriesDivisibleByWithin divisor lo` fact — the one the NODE 1 forward tower produces — so the
+r21 two-way case split is dissolved into ONE object.  The diagonal half is the on-diagonal slice
+(`diagonalEntryAt position = entryAt position position`), the off-diagonal half is the off-diagonal
+slice (drop the `rowIndex ≠ colIndex` witness).  The "fill-in is `divisor`-divisible" reason of the
+recon trace §2b IS this within-predicate: every fill-in cell of the `[lo, ·)` block is `divisor`-divisible
+because the forward tower carries `divisor` across the confined sweep. -/
+
+/-- **The diagonal half from the within-predicate** — a `[lo, ·)²` block that is entirely
+`divisor`-divisible has every diagonal cell `divisor`-divisible (`diagonalEntryAt` is the on-diagonal
+`entryAt`).  The DIAGONAL half of the seed, read off the forward-tower within-predicate directly. -/
+theorem subBlockDiagonalDivisibleOfWithin {divisor : Int} {lo : Nat} {matrix : IntMatrix}
+    (within : MatrixEntriesDivisibleByWithin divisor lo matrix) :
+    SubBlockDiagonalDivisibleFrom divisor lo matrix :=
+  fun position positionGe => within position positionGe position positionGe
+
+/-- **The off-diagonal half from the within-predicate** — a `[lo, ·)²` block that is entirely
+`divisor`-divisible has every off-diagonal cell `divisor`-divisible (drop the distinctness witness).
+The OFF-DIAGONAL half of the seed (r21's gcd-ideal wall) is now a trivial slice of the SAME within-fact
+the forward tower supplies — no separate ideal argument once the within-predicate is in hand. -/
+theorem subBlockOffDiagonalDivisibleOfWithin {divisor : Int} {lo : Nat} {matrix : IntMatrix}
+    (within : MatrixEntriesDivisibleByWithin divisor lo matrix) :
+    SubBlockOffDiagonalDivisibleFrom divisor lo matrix :=
+  fun rowIndex colIndex rowGe colGe _ => within rowIndex rowGe colIndex colGe
+
 end FX1Poly.ComputerAlgebra

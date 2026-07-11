@@ -84,4 +84,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.matrixEntriesDivisibleByWithinLoMono
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepLandsMinorGcdOnConcreteWindow
 
+/- H2-SMITH r22 — NODE 2 (B3): the exit read-off — BOTH r21 seed halves (diagonal + off-diagonal) from
+   ONE `MatrixEntriesDivisibleByWithin` fact; the r21 two-way case split dissolved into one slice. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.subBlockDiagonalDivisibleOfWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.subBlockOffDiagonalDivisibleOfWithin
+
 end FX1PolyAudit
