@@ -748,6 +748,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDispatcherConcrete
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWidthZeroInvolutionProbe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWidthZeroSnakeProbe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineTopWordAppend
+-- FC-3 r16 PORT 1 — the width-0 LOCATE readoff at the adjoint-triple seed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingLastCupShortChord
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
