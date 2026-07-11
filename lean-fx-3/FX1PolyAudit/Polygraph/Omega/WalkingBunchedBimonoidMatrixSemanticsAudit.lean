@@ -1,0 +1,76 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemantics
+
+/-! # FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemanticsAudit — zero-axiom gate for the Mat(N)
+matrix semantics of the walking bunched bimonoid (WP-BI r2, #2188).
+
+Per-declaration `#assert_no_axioms` on the matrix carrier, the propext-clean structural indexers, the three
+matrix operations, the dimension-dependent evaluation motive and its five helpers, the evaluation fold, the
+concrete generator matrices and 1-cell widths, the 13 RESPECTED per-row equalities, the 9 BROKEN per-row
+separations, and the `sigma != id` map-level separation (B1).
+
+Independent `#print axioms` (NOT fuel-based, MEMORY: mandatory) on the evaluation fold, the bialgebra-B1
+respected row, the truth-probe-discovered rightCounitCoassoc separation, and the swap/identity separation closes
+the gate. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.Omega.BunchedBimonoidMat
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidNatListGet
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRowListGet
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatEntryAt
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidNatListSum
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidIdentityMat
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatMul
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatDirectSum
+#assert_no_axioms FX1Poly.Polygraph.Omega.BunchedBimonoidEvalCarrier
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenWidth
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenMatrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalGen
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalId
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalVcomp
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalWhiskerLeft
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalWhiskerRight
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalCell
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWordWidth
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAdditiveGen_width
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAaWord_width
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidIdOne_width
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAddMuGen_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAddDeltaGen_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAddSigmaGen_matrix
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsMultMonadPentagon
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsMultMonadRootUnitAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsAddMonadPentagon
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsAddMonadRootUnitAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsComonoidCopentagon
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsComonoidRootCounitCoassoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsBialgebraProduct
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsBialgebraCounit
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsBialgebraUnit
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsBialgebraBone
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsCommutativity
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsCocommutativity
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsSigmaInvolution
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesMultMonadUnitUnit
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesMultMonadLeftUnitAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesMultMonadRightUnitAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesAddMonadUnitUnit
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesAddMonadLeftUnitAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesAddMonadRightUnitAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesComonoidCounitCounit
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesComonoidLeftCounitCoassoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesComonoidRightCounitCoassoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesSwapFromIdentity
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixCarrierAndEvaluationShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixPerRowPartitionThirteenSoundNineBroken
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixSeparatesSwapFromIdentity
+
+-- Independent confirmation (not fuel-based): the evaluation fold, a respected row, the probe-caught separation,
+-- and the swap/identity separation are all axiom-free.
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalCell
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsBialgebraProduct
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesComonoidRightCounitCoassoc
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesSwapFromIdentity
+
+end FX1PolyAudit

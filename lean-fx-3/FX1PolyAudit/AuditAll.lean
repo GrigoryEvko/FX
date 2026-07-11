@@ -750,6 +750,10 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWidthZeroSnakeProb
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineTopWordAppend
 -- FC-3 r16 PORT 1 — the width-0 LOCATE readoff at the adjoint-triple seed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingLastCupShortChord
+-- FC-3 r16 PORT 2 — the width-0 chord-shift descents at the adjoint-triple seed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingWidthZeroChordShift
+-- FC-3 r16 PORT 3 — the width-0 drop-injectivity linchpin at the adjoint-triple seed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingDropLastCup
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
@@ -1171,6 +1175,8 @@ import FX1PolyAudit.Polygraph.Omega.FrobeniusMonadPresentationAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingStrongMonadPresentationAudit
 -- WP-BI r1 — the walking bunched bimonoid: twenty-two-critical-pair presentation + Frobenius-distinction self-attack
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPresentationAudit
+-- WP-BI r2 — the Mat(N) matrix semantics: 13 respected rows + 9 broken op-commute rows + sigma/id separation
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemanticsAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
