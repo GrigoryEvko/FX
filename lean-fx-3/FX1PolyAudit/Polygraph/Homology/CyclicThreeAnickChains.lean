@@ -73,4 +73,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.anickUndersizedBoundDropsCanonicalChain
 #assert_no_axioms FX1Poly.Polygraph.Homology.involutionAnickEnumeratorSingletonAtDegreeFive
 
+-- B2 (r2): the uniqueness theorem (forced-positions induction)
+#assert_no_axioms FX1Poly.Polygraph.Homology.natEqBoolTrueImpliesEq
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickCanonicalTail
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickCanonicalTailMatchesGuardTail
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickCanonicalChain
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickGuardForcesCanonicalChain
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickGuardPassersOfEqualLengthAreEqual
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickCanonicalChainMatchesShippedTipsThroughDegreeEight
+
 end FX1PolyAudit

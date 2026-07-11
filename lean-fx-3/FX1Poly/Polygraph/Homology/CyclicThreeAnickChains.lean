@@ -529,4 +529,132 @@ space is the `anickChainTips 2 5` singleton at degree 5.**  The uniqueness and e
 theorem involutionAnickEnumeratorSingletonAtDegreeFive :
     anickMinimalChainsAtDegree 2 5 = [anickChainTips 2 5] := rfl
 
+/-! ## B2 (r2) — ★ THE UNIQUENESS THEOREM: any guard-passing list IS the canonical chain (fully general in
+    `tipLength` and length)
+
+The r1 file exhibits the canonical chain and probes rejections; it never proves the chain is FORCED.  The
+guard `isMinimalAnickChain` is an EQUALITY constraint — each accepted position is pinned by
+`natEqBool position (natMaxTwo (prev+1) (prevPrev+k))` to the deterministic leftmost placement — so
+uniqueness is a DIRECT forward/head structural induction, no minimality-clause bookkeeping.  The one helper
+the whole proof rides is `natEqBoolTrueImpliesEq` (the guard's equality test really forces equality); the
+induction threads the two-back window forward, matching the guard's own recursion shape (so no snoc/append
+bridge against the shipped tail-recursive `anickChainTips`, avoiding the `List.append` propext trap).  This
+is the mathematical crown of the round: fully general in `tipLength` and length. -/
+
+/-- The load-bearing helper: a *true* structural-boolean equality really is an equality.  Hand-rolled
+double recursion — the mismatched arms close by `Bool.noConfusion` (`false = true` absurd), the matched arm
+by `congrArg Nat.succ`.  Propext-clean (no `decide`, no `Nat.beq` lemma). -/
+theorem natEqBoolTrueImpliesEq : ∀ (first second : Nat), natEqBool first second = true → first = second
+  | 0, 0, _ => rfl
+  | 0, _ + 1, hEq => Bool.noConfusion hEq
+  | _ + 1, 0, hEq => Bool.noConfusion hEq
+  | first + 1, second + 1, hEq => congrArg Nat.succ (natEqBoolTrueImpliesEq first second hEq)
+
+/-- The forward, window-threaded canonical tail: the deterministic minimal placement rolled out for a given
+LENGTH, threading the two-back window `(prevPrev, prev) → (prev, next)` forward (matching the guard's own
+recursion, unlike the shipped tail-append `anickChainTips`).  Structural on the length. -/
+def anickCanonicalTail (tipLength prevPrev prev : Nat) : Nat → List Nat
+  | 0 => []
+  | length + 1 =>
+      natMaxTwo (prev + 1) (prevPrev + tipLength)
+        :: anickCanonicalTail tipLength prev (natMaxTwo (prev + 1) (prevPrev + tipLength)) length
+
+/-- **Tail uniqueness**: any tail passing `anickMinimalChainTailIsValid` IS the canonical tail of its own
+length.  Clean structural `List` induction — the `&&` splits into the head equality (fed to
+`natEqBoolTrueImpliesEq`, forcing the canonical position) and the tail witness (fed to the IH on the
+advanced window); reassembled by `congrArg`.  No fuel, no append, no propext. -/
+theorem anickCanonicalTailMatchesGuardTail (tipLength : Nat) :
+    ∀ (prevPrev prev : Nat) (positions : List Nat),
+      anickMinimalChainTailIsValid tipLength prevPrev prev positions = true →
+      positions = anickCanonicalTail tipLength prevPrev prev positions.length
+  | _, _, [], _ => rfl
+  | prevPrev, prev, position :: remaining, hValid => by
+      have hUnfold : anickMinimalChainTailIsValid tipLength prevPrev prev (position :: remaining)
+        = (natEqBool position (natMaxTwo (prev + 1) (prevPrev + tipLength))
+            && anickMinimalChainTailIsValid tipLength prev position remaining) := rfl
+      rw [hUnfold] at hValid
+      cases hHead : natEqBool position (natMaxTwo (prev + 1) (prevPrev + tipLength)) with
+      | false => rw [hHead] at hValid; exact Bool.noConfusion hValid
+      | true =>
+        rw [hHead, Bool.true_and] at hValid
+        have hPosition : position = natMaxTwo (prev + 1) (prevPrev + tipLength) :=
+          natEqBoolTrueImpliesEq _ _ hHead
+        have hTail : remaining = anickCanonicalTail tipLength prev position remaining.length :=
+          anickCanonicalTailMatchesGuardTail tipLength prev position remaining hValid
+        show position :: remaining
+          = natMaxTwo (prev + 1) (prevPrev + tipLength)
+              :: anickCanonicalTail tipLength prev
+                  (natMaxTwo (prev + 1) (prevPrev + tipLength)) remaining.length
+        rw [hPosition] at hTail ⊢
+        exact congrArg (natMaxTwo (prev + 1) (prevPrev + tipLength) :: ·) hTail
+
+/-- The forward canonical chain (as a plain tip list) of a given LENGTH: `[]`, `[0]`, or `0 :: 1 ::`
+followed by the window-threaded tail.  Structural on the length; bridges to the shipped
+`anickChainTips` by per-degree `rfl` (below). -/
+def anickCanonicalChain (tipLength : Nat) : Nat → List Nat
+  | 0 => []
+  | 1 => [0]
+  | count + 2 => 0 :: 1 :: anickCanonicalTail tipLength 0 1 count
+
+/-- ★★ **THE UNIQUENESS THEOREM (fully general).**  ANY tip list passing the decidable minimal-overlap
+guard IS the canonical chain of its own length — forced position-by-position by the equality guard, for
+EVERY `tipLength` and length.  Cases mirror the guard's three arms: the `[firstPosition]` arm pins
+`p₁ = 0`; the cons-cons arm pins `p₁ = 0`, `p₂ = 1` (double `&&` split) and delegates the tail to
+`anickCanonicalTailMatchesGuardTail`.  This is the forced-positions induction the recon adjudicated: no
+minimality bookkeeping, the equality guard does all the work. -/
+theorem anickGuardForcesCanonicalChain (tipLength : Nat) :
+    ∀ (positions : List Nat),
+      isMinimalAnickChain tipLength positions = true →
+      positions = anickCanonicalChain tipLength positions.length
+  | [], _ => rfl
+  | [firstPosition], hGuard => by
+      have hFirst : firstPosition = 0 := natEqBoolTrueImpliesEq _ _ hGuard
+      show [firstPosition] = [0]
+      rw [hFirst]
+  | first :: second :: remaining, hGuard => by
+      have hUnfold : isMinimalAnickChain tipLength (first :: second :: remaining)
+        = ((natEqBool first 0 && natEqBool second 1)
+            && anickMinimalChainTailIsValid tipLength first second remaining) := rfl
+      rw [hUnfold] at hGuard
+      cases hFirstBool : natEqBool first 0 with
+      | false => rw [hFirstBool] at hGuard; exact Bool.noConfusion hGuard
+      | true =>
+        cases hSecondBool : natEqBool second 1 with
+        | false => rw [hFirstBool, hSecondBool] at hGuard; exact Bool.noConfusion hGuard
+        | true =>
+          rw [hFirstBool, hSecondBool, Bool.true_and, Bool.true_and] at hGuard
+          have hFirst : first = 0 := natEqBoolTrueImpliesEq _ _ hFirstBool
+          have hSecond : second = 1 := natEqBoolTrueImpliesEq _ _ hSecondBool
+          have hTail : remaining = anickCanonicalTail tipLength first second remaining.length :=
+            anickCanonicalTailMatchesGuardTail tipLength first second remaining hGuard
+          show first :: second :: remaining
+            = 0 :: 1 :: anickCanonicalTail tipLength 0 1 remaining.length
+          rw [hFirst, hSecond] at hTail ⊢
+          exact congrArg (fun tail => 0 :: 1 :: tail) hTail
+
+/-- ★ **Uniqueness corollary: any two guard-passers of the same length are EQUAL.**  Both collapse to the
+one canonical chain of that length — the honest content of "any guard-passing list = `anickChainTips`".
+Fully general in `tipLength`. -/
+theorem anickGuardPassersOfEqualLengthAreEqual (tipLength : Nat) (firstChain secondChain : List Nat)
+    (hFirstGuard : isMinimalAnickChain tipLength firstChain = true)
+    (hSecondGuard : isMinimalAnickChain tipLength secondChain = true)
+    (hEqualLength : firstChain.length = secondChain.length) : firstChain = secondChain := by
+  rw [anickGuardForcesCanonicalChain tipLength firstChain hFirstGuard,
+      anickGuardForcesCanonicalChain tipLength secondChain hSecondGuard, hEqualLength]
+
+/-- ★ **The forward uniqueness generator agrees with the shipped `anickChainTips`** at every cyclic-3
+degree 1–8 — the per-degree `rfl` bridge (both compute the same literal list, so uniqueness against the
+forward canonical chain transfers to the shipped tail-append generator without any snoc/append reasoning).
+`rfl` per degree. -/
+theorem anickCanonicalChainMatchesShippedTipsThroughDegreeEight :
+    anickCanonicalChain 3 1 = anickChainTips 3 1 ∧
+    anickCanonicalChain 3 2 = anickChainTips 3 2 ∧
+    anickCanonicalChain 3 3 = anickChainTips 3 3 ∧
+    anickCanonicalChain 3 4 = anickChainTips 3 4 ∧
+    anickCanonicalChain 3 5 = anickChainTips 3 5 ∧
+    anickCanonicalChain 3 6 = anickChainTips 3 6 ∧
+    anickCanonicalChain 3 7 = anickChainTips 3 7 ∧
+    anickCanonicalChain 3 8 = anickChainTips 3 8 :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
 end FX1Poly.Polygraph.Homology
