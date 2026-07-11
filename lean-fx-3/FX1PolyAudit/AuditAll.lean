@@ -1312,6 +1312,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMiddleDeterminismAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRetractionConvDeltasAudit
 -- WP-PROP r6 (B4) — the BI cash-out: the three verbatim Node-A components (matMul assoc + identity units + block multiplicativity) literally shipped AND assembled at the matrix level, BUT the recon's unconditional cell-level absorber over the FREE carrier REFUTED (a mis-declared free gen breaks the strict unit law: eval 1x0 != 1x2) -- the honest correction of the Job-4 verdict; matrixStrictLawExtensionReached stays false byte-intact, no fabricated flip, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStrictLawAbsorberAudit
+-- WP-PROP r7 (B1) — the riffle: the general block-braiding primitive strandPastBlock (cyclic-shift, matrix-probed at k=0..3, matches wideSymmetryFront), the two collision peel lemmas (mu-fold/delta-fan recursion as rfl), the two width-3 naturality slides (mu/delta as CONV over the star scope), and the DECISIVE truth-probe refuting the naive general wideSwap fold (3x3 != 4x4 middle swap at (2,2)); the general wideSwap word + (m,n) conv recursion stay walled byte-intact, zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRiffleNaturalityAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
