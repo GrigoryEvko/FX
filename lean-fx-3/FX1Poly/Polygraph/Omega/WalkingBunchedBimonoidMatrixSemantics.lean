@@ -604,4 +604,90 @@ identity-matrix unit laws, and block multiplicativity (whisker-functoriality + i
 wall as `fxBunchedBimonoid_additiveConvergentNormalizerReached`. -/
 def fxBunchedBimonoid_matrixStrictLawExtensionReached : Bool := false
 
+/-! # =========================================================================================
+    # B3 — THE SIGMA COMPLETION: the width-2 naturality rows (matrix- AND four-count-respected)
+    # =========================================================================================
+
+★ **The symmetry completion toward faithfulness — the cheap width-2 half.**  A faithful presentation of the
+bicommutative-bimonoid PROP must axiomatize `sigma`'s naturality past every (co)monoid operation.  The two
+width-2 naturality rows — `sigma` commuting past the unit (`(a <| eta); sigma ~ eta |> a`) and past the counit
+(`sigma; (eps |> a) ~ a <| eps`) — are expressible in the r1 substrate WITHOUT a whiskered `sigma`, so they are
+the cheap, safe half.  Both are MATRIX-respected (their legs evaluate to the same map: `[[0],[1]]` and `[[1,0]]`
+respectively) AND four-count-respected (both legs carry the same generator multiset).  The width-3 block
+naturality and the Yang-Baxter / hexagon on `a.a.a` (whiskered `sigma`, the genuine S_3 Coxeter cost) stay
+DEFERRED (`fxBunchedBimonoid_matrixHexagonReached = false`, uniform with r1's
+`fxBunchedBimonoid_yangBaxterHexagonReached`).
+
+**The four-count-breakage check (recon self-attack #1, machine-confirmed):** shipping the naturality rows does
+NOT break the four-count invariant — both legs of each row carry EQUAL four-counts (unlike the bialgebra B1,
+which is the sole four-count breaker).  So the four-count SURVIVES the symmetry enrichment, and the matrix is the
+finer sound invariant on top of it. -/
+
+/-- The **sigma-vs-unit naturality LEFT leg** `(a <| eta_a); sigma_a : a => a.a` — insert the unit on the right,
+then swap. -/
+def bunchedBimonoidSigmaEtaNaturalityLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddEtaGen)
+    bunchedBimonoidAddSigmaGen
+
+/-- The **sigma-vs-unit naturality RIGHT leg** `eta_a |> a : a => a.a` — insert the unit on the left (the swap is
+absorbed by the symmetry). -/
+def bunchedBimonoidSigmaEtaNaturalityRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight bunchedBimonoidAddEtaGen bunchedBimonoidAdditiveGen
+
+/-- The **sigma-vs-counit naturality LEFT leg** `sigma_a; (eps_a |> a) : a.a => a` — swap, then discard the
+right strand. -/
+def bunchedBimonoidSigmaEpsNaturalityLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp bunchedBimonoidAddSigmaGen
+    (CellExpr.whiskerRight bunchedBimonoidAddEpsGen bunchedBimonoidAdditiveGen)
+
+/-- The **sigma-vs-counit naturality RIGHT leg** `a <| eps_a : a.a => a` — discard the left strand directly. -/
+def bunchedBimonoidSigmaEpsNaturalityRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerLeft bunchedBimonoidAdditiveGen bunchedBimonoidAddEpsGen
+
+/-- ★ The **sigma-vs-unit naturality row is MATRIX-respected** — both legs evaluate to `[[0],[1]]` (the swapped
+right-insertion equals the left-insertion). -/
+theorem bunchedBimonoidMatrixRespectsSigmaEtaNaturality :
+    bunchedBimonoidEvalCell bunchedBimonoidSigmaEtaNaturalityLeftLeg
+      = bunchedBimonoidEvalCell bunchedBimonoidSigmaEtaNaturalityRightLeg := rfl
+
+/-- ★ The **sigma-vs-counit naturality row is MATRIX-respected** — both legs evaluate to `[[1,0]]` (swap then
+discard-right equals discard-left). -/
+theorem bunchedBimonoidMatrixRespectsSigmaEpsNaturality :
+    bunchedBimonoidEvalCell bunchedBimonoidSigmaEpsNaturalityLeftLeg
+      = bunchedBimonoidEvalCell bunchedBimonoidSigmaEpsNaturalityRightLeg := rfl
+
+/-- ★ **The four-count SURVIVES the sigma-vs-unit naturality row** — both legs carry the four-count `(0,1,0,0)`
+(one `eta`, the swap counts zero).  Unlike the bialgebra B1, this row does NOT break the four-count. -/
+theorem bunchedBimonoidFourCountRespectsSigmaEtaNaturality :
+    bunchedBimonoidGeneratorFourCount bunchedBimonoidSigmaEtaNaturalityLeftLeg
+      = bunchedBimonoidGeneratorFourCount bunchedBimonoidSigmaEtaNaturalityRightLeg := rfl
+
+/-- ★ **The four-count SURVIVES the sigma-vs-counit naturality row** — both legs carry the four-count `(0,0,0,1)`
+(one `eps`). -/
+theorem bunchedBimonoidFourCountRespectsSigmaEpsNaturality :
+    bunchedBimonoidGeneratorFourCount bunchedBimonoidSigmaEpsNaturalityLeftLeg
+      = bunchedBimonoidGeneratorFourCount bunchedBimonoidSigmaEpsNaturalityRightLeg := rfl
+
+/-! ## The B3 honesty markers -/
+
+/-- ★★ **ESTABLISHED (B3) — the width-2 sigma-naturality rows are shipped (matrix- and four-count-respected).**
+`= true` records the two width-2 naturality rows (`sigma` past `eta`, `sigma` past `eps`): each is
+MATRIX-respected (`bunchedBimonoidMatrixRespects{SigmaEta,SigmaEps}Naturality`) and four-count-respected
+(`bunchedBimonoidFourCountRespects...`).  The symmetry completion toward the faithful `Mat(N)` presentation, the
+cheap half.  (The r1 `fxBunchedBimonoid_sigmaNaturalityRowsShipped` stays `false` — untouched; this is the r2
+additive advance.) -/
+def fxBunchedBimonoid_sigmaNaturalityWidthTwoRowsShipped : Bool := true
+
+/-- ★ **ESTABLISHED (B3, self-attack #1) — the four-count survives the sigma completion.**  `= true` records
+that the sigma-naturality rows carry EQUAL four-counts on both legs (machine-checked), so adding them does NOT
+break the four-count invariant — the bialgebra B1 remains the sole four-count breaker, and the matrix is the
+strictly finer sound invariant layered on top. -/
+def fxBunchedBimonoid_fourCountSurvivesSigmaNaturality : Bool := true
+
+/-- ★ **WALL (honest, r3, uniform with r1) — the width-3 block naturality + Yang-Baxter hexagon are NOT
+shipped.**  `= false` records that `sigma`'s block naturality on `a.a.a` and the hexagon / Yang-Baxter braid
+relation (whiskered `sigma`, the genuine S_3 Coxeter 3-strand cost) are DEFERRED — the same wall as r1's
+`fxBunchedBimonoid_yangBaxterHexagonReached`.  Only the width-2 naturality half is shipped in r2. -/
+def fxBunchedBimonoid_matrixHexagonReached : Bool := false
+
 end FX1Poly.Polygraph.Omega

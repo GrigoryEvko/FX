@@ -77,6 +77,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixSoundOverBalancedThirteen
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixStrictLawExtensionReached
 
+-- B3 — the width-2 sigma-naturality completion (matrix- and four-count-respected).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaEtaNaturalityLeftLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaEtaNaturalityRightLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaEpsNaturalityLeftLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaEpsNaturalityRightLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsSigmaEtaNaturality
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixRespectsSigmaEpsNaturality
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFourCountRespectsSigmaEtaNaturality
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFourCountRespectsSigmaEpsNaturality
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_sigmaNaturalityWidthTwoRowsShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_fourCountSurvivesSigmaNaturality
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixHexagonReached
+
 -- Independent confirmation (not fuel-based): the evaluation fold, a respected row, the probe-caught separation,
 -- the swap/identity separation, the soundness fold, and the proof-carrying separator are all axiom-free.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalCell
