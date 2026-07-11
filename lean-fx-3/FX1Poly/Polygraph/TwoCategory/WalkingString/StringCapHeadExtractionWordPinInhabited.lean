@@ -8,7 +8,9 @@ import FX1Poly.Polygraph.TwoCategory.WalkingString.StringDisjointWordBubble
 import FX1Poly.Polygraph.TwoCategory.WalkingString.StringDisjointWordFactorization
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcWireDistinct
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcPairUntouched
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLastCupReadoff
 
 /-! # WalkingString/StringCapHeadExtractionWordPinInhabited — inhabiting the AllCapArity-augmented cap-head
 pin-prime (FC-3 r26)
@@ -273,5 +275,203 @@ theorem stringInhabitBoundaryProbe :
       ∧ (processArcSpine (ArcWireState.mk (List.range 2) [] 2 0 [] [])
           [stringCapSortProbeAtom]).openWires.length = 0 :=
   ⟨by decide, by decide⟩
+
+/-! ## The pin-prime inhabitant -/
+
+/-- ★★ **The AllCapArity-augmented cap-head pin-prime is inhabited.**  Assembles the four-conjunct discharge, the
+port of `spineArcHeadExtractionChained_ofCapArity` with the DOM word pin and the threaded word chain: arc-structure
+equality LOCATES the consuming cap in the second spine (`stringArcPairCapWindow_ofCapHeadExtractEq`), the located
+cap SEATS at the seed and BUBBLES to the front through the re-founded distinctness descent
+(`stringWordPairSeated_bubblesThroughPrefix_ofDistinct`), the moved atom IDENTIFIES with the head by the DOM word
+pin (`stringCapAtom_eq_of_sharedDom_sameWindow`, both firing at `bottomWord`), and the WORD-bubble consumers plus
+the r21 cancel close the four conjuncts.  The swapped-read branch of the located certificate is refuted by
+order-preservation of the pure-cap split open-wires (`stringCapFoldAdjIncreasing`). -/
+theorem stringCapHeadExtractionWordPinInhabited : StringCapHeadExtractionWordPinPrime := by
+  intro overallSource overallTarget bottomCount bottomWord headAtom c1Dom c1Cod tailList secondList
+    chainedFirst chainedSecond firstWordChained secondWordChained firstPureCap secondPureCap arcEqual
+  obtain ⟨headFires, tailChained⟩ := spineBoundaryChained_tail chainedFirst
+  have windowFits : headAtom.leftContext.length + 2 ≤ bottomCount := by
+    rw [← headFires]
+    show headAtom.leftContext.length + 2
+      ≤ headAtom.leftContext.length + headAtom.generatorDom.length + headAtom.rightContext.length
+    rw [c1Dom]
+    exact Nat.le_add_right (headAtom.leftContext.length + 2) headAtom.rightContext.length
+  have tailBoundaryFits : headAtom.codBoundaryLength + 2 = bottomCount := by
+    rw [← headFires]
+    show headAtom.leftContext.length + headAtom.generatorCod.length + headAtom.rightContext.length + 2
+      = headAtom.leftContext.length + headAtom.generatorDom.length + headAtom.rightContext.length
+    rw [c1Cod, c1Dom]
+    exact Nat.add_right_comm headAtom.leftContext.length headAtom.rightContext.length 2
+  have extractEq : extractArc bottomCount
+      (processArcSpine
+        (stepCapArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          headAtom.leftContext.length) tailList)
+      = extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            secondList) := by
+    rw [← stepArcAtom_eq_stepCapArc
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) headAtom c1Dom c1Cod]
+    exact arcEqual
+  have located : StringArcPairCapWindow bottomCount headAtom.leftContext.length
+      (headAtom.leftContext.length + 1) secondList :=
+    stringArcPairCapWindow_ofCapHeadExtractEq bottomCount headAtom.leftContext.length
+      headAtom.codBoundaryLength windowFits tailBoundaryFits tailList tailChained secondList extractEq
+  obtain ⟨prefixAtoms, toucherAtom, suffixAtoms, doesSplitSpine, untouchedBefore, capDomArity,
+    capCodArity, doesConsumePair⟩ := located
+  have leftBelow : headAtom.leftContext.length < bottomCount :=
+    Nat.lt_of_lt_of_le
+      (Nat.lt_trans (Nat.lt_succ_self headAtom.leftContext.length)
+        (Nat.lt_succ_self (headAtom.leftContext.length + 1)))
+      windowFits
+  have rightBelow : headAtom.leftContext.length + 1 < bottomCount :=
+    Nat.lt_of_lt_of_le (Nat.lt_succ_self (headAtom.leftContext.length + 1)) windowFits
+  have seatBefore : ∃ seatPosition,
+      ArcPairSeated headAtom.leftContext.length (headAtom.leftContext.length + 1) seatPosition
+        (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) :=
+    ⟨headAtom.leftContext.length,
+      rangeGetAt_below bottomCount headAtom.leftContext.length leftBelow,
+      rangeGetAt_below bottomCount (headAtom.leftContext.length + 1) rightBelow, by
+        show headAtom.leftContext.length + 2 ≤ (List.range bottomCount).length
+        rw [rangeLength bottomCount]; exact windowFits⟩
+  have chainedAtSeed : SpineBoundaryChained
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []).openWires.length
+      (prefixAtoms ++ toucherAtom :: suffixAtoms) := by
+    show SpineBoundaryChained (List.range bottomCount).length
+      (prefixAtoms ++ toucherAtom :: suffixAtoms)
+    rw [rangeLength bottomCount, ← doesSplitSpine]
+    exact chainedSecond
+  have allCapPrefix : AllCapArity prefixAtoms :=
+    stringAllCapArity_prefix_ofAppend prefixAtoms (toucherAtom :: suffixAtoms)
+      (doesSplitSpine ▸ secondPureCap)
+  have prefixChain : SpineBoundaryChained
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []).openWires.length
+      prefixAtoms :=
+    spineBoundaryChained_prefix_ofAppend prefixAtoms (toucherAtom :: suffixAtoms)
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []).openWires.length chainedAtSeed
+  have chainedAtSplit : SpineBoundaryChained
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        prefixAtoms).openWires.length (toucherAtom :: suffixAtoms) :=
+    stringSpineBoundaryChained_alongArcSpine prefixAtoms (toucherAtom :: suffixAtoms)
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) chainedAtSeed
+  have splitEntryShape : (processArcSpine
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+      prefixAtoms).openWires.length
+      = toucherAtom.leftContext.length + toucherAtom.generatorDom.length
+        + toucherAtom.rightContext.length :=
+    (spineBoundaryChained_tail chainedAtSplit).1.symm
+  have seatBound : toucherAtom.leftContext.length + 2
+      ≤ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        prefixAtoms).openWires.length := by
+    rw [splitEntryShape, capDomArity]
+    exact Nat.le_add_right (toucherAtom.leftContext.length + 2) toucherAtom.rightContext.length
+  have wordChainedRemainder : SpineBoundaryWordChained bottomWord
+      (prefixAtoms ++ toucherAtom :: suffixAtoms) := doesSplitSpine ▸ secondWordChained
+  cases doesConsumePair with
+  | inr swappedReads =>
+      exfalso
+      have splitIncreasing := stringCapFoldAdjIncreasing prefixAtoms
+        (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) allCapPrefix prefixChain
+        (rangeAdjIncreasing bottomCount) toucherAtom.leftContext.length
+        (Nat.lt_of_succ_le seatBound)
+      rw [swappedReads.1, swappedReads.2] at splitIncreasing
+      exact Nat.lt_irrefl headAtom.leftContext.length
+        (Nat.lt_trans (Nat.lt_succ_self headAtom.leftContext.length) splitIncreasing)
+  | inl orderedReads =>
+      have seatedEnd : ArcPairSeated headAtom.leftContext.length (headAtom.leftContext.length + 1)
+          toucherAtom.leftContext.length
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) :=
+        ⟨orderedReads.1, orderedReads.2, seatBound⟩
+      obtain ⟨movedTarget, movedPrefixAtoms, witness, movedDom, movedCod, movedSeat, _parity⟩ :=
+        stringWordPairSeated_bubblesThroughPrefix_ofDistinct toucherAtom capDomArity capCodArity
+          suffixAtoms headAtom.leftContext.length (headAtom.leftContext.length + 1) prefixAtoms
+          (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) bottomWord
+          (arcStateFresh_initial bottomCount) (arcInitialState_wireListDistinct bottomCount)
+          (arcPairUntouched_initial bottomCount headAtom.leftContext.length
+            (headAtom.leftContext.length + 1) leftBelow rightBelow)
+          seatBefore allCapPrefix chainedAtSeed wordChainedRemainder seatedEnd
+      have movedSeatWindowBound : movedTarget.leftContext.length + 2 ≤ (List.range bottomCount).length :=
+        movedSeat.2.2
+      rw [rangeLength bottomCount] at movedSeatWindowBound
+      have movedWindowBelow : movedTarget.leftContext.length < bottomCount :=
+        Nat.lt_of_lt_of_le
+          (Nat.lt_trans (Nat.lt_succ_self movedTarget.leftContext.length)
+            (Nat.lt_succ_self (movedTarget.leftContext.length + 1)))
+          movedSeatWindowBound
+      have windowPin : movedTarget.leftContext.length = headAtom.leftContext.length :=
+        (rangeGetAt_below bottomCount movedTarget.leftContext.length movedWindowBelow).symm.trans
+          movedSeat.1
+      have bubbledWord : SpineBoundaryWordChained bottomWord
+          (movedTarget :: (movedPrefixAtoms ++ suffixAtoms)) :=
+        spineBoundaryWordChained_of_wordBubblesToFront witness suffixAtoms wordChainedRemainder
+      have movedIsHead : movedTarget = headAtom :=
+        stringCapAtom_eq_of_sharedDom_sameWindow movedTarget headAtom
+          ((spineBoundaryWordChained_tail bubbledWord).1.symm.trans
+            (spineBoundaryWordChained_tail firstWordChained).1)
+          windowPin movedDom c1Dom
+      -- conjunct (1): the bubbled second spine realizes the head-consed remainder
+      have conjunct1 : SpineTraceEquiv adjointTripleModeSignature secondList
+          (headAtom :: (movedPrefixAtoms ++ suffixAtoms)) := by
+        rw [doesSplitSpine, ← movedIsHead]
+        exact spineTraceEquiv_of_wordBubblesToFront witness suffixAtoms
+      -- conjunct (3): the remainder is word-chained at the head cap's cod word
+      have conjunct3 : SpineBoundaryWordChained
+          (composePath headAtom.leftContext
+            (composePath headAtom.generatorCod headAtom.rightContext))
+          (movedPrefixAtoms ++ suffixAtoms) := by
+        have rawWordChained := (spineBoundaryWordChained_tail bubbledWord).2
+        rw [movedIsHead] at rawWordChained
+        exact rawWordChained
+      -- conjunct (2): the remainder is length-chained at the shrunk boundary
+      have codLenEq : (composePath headAtom.leftContext
+            (composePath headAtom.generatorCod headAtom.rightContext)).length
+          = headAtom.codBoundaryLength := by
+        dsimp only [SpineAtom.codBoundaryLength]
+        rw [composePath_length, composePath_length]
+        exact (Nat.add_assoc headAtom.leftContext.length headAtom.generatorCod.length
+          headAtom.rightContext.length).symm
+      have conjunct2 : SpineBoundaryChained headAtom.codBoundaryLength
+          (movedPrefixAtoms ++ suffixAtoms) :=
+        codLenEq ▸ spineBoundaryChained_ofWordChained conjunct3
+      -- conjunct (4): the two tails have equal arc structure at the shrunk boundary
+      have atomicEquiv : AtomicTraceEquiv adjointTripleModeSignature secondList
+          (headAtom :: (movedPrefixAtoms ++ suffixAtoms)) := by
+        rw [doesSplitSpine, ← movedIsHead]
+        exact atomicTraceEquiv_of_wordBubblesToFront witness suffixAtoms
+      have hasPositiveWidth : 0 < bottomCount :=
+        Nat.lt_of_lt_of_le (Nat.zero_lt_succ (headAtom.leftContext.length + 1)) windowFits
+      have traceEquivArc : arcStructureOfSpineList bottomCount secondList
+          = arcStructureOfSpineList bottomCount (headAtom :: (movedPrefixAtoms ++ suffixAtoms)) :=
+        extractArc_eq_of_stringAtomicTraceEquiv atomicEquiv
+          (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) bottomCount bottomCount
+          (arcStateFresh_initial bottomCount) (isUnionFindForest_initialLinks bottomCount)
+          hasPositiveWidth (Nat.le_refl bottomCount) (rangeLength bottomCount) chainedSecond
+      have consPure : AllCapArity (headAtom :: (movedPrefixAtoms ++ suffixAtoms)) :=
+        stringAllCapArity_ofArcEqualToPureCap bottomCount secondList
+          (headAtom :: (movedPrefixAtoms ++ suffixAtoms)) secondPureCap traceEquivArc
+      have matchedPure : AllCapArity (movedPrefixAtoms ++ suffixAtoms) :=
+        stringAllCapArity_ofCons consPure
+      have tailAllCap : AllCapArity tailList := stringAllCapArity_ofCons firstPureCap
+      have wholeAgree : arcStructureOfSpineList bottomCount (headAtom :: tailList)
+          = arcStructureOfSpineList bottomCount (headAtom :: (movedPrefixAtoms ++ suffixAtoms)) :=
+        arcEqual.trans traceEquivArc
+      have compositeAgree : extractArc bottomCount
+          (processArcSpine
+            (stepCapArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              headAtom.leftContext.length) tailList)
+          = extractArc bottomCount
+              (processArcSpine
+                (stepCapArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                  headAtom.leftContext.length) (movedPrefixAtoms ++ suffixAtoms)) := by
+        rw [← stepArcAtom_eq_stepCapArc
+          (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) headAtom c1Dom c1Cod]
+        exact wholeAgree
+      have conjunct4 : arcStructureOfSpineList headAtom.codBoundaryLength tailList
+          = arcStructureOfSpineList headAtom.codBoundaryLength (movedPrefixAtoms ++ suffixAtoms) :=
+        stringArcCapHeadFolded_extractArc_cancel bottomCount headAtom.leftContext.length
+          headAtom.codBoundaryLength windowFits tailBoundaryFits tailList
+          (movedPrefixAtoms ++ suffixAtoms) tailAllCap matchedPure tailChained conjunct2
+          compositeAgree
+      exact ⟨movedPrefixAtoms ++ suffixAtoms, conjunct1, conjunct2, conjunct3, conjunct4⟩
 
 end FX1Poly.Polygraph

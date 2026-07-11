@@ -18,10 +18,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringInhabitPrefixInversionProbe
 #assert_no_axioms FX1Poly.Polygraph.stringInhabitBoundaryProbe
 
+-- ★★ the pin-prime inhabitant (transitively covers all private helpers: order-preservation, seat, conjuncts)
+#assert_no_axioms FX1Poly.Polygraph.stringCapHeadExtractionWordPinInhabited
+
 -- independent cross-check (the fuel macro is not trusted alone)
 #print axioms FX1Poly.Polygraph.stringAllCapArity_prefix_ofAppend
 #print axioms FX1Poly.Polygraph.stringInhabitSeatProbe
 #print axioms FX1Poly.Polygraph.stringInhabitPrefixInversionProbe
 #print axioms FX1Poly.Polygraph.stringInhabitBoundaryProbe
+#print axioms FX1Poly.Polygraph.stringCapHeadExtractionWordPinInhabited
 
 end FX1PolyAudit
