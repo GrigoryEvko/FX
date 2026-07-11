@@ -235,4 +235,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinDragInputViolates
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinReduceTotalOnPathProbe
 
+/- H2-SMITH r15 — the suffix-min invariant REFUTED on the genuine driver path (B1/B3): the matrix-21
+   witness (its two literal diagonals and the per-diagonal reduceTotal-output anchor), the establishment
+   that the witness satisfies the invariant (pinning non-vacuity), the (refuted) preservation node, and
+   the crux refutation that the pivot-0 repair does NOT preserve it (`min(180,210)=180 > d_3=150`).  A
+   permanent regression retiring the invariant to a DEAD node; `SmithReduceFullDriverStatement` stays
+   uninhabited (NO flip). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinRepairWitnessEstablishes
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinRepairWitnessMatchesReduceTotalDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithSuffixMinRepairPreservesStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSuffixMinRepairDoesNotPreserve
+
 end FX1PolyAudit

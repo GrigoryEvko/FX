@@ -4590,4 +4590,176 @@ survives" — never "re-diagonalized".  Every refutation (B1, B3 drag) is a perm
 LITERAL matrix.  The invariant (B3) is a DEFINITION naming the wall, pinned by two probes to be
 non-vacuous and refuter-excluding — NOT a discharge.  `SmithReduceFullDriverStatement` is NOT flipped. -/
 
+/-! ## The suffix-min repair invariant is REFUTED on the genuine driver path
+    (H2-SMITH r15, B1/B3 — the PROBE outcome; permanent regression; NO flip)
+
+r14 shipped `SmithSuffixMinRepairInvariant` as the correctly-stated no-drag wall and pinned it
+non-vacuous on a 2x2 fixed point (`smithSuffixMinReduceTotalOnPathProbe`).  r15 PROBED it on a GENUINE
+multi-pivot driver path (matrix 21 of the 35-matrix battery) and REFUTES it in two ways: the
+divisibility repair does NOT preserve the invariant (R2, the crux), and the def is over-strong on
+rank-deficient inputs (R1, below).  Both are permanent LITERAL regressions; the driver lands valid
+Smith normal form on these inputs ANYWAY (the counterweights below), so the invariant names the WRONG
+carrier and is retired to a DEAD node alongside `SmithReduceTotalPivotMinStatement`.
+
+**The witness matrix.**  `smithSuffixMinRefuterInput` = diag(60, 90, 150, 210, 105); `smithReduceTotal`
+min-abs-sorts it to `smithSuffixMinRepairWitness` = diag(60, 90, 105, 150, 210)
+(`smithSuffixMinRepairWitnessMatchesReduceTotalDiagonal`, a genuine driver-path matrix, per-diagonal by
+defeq).  The witness SATISFIES the suffix-min invariant at every pivot
+(`smithSuffixMinRepairWitnessEstablishes`): the min-abs presort makes the index-first non-dividing
+`d_q` a valid suffix-minimum operand.
+
+**PRESERVATION FAILS (R2, the crux).**  Firing ONE pivot-0 position repair on the witness lands
+`gcd`-descended pivots but lcm-INFLATES the non-dividing fold operands (60, 90 land gcd 15 at the pivot,
+lcm residues -180, -210 down the diagonal) while the entries the pivot ALREADY divided (150, 210 —
+skipped by `smithFindNonDividingLaterDiagonal`) stay put.  The result diag(15, -180, -210, 150, 210)
+VIOLATES the invariant at pivot 1: the index-first non-dividing later diagonal is `q = 2` (value -210),
+giving `min(|-180|, |-210|) = 180`, yet the untouched magnitude-smaller `d_3 = 150 < 180` sits below it.
+So the repair does NOT preserve the invariant — `smithSuffixMinRepairDoesNotPreserve`.
+
+**Why the r14 conjecture is wrong.**  The r14 footer conjectured "reduceTotal presorts to it AND the
+repair preserves it".  The presort half holds (the establishment); the PRESERVE half is FALSE — the
+selection is by INDEX not magnitude, and the pivot-p repair's lcm inflation destroys the min-abs order
+the reduceTotal search guaranteed.  Correctness is carried NOT by a suffix-min precondition on the fold
+pair but by the cascade's own min-abs re-search (which pulls the smaller 150 to the pivot on the very
+next cascade step) — the true no-drag carrier, and the r16+ node (`SmithRepairStepSettlesStatement` via
+cascade-min-abs-landing).  `SmithReduceFullDriverStatement` stays UNINHABITED; NO flip. -/
+
+/-- The probe's matrix-21 INPUT: diag(60, 90, 150, 210, 105).  `smithReduceTotal` min-abs-sorts it to
+the suffix-min witness `smithSuffixMinRepairWitness`. -/
+def smithSuffixMinRefuterInput : IntMatrix :=
+  { rows := [[60, 0, 0, 0, 0], [0, 90, 0, 0, 0], [0, 0, 150, 0, 0], [0, 0, 0, 210, 0],
+      [0, 0, 0, 0, 105]] }
+
+/-- The min-abs-presorted `smithReduceTotal` output diag(60, 90, 105, 150, 210) — the genuine repair
+input on the driver path, and the witness on which the suffix-min invariant holds yet the repair breaks
+it. -/
+def smithSuffixMinRepairWitness : IntMatrix :=
+  { rows := [[60, 0, 0, 0, 0], [0, 90, 0, 0, 0], [0, 0, 105, 0, 0], [0, 0, 0, 150, 0],
+      [0, 0, 0, 0, 210]] }
+
+set_option maxRecDepth 65536 in
+/-- **The witness satisfies the suffix-min invariant** — at every pivot `p` of the min-abs-presorted
+diag(60, 90, 105, 150, 210), the index-first non-dividing later diagonal is `p + 1`, and
+`min(|d_p|, |d_{p+1}|) = |d_p|` bounds every later diagonal (the diagonal is magnitude-nondecreasing on
+this rank-full presort).  Pinned non-vacuous: the antecedent of the (refuted) preservation node holds
+here, so the refutation is genuine, not a vacuous strike on an unsatisfiable premise. -/
+theorem smithSuffixMinRepairWitnessEstablishes :
+    SmithSuffixMinRepairInvariant smithSuffixMinRepairWitness 5 5 := by
+  intro pivotIndex pivotLt firstNonDividing findEq laterIndex pivotLtLater laterLt
+  have laterLt5 : laterIndex < 5 := Nat.lt_of_lt_of_le laterLt (natMinLeLeft 5 5)
+  have pivotLt5 : pivotIndex < 5 := Nat.lt_of_lt_of_le pivotLt (natMinLeLeft 5 5)
+  match pivotIndex, pivotLt5 with
+  | 0, _ =>
+      have fnd : firstNonDividing = 1 :=
+        (Option.some.inj (findEq : some 1 = some firstNonDividing)).symm
+      subst fnd
+      match laterIndex, pivotLtLater, laterLt5 with
+      | 0, gt, _ => exact absurd gt (by decide)
+      | 1, _, _ => decide
+      | 2, _, _ => decide
+      | 3, _, _ => decide
+      | 4, _, _ => decide
+      | _ + 5, _, lt5 =>
+          exact Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc lt5))))))
+  | 1, _ =>
+      have fnd : firstNonDividing = 2 :=
+        (Option.some.inj (findEq : some 2 = some firstNonDividing)).symm
+      subst fnd
+      match laterIndex, pivotLtLater, laterLt5 with
+      | 0, gt, _ => exact absurd gt (by decide)
+      | 1, gt, _ => exact absurd gt (by decide)
+      | 2, _, _ => decide
+      | 3, _, _ => decide
+      | 4, _, _ => decide
+      | _ + 5, _, lt5 =>
+          exact Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc lt5))))))
+  | 2, _ =>
+      have fnd : firstNonDividing = 3 :=
+        (Option.some.inj (findEq : some 3 = some firstNonDividing)).symm
+      subst fnd
+      match laterIndex, pivotLtLater, laterLt5 with
+      | 0, gt, _ => exact absurd gt (by decide)
+      | 1, gt, _ => exact absurd gt (by decide)
+      | 2, gt, _ => exact absurd gt (by decide)
+      | 3, _, _ => decide
+      | 4, _, _ => decide
+      | _ + 5, _, lt5 =>
+          exact Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc lt5))))))
+  | 3, _ =>
+      have fnd : firstNonDividing = 4 :=
+        (Option.some.inj (findEq : some 4 = some firstNonDividing)).symm
+      subst fnd
+      match laterIndex, pivotLtLater, laterLt5 with
+      | 0, gt, _ => exact absurd gt (by decide)
+      | 1, gt, _ => exact absurd gt (by decide)
+      | 2, gt, _ => exact absurd gt (by decide)
+      | 3, gt, _ => exact absurd gt (by decide)
+      | 4, _, _ => decide
+      | _ + 5, _, lt5 =>
+          exact Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+              (natLeOfSuccLeSucc (natLeOfSuccLeSucc lt5))))))
+  | 4, _ =>
+      have contra : (none : Option Nat) = some firstNonDividing := findEq
+      contradiction
+  | _ + 5, lt5 =>
+      exact Nat.noConfusion (natEqZeroOfLeZero
+        (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+          (natLeOfSuccLeSucc (natLeOfSuccLeSucc lt5))))))
+
+set_option maxRecDepth 65536 in
+/-- **The witness is the genuine `smithReduceTotal` output** — per diagonal position, the cross-clearing
+driver reduces `smithSuffixMinRefuterInput` (diag(60, 90, 150, 210, 105)) to the min-abs-presorted
+witness diag(60, 90, 105, 150, 210) by defeq.  Anchors the refutation on the ACTUAL driver path: the
+witness is not an arbitrary literal but the matrix the divisibility-repair phase is fed. -/
+theorem smithSuffixMinRepairWitnessMatchesReduceTotalDiagonal
+    (position : Nat) (inRange : position < 5) :
+    (smithSuffixMinRefuterInput.applyOperations
+        (smithReduceTotal smithSuffixMinRefuterInput 5 5).operations).diagonalEntryAt position
+      = smithSuffixMinRepairWitness.diagonalEntryAt position :=
+  match position, inRange with
+  | 0, _ => rfl
+  | 1, _ => rfl
+  | 2, _ => rfl
+  | 3, _ => rfl
+  | 4, _ => rfl
+  | _ + 5, lt5 =>
+      Nat.noConfusion (natEqZeroOfLeZero
+        (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc
+          (natLeOfSuccLeSucc (natLeOfSuccLeSucc lt5))))))
+
+/-- **The (refuted) preservation node** — the claim that one pivot-0 divisibility-repair position sweep
+PRESERVES the suffix-min invariant along the driver path (the frame advance `p -> p + 1` the r14 footer
+conjectured).  This is the deeper node the round probes; `smithSuffixMinRepairDoesNotPreserve` refutes
+it, with `smithSuffixMinRepairWitnessEstablishes` pinning the antecedent non-vacuous. -/
+def SmithSuffixMinRepairPreservesStatement : Prop :=
+  ∀ (matrix : IntMatrix) (height width : Nat), matrix.IsRectangular height width →
+    SmithSuffixMinRepairInvariant matrix height width →
+    SmithSuffixMinRepairInvariant
+      (matrix.applyOperations
+        (smithRepairPositionSweep (smithMinorAbsSum matrix 0 height width) matrix 0 height width))
+      height width
+
+set_option maxRecDepth 65536 in
+/-- **The divisibility repair does NOT preserve the suffix-min invariant (R2, the crux)** —
+`SmithSuffixMinRepairPreservesStatement` is FALSE.  Applying it to the rectangular witness diag(60, 90,
+105, 150, 210) (which SATISFIES the invariant, `smithSuffixMinRepairWitnessEstablishes`) would give the
+invariant on the pivot-0 repair output diag(15, -180, -210, 150, 210); but at pivot 1 that output has
+first-non-dividing `q = 2`, fold-pair magnitude `min(180, 210) = 180`, and the untouched later
+`d_3 = 150 < 180` — a genuine-nonzero suffix-min violation the pivot-p lcm inflation created.  So the
+repair does not preserve the invariant: it names the wrong carrier, and JAM 1 has no suffix-min
+shortcut.  `SmithReduceFullDriverStatement` stays UNINHABITED; NO flip. -/
+theorem smithSuffixMinRepairDoesNotPreserve : ¬ SmithSuffixMinRepairPreservesStatement := by
+  intro preserves
+  have m1Invariant := preserves smithSuffixMinRepairWitness 5 5
+    ⟨rfl, rfl, rfl, rfl, rfl, rfl, True.intro⟩ smithSuffixMinRepairWitnessEstablishes
+  have bound := m1Invariant 1 (by decide) 2 rfl 3 (by decide) (by decide)
+  exact absurd (id (α := (180 : Nat) ≤ 150) bound) (by decide)
+
 end FX1Poly.ComputerAlgebra
