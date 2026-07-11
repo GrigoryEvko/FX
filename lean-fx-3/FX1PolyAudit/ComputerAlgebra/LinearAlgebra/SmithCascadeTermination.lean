@@ -87,4 +87,12 @@ namespace FX1PolyAudit
    (smithMinorAbsSum) reaches cross-clear. -/
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedReachesCrossClear
 
+/- H2-SMITH r11 — the sub-block (low-low) locality round (B1): the two swap off-both atoms, the move-word
+   assembly, and the cascade low-low preservation keystone (the settled-prefix monotonicity). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapRowsPreservesEntryOffBothRows
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapEntriesWithinRowPreservesEntryOffBoth
+#assert_no_axioms FX1Poly.ComputerAlgebra.swapColumnsPreservesEntryOffBothCols
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMoveToPivotOpsPreservesLowLowEntry
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepPreservesLowLowEntry
+
 end FX1PolyAudit

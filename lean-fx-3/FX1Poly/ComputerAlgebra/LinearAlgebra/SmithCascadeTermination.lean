@@ -2082,4 +2082,242 @@ theorem smithCascadeSweepSeedReachesCrossClear (matrix : IntMatrix) (pivotIndex 
         foundInRange.2.2.1
         (natLtAddSubOfLt pivotIndex foundCol width foundInRange.2.2.1 foundInRange.2.2.2))
 
+/-! ## The sub-block (low-low) locality round (H2-SMITH r11, B1) — the settled-prefix monotonicity
+
+The cascade word at pivot `pivotIndex` modifies only rows `≥ pivotIndex` (move swap, sign, column
+clears) and only columns `≥ pivotIndex` (move swap, row clears).  Consequently a LOW-LOW entry
+`(readRow, readCol)` with `readRow < pivotIndex ∧ readCol < pivotIndex` — a settled-prefix cell — is
+left UNCHANGED by the whole cascade.  This is the sharpest predicate that folds cleanly across the
+heterogeneous move/sign/clear word: a row op defeats reads with `readRow < pivotIndex` (all columns),
+a column op defeats reads with `readCol < pivotIndex` (all rows), and only the low-low corner defeats
+BOTH.
+
+Every atom below is a FUNCTION-CORRECTNESS fact about the definite word on ONE threaded matrix, under
+the delivered `IsRectangular` + pivot-in-range preconditions — refutation-immune, like the r9/r10 clear
+and cross-clear atoms.  The two swaps are the only letters that lacked an "off-both" preserver; the sign
+phase (`signNormalizeOpsPreserveEntryOffPivot`) and both clears (`smithClearColumnBelowStepsPreservesRow`
+/ `smithClearRowRightStepsPreservesColumn`) are already shipped and reused verbatim.  The move swap is
+local ONLY because the r10 `smithFindMinAbsInMinorFoundInRange` pins `pivotIndex ≤ foundRow` and
+`pivotIndex ≤ foundCol` — without it the swapped-in row/column could sit BELOW the pivot and drag a low
+cell.
+
+SCOPE (per the recon gap audit): this delivers the PREFIX conjunct of `SmithNormalForm`'s window-diagonal
+predicate ONLY (`readRow < pivotIndex ∧ readCol < pivotIndex`).  The below-left / above-right bands and
+the sub-block re-diagonalization are NOT locality — they need the invariant-fed "reads-only-zeros"
+argument (POLE-A), so `repairWindowDiagHolds` / `repairChainHolds` stay UNCLOSED this round; no flip. -/
+
+/-- **Concrete truth probe for low-low locality** — on `[[7, 2, 3], [4, 5, 6], [1, 2, 4]]` at pivot `1`
+the cascade FIRES a genuine 8-letter move+sign+clear word (its sub-minor `[[5, 6], [2, 4]]` is nonzero, so
+the search moves the `2` at `(2, 1)` in, sign-normalises, and Euclid-clears the pivot's cross), yet the
+marked low-low entry `(0, 0) = 7` — a settled-prefix cell strictly above and left of the pivot — is left
+untouched.  Anonymous, so it carries no axiom footprint. -/
+example :
+    (({ rows := [[7, 2, 3], [4, 5, 6], [1, 2, 4]] } : IntMatrix).applyOperations
+        (smithCascadeSweep 6 ({ rows := [[7, 2, 3], [4, 5, 6], [1, 2, 4]] } : IntMatrix) 1 3 3)).entryAt 0 0
+      = 7 := by decide
+
+/-- **Swap preserves an entry off BOTH swapped rows** — reading row `readRow` after `swapRows firstIndex
+secondIndex` is unchanged when `readRow` is neither swapped index.  No rectangularity: the two range
+`if`-guards make the op an identity when out of range, and the in-range branch reads through the two
+`listReplaceAt` atoms at the off-position (`listGetWithDefaultReplaceAtNe` twice).  The off-both mirror of
+`swapRowsEntryAtFirst`; covers the move's row swap at a low read row. -/
+theorem swapRowsPreservesEntryOffBothRows (matrix : IntMatrix)
+    (firstIndex secondIndex readRow colIndex : Nat)
+    (isOffFirst : readRow ≠ firstIndex) (isOffSecond : readRow ≠ secondIndex) :
+    (matrix.swapRows firstIndex secondIndex).entryAt readRow colIndex
+      = matrix.entryAt readRow colIndex := by
+  have rowEq :
+      listGetWithDefault [] (matrix.swapRows firstIndex secondIndex).rows readRow
+        = listGetWithDefault [] matrix.rows readRow := by
+    unfold IntMatrix.swapRows
+    split
+    · split
+      · show listGetWithDefault []
+            (listReplaceAt (listReplaceAt matrix.rows firstIndex
+                (listGetWithDefault [] matrix.rows secondIndex)) secondIndex
+              (listGetWithDefault [] matrix.rows firstIndex)) readRow
+          = listGetWithDefault [] matrix.rows readRow
+        rw [listGetWithDefaultReplaceAtNe [] _ secondIndex readRow _ isOffSecond,
+            listGetWithDefaultReplaceAtNe [] matrix.rows firstIndex readRow _ isOffFirst]
+      · rfl
+    · rfl
+  show listGetWithDefault 0
+      (listGetWithDefault [] (matrix.swapRows firstIndex secondIndex).rows readRow) colIndex
+    = listGetWithDefault 0 (listGetWithDefault [] matrix.rows readRow) colIndex
+  rw [rowEq]
+
+/-- **Within-row swap preserves an entry off BOTH swapped positions** — the entry-level off-both mirror of
+`swapEntriesWithinRowAtFirst`: reading position `readCol` after `swapEntriesWithinRow row firstIndex
+secondIndex` is unchanged when `readCol` is neither swapped index.  Two `listGetWithDefaultReplaceAtNe`
+through the range guards. -/
+theorem swapEntriesWithinRowPreservesEntryOffBoth (row : IntRow)
+    (firstIndex secondIndex readCol : Nat)
+    (isOffFirst : readCol ≠ firstIndex) (isOffSecond : readCol ≠ secondIndex) :
+    listGetWithDefault 0 (swapEntriesWithinRow row firstIndex secondIndex) readCol
+      = listGetWithDefault 0 row readCol := by
+  unfold IntMatrix.swapEntriesWithinRow
+  split
+  · split
+    · show listGetWithDefault 0
+          (listReplaceAt (listReplaceAt row firstIndex (listGetWithDefault 0 row secondIndex)) secondIndex
+            (listGetWithDefault 0 row firstIndex)) readCol
+        = listGetWithDefault 0 row readCol
+      rw [listGetWithDefaultReplaceAtNe 0 _ secondIndex readCol _ isOffSecond,
+          listGetWithDefaultReplaceAtNe 0 row firstIndex readCol _ isOffFirst]
+    · rfl
+  · rfl
+
+/-- **Swap preserves an entry off BOTH swapped columns** — the column off-both mirror of
+`swapColumnsEntryAtFirst`: reading column `readCol` of an in-range row `rowIndex` after `swapColumns
+firstIndex secondIndex` is unchanged when `readCol` is neither swapped index.  Needs rectangularity only
+for the mapped-row read (`listGetWithDefaultMapAllRows`); the within-row off-both preserver needs no
+column-in-range (identity past the end).  Covers the move's column swap at a low read column. -/
+theorem swapColumnsPreservesEntryOffBothCols {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (firstIndex secondIndex rowIndex readCol : Nat)
+    (isRowInRange : rowIndex < height)
+    (isOffFirst : readCol ≠ firstIndex) (isOffSecond : readCol ≠ secondIndex) :
+    (matrix.swapColumns firstIndex secondIndex).entryAt rowIndex readCol
+      = matrix.entryAt rowIndex readCol := by
+  obtain ⟨rowCount, _⟩ := isRect
+  have rowInRows : rowIndex < matrix.rows.length :=
+    Eq.mp (congrArg (rowIndex < ·) rowCount.symm) isRowInRange
+  show listGetWithDefault 0 (listGetWithDefault []
+      (mapAllRows (fun row => swapEntriesWithinRow row firstIndex secondIndex) matrix.rows) rowIndex)
+      readCol
+    = listGetWithDefault 0 (listGetWithDefault [] matrix.rows rowIndex) readCol
+  rw [listGetWithDefaultMapAllRows _ matrix.rows rowIndex rowInRows]
+  exact swapEntriesWithinRowPreservesEntryOffBoth (listGetWithDefault [] matrix.rows rowIndex)
+    firstIndex secondIndex readCol isOffFirst isOffSecond
+
+/-- **The move word preserves a low-low entry** — after `smithMoveToPivotOps pivotIndex foundRow foundCol`
+(swap the found row into the pivot row, then the found column into the pivot column) a low-low cell
+`(readRow, readCol)` with `readRow < pivotIndex ∧ readCol < pivotIndex` is unchanged, PROVIDED the found
+position sits in the pivot window (`pivotIndex ≤ foundRow`, `pivotIndex ≤ foundCol` — the r10
+`smithFindMinAbsInMinorFoundInRange` dependency).  The column swap leaves `readCol` fixed (neither
+`pivotIndex` nor `foundCol`, both `> readCol`) via `swapColumnsPreservesEntryOffBothCols` on the
+rect-preserved `afterMove`; the row swap leaves `readRow` fixed (neither `pivotIndex` nor `foundRow`) via
+`swapRowsPreservesEntryOffBothRows`.  Mirrors the threading of `smithMoveToPivotEntryOnPivot`. -/
+theorem smithMoveToPivotOpsPreservesLowLowEntry {height width : Nat} (matrix : IntMatrix)
+    (isRect : matrix.IsRectangular height width)
+    (pivotIndex foundRow foundCol readRow readCol : Nat)
+    (readRowLtPivot : readRow < pivotIndex) (readColLtPivot : readCol < pivotIndex)
+    (pivotLeFoundRow : pivotIndex ≤ foundRow) (pivotLeFoundCol : pivotIndex ≤ foundCol)
+    (readRowInRange : readRow < height) :
+    (matrix.applyOperations (smithMoveToPivotOps pivotIndex foundRow foundCol)).entryAt readRow readCol
+      = matrix.entryAt readRow readCol := by
+  have swapRowRect : (matrix.swapRows pivotIndex foundRow).IsRectangular height width :=
+    applyRowOperationPreservesRectangular (ElementaryRowOperation.swapRows pivotIndex foundRow) matrix
+      isRect
+  show ((matrix.swapRows pivotIndex foundRow).swapColumns pivotIndex foundCol).entryAt readRow readCol
+    = matrix.entryAt readRow readCol
+  rw [swapColumnsPreservesEntryOffBothCols (matrix.swapRows pivotIndex foundRow) swapRowRect
+      pivotIndex foundCol readRow readCol readRowInRange
+      (Nat.ne_of_lt readColLtPivot)
+      (Nat.ne_of_lt (Nat.lt_of_lt_of_le readColLtPivot pivotLeFoundCol))]
+  exact swapRowsPreservesEntryOffBothRows matrix pivotIndex foundRow readRow readCol
+    (Nat.ne_of_lt readRowLtPivot)
+    (Nat.ne_of_lt (Nat.lt_of_lt_of_le readRowLtPivot pivotLeFoundRow))
+
+/-- **The cascade preserves a low-low entry within its fuel** (H2-SMITH r11, B1 keystone) — for a
+rectangular matrix with the pivot in range, `smithCascadeSweep fuel` leaves every settled-prefix cell
+`(readRow, readCol)` with `readRow < pivotIndex ∧ readCol < pivotIndex` UNCHANGED.  Structural induction
+on `fuel`, the entry-preservation mirror of `smithCascadeReachesCrossClear`.
+
+  * **Base (`fuel = 0`)** and **step `none`**: the sweep is empty, the cell is trivially fixed.
+  * **Step `some (foundRow, foundCol)`**: split the settle word `moveOps ++ signOps ++ columnClearOps ++
+    rowClearOps` via `applyOperationsAppend`; the cell survives the move (off-both swaps, the found
+    position pinned `≥ pivotIndex` by `smithFindMinAbsInMinorFoundInRange`), the sign (off-pivot row,
+    `readRow ≠ pivotIndex`), the column clear (top row `readRow < pivotIndex + 1`), and the row clear
+    (left column `readCol < pivotIndex + 1`).  Cross clear ⟹ the settle word is the whole sweep; NOT clear
+    ⟹ the recursive tail on `afterRowClear` closes by IH (the pivot is loop-invariant), then chains with
+    the settle preservation.
+
+A function-correctness fact about the definite cascade word — immune to the r5/r6 refuted-pole shape (it
+asserts entries stay UNCHANGED, never a re-diagonalization over arbitrary window-diagonal inputs).  It is
+the settled-prefix monotonicity feeding the outer INV-DIAG induction — but delivers ONLY the prefix
+conjunct of `repairWindowDiagHolds` (the bands + sub-block stay POLE-A-walled). -/
+theorem smithCascadeSweepPreservesLowLowEntry :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width readRow readCol : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width →
+      readRow < pivotIndex → readCol < pivotIndex →
+      (matrix.applyOperations (smithCascadeSweep fuel matrix pivotIndex height width)).entryAt readRow readCol
+        = matrix.entryAt readRow readCol := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width readRow readCol _ _ _ _ _
+      rfl
+  | succ fuel ih =>
+      intro matrix pivotIndex height width readRow readCol isRect pivotRowInRange pivotColInRange
+        readRowLtPivot readColLtPivot
+      have readRowInRange : readRow < height := Nat.lt_trans readRowLtPivot pivotRowInRange
+      cases hFind : smithFindMinAbsInMinor matrix pivotIndex height width with
+      | none =>
+          rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          rfl
+      | some pair =>
+          obtain ⟨foundRow, foundCol⟩ := pair
+          let moveOps := smithMoveToPivotOps pivotIndex foundRow foundCol
+          let afterMove := matrix.applyOperations moveOps
+          let signOps := smithSignNormalizeOps afterMove pivotIndex
+          let afterSign := afterMove.applyOperations signOps
+          let columnClearOps :=
+            (smithClearColumnBelowSteps afterSign pivotIndex (height - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.rowOperation
+          let afterColumnClear := afterSign.applyOperations columnClearOps
+          let rowClearOps :=
+            (smithClearRowRightSteps afterColumnClear pivotIndex (width - (pivotIndex + 1))
+                (pivotIndex + 1)).map ElementaryOperation.columnOperation
+          let afterRowClear := afterColumnClear.applyOperations rowClearOps
+          let settledOps := moveOps ++ signOps ++ columnClearOps ++ rowClearOps
+          have afterMoveRect : afterMove.IsRectangular height width :=
+            applyOperationsPreservesRectangular moveOps matrix isRect
+          have afterSignRect : afterSign.IsRectangular height width :=
+            applyOperationsPreservesRectangular signOps afterMove afterMoveRect
+          have afterColumnClearRect : afterColumnClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular columnClearOps afterSign afterSignRect
+          have afterRowClearRect : afterRowClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular rowClearOps afterColumnClear afterColumnClearRect
+          have foundInRange := smithFindMinAbsInMinorFoundInRange matrix pivotIndex height width
+            foundRow foundCol pivotRowInRange pivotColInRange hFind
+          have hApplySettled : matrix.applyOperations settledOps = afterRowClear :=
+            (applyOperationsAppend (moveOps ++ signOps ++ columnClearOps) rowClearOps matrix).trans
+              (congrArg (fun reducedMatrix => reducedMatrix.applyOperations rowClearOps)
+                ((applyOperationsAppend (moveOps ++ signOps) columnClearOps matrix).trans
+                  (congrArg (fun reducedMatrix => reducedMatrix.applyOperations columnClearOps)
+                    (applyOperationsAppend moveOps signOps matrix))))
+          have afterRowClearPreserves :
+              afterRowClear.entryAt readRow readCol = matrix.entryAt readRow readCol :=
+            (smithClearRowRightStepsPreservesColumn afterColumnClear pivotIndex height width readRow
+                readCol readRowInRange (width - (pivotIndex + 1)) (pivotIndex + 1) afterColumnClear
+                afterColumnClearRect (Nat.lt_trans readColLtPivot (Nat.lt_succ_self pivotIndex))).trans
+              ((smithClearColumnBelowStepsPreservesRow afterSign pivotIndex readRow readCol
+                  (height - (pivotIndex + 1)) (pivotIndex + 1) afterSign
+                  (Nat.lt_trans readRowLtPivot (Nat.lt_succ_self pivotIndex))).trans
+                ((signNormalizeOpsPreserveEntryOffPivot afterMove pivotIndex readRow readCol
+                    (Nat.ne_of_lt readRowLtPivot)).trans
+                  (smithMoveToPivotOpsPreservesLowLowEntry matrix isRect pivotIndex foundRow foundCol
+                    readRow readCol readRowLtPivot readColLtPivot foundInRange.1 foundInRange.2.2.1
+                    readRowInRange)))
+          have settledPreserves :
+              (matrix.applyOperations settledOps).entryAt readRow readCol
+                = matrix.entryAt readRow readCol :=
+            (congrArg (fun reducedMatrix => reducedMatrix.entryAt readRow readCol) hApplySettled).trans
+              afterRowClearPreserves
+          have hSweep : smithCascadeSweep (fuel + 1) matrix pivotIndex height width
+              = (match smithCrossIsClear afterRowClear pivotIndex height width with
+                 | true => settledOps
+                 | false => settledOps ++ smithCascadeSweep fuel afterRowClear pivotIndex height width) := by
+            rw [smithCascadeSweepSucc fuel matrix pivotIndex height width, hFind]
+          rw [hSweep]
+          cases hCross : smithCrossIsClear afterRowClear pivotIndex height width with
+          | true => exact settledPreserves
+          | false =>
+              rw [applyOperationsAppend, hApplySettled]
+              exact (ih afterRowClear pivotIndex height width readRow readCol afterRowClearRect
+                pivotRowInRange pivotColInRange readRowLtPivot readColLtPivot).trans
+                afterRowClearPreserves
+
 end FX1Poly.ComputerAlgebra
