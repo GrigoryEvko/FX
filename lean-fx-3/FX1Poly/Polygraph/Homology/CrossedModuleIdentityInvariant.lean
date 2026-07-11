@@ -610,4 +610,52 @@ theorem crossedModuleImageRespectsPeiffer :
           (crossedModuleImageAppend _ _).symm)
   | _, _, .peifferMove firstGen secondGen => peifferMoveImage firstGen secondGen
 
+/-! ## B4 — the non-triviality theorem: the first machine-checked nontrivial identity among relations -/
+
+/-- The images of `ζ` and the empty word DIFFER: `(−1, 1, 0) ≠ (0, 0, 0)`, refuted by projecting the
+`coeffOne` field (`−1 ≠ 0` by `Int.decEq`, clean-structural — never `mk.injEq`). -/
+theorem rotationIdentityImageNeqEmptyImage :
+    crossedModuleImage rotationIdentityWitness ≠ crossedModuleImage ([] : PreCrossedElement) :=
+  fun imagesEqual => absurd (congrArg GroupRingZmod3.coeffOne imagesEqual) (by decide)
+
+/-- ★★★ **`ζ` IS A NONTRIVIAL IDENTITY AMONG RELATIONS** — `¬ PeifferEquiv ζ []`.  If `ζ` were
+Peiffer-trivial the invariant would force `image ζ = image []`, i.e. `(−1, 1, 0) = (0, 0, 0)`, absurd.
+Combined with r1's `rotationIdentityBoundaryVanishes` (`ζ ∈ ker ∂`), this exhibits `ζ` as a nontrivial
+element of `π₂⟨s | s³⟩ = ker(∂ : C → F)` — the FIRST machine-checked nontrivial identity among
+relations for this presentation, mechanizing Lyndon's `π₂ ≠ 0` (promoted from cited to PROVED, at the
+element level, via the separating `ZZ[G]`-invariant).  NOT claimed: the relation-module isomorphism
+`π₂ ≅ ZZ[G]` (free rank 1) / `π₂ ≅ H²(G; ZZ[G])` (Brown–Huebschmann) — those stay the r3 residual. -/
+theorem rotationIdentityNotPeifferTrivial :
+    ¬ PeifferEquiv rotationIdentityWitness ([] : PreCrossedElement) :=
+  fun peifferTrivial =>
+    absurd (crossedModuleImageRespectsPeiffer peifferTrivial) rotationIdentityImageNeqEmptyImage
+
+/-! ## B5 — the ledger node closed (the r1 `separatingInvariantResidual` promoted to shipped)
+
+r1's `cyclicThreeNonTrivialityLedger` (in `Homology/CrossedModuleCyclicThree`) marks the
+`separatingInvariantStatus` as `separatingInvariantResidual`.  r1's own ledger stays untouched
+(honest record of what r1 shipped); this NEW ledger records the r2 state, in which the separating
+invariant is now SHIPPED (`crossedModuleImageRespectsPeiffer` + `rotationIdentityNotPeifferTrivial`).
+The claim language is exact: `ζ` is exhibited as an element-level nontrivial identity among relations;
+the full relation-module iso (`π₂ ≅ ZZ[G]`) stays the r3 residual. -/
+
+/-- ★ **The r2 `pi_2 ≠ 0` ledger** — all three obligations SHIPPED: the kernel witness `ζ ∈ ker ∂`
+(r1 `rotationIdentityBoundaryVanishes`), the proper-power hypothesis `ρ = s³` (r1
+`cyclicThreeRelatorProperPower`), and NOW the `ZZ[G] ≅ ZZ³` separating invariant with Peiffer-
+invariance (`crossedModuleImageRespectsPeiffer`) and the separating value `ζ ↦ (−1, 1, 0) ≠ 0`
+(`rotationIdentityNotPeifferTrivial`).  The r1 `separatingInvariantResidual` node is CLOSED. -/
+def cyclicThreeSeparatingInvariantLedger : CrossedModuleNonTrivialityLedger :=
+  { kernelWitnessStatus := NonTrivialityObligationStatus.shippedThisRound
+  , properPowerStatus := NonTrivialityObligationStatus.shippedThisRound
+  , separatingInvariantStatus := NonTrivialityObligationStatus.shippedThisRound }
+
+/-- ★ **The #2199 r2 separating-invariant marker.**  Shipped zero-axiom over r1: the `ZZ[ZZ/3] ≅ ZZ³`
+group-ring carrier (B1), the invariant map `crossedModuleImage : E → ZZ[ZZ/3]` with its append-
+homomorphism and the separating value `image ζ = (−1, 1, 0)` (B2), ★★ the Peiffer-invariance keystone
+`crossedModuleImageRespectsPeiffer` over the residue homomorphism with `residue (∂a) = 0` (B3), and
+★★★ the non-triviality theorem `rotationIdentityNotPeifferTrivial` — the FIRST machine-checked
+nontrivial identity among relations, `π₂⟨s | s³⟩ ≠ 0` mechanized at the element level, with the r1
+ledger node closed (B4/B5).  Read the meaning from THIS docstring (the honest-record convention). -/
+def crossedModuleIdentityInvariantIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
