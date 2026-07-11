@@ -1304,6 +1304,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidNormalFormCensusAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRoundFourLedgerAudit
 -- WP-PROP r5 (B1) — the reconstruction kit (range-succ-cons + list rebuilds + matReconstruct + get-of-range-map readers + matMul entry read) + the finite-sum Fubini kit + Node A residual (1) general matMul associativity + Node A residual (2) general-n identity unit laws (delta collapse), all zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixReconstructionAudit
+-- WP-PROP r5 (B2/B3/B4) — the NF-induction base+generator+whisker census (staged-form matrix witnesses) + the CORRECTED additive-scope star (unrestricted r4 star named refutable via equal-matrix mixed-colour datum) + the width-2 vcomp collision witness + the honest r6 residual ledger (wide collision recursion + middle-determinism double-coset), zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarRetractionCensusAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
