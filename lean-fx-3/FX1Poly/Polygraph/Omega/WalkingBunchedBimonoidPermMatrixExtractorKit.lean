@@ -281,8 +281,94 @@ theorem bunchedBimonoidPositionsValidTail (width k : Nat) (rest : List Nat)
 GATE (c) FULL (`bunchedBimonoidPermOfWordConsRelabel` — the head transposition relabels the tail's one-line
 permutation by `swapValue k`, via the r11 fold-commute), and the boundary-excluding valid-word predicate
 (`bunchedBimonoidPositionsValid` + head/tail peels).  Two of the three gates the r11 wall names — (a) and (b) — are
-the matrix content; (a) `bunchedBimonoidSigmaAtIsTransposition` ships in this file's part 2, (b) the matMul
-column-swap law is r13.  Zero-axiom (per-decl `#assert_no_axioms` + independent `#print axioms` in the twin). -/
+the matrix content; (a)'s infra + the closed block-form of `evalCell (sigmaAt width k)` ship in this file's part 2
+(reducing (a) to a pure `directSum`-quadrant entry analysis), (b) the matMul column-swap law is r13.  Zero-axiom
+(per-decl `#assert_no_axioms` + independent `#print axioms` in the twin). -/
 def fxBunchedBimonoid_permMatrixKitRelabelKeystoneShipped : Bool := true
+
+/-! # =========================================================================================
+    # K3-INFRA — gate (a)'s matrix infrastructure: the `aWordPow` width, matrix extensionality,
+    #            the boundary dimension arithmetic, and the CLOSED BLOCK-FORM of `sigmaAt`
+    # =========================================================================================
+
+★ **Gate (a) reduced to a pure `directSum`-quadrant entry analysis.**  Gate (a) is
+`evalCell (sigmaAt width k) = permMatrixOf width (applyAdjacentSwap (range width) k)` at generic width.  This
+section ships the closed block-form `evalCell (sigmaAt width k) = directSum (identityMat k) (directSum sigma2x2
+(identityMat (width - k - 2)))` (all widths, not just the r11 concrete pins), plus the tools its entry-wise proof
+consumes: the `aWordPow` width, matrix extensionality by fields, and the boundary dimension identity `k + (2 +
+(width - k - 2)) = width` under `k + 2 <= width`.  The residual for (a) is the entry-wise identity `matEntryAt
+(block-form) i j = matEntryAt (permMatrixOf width (applyAdjacentSwap (range width) k)) i j` for all `i, j < width`
+— a 4x4 index-range case split over the shipped `directSum` quadrant reads (`bunchedBimonoidDirectSumEntry*`) +
+`identityMatEntry` + RELABEL-GET; the RHS entry is `if swapValue k i == j then 1 else 0` by RELABEL-GET, so the
+match to the block-form is the honest matrix-algebra content still to assemble (r13, alongside gate (b)). -/
+
+/-- ★ **`evalCell (aWordPow n) = n`** — the additive word power `a^n` has width `n` (the whisker block's
+dimension).  Structural on `n`; `Nat.add_comm` normalizes `1 + k` to `k + 1`.  Read back at the manifest `Nat`
+motive (`BunchedBimonoidEvalCarrier 1`). -/
+theorem bunchedBimonoidAWordPowWidth :
+    (n : Nat) → (bunchedBimonoidEvalCell (bunchedBimonoidAWordPow n) : Nat) = n
+  | 0 => rfl
+  | k + 1 => by
+      show Nat.add 1 (bunchedBimonoidEvalCell (bunchedBimonoidAWordPow k)) = k + 1
+      rw [bunchedBimonoidAWordPowWidth k]
+      exact Nat.add_comm 1 k
+
+/-- ★ **Matrix extensionality by fields** — two matrices with equal `rows`, `cols`, and `entries` are equal
+(structure eta).  The reusable assembler for gate (a)'s block-form and the future extractor. -/
+theorem bunchedBimonoidMatEqOfEntries : (matA matB : BunchedBimonoidMat) →
+    matA.rows = matB.rows → matA.cols = matB.cols → matA.entries = matB.entries → matA = matB
+  | ⟨_, _, _⟩, ⟨_, _, _⟩, hrows, hcols, hentries => by
+      cases hrows; cases hcols; cases hentries; rfl
+
+/-- **Additive left-cancel** `(n + m) - n = m` — via `Nat.add_comm` + the shipped `bunchedBimonoidAddSubCancel`
+(propext-clean; Init's `Nat.add_sub_cancel_left` route is avoided). -/
+theorem bunchedBimonoidAddSubCancelLeft (n m : Nat) : (n + m) - n = m := by
+  rw [Nat.add_comm n m]; exact bunchedBimonoidAddSubCancel m n
+
+/-- ★ **The boundary dimension identity** — `k + (2 + (width - k - 2)) = width` for `k + 2 <= width`, the exact
+condition under which the three blocks of `sigmaAt width k` (widths `k`, `2`, `width - k - 2`) reassemble to
+`width`.  Via `Nat.le.dest` + the additive cancels; the arithmetic backbone of gate (a)'s dimension match. -/
+theorem bunchedBimonoidSigmaAtDimArith (k width : Nat) (hValid : k + 2 ≤ width) :
+    k + (2 + (width - k - 2)) = width := by
+  obtain ⟨diff, hdiff⟩ := Nat.le.dest hValid
+  subst hdiff
+  have cancelK : (k + 2 + diff) - k = 2 + diff := by
+    rw [Nat.add_assoc k 2 diff]; exact bunchedBimonoidAddSubCancelLeft k (2 + diff)
+  have cancelTwo : (2 + diff) - 2 = diff := bunchedBimonoidAddSubCancelLeft 2 diff
+  calc k + (2 + ((k + 2 + diff) - k - 2))
+      = k + (2 + (((k + 2 + diff) - k) - 2)) := rfl
+    _ = k + (2 + ((2 + diff) - 2)) := by rw [cancelK]
+    _ = k + (2 + diff) := by rw [cancelTwo]
+    _ = k + 2 + diff := (Nat.add_assoc k 2 diff).symm
+
+/-- ★★ **GATE (a) — the closed block-form of `sigmaAt` (all widths).**  `evalCell (sigmaAt width k)` is the
+block-diagonal `directSum (identityMat k) (directSum sigma2x2 (identityMat (width - k - 2)))`, where `sigma2x2 =
+[[0,1],[1,0]]` is the swap generator's matrix.  Via the `aWordPow` widths (whisker blocks) + the generator matrix
+by `rfl`.  The residual for gate (a) is the entry-wise match of THIS block-form to `permMatrixOf width
+(applyAdjacentSwap (range width) k)` (r13; see the section note). -/
+theorem bunchedBimonoidSigmaAtBlockForm (width k : Nat) :
+    bunchedBimonoidEvalCell (bunchedBimonoidSigmaAt width k)
+      = bunchedBimonoidMatDirectSum (bunchedBimonoidIdentityMat k)
+          (bunchedBimonoidMatDirectSum { rows := 2, cols := 2, entries := [[0, 1], [1, 0]] }
+            (bunchedBimonoidIdentityMat (width - k - 2))) := by
+  show bunchedBimonoidMatDirectSum
+        (bunchedBimonoidIdentityMat (bunchedBimonoidEvalCell (bunchedBimonoidAWordPow k)))
+        (bunchedBimonoidMatDirectSum (bunchedBimonoidEvalCell bunchedBimonoidAddSigmaGen)
+          (bunchedBimonoidIdentityMat (bunchedBimonoidEvalCell (bunchedBimonoidAWordPow (width - k - 2)))))
+      = _
+  rw [bunchedBimonoidAWordPowWidth k, bunchedBimonoidAWordPowWidth (width - k - 2)]
+  rfl
+
+/-- ★★ **ESTABLISHED (r12 KIT, part 2) — gate (a)'s matrix infrastructure + the closed block-form.**  `= true`
+records: the `aWordPow` width (`bunchedBimonoidAWordPowWidth`), matrix extensionality
+(`bunchedBimonoidMatEqOfEntries`), the additive left-cancel (`bunchedBimonoidAddSubCancelLeft`), the boundary
+dimension identity `k + (2 + (width - k - 2)) = width` for `k + 2 <= width` (`bunchedBimonoidSigmaAtDimArith`), and
+GATE (a)'s CLOSED BLOCK-FORM `evalCell (sigmaAt width k) = directSum (identityMat k) (directSum sigma2x2
+(identityMat (width - k - 2)))` at ALL widths (`bunchedBimonoidSigmaAtBlockForm`, generalizing the r11 concrete
+pins).  Gate (a) is thereby reduced to the pure `directSum`-quadrant entry analysis (r13); gate (b) the matMul
+column-swap law is r13.  The wall `fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit` stays
+`= false` byte-intact, the star does NOT flip.  Zero-axiom (per-decl `#assert_no_axioms` + independent
+`#print axioms` in the twin). -/
+def fxBunchedBimonoid_permMatrixKitSigmaAtBlockFormShipped : Bool := true
 
 end FX1Poly.Polygraph.Omega

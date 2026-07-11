@@ -38,6 +38,16 @@ namespace FX1PolyAudit
 -- The r12 KIT (part 1) marker.
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_permMatrixKitRelabelKeystoneShipped
 
+-- K3-INFRA — gate (a)'s matrix infrastructure + the closed block-form of sigmaAt.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowWidth
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatEqOfEntries
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAddSubCancelLeft
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtDimArith
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtBlockForm
+
+-- The r12 KIT (part 2) marker.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_permMatrixKitSigmaAtBlockFormShipped
+
 -- Independent (non-fuel) axiom prints on RELABEL-GET, its map-form, gate (c), the three swap-reads, and the marker.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGetApplyAdjacentSwapRange
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMapSwapValueRangeIsAdjacentSwap
