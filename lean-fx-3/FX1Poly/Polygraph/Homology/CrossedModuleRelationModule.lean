@@ -385,4 +385,283 @@ theorem doublyConjugatedIdentityAugmentationIsZero :
     groupRingAugmentation (crossedModuleImage [⟨[SignedLetter.pos 0, SignedLetter.pos 0], 0, true⟩,
         invGen ⟨[SignedLetter.pos 0, SignedLetter.pos 0], 0, true⟩]) = 0 := rfl
 
+/-! ## B2 — the realization family: `crossedModuleImage` surjects onto `ZZ[ZZ/3]` (hence onto `ker N`)
+
+Single generators image to `±eₖ`, so scaling a generator by an integer and concatenating the three
+basis columns realizes any `(a, b, c)` as an image.  This makes `crossedModuleImage : E → ZZ[ZZ/3]` a
+SURJECTION onto the whole group ring — in particular onto `ker(N)`.
+
+★ **Honest scope.**  This exhibits, for every target, a PREIMAGE in the pre-crossed carrier `E`.  It does
+NOT claim the preimage is itself an identity (`∂ = []`); the arbitrary realizer's identity-hood telescopes
+`mulWord`-associativity + `mulWord a (invWord a) = []`, the r1 named residual R1 (deferred).  The genuine
+`ker(N)`-generators that ARE identities are the rotation orbit `ζ`, `s·ζ`, `s²·ζ` below. -/
+
+/-- Integer scaling of a group-ring element — coefficientwise `Int` multiplication. -/
+def groupRingZScale (scale : Int) (value : GroupRingZmod3) : GroupRingZmod3 :=
+  ⟨scale * value.coeffOne, scale * value.coeffT, scale * value.coeffTsq⟩
+
+/-- The `e₀` basis generator `(1, ρ)` — images to `(1, 0, 0)`. -/
+def genE0 : ConjugatedRelator := ⟨[], 0, true⟩
+
+/-- The `e₁` basis generator `(s, ρ)` — images to `(0, 1, 0)`. -/
+def genE1 : ConjugatedRelator := ⟨[SignedLetter.pos 0], 0, true⟩
+
+/-- The `e₂` basis generator `(s², ρ)` — images to `(0, 0, 1)`. -/
+def genE2 : ConjugatedRelator := ⟨[SignedLetter.pos 0, SignedLetter.pos 0], 0, true⟩
+
+/-- `count` copies of a generator — structural on the `Nat`. -/
+def repeatGenPos : Nat → ConjugatedRelator → PreCrossedElement
+  | 0, _ => []
+  | count + 1, gen => gen :: repeatGenPos count gen
+
+/-- `scale` signed copies of a generator: `ofNat k` copies of `gen`, `negSucc k` = `k + 1` copies of its
+inverse.  Structural on the `Nat` payload after an `Int`-constructor match (no well-founded recursion). -/
+def repeatGen : Int → ConjugatedRelator → PreCrossedElement
+  | Int.ofNat count, gen => repeatGenPos count gen
+  | Int.negSucc predecessor, gen => repeatGenPos (predecessor + 1) (invGen gen)
+
+/-- The successor-scaling law `x + n·x = (n+1)·x` — `intRightDistrib` against the unit. -/
+theorem intSuccScale (count : Nat) (value : Int) :
+    value + Int.ofNat count * value = Int.ofNat (count + 1) * value :=
+  (intAddComm value (Int.ofNat count * value)).trans
+    ((congrArg (fun summand => Int.ofNat count * value + summand) (intOneMul value).symm).trans
+      (intRightDistrib (Int.ofNat count) 1 value).symm)
+
+/-- The image of `count` copies of a generator is `count`-scaled. -/
+theorem imageRepeatGenPos : ∀ (count : Nat) (gen : ConjugatedRelator),
+    crossedModuleImage (repeatGenPos count gen)
+      = groupRingZScale (Int.ofNat count) (conjugatedRelatorImage gen)
+  | 0, gen =>
+      groupRingEq (intZeroMul (conjugatedRelatorImage gen).coeffOne).symm
+        (intZeroMul (conjugatedRelatorImage gen).coeffT).symm
+        (intZeroMul (conjugatedRelatorImage gen).coeffTsq).symm
+  | count + 1, gen =>
+      (congrArg (fun tailImage => groupRingAdd (conjugatedRelatorImage gen) tailImage)
+          (imageRepeatGenPos count gen)).trans
+        (groupRingEq (intSuccScale count (conjugatedRelatorImage gen).coeffOne)
+          (intSuccScale count (conjugatedRelatorImage gen).coeffT)
+          (intSuccScale count (conjugatedRelatorImage gen).coeffTsq))
+
+/-- The `negSucc`-scaling of a negated value is the plain `negSucc`-scaling: `(k+1)·(−x) = negSucc k · x`
+(both `−((k+1)·x)`). -/
+theorem negSuccScaleNeg (predecessor : Nat) (value : Int) :
+    Int.ofNat (predecessor + 1) * -value = Int.negSucc predecessor * value :=
+  (intMulNeg (Int.ofNat (predecessor + 1)) value).trans
+    (intNegMul (Int.ofNat (predecessor + 1)) value).symm
+
+/-- ★ **The image of `scale` signed copies of a generator is `scale`-scaled** — `ofNat` folds
+`imageRepeatGenPos`; `negSucc` folds it on the inverse (`conjugatedRelatorImageInvGen`) and rebalances
+the sign (`negSuccScaleNeg`). -/
+theorem imageRepeatGen : ∀ (scale : Int) (gen : ConjugatedRelator),
+    crossedModuleImage (repeatGen scale gen)
+      = groupRingZScale scale (conjugatedRelatorImage gen)
+  | Int.ofNat count, gen => imageRepeatGenPos count gen
+  | Int.negSucc predecessor, gen =>
+      (imageRepeatGenPos (predecessor + 1) (invGen gen)).trans
+        ((congrArg (fun negatedImage => groupRingZScale (Int.ofNat (predecessor + 1)) negatedImage)
+            (conjugatedRelatorImageInvGen gen)).trans
+          (groupRingEq (negSuccScaleNeg predecessor (conjugatedRelatorImage gen).coeffOne)
+            (negSuccScaleNeg predecessor (conjugatedRelatorImage gen).coeffT)
+            (negSuccScaleNeg predecessor (conjugatedRelatorImage gen).coeffTsq)))
+
+/-- Scaling the `e₀` basis vector: `scale · (1, 0, 0) = (scale, 0, 0)`. -/
+theorem groupRingZScaleE0 (scale : Int) :
+    groupRingZScale scale (GroupRingZmod3.mk 1 0 0) = GroupRingZmod3.mk scale 0 0 :=
+  groupRingEq (intMulOne scale) (intMulZero scale) (intMulZero scale)
+
+/-- Scaling the `e₁` basis vector: `scale · (0, 1, 0) = (0, scale, 0)`. -/
+theorem groupRingZScaleE1 (scale : Int) :
+    groupRingZScale scale (GroupRingZmod3.mk 0 1 0) = GroupRingZmod3.mk 0 scale 0 :=
+  groupRingEq (intMulZero scale) (intMulOne scale) (intMulZero scale)
+
+/-- Scaling the `e₂` basis vector: `scale · (0, 0, 1) = (0, 0, scale)`. -/
+theorem groupRingZScaleE2 (scale : Int) :
+    groupRingZScale scale (GroupRingZmod3.mk 0 0 1) = GroupRingZmod3.mk 0 0 scale :=
+  groupRingEq (intMulZero scale) (intMulZero scale) (intMulOne scale)
+
+/-- The `e₀`-column image: `scale` copies of `genE0` image to `(scale, 0, 0)`. -/
+theorem imageRepeatGenE0 (scale : Int) :
+    crossedModuleImage (repeatGen scale genE0) = GroupRingZmod3.mk scale 0 0 :=
+  (imageRepeatGen scale genE0).trans (groupRingZScaleE0 scale)
+
+/-- The `e₁`-column image: `scale` copies of `genE1` image to `(0, scale, 0)`. -/
+theorem imageRepeatGenE1 (scale : Int) :
+    crossedModuleImage (repeatGen scale genE1) = GroupRingZmod3.mk 0 scale 0 :=
+  (imageRepeatGen scale genE1).trans (groupRingZScaleE1 scale)
+
+/-- The `e₂`-column image: `scale` copies of `genE2` image to `(0, 0, scale)`. -/
+theorem imageRepeatGenE2 (scale : Int) :
+    crossedModuleImage (repeatGen scale genE2) = GroupRingZmod3.mk 0 0 scale :=
+  (imageRepeatGen scale genE2).trans (groupRingZScaleE2 scale)
+
+/-- ★ **The realizer** — `(a, b, c)` as a pre-crossed element: `a` copies of `genE0`, `b` of `genE1`, `c`
+of `genE2` (signed), concatenated.  Its image is exactly `(a, b, c)` (`realizeRoundTrip`). -/
+def realizeAugmentationZeroIdentity (targetOne targetT targetTsq : Int) : PreCrossedElement :=
+  repeatGen targetOne genE0 ++ repeatGen targetT genE1 ++ repeatGen targetTsq genE2
+
+/-- ★★ **THE ROUND TRIP** — `image (realize a b c) = (a, b, c)` for ARBITRARY targets.  Two
+`crossedModuleImageAppend`s split the three columns; `imageRepeatGenE0/E1/E2` give each column its basis
+value; the coordinatewise `0`-cleanup assembles `(a, b, c)`. -/
+theorem realizeRoundTrip (targetOne targetT targetTsq : Int) :
+    crossedModuleImage (realizeAugmentationZeroIdentity targetOne targetT targetTsq)
+      = GroupRingZmod3.mk targetOne targetT targetTsq :=
+  (crossedModuleImageAppend (repeatGen targetOne genE0 ++ repeatGen targetT genE1)
+      (repeatGen targetTsq genE2)).trans
+    ((congrArg
+        (fun leftImage => groupRingAdd leftImage (crossedModuleImage (repeatGen targetTsq genE2)))
+        (crossedModuleImageAppend (repeatGen targetOne genE0) (repeatGen targetT genE1))).trans
+      ((congrArg
+          (fun columnZero => groupRingAdd (groupRingAdd columnZero
+              (crossedModuleImage (repeatGen targetT genE1)))
+            (crossedModuleImage (repeatGen targetTsq genE2)))
+          (imageRepeatGenE0 targetOne)).trans
+        ((congrArg
+            (fun columnOne => groupRingAdd (groupRingAdd (GroupRingZmod3.mk targetOne 0 0) columnOne)
+              (crossedModuleImage (repeatGen targetTsq genE2)))
+            (imageRepeatGenE1 targetT)).trans
+          ((congrArg
+              (fun columnTwo => groupRingAdd
+                (groupRingAdd (GroupRingZmod3.mk targetOne 0 0) (GroupRingZmod3.mk 0 targetT 0))
+                columnTwo)
+              (imageRepeatGenE2 targetTsq)).trans
+            (groupRingEq ((intAddZero (targetOne + 0)).trans (intAddZero targetOne))
+              ((intAddZero (0 + targetT)).trans (intZeroAdd targetT))
+              ((congrArg (fun summand => summand + targetTsq) (intAddZero (0 : Int))).trans
+                (intZeroAdd targetTsq)))))))
+
+/-- ★ **`crossedModuleImage` surjects onto the group ring** — every `v : ZZ[ZZ/3]` is `image (realize …)`.
+In particular it surjects onto `ker(N)` (which the identities land in, `identityLandsAugmentationZero`),
+completing the realization half of the characterization. -/
+theorem crossedModuleImageSurjectsOntoGroupRing (value : GroupRingZmod3) :
+    crossedModuleImage
+        (realizeAugmentationZeroIdentity value.coeffOne value.coeffT value.coeffTsq) = value :=
+  realizeRoundTrip value.coeffOne value.coeffT value.coeffTsq
+
+/-! ### B2 probes — evaluate the realizer on the tasked targets -/
+
+/-- ★ Probe (eval) — `realize 2 (−1) (−1)` reduces to the concrete list `[e₀, e₀, e₁⁻¹, e₂⁻¹]`. -/
+theorem realizeProbeListTwoNegOneNegOne :
+    realizeAugmentationZeroIdentity 2 (-1) (-1)
+      = [genE0, genE0, invGen genE1, invGen genE2] := rfl
+
+/-- ★ Probe — the target `(2, −1, −1)` (augmentation `0`) is realized: `image = (2, −1, −1)`. -/
+theorem realizeProbeImageTwoNegOneNegOne :
+    crossedModuleImage (realizeAugmentationZeroIdentity 2 (-1) (-1))
+      = GroupRingZmod3.mk 2 (-1) (-1) :=
+  realizeRoundTrip 2 (-1) (-1)
+
+/-- ★ Probe — the target `(0, 3, −3)` (augmentation `0`) is realized: `image = (0, 3, −3)`. -/
+theorem realizeProbeImageZeroThreeNegThree :
+    crossedModuleImage (realizeAugmentationZeroIdentity 0 3 (-3))
+      = GroupRingZmod3.mk 0 3 (-3) :=
+  realizeRoundTrip 0 3 (-3)
+
+/-! ## B2b — the genuine `ker(N)`-generators: the rotation orbit `ζ`, `s·ζ`, `s²·ζ`
+
+Unlike the arbitrary realizer, the rotation orbit consists of GENUINE identities (`∂ = []`).  The
+`s`-action `sActOnGen` (prepend `s` to the conjugator) is image-equivariant
+(`crossedModuleImageSActOnGen`: `image ∘ map sActOnGen = s · image`), so the orbit of `ζ` images to the
+`s`-orbit of `(−1, 1, 0)`: `(0, −1, 1)` and `(1, 0, −1)`.  Their sum is `N · image ζ`
+(`rotationOrbitSumsToNormElement`), an aug-zero diagonal — the norm relation made explicit. -/
+
+/-- The `s`-action on a generator — prepend `s` to its conjugator (through the free-cancellation guard). -/
+def sActOnGen (gen : ConjugatedRelator) : ConjugatedRelator :=
+  { gen with conjugator := consReduced (SignedLetter.pos 0) gen.conjugator }
+
+/-- The `s`-action rotates the basis: `s · eₖ = e_{k+1}`. -/
+theorem groupRingSActionPowerOfT : ∀ residue : ZmodThree,
+    groupRingSAction (powerOfT residue) = powerOfT (shiftUp residue)
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- The `s`-action commutes with sign scaling. -/
+theorem groupRingSActionSignScale : ∀ (sign : Bool) (value : GroupRingZmod3),
+    groupRingSAction (signScale sign value) = signScale sign (groupRingSAction value)
+  | true, _ => rfl
+  | false, _ => rfl
+
+/-- The `s`-action is additive. -/
+theorem groupRingSActionAdd (left right : GroupRingZmod3) :
+    groupRingSAction (groupRingAdd left right)
+      = groupRingAdd (groupRingSAction left) (groupRingSAction right) := rfl
+
+/-- ★ **The `s`-action is image-equivariant on a single generator**: `image (s · gen) = s · image gen`
+(via `consReducedResidue` rotating the residue and `groupRingSActionPowerOfT`). -/
+theorem conjugatedRelatorImageSActOnGen (gen : ConjugatedRelator) :
+    conjugatedRelatorImage (sActOnGen gen)
+      = groupRingSAction (conjugatedRelatorImage gen) :=
+  (congrArg (fun residue => signScale gen.isPositive (powerOfT residue))
+      (consReducedResidue (SignedLetter.pos 0) gen.conjugator)).trans
+    ((congrArg (fun rotated => signScale gen.isPositive rotated)
+        (groupRingSActionPowerOfT (wordResidue gen.conjugator)).symm).trans
+      (groupRingSActionSignScale gen.isPositive (powerOfT (wordResidue gen.conjugator))).symm)
+
+/-- ★★ **The `s`-action is image-equivariant**: `image (map sActOnGen x) = s · image x`. -/
+theorem crossedModuleImageSActOnGen : ∀ element : PreCrossedElement,
+    crossedModuleImage (List.map sActOnGen element)
+      = groupRingSAction (crossedModuleImage element)
+  | [] => rfl
+  | gen :: rest =>
+      (groupRingAddCongr (conjugatedRelatorImageSActOnGen gen)
+          (crossedModuleImageSActOnGen rest)).trans
+        (groupRingSActionAdd (conjugatedRelatorImage gen) (crossedModuleImage rest)).symm
+
+/-- The second rotation identity `s · ζ` — the `s`-action image of `ζ`. -/
+def rotationIdentityWitnessSecond : PreCrossedElement := List.map sActOnGen rotationIdentityWitness
+
+/-- The third rotation identity `s² · ζ`. -/
+def rotationIdentityWitnessThird : PreCrossedElement := List.map sActOnGen rotationIdentityWitnessSecond
+
+/-- ★ `s · ζ` images to `(0, −1, 1) = s² − s` (the `s`-rotate of `(−1, 1, 0)`). -/
+theorem rotationIdentityWitnessSecondImage :
+    crossedModuleImage rotationIdentityWitnessSecond = GroupRingZmod3.mk 0 (-1) 1 :=
+  (crossedModuleImageSActOnGen rotationIdentityWitness).trans
+    (congrArg groupRingSAction rotationIdentityImageIsSeparating)
+
+/-- ★ `s² · ζ` images to `(1, 0, −1) = 1 − s²`. -/
+theorem rotationIdentityWitnessThirdImage :
+    crossedModuleImage rotationIdentityWitnessThird = GroupRingZmod3.mk 1 0 (-1) :=
+  (crossedModuleImageSActOnGen rotationIdentityWitnessSecond).trans
+    (congrArg groupRingSAction rotationIdentityWitnessSecondImage)
+
+/-- ★ `s · ζ` is a genuine identity (`∂ = []`) — `∂` still telescopes `s³·s⁻³ = 1`.  `rfl`. -/
+theorem rotationIdentityWitnessSecondBoundaryVanishes :
+    partialBoundary rotationIdentityWitnessSecond = oneWord := rfl
+
+/-- ★ `s² · ζ` is a genuine identity (`∂ = []`).  `rfl`. -/
+theorem rotationIdentityWitnessThirdBoundaryVanishes :
+    partialBoundary rotationIdentityWitnessThird = oneWord := rfl
+
+/-- ★★ **The rotation orbit sums to `N · image ζ`** — `image ζ + image (s·ζ) + image (s²·ζ)
+= (1 + s + s²) · image ζ`, an aug-zero diagonal.  The norm relation among the three genuine identities,
+machine-checked. -/
+theorem rotationOrbitSumsToNormElement :
+    groupRingAdd (crossedModuleImage rotationIdentityWitness)
+        (groupRingAdd (crossedModuleImage rotationIdentityWitnessSecond)
+          (crossedModuleImage rotationIdentityWitnessThird))
+      = groupRingNormElement (crossedModuleImage rotationIdentityWitness) :=
+  groupRingAddCongr rfl
+    (groupRingAddCongr rotationIdentityWitnessSecondImage rotationIdentityWitnessThirdImage)
+
+/-- ★★ **`ker(N)` is Z-spanned by the rotation generators** — any aug-zero `(a, b, c)` decomposes as
+`(a, −a, 0) + (0, −c, c)`, integer multiples of `1 − s = (1, −1, 0)` and `s² − s = (0, −1, 1)`.  The
+middle coordinate `b = −a − c` is forced by `a + b + c = 0`.  Pure `Int` arithmetic; no multiplication. -/
+theorem augmentationZeroSpannedByRotations (targetOne targetT targetTsq : Int)
+    (augZero : (targetOne + targetT) + targetTsq = 0) :
+    GroupRingZmod3.mk targetOne targetT targetTsq
+      = groupRingAdd (GroupRingZmod3.mk targetOne (-targetOne) 0)
+          (GroupRingZmod3.mk 0 (-targetTsq) targetTsq) :=
+  let sumEqualsNegThird : targetOne + targetT = -targetTsq :=
+    (intAddZero (targetOne + targetT)).symm.trans
+      ((congrArg (fun summand => (targetOne + targetT) + summand) (intAddRightNeg targetTsq).symm).trans
+        ((intAddAssoc (targetOne + targetT) targetTsq (-targetTsq)).symm.trans
+          ((congrArg (fun summand => summand + -targetTsq) augZero).trans (intZeroAdd (-targetTsq)))))
+  groupRingEq (intAddZero targetOne).symm
+    ((intZeroAdd targetT).symm.trans
+      ((congrArg (fun summand => summand + targetT) (intAddLeftNeg targetOne).symm).trans
+        ((intAddAssoc (-targetOne) targetOne targetT).trans
+          (congrArg (fun summand => -targetOne + summand) sumEqualsNegThird))))
+    (intZeroAdd targetTsq).symm
+
 end FX1Poly.Polygraph.Homology
