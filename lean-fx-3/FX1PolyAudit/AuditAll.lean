@@ -897,6 +897,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMatchingPartnerInv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCapReconstruct
 -- FC-3 r33 — B5 keystone: the string CONCRETE seed-agnostic cup position embedding (the cup-side twin-instantiation position map)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringCupPositionEmbedding
+-- FC-3 r33 — B5: the string cup-BOTTOM + cup-TOP-survivor partner fields of cupRestrict (Piece-II cup tail)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupBottomPartner
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
