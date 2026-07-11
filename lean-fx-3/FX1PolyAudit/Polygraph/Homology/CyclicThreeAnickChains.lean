@@ -59,4 +59,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.anickCrownInheritanceStaysScoped
 #assert_no_axioms FX1Poly.Polygraph.Homology.towerAnickRoundOneLedgerIsComplete
 
+/-! ## TOWER-ANICK r2 (#2144) — the enumerative round: the fueled enumerator, the uniqueness theorem, the
+    re-based derived count + tower tie-in, and the computable rank-oracle interface + named r3 node -/
+
+-- B1 (r2): the enumerator
+#assert_no_axioms FX1Poly.Polygraph.Homology.natCountUpFrom
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickCandidateTails
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickCandidateChains
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickMinimalChainsAtDegree
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickEnumeratorAgreesWithGeneratorThroughDegreeSix
+#assert_no_axioms FX1Poly.Polygraph.Homology.nonMinimalOverStepBeyondWindowIsRejected
+#assert_no_axioms FX1Poly.Polygraph.Homology.nonMinimalMidChainOverStepIsRejected
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickUndersizedBoundDropsCanonicalChain
+#assert_no_axioms FX1Poly.Polygraph.Homology.involutionAnickEnumeratorSingletonAtDegreeFive
+
 end FX1PolyAudit

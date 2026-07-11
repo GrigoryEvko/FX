@@ -443,4 +443,90 @@ crown-inheritance anchor (constant-1 per-degree finiteness; the `S_1` rank-finit
 the meaning from THIS docstring (the honest-record convention). -/
 def towerAnickRoundOneLedgerIsComplete : Bool := true
 
+/-! ## B1 (r2) — THE ENUMERATOR: a fueled strictly-increasing candidate generator + the guard filter,
+    truth-probed to reproduce the shipped `anickChainTips` singleton at every low degree (the "compute
+    first" oracle for the uniqueness theorem below)
+
+The r1 file GENERATES the canonical chain top-down (`anickChainTips`) but never independently CONFIRMS it
+is the *only* guard-passer.  This brick supplies the enumerative cross-check: build the whole finite
+candidate space of strictly-increasing length-`n` tip lists bounded by the last canonical position, filter
+by `isMinimalAnickChain`, and observe by `rfl` that EXACTLY the shipped chain survives.  Pre-restricting to
+strictly-increasing-from-`0` drops no guard-passer (the guard forces `p₁ = 0`, `p₂ = 1`, and
+`max(prev+1, _) ≥ prev+1 > prev` ⟹ strictly increasing), so completeness is preserved while the candidate
+count collapses from `(bound+1)ⁿ` to `C(bound, n−1)` — 21 candidates at degree 6, kernel-`rfl` tractable.
+Hand-rolled count-down (NO `List.range`, whose accumulator-loop reduction is awkward under `rfl`). -/
+
+/-- The ascending run `[start, start+1, …, start + length − 1]`, hand-rolled structurally on the length so
+no `List.range` accumulator loop enters (every candidate step reduces by `rfl`). -/
+def natCountUpFrom (start : Nat) : Nat → List Nat
+  | 0 => []
+  | length + 1 => start :: natCountUpFrom (start + 1) length
+
+/-- All strictly-increasing tails of the given `remainingLength`, each entry in `(prev, bound]` — the
+candidate tip-tails above `prev`.  Structural on `remainingLength`; `prev` threads forward.  The next
+position ranges over `natCountUpFrom (prev + 1) (bound − prev)` = `{prev+1, …, bound}` (empty when
+`bound < prev`, so the strictly-increasing invariant and the upper bound are both enforced structurally). -/
+def anickCandidateTails (bound : Nat) : Nat → Nat → List (List Nat)
+  | _prev, 0 => [[]]
+  | prev, remainingLength + 1 =>
+      (natCountUpFrom (prev + 1) (bound - prev)).flatMap (fun next =>
+        (anickCandidateTails bound next remainingLength).map (fun tail => next :: tail))
+
+/-- The full candidate space at a degree: every strictly-increasing length-`degree` tip list starting at
+`0` with entries `≤ bound`.  Degree `0` is the empty chain `[[]]`; degree `d+1` prepends `0` to each
+length-`d` strictly-increasing tail above `0`. -/
+def anickCandidateChains (degree bound : Nat) : List (List Nat) :=
+  match degree with
+  | 0 => [[]]
+  | remainingLength + 1 => (anickCandidateTails bound 0 remainingLength).map (fun tail => 0 :: tail)
+
+/-- ★ **THE ENUMERATOR.**  The minimal Anick chains at a degree = the candidate space (bounded by the last
+canonical position `L(degree) − tipLength`) filtered by the decidable guard.  Because the guard is a pure
+EQUALITY test (§B2), exactly one candidate survives — this is the executable per-degree Anick-generator
+count, uniqueness-certified below. -/
+def anickMinimalChainsAtDegree (tipLength degree : Nat) : List (List Nat) :=
+  (anickCandidateChains degree (anickChainWordLength tipLength degree - tipLength)).filter
+    (isMinimalAnickChain tipLength)
+
+/-- ★ **Enumerator truth probe (the built-in oracle): the guard-filtered candidate space is EXACTLY the
+shipped `anickChainTips` singleton at every cyclic-3 degree 1–6.**  The candidate space collapses to one
+survivor — the deterministic canonical chain — confirming the generator by independent enumeration.  `rfl`
+per degree. -/
+theorem anickEnumeratorAgreesWithGeneratorThroughDegreeSix :
+    anickMinimalChainsAtDegree 3 1 = [anickChainTips 3 1] ∧
+    anickMinimalChainsAtDegree 3 2 = [anickChainTips 3 2] ∧
+    anickMinimalChainsAtDegree 3 3 = [anickChainTips 3 3] ∧
+    anickMinimalChainsAtDegree 3 4 = [anickChainTips 3 4] ∧
+    anickMinimalChainsAtDegree 3 5 = [anickChainTips 3 5] ∧
+    anickMinimalChainsAtDegree 3 6 = [anickChainTips 3 6] :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- ★ **Hostile near-miss rejected (over-disjoint): `{0, 1, 4}` is NOT minimal** — the 3rd tip is placed
+TOO FAR: window `(0, 1)` forces `p₃ = max(1+1, 0+3) = 3`, and `4 ≠ 3`.  A new rejection DIRECTION beyond
+r1's two probes (over-disjoint, not over-overlapping).  `rfl`. -/
+theorem nonMinimalOverStepBeyondWindowIsRejected :
+    isMinimalAnickChain 3 [0, 1, 4] = false := rfl
+
+/-- ★ **Hostile near-miss rejected (mid-chain over-step): `{0, 1, 3, 5}` is NOT minimal** — the first
+three tips are canonical (`p₃ = 3`), but the 4th over-steps: window `(1, 3)` forces
+`p₄ = max(3+1, 1+3) = 4`, and `5 ≠ 4`.  A deviation on the min-progress branch mid-chain — the equality
+guard pins every step, so ANY over- or under-step fails.  `rfl`. -/
+theorem nonMinimalMidChainOverStepIsRejected :
+    isMinimalAnickChain 3 [0, 1, 3, 5] = false := rfl
+
+/-- ★ **The enumerator's BOUND GATE is necessary (self-attack): an undersized bound drops the canonical
+chain.**  At degree 3 the sufficient bound is `L(3) − 3 = 3`; with the undersized bound `2` the candidate
+space is only `[[0, 1, 2]]` (the canonical `[0, 1, 3]` is unreachable), and the guard filter yields the
+EMPTY list — `Derived = 0 ≠ 1`.  This documents why `bound = anickChainWordLength k n − k` (the last
+canonical position, provably `≥` every canonical position by strict monotonicity) is the correct gate.
+`rfl`. -/
+theorem anickUndersizedBoundDropsCanonicalChain :
+    (anickCandidateChains 3 2).filter (isMinimalAnickChain 3) = [] := rfl
+
+/-- ★ **The enumerator is tip-length-generic (k = 2 involution / idempotent): the guard-filtered candidate
+space is the `anickChainTips 2 5` singleton at degree 5.**  The uniqueness and enumeration machinery is
+`tipLength`-parametric, so the involution / idempotent walkers are covered by the same code.  `rfl`. -/
+theorem involutionAnickEnumeratorSingletonAtDegreeFive :
+    anickMinimalChainsAtDegree 2 5 = [anickChainTips 2 5] := rfl
+
 end FX1Poly.Polygraph.Homology
