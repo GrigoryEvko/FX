@@ -1374,6 +1374,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPositionGenericMovesAu
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCollisionCanonFormAudit
 -- WP-PROP r11 — the permutation-matrix read-off: pure List Nat symmetric-group engine + permMatrixOf + concrete extractor pins (evalCell (permWord) = permMatrixOf (permOfWord)) + r11-pair reduction; the Omega mirror of the Brauer permutationDiagram read-off
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorAudit
+-- WP-PROP r12 — the matrix-algebra kit gating the generic permutation-matrix extractor: the shared relabel keystone RELABEL-GET (reading a swapped range entry IS swapValue, k+1<width the boundary-excluder) + its map-form + gate (c) cons-relabel (permOfWord (k::rest) = (permOfWord rest).map (swapValue k)) + the length-preservation chain + the boundary-excluding valid-word predicate; gates (a) sigmaAt-as-transposition and (b) matMul column-swap stay named, the wall stays false, star not flipped
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorKitAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
