@@ -55,4 +55,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorReduces
 #assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedSubMovesAreComplete
 
+/-! ## B3/B4 — the well-formed structure theorem, the instance iso, and the ledger -/
+
+#assert_no_axioms FX1Poly.Polygraph.Homology.AllConjugatorsOverGenZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorAllRelatorIndexZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorAllConjugatorsOverGenZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.rotationIdentityAllRelatorIndexZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.rotationIdentityAllConjugatorsOverGenZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModuleNormalFormResidualWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorResidualHolds
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModuleWellFormedInjectivityObligation
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModuleNormalFormWellFormedImpliesInjectivity
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModuleWellFormedImageInjective
+#assert_no_axioms FX1Poly.Polygraph.Homology.FreeCrossedModulePiTwoIso
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModulePiTwoIsoOfResidual
+#assert_no_axioms FX1Poly.Polygraph.Homology.FreeCrossedModuleStructureTheoremLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleFreeGroupStructureTheoremLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleFreeGroupStructureTheoremIsComplete
+
 end FX1PolyAudit

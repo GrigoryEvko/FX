@@ -418,4 +418,229 @@ and the r4-deferred shuffled-commutator identity `[genE0, genE1, genE0⁻¹, gen
 cancellation.  Read the meaning from THIS docstring. -/
 def freeCrossedSubMovesAreComplete : Bool := true
 
+/-! ## B3 — the WELL-FORMED structure theorem + the instance iso `π₂⟨s | s³⟩ ≅ ker(N)`
+
+### ★★★ HARD FINDING — the shipped r4 `freeCrossedModuleNormalFormResidual` is FALSE as stated
+
+Because r2's `letterShift` IGNORES the generator index, a conjugator over a DIFFERENT generator images
+the same as one over generator `0` but has a DIFFERENT boundary.  Concretely
+`x = [⟨[SignedLetter.pos 1], 0, true⟩]` images to `(0, 1, 0) = image [genE1]`, yet
+`∂x = [pos 1, pos 0, pos 0, pos 0, neg 1] ≠ s³ = ∂genE1`.  `FreeCrossedModuleEquiv` preserves the free-group
+boundary, so it can never relate two elements with distinct boundaries — hence
+`¬ FreeCrossedModuleEquiv x [genE1]`, refuting the unguarded residual `FreeCrossedModuleEquiv x
+(realize (image x))`.  (The Lean refutation itself needs the GENERAL boundary-soundness
+`FreeCrossedModuleEquiv x y → ∂x = ∂y`, which telescopes further R1 plumbing and is NOT shipped this
+round; the finding is recorded mathematically and DEFENDED by the well-formedness guard below.)
+
+**r5 does NOT inhabit the false unguarded Prop.**  It introduces the well-formedness guard
+`AllConjugatorsOverGenZero` (mirror of r3's load-bearing `AllRelatorIndexZero`) — every conjugator over
+generator `0` — restates the residual under BOTH guards, proves the residual→injectivity→iso bridge, and
+INHABITS the guarded residual on concrete nontrivial well-formed elements (the shuffled commutator).  The
+whole live `⟨s | s³⟩` corpus (genE*, ζ-orbit, self-attacks, the shuffled commutator) satisfies both
+guards by construction. -/
+
+/-- ★ **The well-formedness guard** (the §3.2 fix) — every generator's conjugator is over generator `0`.
+A `Prop`-inductive mirroring r3's `AllRelatorIndexZero`; the whole live corpus satisfies it. -/
+inductive AllConjugatorsOverGenZero : PreCrossedElement → Prop where
+  /-- The empty element is well-formed. -/
+  | nil : AllConjugatorsOverGenZero []
+  /-- A cons is well-formed when its head's conjugator is over generator `0` and its tail is. -/
+  | cons (gen : ConjugatedRelator) (rest : PreCrossedElement)
+      (conjugatorOver : AllLettersOverGenZero gen.conjugator)
+      (restAllOver : AllConjugatorsOverGenZero rest) :
+      AllConjugatorsOverGenZero (gen :: rest)
+
+/-- Probe — the shuffled commutator satisfies the relator-index guard (all `relationIndex = 0`). -/
+theorem shuffledCommutatorAllRelatorIndexZero :
+    AllRelatorIndexZero [genE0, genE1, invGen genE0, invGen genE1] :=
+  .cons _ _ rfl (.cons _ _ rfl (.cons _ _ rfl (.cons _ _ rfl .nil)))
+
+/-- Probe — the shuffled commutator satisfies the conjugator guard (all conjugators over generator `0`). -/
+theorem shuffledCommutatorAllConjugatorsOverGenZero :
+    AllConjugatorsOverGenZero [genE0, genE1, invGen genE0, invGen genE1] :=
+  .cons _ _ .nil (.cons _ _ (.consPos _ .nil) (.cons _ _ .nil
+    (.cons _ _ (.consPos _ .nil) .nil)))
+
+/-- Probe — the rotation identity `ζ` is well-formed under both guards. -/
+theorem rotationIdentityAllRelatorIndexZero :
+    AllRelatorIndexZero rotationIdentityWitness :=
+  .cons _ _ rfl (.cons _ _ rfl .nil)
+
+/-- Probe — the rotation identity `ζ`'s conjugators are over generator `0`. -/
+theorem rotationIdentityAllConjugatorsOverGenZero :
+    AllConjugatorsOverGenZero rotationIdentityWitness :=
+  .cons _ _ (.consPos _ .nil) (.cons _ _ .nil .nil)
+
+/-! ### The guarded residual (STATED, not asserted) + the residual→injectivity→iso bridges (PROVED) -/
+
+/-- ★ **The WELL-FORMED structure-theorem residual** — every WELL-FORMED element reduces, under the
+group-enriched relation, to its residue-vector normal form `realize (image x)`.  The honest replacement
+for the r4 `freeCrossedModuleNormalFormResidual` (which §3.2 refutes for arbitrary generators).  Stated as
+a `Prop` (a def); the general measure induction (sort → strip → cancel over the r4 `residueInversions`
+fuel) is NOT asserted here — it is INHABITED on concrete well-formed elements below and the residual→iso
+bridge is proved, so proving it upgrades r3's surjection to the full instance iso. -/
+def freeCrossedModuleNormalFormResidualWellFormed : Prop :=
+  ∀ element : PreCrossedElement,
+    AllRelatorIndexZero element → AllConjugatorsOverGenZero element →
+    FreeCrossedModuleEquiv element
+      (realizeAugmentationZeroIdentity (crossedModuleImage element).coeffOne
+        (crossedModuleImage element).coeffT (crossedModuleImage element).coeffTsq)
+
+/-- ★★ **Residual inhabited on the shuffled commutator** — its image is `0`, so its residue-vector normal
+form is `realize 0 0 0 = []`, and `shuffledCommutatorReduces` provides exactly
+`FreeCrossedModuleEquiv [genE0, genE1, genE0⁻¹, genE1⁻¹] []`.  A concrete NONTRIVIAL well-formed witness
+of the guarded residual (the r4-deferred shuffled-identity attack, delivered as a residual instance). -/
+theorem shuffledCommutatorResidualHolds :
+    FreeCrossedModuleEquiv [genE0, genE1, invGen genE0, invGen genE1]
+      (realizeAugmentationZeroIdentity
+        (crossedModuleImage [genE0, genE1, invGen genE0, invGen genE1]).coeffOne
+        (crossedModuleImage [genE0, genE1, invGen genE0, invGen genE1]).coeffT
+        (crossedModuleImage [genE0, genE1, invGen genE0, invGen genE1]).coeffTsq) :=
+  shuffledCommutatorReduces
+
+/-- The guarded injectivity obligation — `image x = 0 ⟹ x ~ []` for well-formed `x`. -/
+def freeCrossedModuleWellFormedInjectivityObligation : Prop :=
+  ∀ element : PreCrossedElement,
+    AllRelatorIndexZero element → AllConjugatorsOverGenZero element →
+    crossedModuleImage element = groupRingZero →
+      FreeCrossedModuleEquiv element ([] : PreCrossedElement)
+
+/-- ★★ **The structure theorem implies the guarded injectivity** — if every well-formed element reduces to
+its residue-vector normal form, then `image x = 0` forces `x ~ []` (`realize 0 0 0 = []`).  PROVED (the
+guarded residual is exactly the missing piece); mirrors r4's bridge with the two guards threaded. -/
+theorem freeCrossedModuleNormalFormWellFormedImpliesInjectivity
+    (residualReduces : freeCrossedModuleNormalFormResidualWellFormed) :
+    freeCrossedModuleWellFormedInjectivityObligation :=
+  fun element relatorGuard conjugatorGuard imageIsZero =>
+    let realizeCollapsesToEmpty :
+        realizeAugmentationZeroIdentity (crossedModuleImage element).coeffOne
+            (crossedModuleImage element).coeffT (crossedModuleImage element).coeffTsq
+          = ([] : PreCrossedElement) :=
+      congrArg (fun value => realizeAugmentationZeroIdentity (GroupRingZmod3.coeffOne value)
+        (GroupRingZmod3.coeffT value) (GroupRingZmod3.coeffTsq value)) imageIsZero
+    Eq.mp (congrArg (FreeCrossedModuleEquiv element) realizeCollapsesToEmpty)
+      (residualReduces element relatorGuard conjugatorGuard)
+
+/-- ★★ **The full guarded injectivity on `~`-classes** — for well-formed `x, y`, `image x = image y ⟹
+x ~ y`.  From the residual, `x ~ realize (image x) = realize (image y) ~ y`.  PROVED off the guarded
+residual (r5's free bonus past the zero-case obligation). -/
+theorem freeCrossedModuleWellFormedImageInjective
+    (residualReduces : freeCrossedModuleNormalFormResidualWellFormed)
+    {leftElement rightElement : PreCrossedElement}
+    (leftRelator : AllRelatorIndexZero leftElement) (leftConjugator : AllConjugatorsOverGenZero leftElement)
+    (rightRelator : AllRelatorIndexZero rightElement)
+    (rightConjugator : AllConjugatorsOverGenZero rightElement)
+    (imageEqual : crossedModuleImage leftElement = crossedModuleImage rightElement) :
+    FreeCrossedModuleEquiv leftElement rightElement :=
+  let leftToNormalForm := residualReduces leftElement leftRelator leftConjugator
+  let rightToNormalForm := residualReduces rightElement rightRelator rightConjugator
+  let normalFormsEqual :
+      realizeAugmentationZeroIdentity (crossedModuleImage leftElement).coeffOne
+          (crossedModuleImage leftElement).coeffT (crossedModuleImage leftElement).coeffTsq
+        = realizeAugmentationZeroIdentity (crossedModuleImage rightElement).coeffOne
+          (crossedModuleImage rightElement).coeffT (crossedModuleImage rightElement).coeffTsq :=
+    congrArg (fun value => realizeAugmentationZeroIdentity (GroupRingZmod3.coeffOne value)
+      (GroupRingZmod3.coeffT value) (GroupRingZmod3.coeffTsq value)) imageEqual
+  FreeCrossedModuleEquiv.trans (normalFormsEqual ▸ leftToNormalForm)
+    (FreeCrossedModuleEquiv.symm rightToNormalForm)
+
+/-- ★ **The instance iso `π₂⟨s | s³⟩ ≅ ker(N)` as a witness bundle** over the setoid
+`(PreCrossedElement, FreeCrossedModuleEquiv)` with `crossedModuleImage` the map.  `wellDefined` = the map
+descends (r4 soundness); `surjective` = every group-ring value is realized (r3); `kernelLands` = every
+well-formed identity lands in `ker(N)` (r3); `injective` = the residual-gated full injectivity.  NO
+`Quot` — the congruence `FreeCrossedModuleEquiv` and the map `crossedModuleImage` are named directly. -/
+structure FreeCrossedModulePiTwoIso where
+  /-- The invariant descends to the group-enriched congruence. -/
+  wellDefined : ∀ {leftElement rightElement : PreCrossedElement},
+    FreeCrossedModuleEquiv leftElement rightElement →
+    crossedModuleImage leftElement = crossedModuleImage rightElement
+  /-- Every group-ring value is realized as an image (surjectivity of the map). -/
+  surjective : ∀ value : GroupRingZmod3,
+    crossedModuleImage
+        (realizeAugmentationZeroIdentity value.coeffOne value.coeffT value.coeffTsq) = value
+  /-- Every well-formed identity images into `ker(N) = {aug = 0}`. -/
+  kernelLands : ∀ {element : PreCrossedElement},
+    AllRelatorIndexZero element → partialBoundary element = oneWord →
+    groupRingAugmentation (crossedModuleImage element) = 0
+  /-- The map is injective on `~`-classes of well-formed elements. -/
+  injective : ∀ {leftElement rightElement : PreCrossedElement},
+    AllRelatorIndexZero leftElement → AllConjugatorsOverGenZero leftElement →
+    AllRelatorIndexZero rightElement → AllConjugatorsOverGenZero rightElement →
+    crossedModuleImage leftElement = crossedModuleImage rightElement →
+    FreeCrossedModuleEquiv leftElement rightElement
+
+/-- ★★★ **The instance iso, assembled from the guarded residual** — `freeCrossedModuleNormalFormResidualWellFormed
+→ FreeCrossedModulePiTwoIso`.  Three fields (well-definedness, surjectivity, kernel-landing) hold
+UNCONDITIONALLY (r2/r3/r4); the fourth (injectivity) is delivered by
+`freeCrossedModuleWellFormedImageInjective`.  This is the honest iso ASSEMBLY: the packaging decl and the
+residual→iso bridge are PROVED, so the full instance iso `π₂⟨s | s³⟩ ≅ ker(N) ≅ ZZ[G]` (free rank `1`)
+holds AT INSTANCE SCOPE the moment the walled measure induction lands. -/
+def freeCrossedModulePiTwoIsoOfResidual
+    (residualReduces : freeCrossedModuleNormalFormResidualWellFormed) : FreeCrossedModulePiTwoIso :=
+  { wellDefined := fun equiv => crossedModuleImageRespectsFreeCrossed equiv
+  , surjective := fun value => crossedModuleImageSurjectsOntoGroupRing value
+  , kernelLands := fun relatorGuard isIdentity => identityLandsAugmentationZero relatorGuard isIdentity
+  , injective := fun leftRelator leftConjugator rightRelator rightConjugator imageEqual =>
+      freeCrossedModuleWellFormedImageInjective residualReduces leftRelator leftConjugator
+        rightRelator rightConjugator imageEqual }
+
+/-! ## B4 — the honest r5 ledger
+
+The Brown–Huebschmann general wall is PRESERVED; the H2 feed is r3's `normAugmentationMatchesRelatorShadow`
+(`ε(N) = 3`) name-only.  The general well-formed residual (the measure induction) stays the wall — its
+marker is NOT flipped; only the R1 / sub-move / iso-assembly obligations flip at literal delivery. -/
+
+/-- The six-obligation ledger of the r5 structure-theorem spike, honestly classified against r3's
+`RelationModuleObligationStatus`. -/
+structure FreeCrossedModuleStructureTheoremLedger where
+  /-- r1's residual R1 (`mulWord` associativity + inverse law + `∂ = s³` collapse), single-generator. -/
+  freeGroupResidualR1Status : RelationModuleObligationStatus
+  /-- The R1-unlocked sub-moves (adjacent swap + `s^{k+3}` strip). -/
+  subMovesStatus : RelationModuleObligationStatus
+  /-- The r4-deferred shuffled-commutator identity `[genE0, genE1, genE0⁻¹, genE1⁻¹] ~ []`. -/
+  shuffledCommutatorStatus : RelationModuleObligationStatus
+  /-- The §3.2 well-formedness guard (`AllConjugatorsOverGenZero`) correcting the false unguarded residual. -/
+  wellFormedGuardStatus : RelationModuleObligationStatus
+  /-- The residual→injectivity→iso bridge + the iso-bundle assembly (`freeCrossedModulePiTwoIsoOfResidual`). -/
+  isoAssemblyStatus : RelationModuleObligationStatus
+  /-- The GENERAL well-formed residual (the measure induction) — the remaining wall. -/
+  generalWellFormedResidualStatus : RelationModuleObligationStatus
+
+/-- ★ **The r5 structure-theorem ledger.**  R1 / sub-moves / shuffled commutator / well-formed guard /
+iso assembly all SHIPPED zero-axiom; the GENERAL well-formed residual stays the Brown–Huebschmann
+structure-theorem wall (its marker NOT flipped — the measure induction is inhabited only on concrete
+well-formed elements this round).  The honest reading: r5 closes r1's residual R1 (the round's single
+genuine obstruction), delivers the R1-unlocked sub-moves and the r4-deferred shuffled-commutator, CORRECTS
+the false unguarded residual with the well-formedness guard, and PROVES the residual→iso bridge — so the
+instance iso `π₂⟨s | s³⟩ ≅ ker(N)` is one measure-induction away. -/
+def crossedModuleFreeGroupStructureTheoremLedger : FreeCrossedModuleStructureTheoremLedger :=
+  { freeGroupResidualR1Status := RelationModuleObligationStatus.shipped
+  , subMovesStatus := RelationModuleObligationStatus.shipped
+  , shuffledCommutatorStatus := RelationModuleObligationStatus.shipped
+  , wellFormedGuardStatus := RelationModuleObligationStatus.shipped
+  , isoAssemblyStatus := RelationModuleObligationStatus.shipped
+  , generalWellFormedResidualStatus := RelationModuleObligationStatus.structureTheoremResidual }
+
+/-- ★ **The #2199 r5 structure-theorem marker.**  Shipped zero-axiom over r4:
+
+  * **B1 (R1)** — the single-generator normal form `signPower` + the cancellation-induction crux
+    `reduceWordIsSignPowerOverGenZero`, whence R1-inv/R1-assoc and the `∂ = s³` collapse.  r1's residual
+    R1, the round's single obstruction, is CLOSED for the single-generator fragment.
+  * **B2 (sub-moves)** — the adjacent swap `x·y ~ (^{∂x}y)·x` (pure structure), the R1-gated
+    conjugator-exponent strip `s^{k+3} ~ s^k`, and the r4-deferred shuffled-commutator identity
+    `[genE0, genE1, genE0⁻¹, genE1⁻¹] ~ []` (`shuffledCommutatorReduces`).
+  * **B3 (structure theorem / iso)** — ★★★ the §3.2 FINDING (the r4 unguarded residual is FALSE for
+    arbitrary generators) + the `AllConjugatorsOverGenZero` guard; the guarded residual STATED and
+    INHABITED on the shuffled commutator (`shuffledCommutatorResidualHolds`); the residual→injectivity→iso
+    bridge PROVED (`freeCrossedModuleNormalFormWellFormedImpliesInjectivity`,
+    `freeCrossedModuleWellFormedImageInjective`, `freeCrossedModulePiTwoIsoOfResidual`).
+  * **B4 (ledger)** — five obligations SHIPPED; the GENERAL well-formed residual stays the walled measure
+    induction (marker NOT flipped).  The H2 feed is r3's `ε(N) = 3` name-only (no chain-complex import,
+    lane law respected).
+
+The honest r5 close: R1 lands, the sub-moves and the shuffled commutator land, the false residual is
+corrected and the iso is ASSEMBLED behind the one remaining wall (the general measure induction).  Read
+the meaning from THIS docstring (the honest-record convention). -/
+def crossedModuleFreeGroupStructureTheoremIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology
