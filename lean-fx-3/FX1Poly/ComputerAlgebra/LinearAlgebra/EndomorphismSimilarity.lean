@@ -271,4 +271,69 @@ theorem endomorphismZeroVersusJordanShareCharPoly :
     endomorphismCharPolyCoefficients 2 (setoidMatrixOfRows [[0, 0], [0, 0]])
       = endomorphismCharPolyCoefficients 2 (setoidMatrixOfRows [[0, 1], [0, 0]]) := by decide
 
+/-! ## The walker tie-in and the census ledger
+
+**The walker.**  The walking endomorphism is the one-object, one-generating-1-cell, NO-relation
+polygraph — the delooping of the free monoid `ℕ`.  Its rewriting presentation is trivially convergent
+(empty critical pairs), so it carries no content for the coherent-presentation census
+(`SquierFamilyCensus`).  Its content is the LINEAR MODEL: the representation category `[walking-endo,
+Vect]` is the category of pairs `(V, f : V → V)`; on a chosen basis `f` is a matrix `M`, and
+iso-classification of representations = SIMILARITY of `M` = rational canonical form.  This is the
+matrix-semantics axis, mirroring `WalkingBunchedBimonoidMatrixSemantics` (a walker given a `Mat(N)`
+semantics), and it belongs in the ComputerAlgebra lane, NOT `Polygraph/Omega/`.
+
+**What r1 DECIDES (the exact scope).**  A pure per-input certificate producer, inheriting the #2137
+per-input contract (no general driver, nothing to discharge into):
+
+  * for a concrete integer pair, `WitnessesSimilarity` certifies ℚ-similarity by kernel-checking the
+    scaled-pair identities — grounded by the `d = 1` and `d = 2` instances;
+  * for a concrete integer pair, a char-poly OR `2×2`-rank inequality certifies dissimilarity —
+    grounded by the trace-separated and the equal-char-poly rank-separated instances.
+
+No general similarity DECISION procedure is claimed, and NO driver-totality is reopened (the #2137
+general-driver target was REFUTED upstream and stays closed).
+
+**The r2+ walls (named nodes for the successor).**
+
+  * `charMatrixCarrier` — the general `det(x·I − M)` (all `n`) needs a univariate polynomial matrix
+    carrier (`IntPolynomial`, `x·I − M`) that does NOT ship. → r2.
+  * `invariantFactorSeparator` — the COMPLETE similarity separator is the invariant factors of
+    `x·I − M` via Smith-over-`ℚ[x]`; the genuine wall is irrational eigenvalues. → r2+.
+  * `rankSequenceNilpotent` — the complete NILPOTENT separator is the rank sequence `rank(Mᵏ)`, which
+    needs a matrix power (`iterate mulMatrix`). → r1-stretch.
+  * `minorRankGeneral` — rank at `n ≥ 3` needs a general `k×k` minor selector (the shipped
+    determinant only deletes row 0). → r1-stretch. -/
+
+/-- The classification axis of the walking-endomorphism linear model: representations up to iso ⇔
+matrices up to similarity ⇔ rational canonical form. -/
+inductive WalkingEndomorphismClassification
+  | similarByRationalCanonicalForm
+
+/-- A census entry for the walking-endomorphism linear model: the classification marker plus the
+counts of kernel-checked similar witnesses and dissimilarity separators shipped as its grounding. -/
+structure WalkingEndomorphismCensusEntry where
+  classification : WalkingEndomorphismClassification
+  decidedSimilarInstances : Nat
+  decidedDissimilarInstances : Nat
+
+/-- The r1 census feed: two decided similar witnesses (`d = 1`, `d = 2`) and two decided separators
+(char-poly, rank). -/
+def walkingEndomorphismCensusEntry : WalkingEndomorphismCensusEntry :=
+  { classification := WalkingEndomorphismClassification.similarByRationalCanonicalForm
+    decidedSimilarInstances := 2
+    decidedDissimilarInstances := 2 }
+
+/-- The census feed is grounded in the four kernel-checked instances: this bundles the two
+scaled-pair witnesses and the two dissimilarity separators into a single certificate, so the census
+counts are backed by machine-checked evidence, not assertion. -/
+theorem walkingEndomorphismCensusGrounded :
+    endomorphismNilpotentConjugacyWitness.WitnessesSimilarity
+      ∧ endomorphismRationalConjugacyWitness.WitnessesSimilarity
+      ∧ EndomorphismDissimilarByCharPoly 2 (setoidMatrixOfRows [[1, 0], [0, 0]])
+          (setoidMatrixOfRows [[2, 0], [0, 0]])
+      ∧ EndomorphismDissimilarByRank (setoidMatrixOfRows [[0, 0], [0, 0]])
+          (setoidMatrixOfRows [[0, 1], [0, 0]]) :=
+  ⟨endomorphismNilpotentConjugacyIsWitnessed, endomorphismRationalConjugacyIsWitnessed,
+    endomorphismDistinctTraceDissimilar, endomorphismZeroVersusJordanDissimilar⟩
+
 end FX1Poly.ComputerAlgebra
