@@ -781,6 +781,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringScrambledThreeCupP
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWidthZeroPureCupSort
 -- FC-3 r18 THE CAP-DUAL — the pure-cap sort ported to the adjoint-triple seed, modulo the cap-head discharge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPureCapSpineSort
+-- FC-3 r19 THE CAP-HEAD DISCHARGE PORT — LOCATE substrate, head-location scan floor
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcPairLocateTouch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
