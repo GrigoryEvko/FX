@@ -19,5 +19,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.throughCupSurvival_firesMonster
 #assert_no_axioms FX1Poly.Polygraph.throughCupSurvival_firesThreeThrough
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasThroughSurvivalSeams
+#assert_no_axioms FX1Poly.Polygraph.cupChainS4Width
+#assert_no_axioms FX1Poly.Polygraph.throughMiddleTracker
+#assert_no_axioms FX1Poly.Polygraph.throughTopTracker
+#assert_no_axioms FX1Poly.Polygraph.throughMiddleTracker_firesMonster
+#assert_no_axioms FX1Poly.Polygraph.throughTopTracker_firesMonster
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasThroughTrackerSeams
 
 end FX1PolyAudit
