@@ -17,4 +17,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithPivotClearingOutput
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepExitCrossClearOnConcreteWindow
 
+/- PART A3 — the interior fill-in invariant adjudication + the exit-interior-even truth-probe (the
+   landed pivot 2 divides the interior fill-in 30, 8 on the gcd>1 window). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithClearingSweepExitInteriorEvenOnConcreteWindow
+
 end FX1PolyAudit

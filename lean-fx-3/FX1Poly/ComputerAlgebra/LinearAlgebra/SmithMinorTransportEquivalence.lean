@@ -68,4 +68,50 @@ theorem smithClearingSweepExitCrossClearOnConcreteWindow :
         (smithPivotClearingOutput { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3) 0 3 3 = true := by
   decide
 
+/-! ## PART A3 — THE INTERIOR FILL-IN INVARIANT (the crux; the cascade-computes-gcd wall)
+
+Target: the landed pivot `g := M'.diagonalEntryAt p` divides every OFF-DIAGONAL interior cell
+`M'.entryAt r c` for `r > p, c > p, r ≠ c` (`SubBlockOffDiagonalDivisibleFrom g (p+1) M'`).
+
+**Per-phase invariant (made exact).**  Each cascade rotation emits, in order: the move-to-pivot swaps,
+the sign-normalize negate, the column-below clears (`entry(i, j) += −q_i · entry(p, j)`, a combination of
+the pivot ROW), and the row-right clears (`entry(i, j) += −q'_j · entry(i, p)`, a combination of the
+pivot COLUMN).  So the fill-in of rotation `k` is a ℤ-combination of `d_k`-multiples ONLY IF
+`d_k ∣ (pivot row) ∧ d_k ∣ (pivot col)`, where `d_k` is the pivot value at rotation `k`.
+
+**The chain composition + why it is circular.**  The min-abs re-selection PARKS strictly-smaller
+remainders, so the pivot value CHANGES across rotations and the final landed `g = d_n`.  Threading the
+invariant against `g` needs the **Euclidean divisibility chain** `g ∣ d_k` for every `k`.  Both halves
+are circular against the target:
+  * the per-phase premise `d_k ∣ pivot-row/col` is FALSE mid-rotation (that is exactly why the cascade
+    LOOPS — `intPivotQuotient` is a MAGNITUDE quotient parking a nonzero remainder, not an exact
+    divisor);
+  * the chain `g ∣ d_k` needs `g = gcd(minor)`, which needs `g ∣` the whole minor — the target itself.
+
+The ONLY non-circular divisor for which the shipped forward tower proves "d ∣ interior of `M'`" is a `d`
+known a priori to divide the INPUT minor — instantiating `d := g` IS the keystone.  The
+`InteriorDivByPhasePivot`/Euclidean-chain hope is genuinely NOT a loop invariant: the interior
+ACCUMULATES across passes and is never overwritten (NODE E's
+`smithClearingSweepInteriorNotDiagonalWitness`, `diag(15, 10, 6, 4)` interior `(3, 1) = −20`).  **A3 =
+the seed's off-diagonal half = the cascade-computes-gcd / gcd-ideal-invariance major arc — the r11+ wall.
+It is walled; it is not a loop invariant.**
+
+**Probe-first (`diag(6, 10, 8)`).**  The pivot-0 sweep lands `g = 2 = gcd(6, 10, 8)` and the exit
+interior is `diag(2, 30, 8)` — the interior entries `30, 8` are BOTH even (`2`-divisible), exactly the A3
+content, exhibited on a gcd > 1 window.  The evenness holds ONLY because `2` is the minor gcd. -/
+
+set_option maxRecDepth 8000 in
+/-- **The exit interior is `2`-divisible on a concrete gcd > 1 window** — the pivot-0 clearing sweep of
+`diag(6, 10, 8)` lands `2` at the pivot (`= gcd(6, 10, 8)`) and the exit interior diagonal entries
+`30, 8` are BOTH `2`-divisible.  A machine-checked instance of the A3 content: the landed pivot divides
+the interior fill-in, WITH concrete `dividesExactly` witnesses (`30 = 2·15`, `8 = 2·4`).  This is the
+canonical case where A3 bites — the interior is even ONLY because `2` is the gcd. -/
+theorem smithClearingSweepExitInteriorEvenOnConcreteWindow :
+    (smithPivotClearingOutput { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3).diagonalEntryAt 0 = 2
+      ∧ dividesExactly 2
+          ((smithPivotClearingOutput { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3).entryAt 1 1)
+      ∧ dividesExactly 2
+          ((smithPivotClearingOutput { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3).entryAt 2 2) :=
+  ⟨by decide, ⟨15, by decide⟩, ⟨4, by decide⟩⟩
+
 end FX1Poly.ComputerAlgebra
