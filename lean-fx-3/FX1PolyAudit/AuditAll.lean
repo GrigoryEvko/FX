@@ -1160,6 +1160,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingEquivalencePresentationAudit
 import FX1PolyAudit.Polygraph.Omega.FrobeniusMonadPresentationAudit
 -- WP-STRONG r1 — the walking strong monad: seven-critical-pair sub-presentation of the distributive law
 import FX1PolyAudit.Polygraph.Omega.WalkingStrongMonadPresentationAudit
+-- WP-BI r1 — the walking bunched bimonoid: twenty-two-critical-pair presentation + Frobenius-distinction self-attack
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPresentationAudit
 -- OMEGA-5 r1 — the graded rung: graded cell + composition arithmetic
 import FX1PolyAudit.Polygraph.Omega.Graded.GradedCellAudit
 -- OMEGA-5 r1 — the App rule IS the sequential graded composite (the anchor)
