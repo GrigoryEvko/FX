@@ -164,8 +164,10 @@ def endomorphismCharPolyCoefficients (dimension : Nat) (matrix : SetoidMatrix In
       [-(intCofactorDet 3 matrix), principalTwoMinorSum, -traceValue, 1]
   | _ => []
 
-/-- `source` and `target` are dissimilar because their characteristic polynomials differ. -/
-def EndomorphismDissimilarByCharPoly (dimension : Nat) (source target : SetoidMatrix Int) : Prop :=
+/-- `source` and `target` are dissimilar because their characteristic polynomials differ.  Reducible
+so a concrete separation closes by `decide` (unfolds to `List Int` inequality). -/
+@[reducible] def EndomorphismDissimilarByCharPoly (dimension : Nat)
+    (source target : SetoidMatrix Int) : Prop :=
   endomorphismCharPolyCoefficients dimension source
     ≠ endomorphismCharPolyCoefficients dimension target
 
@@ -197,8 +199,9 @@ def endomorphismRank2 (matrix : SetoidMatrix Int) : Nat :=
       then 0 else 1)
   else 2
 
-/-- `source` and `target` are dissimilar because their `2×2` ranks differ. -/
-def EndomorphismDissimilarByRank (source target : SetoidMatrix Int) : Prop :=
+/-- `source` and `target` are dissimilar because their `2×2` ranks differ.  Reducible so a concrete
+separation closes by `decide` (unfolds to `Nat` inequality). -/
+@[reducible] def EndomorphismDissimilarByRank (source target : SetoidMatrix Int) : Prop :=
   endomorphismRank2 source ≠ endomorphismRank2 target
 
 /-- Grounding: the zero matrix has rank `0`. -/
@@ -212,5 +215,60 @@ theorem endomorphismRankOneExample :
 /-- Grounding: the identity has full rank `2` (`det = 1 ≠ 0`). -/
 theorem endomorphismRankTwoExample :
     endomorphismRank2 (setoidMatrixOfRows [[1, 0], [0, 1]]) = 2 := by decide
+
+/-! ## The decided instances
+
+Two SIMILAR pairs with kernel-checked scaled-pair witnesses, and two DISSIMILAR pairs with
+kernel-checked separators — including the equal-char-poly pair that only rank tells apart. -/
+
+/-- **Similar #1 — unimodular (`d = 1`).**  The nilpotent `[[0,1],[0,0]]` conjugated by the
+unimodular `P = [[1,0],[1,1]]` (`Q = P⁻¹ = [[1,0],[-1,1]]`) to `B = [[1,1],[-1,-1]]`.  Here `d = 1`,
+so the witness reduces to the classical integer-unimodular conjugation. -/
+def endomorphismNilpotentConjugacyWitness : EndomorphismSimilarityWitness :=
+  { dimension := 2
+    source := setoidMatrixOfRows [[0, 1], [0, 0]]
+    target := setoidMatrixOfRows [[1, 1], [-1, -1]]
+    changeOfBasis := setoidMatrixOfRows [[1, 0], [1, 1]]
+    scaledInverse := setoidMatrixOfRows [[1, 0], [-1, 1]]
+    scale := 1 }
+
+/-- The unimodular nilpotent conjugacy is machine-checked: `P · Q = I` and `Q · (A · P) = B`. -/
+theorem endomorphismNilpotentConjugacyIsWitnessed :
+    endomorphismNilpotentConjugacyWitness.WitnessesSimilarity := by decide
+
+/-- **Similar #2 — the scaled trick (`d = 2`, `P` rational-not-integer).**  `A = [[1,1],[0,3]]` and
+`B = [[1,0],[0,3]]` are ℚ-similar but NOT integer-unimodular-conjugate; the conjugator `S = [[1,1],[0,2]]`
+has `det 2`.  Cleared to `P = S`, `Q = adj(S) = [[2,-1],[0,1]]`, `d = 2`: `P · Q = 2·I` and
+`Q · (A · P) = 2·B = [[2,0],[0,6]]`.  This is the instance that exercises the scaled pair. -/
+def endomorphismRationalConjugacyWitness : EndomorphismSimilarityWitness :=
+  { dimension := 2
+    source := setoidMatrixOfRows [[1, 1], [0, 3]]
+    target := setoidMatrixOfRows [[1, 0], [0, 3]]
+    changeOfBasis := setoidMatrixOfRows [[1, 1], [0, 2]]
+    scaledInverse := setoidMatrixOfRows [[2, -1], [0, 1]]
+    scale := 2 }
+
+/-- The `d = 2` rational conjugacy is machine-checked: `P · Q = 2·I` and `Q · (A · P) = 2·B`. -/
+theorem endomorphismRationalConjugacyIsWitnessed :
+    endomorphismRationalConjugacyWitness.WitnessesSimilarity := by decide
+
+/-- **Dissimilar #1 — char-poly (trace differs).**  `[[1,0],[0,0]]` (char-poly `x² − x`) vs
+`[[2,0],[0,0]]` (char-poly `x² − 2x`).  Distinct trace ⇒ distinct char-poly ⇒ dissimilar. -/
+theorem endomorphismDistinctTraceDissimilar :
+    EndomorphismDissimilarByCharPoly 2 (setoidMatrixOfRows [[1, 0], [0, 0]])
+      (setoidMatrixOfRows [[2, 0], [0, 0]]) := by decide
+
+/-- **Dissimilar #2 — equal char-poly, rank-separated (the subtle case).**  The zero matrix vs the
+Jordan block `[[0,1],[0,0]]`: both have char-poly `x²`, so char-poly is blind; rank `0` vs `1`
+separates them. -/
+theorem endomorphismZeroVersusJordanDissimilar :
+    EndomorphismDissimilarByRank (setoidMatrixOfRows [[0, 0], [0, 0]])
+      (setoidMatrixOfRows [[0, 1], [0, 0]]) := by decide
+
+/-- The zero-vs-Jordan pair SHARES a characteristic polynomial (`x²`), confirming char-poly cannot
+separate it — the rank separator above is necessary. -/
+theorem endomorphismZeroVersusJordanShareCharPoly :
+    endomorphismCharPolyCoefficients 2 (setoidMatrixOfRows [[0, 0], [0, 0]])
+      = endomorphismCharPolyCoefficients 2 (setoidMatrixOfRows [[0, 1], [0, 0]]) := by decide
 
 end FX1Poly.ComputerAlgebra
