@@ -161,4 +161,10 @@ namespace FX1PolyAudit
    `p → p+1` through the fold+re-cascade stays the POLE-B wall. -/
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairFoldPreservesSettledFrame
 
+/- H2-SMITH r13 — the repair terminal re-clear (B2): the r10 seed cross-clear instantiated at the post-fold
+   matrix, and the whole-position-sweep cross-clear (input cross clear ⇒ output cross clear, structural on the
+   repair fuel).  The MEDIUM unconditional cross-strip clearing; the frame advance `p → p+1` stays walled. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairFoldCascadeReachesCrossClear
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepReachesCrossClear
+
 end FX1PolyAudit

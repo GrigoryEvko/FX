@@ -3731,4 +3731,98 @@ theorem smithRepairFoldPreservesSettledFrame (matrix : IntMatrix) (pivotIndex fo
         pivotEntryZero, foundEntryZero, intOneMul]
       exact intZeroAdd 0
 
+/-! ## The repair terminal re-clear (H2-SMITH r13, B2) — the fold's re-fired cascade clears the pivot cross
+
+Each repair iteration folds a later row into the pivot row and RE-FIRES the shipped Euclid cascade at the
+pivot.  The r10 seed `smithCascadeSweepSeedReachesCrossClear` — unconditional cross-clear of the seed cascade
+on ANY rectangular matrix with the pivot in range — instantiates verbatim at the POST-FOLD matrix (the fold
+preserves rectangularity via `applyOperationsPreservesRectangular`, the pivot range is the outer guard's).
+`smithRepairFoldCascadeReachesCrossClear` packages that instantiation.
+
+Folding it up the position loop, `smithRepairPositionSweepReachesCrossClear` shows the WHOLE per-position
+repair keeps the pivot cross clear: given the input's cross is clear, the output's cross is clear — the
+`none`/exhausted branches pass the hypothesis through untouched, and every fired iteration lands on the last
+re-cascade's clear cross (B2 at the post-fold matrix) before the IH runs on it.  This is the MEDIUM
+recon deliverable: an UNCONDITIONAL cross-strip clearing of the repair loop, riding r10 per-iteration.  It is
+NOT the frame advance `p → p+1` (which additionally requires the input's cross-strip at `p` be MADE clean
+when it is dirty — the POLE-B wall, since the repair only fires on DIAGONAL non-divisibility).
+`SmithReduceFullDriverStatement` stays uninhabited; NO flip. -/
+
+/-- **The repair fold's re-fired cascade clears the pivot cross** — after folding `foundPos`'s row into the
+pivot row, the re-fired seed cascade at `pivotIndex` reaches `smithCrossIsClear = true`.  The r10 seed
+`smithCascadeSweepSeedReachesCrossClear` at the POST-FOLD matrix (rectangular by
+`applyOperationsPreservesRectangular`; pivot in range from the outer guard).  The single-iteration atom the
+whole-loop cross-clear rides. -/
+theorem smithRepairFoldCascadeReachesCrossClear (matrix : IntMatrix) (foundPos pivotIndex height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width) :
+    smithCrossIsClear
+      ((matrix.applyOperations
+          [ ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]).applyOperations
+        (smithCascadeSweep
+          (smithMinorAbsSum
+            (matrix.applyOperations
+              [ ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ])
+            pivotIndex height width)
+          (matrix.applyOperations
+            [ ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ])
+          pivotIndex height width))
+      pivotIndex height width = true :=
+  smithCascadeSweepSeedReachesCrossClear
+    (matrix.applyOperations
+      [ ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ])
+    pivotIndex height width
+    (applyOperationsPreservesRectangular _ matrix isRect)
+    pivotRowInRange pivotColInRange
+
+/-- **The per-position repair sweep keeps the pivot cross clear** — if the input's cross at `pivotIndex` is
+clear, so is the output's, for every repair fuel.  Structural on the fuel: the `none` and zero-fuel branches
+return the matrix unchanged (hypothesis passes through); a fired iteration lands on the post-fold cascade's
+clear cross (`smithRepairFoldCascadeReachesCrossClear`), which feeds the IH on the reduced matrix.  The
+MEDIUM r13 deliverable — an unconditional cross-strip clearing of the repair loop; the frame advance
+`p → p+1` (making a DIRTY input cross-strip clean) stays the POLE-B wall. -/
+theorem smithRepairPositionSweepReachesCrossClear :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width →
+      smithCrossIsClear matrix pivotIndex height width = true →
+      smithCrossIsClear
+        (matrix.applyOperations (smithRepairPositionSweep fuel matrix pivotIndex height width))
+        pivotIndex height width = true := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width _ _ _ crossClear
+      exact crossClear
+  | succ fuel ih =>
+      intro matrix pivotIndex height width isRect pivotRowInRange pivotColInRange crossClear
+      cases hFind : smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+      | none =>
+          rw [smithRepairPositionSweepSucc fuel matrix pivotIndex height width, hFind]
+          exact crossClear
+      | some foundPos =>
+          let foldOps :=
+            [ ElementaryOperation.rowOperation
+                (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+          let afterFold := matrix.applyOperations foldOps
+          let clearOps :=
+            smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+              afterFold pivotIndex height width
+          let afterClear := afterFold.applyOperations clearOps
+          have afterFoldRect : afterFold.IsRectangular height width :=
+            applyOperationsPreservesRectangular foldOps matrix isRect
+          have afterClearRect : afterClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular clearOps afterFold afterFoldRect
+          have afterClearCrossClear :
+              smithCrossIsClear afterClear pivotIndex height width = true :=
+            smithRepairFoldCascadeReachesCrossClear matrix foundPos pivotIndex height width isRect
+              pivotRowInRange pivotColInRange
+          have hUnfold : smithRepairPositionSweep (fuel + 1) matrix pivotIndex height width
+              = foldOps ++ clearOps ++ smithRepairPositionSweep fuel afterClear pivotIndex height width := by
+            rw [smithRepairPositionSweepSucc fuel matrix pivotIndex height width, hFind]
+          rw [hUnfold, applyOperationsAppend, applyOperationsAppend]
+          exact ih afterClear pivotIndex height width afterClearRect pivotRowInRange pivotColInRange
+            afterClearCrossClear
+
 end FX1Poly.ComputerAlgebra
