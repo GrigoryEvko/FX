@@ -1247,6 +1247,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemanticsAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidOverQuotientAdjudicationAudit
 -- WP-PROP r1 — the matrix PROP opens: carrier VIEW (arity words/hom/composition) + staged spider + per-instance round-trip + two completeness instances over the sound sub-theory
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderNormalFormAudit
+-- WP-PROP r2 — the general spider round-trip: the matMul-algebra Fubini kit + general stage lemmas + general scalar round-trip
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidSpiderRoundTripAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
