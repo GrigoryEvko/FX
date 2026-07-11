@@ -22,4 +22,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.IntPairwiseGcdSpec
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGcdSatisfiesPairwiseSpec
 
+/- BRICK 2 — the diagonal-input narrowing + the pivot-0 discharge + the re-plumb refutation. -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.subBlockOffDiagonalDivisibleOfWindowDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.matrixEntriesDivisibleByWithinOfDiagonalInput
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithDiagonalInputLandedPivotDividesDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.landedPivotDividesMinorOnDiagonalInput
+#assert_no_axioms FX1Poly.ComputerAlgebra.phaseAOutputIsWindowDiagonalAtZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDiagonalInputReplumbFixture
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDiagonalInputPivotOneInputNotWindowDiagonal
+
 end FX1PolyAudit

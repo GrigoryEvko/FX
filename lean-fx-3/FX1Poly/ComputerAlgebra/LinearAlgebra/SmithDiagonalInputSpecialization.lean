@@ -91,4 +91,120 @@ theorem intGcdSatisfiesPairwiseSpec (leftValue rightValue : Int) :
    intGcdDividesRight leftValue rightValue,
    fun dividesLeft dividesRight => intGcdGreatest dividesLeft dividesRight⟩
 
+/-! ## BRICK 2 — the diagonal-input narrowing + the re-plumb refutation (H2-SMITH r24, B2)
+
+The verdict-(iii) content.  On a WINDOW-DIAGONAL input the keystone's INPUT off-diagonal cells are
+`0`, so its off-diagonal half is free — the keystone-input-minor divisibility narrows to the DIAGONAL
+common-divisor obligation alone.  But this specialization discharges ONLY the pivot-0 evaluation (the
+Phase-A output is provably window-diagonal); the chain carrier `chainWindowedThroughPivots` needs the
+keystone on the pivot-`p ≥ 1` ADVANCED matrices, which are NON-diagonal — machine-refuted below. -/
+
+/-- **On a window-diagonal input the off-diagonal half is free.**  Every off-diagonal cell of the
+`[lo, ·)²` quadrant of a window-diagonal rectangular matrix is `0` (in-window by `IsWindowDiagonal`,
+beyond-window by `entryAtBeyondZero`), hence divisible by ANY `divisor`.  The narrowing that removes
+the seed's gcd-ideal wall on diagonal inputs. -/
+theorem subBlockOffDiagonalDivisibleOfWindowDiagonal {height width : Nat} (divisor : Int)
+    (matrix : IntMatrix) (isRect : matrix.IsRectangular height width) (lo : Nat)
+    (isDiag : IsWindowDiagonal matrix lo height width) :
+    SubBlockOffDiagonalDivisibleFrom divisor lo matrix := by
+  intro rowIndex colIndex rowGe colGe rowNeCol
+  cases Nat.lt_or_ge rowIndex height with
+  | inl rowLt =>
+      cases Nat.lt_or_ge colIndex width with
+      | inl colLt =>
+          rw [isDiag rowIndex colIndex rowGe rowLt colGe colLt rowNeCol]
+          exact dividesExactlyZero divisor
+      | inr colGeWidth =>
+          rw [entryAtBeyondZero matrix isRect rowIndex colIndex (Or.inr colGeWidth)]
+          exact dividesExactlyZero divisor
+  | inr rowGeHeight =>
+      rw [entryAtBeyondZero matrix isRect rowIndex colIndex (Or.inl rowGeHeight)]
+      exact dividesExactlyZero divisor
+
+/-- **The keystone-input-minor divisibility from the DIAGONAL half alone, on a diagonal input.**
+Given a window-diagonal rectangular input, `MatrixEntriesDivisibleByWithin divisor lo matrix` (the
+keystone's input-minor obligation) follows from the diagonal-common-divisor obligation
+`SubBlockDiagonalDivisibleFrom divisor lo matrix` — the off-diagonal half is supplied for free by
+`subBlockOffDiagonalDivisibleOfWindowDiagonal`.  The genuine narrowing of the keystone on diagonal
+inputs (recon verdict (iii)). -/
+theorem matrixEntriesDivisibleByWithinOfDiagonalInput {height width : Nat} (divisor : Int)
+    (matrix : IntMatrix) (isRect : matrix.IsRectangular height width) (lo : Nat)
+    (isDiag : IsWindowDiagonal matrix lo height width)
+    (diagDivisible : SubBlockDiagonalDivisibleFrom divisor lo matrix) :
+    MatrixEntriesDivisibleByWithin divisor lo matrix :=
+  matrixEntriesDivisibleByWithinOfHalves divisor lo matrix diagDivisible
+    (subBlockOffDiagonalDivisibleOfWindowDiagonal divisor matrix isRect lo isDiag)
+
+/-- **The diagonal-input-scoped keystone** — the `SmithCascadeLandedPivotDividesMinor` obligation
+RESTRICTED to window-diagonal inputs, and further NARROWED to its diagonal-common-divisor content:
+on a window-diagonal input, the pivot-`p` clearing-sweep landed pivot divides every INPUT DIAGONAL
+entry of the `[p, ·)` window.  Strictly weaker than the unrestricted keystone (it only sees diagonal
+inputs), and — per `smithDiagonalInputPivotOneInputNotWindowDiagonal` — NOT enough to feed
+`chainWindowedThroughPivots`. -/
+def SmithDiagonalInputLandedPivotDividesDiagonal : Prop :=
+  ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
+    matrix.IsRectangular height width → pivotIndex < height → pivotIndex < width →
+    IsWindowDiagonal matrix pivotIndex height width →
+    SubBlockDiagonalDivisibleFrom
+      ((matrix.applyOperations
+          (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width)).diagonalEntryAt pivotIndex)
+      pivotIndex
+      matrix
+
+/-- **The re-threaded reduction (a Lean theorem)** — GIVEN the diagonal-input-scoped keystone, the
+FULL keystone-input-minor divisibility `MatrixEntriesDivisibleByWithin (landed pivot) pivotIndex matrix`
+holds ON window-diagonal inputs.  Composes the scoped diagonal obligation with the diagonal-input
+narrowing `matrixEntriesDivisibleByWithinOfDiagonalInput`.  This is the pivot-0 evaluation of the
+keystone (the Phase-A output being window-diagonal, `phaseAOutputIsWindowDiagonalAtZero`); it does NOT
+generalise to the chain (the advanced matrices are non-diagonal). -/
+theorem landedPivotDividesMinorOnDiagonalInput
+    (diagonalCase : SmithDiagonalInputLandedPivotDividesDiagonal)
+    (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pRowLt : pivotIndex < height) (pColLt : pivotIndex < width)
+    (isDiag : IsWindowDiagonal matrix pivotIndex height width) :
+    MatrixEntriesDivisibleByWithin
+      ((matrix.applyOperations
+          (smithRepairPositionSweepClearing (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width)).diagonalEntryAt pivotIndex)
+      pivotIndex
+      matrix :=
+  matrixEntriesDivisibleByWithinOfDiagonalInput _ matrix isRect pivotIndex isDiag
+    (diagonalCase matrix pivotIndex height width isRect pRowLt pColLt isDiag)
+
+/-- **The Phase-A output is window-diagonal at floor `0`** — the total cross-clear sweep output has an
+off-diagonal-zero `[0, ·)` window (`smithReduceTotalSweepDiagonalizes`, the `0 ≤ ·` guards trivial).
+So at pivot `0` the diagonal-input hypothesis of the scoped keystone is DISCHARGED, not assumed. -/
+theorem phaseAOutputIsWindowDiagonalAtZero (matrix : IntMatrix) (height width : Nat)
+    (isRect : matrix.IsRectangular height width) :
+    IsWindowDiagonal
+      (matrix.applyOperations (smithReduceTotalSweep (Nat.min height width) matrix 0 height width))
+      0 height width :=
+  fun rowIndex colIndex _rowGe rowLt _colGe colLt rowNeCol =>
+    smithReduceTotalSweepDiagonalizes matrix height width isRect rowIndex colIndex rowLt colLt rowNeCol
+
+/-- The NODE-E re-plumb fixture `diag(15, 10, 6, 4)` — the pivot-0 clearing sweep sends its `(3, 1)`
+cell to `-20`, planting a nonzero off-diagonal INSIDE the pivot-1 window `[1, ·)²`. -/
+def smithDiagonalInputReplumbFixture : IntMatrix :=
+  { rows := [[15, 0, 0, 0], [0, 10, 0, 0], [0, 0, 6, 0], [0, 0, 0, 4]] }
+
+set_option maxRecDepth 8000 in
+/-- **THE RE-PLUMB REFUTATION (verdict (iii), machine-checked).**  The pivot-0 clearing-sweep output
+of `diag(15, 10, 6, 4)` is NOT window-diagonal at floor `1`: its `[1, ·)` minor carries `-20` at the
+off-diagonal cell `(3, 1)` (`1 ≤ 3 < 4`, `1 ≤ 1 < 4`, `3 ≠ 1`).  So `chainWindowedThroughPivots`,
+whose induction advances `matrix := matrix.applyOperations (pivot-0 sweep)` and would need
+`IsWindowDiagonal (advanced) 1 · ·` to invoke the diagonal-input keystone at pivot 1, CANNOT obtain
+it — the diagonal-input specialization discharges only pivot 0 and does NOT re-plumb the chain.  A
+single-entry 4×4 sweep read (NODE-E granularity, within the defeq ceiling). -/
+theorem smithDiagonalInputPivotOneInputNotWindowDiagonal :
+    ¬ IsWindowDiagonal
+        (smithDiagonalInputReplumbFixture.applyOperations
+          (smithRepairPositionSweepClearing
+            (smithMinorAbsSum smithDiagonalInputReplumbFixture 0 4 4)
+            smithDiagonalInputReplumbFixture 0 4 4))
+        1 4 4 :=
+  fun isDiag =>
+    absurd (isDiag 3 1 (by decide) (by decide) (by decide) (by decide) (by decide)) (by decide)
+
 end FX1Poly.ComputerAlgebra
