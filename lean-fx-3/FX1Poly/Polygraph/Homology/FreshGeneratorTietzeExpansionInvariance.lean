@@ -149,4 +149,117 @@ theorem handProbeExpandedBoundaryReducesToSmithNormalForm :
         handProbeExpandedTietzeBoundaryOfDimOneSmithCertificate.operations
       = ⟨[[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 3, 0, 0]]⟩ := rfl
 
+/-! ## B3 — the generic homology-preservation theorem (the reader-level invariance)
+
+The single Tietze move — adjoin `t` with `t ⟹ w` — inserts exactly ONE unit into the Smith diagonal of
+`d2` (bumping its rank by one), appends a ZERO row to `d3` (leaving its rank untouched), and leaves the
+non-unit torsion factors alone.  Read through the shipped generic `SmithHomologyData.homologyInvariant`,
+this preserves the homology invariant at BOTH degree 1 and degree 2.  Everything below is at the reader
+granularity — the two diagonal inductions plus the truncated-subtraction bookkeeping. -/
+
+/-- `(leftValue + 1) − (rightValue + 1) = leftValue − rightValue` — structural on `rightValue`, no
+`Nat.succ_sub_succ` import (the second `Nat.sub` argument drives the recursion). -/
+theorem natSuccSubSuccEqSub :
+    ∀ (leftValue rightValue : Nat), (leftValue + 1) - (rightValue + 1) = leftValue - rightValue
+  | _, 0 => rfl
+  | leftValue, rightValue + 1 => congrArg Nat.pred (natSuccSubSuccEqSub leftValue rightValue)
+
+/-- Two homology invariants are equal when their free ranks and torsion-factor lists agree — the
+structure-eta bridge, via `Eq` cases (no propext). -/
+theorem homologyInvariantEq {leftInvariant rightInvariant : HomologyInvariant}
+    (freeRankEq : leftInvariant.freeRank = rightInvariant.freeRank)
+    (torsionEq : leftInvariant.torsionFactors = rightInvariant.torsionFactors) :
+    leftInvariant = rightInvariant := by
+  cases leftInvariant
+  cases rightInvariant
+  cases freeRankEq
+  cases torsionEq
+  rfl
+
+/-- ★ **Prefix-unit rank successor (the first diagonal induction).**  When the top diagonal entry of a
+Smith matrix within the window `windowSize + 1` is NONZERO (a fresh unit pivot), the Smith rank within
+that window is one more than the rank within `windowSize` — the fresh unit contributes exactly `+1`. -/
+theorem smithRankWithinTopNonzeroIsSuccessor (matrix : IntMatrix) (windowSize : Nat)
+    (topIsNonzero : matrix.diagonalEntryAt windowSize ≠ 0) :
+    smithRankWithin matrix (windowSize + 1) = smithRankWithin matrix windowSize + 1 := by
+  show (if matrix.diagonalEntryAt windowSize = 0 then 0 else 1) + smithRankWithin matrix windowSize
+      = smithRankWithin matrix windowSize + 1
+  rw [if_neg topIsNonzero]
+  exact Nat.add_comm 1 (smithRankWithin matrix windowSize)
+
+/-- ★ **Prefix-unit torsion stability (the second diagonal induction).**  Prepending a UNIT invariant
+factor `1` to the factor list leaves the non-unit torsion factors UNCHANGED — the unit is filtered out
+by `nonUnitInvariantFactors`'s explicit `if factor = 1` guard.  `rfl`. -/
+theorem nonUnitInvariantFactorsUnitConsIsStable (remainingFactors : List Int) :
+    nonUnitInvariantFactors ((1 : Int) :: remainingFactors)
+      = nonUnitInvariantFactors remainingFactors := rfl
+
+/-- ★★ **THE DEGREE-1 PRESERVATION THEOREM (generic, reader-level).**  Given base and expanded Smith
+homology data whose (a) chain basis bumps by one, (b) into-lower rank is unchanged and is zero (the
+all-zero `d1` loop row), (c) from-higher rank bumps by one (the fresh Smith unit), and (d) non-unit
+torsion factors agree, the expanded degree-1 homology invariant EQUALS the base one.  The free rank
+`(C1 + 1 − 0) − (rank + 1) = C1 − rank` is preserved by `natSuccSubSuccEqSub`; the torsion by (d). -/
+theorem tietzeExpansionPreservesDegreeOneInvariant
+    (baseData expandedData : SmithHomologyData)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (intoLowerRankAgrees :
+      smithRankWithin expandedData.smithBoundaryIntoLower expandedData.windowIntoLower
+        = smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower)
+    (baseIntoLowerRankIsZero :
+      smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower = 0)
+    (fromHigherRankIsSuccessor :
+      smithRankWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher
+        = smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher + 1)
+    (fromHigherTorsionAgrees :
+      nonUnitInvariantFactors
+          (smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher)
+        = nonUnitInvariantFactors
+          (smithInvariantFactorsWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher)) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  refine homologyInvariantEq ?_ ?_
+  · show (expandedData.chainBasisCount
+            - smithRankWithin expandedData.smithBoundaryIntoLower expandedData.windowIntoLower)
+          - smithRankWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher
+        = (baseData.chainBasisCount
+            - smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower)
+          - smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher
+    rw [basisIsSuccessor, intoLowerRankAgrees, baseIntoLowerRankIsZero, fromHigherRankIsSuccessor]
+    exact natSuccSubSuccEqSub baseData.chainBasisCount
+      (smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher)
+  · exact fromHigherTorsionAgrees
+
+/-- ★★ **THE DEGREE-2 PRESERVATION THEOREM (generic, reader-level).**  Given base and expanded Smith
+homology data whose (a) chain basis bumps by one, (b) into-lower rank bumps by one (the fresh Smith unit
+in `d2`), (c) from-higher rank is unchanged (the appended zero `d3` row adds no rank), and (d) non-unit
+torsion factors agree, the expanded degree-2 homology invariant EQUALS the base one.  The free rank
+`(C2 + 1 − (rank + 1)) − r3 = (C2 − rank) − r3` is preserved by `natSuccSubSuccEqSub`. -/
+theorem tietzeExpansionPreservesDegreeTwoInvariant
+    (baseData expandedData : SmithHomologyData)
+    (basisIsSuccessor : expandedData.chainBasisCount = baseData.chainBasisCount + 1)
+    (intoLowerRankIsSuccessor :
+      smithRankWithin expandedData.smithBoundaryIntoLower expandedData.windowIntoLower
+        = smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower + 1)
+    (fromHigherRankAgrees :
+      smithRankWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher
+        = smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher)
+    (fromHigherTorsionAgrees :
+      nonUnitInvariantFactors
+          (smithInvariantFactorsWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher)
+        = nonUnitInvariantFactors
+          (smithInvariantFactorsWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher)) :
+    expandedData.homologyInvariant = baseData.homologyInvariant := by
+  refine homologyInvariantEq ?_ ?_
+  · show (expandedData.chainBasisCount
+            - smithRankWithin expandedData.smithBoundaryIntoLower expandedData.windowIntoLower)
+          - smithRankWithin expandedData.smithBoundaryFromHigher expandedData.windowFromHigher
+        = (baseData.chainBasisCount
+            - smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower)
+          - smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher
+    rw [basisIsSuccessor, intoLowerRankIsSuccessor, fromHigherRankAgrees]
+    exact congrArg
+      (· - smithRankWithin baseData.smithBoundaryFromHigher baseData.windowFromHigher)
+      (natSuccSubSuccEqSub baseData.chainBasisCount
+        (smithRankWithin baseData.smithBoundaryIntoLower baseData.windowIntoLower))
+  · exact fromHigherTorsionAgrees
+
 end FX1Poly.Polygraph.Homology

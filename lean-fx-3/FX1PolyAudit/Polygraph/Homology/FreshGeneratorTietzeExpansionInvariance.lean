@@ -23,4 +23,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedTietzeBoundaryOfDimOneSmithCertificate
 #assert_no_axioms FX1Poly.Polygraph.Homology.handProbeExpandedBoundaryReducesToSmithNormalForm
 
+-- B3: the reader-level diagonal inductions + the generic degree-1/degree-2 preservation theorems
+#assert_no_axioms FX1Poly.Polygraph.Homology.natSuccSubSuccEqSub
+#assert_no_axioms FX1Poly.Polygraph.Homology.homologyInvariantEq
+#assert_no_axioms FX1Poly.Polygraph.Homology.smithRankWithinTopNonzeroIsSuccessor
+#assert_no_axioms FX1Poly.Polygraph.Homology.nonUnitInvariantFactorsUnitConsIsStable
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeExpansionPreservesDegreeOneInvariant
+#assert_no_axioms FX1Poly.Polygraph.Homology.tietzeExpansionPreservesDegreeTwoInvariant
+
 end FX1PolyAudit
