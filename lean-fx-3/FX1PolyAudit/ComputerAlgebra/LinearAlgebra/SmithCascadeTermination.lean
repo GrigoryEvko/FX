@@ -95,4 +95,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithMoveToPivotOpsPreservesLowLowEntry
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepPreservesLowLowEntry
 
+/- H2-SMITH r11 — the fold transport up the driver stack (B2): the min-le-right companion, the seed-fuel
+   corollary, and the three per-pivot sweep lifts (cross-clear total sweep, per-position repair, top-down
+   divisibility repair). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.natMinLeRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCascadeSweepSeedPreservesLowLowEntry
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceTotalSweepPreservesLowLowEntry
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepPreservesLowLowEntry
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithDivisibilityRepairSweepPreservesLowLowEntry
+
 end FX1PolyAudit

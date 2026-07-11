@@ -2320,4 +2320,237 @@ theorem smithCascadeSweepPreservesLowLowEntry :
                 pivotRowInRange pivotColInRange readRowLtPivot readColLtPivot).trans
                 afterRowClearPreserves
 
+/-! ## The fold transport up the driver stack (H2-SMITH r11, B2) — low-low across the sweeps
+
+The keystone is discharged at the STATIC seed fuel `smithMinorAbsSum` the driver actually seeds the
+cascade with (the driver-path form, mirror of `smithCascadeSweepSeedReachesCrossClear`), then lifted
+through the three per-pivot sweeps of the augmented driver:
+
+  * `smithReduceTotalSweep` (the cross-clear phase `diagOps`) — per pivot a seed cascade;
+  * `smithRepairPositionSweep` (the per-position divisibility fold loop) — per iteration an
+    `addRowMultiple foundPos pivotIndex 1` fold (target row `pivotIndex`, off a low read row) then a seed
+    cascade;
+  * `smithDivisibilityRepairSweep` (the top-down repair phase `repairOps`) — per pivot a position sweep.
+
+Each transport is structural on its fuel: a cell below the STARTING pivot survives every op the sweep
+fires (the fold's target row is the pivot, the cascade preserves low-low), and stays below the advanced
+pivot for the recursion.  The genuine "fold transport" the task's B2 asks for — refutation-immune
+function-correctness facts about the definite driver words. -/
+
+/-- **`Nat.min` sits below its right argument** — the propext-clean right companion of `natMinLeLeft`
+(Init's `Nat.min_le_right` is propext-dirty): case the `if`-defined `Nat.min` guard, close by the guard
+hypothesis (min = left ≤ right) or reflexivity (min = right). -/
+theorem natMinLeRight (leftValue rightValue : Nat) :
+    Nat.min leftValue rightValue ≤ rightValue := by
+  show (if leftValue ≤ rightValue then leftValue else rightValue) ≤ rightValue
+  cases Nat.decLe leftValue rightValue with
+  | isTrue isLe =>
+      rw [if_pos isLe]
+      exact isLe
+  | isFalse isNotLe =>
+      rw [if_neg isNotLe]
+      exact Nat.le.refl
+
+/-- **The cascade at its ACTUAL seed fuel preserves a low-low entry** (driver-path form) — the keystone
+`smithCascadeSweepPreservesLowLowEntry` discharged at `smithMinorAbsSum matrix pivotIndex height width`,
+the static fuel the total driver and the repair seed the cascade with.  The direct low-low twin of
+`smithCascadeSweepSeedReachesCrossClear`. -/
+theorem smithCascadeSweepSeedPreservesLowLowEntry (matrix : IntMatrix)
+    (pivotIndex height width readRow readCol : Nat)
+    (isRect : matrix.IsRectangular height width)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (readRowLtPivot : readRow < pivotIndex) (readColLtPivot : readCol < pivotIndex) :
+    (matrix.applyOperations
+        (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+          matrix pivotIndex height width)).entryAt readRow readCol
+      = matrix.entryAt readRow readCol :=
+  smithCascadeSweepPreservesLowLowEntry (smithMinorAbsSum matrix pivotIndex height width) matrix
+    pivotIndex height width readRow readCol isRect pivotRowInRange pivotColInRange readRowLtPivot
+    readColLtPivot
+
+/-- **The cross-clear total sweep preserves a low-low entry** — `smithReduceTotalSweep` leaves every cell
+`(readRow, readCol)` strictly below its STARTING pivot unchanged.  Structural on the outer (pivot-budget)
+fuel: the seed cascade at the current pivot preserves the cell (`smithCascadeSweepSeedPreservesLowLowEntry`,
+pivot-in-range from the `pivotIndex + 1 ≤ min` guard), and the cell stays below the advanced pivot for the
+recursion. -/
+theorem smithReduceTotalSweepPreservesLowLowEntry :
+    ∀ (outerFuel : Nat) (matrix : IntMatrix) (pivotIndex height width readRow readCol : Nat),
+      matrix.IsRectangular height width →
+      readRow < pivotIndex → readCol < pivotIndex →
+      (matrix.applyOperations
+          (smithReduceTotalSweep outerFuel matrix pivotIndex height width)).entryAt readRow readCol
+        = matrix.entryAt readRow readCol := by
+  intro outerFuel
+  induction outerFuel with
+  | zero =>
+      intro matrix pivotIndex height width readRow readCol _ _ _
+      rfl
+  | succ outerFuel ih =>
+      intro matrix pivotIndex height width readRow readCol isRect readRowLtPivot readColLtPivot
+      show (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width
+              ++ smithReduceTotalSweep outerFuel
+                  (matrix.applyOperations
+                    (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                      height width))
+                  (pivotIndex + 1) height width
+           else [])).entryAt readRow readCol = matrix.entryAt readRow readCol
+      split
+      · rename_i hCond
+        rw [applyOperationsAppend]
+        have pivotRowInRange : pivotIndex < height := natLeTrans hCond (natMinLeLeft height width)
+        have pivotColInRange : pivotIndex < width := natLeTrans hCond (natMinLeRight height width)
+        have seedPreserves :
+            (matrix.applyOperations
+                (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width)).entryAt readRow readCol
+              = matrix.entryAt readRow readCol :=
+          smithCascadeSweepSeedPreservesLowLowEntry matrix pivotIndex height width readRow readCol isRect
+            pivotRowInRange pivotColInRange readRowLtPivot readColLtPivot
+        have afterPivotRect :
+            (matrix.applyOperations
+                (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                  height width)).IsRectangular height width :=
+          applyOperationsPreservesRectangular _ matrix isRect
+        exact (ih
+            (matrix.applyOperations
+              (smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                height width))
+            (pivotIndex + 1) height width readRow readCol afterPivotRect
+            (Nat.lt_trans readRowLtPivot (Nat.lt_succ_self pivotIndex))
+            (Nat.lt_trans readColLtPivot (Nat.lt_succ_self pivotIndex))).trans seedPreserves
+      · rfl
+
+/-- **`smithRepairPositionSweep` at successor fuel unfolds to its match body** — the definitional
+unfolding of the structural recursion at `fuel + 1`, exposed as a rewrite target (`rfl`).  The
+repair-loop analogue of `smithCascadeSweepSucc`. -/
+theorem smithRepairPositionSweepSucc (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat) :
+    smithRepairPositionSweep (fuel + 1) matrix pivotIndex height width
+      = (match smithFindNonDividingLaterDiagonal matrix pivotIndex
+            (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+         | none => []
+         | some foundPos =>
+             let foldOps :=
+               [ ElementaryOperation.rowOperation
+                   (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+             let afterFold := matrix.applyOperations foldOps
+             let clearOps :=
+               smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+                 afterFold pivotIndex height width
+             let afterClear := afterFold.applyOperations clearOps
+             foldOps ++ clearOps ++ smithRepairPositionSweep fuel afterClear pivotIndex height width) :=
+  rfl
+
+/-- **The per-position divisibility repair preserves a low-low entry** — `smithRepairPositionSweep` leaves
+every cell `(readRow, readCol)` strictly below its pivot unchanged.  Structural on the repair fuel: the
+fold `addRowMultiple foundPos pivotIndex 1` targets row `pivotIndex` (off the low read row `readRow ≠
+pivotIndex`, via `addRowMultiplePreservesEntryOffTargetRow`), the re-fired seed cascade preserves low-low,
+and the loop stays at the SAME pivot so the IH applies verbatim.  Needs the pivot in range for the cascade
+seed (supplied by the outer sweep's guard). -/
+theorem smithRepairPositionSweepPreservesLowLowEntry :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width readRow readCol : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width →
+      readRow < pivotIndex → readCol < pivotIndex →
+      (matrix.applyOperations
+          (smithRepairPositionSweep fuel matrix pivotIndex height width)).entryAt readRow readCol
+        = matrix.entryAt readRow readCol := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width readRow readCol _ _ _ _ _
+      rfl
+  | succ fuel ih =>
+      intro matrix pivotIndex height width readRow readCol isRect pivotRowInRange pivotColInRange
+        readRowLtPivot readColLtPivot
+      cases hFind : smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+      | none =>
+          rw [smithRepairPositionSweepSucc fuel matrix pivotIndex height width, hFind]
+          rfl
+      | some foundPos =>
+          let foldOps :=
+            [ ElementaryOperation.rowOperation
+                (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+          let afterFold := matrix.applyOperations foldOps
+          let clearOps :=
+            smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+              afterFold pivotIndex height width
+          let afterClear := afterFold.applyOperations clearOps
+          have afterFoldRect : afterFold.IsRectangular height width :=
+            applyOperationsPreservesRectangular foldOps matrix isRect
+          have afterClearRect : afterClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular clearOps afterFold afterFoldRect
+          have foldPreserves : afterFold.entryAt readRow readCol = matrix.entryAt readRow readCol :=
+            addRowMultiplePreservesEntryOffTargetRow matrix foundPos pivotIndex 1 readRow readCol
+              (Nat.ne_of_lt readRowLtPivot)
+          have clearPreserves : afterClear.entryAt readRow readCol = afterFold.entryAt readRow readCol :=
+            smithCascadeSweepSeedPreservesLowLowEntry afterFold pivotIndex height width readRow readCol
+              afterFoldRect pivotRowInRange pivotColInRange readRowLtPivot readColLtPivot
+          have hUnfold : smithRepairPositionSweep (fuel + 1) matrix pivotIndex height width
+              = foldOps ++ clearOps ++ smithRepairPositionSweep fuel afterClear pivotIndex height width := by
+            rw [smithRepairPositionSweepSucc fuel matrix pivotIndex height width, hFind]
+          rw [hUnfold, applyOperationsAppend, applyOperationsAppend]
+          exact (ih afterClear pivotIndex height width readRow readCol afterClearRect pivotRowInRange
+            pivotColInRange readRowLtPivot readColLtPivot).trans (clearPreserves.trans foldPreserves)
+
+/-- **The top-down divisibility-repair sweep preserves a low-low entry** — `smithDivisibilityRepairSweep`
+leaves every cell `(readRow, readCol)` strictly below its STARTING pivot unchanged.  Structural on the
+outer fuel: the per-position repair at the current pivot preserves the cell
+(`smithRepairPositionSweepPreservesLowLowEntry`, pivot-in-range from the guard), and the cell stays below
+the advanced pivot for the recursion.  At the driver's top-level start `pivotIndex = 0` this is VACUOUS
+(no cell below `0`) — the honest gap the recon flags: `repairWindowDiagHolds` demands the WHOLE window
+off-diagonal-zero, and its sub-block + bands are POLE-A-walled, not settled-prefix monotonicity. -/
+theorem smithDivisibilityRepairSweepPreservesLowLowEntry :
+    ∀ (outerFuel : Nat) (matrix : IntMatrix) (pivotIndex height width readRow readCol : Nat),
+      matrix.IsRectangular height width →
+      readRow < pivotIndex → readCol < pivotIndex →
+      (matrix.applyOperations
+          (smithDivisibilityRepairSweep outerFuel matrix pivotIndex height width)).entryAt readRow readCol
+        = matrix.entryAt readRow readCol := by
+  intro outerFuel
+  induction outerFuel with
+  | zero =>
+      intro matrix pivotIndex height width readRow readCol _ _ _
+      rfl
+  | succ outerFuel ih =>
+      intro matrix pivotIndex height width readRow readCol isRect readRowLtPivot readColLtPivot
+      show (matrix.applyOperations
+          (if pivotIndex + 1 ≤ Nat.min height width then
+            smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                height width
+              ++ smithDivisibilityRepairSweep outerFuel
+                  (matrix.applyOperations
+                    (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix
+                      pivotIndex height width))
+                  (pivotIndex + 1) height width
+           else [])).entryAt readRow readCol = matrix.entryAt readRow readCol
+      split
+      · rename_i hCond
+        rw [applyOperationsAppend]
+        have pivotRowInRange : pivotIndex < height := natLeTrans hCond (natMinLeLeft height width)
+        have pivotColInRange : pivotIndex < width := natLeTrans hCond (natMinLeRight height width)
+        have positionPreserves :
+            (matrix.applyOperations
+                (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix
+                  pivotIndex height width)).entryAt readRow readCol
+              = matrix.entryAt readRow readCol :=
+          smithRepairPositionSweepPreservesLowLowEntry (smithMinorAbsSum matrix pivotIndex height width)
+            matrix pivotIndex height width readRow readCol isRect pivotRowInRange pivotColInRange
+            readRowLtPivot readColLtPivot
+        have afterPositionRect :
+            (matrix.applyOperations
+                (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix
+                  pivotIndex height width)).IsRectangular height width :=
+          applyOperationsPreservesRectangular _ matrix isRect
+        exact (ih
+            (matrix.applyOperations
+              (smithRepairPositionSweep (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex
+                height width))
+            (pivotIndex + 1) height width readRow readCol afterPositionRect
+            (Nat.lt_trans readRowLtPivot (Nat.lt_succ_self pivotIndex))
+            (Nat.lt_trans readColLtPivot (Nat.lt_succ_self pivotIndex))).trans positionPreserves
+      · rfl
+
 end FX1Poly.ComputerAlgebra
