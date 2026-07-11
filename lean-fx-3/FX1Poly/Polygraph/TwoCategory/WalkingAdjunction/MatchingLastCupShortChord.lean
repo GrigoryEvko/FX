@@ -321,8 +321,9 @@ theorem stepCupMatching_forwardPartner (state : WireState) (windowPosition : Nat
 so the whole pure-cup fold runs from the width-`0` seed `⟨[], [], 0, 0⟩` positivity-free — the
 sentinel gate that kills the generic `processSpine_wireStateFresh` at width `0` never fires. -/
 theorem wireStateFresh_processSpine_ofAllCup
-    {overallSource overallTarget : adjunctionGraph.Mode} :
-    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget)) →
+    {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} :
+    (atoms : List (SpineAtom signature overallSource overallTarget)) →
     AllCupArity atoms → (state : WireState) → WireStateFresh state →
     WireStateFresh (processSpine state atoms)
   | [], _, _, fresh => fresh

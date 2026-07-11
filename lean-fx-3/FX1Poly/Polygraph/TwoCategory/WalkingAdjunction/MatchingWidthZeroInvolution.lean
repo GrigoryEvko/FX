@@ -258,8 +258,9 @@ private theorem nodeRootClassSmall_stepCup (state : WireState) (position : Nat)
 census, each cup step discharged by `nodeRootClassSmall_stepCup`.  Positivity-free (the cup sentinel never
 fires). -/
 private theorem nodeRootClassSmall_processSpine_ofAllCup
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    (atoms : List (SpineAtom signature overallSource overallTarget))
     (pureCup : AllCupArity atoms) :
     (state : WireState) → WireStateFresh state → isUnionFindForest state.links →
     NodeRootClassSmall state → NodeRootClassSmall (processSpine state atoms) := by
@@ -286,8 +287,9 @@ private theorem nodeRootClassSmall_seedZero :
 /-- A pure-cup block preserves open-wire distinctness from the width-`0` seed — each cup splices two fresh
 legs (`stepCup_wireListDistinct`), no cap sentinel needed. -/
 private theorem wireListDistinct_processSpine_ofAllCup
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    (atoms : List (SpineAtom signature overallSource overallTarget))
     (pureCup : AllCupArity atoms) :
     (state : WireState) → WireStateFresh state → WireListDistinct state.openWires →
     WireListDistinct (processSpine state atoms).openWires := by
@@ -309,8 +311,9 @@ distinct in-range boundary indices read three distinct open wires (open-wire dis
 `nextFresh` (`WireStateFresh`); pairwise same-component means pairwise equal roots, so the node census
 (each component `≤ 2` members) is violated. -/
 theorem widthZeroPureCup_boundaryIndexCensus
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    (spine : List (SpineAtom signature overallSource overallTarget))
     (pureCup : AllCupArity spine) :
     BoundaryIndexCensus (processSpine ⟨List.range 0, [], 0, 0⟩ spine).links
       (List.range 0 ++ (processSpine ⟨List.range 0, [], 0, 0⟩ spine).openWires)
@@ -367,8 +370,9 @@ port again — the width-0 partner involution the LOCATE snake exclusion consume
 (`widthZeroPureCup_boundaryIndexCensus`), with NO `arcDiagram_eq_matching` bridge and NO `0 < bottomCount`
 — the make-or-break of the Track B width-0 stack, positivity-free. -/
 theorem matchingOfSpineListZero_partner_isInvolution
-    {overallSource overallTarget : adjunctionGraph.Mode}
-    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    (spine : List (SpineAtom signature overallSource overallTarget))
     (pureCup : AllCupArity spine)
     (index : Nat)
     (inRange : index < 0 + (matchingOfSpineList 0 spine).topCount)
