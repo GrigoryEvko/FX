@@ -164,4 +164,77 @@ theorem groupRingCancelProbe :
 theorem signScaleNegProbe :
     signScale false (GroupRingZmod3.mk 1 0 0) = GroupRingZmod3.mk (-1) 0 0 := rfl
 
+/-! ## B2 — the residue "image of `w` in `G`" and the invariant map `E → ZZ[ZZ/3]` -/
+
+/-- One `t`-shift up in `ZZ/3` (the residue of appending the single generator `s`). -/
+def shiftUp : ZmodThree → ZmodThree
+  | .residue0 => .residue1
+  | .residue1 => .residue2
+  | .residue2 => .residue0
+
+/-- One `t`-shift down in `ZZ/3` (the residue of appending `s⁻¹`). -/
+def shiftDown : ZmodThree → ZmodThree
+  | .residue0 => .residue2
+  | .residue1 => .residue0
+  | .residue2 => .residue1
+
+/-- The residue shift of a single signed letter — the generator index is IGNORED (there is one
+generator), so `pos` shifts up and `neg` shifts down.  Full enum on the sign. -/
+def letterShift : SignedLetter → ZmodThree → ZmodThree
+  | .pos _, residue => shiftUp residue
+  | .neg _, residue => shiftDown residue
+
+/-- **The image of a free-group word in `G = ZZ/3`** — the exponent-sum residue, a right fold of the
+per-letter shifts starting from `residue0`. -/
+def wordResidue : List SignedLetter → ZmodThree
+  | [] => .residue0
+  | letter :: rest => letterShift letter (wordResidue rest)
+
+/-- **The invariant image of one conjugated relator** `±(w, r)` in the group ring: the sign-scaled
+`t^(image of w in G)` basis element.  (The single relator collapses `R = 1`, so there is one `ZZ³`.) -/
+def conjugatedRelatorImage (gen : ConjugatedRelator) : GroupRingZmod3 :=
+  signScale gen.isPositive (powerOfT (wordResidue gen.conjugator))
+
+/-- ★ **The separating invariant `E → ZZ[ZZ/3]`** — the additive extension of `conjugatedRelatorImage`
+over the free word of the pre-crossed carrier, a right fold summing the per-generator images. -/
+def crossedModuleImage : PreCrossedElement → GroupRingZmod3
+  | [] => groupRingZero
+  | gen :: rest => groupRingAdd (conjugatedRelatorImage gen) (crossedModuleImage rest)
+
+/-- ★ **The invariant is an append-homomorphism** — `image (x ++ y) = image x + image y`, by induction
+on `x` folding left-identity (base) and associativity (step).  This is the `congrAppend`-compatibility
+that lets the invariant respect the Peiffer congruence. -/
+theorem crossedModuleImageAppend : ∀ (leftPart rightPart : PreCrossedElement),
+    crossedModuleImage (leftPart ++ rightPart)
+      = groupRingAdd (crossedModuleImage leftPart) (crossedModuleImage rightPart)
+  | [], rightPart => (groupRingZeroAdd (crossedModuleImage rightPart)).symm
+  | gen :: rest, rightPart =>
+      (congrArg (groupRingAdd (conjugatedRelatorImage gen))
+          (crossedModuleImageAppend rest rightPart)).trans
+        (groupRingAddAssoc (conjugatedRelatorImage gen)
+          (crossedModuleImage rest) (crossedModuleImage rightPart)).symm
+
+/-! ### B2 truth probes — the invariant on the r1 witnesses -/
+
+/-- ★★ **The separating value: `image ζ = (−1, 1, 0)`** — the group-ring image of the rotation identity
+`ζ = (s, ρ)·(1, ρ)⁻¹`.  `t¹ − t⁰ = (s̄ − 1)·e_ρ`, exactly the Lyndon rotation class.  `rfl`. -/
+theorem rotationIdentityImageIsSeparating :
+    crossedModuleImage rotationIdentityWitness = GroupRingZmod3.mk (-1) 1 0 := rfl
+
+/-- Probe — the empty pre-crossed word images to `0`. -/
+theorem emptyImageIsZero :
+    crossedModuleImage ([] : PreCrossedElement) = groupRingZero := rfl
+
+/-- Probe — the r1 concrete Peiffer probe images coherently: both `[a, b, a⁻¹]` and `[^{∂a}b]` land on
+the SAME value `(0, 1, 0)`, confirming the invariant respects the Peiffer move on this instance. -/
+theorem peifferProbeImageCoherent :
+    crossedModuleImage [peifferProbeFirst, peifferProbeSecond, invGen peifferProbeFirst]
+      = crossedModuleImage [peifferConjugate peifferProbeFirst peifferProbeSecond] := rfl
+
+/-- Probe — that shared Peiffer-probe value is `(0, 1, 0)`, DISTINCT from `ζ`'s `(−1, 1, 0)`: the
+invariant genuinely separates. -/
+theorem peifferProbeImageValue :
+    crossedModuleImage [peifferProbeFirst, peifferProbeSecond, invGen peifferProbeFirst]
+      = GroupRingZmod3.mk 0 1 0 := rfl
+
 end FX1Poly.Polygraph.Homology
