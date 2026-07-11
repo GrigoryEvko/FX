@@ -520,6 +520,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTrackerInteri
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingTrackerLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapChain
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescTConnectCapChainLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBasePermuteBridge
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
