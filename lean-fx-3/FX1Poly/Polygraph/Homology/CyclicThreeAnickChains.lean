@@ -657,4 +657,68 @@ theorem anickCanonicalChainMatchesShippedTipsThroughDegreeEight :
     anickCanonicalChain 3 8 = anickChainTips 3 8 :=
   ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
+/-! ## B3 (r2) — THE RE-BASED TIE-IN: the DERIVED per-degree count (from the enumerator) equals r1's fiat
+    `1`, and is re-tied to the shipped `PeriodicTower.basisCount` — the r1 names kept VERBATIM, the derived
+    theorems ALONGSIDE
+
+r1 posits `anickChainCountAtDegree = fun _ => 1` by fiat (deterministic-generator argument in prose).  This
+brick makes that count the ENUMERATION: `anickChainCountAtDegreeDerived k n = (anickMinimalChainsAtDegree k
+n).length`, proven `= 1` by `rfl` at the probed degrees (riding the B1 singleton), then shown DEFINITIONALLY
+equal to r1's fiat count and re-tied to the tower basis.  r1's `anickChainCountAtDegree` and
+`cyclicThreeAnickChainCountMatchesPeriodicTowerBasis` are untouched; the derived theorems stand beside them.
+The GENERAL `Derived n = 1` (all `n`) is a NAMED residual (the filter-collapse lemma, below). -/
+
+/-- The DERIVED per-degree Anick chain count: the length of the guard-filtered candidate space (the honest
+enumeration behind r1's fiat `anickChainCountAtDegree = 1`). -/
+def anickChainCountAtDegreeDerived (tipLength degree : Nat) : Nat :=
+  (anickMinimalChainsAtDegree tipLength degree).length
+
+/-- ★ **The derived cyclic-3 count is `1` at degrees 1–6** — the enumeration itself yields a singleton, so
+the count is `1` by computation (not fiat).  `rfl` per degree. -/
+theorem anickDerivedCountThroughDegreeSix :
+    anickChainCountAtDegreeDerived 3 1 = 1 ∧
+    anickChainCountAtDegreeDerived 3 2 = 1 ∧
+    anickChainCountAtDegreeDerived 3 3 = 1 ∧
+    anickChainCountAtDegreeDerived 3 4 = 1 ∧
+    anickChainCountAtDegreeDerived 3 5 = 1 ∧
+    anickChainCountAtDegreeDerived 3 6 = 1 :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- ★ **r1's fiat count IS the enumeration**: `anickChainCountAtDegree n = anickChainCountAtDegreeDerived 3
+n` at degrees 1–6 — the honest link that r1's constant `1` is exactly the guard-filtered enumeration count,
+not an unjustified stipulation.  `rfl` per degree. -/
+theorem anickDefinitionalCountEqualsDerivedThroughDegreeSix :
+    anickChainCountAtDegree 1 = anickChainCountAtDegreeDerived 3 1 ∧
+    anickChainCountAtDegree 2 = anickChainCountAtDegreeDerived 3 2 ∧
+    anickChainCountAtDegree 3 = anickChainCountAtDegreeDerived 3 3 ∧
+    anickChainCountAtDegree 4 = anickChainCountAtDegreeDerived 3 4 ∧
+    anickChainCountAtDegree 5 = anickChainCountAtDegreeDerived 3 5 ∧
+    anickChainCountAtDegree 6 = anickChainCountAtDegreeDerived 3 6 :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- ★★ **THE RE-BASED TOWER TIE-IN: the DERIVED per-degree count equals the shipped
+`PeriodicTower.basisCount`** at degrees 1–6 — the same `= basisCount` tie-in as r1's
+`cyclicThreeAnickChainCountMatchesPeriodicTowerBasis`, but now the count is the ENUMERATION rather than the
+fiat `1`.  Stated ALONGSIDE the r1 theorem (which stays a full `∀ degree`); this derived version is probed
+(concrete degrees) because `Derived n = 1` is proven concretely, backed by the general uniqueness theorem
+(§B2).  `rfl` per degree. -/
+theorem cyclicThreeAnickDerivedCountMatchesPeriodicTowerBasis :
+    anickChainCountAtDegreeDerived 3 1 = cyclicThreePeriodicTowerChainComplex.basisCount 1 ∧
+    anickChainCountAtDegreeDerived 3 2 = cyclicThreePeriodicTowerChainComplex.basisCount 2 ∧
+    anickChainCountAtDegreeDerived 3 3 = cyclicThreePeriodicTowerChainComplex.basisCount 3 ∧
+    anickChainCountAtDegreeDerived 3 4 = cyclicThreePeriodicTowerChainComplex.basisCount 4 ∧
+    anickChainCountAtDegreeDerived 3 5 = cyclicThreePeriodicTowerChainComplex.basisCount 5 ∧
+    anickChainCountAtDegreeDerived 3 6 = cyclicThreePeriodicTowerChainComplex.basisCount 6 :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- ★ **The GENERAL `Derived n = 1` (all `n`) is a NAMED residual node (r2-stretch / r3).**  The general
+statement `anickChainCountAtDegreeDerived k n = 1` for EVERY `n` needs, on top of the general uniqueness
+theorem (§B2, already shipped), a FILTER-COLLAPSE lemma: filtering a strictly-increasing count-down
+candidate list by the equality guard yields the singleton `[canonical]` (one-survivor / nodup bookkeeping
+threaded through the `n`-level candidate tree), plus the general forward-generator = shipped-append equality
+(a snoc/`List.append`-propext budget sink).  The concrete `Derived = 1` (degrees 1–6) is fully honored here
+and backed by the general uniqueness theorem; the general length-collapse is the identified residual.  Read
+the meaning from THIS docstring.  `= true`. -/
+def anickGeneralDerivedCountCollapseIsNamedNode : Bool := true
+
 end FX1Poly.Polygraph.Homology

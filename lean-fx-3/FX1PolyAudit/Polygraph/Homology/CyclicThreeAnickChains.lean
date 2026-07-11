@@ -82,4 +82,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.anickGuardPassersOfEqualLengthAreEqual
 #assert_no_axioms FX1Poly.Polygraph.Homology.anickCanonicalChainMatchesShippedTipsThroughDegreeEight
 
+-- B3 (r2): the re-based derived count + tower tie-in
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickChainCountAtDegreeDerived
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickDerivedCountThroughDegreeSix
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickDefinitionalCountEqualsDerivedThroughDegreeSix
+#assert_no_axioms FX1Poly.Polygraph.Homology.cyclicThreeAnickDerivedCountMatchesPeriodicTowerBasis
+#assert_no_axioms FX1Poly.Polygraph.Homology.anickGeneralDerivedCountCollapseIsNamedNode
+
 end FX1PolyAudit
