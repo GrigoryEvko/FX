@@ -1177,6 +1177,7 @@ import FX1PolyAudit.Polygraph.Homology.FreeGroupReducedWord
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleCyclicThree
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleIdentityInvariant
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleRelationModule
+import FX1PolyAudit.Polygraph.Homology.CrossedModuleFreeGroupNormalForm
 import FX1PolyAudit.Polygraph.Homology.CyclicThreeAnickChains
 import FX1PolyAudit.Polygraph.Homology.MultiObstructionAnickChains
 import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
