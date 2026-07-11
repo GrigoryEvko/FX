@@ -459,4 +459,511 @@ single generator lands on its genE-form, image preserved (r4 soundness).  Read t
 docstring. -/
 def freeCrossedMeasureNormalizeIsComplete : Bool := true
 
+/-! ## B3 — insert a genE-form into a realized form, assemble the residual, deliver the iso -/
+
+/-- Prepend a generator onto a same-generator block: `g :: repeatGen a g ~ repeatGen (a + 1) g`.  For
+`a ≥ 0` the block extends (definitional); for `a < 0` the leading `g⁻¹` cancels (`consInvCancel`). -/
+theorem prependSameGen (gen : ConjugatedRelator) : ∀ scale : Int,
+    FreeCrossedModuleEquiv (gen :: repeatGen scale gen) (repeatGen (scale + 1) gen)
+  | Int.ofNat _ => FreeCrossedModuleEquiv.refl _
+  | Int.negSucc 0 => FreeCrossedModuleEquiv.consInvCancel gen
+  | Int.negSucc (predecessor + 1) =>
+      FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.consInvCancel gen)
+        (FreeCrossedModuleEquiv.refl (repeatGenPos (predecessor + 1) (invGen gen)))
+
+/-- Prepend a formal inverse onto a same-generator block: `g⁻¹ :: repeatGen a g ~ repeatGen (a + (-1)) g`.
+For `a > 0` the leading `g` cancels (`invConsCancel`); for `a ≤ 0` the negative block extends. -/
+theorem prependInvGen (gen : ConjugatedRelator) : ∀ scale : Int,
+    FreeCrossedModuleEquiv (invGen gen :: repeatGen scale gen) (repeatGen (scale + (-1)) gen)
+  | Int.ofNat 0 => FreeCrossedModuleEquiv.refl _
+  | Int.ofNat (count + 1) =>
+      Eq.mp (congrArg (fun target => FreeCrossedModuleEquiv
+            (invGen gen :: repeatGen (Int.ofNat (count + 1)) gen) target)
+          (congrArg (fun scaleValue => repeatGen scaleValue gen) (intSubNatNatLeftSurplus count 1)).symm)
+        (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.invConsCancel gen)
+          (FreeCrossedModuleEquiv.refl (repeatGenPos count gen)))
+  | Int.negSucc _ => FreeCrossedModuleEquiv.refl _
+
+/-- Float a genE-form past a whole `Int`-scaled block: dispatch on the block's sign to `commutePastBlock`
+(a positive block is `repeatGenPos count`, a negative block is `repeatGenPos (·) (invGen block)`). -/
+theorem commuteGenEPastBlockList (powerMove : Nat) (signMove : Bool) (powerBlock : Nat)
+    (signBlock : Bool) : ∀ scale : Int,
+    FreeCrossedModuleEquiv
+      (⟨signPowerPos powerMove, 0, signMove⟩ :: repeatGen scale ⟨signPowerPos powerBlock, 0, signBlock⟩)
+      (repeatGen scale ⟨signPowerPos powerBlock, 0, signBlock⟩ ++ [⟨signPowerPos powerMove, 0, signMove⟩])
+  | Int.ofNat count => commutePastBlock powerMove signMove powerBlock signBlock count
+  | Int.negSucc predecessor =>
+      commutePastBlock powerMove signMove powerBlock (Bool.not signBlock) (predecessor + 1)
+
+/-- Float a genE-form past a block that sits in front of a tail: `g :: (block ++ tail) ~ block ++
+(g :: tail)`.  `commuteGenEPastBlockList` moves `g` to the block's far side, then `listAppendAssociative`
+regroups. -/
+theorem commutePastBlockIntoTail (powerMove : Nat) (signMove : Bool) (powerBlock : Nat)
+    (signBlock : Bool) (scale : Int) (tailWord : PreCrossedElement) :
+    FreeCrossedModuleEquiv
+      (⟨signPowerPos powerMove, 0, signMove⟩ ::
+        (repeatGen scale ⟨signPowerPos powerBlock, 0, signBlock⟩ ++ tailWord))
+      (repeatGen scale ⟨signPowerPos powerBlock, 0, signBlock⟩ ++
+        (⟨signPowerPos powerMove, 0, signMove⟩ :: tailWord)) :=
+  Eq.mp (congrArg (fun rebuilt => FreeCrossedModuleEquiv
+        (⟨signPowerPos powerMove, 0, signMove⟩ ::
+          (repeatGen scale ⟨signPowerPos powerBlock, 0, signBlock⟩ ++ tailWord)) rebuilt)
+      (listAppendAssociative (repeatGen scale ⟨signPowerPos powerBlock, 0, signBlock⟩)
+        [⟨signPowerPos powerMove, 0, signMove⟩] tailWord))
+    (FreeCrossedModuleEquiv.congrAppend
+      (commuteGenEPastBlockList powerMove signMove powerBlock signBlock scale)
+      (FreeCrossedModuleEquiv.refl tailWord))
+
+/-- Realize is a right-associated triple concatenation of blocks. -/
+theorem realizeRightAssoc (targetOne targetT targetTsq : Int) :
+    realizeAugmentationZeroIdentity targetOne targetT targetTsq
+      = repeatGen targetOne genE0 ++ (repeatGen targetT genE1 ++ repeatGen targetTsq genE2) :=
+  listAppendAssociative (repeatGen targetOne genE0) (repeatGen targetT genE1) (repeatGen targetTsq genE2)
+
+/-- ★ **Prepend a residue-0 genE-form into a realized form** — insert `genE0` (or `genE0⁻¹`) into block 0,
+extending/cancelling that block. -/
+theorem prependAtResidue0 (sign : Bool) (w : GroupRingZmod3) :
+    FreeCrossedModuleEquiv
+      (genEformSigned sign ZmodThree.residue0
+        :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+      (realizeAugmentationZeroIdentity
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue0)) w).coeffOne
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue0)) w).coeffT
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue0)) w).coeffTsq) :=
+  match sign with
+  | true =>
+      let base : FreeCrossedModuleEquiv
+          (genE0 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+          ((repeatGen (w.coeffOne + 1) genE0 ++ repeatGen w.coeffT genE1) ++ repeatGen w.coeffTsq genE2) :=
+        FreeCrossedModuleEquiv.congrAppend
+          (FreeCrossedModuleEquiv.congrAppend (prependSameGen genE0 w.coeffOne)
+            (FreeCrossedModuleEquiv.refl (repeatGen w.coeffT genE1)))
+          (FreeCrossedModuleEquiv.refl (repeatGen w.coeffTsq genE2))
+      let targetEq :
+          ((repeatGen (w.coeffOne + 1) genE0 ++ repeatGen w.coeffT genE1) ++ repeatGen w.coeffTsq genE2)
+            = ((repeatGen (1 + w.coeffOne) genE0 ++ repeatGen (0 + w.coeffT) genE1)
+                ++ repeatGen (0 + w.coeffTsq) genE2) :=
+        (congrArg (fun value =>
+              (repeatGen value genE0 ++ repeatGen w.coeffT genE1) ++ repeatGen w.coeffTsq genE2)
+            (intAddComm w.coeffOne 1)).trans
+          ((congrArg (fun value =>
+                (repeatGen (1 + w.coeffOne) genE0 ++ repeatGen value genE1) ++ repeatGen w.coeffTsq genE2)
+              (intZeroAdd w.coeffT).symm).trans
+            (congrArg (fun value =>
+                (repeatGen (1 + w.coeffOne) genE0 ++ repeatGen (0 + w.coeffT) genE1) ++ repeatGen value genE2)
+              (intZeroAdd w.coeffTsq).symm))
+      Eq.mp (congrArg (fun rhs => FreeCrossedModuleEquiv
+            (genE0 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq) rhs) targetEq) base
+  | false =>
+      let base : FreeCrossedModuleEquiv
+          (invGen genE0 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+          ((repeatGen (w.coeffOne + (-1)) genE0 ++ repeatGen w.coeffT genE1) ++ repeatGen w.coeffTsq genE2) :=
+        FreeCrossedModuleEquiv.congrAppend
+          (FreeCrossedModuleEquiv.congrAppend (prependInvGen genE0 w.coeffOne)
+            (FreeCrossedModuleEquiv.refl (repeatGen w.coeffT genE1)))
+          (FreeCrossedModuleEquiv.refl (repeatGen w.coeffTsq genE2))
+      let targetEq :
+          ((repeatGen (w.coeffOne + (-1)) genE0 ++ repeatGen w.coeffT genE1) ++ repeatGen w.coeffTsq genE2)
+            = ((repeatGen (-1 + w.coeffOne) genE0 ++ repeatGen (0 + w.coeffT) genE1)
+                ++ repeatGen (0 + w.coeffTsq) genE2) :=
+        (congrArg (fun value =>
+              (repeatGen value genE0 ++ repeatGen w.coeffT genE1) ++ repeatGen w.coeffTsq genE2)
+            (intAddComm w.coeffOne (-1))).trans
+          ((congrArg (fun value =>
+                (repeatGen (-1 + w.coeffOne) genE0 ++ repeatGen value genE1) ++ repeatGen w.coeffTsq genE2)
+              (intZeroAdd w.coeffT).symm).trans
+            (congrArg (fun value =>
+                (repeatGen (-1 + w.coeffOne) genE0 ++ repeatGen (0 + w.coeffT) genE1) ++ repeatGen value genE2)
+              (intZeroAdd w.coeffTsq).symm))
+      Eq.mp (congrArg (fun rhs => FreeCrossedModuleEquiv
+            (invGen genE0 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq) rhs) targetEq)
+        base
+
+/-- ★ **Prepend a residue-1 genE-form into a realized form** — commute `genE1` (or its inverse) past block 0
+(`commutePastBlockIntoTail`), then extend/cancel block 1.  Worked in right-associated realize form. -/
+theorem prependAtResidue1 (sign : Bool) (w : GroupRingZmod3) :
+    FreeCrossedModuleEquiv
+      (genEformSigned sign ZmodThree.residue1
+        :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+      (realizeAugmentationZeroIdentity
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue1)) w).coeffOne
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue1)) w).coeffT
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue1)) w).coeffTsq) :=
+  match sign with
+  | true =>
+      let tail : PreCrossedElement := repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2
+      let commuted : FreeCrossedModuleEquiv
+          (genE1 :: (repeatGen w.coeffOne genE0 ++ tail))
+          (repeatGen w.coeffOne genE0 ++ (genE1 :: tail)) :=
+        commutePastBlockIntoTail 1 true 0 true w.coeffOne tail
+      let extended : FreeCrossedModuleEquiv (genE1 :: tail)
+          (repeatGen (w.coeffT + 1) genE1 ++ repeatGen w.coeffTsq genE2) :=
+        FreeCrossedModuleEquiv.congrAppend (prependSameGen genE1 w.coeffT)
+          (FreeCrossedModuleEquiv.refl (repeatGen w.coeffTsq genE2))
+      let assembled : FreeCrossedModuleEquiv
+          (genE1 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+          (repeatGen w.coeffOne genE0 ++
+            (repeatGen (w.coeffT + 1) genE1 ++ repeatGen w.coeffTsq genE2)) :=
+        FreeCrossedModuleEquiv.trans
+          (Eq.mp (congrArg (fun start => FreeCrossedModuleEquiv start
+                (repeatGen w.coeffOne genE0 ++ (genE1 :: tail)))
+              (congrArg (genE1 :: ·) (realizeRightAssoc w.coeffOne w.coeffT w.coeffTsq)).symm) commuted)
+          (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl (repeatGen w.coeffOne genE0))
+            extended)
+      let targetEq :
+          (repeatGen w.coeffOne genE0 ++ (repeatGen (w.coeffT + 1) genE1 ++ repeatGen w.coeffTsq genE2))
+            = realizeAugmentationZeroIdentity (0 + w.coeffOne) (1 + w.coeffT) (0 + w.coeffTsq) :=
+        (congrArg (fun value =>
+              repeatGen w.coeffOne genE0 ++ (repeatGen value genE1 ++ repeatGen w.coeffTsq genE2))
+            (intAddComm w.coeffT 1)).trans
+          ((congrArg (fun value =>
+                repeatGen value genE0 ++ (repeatGen (1 + w.coeffT) genE1 ++ repeatGen w.coeffTsq genE2))
+              (intZeroAdd w.coeffOne).symm).trans
+            ((congrArg (fun value =>
+                  repeatGen (0 + w.coeffOne) genE0
+                    ++ (repeatGen (1 + w.coeffT) genE1 ++ repeatGen value genE2))
+                (intZeroAdd w.coeffTsq).symm).trans
+              (realizeRightAssoc (0 + w.coeffOne) (1 + w.coeffT) (0 + w.coeffTsq)).symm))
+      Eq.mp (congrArg (fun rhs => FreeCrossedModuleEquiv
+            (genE1 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq) rhs) targetEq)
+        assembled
+  | false =>
+      let tail : PreCrossedElement := repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2
+      let commuted : FreeCrossedModuleEquiv
+          (invGen genE1 :: (repeatGen w.coeffOne genE0 ++ tail))
+          (repeatGen w.coeffOne genE0 ++ (invGen genE1 :: tail)) :=
+        commutePastBlockIntoTail 1 false 0 true w.coeffOne tail
+      let extended : FreeCrossedModuleEquiv (invGen genE1 :: tail)
+          (repeatGen (w.coeffT + (-1)) genE1 ++ repeatGen w.coeffTsq genE2) :=
+        FreeCrossedModuleEquiv.congrAppend (prependInvGen genE1 w.coeffT)
+          (FreeCrossedModuleEquiv.refl (repeatGen w.coeffTsq genE2))
+      let assembled : FreeCrossedModuleEquiv
+          (invGen genE1 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+          (repeatGen w.coeffOne genE0 ++
+            (repeatGen (w.coeffT + (-1)) genE1 ++ repeatGen w.coeffTsq genE2)) :=
+        FreeCrossedModuleEquiv.trans
+          (Eq.mp (congrArg (fun start => FreeCrossedModuleEquiv start
+                (repeatGen w.coeffOne genE0 ++ (invGen genE1 :: tail)))
+              (congrArg (invGen genE1 :: ·) (realizeRightAssoc w.coeffOne w.coeffT w.coeffTsq)).symm)
+            commuted)
+          (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl (repeatGen w.coeffOne genE0))
+            extended)
+      let targetEq :
+          (repeatGen w.coeffOne genE0
+              ++ (repeatGen (w.coeffT + (-1)) genE1 ++ repeatGen w.coeffTsq genE2))
+            = realizeAugmentationZeroIdentity (0 + w.coeffOne) (-1 + w.coeffT) (0 + w.coeffTsq) :=
+        (congrArg (fun value =>
+              repeatGen w.coeffOne genE0 ++ (repeatGen value genE1 ++ repeatGen w.coeffTsq genE2))
+            (intAddComm w.coeffT (-1))).trans
+          ((congrArg (fun value =>
+                repeatGen value genE0 ++ (repeatGen (-1 + w.coeffT) genE1 ++ repeatGen w.coeffTsq genE2))
+              (intZeroAdd w.coeffOne).symm).trans
+            ((congrArg (fun value =>
+                  repeatGen (0 + w.coeffOne) genE0
+                    ++ (repeatGen (-1 + w.coeffT) genE1 ++ repeatGen value genE2))
+                (intZeroAdd w.coeffTsq).symm).trans
+              (realizeRightAssoc (0 + w.coeffOne) (-1 + w.coeffT) (0 + w.coeffTsq)).symm))
+      Eq.mp (congrArg (fun rhs => FreeCrossedModuleEquiv
+            (invGen genE1 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq) rhs) targetEq)
+        assembled
+
+/-- ★ **Prepend a residue-2 genE-form into a realized form** — commute `genE2` (or its inverse) past blocks
+0 and 1, then extend/cancel block 2.  Worked in right-associated realize form. -/
+theorem prependAtResidue2 (sign : Bool) (w : GroupRingZmod3) :
+    FreeCrossedModuleEquiv
+      (genEformSigned sign ZmodThree.residue2
+        :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+      (realizeAugmentationZeroIdentity
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue2)) w).coeffOne
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue2)) w).coeffT
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign ZmodThree.residue2)) w).coeffTsq) :=
+  match sign with
+  | true =>
+      let innerCommuted : FreeCrossedModuleEquiv
+          (genE2 :: (repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2))
+          (repeatGen w.coeffT genE1 ++ (repeatGen (w.coeffTsq + 1) genE2)) :=
+        FreeCrossedModuleEquiv.trans
+          (commutePastBlockIntoTail 2 true 1 true w.coeffT (repeatGen w.coeffTsq genE2))
+          (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl (repeatGen w.coeffT genE1))
+            (prependSameGen genE2 w.coeffTsq))
+      let assembled : FreeCrossedModuleEquiv
+          (genE2 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+          (repeatGen w.coeffOne genE0 ++
+            (repeatGen w.coeffT genE1 ++ repeatGen (w.coeffTsq + 1) genE2)) :=
+        FreeCrossedModuleEquiv.trans
+          (Eq.mp (congrArg (fun start => FreeCrossedModuleEquiv start
+                (repeatGen w.coeffOne genE0
+                  ++ (genE2 :: (repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2))))
+              (congrArg (genE2 :: ·) (realizeRightAssoc w.coeffOne w.coeffT w.coeffTsq)).symm)
+            (commutePastBlockIntoTail 2 true 0 true w.coeffOne
+              (repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2)))
+          (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl (repeatGen w.coeffOne genE0))
+            innerCommuted)
+      let targetEq :
+          (repeatGen w.coeffOne genE0 ++ (repeatGen w.coeffT genE1 ++ repeatGen (w.coeffTsq + 1) genE2))
+            = realizeAugmentationZeroIdentity (0 + w.coeffOne) (0 + w.coeffT) (1 + w.coeffTsq) :=
+        (congrArg (fun value =>
+              repeatGen w.coeffOne genE0 ++ (repeatGen w.coeffT genE1 ++ repeatGen value genE2))
+            (intAddComm w.coeffTsq 1)).trans
+          ((congrArg (fun value =>
+                repeatGen value genE0 ++ (repeatGen w.coeffT genE1 ++ repeatGen (1 + w.coeffTsq) genE2))
+              (intZeroAdd w.coeffOne).symm).trans
+            ((congrArg (fun value =>
+                  repeatGen (0 + w.coeffOne) genE0
+                    ++ (repeatGen value genE1 ++ repeatGen (1 + w.coeffTsq) genE2))
+                (intZeroAdd w.coeffT).symm).trans
+              (realizeRightAssoc (0 + w.coeffOne) (0 + w.coeffT) (1 + w.coeffTsq)).symm))
+      Eq.mp (congrArg (fun rhs => FreeCrossedModuleEquiv
+            (genE2 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq) rhs) targetEq)
+        assembled
+  | false =>
+      let innerCommuted : FreeCrossedModuleEquiv
+          (invGen genE2 :: (repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2))
+          (repeatGen w.coeffT genE1 ++ (repeatGen (w.coeffTsq + (-1)) genE2)) :=
+        FreeCrossedModuleEquiv.trans
+          (commutePastBlockIntoTail 2 false 1 true w.coeffT (repeatGen w.coeffTsq genE2))
+          (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl (repeatGen w.coeffT genE1))
+            (prependInvGen genE2 w.coeffTsq))
+      let assembled : FreeCrossedModuleEquiv
+          (invGen genE2 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+          (repeatGen w.coeffOne genE0 ++
+            (repeatGen w.coeffT genE1 ++ repeatGen (w.coeffTsq + (-1)) genE2)) :=
+        FreeCrossedModuleEquiv.trans
+          (Eq.mp (congrArg (fun start => FreeCrossedModuleEquiv start
+                (repeatGen w.coeffOne genE0
+                  ++ (invGen genE2 :: (repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2))))
+              (congrArg (invGen genE2 :: ·) (realizeRightAssoc w.coeffOne w.coeffT w.coeffTsq)).symm)
+            (commutePastBlockIntoTail 2 false 0 true w.coeffOne
+              (repeatGen w.coeffT genE1 ++ repeatGen w.coeffTsq genE2)))
+          (FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl (repeatGen w.coeffOne genE0))
+            innerCommuted)
+      let targetEq :
+          (repeatGen w.coeffOne genE0
+              ++ (repeatGen w.coeffT genE1 ++ repeatGen (w.coeffTsq + (-1)) genE2))
+            = realizeAugmentationZeroIdentity (0 + w.coeffOne) (0 + w.coeffT) (-1 + w.coeffTsq) :=
+        (congrArg (fun value =>
+              repeatGen w.coeffOne genE0 ++ (repeatGen w.coeffT genE1 ++ repeatGen value genE2))
+            (intAddComm w.coeffTsq (-1))).trans
+          ((congrArg (fun value =>
+                repeatGen value genE0 ++ (repeatGen w.coeffT genE1 ++ repeatGen (-1 + w.coeffTsq) genE2))
+              (intZeroAdd w.coeffOne).symm).trans
+            ((congrArg (fun value =>
+                  repeatGen (0 + w.coeffOne) genE0
+                    ++ (repeatGen value genE1 ++ repeatGen (-1 + w.coeffTsq) genE2))
+                (intZeroAdd w.coeffT).symm).trans
+              (realizeRightAssoc (0 + w.coeffOne) (0 + w.coeffT) (-1 + w.coeffTsq)).symm))
+      Eq.mp (congrArg (fun rhs => FreeCrossedModuleEquiv
+            (invGen genE2 :: realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq) rhs) targetEq)
+        assembled
+
+/-- ★★ **Insert one genE-form into a realized form** — `[signed genE-form of residue] ++ realize w ~
+realize (image genE-form + w)`, dispatching on the residue to the three block insertions. -/
+theorem prependGenEForm (sign : Bool) (residue : ZmodThree) (w : GroupRingZmod3) :
+    FreeCrossedModuleEquiv
+      ([genEformSigned sign residue] ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+      (realizeAugmentationZeroIdentity
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign residue)) w).coeffOne
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign residue)) w).coeffT
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign residue)) w).coeffTsq) :=
+  match residue with
+  | .residue0 => prependAtResidue0 sign w
+  | .residue1 => prependAtResidue1 sign w
+  | .residue2 => prependAtResidue2 sign w
+
+/-- ★★ **Prepend one well-formed generator into a realized form** — `[⟨w', 0, sign⟩] ++ realize v ~ realize
+(image ⟨w', 0, sign⟩ + v)`.  Normalize the head to its genE-form, insert it (`prependGenEForm`), and carry
+the image equality back through r4 soundness (`crossedModuleImageRespectsFreeCrossed`). -/
+theorem prependGen (conjugatorWord : List SignedLetter) (sign : Bool)
+    (over : AllLettersOverGenZero conjugatorWord) (w : GroupRingZmod3) :
+    FreeCrossedModuleEquiv
+      ([⟨conjugatorWord, 0, sign⟩] ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+      (realizeAugmentationZeroIdentity
+        (groupRingAdd (conjugatedRelatorImage ⟨conjugatorWord, 0, sign⟩) w).coeffOne
+        (groupRingAdd (conjugatedRelatorImage ⟨conjugatorWord, 0, sign⟩) w).coeffT
+        (groupRingAdd (conjugatedRelatorImage ⟨conjugatorWord, 0, sign⟩) w).coeffTsq) :=
+  let normalized : FreeCrossedModuleEquiv [⟨conjugatorWord, 0, sign⟩]
+      [genEformSigned sign (wordResidue conjugatorWord)] := normalizeGen sign over
+  let imageEq :
+      conjugatedRelatorImage (genEformSigned sign (wordResidue conjugatorWord))
+        = conjugatedRelatorImage ⟨conjugatorWord, 0, sign⟩ :=
+    (groupRingAddZero (conjugatedRelatorImage (genEformSigned sign (wordResidue conjugatorWord)))).symm.trans
+      ((crossedModuleImageRespectsFreeCrossed normalized).symm.trans
+        (groupRingAddZero (conjugatedRelatorImage ⟨conjugatorWord, 0, sign⟩)))
+  let bridged : FreeCrossedModuleEquiv
+      ([⟨conjugatorWord, 0, sign⟩] ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+      (realizeAugmentationZeroIdentity
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign (wordResidue conjugatorWord))) w).coeffOne
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign (wordResidue conjugatorWord))) w).coeffT
+        (groupRingAdd (conjugatedRelatorImage (genEformSigned sign (wordResidue conjugatorWord))) w).coeffTsq) :=
+    FreeCrossedModuleEquiv.trans
+      (FreeCrossedModuleEquiv.congrAppend normalized
+        (FreeCrossedModuleEquiv.refl (realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)))
+      (prependGenEForm sign (wordResidue conjugatorWord) w)
+  Eq.mp (congrArg (fun image => FreeCrossedModuleEquiv
+        ([⟨conjugatorWord, 0, sign⟩] ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+        (realizeAugmentationZeroIdentity (groupRingAdd image w).coeffOne (groupRingAdd image w).coeffT
+          (groupRingAdd image w).coeffTsq)) imageEq) bridged
+
+/-- ★★★ **The append-realize induction** — for every well-formed element and value, `element ++ realize v
+~ realize (image element + v)`.  Structural on the element list: `[]` collapses `groupRingZeroAdd`; the
+cons peels the head with `prependGen`, folds the tail with the IH, and reassociates the image sum
+(`groupRingAddAssoc`).  Setting `v = 0` gives the residual. -/
+theorem appendRealize : ∀ (element : PreCrossedElement), AllRelatorIndexZero element →
+    AllConjugatorsOverGenZero element → ∀ (w : GroupRingZmod3),
+    FreeCrossedModuleEquiv
+      (element ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+      (realizeAugmentationZeroIdentity (groupRingAdd (crossedModuleImage element) w).coeffOne
+        (groupRingAdd (crossedModuleImage element) w).coeffT
+        (groupRingAdd (crossedModuleImage element) w).coeffTsq)
+  | [], _, _, w =>
+      Eq.mp (congrArg (fun value => FreeCrossedModuleEquiv
+            (realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq)
+            (realizeAugmentationZeroIdentity value.coeffOne value.coeffT value.coeffTsq))
+          (groupRingZeroAdd w).symm)
+        (FreeCrossedModuleEquiv.refl (realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq))
+  | gen :: rest, .cons _ _ indexIsZero restIndex, .cons _ _ over restOver, w =>
+      let genPrime : ConjugatedRelator := ⟨gen.conjugator, 0, gen.isPositive⟩
+      let genEq : gen = genPrime :=
+        congrArg (fun index => ConjugatedRelator.mk gen.conjugator index gen.isPositive) indexIsZero
+      let ih := appendRealize rest restIndex restOver w
+      let step1 : FreeCrossedModuleEquiv (genPrime :: (rest ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq))
+          (genPrime :: realizeAugmentationZeroIdentity (groupRingAdd (crossedModuleImage rest) w).coeffOne
+            (groupRingAdd (crossedModuleImage rest) w).coeffT (groupRingAdd (crossedModuleImage rest) w).coeffTsq) :=
+        FreeCrossedModuleEquiv.congrAppend (FreeCrossedModuleEquiv.refl [genPrime]) ih
+      let step2 := prependGen gen.conjugator gen.isPositive over (groupRingAdd (crossedModuleImage rest) w)
+      let combined := FreeCrossedModuleEquiv.trans step1 step2
+      let valueEq :
+          groupRingAdd (conjugatedRelatorImage genPrime) (groupRingAdd (crossedModuleImage rest) w)
+            = groupRingAdd (crossedModuleImage (gen :: rest)) w :=
+        (groupRingAddAssoc (conjugatedRelatorImage genPrime) (crossedModuleImage rest) w).symm
+      Eq.mp (congrArg (fun start => FreeCrossedModuleEquiv start
+            (realizeAugmentationZeroIdentity (groupRingAdd (crossedModuleImage (gen :: rest)) w).coeffOne
+              (groupRingAdd (crossedModuleImage (gen :: rest)) w).coeffT
+              (groupRingAdd (crossedModuleImage (gen :: rest)) w).coeffTsq))
+          (congrArg (fun head => head :: (rest ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq))
+            genEq.symm))
+        (Eq.mp (congrArg (fun value => FreeCrossedModuleEquiv
+              (genPrime :: (rest ++ realizeAugmentationZeroIdentity w.coeffOne w.coeffT w.coeffTsq))
+              (realizeAugmentationZeroIdentity value.coeffOne value.coeffT value.coeffTsq)) valueEq)
+          combined)
+
+/-- ★★★ **THE GENERAL WELL-FORMED RESIDUAL** — every well-formed element reduces, under the group-enriched
+relation, to its residue-vector normal form `realize (image x)`.  The measure induction: `appendRealize`
+with `v = 0`, then `element ++ realize 0 = element` and `realize (image x + 0) = realize (image x)`.  This
+inhabits r5's `freeCrossedModuleNormalFormResidualWellFormed`, closing the Brown–Huebschmann
+structure-theorem wall. -/
+theorem freeCrossedResidualWellFormed : freeCrossedModuleNormalFormResidualWellFormed :=
+  fun element relatorGuard conjugatorGuard =>
+    Eq.mp (congrArg (fun value => FreeCrossedModuleEquiv element
+          (realizeAugmentationZeroIdentity value.coeffOne value.coeffT value.coeffTsq))
+        (groupRingAddZero (crossedModuleImage element)))
+      (Eq.mp (congrArg (fun start => FreeCrossedModuleEquiv start
+            (realizeAugmentationZeroIdentity (groupRingAdd (crossedModuleImage element) groupRingZero).coeffOne
+              (groupRingAdd (crossedModuleImage element) groupRingZero).coeffT
+              (groupRingAdd (crossedModuleImage element) groupRingZero).coeffTsq))
+          (listAppendNilRight element))
+        (appendRealize element relatorGuard conjugatorGuard groupRingZero))
+
+/-! ### B3 — the iso delivered UNCONDITIONALLY -/
+
+/-- ★★★ **THE INSTANCE ISO, UNCONDITIONAL** — feeding the now-proved residual to the shipped r5 assembly
+`freeCrossedModulePiTwoIsoOfResidual` produces the `π₂⟨s | s³⟩ ≅ ker(N)` witness bundle with NO hypothesis:
+the instance presentation, the enriched congruence, the FIRST machine-checked relation-module iso. -/
+def freeCrossedModulePiTwoIso : FreeCrossedModulePiTwoIso :=
+  freeCrossedModulePiTwoIsoOfResidual freeCrossedResidualWellFormed
+
+/-- ★★ **The zero-image corollary (unconditional)** — a well-formed element with vanishing image is
+`~`-trivial: `image x = 0 ⟹ x ~ []`.  Off the now-proved residual via r5's injectivity bridge. -/
+theorem freeCrossedWellFormedImageZeroReduces {element : PreCrossedElement}
+    (relatorGuard : AllRelatorIndexZero element) (conjugatorGuard : AllConjugatorsOverGenZero element)
+    (imageIsZero : crossedModuleImage element = groupRingZero) :
+    FreeCrossedModuleEquiv element ([] : PreCrossedElement) :=
+  freeCrossedModuleNormalFormWellFormedImpliesInjectivity freeCrossedResidualWellFormed element
+    relatorGuard conjugatorGuard imageIsZero
+
+/-! ### B3/B4 truth probes (self-attacks against the GENERAL theorem) -/
+
+/-- ★ Self-attack 1 — the shuffled commutator through the GENERAL residual reproduces r5's manual reduction
+(`image = 0`, `realize 0 0 0 = []`). -/
+theorem shuffledCommutatorGeneralResidual :
+    FreeCrossedModuleEquiv [genE0, genE1, invGen genE0, invGen genE1] ([] : PreCrossedElement) :=
+  freeCrossedWellFormedImageZeroReduces shuffledCommutatorAllRelatorIndexZero
+    shuffledCommutatorAllConjugatorsOverGenZero rfl
+
+/-- ★ Self-attack 2 — a maximally out-of-order three-class scramble `[genE2, genE2, genE1, genE1, genE0,
+genE0]` normalizes to `realize 2 2 2 = [genE0, genE0, genE1, genE1, genE2, genE2]`. -/
+theorem scrambleGeneralResidual :
+    FreeCrossedModuleEquiv [genE2, genE2, genE1, genE1, genE0, genE0]
+      (realizeAugmentationZeroIdentity
+        (crossedModuleImage [genE2, genE2, genE1, genE1, genE0, genE0]).coeffOne
+        (crossedModuleImage [genE2, genE2, genE1, genE1, genE0, genE0]).coeffT
+        (crossedModuleImage [genE2, genE2, genE1, genE1, genE0, genE0]).coeffTsq) :=
+  freeCrossedResidualWellFormed [genE2, genE2, genE1, genE1, genE0, genE0]
+    (.cons _ _ rfl (.cons _ _ rfl (.cons _ _ rfl (.cons _ _ rfl (.cons _ _ rfl (.cons _ _ rfl .nil))))))
+    (.cons _ _ (.consPos _ (.consPos _ .nil)) (.cons _ _ (.consPos _ (.consPos _ .nil))
+      (.cons _ _ (.consPos _ .nil) (.cons _ _ (.consPos _ .nil) (.cons _ _ .nil (.cons _ _ .nil .nil))))))
+
+/-- ★ Self-attack 3 — an unreduced negative-conjugator generator reduces through the general residual:
+`[⟨s⁻¹ s⁻¹, 0, +⟩]` (residue `2`) lands on `realize (image) = [genE2]`. -/
+theorem unreducedGeneralResidual :
+    FreeCrossedModuleEquiv [⟨[SignedLetter.neg 0, SignedLetter.neg 0], 0, true⟩]
+      (realizeAugmentationZeroIdentity
+        (crossedModuleImage [⟨[SignedLetter.neg 0, SignedLetter.neg 0], 0, true⟩]).coeffOne
+        (crossedModuleImage [⟨[SignedLetter.neg 0, SignedLetter.neg 0], 0, true⟩]).coeffT
+        (crossedModuleImage [⟨[SignedLetter.neg 0, SignedLetter.neg 0], 0, true⟩]).coeffTsq) :=
+  freeCrossedResidualWellFormed [⟨[SignedLetter.neg 0, SignedLetter.neg 0], 0, true⟩]
+    (.cons _ _ rfl .nil) (.cons _ _ (.consNeg _ (.consNeg _ .nil)) .nil)
+
+/-! ## B4 — the honest r6 ledger
+
+The Brown–Huebschmann general wall is now DISCHARGED; the H2 feed remains r3's `ε(N) = 3`
+(`normAugmentationMatchesRelatorShadow`) name-only.  Only the general well-formed residual flips at the
+literal delivery `freeCrossedResidualWellFormed`. -/
+
+/-- The r6 ledger, honestly classified against r3's `RelationModuleObligationStatus`. -/
+structure FreeCrossedModuleMeasureInductionLedger where
+  /-- The atomic layer (self-shift, inverse congruence, genE-form commute, block float). -/
+  atomicLayerStatus : RelationModuleObligationStatus
+  /-- The NORMALIZE phase inductions (every well-formed generator to its genE-form). -/
+  normalizeStatus : RelationModuleObligationStatus
+  /-- The single-genE-form insertion into a realized form (`prependGenEForm`). -/
+  insertionStatus : RelationModuleObligationStatus
+  /-- The GENERAL well-formed residual — the measure induction, r5's remaining wall.  NOW SHIPPED. -/
+  generalWellFormedResidualStatus : RelationModuleObligationStatus
+  /-- The UNCONDITIONAL instance iso `π₂⟨s | s³⟩ ≅ ker(N)` (`freeCrossedModulePiTwoIso`). -/
+  unconditionalIsoStatus : RelationModuleObligationStatus
+
+/-- ★ **The r6 measure-induction ledger.**  Every obligation SHIPPED zero-axiom; ★ the GENERAL well-formed
+residual FLIPS to `shipped` (the honest flip AT the literal delivery `freeCrossedResidualWellFormed`), and
+the instance iso is delivered UNCONDITIONALLY.  The honest reading: r6 discharges the Brown–Huebschmann
+structure-theorem wall of r3/r4/r5 by the recon-confirmed normalize-then-insert measure induction, feeds
+r5's shipped `freeCrossedModulePiTwoIsoOfResidual`, and lands the first machine-checked relation-module
+isomorphism. -/
+def crossedModuleFreeGroupMeasureInductionLedger : FreeCrossedModuleMeasureInductionLedger :=
+  { atomicLayerStatus := RelationModuleObligationStatus.shipped
+  , normalizeStatus := RelationModuleObligationStatus.shipped
+  , insertionStatus := RelationModuleObligationStatus.shipped
+  , generalWellFormedResidualStatus := RelationModuleObligationStatus.shipped
+  , unconditionalIsoStatus := RelationModuleObligationStatus.shipped }
+
+/-- ★ **The #2199 r6 measure-induction marker.**  Shipped zero-axiom over r5:
+
+  * **B1 (atomic)** — the self-conjugation shift, the formal-inverse congruence, the genE-form commute
+    (both-negative via the crossed-inverse anti-congruence), and the block float.
+  * **B2 (NORMALIZE)** — every well-formed single generator reduces to its genE-form (`normalizeGen`), via
+    two structural power normalizations off the two strips, residue tracked through `wordResidue` (no
+    `exponentSum↔residue` bridge).
+  * **B3 (the residual + the iso)** — the single-genE-form insertion `prependGenEForm` (commute past prior
+    blocks + extend/cancel the home block), the append-realize induction `appendRealize`, ★★★ the GENERAL
+    residual `freeCrossedResidualWellFormed` inhabiting r5's `freeCrossedModuleNormalFormResidualWellFormed`,
+    the unconditional zero-image corollary, and ★★★ the UNCONDITIONAL instance iso `freeCrossedModulePiTwoIso
+    := freeCrossedModulePiTwoIsoOfResidual freeCrossedResidualWellFormed`.
+  * **B4 (ledger)** — every obligation SHIPPED; ★ the general well-formed residual FLIPS to `shipped` at the
+    literal delivery; the H2 feed stays r3's `ε(N) = 3` name-only, the Brown–Huebschmann wall discharged.
+
+The honest r6 close: `π₂⟨s | s³⟩ ≅ ker(N) ≅ ZZ[G]` (free rank `1`) holds at instance scope with NO
+hypothesis — the first machine-checked relation-module isomorphism, the instance presentation, the enriched
+congruence.  Read the meaning from THIS docstring (the honest-record convention). -/
+def crossedModuleFreeGroupMeasureInductionIsComplete : Bool := true
+
 end FX1Poly.Polygraph.Homology

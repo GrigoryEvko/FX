@@ -49,4 +49,27 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.normalizeNegPowerProbe
 #assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedMeasureNormalizeIsComplete
 
+/-! ## B3/B4 — the insertion, the general residual, the UNCONDITIONAL iso, and the ledger -/
+
+#assert_no_axioms FX1Poly.Polygraph.Homology.prependSameGen
+#assert_no_axioms FX1Poly.Polygraph.Homology.prependInvGen
+#assert_no_axioms FX1Poly.Polygraph.Homology.commuteGenEPastBlockList
+#assert_no_axioms FX1Poly.Polygraph.Homology.commutePastBlockIntoTail
+#assert_no_axioms FX1Poly.Polygraph.Homology.realizeRightAssoc
+#assert_no_axioms FX1Poly.Polygraph.Homology.prependAtResidue0
+#assert_no_axioms FX1Poly.Polygraph.Homology.prependAtResidue1
+#assert_no_axioms FX1Poly.Polygraph.Homology.prependAtResidue2
+#assert_no_axioms FX1Poly.Polygraph.Homology.prependGenEForm
+#assert_no_axioms FX1Poly.Polygraph.Homology.prependGen
+#assert_no_axioms FX1Poly.Polygraph.Homology.appendRealize
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedResidualWellFormed
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedModulePiTwoIso
+#assert_no_axioms FX1Poly.Polygraph.Homology.freeCrossedWellFormedImageZeroReduces
+#assert_no_axioms FX1Poly.Polygraph.Homology.shuffledCommutatorGeneralResidual
+#assert_no_axioms FX1Poly.Polygraph.Homology.scrambleGeneralResidual
+#assert_no_axioms FX1Poly.Polygraph.Homology.unreducedGeneralResidual
+#assert_no_axioms FX1Poly.Polygraph.Homology.FreeCrossedModuleMeasureInductionLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleFreeGroupMeasureInductionLedger
+#assert_no_axioms FX1Poly.Polygraph.Homology.crossedModuleFreeGroupMeasureInductionIsComplete
+
 end FX1PolyAudit
