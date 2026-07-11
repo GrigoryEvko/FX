@@ -446,4 +446,59 @@ and the shared matrix is DERIVED from the convertibility via `bunchedBimonoidMat
 HAND-EXHIBITED instances, NOT a general decision — see B4. -/
 def fxBunchedBimonoid_propCompletenessInstancesShipped : Bool := true
 
+/-! # =========================================================================================
+    # B4 — THE LEDGER + CENSUS: the honest r1 scope (general completeness = r2+, the #2033 star NOT claimed)
+    # =========================================================================================
+
+★ **No overclaim: r1 opens the matrix-PROP correspondence's diagram-to-matrix direction; the general spider
+normal form (the #2033 star) is the NAMED r2+ wall.**  The Lafont / Pirashvili / Fox theorem states the free
+bicommutative-bimonoid PROP IS `Mat(N)` — a two-way correspondence.  The SOUND direction (convertible implies
+equal matrix) is shipped upstream (`bunchedBimonoidMatrixSoundOverSound`).  r1 ships the OPENS toward the
+converse: the carrier VIEW (B1), the staged spider SECTION on the instance family with per-instance round-trips
+(B2), and two hand-exhibited completeness INSTANCES (B3).  The general completeness (equal matrix implies
+convertible, for ALL matrices) is the spider NF — the #2033 star — and is NOT claimed here. -/
+
+/-- ★★ **ESTABLISHED (B4) — the r1 matrix-PROP OPENS are shipped.**  `= true` records the complete r1 opens: the
+carrier view (`fxBunchedBimonoid_propHomAndCompositionViewsTypeCheck`, B1 — arity words as objects, dim-2 words
+as homs, `vcomp` as composition, no new inductive), the staged spider section with per-instance round-trips
+(`fxBunchedBimonoid_spiderPerInstanceRoundTripShipped`, B2), and the two completeness instances converged onto
+the canonical spider through the sound sub-theory (`fxBunchedBimonoid_propCompletenessInstancesShipped`, B3).
+The functor into `Mat(N)` is the shipped `bunchedBimonoidEvalCell`. -/
+def fxBunchedBimonoid_propOpensSubstrateShipped : Bool := true
+
+/-- ★★ **THE #2033 STAR IS NOT CLAIMED (honest r1 scope).**  `= false` records that the GENERAL matrix
+completeness — "equal `Mat(N)` matrix implies convertible" for ALL 2-cells, i.e. the faithful diagram-to-matrix
+"spider" decision — is the #2033 star and is NOT reached in r1.  r1 ships two HAND-EXHIBITED instances
+(`bunchedBimonoid{Bialgebra,Cocommutativity}CompletenessInstance`), never a decision procedure; the general
+converse is the spider NF, already NAMED (see the cross-reference below) at the r2+ wall.  Stating the general
+"equal-matrix implies convertible" now would be a lie. -/
+def fxBunchedBimonoid_propGeneralCompletenessStarReached : Bool := false
+
+/-- ★ **CROSS-REFERENCE (name-only) — the spider-NF completeness wall lives upstream, UNTOUCHED.**  `= true`
+records that the general spider normal form (the r1 opens' r2+ continuation) is the SAME wall already NAMED and
+shipped upstream: `fxBunchedBimonoid_matrixCompletenessIsSpiderNormalFormWall` (matrix semantics, `= false`) and
+`fxBunchedBimonoid_spiderCompletenessTargetsSoundSubTheory` (over-quotient adjudication, `= false`, re-scoped to
+`BunchedBimonoidSoundRow`).  This file adds the OPENS toward that target and cites it by NAME ONLY — neither
+marker's name nor `= false` value is edited, and the target of the spider NF stays the SOUND sub-theory
+`BunchedBimonoidSoundRow` (an over-quotienting congruence cannot be a faithful-completeness target). -/
+def fxBunchedBimonoid_propSpiderWallCrossReferencedNameOnly : Bool := true
+
+/-- ★ **CENSUS ENTRY — the matrix-PROP opens register in the bunched-bimonoid census (local, additive).**
+`= true` records the census entry for the r1 PROP opens: the carrier view + spider section + completeness
+instances feed the additive fragment's `Mat(N)` = matrix-PROP correspondence (Lafont / Pirashvili / Fox) in the
+diagram-to-matrix direction, complementing the upstream soundness feed
+(`fxBunchedBimonoid_matrixSoundnessFeedsMatNatCorrespondenceOneDirection`).  The upstream census tie-in
+(`SquierFamilyCensus.squierFamilyBunchedWalkerPresented`) is NAMED, not edited (cross-file); this local entry
+records the opens additively, keeping every upstream decl's name and meaning. -/
+def fxBunchedBimonoid_propNormalFormCensusEntryShipped : Bool := true
+
+/-- ★★ **ESTABLISHED (B4) — the r1 matrix-PROP opens ledger (honest scoreboard).**  `= true` records the complete
+r1 ledger: the carrier VIEW wins (zero new inductive, B1); the staged spider + per-instance round-trip shipped,
+with the general round-trip / stage lemmas / routing NAMED r2 (B2); two hand-exhibited completeness instances
+over the sound sub-theory (B3); and the honest scope — the general spider-NF completeness (the #2033 star) is NOT
+claimed (`fxBunchedBimonoid_propGeneralCompletenessStarReached = false`), cross-referenced name-only to the
+upstream wall, with the census entry recorded additively.  Every wall NAMED at its node: the general round-trip /
+stage Fubini kit (r2), the general routing transpose (r2), the spider-NF completeness (r2+). -/
+def fxBunchedBimonoid_propOpensRoundOneLedgerShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega

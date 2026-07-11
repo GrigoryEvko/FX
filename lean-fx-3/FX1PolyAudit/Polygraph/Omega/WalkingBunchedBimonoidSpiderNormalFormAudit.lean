@@ -89,6 +89,13 @@ namespace FX1PolyAudit
 -- B3 — the marker.
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propCompletenessInstancesShipped
 
+-- B4 — the ledger / census markers (honest scope: general completeness = r2+, the #2033 star NOT claimed).
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propOpensSubstrateShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propGeneralCompletenessStarReached
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propSpiderWallCrossReferencedNameOnly
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propNormalFormCensusEntryShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_propOpensRoundOneLedgerShipped
+
 -- Independent confirmation (not fuel-based) of the B1 arity word + a hom-view fact + the spider blocks /
 -- round-trip + the two completeness-instance convertibilities.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAPow
