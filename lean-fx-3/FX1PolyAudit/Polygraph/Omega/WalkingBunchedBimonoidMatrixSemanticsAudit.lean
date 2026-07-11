@@ -90,6 +90,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_fourCountSurvivesSigmaNaturality
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixHexagonReached
 
+-- B4 — the four-count-vs-matrix precision note + the 1-cell mixed splitter.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFourCountSeesBialgebraMatrixIdentifies
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeesCounitCommuteFourCountBlind
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSkeletonColourLabels
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWordColourSequence
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidColourTagSequence
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidColourSequenceBeq
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWordAdditiveMult
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWordMultAdditive
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMixedSplitterSeparatesAdditiveMultFromMultAdditive
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAaWordColourSequence
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_fourCountVsMatrixPrecisionNoteMachineChecked
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_matrixSeparatorAndBothSidedDemosShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_oneCellMixedSplitterShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_mixedTwoCellSplitsPerBlockDesignOnly
+
 -- Independent confirmation (not fuel-based): the evaluation fold, a respected row, the probe-caught separation,
 -- the swap/identity separation, the soundness fold, and the proof-carrying separator are all axiom-free.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidEvalCell
@@ -98,5 +114,8 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeparatesSwapFromIdentity
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSoundOverBalanced
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSwapNotConvertibleToIdentityOverBalanced
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidFourCountSeesBialgebraMatrixIdentifies
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMatrixSeesCounitCommuteFourCountBlind
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMixedSplitterSeparatesAdditiveMultFromMultAdditive
 
 end FX1PolyAudit

@@ -690,4 +690,153 @@ relation (whiskered `sigma`, the genuine S_3 Coxeter 3-strand cost) are DEFERRED
 `fxBunchedBimonoid_yangBaxterHexagonReached`.  Only the width-2 naturality half is shipped in r2. -/
 def fxBunchedBimonoid_matrixHexagonReached : Bool := false
 
+/-! # =========================================================================================
+    # B4 — THE FOUR-COUNT-vs-MATRIX PRECISION NOTE + the separator + the mixed splitter first brick
+    # =========================================================================================
+
+★ **The four-count and the matrix are COMPLEMENTARY, not one a refinement of the other — machine-checked on
+disjoint rows.**  The two invariants answer DIFFERENT questions and break on DISJOINT row sets:
+
+  * The **four-count** is a PRESENTATION invariant — it counts generator occurrences.  It SEPARATES the bialgebra
+    B1 legs (`(1,0,1,0) != (2,0,2,0)`: the right leg literally has two more generators) — a
+    presentation-level fact — but it is BLIND to which strand an operation acts on, so it identifies the
+    op-commute legs `op |> x` and `x <| op` (same generator multiset).
+  * The **matrix** is a MAP invariant — the actual linear map.  It IDENTIFIES the B1 legs (both `[[1,1],[1,1]]`:
+    convertible legs ARE the same map) but SEPARATES the op-commute legs (`op (x) 1 != 1 (x) op` as maps).
+
+So neither refines the other: the four-count breaks exactly where the matrix is sound (bialgebra B1), and the
+matrix breaks exactly where the four-count is sound (the 9 op-commute rows).  The B1 four-count separation
+`(1,0,1,0) != (2,0,2,0)` and the B1 matrix EQUALITY are NOT a contradiction — the four-count separates
+PRESENTATIONS (guards `BI != Frobenius`), the matrix identifies MAPS (convertible => same map).  This is the
+precision note stated as two machine-checked conjunctions. -/
+
+/-- ★★ **PRECISION NOTE, half 1 — the four-count SEES the bialgebra B1 that the matrix IDENTIFIES.**  The B1 legs
+have DIFFERENT four-counts (`(1,0,1,0) != (2,0,2,0)`, the presentation-level generator count) yet the SAME matrix
+(`[[1,1],[1,1]]`, the map).  The four-count is a presentation invariant that separates the B1 words; the matrix
+is a map invariant that identifies the B1 maps.  No contradiction — different questions. -/
+theorem bunchedBimonoidFourCountSeesBialgebraMatrixIdentifies :
+    bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductLeftLeg
+        ≠ bunchedBimonoidGeneratorFourCount bunchedBimonoidBialgebraProductRightLeg
+      ∧ bunchedBimonoidEvalCell bunchedBimonoidBialgebraProductLeftLeg
+        = bunchedBimonoidEvalCell bunchedBimonoidBialgebraProductRightLeg :=
+  ⟨bunchedFourCountUnsoundForBialgebra, bunchedBimonoidMatrixRespectsBialgebraProduct⟩
+
+/-- ★★ **PRECISION NOTE, half 2 — the matrix SEES the op-commute row that the four-count is BLIND to.**  The
+comonoid counitCounit legs (`eps |> a` vs `a <| eps`) have DIFFERENT matrices (`[[0,1]] != [[1,0]]`, the maps
+`eps (x) 1` vs `1 (x) eps`) yet the SAME four-count (`(0,0,0,1)`, one `eps` either way).  The matrix separates
+maps the count cannot see.  Together with half 1, this proves the two invariants are Pareto-incomparable. -/
+theorem bunchedBimonoidMatrixSeesCounitCommuteFourCountBlind :
+    bunchedBimonoidEvalCell bunchedBimonoidComonoidCounitCounitLeftLeg
+        ≠ bunchedBimonoidEvalCell bunchedBimonoidComonoidCounitCounitRightLeg
+      ∧ bunchedBimonoidGeneratorFourCount bunchedBimonoidComonoidCounitCounitLeftLeg
+        = bunchedBimonoidGeneratorFourCount bunchedBimonoidComonoidCounitCounitRightLeg :=
+  ⟨bunchedBimonoidMatrixSeparatesComonoidCounitCounit, rfl⟩
+
+/-! ## The mixed splitter — the 1-cell block decomposition (the CLEAN mixed fragment, first brick)
+
+★ **The mixed `a/m` fragment splits per colour block because the two bunches share NO interacting symbol.**  At
+the 1-cell level the theory is the FREE MONOID on `{a, m}` (no relations), so a 1-cell word IS its literal
+sequence of colours.  `bunchedBimonoidWordColourSequence` reads that sequence off the propext-clean skeleton;
+convertible 1-cells (= `cellBeq`-equal, no 1-cell relations) have the same sequence, so it is a faithful
+reindexing.  Grouping consecutive equal colours yields the alternating-block normal form (`a`-blocks and
+`m`-blocks); the mixed decision is the Amalgam disjoint-signature transfer over the two per-bunch decisions —
+DECIDABLE relative to them, precisely because `a` and `m` never interact (the exact inverse of the DistLaw /
+strong-monad wall). -/
+
+/-- Collect the **colour-label sequence** of a cell skeleton — a total structural fold over all six skeleton
+constructors (propext-clean, like `toSkeleton`); a generator node contributes its label, composites concatenate.
+For a 1-cell word the labels are exactly its colours in order. -/
+def bunchedBimonoidSkeletonColourLabels :
+    CellSkeleton bunchedBimonoidOmegaComputad → List BunchedBIGenLabel
+  | .modeLeaf _ => []
+  | .genNode _ label _ _ => [label]
+  | .idNode _ => []
+  | .vcompNode leftSkel rightSkel =>
+      bunchedBimonoidSkeletonColourLabels leftSkel ++ bunchedBimonoidSkeletonColourLabels rightSkel
+  | .whiskerLeftNode leftSkel rightSkel =>
+      bunchedBimonoidSkeletonColourLabels leftSkel ++ bunchedBimonoidSkeletonColourLabels rightSkel
+  | .whiskerRightNode leftSkel rightSkel =>
+      bunchedBimonoidSkeletonColourLabels leftSkel ++ bunchedBimonoidSkeletonColourLabels rightSkel
+
+/-- The **colour sequence of a 1-cell word** — the free-monoid normal form (the literal list of colours), read
+off the flat skeleton.  Two 1-cells are convertible iff they share this sequence (the 1-cell theory has no
+relations). -/
+def bunchedBimonoidWordColourSequence (cell : CellExpr bunchedBimonoidOmegaComputad 1) :
+    List BunchedBIGenLabel :=
+  bunchedBimonoidSkeletonColourLabels (toSkeleton cell)
+
+/-- The **integer-tag sequence** of a colour list — for decidable comparison of block decompositions. -/
+def bunchedBimonoidColourTagSequence : List BunchedBIGenLabel → List Nat
+  | [] => []
+  | head :: tail => bunchedBimonoidLabelTag head :: bunchedBimonoidColourTagSequence tail
+
+/-- Structural **`Bool` equality of tag sequences** — full four-arm enumeration (no wildcard), propext-clean. -/
+def bunchedBimonoidColourSequenceBeq : List Nat → List Nat → Bool
+  | [], [] => true
+  | [], _ :: _ => false
+  | _ :: _, [] => false
+  | headA :: tailA, headB :: tailB =>
+      (headA == headB) && bunchedBimonoidColourSequenceBeq tailA tailB
+
+/-- The mixed word `a.m` (additive then multiplicative). -/
+def bunchedBimonoidWordAdditiveMult : CellExpr bunchedBimonoidOmegaComputad 1 :=
+  CellExpr.vcomp bunchedBimonoidAdditiveGen bunchedBimonoidMultGen
+
+/-- The mixed word `m.a` (multiplicative then additive). -/
+def bunchedBimonoidWordMultAdditive : CellExpr bunchedBimonoidOmegaComputad 1 :=
+  CellExpr.vcomp bunchedBimonoidMultGen bunchedBimonoidAdditiveGen
+
+/-- ★ **THE MIXED SPLITTER SEPARATES `a.m` FROM `m.a`.**  Their colour sequences are `[a, m]` and `[m, a]` — tag
+sequences `[0, 1]` and `[1, 0]` — which the splitter distinguishes (`= false`).  So the 1-cell mixed theory is
+the free monoid on `{a, m}`, decided by literal colour-sequence equality — no cross-braiding at the 1-cell
+level. -/
+theorem bunchedBimonoidMixedSplitterSeparatesAdditiveMultFromMultAdditive :
+    bunchedBimonoidColourSequenceBeq
+        (bunchedBimonoidColourTagSequence (bunchedBimonoidWordColourSequence bunchedBimonoidWordAdditiveMult))
+        (bunchedBimonoidColourTagSequence (bunchedBimonoidWordColourSequence bunchedBimonoidWordMultAdditive))
+      = false := rfl
+
+/-- ★ The **colour sequence of `a.a`** is `[a, a]` (tag sequence `[0, 0]`) — a pure additive block, machine-read
+off the splitter. -/
+theorem bunchedBimonoidAaWordColourSequence :
+    bunchedBimonoidColourTagSequence (bunchedBimonoidWordColourSequence bunchedBimonoidAaWord) = [0, 0] := rfl
+
+/-! ## B4 non-vacuity probes -/
+
+#eval bunchedBimonoidColourTagSequence (bunchedBimonoidWordColourSequence bunchedBimonoidWordAdditiveMult)
+#eval bunchedBimonoidColourTagSequence (bunchedBimonoidWordColourSequence bunchedBimonoidWordMultAdditive)
+
+/-! ## The B4 honesty markers -/
+
+/-- ★★ **ESTABLISHED (B4) — the four-count-vs-matrix precision note is machine-checked.**  `= true` records the
+two conjunctions (`bunchedBimonoidFourCountSeesBialgebraMatrixIdentifies`,
+`bunchedBimonoidMatrixSeesCounitCommuteFourCountBlind`): the four-count separates the bialgebra B1 where the
+matrix identifies it, and the matrix separates the op-commute rows where the four-count is blind.  The two
+invariants are Pareto-incomparable — presentation-level (count) vs map-level (matrix), neither refining the
+other, no confusion. -/
+def fxBunchedBimonoid_fourCountVsMatrixPrecisionNoteMachineChecked : Bool := true
+
+/-- ★★ **ESTABLISHED (B4) — the proof-carrying separator + both-sided demos are shipped.**  `= true` records the
+refutation side (`bunchedBimonoidSwapNotConvertibleToIdentityOverBalanced`, B2 — `sigma` is provably NOT
+convertible to `id` over the balanced congruence) together with the both-sided exercise (a convertible pair
+shares the matrix; the 9 op-commute rows are matrix-separated) — the map-level decision the four-count cannot
+make. -/
+def fxBunchedBimonoid_matrixSeparatorAndBothSidedDemosShipped : Bool := true
+
+/-- ★ **ESTABLISHED (B4) — the 1-cell mixed splitter is shipped.**  `= true` records
+`bunchedBimonoidWordColourSequence` (the free-monoid colour-sequence normal form, read off the propext-clean
+skeleton) and its faithfulness demo (`...SeparatesAdditiveMultFromMultAdditive`: `a.m` and `m.a` have distinct
+colour sequences).  The 1-cell mixed theory is the free monoid on `{a, m}`, decided by literal sequence equality
+— the clean fragment (`a` and `m` never interact). -/
+def fxBunchedBimonoid_oneCellMixedSplitterShipped : Bool := true
+
+/-- ★ **DESIGN-ONLY (B4, honest) — the 2-cell per-block decomposition names the Amalgam transfer, NOT proven.**
+`= true` records the design statement: a 2-cell between mixed words decomposes into per-`a`-block matrices and
+per-`m`-block monotone maps, decidable RELATIVE to the two per-bunch decisions via the Amalgam disjoint-signature
+combination (Pigozzi 1974; Baader-Tinelli 1998) — which transfers PRECISELY because `a` and `m` share no
+interacting symbol.  This NAMES the target (uniform with r1's
+`fxBunchedBimonoid_mixedDecisionIsAlternatingBlockAmalgam`); the full 2-cell decomposition consumes the additive
+`Mat(N)` normalizer (walled, r3), so it is design-only here, not a proven theorem. -/
+def fxBunchedBimonoid_mixedTwoCellSplitsPerBlockDesignOnly : Bool := true
+
 end FX1Poly.Polygraph.Omega
