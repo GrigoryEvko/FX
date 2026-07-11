@@ -511,6 +511,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescInterleavedArcWitness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraddleSinkUnconditional
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcInsertion
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescArcInsertionPeel
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupArrivalPeel
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldR5Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryComponents
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGeneratorBridge
