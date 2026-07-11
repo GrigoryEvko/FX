@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingString.StringMatchingValleyDescent
 import FX1Poly.Polygraph.TwoCategory.WalkingString.StringArcArity
+import FX1Poly.Polygraph.TwoCategory.WalkingString.StringSpineTopWord
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyBlockSplit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineValleyCellBridge
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLastCupReadoff
@@ -201,6 +202,28 @@ def StringWidthZeroPureCupDeterminacy : Prop :=
     matchingOfSpineList 0 cupFirst = matchingOfSpineList 0 cupSecond →
     SpineTraceEquiv adjointTripleModeSignature cupFirst cupSecond
 
+/-- ★★ The **SHARED-TOP-strengthened width-0 pure-cup determinacy** sub-producer (FC-3 r12, the r12 re-key).  Same as
+`StringWidthZeroPureCupDeterminacy` (adjudicated TRUE by forcing, `StringWidthZeroForcingAdjudication`), but CARRYING
+the shared top boundary WORD the width-0 sort's last-cup pin consumes: the two cup lists are additionally
+word-boundary-chained from a common `bottomWord` and share their `spineListTopWord` (the fixed top 1-cell every cup in
+a width-0 valley builds up to).  This is the plumbing convenience the recon designed (r9 factoring precedent —
+introduce a NEW `…Shared` Prop, keep the bare one verbatim): the case-(a) caller
+(`stringDegenerateEmptySource_of_widthZero`) supplies the shared top word for free from the two valleys' common
+`targetPath` (`RawTwoCellExpr.spineListTopWord_spine`), which is strictly cheaper than the standalone forcing lemma.
+The extra hypotheses are exactly the data the r13 sort threads: the two `SpineBoundaryWordChained bottomWord` feed the
+word-swap kit and the `spineListTopWord` equality feeds the shared-cod pin `stringSpineAtom_eq_of_sharedCod_sameWindow`
+(`StringLastCupSharedTopPin`).  Still colour-KEYED and un-inhabited this round — the multi-round sort is r13+. -/
+def StringWidthZeroPureCupDeterminacyShared : Prop :=
+  ∀ {overallSource overallTarget : adjointTripleGraph.Mode}
+    (bottomWord : ModalityPath adjointTripleGraph overallSource overallTarget)
+    (cupFirst cupSecond : List (SpineAtom adjointTripleModeSignature overallSource overallTarget)),
+    AllCupArity cupFirst → AllCupArity cupSecond →
+    SpineBoundaryChained 0 cupFirst → SpineBoundaryChained 0 cupSecond →
+    SpineBoundaryWordChained bottomWord cupFirst → SpineBoundaryWordChained bottomWord cupSecond →
+    spineListTopWord bottomWord cupFirst = spineListTopWord bottomWord cupSecond →
+    matchingOfSpineList 0 cupFirst = matchingOfSpineList 0 cupSecond →
+    SpineTraceEquiv adjointTripleModeSignature cupFirst cupSecond
+
 /-- ★ The **mid-width-0 valley determinacy** sub-producer (Tier-D case (b)'s residual).  Two whole VALLEY string
 cells with equal boundary `matchingOf`, POSITIVE source width, and mid-width `0` (`survivorTopTotal (matchingOf
 valleyA) = 0`, the cap block consuming every bottom wire) are `SpineTraceEquiv`.  The string analog of
@@ -241,7 +264,7 @@ suffixes — pure cups chained at width `0` — and the whole-boundary `matching
 `matchingOfSpineList 0` equality of the cup suffixes.  The width-0 pure-cup determinacy then delivers the
 `SpineTraceEquiv`.  Token-swap of the adjunction's `degenerateEmptySource_of_widthZero`. -/
 theorem stringDegenerateEmptySource_of_widthZero
-    (widthZero : StringWidthZeroPureCupDeterminacy)
+    (widthZero : StringWidthZeroPureCupDeterminacyShared)
     {sourceMode targetMode : AdjointTripleMode}
     {sourcePath targetPath : ModalityPath adjointTripleGraph sourceMode targetMode}
     (valleyA valleyB : RawTwoCellExpr adjointTripleModeSignature sourcePath targetPath)
@@ -274,8 +297,23 @@ theorem stringDegenerateEmptySource_of_widthZero
       show matchingOfSpineList sourcePath.length valleyB.spine = matchingOfSpineList 0 cupB
       rw [sourceZero, splitB, capEmptyB]; rfl
     rw [← eqA, ← eqB]; exact matchingEq
+  have wordChainedA : SpineBoundaryWordChained sourcePath cupA := by
+    have wholeWord := valleyA.spineBoundaryWordChained_spine
+    rw [splitA, capEmptyA] at wholeWord; exact wholeWord
+  have wordChainedB : SpineBoundaryWordChained sourcePath cupB := by
+    have wholeWord := valleyB.spineBoundaryWordChained_spine
+    rw [splitB, capEmptyB] at wholeWord; exact wholeWord
+  have topWordA : spineListTopWord sourcePath cupA = targetPath := by
+    have wholeTop := valleyA.spineListTopWord_spine
+    rw [splitA, capEmptyA] at wholeTop; exact wholeTop
+  have topWordB : spineListTopWord sourcePath cupB = targetPath := by
+    have wholeTop := valleyB.spineListTopWord_spine
+    rw [splitB, capEmptyB] at wholeTop; exact wholeTop
+  have sharedTopWord : spineListTopWord sourcePath cupA = spineListTopWord sourcePath cupB :=
+    topWordA.trans topWordB.symm
   rw [splitA, capEmptyA, splitB, capEmptyB]
-  exact widthZero cupA cupB cupPureA cupPureB cupChained0A cupChained0B matchCupEq
+  exact widthZero sourcePath cupA cupB cupPureA cupPureB cupChained0A cupChained0B
+    wordChainedA wordChainedB sharedTopWord matchCupEq
 
 /-! ## The FULL three-way split -/
 
@@ -289,7 +327,7 @@ SHARPENS the monolithic Piece-II residual into three, PROVING the colour-blind d
 reducer.  Token-swap of the adjunction's `cellValleyTraceEquiv_of_widthZero_of_midZero` (whose positive branch was
 discharged; ours stays a named residual). -/
 theorem stringCellValleyTraceEquiv_of_widthZero_of_midZero
-    (widthZero : StringWidthZeroPureCupDeterminacy) (midZero : StringMidZeroValleyTraceEquiv)
+    (widthZero : StringWidthZeroPureCupDeterminacyShared) (midZero : StringMidZeroValleyTraceEquiv)
     (positive : StringCellValleyTraceEquivPositive) : StringCellValleyTraceEquiv := by
   intro sourceMode targetMode sourcePath targetPath valleyA valleyB isValleyA isValleyB matchingEq
   cases Nat.eq_zero_or_pos sourcePath.length with
@@ -309,15 +347,23 @@ theorem stringCellValleyTraceEquiv_of_widthZero_of_midZero
 named colour-keyed sub-producers, with the colour-blind skeleton + case (a) PROVED.**  The block extractor
 (`stringSpineValley_blockSplit` and its three arity read-offs), the empty-source cap collapse
 (`stringCapBlockEmpty_ofSourceZero`), the case-(a) reducer (`stringDegenerateEmptySource_of_widthZero`, FULLY proved
-from `StringWidthZeroPureCupDeterminacy`), and the full split (`stringCellValleyTraceEquiv_of_widthZero_of_midZero`)
-all port the adjunction's `SpineValleyCellDegenerate` skeleton BYTE-IDENTICAL modulo the signature tokens — the
-recon's "OUTER assembly transplant verbatim" verdict, confirmed: every step is colour-blind (reads cup-vs-cap arity,
-`matchingOfSpineList`, `survivorTopTotal`, boundary-chain arithmetic — never `F`/`G`/`H`), riding the shipped
-four-generator classification `adjointTripleSpineAtom_isCupOrCap`.
+from the r12-strengthened `StringWidthZeroPureCupDeterminacyShared`), and the full split
+(`stringCellValleyTraceEquiv_of_widthZero_of_midZero`) all port the adjunction's `SpineValleyCellDegenerate` skeleton
+BYTE-IDENTICAL modulo the signature tokens — the recon's "OUTER assembly transplant verbatim" verdict, confirmed:
+every step is colour-blind (reads cup-vs-cap arity, `matchingOfSpineList`, `survivorTopTotal`, boundary-chain
+arithmetic — never `F`/`G`/`H`), riding the shipped four-generator classification `adjointTripleSpineAtom_isCupOrCap`.
+
+  The r12 re-key (FC-3): the case-(a) reducer and the full split now consume the SHARED-TOP strengthening
+  `StringWidthZeroPureCupDeterminacyShared` (which additionally carries the two `SpineBoundaryWordChained` chains and
+  the shared `spineListTopWord` the width-0 sort's last-cup pin needs); the caller supplies the shared top word for
+  free from the two valleys' common `targetPath` (`RawTwoCellExpr.spineListTopWord_spine`).  The bare
+  `StringWidthZeroPureCupDeterminacy` is kept VERBATIM and adjudicated TRUE by forcing
+  (`StringWidthZeroForcingAdjudication`) — the re-key follows the r9 factoring precedent (a NEW `…Shared` Prop, the
+  shipped consumer names keep their meaning).
 
   What this marker does NOT close (no gate flag flips): the THREE named sub-producers
-  `StringWidthZeroPureCupDeterminacy`, `StringMidZeroValleyTraceEquiv`, `StringCellValleyTraceEquivPositive` are the
-  SORT + arc↔matching CORE, genuinely colour-KEYED — the adjunction discharges its analogs
+  `StringWidthZeroPureCupDeterminacyShared`, `StringMidZeroValleyTraceEquiv`, `StringCellValleyTraceEquivPositive` are
+  the SORT + arc↔matching CORE, genuinely colour-KEYED — the adjunction discharges its analogs
   (`widthZeroPureCupDeterminacy_holds`, `midZeroCupBlockReconstruct_holds`, `cellValleyTraceEquiv_ofPositive`)
   through `pureCupSpine_sort` / `pureCapSpine_sort` / `cupRestrict_reconstructs`, which read atom species through
   LENGTHS (`adjunctionPath_eq_of_length_eq`), FALSE at the string (`string_left_ne_coLeft`).  The colour-aware

@@ -17,6 +17,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stringSpineValley_blockSplit
 #assert_no_axioms FX1Poly.Polygraph.stringCapBlockEmpty_ofSourceZero
 #assert_no_axioms FX1Poly.Polygraph.StringWidthZeroPureCupDeterminacy
+#assert_no_axioms FX1Poly.Polygraph.StringWidthZeroPureCupDeterminacyShared
 #assert_no_axioms FX1Poly.Polygraph.stringDegenerateEmptySource_of_widthZero
 #assert_no_axioms FX1Poly.Polygraph.StringMidZeroValleyTraceEquiv
 #assert_no_axioms FX1Poly.Polygraph.StringCellValleyTraceEquivPositive

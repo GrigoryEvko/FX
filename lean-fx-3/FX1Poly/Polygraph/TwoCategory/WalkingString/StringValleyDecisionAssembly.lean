@@ -5,10 +5,11 @@ import FX1Poly.Polygraph.TwoCategory.WalkingString.StringDescentStepOracleInhabi
 Piece I fully discharged
 
 `StringValleyDegenerateSplit` SHARPENED the monolithic Piece-II residual `StringCellValleyTraceEquiv` into the three
-named colour-keyed sub-producers `StringWidthZeroPureCupDeterminacy`, `StringMidZeroValleyTraceEquiv`,
-`StringCellValleyTraceEquivPositive` (via `stringCellValleyTraceEquiv_of_widthZero_of_midZero`, proving the
-colour-blind skeleton + the case-(a) reducer).  Piece I is ALREADY DONE — the per-step descent oracle is inhabited
-hypothesis-free (`stringDescentStepOracle`, `StringDescentStepOracleInhabited`).
+named colour-keyed sub-producers `StringWidthZeroPureCupDeterminacyShared` (the FC-3 r12 shared-top strengthening),
+`StringMidZeroValleyTraceEquiv`, `StringCellValleyTraceEquivPositive` (via
+`stringCellValleyTraceEquiv_of_widthZero_of_midZero`, proving the colour-blind skeleton + the case-(a) reducer).
+Piece I is ALREADY DONE — the per-step descent oracle is inhabited hypothesis-free (`stringDescentStepOracle`,
+`StringDescentStepOracleInhabited`).
 
 This file WIRES the two together into the final decision chain: given the three colour-keyed sub-producers, the
 WHOLE adjoint-triple word-problem DECISION (#2020) fires, with everything else discharged.  The chain is
@@ -56,7 +57,7 @@ three) with the Piece-I-discharged reduction `stringMatchingReductsShareSpineTra
 argument is the inhabited `stringDescentStepOracle`).  So `StringMatchingReductsShareSpineTrace` follows from the
 three sub-producers alone — every other input already discharged. -/
 theorem stringMatchingReductsShareSpineTrace_ofThreeSubProducers
-    (widthZero : StringWidthZeroPureCupDeterminacy) (midZero : StringMidZeroValleyTraceEquiv)
+    (widthZero : StringWidthZeroPureCupDeterminacyShared) (midZero : StringMidZeroValleyTraceEquiv)
     (positive : StringCellValleyTraceEquivPositive) : StringMatchingReductsShareSpineTrace :=
   stringMatchingReductsShareSpineTrace_of_valleyTraceEquiv
     (stringCellValleyTraceEquiv_of_widthZero_of_midZero widthZero midZero positive)
@@ -66,7 +67,7 @@ theorem stringMatchingReductsShareSpineTrace_ofThreeSubProducers
 /-- ★ **The BASE completeness from the three sub-producers** — `matchingOf cellA = matchingOf cellB → cellA ≈ cellB`,
 routed through the shipped `stringConvOfMapEq_ofReductsShareSpineTrace`. -/
 theorem stringConvOfMapEq_ofThreeSubProducers
-    (widthZero : StringWidthZeroPureCupDeterminacy) (midZero : StringMidZeroValleyTraceEquiv)
+    (widthZero : StringWidthZeroPureCupDeterminacyShared) (midZero : StringMidZeroValleyTraceEquiv)
     (positive : StringCellValleyTraceEquivPositive)
     {sourceMode targetMode : AdjointTripleMode}
     {sourcePath targetPath : ModalityPath adjointTripleGraph sourceMode targetMode}
@@ -80,7 +81,7 @@ theorem stringConvOfMapEq_ofThreeSubProducers
 /-- ★ **The whole keystone from the three sub-producers** — soundness (r2, unconditional) + completeness (from the
 three), the two-field `StringSaturatedMatchingCanonicalization`. -/
 def stringSaturatedMatchingCanonicalization_ofThreeSubProducers
-    (widthZero : StringWidthZeroPureCupDeterminacy) (midZero : StringMidZeroValleyTraceEquiv)
+    (widthZero : StringWidthZeroPureCupDeterminacyShared) (midZero : StringMidZeroValleyTraceEquiv)
     (positive : StringCellValleyTraceEquivPositive) : StringSaturatedMatchingCanonicalization :=
   stringSaturatedMatchingCanonicalization_ofReducts
     (stringMatchingReductsShareSpineTrace_ofThreeSubProducers widthZero midZero positive)
@@ -93,7 +94,7 @@ The decision runs BOTH verdicts on adjoint-triple 2-cells; the `isFalse` leg is 
 on the three colour-keyed sub-producers — Piece I, the block-split, the case-(a) reducer, and the dispatching
 skeleton all discharged.  Routed through the shipped `decidableStringSaturatedConv_ofReducts`. -/
 def decidableStringSaturatedConv_ofThreeSubProducers
-    (widthZero : StringWidthZeroPureCupDeterminacy) (midZero : StringMidZeroValleyTraceEquiv)
+    (widthZero : StringWidthZeroPureCupDeterminacyShared) (midZero : StringMidZeroValleyTraceEquiv)
     (positive : StringCellValleyTraceEquivPositive)
     {sourceMode targetMode : AdjointTripleMode}
     {sourcePath targetPath : ModalityPath adjointTripleGraph sourceMode targetMode}
@@ -109,8 +110,9 @@ def decidableStringSaturatedConv_ofThreeSubProducers
 the colour-blind skeleton are fully discharged.**  `stringMatchingReductsShareSpineTrace_ofThreeSubProducers`,
 `stringConvOfMapEq_ofThreeSubProducers`, the keystone, and the full DECISION
 `decidableStringSaturatedConv_ofThreeSubProducers` all follow — zero-axiom, one composition each — from the three
-named sub-producers `StringWidthZeroPureCupDeterminacy`, `StringMidZeroValleyTraceEquiv`,
-`StringCellValleyTraceEquivPositive`.  Everything below Piece II is shipped: Piece I (`stringDescentStepOracle`,
+named sub-producers `StringWidthZeroPureCupDeterminacyShared` (the r12 shared-top strengthening),
+`StringMidZeroValleyTraceEquiv`, `StringCellValleyTraceEquivPositive`.  Everything below Piece II is shipped: Piece I
+(`stringDescentStepOracle`,
 hypothesis-free), the block extractor + empty-source cap collapse + case-(a) reducer + dispatching skeleton
 (`StringValleyDegenerateSplit`), and the completeness reduction + gated decision (`StringMatchingCompleteness`).
 The decision genuinely runs both verdicts on adjoint-triple 2-cells (`isFalse` residual-free via r2 soundness,
