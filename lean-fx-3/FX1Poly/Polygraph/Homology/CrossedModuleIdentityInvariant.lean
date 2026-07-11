@@ -237,4 +237,288 @@ theorem peifferProbeImageValue :
     crossedModuleImage [peifferProbeFirst, peifferProbeSecond, invGen peifferProbeFirst]
       = GroupRingZmod3.mk 0 1 0 := rfl
 
+/-! ## B3 — the residue group `ZZ/3`: Cayley table and the shift-distribution laws
+
+The soundness keystone needs the residue "image of `w` in `G`" to be a group homomorphism from the
+free group: it must send `reduceWord` to itself, `++` to `addZmod3`, and `invWord` to `negZmod3`.
+Every fact below is a full-enum `match … => rfl` on `ZmodThree` (the residue is a 3-element group,
+never an `Int`-remainder). -/
+
+/-- The group operation of `ZZ/3` — the fully-enumerated Cayley table (nine arms, no wildcard). -/
+def addZmod3 : ZmodThree → ZmodThree → ZmodThree
+  | .residue0, .residue0 => .residue0
+  | .residue0, .residue1 => .residue1
+  | .residue0, .residue2 => .residue2
+  | .residue1, .residue0 => .residue1
+  | .residue1, .residue1 => .residue2
+  | .residue1, .residue2 => .residue0
+  | .residue2, .residue0 => .residue2
+  | .residue2, .residue1 => .residue0
+  | .residue2, .residue2 => .residue1
+
+/-- The group negation of `ZZ/3`. -/
+def negZmod3 : ZmodThree → ZmodThree
+  | .residue0 => .residue0
+  | .residue1 => .residue2
+  | .residue2 => .residue1
+
+/-- Left identity of `addZmod3`. -/
+theorem addZmod3ZeroLeft : ∀ residue : ZmodThree, addZmod3 ZmodThree.residue0 residue = residue
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- Right identity of `addZmod3`. -/
+theorem addZmod3ZeroRight : ∀ residue : ZmodThree, addZmod3 residue ZmodThree.residue0 = residue
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- Right inverse of `addZmod3`: `r + (-r) = 0`. -/
+theorem addZmod3RightNeg : ∀ residue : ZmodThree,
+    addZmod3 residue (negZmod3 residue) = ZmodThree.residue0
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- `shiftUp` undoes `shiftDown`. -/
+theorem shiftUpShiftDown : ∀ residue : ZmodThree, shiftUp (shiftDown residue) = residue
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- `shiftDown` undoes `shiftUp`. -/
+theorem shiftDownShiftUp : ∀ residue : ZmodThree, shiftDown (shiftUp residue) = residue
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- `shiftUp` distributes over `addZmod3` on the LEFT operand (`+1` is a translation). -/
+theorem shiftUpAddZmod3 : ∀ (leftResidue rightResidue : ZmodThree),
+    shiftUp (addZmod3 leftResidue rightResidue) = addZmod3 (shiftUp leftResidue) rightResidue
+  | .residue0, .residue0 => rfl
+  | .residue0, .residue1 => rfl
+  | .residue0, .residue2 => rfl
+  | .residue1, .residue0 => rfl
+  | .residue1, .residue1 => rfl
+  | .residue1, .residue2 => rfl
+  | .residue2, .residue0 => rfl
+  | .residue2, .residue1 => rfl
+  | .residue2, .residue2 => rfl
+
+/-- `shiftDown` distributes over `addZmod3` on the LEFT operand. -/
+theorem shiftDownAddZmod3 : ∀ (leftResidue rightResidue : ZmodThree),
+    shiftDown (addZmod3 leftResidue rightResidue) = addZmod3 (shiftDown leftResidue) rightResidue
+  | .residue0, .residue0 => rfl
+  | .residue0, .residue1 => rfl
+  | .residue0, .residue2 => rfl
+  | .residue1, .residue0 => rfl
+  | .residue1, .residue1 => rfl
+  | .residue1, .residue2 => rfl
+  | .residue2, .residue0 => rfl
+  | .residue2, .residue1 => rfl
+  | .residue2, .residue2 => rfl
+
+/-- `letterShift` distributes over `addZmod3` on the LEFT operand. -/
+theorem letterShiftAddZmod3 : ∀ (letter : SignedLetter) (leftResidue rightResidue : ZmodThree),
+    letterShift letter (addZmod3 leftResidue rightResidue)
+      = addZmod3 (letterShift letter leftResidue) rightResidue
+  | .pos _, leftResidue, rightResidue => shiftUpAddZmod3 leftResidue rightResidue
+  | .neg _, leftResidue, rightResidue => shiftDownAddZmod3 leftResidue rightResidue
+
+/-- `shiftUp` distributes over `addZmod3` on the RIGHT operand. -/
+theorem shiftUpAddZmod3Right : ∀ (leftResidue rightResidue : ZmodThree),
+    shiftUp (addZmod3 leftResidue rightResidue) = addZmod3 leftResidue (shiftUp rightResidue)
+  | .residue0, .residue0 => rfl
+  | .residue0, .residue1 => rfl
+  | .residue0, .residue2 => rfl
+  | .residue1, .residue0 => rfl
+  | .residue1, .residue1 => rfl
+  | .residue1, .residue2 => rfl
+  | .residue2, .residue0 => rfl
+  | .residue2, .residue1 => rfl
+  | .residue2, .residue2 => rfl
+
+/-- `shiftDown` distributes over `addZmod3` on the RIGHT operand. -/
+theorem shiftDownAddZmod3Right : ∀ (leftResidue rightResidue : ZmodThree),
+    shiftDown (addZmod3 leftResidue rightResidue) = addZmod3 leftResidue (shiftDown rightResidue)
+  | .residue0, .residue0 => rfl
+  | .residue0, .residue1 => rfl
+  | .residue0, .residue2 => rfl
+  | .residue1, .residue0 => rfl
+  | .residue1, .residue1 => rfl
+  | .residue1, .residue2 => rfl
+  | .residue2, .residue0 => rfl
+  | .residue2, .residue1 => rfl
+  | .residue2, .residue2 => rfl
+
+/-- `letterShift` distributes over `addZmod3` on the RIGHT operand. -/
+theorem letterShiftAddZmod3Right : ∀ (letter : SignedLetter) (leftResidue rightResidue : ZmodThree),
+    letterShift letter (addZmod3 leftResidue rightResidue)
+      = addZmod3 leftResidue (letterShift letter rightResidue)
+  | .pos _, leftResidue, rightResidue => shiftUpAddZmod3Right leftResidue rightResidue
+  | .neg _, leftResidue, rightResidue => shiftDownAddZmod3Right leftResidue rightResidue
+
+/-- `shiftDown` on a negated residue equals negation of `shiftUp`. -/
+theorem shiftDownNegIsNegShiftUp : ∀ residue : ZmodThree,
+    shiftDown (negZmod3 residue) = negZmod3 (shiftUp residue)
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- `shiftUp` on a negated residue equals negation of `shiftDown`. -/
+theorem shiftUpNegIsNegShiftDown : ∀ residue : ZmodThree,
+    shiftUp (negZmod3 residue) = negZmod3 (shiftDown residue)
+  | .residue0 => rfl
+  | .residue1 => rfl
+  | .residue2 => rfl
+
+/-- Shifting by the inverse letter on a negated residue equals negation of the forward shift. -/
+theorem letterShiftInverseNeg : ∀ (letter : SignedLetter) (residue : ZmodThree),
+    letterShift (inverseLetter letter) (negZmod3 residue) = negZmod3 (letterShift letter residue)
+  | .pos _, residue => shiftDownNegIsNegShiftUp residue
+  | .neg _, residue => shiftUpNegIsNegShiftDown residue
+
+/-! ### B3 — the residue is a `++`/`reduceWord`/`invWord` homomorphism -/
+
+/-- Fold a word's per-letter shifts onto a starting residue (the residue action of a word). -/
+def applyWordShift : List SignedLetter → ZmodThree → ZmodThree
+  | [], residue => residue
+  | letter :: rest, residue => letterShift letter (applyWordShift rest residue)
+
+/-- `wordResidue` of a concatenation folds the left word's shifts onto the right word's residue. -/
+theorem wordResidueAppend : ∀ (leftPart rightPart : List SignedLetter),
+    wordResidue (leftPart ++ rightPart) = applyWordShift leftPart (wordResidue rightPart)
+  | [], _ => rfl
+  | letter :: rest, rightPart =>
+      congrArg (letterShift letter) (wordResidueAppend rest rightPart)
+
+/-- The word action is `addZmod3` by the word's residue (`+1`/`-1` shifts distribute). -/
+theorem applyWordShiftIsAdd : ∀ (word : List SignedLetter) (residue : ZmodThree),
+    applyWordShift word residue = addZmod3 (wordResidue word) residue
+  | [], residue => (addZmod3ZeroLeft residue).symm
+  | letter :: rest, residue =>
+      (congrArg (letterShift letter) (applyWordShiftIsAdd rest residue)).trans
+        (letterShiftAddZmod3 letter (wordResidue rest) residue)
+
+/-- ★ **`wordResidue` is a `++`-homomorphism**: `residue (x ++ y) = residue x + residue y`. -/
+theorem wordResidueAppendAdd (leftPart rightPart : List SignedLetter) :
+    wordResidue (leftPart ++ rightPart)
+      = addZmod3 (wordResidue leftPart) (wordResidue rightPart) :=
+  (wordResidueAppend leftPart rightPart).trans (applyWordShiftIsAdd leftPart (wordResidue rightPart))
+
+/-- Two inverse letters shift to the identity — the residue is blind to a cancelling pair. -/
+theorem letterShiftInverseCancel : ∀ (letter top : SignedLetter) (residue : ZmodThree),
+    areInverse letter top = true → letterShift letter (letterShift top residue) = residue
+  | .pos _, .neg _, residue, _ => shiftUpShiftDown residue
+  | .neg _, .pos _, residue, _ => shiftDownShiftUp residue
+  | .pos _, .pos _, _, cancels => Bool.noConfusion cancels
+  | .neg _, .neg _, _, cancels => Bool.noConfusion cancels
+
+/-- ★ **`consReduced` preserves residue**: prepending through the free-cancellation guard leaves the
+residue equal to the plain letter-shift, keyed by the `areInverse` guard (cancel drops both, extend
+keeps).  Mirrors r1's `isReducedConsReduced`. -/
+theorem consReducedResidue : ∀ (letter : SignedLetter) (word : List SignedLetter),
+    wordResidue (consReduced letter word) = letterShift letter (wordResidue word)
+  | _, [] => rfl
+  | letter, top :: rest =>
+      match hCancel : areInverse letter top with
+      | true =>
+          (congrArg wordResidue (consReducedCancel letter top rest hCancel)).trans
+            (letterShiftInverseCancel letter top (wordResidue rest) hCancel).symm
+      | false =>
+          congrArg wordResidue (consReducedExtend letter top rest hCancel)
+
+/-- ★★ **`reduceWord` preserves residue** — the highest-content lemma: free reduction never changes
+the image of `w` in `G` (it only deletes `g g⁻¹` pairs).  Structural induction folding
+`consReducedResidue`. -/
+theorem reduceResiduePreserved : ∀ word : List SignedLetter,
+    wordResidue (reduceWord word) = wordResidue word
+  | [] => rfl
+  | letter :: rest =>
+      (consReducedResidue letter (reduceWord rest)).trans
+        (congrArg (letterShift letter) (reduceResiduePreserved rest))
+
+/-- `List.map inverseLetter` negates the residue (each letter flips sign). -/
+theorem wordResidueMapInverse : ∀ word : List SignedLetter,
+    wordResidue (List.map inverseLetter word) = negZmod3 (wordResidue word)
+  | [] => rfl
+  | letter :: rest =>
+      (congrArg (letterShift (inverseLetter letter)) (wordResidueMapInverse rest)).trans
+        (letterShiftInverseNeg letter (wordResidue rest))
+
+/-- Reversal preserves residue (`ZZ/3` is abelian) — the accumulator-general form. -/
+theorem wordResidueReverseAux : ∀ (word accumulator : List SignedLetter),
+    wordResidue (List.reverseAux word accumulator)
+      = addZmod3 (wordResidue word) (wordResidue accumulator)
+  | [], accumulator => (addZmod3ZeroLeft (wordResidue accumulator)).symm
+  | frontLetter :: remainingWord, accumulator =>
+      (wordResidueReverseAux remainingWord (frontLetter :: accumulator)).trans
+        (((letterShiftAddZmod3Right frontLetter (wordResidue remainingWord)
+              (wordResidue accumulator)).symm).trans
+          (letterShiftAddZmod3 frontLetter (wordResidue remainingWord) (wordResidue accumulator)))
+
+/-- Reversal preserves residue. -/
+theorem wordResidueReverse (word : List SignedLetter) :
+    wordResidue (List.reverse word) = wordResidue word :=
+  (wordResidueReverseAux word []).trans (addZmod3ZeroRight (wordResidue word))
+
+/-- ★ **`invWord` negates residue**: `residue (w⁻¹) = -(residue w)` — reverse then flip each sign. -/
+theorem wordResidueInvWord (word : List SignedLetter) :
+    wordResidue (invWord word) = negZmod3 (wordResidue word) :=
+  (wordResidueReverse (List.map inverseLetter word)).trans (wordResidueMapInverse word)
+
+/-- The relator `ρ = s³` has residue `0` in `G = ZZ/3` (three up-shifts return to the start); every
+other relator index is the empty word, residue `0`. -/
+theorem relatorResidueIsZero : ∀ relatorIndex : Nat,
+    wordResidue (relatorWord relatorIndex) = ZmodThree.residue0
+  | 0 => rfl
+  | _ + 1 => rfl
+
+/-- The inverse relator also has residue `0`. -/
+theorem invRelatorResidueIsZero (relatorIndex : Nat) :
+    wordResidue (invWord (relatorWord relatorIndex)) = ZmodThree.residue0 :=
+  (wordResidueInvWord (relatorWord relatorIndex)).trans
+    (congrArg negZmod3 (relatorResidueIsZero relatorIndex))
+
+/-- ★ **A conjugated relator-body has residue `0`**: `residue (w · r · w⁻¹) = residue r = 0` — the
+`w` and `w⁻¹` residues cancel additively, independent of `w`. -/
+theorem conjugationResidueZero (conjugatorWord relatorBody : List SignedLetter)
+    (relatorZero : wordResidue relatorBody = ZmodThree.residue0) :
+    wordResidue (reduceWord (conjugatorWord ++ relatorBody ++ invWord conjugatorWord))
+      = ZmodThree.residue0 :=
+  calc wordResidue (reduceWord (conjugatorWord ++ relatorBody ++ invWord conjugatorWord))
+      = wordResidue (conjugatorWord ++ relatorBody ++ invWord conjugatorWord) :=
+        reduceResiduePreserved _
+    _ = addZmod3 (wordResidue (conjugatorWord ++ relatorBody))
+          (wordResidue (invWord conjugatorWord)) := wordResidueAppendAdd _ _
+    _ = addZmod3 (addZmod3 (wordResidue conjugatorWord) (wordResidue relatorBody))
+          (wordResidue (invWord conjugatorWord)) :=
+        congrArg (fun leftRes => addZmod3 leftRes (wordResidue (invWord conjugatorWord)))
+          (wordResidueAppendAdd conjugatorWord relatorBody)
+    _ = addZmod3 (addZmod3 (wordResidue conjugatorWord) ZmodThree.residue0)
+          (wordResidue (invWord conjugatorWord)) :=
+        congrArg (fun midRes => addZmod3 (addZmod3 (wordResidue conjugatorWord) midRes)
+          (wordResidue (invWord conjugatorWord))) relatorZero
+    _ = addZmod3 (addZmod3 (wordResidue conjugatorWord) ZmodThree.residue0)
+          (negZmod3 (wordResidue conjugatorWord)) :=
+        congrArg (fun invRes => addZmod3 (addZmod3 (wordResidue conjugatorWord) ZmodThree.residue0)
+          invRes) (wordResidueInvWord conjugatorWord)
+    _ = addZmod3 (wordResidue conjugatorWord) (negZmod3 (wordResidue conjugatorWord)) :=
+        congrArg (fun leftRes => addZmod3 leftRes (negZmod3 (wordResidue conjugatorWord)))
+          (addZmod3ZeroRight (wordResidue conjugatorWord))
+    _ = ZmodThree.residue0 := addZmod3RightNeg (wordResidue conjugatorWord)
+
+/-- ★★ **The Peiffer crux: `residue (∂a) = 0`** — the boundary of any conjugated relator maps to the
+identity of `G` (both signs), because `∂a = w · ρ^±1 · w⁻¹` and `residue ρ = 0`.  This is exactly the
+B4-docstring "`r ↦ 1` in `G`" that makes the Peiffer move invisible in `ZZ[G]`. -/
+theorem boundaryResidueIsZero : ∀ gen : ConjugatedRelator,
+    wordResidue (conjugatedRelatorBoundary gen) = ZmodThree.residue0
+  | ⟨conjugatorWord, relatorIndex, true⟩ =>
+      conjugationResidueZero conjugatorWord (relatorWord relatorIndex)
+        (relatorResidueIsZero relatorIndex)
+  | ⟨conjugatorWord, relatorIndex, false⟩ =>
+      conjugationResidueZero conjugatorWord (invWord (relatorWord relatorIndex))
+        (invRelatorResidueIsZero relatorIndex)
+
 end FX1Poly.Polygraph.Homology
