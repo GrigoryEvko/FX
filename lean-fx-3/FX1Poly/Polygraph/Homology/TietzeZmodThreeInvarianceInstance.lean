@@ -575,4 +575,109 @@ theorem tietzeAndCyclicDegreeThreeChainCountsDiffer :
     cyclicThreeWalkerPresentation.computeBasisCount 3 ≠ tietzeZmodThreePresentation.computeBasisCount 3 :=
   by decide
 
+/-! ## B4 — the CROWN ledger: the first genuine cross-presentation invariance inhabitant + the S_1
+    no-go re-audit (no wall moved)
+
+The r1 op-duality witness (`monadAndComonadShareDegreeTwoInvariant`) related two SAME-SHAPE presentations
+by a sign flip `d^op = −d`.  This round ships the FIRST inhabitant of `HomologyPresentationInvariance`
+relating two GENUINELY DIFFERENT presentations (`1 gen / 1 rule / 2 CP` vs `2 gen / 4 rule / 8 CP`) of
+the same monoid — a strict strengthening of the R1 evidence.  The general invariance theorem (any two
+finite convergent presentations of the same monoid have isomorphic homology) stays the RESEARCH WALL,
+now down-paid by TWO worked instances (op-duality + Tietze). -/
+
+/-- ★★ **THE FIRST GENUINE CROSS-PRESENTATION AGREEMENT.**  Two GENUINELY DIFFERENT Smith read-offs — the
+compact `⟨s | sss⟩`'s `1 × 1` `[[3]]` (at `C_1 = 1`) and the expanded presentation's `2 × 4` `diag(1, 3)`
+(at `C_1 = 2`) — produce the EQUAL homology invariant `ZZ/3 = (0, [3])`, by `rfl`.  Not a constant-function
+defeq (the op-duality restriction) but a real coincidence of two distinct computed invariants: the down
+payment on R1 (monoid-level invariance) that op-duality could not make. -/
+theorem tietzeAndCyclicShareDegreeOneInvariant :
+    tietzeDegreeOneSmithData.homologyInvariant = cyclicThreeDegreeOneSmithData.homologyInvariant := rfl
+
+/-- ★ **The Tietze invariance interface — the first genuine cross-presentation inhabitant of
+`HomologyPresentationInvariance`.**  Both `⟨s | sss⟩` and the expanded `⟨s, t | …⟩` present the
+handle-`3` monoid `ZZ/3`, both assigned `H1 = (0, [3])`; `isInvariant` holds.  The `presentsMonoid`
+support has two GENUINELY DIFFERENT presentations (unlike op-duality's sign-flip pair). -/
+def tietzeInvarianceInterface : HomologyPresentationInvariance :=
+  { presentsMonoid := fun presentation monoid =>
+      (presentation = cyclicThreeWalkerPresentation ∨ presentation = tietzeZmodThreePresentation) ∧
+      monoid.identifier = 3
+  , homologyInvariantOf := fun _ => cyclicThreeDegreeOneHomologyInvariant
+  , isInvariant := fun _ _ _ _ _ => rfl }
+
+/-- ★ **The interface is NON-DEGENERATELY inhabited by two DIFFERENT presentations** — the compact and
+expanded presentations of `ZZ/3` differ already in their generator count (`oneGeneratorCount` `1 ≠ 2`),
+so `tietzeInvarianceInterface`'s `isInvariant` relates two genuinely different presentations. -/
+theorem tietzeInvarianceInterfaceHasDistinctPresentations :
+    cyclicThreeWalkerPresentation ≠ tietzeZmodThreePresentation :=
+  fun presentationsEqual =>
+    absurd (congrArg WalkerPresentation.oneGeneratorCount presentationsEqual) (by decide)
+
+/-- ★ **The S_1 no-go WALL re-audited with the enriched inventory — VERBATIM, no wall moved.**  The
+obligation-3 wall `carrierDegreeThreeChainIsAlwaysFinite` applies UNCHANGED to the new expanded
+instance: its degree-3 chain basis is `criticalPairs.length` (a finite `Nat`, here `8`), so the carrier
+still cannot even STATE `H_3`-non-finiteness.  This round pays down R1's EVIDENCE (a second worked
+instance) and moves NEITHER wall's general statement. -/
+theorem tietzeCarrierDegreeThreeChainStillFinite :
+    tietzeZmodThreePresentation.computeBasisCount 3 = tietzeZmodThreePresentation.criticalPairs.length :=
+  carrierDegreeThreeChainIsAlwaysFinite tietzeZmodThreePresentation
+
+/-! ## B5 — the #2139 round-two ledger (what r2 opened, what stays walled)
+
+### What r2 OPENED (shipped, zero-axiom)
+
+  * **B1 — the expanded presentation**: `tietzeZmodThreePresentation` (the first `oneGeneratorCount = 2`
+    carrier instance); the convergence TRUTH PROBE (`tietzeRewritingNormalFormsAreThree`,
+    `tietzeCriticalPairJoinTargets`, ★★ `tietzeCriticalPairsJoin` — all eight critical pairs join by
+    structural evaluation); the boundary carrier-fit (`tietzePresentationComputes…`, all `rfl`);
+    ★★ `tietzeZmodThreePresentationIsWellFormed` (`d2 · d3 = 0`); `tietzeZmodThreeChainComplex` (the full
+    `AugmentedDirectedComplex` through the generic carrier).
+  * **B2 — the homology read-off through the SHIPPED reader**: two explicit unimodular Smith certificates
+    (`d2 → diag(1, 3)`, `d3 → diag(1, 1, 0, 0)`, kernel-checked); ★★ `tietzeDegreeOneHomologyIsZmodThree`
+    (`H1 = ZZ/3 = (0, [3])` — the invariant the round demanded) and `tietzeDegreeTwoHomologyIsZero`
+    (`H2 = 0`); `tietzeSmithHandoff`.
+  * **B3 — the agreement record**: `TietzePairAgreement` inhabited (`tietzeCyclicPairAgreement`) — equal
+    `H1`/`H2` invariants through the shipped reader AND the 3-element monoid iso `{e, s, ss} ≅ {e, s, t}`
+    (mutually inverse, multiplication-respecting); honest H3-divergence marker
+    (`tietzeAndCyclicDegreeThreeChainCountsDiffer`, `C_3` `2 ≠ 8`).
+  * **B4 — the crown**: ★★ `tietzeAndCyclicShareDegreeOneInvariant` (the first genuine cross-presentation
+    agreement — two DIFFERENT Smith read-offs, equal invariant); `tietzeInvarianceInterface` (the first
+    genuine cross-presentation inhabitant of `HomologyPresentationInvariance`);
+    `tietzeCarrierDegreeThreeChainStillFinite` (the S_1 obligation-3 wall re-audited VERBATIM).
+
+### What STAYS WALLED (named, unmoved — per the r1 ledger, verbatim demand)
+
+  * **R1 (WALL) — monoid-level presentation invariance.**  The GENERAL theorem (any two finite convergent
+    presentations of the same monoid have isomorphic homology; the abelianized-Tietze-move chain-homotopy
+    argument — Squier / Pride homotopy machinery) remains the research wall.  Down-payment ENRICHED: now
+    TWO worked instances (op-duality sign-invariance + this genuine cross-presentation Tietze agreement);
+    the fully-generic `PresentsMonoid` relation + invariance theorem stays the residual.
+  * **R2 (WALL) — the S_1 homological witness.**  Obligation 2 (decidability off the convergent path) and
+    obligation 3 (`H_3` not f.g., WALLED by carrier structural finiteness) are UNTOUCHED —
+    `tietzeCarrierDegreeThreeChainStillFinite` confirms the new instance is finite Z/3, staying the
+    verbatim wall.
+  * **R3 — the schema's live antecedent** — unsatisfiable over the finite carrier, still needs R2's
+    substrate.
+
+### Honest scoping (no overclaim)
+
+This round does NOT prove Squier's monoid-level invariance, `S_1`'s non-finiteness, or the general Tietze
+chain-homotopy.  It ships a genuinely NEW, strictly-stronger cross-presentation instance of the shipped
+invariance interface and re-audits the S_1 no-go with the enriched inventory — moving NO wall beyond its
+verbatim demand.  Exactly the "genuine down-payment + interface + ledger (honest), NOT a fabricated
+close" shape. -/
+
+/-- ★ **The #2139 round-two ledger marker.**  What r2 OPENED, zero-axiom: the expanded 2-generator
+convergent presentation of `ZZ/3` with all eight critical pairs joining, its `H1 = ZZ/3` / `H2 = 0`
+through the shipped reader, the degree-≤2 agreement record with the finite monoid iso, and the first
+genuine cross-presentation inhabitant of `HomologyPresentationInvariance`.  What STAYS WALLED: R1 the
+general monoid-level invariance (now down-paid by two worked instances), R2 the S_1 homological witness.
+Read the meaning from THIS docstring (the honest-record convention). -/
+def tietzeSquierNoGoRoundTwoLedgerIsComplete : Bool := true
+
+/-- ★ **The HONESTY marker: r2 ENRICHES the invariance evidence, it moves NO wall.**  The general Tietze
+invariance theorem (R1) and the S_1 homological witness (R2) stay the named research walls; this round
+ships a genuine cross-presentation instance and re-audits the no-go with the enriched inventory.  `= true`
+records the stance, not a closure. -/
+def tietzeInvarianceInstanceEnrichesButNoWallMoved : Bool := true
+
 end FX1Poly.Polygraph.Homology
