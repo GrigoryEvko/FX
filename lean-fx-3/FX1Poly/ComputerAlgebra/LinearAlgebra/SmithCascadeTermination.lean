@@ -5411,4 +5411,344 @@ public decl).  The 5x5 whole-driver-defeq stack line respected: the largest batt
 refuter at `maxRecDepth 200000`; the 5x5 companion is prose-only, NOT built.  NO fabricated battery pass, NO
 fabricated phase discharge. -/
 
+/-! ## RESIDUAL 1 DISCHARGED (H2-SMITH r18, B1, #2261) — `SmithRepairClearingStepSettles` inhabited
+
+The r17 crux residual `SmithRepairClearingStepSettles` (the clearing per-position repair advances the
+settled frame `pivotIndex -> pivotIndex + 1`) is inhabited here UNCONDITIONALLY.  The recon's key finding:
+NO Euclid measure / fuel-adequacy is needed for the frame, because EVERY branch of
+`smithRepairPositionSweepClearing` ends by firing `smithCascadeSweep` at the pivot, whose cross-clear is the
+hypothesis-free `smithCascadeStepSettlesThroughPivot`.  The strong invariant `frame pivotIndex + 1`
+self-threads at each iteration boundary — a near-verbatim mirror of the r13
+`smithRepairPositionSweepReachesCrossClear` chain, with the crux flip that the `none`-branch now fires the
+frame-advancing cascade (the r17 fix) instead of returning `[]`.
+
+Four new atoms feed the discharge: the succ-unfold `smithRepairPositionSweepClearingSucc`; the scan-range
+`smithFindNonDividingLaterDiagonalSomeInRange` (feeding the fold preserver's `pivotIndex < foundPos <
+height`); the minor-abs-sum-zero decode `smithMinorAbsSumZeroImpliesCrossStripZero` (the all-zero-minor
+edge); and the self-threading `smithRepairPositionSweepClearingPreservesFrame`.  Everything else is r12/r13
+shipped.  This DISCHARGES `repairWindowDiagHolds` for the corrected driver (through
+`repairWindowDiagHoldsOfClearingStep`), leaving `repairChainHolds` as the single surviving driver residual. -/
+
+/-- **`smithRepairPositionSweepClearing` at successor fuel unfolds to its match body** — the definitional
+unfolding of the structural recursion at `fuel + 1`, exposed as a rewrite target (`rfl`).  The clearing
+analogue of `smithRepairPositionSweepSucc`; the `none`-branch is the standalone cascade (the r17 fix). -/
+theorem smithRepairPositionSweepClearingSucc (fuel : Nat) (matrix : IntMatrix)
+    (pivotIndex height width : Nat) :
+    smithRepairPositionSweepClearing (fuel + 1) matrix pivotIndex height width
+      = (match smithFindNonDividingLaterDiagonal matrix pivotIndex
+            (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+         | none =>
+             smithCascadeSweep (smithMinorAbsSum matrix pivotIndex height width)
+               matrix pivotIndex height width
+         | some foundPos =>
+             let foldOps :=
+               [ ElementaryOperation.rowOperation
+                   (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+             let afterFold := matrix.applyOperations foldOps
+             let clearOps :=
+               smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+                 afterFold pivotIndex height width
+             let afterClear := afterFold.applyOperations clearOps
+             foldOps ++ clearOps ++
+               smithRepairPositionSweepClearing fuel afterClear pivotIndex height width) :=
+  rfl
+
+/-- **The non-dividing scan reports an in-range position** — `smithFindNonDividingLaterDiagonal` at
+`scanCount`/`scanStart` returns a `some foundPos` inside `[scanStart, scanStart + scanCount)`.  Structural on
+`scanCount`: the guard-true arm rides the IH on the advanced start (loosening the lower bound by one, growing
+the count by one via `Nat.add_right_comm`); the guard-false arm returns `scanStart` itself (`Option.some.inj`,
+in range by reflexivity).  The generic range fact the window instantiation reads off. -/
+theorem smithFindNonDividingLaterDiagonalScanInRange (matrix : IntMatrix) (pivotIndex : Nat) :
+    ∀ (scanCount scanStart foundPos : Nat),
+      smithFindNonDividingLaterDiagonal matrix pivotIndex scanCount scanStart = some foundPos →
+      scanStart ≤ foundPos ∧ foundPos < scanStart + scanCount := by
+  intro scanCount
+  induction scanCount with
+  | zero =>
+      intro scanStart foundPos findEq
+      have findNone : (none : Option Nat) = some foundPos := findEq
+      contradiction
+  | succ scanCount ih =>
+      intro scanStart foundPos findEq
+      have hUnfold : smithFindNonDividingLaterDiagonal matrix pivotIndex (scanCount + 1) scanStart
+          = if smithPivotDividesEntry (matrix.diagonalEntryAt pivotIndex)
+                (matrix.diagonalEntryAt scanStart) then
+              smithFindNonDividingLaterDiagonal matrix pivotIndex scanCount (scanStart + 1)
+            else some scanStart := rfl
+      rw [hUnfold] at findEq
+      cases hGuard : smithPivotDividesEntry (matrix.diagonalEntryAt pivotIndex)
+          (matrix.diagonalEntryAt scanStart) with
+      | true =>
+          rw [if_pos (by rw [hGuard] :
+            smithPivotDividesEntry (matrix.diagonalEntryAt pivotIndex)
+              (matrix.diagonalEntryAt scanStart) = true)] at findEq
+          have recRange := ih (scanStart + 1) foundPos findEq
+          refine ⟨Nat.le_of_succ_le recRange.1, ?_⟩
+          exact Eq.mp (congrArg (foundPos < ·) (Nat.add_right_comm scanStart 1 scanCount)) recRange.2
+      | false =>
+          rw [if_neg (by rw [hGuard]; exact Bool.noConfusion :
+            ¬ (smithPivotDividesEntry (matrix.diagonalEntryAt pivotIndex)
+              (matrix.diagonalEntryAt scanStart) = true))] at findEq
+          have foundEq : scanStart = foundPos := Option.some.inj findEq
+          subst foundEq
+          exact ⟨Nat.le_refl scanStart, Nat.lt_succ_of_le (Nat.le_add_right scanStart scanCount)⟩
+
+/-- **The repair search returns a strictly-later in-window position** — when
+`smithFindNonDividingLaterDiagonal` at the driver's scan window (`Nat.min height width - (pivotIndex + 1)`
+positions from `pivotIndex + 1`) reports `some foundPos`, then `pivotIndex < foundPos < Nat.min height
+width`.  Converts the generic `smithFindNonDividingLaterDiagonalScanInRange` bounds through the propext-clean
+`smithNatAddSubOfLe` (with `pivotIndex + 1 <= Nat.min height width` from the pivot-in-range hypotheses via
+the `if`-unfold of `Nat.min`).  Feeds `smithRepairFoldPreservesSettledFrame`'s `pivotBelowFound` /
+`foundInWindow`. -/
+theorem smithFindNonDividingLaterDiagonalSomeInRange (matrix : IntMatrix)
+    (pivotIndex height width foundPos : Nat)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (findEq : smithFindNonDividingLaterDiagonal matrix pivotIndex
+        (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) = some foundPos) :
+    pivotIndex < foundPos ∧ foundPos < Nat.min height width := by
+  have succLeMin : pivotIndex + 1 ≤ Nat.min height width := by
+    show pivotIndex + 1 ≤ if height ≤ width then height else width
+    cases Nat.decLe height width with
+    | isTrue heightLeWidth => rw [if_pos heightLeWidth]; exact pivotRowInRange
+    | isFalse heightGtWidth => rw [if_neg heightGtWidth]; exact pivotColInRange
+  have range := smithFindNonDividingLaterDiagonalScanInRange matrix pivotIndex
+    (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) foundPos findEq
+  refine ⟨range.1, ?_⟩
+  exact Eq.mp (congrArg (foundPos < ·)
+    (smithNatAddSubOfLe (pivotIndex + 1) (Nat.min height width) succLeMin)) range.2
+
+/-- **A natural sum of two summands is zero only when both are** — `leftValue + rightValue = 0` forces
+`leftValue = 0` and `rightValue = 0`.  Structural on `rightValue`: the `0` arm reads `leftValue = 0` off
+`leftValue + 0`; the successor arm refutes `Nat.succ _ = 0` by `Nat.noConfusion`.  The peeling atom for the
+abs-sum-zero decode. -/
+theorem natAddEqZeroSplit : ∀ (leftValue rightValue : Nat),
+    leftValue + rightValue = 0 → leftValue = 0 ∧ rightValue = 0
+  | _, 0, sumZero => ⟨sumZero, rfl⟩
+  | _, _ + 1, sumZero => Nat.noConfusion sumZero
+
+/-- **A zero row-magnitude sum decodes to pointwise zero** — `smithRowAbsSum matrix rowIndex colCount
+colStart = 0` forces every entry of row `rowIndex` over `[colStart, colStart + colCount)` to vanish.
+Structural on `colCount`, the abs-sum mirror of `smithRowSegmentAllZeroPointwise`: the head magnitude and the
+tail sum split by `natAddEqZeroSplit`, the head decodes via `intOfNatAbsZero`, the tail rides the IH. -/
+theorem smithRowAbsSumZeroPointwise (matrix : IntMatrix) (rowIndex : Nat) :
+    ∀ (colCount colStart : Nat),
+      smithRowAbsSum matrix rowIndex colCount colStart = 0 →
+      ∀ col, colStart ≤ col → col < colStart + colCount → matrix.entryAt rowIndex col = 0 := by
+  intro colCount
+  induction colCount with
+  | zero =>
+      intro colStart _ col colGe colLt
+      exact absurd
+        (Nat.lt_of_lt_of_le (Eq.mp (congrArg (col < ·) (Nat.add_zero colStart)) colLt) colGe)
+        (Nat.lt_irrefl col)
+  | succ colCount ih =>
+      intro colStart sumZero col colGe colLt
+      have sumUnfold :
+          (matrix.entryAt rowIndex colStart).natAbs
+            + smithRowAbsSum matrix rowIndex colCount (colStart + 1) = 0 :=
+        sumZero
+      have split := natAddEqZeroSplit _ _ sumUnfold
+      cases Nat.eq_or_lt_of_le colGe with
+      | inl colStartEqCol =>
+          exact intOfNatAbsZero (matrix.entryAt rowIndex col)
+            ((congrArg (fun position => (matrix.entryAt rowIndex position).natAbs) colStartEqCol).symm.trans
+              split.1)
+      | inr colStartLtCol =>
+          exact ih (colStart + 1) split.2 col colStartLtCol
+            (Eq.mp (congrArg (col < ·) (Nat.succ_add colStart colCount).symm) colLt)
+
+/-- **A zero minor-magnitude sum decodes to pointwise zero** — `smithMinorAbsSumRows matrix colStart colCount
+rowCount rowStart = 0` forces every entry of the sub-block `[rowStart, rowStart + rowCount) x [colStart,
+colStart + colCount)` to vanish.  Structural on `rowCount`: the head row-sum and the tail split by
+`natAddEqZeroSplit`, the head row decodes via `smithRowAbsSumZeroPointwise`, the tail rows ride the IH. -/
+theorem smithMinorAbsSumRowsZeroPointwise (matrix : IntMatrix) (colStart colCount : Nat) :
+    ∀ (rowCount rowStart : Nat),
+      smithMinorAbsSumRows matrix colStart colCount rowCount rowStart = 0 →
+      ∀ row col, rowStart ≤ row → row < rowStart + rowCount →
+        colStart ≤ col → col < colStart + colCount → matrix.entryAt row col = 0 := by
+  intro rowCount
+  induction rowCount with
+  | zero =>
+      intro rowStart _ row col rowGe rowLt _ _
+      exact absurd
+        (Nat.lt_of_lt_of_le (Eq.mp (congrArg (row < ·) (Nat.add_zero rowStart)) rowLt) rowGe)
+        (Nat.lt_irrefl row)
+  | succ rowCount ih =>
+      intro rowStart sumZero row col rowGe rowLt colGe colLt
+      have sumUnfold :
+          smithRowAbsSum matrix rowStart colCount colStart
+            + smithMinorAbsSumRows matrix colStart colCount rowCount (rowStart + 1) = 0 :=
+        sumZero
+      have split := natAddEqZeroSplit _ _ sumUnfold
+      cases Nat.eq_or_lt_of_le rowGe with
+      | inl rowStartEqRow =>
+          rw [← rowStartEqRow]
+          exact smithRowAbsSumZeroPointwise matrix rowStart colCount colStart split.1 col colGe colLt
+      | inr rowStartLtRow =>
+          exact ih (rowStart + 1) split.2 row col rowStartLtRow
+            (Eq.mp (congrArg (row < ·) (Nat.succ_add rowStart rowCount).symm) rowLt) colGe colLt
+
+/-- **A zero minor magnitude sum zeroes the whole pivot minor** — `smithMinorAbsSum matrix pivotIndex height
+width = 0` forces every entry of the minor `[pivotIndex, height) x [pivotIndex, width)` — in particular the
+pivot cross-strip — to vanish.  The window instantiation of `smithMinorAbsSumRowsZeroPointwise`, converting
+the raw scan bounds `pivotIndex + (dim - pivotIndex)` to `< dim` through `smithNatAddSubOfLe`.  The
+all-zero-minor edge of the residual-1 discharge (frame advances trivially, no cascade fired). -/
+theorem smithMinorAbsSumZeroImpliesCrossStripZero (matrix : IntMatrix) (pivotIndex height width : Nat)
+    (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
+    (minorZero : smithMinorAbsSum matrix pivotIndex height width = 0) :
+    ∀ row col, pivotIndex ≤ row → row < height → pivotIndex ≤ col → col < width →
+      matrix.entryAt row col = 0 := by
+  intro row col rowGe rowLt colGe colLt
+  exact smithMinorAbsSumRowsZeroPointwise matrix pivotIndex (width - pivotIndex)
+    (height - pivotIndex) pivotIndex minorZero row col rowGe
+    (Eq.mp (congrArg (row < ·)
+      (smithNatAddSubOfLe pivotIndex height (Nat.le_of_lt pivotRowInRange)).symm) rowLt)
+    colGe
+    (Eq.mp (congrArg (col < ·)
+      (smithNatAddSubOfLe pivotIndex width (Nat.le_of_lt pivotColInRange)).symm) colLt)
+
+/-- **The clearing per-position sweep self-threads the advanced frame** — GIVEN the input already at frame
+`pivotIndex + 1`, `smithRepairPositionSweepClearing` at any fuel leaves the output at frame `pivotIndex + 1`.
+Structural on the fuel (the self-threading carrier, NO measure): the `0` arm passes the frame through
+(`applyOperations [] = matrix`); the `none` arm's standalone cascade re-establishes frame `pivotIndex + 1`
+from frame `pivotIndex` (`smithCascadeStepSettlesThroughPivot`, via monotone down); the `some` arm folds
+(preserving frame `pivotIndex`, `smithRepairFoldPreservesSettledFrame` with the range lemma), cascades
+(advancing to frame `pivotIndex + 1`), and rides the IH on the reduced tail.  The r13
+`smithRepairPositionSweepReachesCrossClear` template lifted from the Bool cross-clear to the frame. -/
+theorem smithRepairPositionSweepClearingPreservesFrame :
+    ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
+      matrix.IsRectangular height width →
+      pivotIndex < height → pivotIndex < width →
+      SmithPrefixSettled matrix (pivotIndex + 1) height width →
+      SmithPrefixSettled
+        (matrix.applyOperations (smithRepairPositionSweepClearing fuel matrix pivotIndex height width))
+        (pivotIndex + 1) height width := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro matrix pivotIndex height width _ _ _ isSettledSucc
+      exact isSettledSucc
+  | succ fuel ih =>
+      intro matrix pivotIndex height width isRect pivotRowInRange pivotColInRange isSettledSucc
+      have isSettledP : SmithPrefixSettled matrix pivotIndex height width :=
+        smithPrefixSettledMonotone matrix (pivotIndex + 1) height width pivotIndex isSettledSucc
+          (Nat.le_succ pivotIndex)
+      cases hFind : smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+      | none =>
+          rw [smithRepairPositionSweepClearingSucc fuel matrix pivotIndex height width, hFind]
+          exact smithCascadeStepSettlesThroughPivot matrix pivotIndex height width isRect
+            pivotRowInRange pivotColInRange isSettledP
+      | some foundPos =>
+          let foldOps :=
+            [ ElementaryOperation.rowOperation
+                (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+          let afterFold := matrix.applyOperations foldOps
+          let clearOps :=
+            smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+              afterFold pivotIndex height width
+          let afterClear := afterFold.applyOperations clearOps
+          have foundRange := smithFindNonDividingLaterDiagonalSomeInRange matrix pivotIndex height width
+            foundPos pivotRowInRange pivotColInRange hFind
+          have foundInWindow : foundPos < height :=
+            Nat.lt_of_lt_of_le foundRange.2 (natMinLeLeft height width)
+          have afterFoldRect : afterFold.IsRectangular height width :=
+            applyOperationsPreservesRectangular foldOps matrix isRect
+          have afterFoldSettledP : SmithPrefixSettled afterFold pivotIndex height width :=
+            smithRepairFoldPreservesSettledFrame matrix pivotIndex foundPos height width isRect
+              pivotRowInRange foundRange.1 foundInWindow isSettledP
+          have afterClearSettledSucc : SmithPrefixSettled afterClear (pivotIndex + 1) height width :=
+            smithCascadeStepSettlesThroughPivot afterFold pivotIndex height width afterFoldRect
+              pivotRowInRange pivotColInRange afterFoldSettledP
+          have afterClearRect : afterClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular clearOps afterFold afterFoldRect
+          have hUnfold : smithRepairPositionSweepClearing (fuel + 1) matrix pivotIndex height width
+              = foldOps ++ clearOps
+                  ++ smithRepairPositionSweepClearing fuel afterClear pivotIndex height width := by
+            rw [smithRepairPositionSweepClearingSucc fuel matrix pivotIndex height width, hFind]
+          rw [hUnfold, applyOperationsAppend, applyOperationsAppend]
+          exact ih afterClear pivotIndex height width afterClearRect pivotRowInRange pivotColInRange
+            afterClearSettledSucc
+
+/-- **RESIDUAL 1 — `SmithRepairClearingStepSettles` inhabited (UNCONDITIONAL)** — the clearing per-position
+repair advances the settled frame `pivotIndex -> pivotIndex + 1` for every rectangular input settled at
+`pivotIndex`.  Case on the fuel `smithMinorAbsSum matrix pivotIndex height width`: `= 0` the whole minor is
+zero (`smithMinorAbsSumZeroImpliesCrossStripZero`), so the frame advances with no operations; `= k + 1` the
+succ-unfold's `none` arm advances via the standalone cascade (`smithCascadeStepSettlesThroughPivot` from the
+input frame), and its `some` arm folds+cascades to frame `pivotIndex + 1` then hands the reduced tail to the
+self-threading `smithRepairPositionSweepClearingPreservesFrame`.  NO Euclid measure / fuel-adequacy is
+required — the crux flip (the `none`-branch fires the frame-advancing cascade) makes the invariant
+self-maintaining.  Discharges `repairWindowDiagHolds` for the corrected driver. -/
+theorem smithRepairClearingStepSettlesHolds : SmithRepairClearingStepSettles := by
+  intro matrix pivotIndex height width isRect pivotRowInRange pivotColInRange isSettled
+  cases hSum : smithMinorAbsSum matrix pivotIndex height width with
+  | zero =>
+      have crossZero := smithMinorAbsSumZeroImpliesCrossStripZero matrix pivotIndex height width
+        pivotRowInRange pivotColInRange hSum
+      intro rowIndex colIndex rowLtHeight colLtWidth rowNeCol _frameHolds
+      cases Nat.lt_or_ge rowIndex pivotIndex with
+      | inl rowLtPivot =>
+          exact isSettled rowIndex colIndex rowLtHeight colLtWidth rowNeCol (Or.inl rowLtPivot)
+      | inr rowGePivot =>
+          cases Nat.lt_or_ge colIndex pivotIndex with
+          | inl colLtPivot =>
+              exact isSettled rowIndex colIndex rowLtHeight colLtWidth rowNeCol (Or.inr colLtPivot)
+          | inr colGePivot =>
+              exact crossZero rowIndex colIndex rowGePivot rowLtHeight colGePivot colLtWidth
+  | succ k =>
+      show SmithPrefixSettled
+        (matrix.applyOperations (smithRepairPositionSweepClearing (k + 1) matrix pivotIndex height width))
+        (pivotIndex + 1) height width
+      cases hFind : smithFindNonDividingLaterDiagonal matrix pivotIndex
+          (Nat.min height width - (pivotIndex + 1)) (pivotIndex + 1) with
+      | none =>
+          rw [smithRepairPositionSweepClearingSucc k matrix pivotIndex height width, hFind]
+          exact smithCascadeStepSettlesThroughPivot matrix pivotIndex height width isRect
+            pivotRowInRange pivotColInRange isSettled
+      | some foundPos =>
+          let foldOps :=
+            [ ElementaryOperation.rowOperation
+                (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
+          let afterFold := matrix.applyOperations foldOps
+          let clearOps :=
+            smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width)
+              afterFold pivotIndex height width
+          let afterClear := afterFold.applyOperations clearOps
+          have foundRange := smithFindNonDividingLaterDiagonalSomeInRange matrix pivotIndex height width
+            foundPos pivotRowInRange pivotColInRange hFind
+          have foundInWindow : foundPos < height :=
+            Nat.lt_of_lt_of_le foundRange.2 (natMinLeLeft height width)
+          have afterFoldRect : afterFold.IsRectangular height width :=
+            applyOperationsPreservesRectangular foldOps matrix isRect
+          have afterFoldSettledP : SmithPrefixSettled afterFold pivotIndex height width :=
+            smithRepairFoldPreservesSettledFrame matrix pivotIndex foundPos height width isRect
+              pivotRowInRange foundRange.1 foundInWindow isSettled
+          have afterClearSettledSucc : SmithPrefixSettled afterClear (pivotIndex + 1) height width :=
+            smithCascadeStepSettlesThroughPivot afterFold pivotIndex height width afterFoldRect
+              pivotRowInRange pivotColInRange afterFoldSettledP
+          have afterClearRect : afterClear.IsRectangular height width :=
+            applyOperationsPreservesRectangular clearOps afterFold afterFoldRect
+          have hUnfold : smithRepairPositionSweepClearing (k + 1) matrix pivotIndex height width
+              = foldOps ++ clearOps
+                  ++ smithRepairPositionSweepClearing k afterClear pivotIndex height width := by
+            rw [smithRepairPositionSweepClearingSucc k matrix pivotIndex height width, hFind]
+          rw [hUnfold, applyOperationsAppend, applyOperationsAppend]
+          exact smithRepairPositionSweepClearingPreservesFrame k afterClear pivotIndex height width
+            afterClearRect pivotRowInRange pivotColInRange afterClearSettledSucc
+
+/-- **`repairWindowDiagHolds` for the corrected driver, UNCONDITIONAL (r18)** — the corrected driver's repair
+output is window-diagonal at `0`, for every rectangular `matrix`, with NO hypothesis: feed the discharged
+`smithRepairClearingStepSettlesHolds` (residual 1) into the r17 conditional
+`repairWindowDiagHoldsOfClearingStep`.  Exactly the first hypothesis of
+`smithReduceCompleteDriverOfRepairInvariants`, now landed. -/
+theorem repairWindowDiagHoldsForClearing :
+    ∀ (matrix : IntMatrix) (height width : Nat),
+      matrix.IsRectangular height width →
+      IsWindowDiagonal
+        ((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
+          (smithDivisibilityRepairSweepClearing (Nat.min height width)
+            (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
+        0 height width :=
+  repairWindowDiagHoldsOfClearingStep smithRepairClearingStepSettlesHolds
+
 end FX1Poly.ComputerAlgebra

@@ -288,4 +288,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.repairWindowDiagHoldsOfClearingStep
 #assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCompleteDriverOfClearingStepAndChain
 
+/- H2-SMITH r18 — RESIDUAL 1 DISCHARGED (B1): `SmithRepairClearingStepSettles` inhabited UNCONDITIONALLY.
+   The clearing per-position repair advances the settled frame `pivotIndex -> pivotIndex + 1`; NO Euclid
+   measure needed (the crux flip makes the strong invariant `frame pivotIndex + 1` self-thread at each
+   iteration boundary).  Four new atoms — the succ-unfold, the scan-range, the abs-sum-zero decode, and the
+   self-threading frame preserver — feed `smithRepairClearingStepSettlesHolds`, which lands
+   `repairWindowDiagHoldsForClearing` (the driver's first repair invariant, now unconditional). -/
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepClearingSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithFindNonDividingLaterDiagonalScanInRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithFindNonDividingLaterDiagonalSomeInRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.natAddEqZeroSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRowAbsSumZeroPointwise
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMinorAbsSumRowsZeroPointwise
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithMinorAbsSumZeroImpliesCrossStripZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairPositionSweepClearingPreservesFrame
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRepairClearingStepSettlesHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.repairWindowDiagHoldsForClearing
+
 end FX1PolyAudit
