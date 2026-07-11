@@ -276,6 +276,86 @@ theorem partnerIndexOf_readsArc_adversarialB_cup :
   partnerIndexOf_reads_arc_general adversarialBDiagram (by decide) isBoundaryInvolution_adversarialBDiagram
     3 5 (by decide) (by decide) (by decide) (by decide)
 
+/-! ## B2 (CUP, partial) — the top–top / bottom–top join-site matching reductions + the fresh interleaved-cups probe
+
+The cap-arc join site reduces via `matchingSameComponent_bottomBottom_eq_isSameComponent` (both feet bottom).  The CUP
+arc's two feet are both TOP ports, and the THROUGH arc has one bottom + one top foot, so the CUP / THROUGH chains need
+the top–top and bottom–top analogs — cheap reductions via `matchingBoundaryNodes_getAt_top` (a top port
+`bottomCount + offset` reads the open wire at `offset`, no range hypothesis).  These are the join-site reductions the
+general CUP / THROUGH `partnerShares` will feed the routing collapse; the connectivity BUILD (the `foldFactorsThroughCup`
+six-phase factor + the `permInverse` cup-rank arithmetic for CUP, the 5-phase node-identity assembly for THROUGH) stays
+WALLED — see `fxBrauer_hasTConnectThroughWall`. -/
+
+/-- ★★ **The CUP arc join-site reduction (top–top).**  Both cup feet are top ports, so
+`matchingSameComponent bottomCount state (bottomCount + a) (bottomCount + b)` reduces to node connectivity of the open
+wires at offsets `a`, `b` — the top-side analog of `matchingSameComponent_bottomBottom_eq_isSameComponent`, via
+`matchingBoundaryNodes_getAt_top` (no range hypothesis needed). -/
+theorem matchingSameComponent_topTop_eq_isSameComponent (bottomCount : Nat) (state : WireState) (a b : Nat) :
+    matchingSameComponent bottomCount state (bottomCount + a) (bottomCount + b)
+      = isSameComponent state.links (natListGetAt state.openWires a) (natListGetAt state.openWires b) := by
+  show isSameComponent state.links (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + a))
+      (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + b))
+    = isSameComponent state.links (natListGetAt state.openWires a) (natListGetAt state.openWires b)
+  rw [matchingBoundaryNodes_getAt_top bottomCount state a, matchingBoundaryNodes_getAt_top bottomCount state b]
+
+/-- ★★ **The THROUGH arc join-site reduction (bottom–top).**  A through arc has one bottom foot `i < bottomCount` and
+one top foot `bottomCount + b`, so `matchingSameComponent bottomCount state i (bottomCount + b)` reduces to node
+connectivity of `i` and the open wire at offset `b`. -/
+theorem matchingSameComponent_bottomTop_eq_isSameComponent (bottomCount : Nat) (state : WireState)
+    (i b : Nat) (iLt : i < bottomCount) :
+    matchingSameComponent bottomCount state i (bottomCount + b)
+      = isSameComponent state.links i (natListGetAt state.openWires b) := by
+  show isSameComponent state.links (natListGetAt (matchingBoundaryNodes bottomCount state) i)
+      (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + b))
+    = isSameComponent state.links i (natListGetAt state.openWires b)
+  rw [matchingBoundaryNodes_getAt_bottom bottomCount state i iLt,
+    matchingBoundaryNodes_getAt_top bottomCount state b]
+
+/-- The FRESH interleaved crossing cups diagram: two top-only cup arcs `0↔2` and `1↔3`, INTERLEAVED (each spans one
+foot of the other), distinct from the r24 NESTED `{0,4,[3,2,1,0]}`.  A boundary involution on `0 + 4` ports. -/
+def interleavedCupsDiagram : DiagramType :=
+  { bottomCount := 0, topCount := 4, partner := [2, 3, 0, 1], loops := 0 }
+
+/-- The interleaved cups diagram is a boundary involution (each field `decide`-checked). -/
+theorem isBoundaryInvolution_interleavedCups :
+    IsBoundaryInvolution (interleavedCupsDiagram.bottomCount + interleavedCupsDiagram.topCount)
+      interleavedCupsDiagram.partner where
+  hasBoundaryLength := rfl
+  mapsInRange := by decide
+  isSelfInverse := by decide
+  isFixedPointFree := by decide
+
+/-- ★ **CUP-chain TOP-DECODE probe (interleaved cups).**  The corrected `topPerm` staircase decodes to `[0, 2, 1, 3]`
+— the interleaved routing (distinct from the nested `[0, 2, 3, 1]`). -/
+theorem cupChainTopDecodeProbe_interleavedCups :
+    permuteOfCrossingWord 4 (reconstructStandardFormExt5Corrected interleavedCupsDiagram).topPerm
+      = permInverse (throughStrandTops 0 4 interleavedCupsDiagram.partner
+          ++ cupArcTops 0 4 interleavedCupsDiagram.partner) := by decide
+
+/-- ★ **CUP-chain JOIN probe (fresh interleaved cups).**  The two interleaved cup arcs `top0↔top2`, `top1↔top3` are
+each same-component in the corrected six-phase fold, and the non-arc `top0↔top1` is disconnected — the CUP join
+witnessed on a FRESH interleaved diagram (the general CUP T-CONNECT would prove this for every cup rank; the build
+stays walled at the `foldFactorsThroughCup` factor + `permInverse` cup-rank arithmetic). -/
+theorem cupChainJoinProbe_interleavedCups :
+    (matchingSameComponent 0
+        (processBrauer (brauerSeed 0)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected interleavedCupsDiagram))) 0 2 = true)
+    ∧ (matchingSameComponent 0
+        (processBrauer (brauerSeed 0)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected interleavedCupsDiagram))) 1 3 = true)
+    ∧ (matchingSameComponent 0
+        (processBrauer (brauerSeed 0)
+          (standardFormWordExt5 (reconstructStandardFormExt5Corrected interleavedCupsDiagram))) 0 1 = false) :=
+  ⟨by decide, by decide, by decide⟩
+
+/-- ★★ **Honesty marker — the CUP / THROUGH join-site matching reductions are SHIPPED (r25, ingredient).**  The top–top
+(`matchingSameComponent_topTop_eq_isSameComponent`) and bottom–top (`matchingSameComponent_bottomTop_eq_isSameComponent`)
+reductions — the CUP / THROUGH analogs of the shipped bottom–bottom cap reduction — reduce each arc's `partnerShares` to
+node connectivity of the open wires at the arc's top offsets.  A NEW ingredient marker; it flips NO master — the CUP
+connectivity BUILD (`foldFactorsThroughCup` + `permInverse` cup-rank arithmetic) and the THROUGH 5-phase assembly stay
+walled (`fxBrauer_hasTConnectThroughWall = false`).  `= true`. -/
+def fxBrauer_hasTopTopMatchingReduction : Bool := true
+
 /-! ## Honesty markers + the r22 ledger -/
 
 /-- ★★ **Honesty marker — the T-CONNECT ROUTING COLLAPSE is SHIPPED (r22).**  `partnerIndexOf_reads_arc_general`

@@ -35,4 +35,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasTConnectThroughWall
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_r22GrandLedger
 
+-- ★ BRAUER r25 B2 (CUP, partial): the top–top / bottom–top join-site matching reductions, the fresh interleaved-cups
+-- decode + join probes, and the ingredient marker.
+#assert_no_axioms FX1Poly.Polygraph.matchingSameComponent_topTop_eq_isSameComponent
+#assert_no_axioms FX1Poly.Polygraph.matchingSameComponent_bottomTop_eq_isSameComponent
+#assert_no_axioms FX1Poly.Polygraph.isBoundaryInvolution_interleavedCups
+#assert_no_axioms FX1Poly.Polygraph.cupChainTopDecodeProbe_interleavedCups
+#assert_no_axioms FX1Poly.Polygraph.cupChainJoinProbe_interleavedCups
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasTopTopMatchingReduction
+
 end FX1PolyAudit
