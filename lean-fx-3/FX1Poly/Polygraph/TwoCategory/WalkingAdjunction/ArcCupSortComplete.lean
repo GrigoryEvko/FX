@@ -155,23 +155,24 @@ private theorem addLeftZero {leftSummand rightSummand : Nat}
   | succ predLeft =>
       exact Nat.noConfusion (Nat.add_comm (predLeft + 1) rightSummand ▸ sumZero)
 
-/-- ★ **A pure-cup append's prefix is pure cup (M2).**  From `AllCupArity (prefixAtoms ++
-suffixAtoms)`, the whole cap tally is zero (`capAtomCount_ofAllCupArity`); the append splits the
-tally (`capAtomCount_append`), so the prefix's cap tally is the left summand of a vanishing sum,
-hence zero (`addLeftZero`), whence `AllCupArity prefixAtoms` (`allCupArity_ofCapAtomCountZero`).
-Routed through the cap count rather than an indexed `cases`, so it stays `propext`-free.  The
-location induction peels the last cup off the append and recurses on the prefix. -/
-theorem allCupArity_prefix_ofAppend
-    {overallSource overallTarget : adjunctionGraph.Mode}
+/-- ★ **A pure-cup append's prefix is pure cup (M2).**  Structural recursion on `prefixAtoms`:
+each cons peels the head cup witness by a DIRECT `cases` on `AllCupArity (headAtom :: (restPrefix
+++ suffixAtoms))` and recurses on the tail, rebuilding `AllCupArity (headAtom :: restPrefix)`.
+Machine-checked axiom-clean (Route B — the `cases`-on-`AllCupArity` pattern carries no `propext`,
+`scratchpad/probe.lean`), signature-generic, superseding the cap-count detour: the walking-
+adjunction classifier is gone.  The location induction peels the last cup off the append and
+recurses on the prefix. -/
+theorem allCupArity_prefix_ofAppend {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} :
     (prefixAtoms suffixAtoms :
-      List (SpineAtom adjunctionModeSignature overallSource overallTarget))
-    (appendPureCup : AllCupArity (prefixAtoms ++ suffixAtoms)) :
-    AllCupArity prefixAtoms := by
-  have appendCapZero : capAtomCount (prefixAtoms ++ suffixAtoms) = 0 :=
-    capAtomCount_ofAllCupArity (prefixAtoms ++ suffixAtoms) appendPureCup
-  have splitCapZero : capAtomCount prefixAtoms + capAtomCount suffixAtoms = 0 :=
-    (capAtomCount_append prefixAtoms suffixAtoms).symm.trans appendCapZero
-  exact allCupArity_ofCapAtomCountZero prefixAtoms (addLeftZero splitCapZero)
+      List (SpineAtom signature overallSource overallTarget)) →
+    AllCupArity (prefixAtoms ++ suffixAtoms) → AllCupArity prefixAtoms
+  | [], _, _ => AllCupArity.nil
+  | headAtom :: restPrefix, suffixAtoms, appendPureCup => by
+      cases appendPureCup with
+      | cons hasCupDomArity hasCupCodArity restAppendPureCup =>
+          exact AllCupArity.cons hasCupDomArity hasCupCodArity
+            (allCupArity_prefix_ofAppend restPrefix suffixAtoms restAppendPureCup)
 
 /-! ## The chord-shift readoff — how a partner chord survives the last-cup drop
 
