@@ -19,4 +19,22 @@ namespace FX1PolyAudit
 -- B1: the honesty marker for the re-export + probes
 #assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBoundaryPhaseLoopsProbe
 
+-- B2: the position-general cup loops-zero step
+#assert_no_axioms FX1Poly.Polygraph.stepWiring_cup_loops_atPos
+
+-- B2: the three phase loops-zero folds (D2 crossing, D3 cup, D4 cap) + the distinctness carrier
+#assert_no_axioms FX1Poly.Polygraph.crossingWord_loops_zero
+#assert_no_axioms FX1Poly.Polygraph.cupWord_loops_zero
+#assert_no_axioms FX1Poly.Polygraph.capWord_loops_zero_ofDistinct
+#assert_no_axioms FX1Poly.Polygraph.crossingWord_preserves_distinct
+
+-- B2: THE WELD -- the boundary word closes zero loops, and the full loops field
+#assert_no_axioms FX1Poly.Polygraph.foldLoopsField_ofForm
+#assert_no_axioms FX1Poly.Polygraph.foldLoopsField_general
+#assert_no_axioms FX1Poly.Polygraph.foldLoopsField_general_wildThrough
+#assert_no_axioms FX1Poly.Polygraph.foldLoopsField_general_wildCupLoop
+
+-- B2: the honesty marker
+#assert_no_axioms FX1Poly.Polygraph.fxBrauer_hasBoundaryWordLoopsField
+
 end FX1PolyAudit
