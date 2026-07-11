@@ -84,6 +84,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.expandCupTopPairs_length
 #assert_no_axioms FX1Poly.Polygraph.cupArcTwiceThroughSumsToTop
 
+-- ★ BRAUER r21: the through-count symmetry (`|throughStrandBottoms| = |throughStrandTops|`), the phase-boundary-width
+-- residual the two cruxes did not jointly close (feeds the corrected-word general WellFormedBrauerFold assembly)
+#assert_no_axioms FX1Poly.Polygraph.throughStrandBottoms_length_eq_throughStrandTops
+
 -- ★ BRAUER r17 (T-CLOSE top side): the TOP read-off width-length / boundedness / distinctness, the general top
 -- IsPermutationOfRange, the permInverse lift, and the universal top E2 roundtrip.
 #assert_no_axioms FX1Poly.Polygraph.topReadOffOrderLength

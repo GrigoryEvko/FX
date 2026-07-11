@@ -1486,6 +1486,115 @@ theorem cupLargerTopIndices_length_eq (bottomCount topCount : Nat) (partner : Li
       distinctLarger distinctMap sameMembers
   rw [lengthEq, mapLengthCount]
 
+/-! ## Section 19b — the through-count symmetry: `|throughStrandBottoms| = |throughStrandTops|`
+
+The corrected extractor's cup block fires `|cupArcTops|` cups at position `|throughStrandBottoms|`, so the
+phase-boundary open-wire width after the cups is `|throughStrandBottoms| + 2·|cupArcTops|`, while the top crossing
+staircase has width `topCount = |throughStrandTops| + 2·|cupArcTops|` (the ∗-dual crux).  For the top-crossing phase
+width to equal `topCount` the two through counts must agree — a fact the two cruxes do NOT jointly imply.  The
+involution bijects the through TOPS onto the through BOTTOMS via `topIndex ↦ partner (bottomCount + topIndex)` (its own
+inverse), so the counts are equal — the same erase-kit / involution-bijection machinery the cap/cup pairing lemmas
+use, now cross-boundary. -/
+
+/-- ★★ **The through-count symmetry.**  Under the involution gate over `bottomCount + topCount` ports, the number of
+through-strand BOTTOM ports equals the number of through-strand TOP ports.  The involution bijects the through tops
+onto the through bottoms via `topIndex ↦ partner (bottomCount + topIndex)` (each through top's bottom partner is a
+distinct through bottom, and the map is its own inverse).  Realized via the erase-kit length equality
+(`distinctSameMembersLengthEq`) on `throughStrandBottoms` and `throughStrandTops.map (partner ∘ (bottomCount + ·))` —
+two distinct lists with the same members.  The phase-boundary-width residual the two cruxes did not close. -/
+theorem throughStrandBottoms_length_eq_throughStrandTops (bottomCount topCount : Nat) (partner : List Nat)
+    (wf : IsBoundaryInvolution (bottomCount + topCount) partner) :
+    (throughStrandBottoms bottomCount partner).length
+      = (throughStrandTops bottomCount topCount partner).length := by
+  have sameMembers : ∀ value, memBool value (throughStrandBottoms bottomCount partner)
+      = memBool value
+          ((throughStrandTops bottomCount topCount partner).map
+            (fun topIndex => natListGetAt partner (bottomCount + topIndex))) := by
+    intro value
+    apply boolEqOfImpCount
+    · intro valueMemBottom
+      have valueMem : value ∈ throughStrandBottoms bottomCount partner := memBoolMemCount _ value valueMemBottom
+      obtain ⟨valueRange, valueGuard⟩ :=
+        memFilterMapGuardInvertedCount (throughBottomGuard bottomCount partner) (List.range bottomCount) value valueMem
+      have valueLt : value < bottomCount := memRangeLtCount valueRange
+      have valueLtTotal : value < bottomCount + topCount :=
+        Nat.lt_of_lt_of_le valueLt (Nat.le_add_right bottomCount topCount)
+      have bottomLePartner : bottomCount ≤ natListGetAt partner value :=
+        natLeOfBleCount bottomCount (natListGetAt partner value) valueGuard
+      have addSub : bottomCount + (natListGetAt partner value - bottomCount) = natListGetAt partner value :=
+        addSubCancelTop bottomCount (natListGetAt partner value) bottomLePartner
+      have selfInv : natListGetAt partner (natListGetAt partner value) = value :=
+        wf.isSelfInverse value valueLtTotal
+      have partnerAtTop : natListGetAt partner (bottomCount + (natListGetAt partner value - bottomCount)) = value := by
+        rw [addSub]; exact selfInv
+      have topLtTop : natListGetAt partner value - bottomCount < topCount := by
+        have partnerLtTotal : natListGetAt partner value < bottomCount + topCount := wf.mapsInRange value valueLtTotal
+        have step : bottomCount + (natListGetAt partner value - bottomCount) < bottomCount + topCount := by
+          rw [addSub]; exact partnerLtTotal
+        exact natLtOfAddLtAddLeftTop bottomCount (natListGetAt partner value - bottomCount) topCount step
+      have topGuard : throughTopGuard bottomCount partner (natListGetAt partner value - bottomCount) = true := by
+        show Nat.blt (natListGetAt partner (bottomCount + (natListGetAt partner value - bottomCount))) bottomCount = true
+        rw [partnerAtTop]; exact natBltOfLtCount value bottomCount valueLt
+      have topRange : natListGetAt partner value - bottomCount ∈ List.range topCount :=
+        memRangeOfLtCount (natListGetAt partner value - bottomCount) topCount topLtTop
+      have topMemThrough : natListGetAt partner value - bottomCount ∈ throughStrandTops bottomCount topCount partner :=
+        memFilterMapGuardComplete (throughTopGuard bottomCount partner) (List.range topCount)
+          (natListGetAt partner value - bottomCount) topRange topGuard
+      have mapMem : memBool (natListGetAt partner (bottomCount + (natListGetAt partner value - bottomCount)))
+          ((throughStrandTops bottomCount topCount partner).map
+            (fun topIndex => natListGetAt partner (bottomCount + topIndex))) = true :=
+        memBoolMapOfMemCount (fun topIndex => natListGetAt partner (bottomCount + topIndex))
+          (throughStrandTops bottomCount topCount partner) (natListGetAt partner value - bottomCount) topMemThrough
+      rw [partnerAtTop] at mapMem
+      exact mapMem
+    · intro valueMemMap
+      obtain ⟨throughTop, throughTopMem, mapEq⟩ :=
+        memBoolMapWitnessCount (fun topIndex => natListGetAt partner (bottomCount + topIndex))
+          (throughStrandTops bottomCount topCount partner) value valueMemMap
+      have throughSound := throughStrandTops_mem_sound bottomCount topCount partner throughTop throughTopMem
+      have portLtTotal : bottomCount + throughTop < bottomCount + topCount :=
+        Nat.add_lt_add_left throughSound.1 bottomCount
+      have valueEq : natListGetAt partner (bottomCount + throughTop) = value := mapEq
+      have valueLt : value < bottomCount := valueEq ▸ throughSound.2
+      have selfInv : natListGetAt partner (natListGetAt partner (bottomCount + throughTop)) = bottomCount + throughTop :=
+        wf.isSelfInverse (bottomCount + throughTop) portLtTotal
+      have partnerAtValue : natListGetAt partner value = bottomCount + throughTop := by
+        rw [← valueEq]; exact selfInv
+      have bottomGuard : throughBottomGuard bottomCount partner value = true := by
+        show Nat.ble bottomCount (natListGetAt partner value) = true
+        rw [partnerAtValue]
+        exact natBleOfLeCount bottomCount (bottomCount + throughTop) (Nat.le_add_right bottomCount throughTop)
+      have valueRange : value ∈ List.range bottomCount := memRangeOfLtCount value bottomCount valueLt
+      have valueMemBottom : value ∈ throughStrandBottoms bottomCount partner :=
+        memFilterMapGuardComplete (throughBottomGuard bottomCount partner) (List.range bottomCount)
+          value valueRange bottomGuard
+      exact memBoolOfMemCount _ value valueMemBottom
+  have distinctBottoms : isDistinctList (throughStrandBottoms bottomCount partner) = true :=
+    filterMapGuardIdentityDistinctCount (throughBottomGuard bottomCount partner) (List.range bottomCount)
+      (isDistinctListRangeCount bottomCount)
+  have distinctMap :
+      isDistinctList ((throughStrandTops bottomCount topCount partner).map
+        (fun topIndex => natListGetAt partner (bottomCount + topIndex))) = true :=
+    mapDistinctOfInjOnCount (fun topIndex => natListGetAt partner (bottomCount + topIndex))
+      (throughStrandTops bottomCount topCount partner)
+      (filterMapGuardIdentityDistinctCount (throughTopGuard bottomCount partner) (List.range topCount)
+        (isDistinctListRangeCount topCount))
+      (fun left right leftMem rightMem eqMap => by
+        have leftSound := throughStrandTops_mem_sound bottomCount topCount partner left leftMem
+        have rightSound := throughStrandTops_mem_sound bottomCount topCount partner right rightMem
+        have portIndexEq : bottomCount + left = bottomCount + right :=
+          involutionInjectiveCount (bottomCount + topCount) partner wf (bottomCount + left) (bottomCount + right)
+            (Nat.add_lt_add_left leftSound.1 bottomCount) (Nat.add_lt_add_left rightSound.1 bottomCount) eqMap
+        exact natAddLeftCancelTop bottomCount left right portIndexEq)
+  have lengthEq : (throughStrandBottoms bottomCount partner).length
+      = ((throughStrandTops bottomCount topCount partner).map
+          (fun topIndex => natListGetAt partner (bottomCount + topIndex))).length :=
+    distinctSameMembersLengthEq (throughStrandBottoms bottomCount partner)
+      ((throughStrandTops bottomCount topCount partner).map
+        (fun topIndex => natListGetAt partner (bottomCount + topIndex)))
+      distinctBottoms distinctMap sameMembers
+  rw [lengthEq, mapLengthCount]
+
 /-! ## Section 20 — the ∗-dual crux and doubling -/
 
 /-- ★★ **The ∗-dual doubling — `|cupArcTops| = 2·|cupArcTopIndices|`.**  Each cup arc contributes two top feet. -/
