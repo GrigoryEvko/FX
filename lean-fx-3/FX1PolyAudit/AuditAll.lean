@@ -835,6 +835,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapHeadStructur
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcCapHeadCancellation
 -- FC-3 r22 B2 P1 — the adjoint-triple mode-parity substrate (the descent's seat/refute bookkeeping)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointTripleModeParity
+-- FC-3 r22 B2 P3 — the boundary chain advances along the arc fold (read-off split-state seat bound)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringArcSpineChainAlong
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionParity
