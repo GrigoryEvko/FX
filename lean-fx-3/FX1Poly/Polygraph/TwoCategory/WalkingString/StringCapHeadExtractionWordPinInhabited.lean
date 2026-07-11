@@ -107,6 +107,144 @@ theorem stringAllCapArity_prefix_ofAppend
       exact AllCapArity.cons headDom headCod
         (stringAllCapArity_prefix_ofAppend restPrefix suffixAtoms restAppendPureCap)
 
+/-! ## Order-preservation of the pure-cap split open-wires (closes the swapped-read branch)
+
+The located certificate's `doesConsumePair` is a two-order disjunction; the SWAPPED order (the toucher's window
+reading `rightIndex` then `leftIndex`) cannot feed the re-founded descent master, whose `∃ seatBefore` premise
+is unsatisfiable for the reversed pair at the seed.  It is refuted by order-preservation: a pure-cap fold from
+the sorted `range` seed keeps `openWires` adjacently strictly increasing, so the toucher's two consecutive reads
+are in increasing order — contradicting the swapped read of the two consecutive seed ports. -/
+
+/-- **A pair removal preserves adjacent strict increase.**  Removing the two-wire window at `windowPosition`
+(in range) from an adjacently-strictly-increasing list keeps it adjacently strictly increasing: below the
+window reads are untouched, past it reads shift down by two, and at the seam the removed pair is bridged by
+transitivity through the three original adjacent steps. -/
+private theorem natListRemoveTwoAt_adjIncreasing
+    (wires : List Nat) (windowPosition : Nat)
+    (windowFits : windowPosition + 2 ≤ wires.length)
+    (increasing : ∀ position, position + 1 < wires.length →
+      natListGetAt wires position < natListGetAt wires (position + 1)) :
+    ∀ position, position + 1 < (natListRemoveTwoAt wires windowPosition).length →
+      natListGetAt (natListRemoveTwoAt wires windowPosition) position
+        < natListGetAt (natListRemoveTwoAt wires windowPosition) (position + 1) := by
+  intro position positionInRange
+  have removedLen : (natListRemoveTwoAt wires windowPosition).length + 2 = wires.length :=
+    natListRemoveTwoAt_length wires windowPosition windowFits
+  have windowBelowWires : windowPosition < wires.length :=
+    Nat.lt_of_lt_of_le (Nat.lt_succ_of_le (Nat.le_succ windowPosition)) windowFits
+  have windowSuccBelowWires : windowPosition + 1 < wires.length :=
+    Nat.lt_of_lt_of_le (Nat.lt_succ_self (windowPosition + 1)) windowFits
+  -- position + 3 ≤ wires.length from positionInRange (position + 1 < removed.length, removed.length + 2 = wires.length)
+  have positionSuccPlusTwo : position + 1 + 2 < wires.length := by
+    have shifted : position + 1 + 2 < (natListRemoveTwoAt wires windowPosition).length + 2 :=
+      Nat.add_lt_add_right positionInRange 2
+    rw [removedLen] at shifted
+    exact shifted
+  cases Nat.lt_or_ge position windowPosition with
+  | inl belowWindow =>
+      cases Nat.lt_or_ge (position + 1) windowPosition with
+      | inl succBelowWindow =>
+          rw [natListGetAt_natListRemoveTwoAt_below wires windowPosition position belowWindow,
+            natListGetAt_natListRemoveTwoAt_below wires windowPosition (position + 1) succBelowWindow]
+          exact increasing position (Nat.lt_trans succBelowWindow windowBelowWires)
+      | inr succAtLeastWindow =>
+          have succEqWindow : position + 1 = windowPosition :=
+            Nat.le_antisymm (Nat.succ_le_of_lt belowWindow) succAtLeastWindow
+          rw [natListGetAt_natListRemoveTwoAt_below wires windowPosition position belowWindow]
+          have pastRead : natListGetAt (natListRemoveTwoAt wires windowPosition) (windowPosition + 0)
+              = natListGetAt wires (windowPosition + 0 + 2) :=
+            natListGetAt_natListRemoveTwoAt_pastPair wires windowPosition 0 windowFits
+          rw [Nat.add_zero] at pastRead
+          rw [succEqWindow, pastRead]
+          -- goal: wires[position] < wires[windowPosition + 2]
+          have stepOne : natListGetAt wires position < natListGetAt wires (position + 1) :=
+            increasing position (succEqWindow ▸ windowBelowWires)
+          have stepTwo : natListGetAt wires windowPosition
+              < natListGetAt wires (windowPosition + 1) :=
+            increasing windowPosition windowSuccBelowWires
+          have windowPlusTwoBelow : windowPosition + 2 < wires.length := succEqWindow ▸ positionSuccPlusTwo
+          have windowSuccSuccBelow : windowPosition + 1 + 1 < wires.length := windowPlusTwoBelow
+          have stepThree : natListGetAt wires (windowPosition + 1)
+              < natListGetAt wires (windowPosition + 1 + 1) :=
+            increasing (windowPosition + 1) windowSuccSuccBelow
+          rw [succEqWindow] at stepOne
+          exact Nat.lt_trans stepOne (Nat.lt_trans stepTwo stepThree)
+  | inr atLeastWindow =>
+      obtain ⟨gap, gapEq⟩ := Nat.le.dest atLeastWindow
+      have readAtPosition : natListGetAt (natListRemoveTwoAt wires windowPosition) position
+          = natListGetAt wires (position + 2) := by
+        have pastRead := natListGetAt_natListRemoveTwoAt_pastPair wires windowPosition gap windowFits
+        rw [gapEq] at pastRead
+        exact pastRead
+      have readAtSucc : natListGetAt (natListRemoveTwoAt wires windowPosition) (position + 1)
+          = natListGetAt wires (position + 1 + 2) := by
+        have pastRead := natListGetAt_natListRemoveTwoAt_pastPair wires windowPosition (gap + 1)
+          windowFits
+        rw [show windowPosition + (gap + 1) = position + 1 by rw [← Nat.add_assoc, gapEq]] at pastRead
+        exact pastRead
+      rw [readAtPosition, readAtSucc]
+      have adjacentPast : natListGetAt wires (position + 2) < natListGetAt wires (position + 2 + 1) :=
+        increasing (position + 2) (by rw [Nat.add_right_comm position 2 1]; exact positionSuccPlusTwo)
+      rw [Nat.add_right_comm position 2 1] at adjacentPast
+      exact adjacentPast
+
+/-- **The pure-cap fold from an adjacently-increasing state stays adjacently increasing.**  Structural on the
+prefix: every atom is a cap (`stringHeadCapArity`), whose step is a pair removal (`stepArcAtom_eq_stepCapArc`) at
+an in-range window (the boundary chain gives the window fit), and pair removal preserves adjacent strict increase
+(`natListRemoveTwoAt_adjIncreasing`); the boundary chain advances via `stepArcAtom_openWires_tracksBoundary`. -/
+private theorem stringCapFoldAdjIncreasing
+    {overallSource overallTarget : adjointTripleGraph.Mode} :
+    (prefixAtoms : List (SpineAtom adjointTripleModeSignature overallSource overallTarget)) →
+    (state : ArcWireState) → AllCapArity prefixAtoms →
+    SpineBoundaryChained state.openWires.length prefixAtoms →
+    (∀ position, position + 1 < state.openWires.length →
+      natListGetAt state.openWires position < natListGetAt state.openWires (position + 1)) →
+    ∀ position, position + 1 < (processArcSpine state prefixAtoms).openWires.length →
+      natListGetAt (processArcSpine state prefixAtoms).openWires position
+        < natListGetAt (processArcSpine state prefixAtoms).openWires (position + 1)
+  | [], _, _, _, increasing => increasing
+  | capAtom :: restPrefix, state, allCap, chained, increasing => by
+      obtain ⟨domTwo, codZero⟩ := stringHeadCapArity allCap
+      have allCapRest : AllCapArity restPrefix := stringAllCapArity_ofCons allCap
+      obtain ⟨headFires, tailChained⟩ := spineBoundaryChained_tail chained
+      have entryShape : state.openWires.length
+          = capAtom.leftContext.length + capAtom.generatorDom.length
+            + capAtom.rightContext.length := headFires.symm
+      have windowFits : capAtom.leftContext.length + 2 ≤ state.openWires.length := by
+        rw [entryShape, domTwo]
+        exact Nat.le_add_right (capAtom.leftContext.length + 2) capAtom.rightContext.length
+      have stepIsCap : stepArcAtom state capAtom
+          = stepCapArc state capAtom.leftContext.length :=
+        stepArcAtom_eq_stepCapArc state capAtom domTwo codZero
+      have steppedIncreasing : ∀ position,
+          position + 1 < (stepArcAtom state capAtom).openWires.length →
+          natListGetAt (stepArcAtom state capAtom).openWires position
+            < natListGetAt (stepArcAtom state capAtom).openWires (position + 1) := by
+        rw [stepIsCap]
+        exact natListRemoveTwoAt_adjIncreasing state.openWires capAtom.leftContext.length windowFits
+          increasing
+      have stepTracks : (stepArcAtom state capAtom).openWires.length = capAtom.codBoundaryLength :=
+        stepArcAtom_openWires_tracksBoundary state capAtom
+          (adjointTripleSpineAtom_hasCupOrCapArity capAtom) headFires.symm
+      have steppedChained : SpineBoundaryChained (stepArcAtom state capAtom).openWires.length
+          restPrefix := stepTracks ▸ tailChained
+      exact stringCapFoldAdjIncreasing restPrefix (stepArcAtom state capAtom) allCapRest
+        steppedChained steppedIncreasing
+
+/-- **The initial seed open-wires are adjacently strictly increasing.**  `natListGetAt (range n) position
+= position`, so consecutive reads step up by one. -/
+private theorem rangeAdjIncreasing (bottomCount : Nat) :
+    ∀ position, position + 1 < (List.range bottomCount).length →
+      natListGetAt (List.range bottomCount) position
+        < natListGetAt (List.range bottomCount) (position + 1) := by
+  intro position positionInRange
+  rw [rangeLength bottomCount] at positionInRange
+  have positionBelow : position < bottomCount :=
+    Nat.lt_of_lt_of_le (Nat.lt_succ_self position) (Nat.le_of_lt positionInRange)
+  rw [rangeGetAt_below bottomCount position positionBelow,
+    rangeGetAt_below bottomCount (position + 1) positionInRange]
+  exact Nat.lt_succ_self position
+
 /-! ## Truth-probes (anti-vacuity, concrete `ε` at `tip`) -/
 
 /-- ★ **Seat/range probe.**  The tracked seed pair `(0, 1)` is seated adjacent at position `0` in the two-wire
