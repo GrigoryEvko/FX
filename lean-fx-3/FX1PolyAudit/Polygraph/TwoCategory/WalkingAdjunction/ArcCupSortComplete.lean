@@ -14,6 +14,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.cupSwapStepMirror
 #assert_no_axioms FX1Poly.Polygraph.allCupArity_prefix_ofAppend
+#assert_no_axioms FX1Poly.Polygraph.allCupArity_lastCup_arity
 #assert_no_axioms FX1Poly.Polygraph.chordShift_below
 #assert_no_axioms FX1Poly.Polygraph.chordShift_above
 #assert_no_axioms FX1Poly.Polygraph.atomicTraceEquiv_prefixCongr
