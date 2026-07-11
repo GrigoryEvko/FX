@@ -218,6 +218,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutDispatchMasterReAuditLe
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutAmalgamDispatchStateLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeGenCase
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeWhiskerCase
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutFactorizeVcompCase
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedInterchangeFreeStep
