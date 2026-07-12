@@ -697,6 +697,136 @@ theorem bunchedBimonoidCombInsertConv (generatorCount : Nat) (genPos : 1 ≤ gen
                     (bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun) runValid)))))))
 
 /-! # =========================================================================================
+    # A5 — THE COMB-FOLD CONV + THE ONE-LEVEL NORMAL-FORM CONV (F3)
+    # =========================================================================================
+
+★ The CONV mirror of the r14 pure `bunchedBimonoidCombFoldPreservesPerm` / `bunchedBimonoidCombNormalizeFormPreservesPerm`.
+Structural on the remaining word `rest`, threading the state invariants through the shipped
+`bunchedBimonoidCombInsertPreservesInvariants` and the per-step CONV through the F2 `combInsertConv`; the pure
+`permOfWordAppendSplit` (permutation product) is replaced by the B1 CONV reshape `permWordAppendConv` (append is a
+vcomp of the two `permWord` factors, gated on the run's `mentionsOnlyBelow`). -/
+
+/-- `leftFlag = true` from `leftFlag && rightFlag = true` — full-enum (propext-clean). -/
+private theorem bunchedBimonoidBoolAndLeftCombInsert :
+    (leftFlag rightFlag : Bool) → (leftFlag && rightFlag) = true → leftFlag = true
+  | true, _, _ => rfl
+  | false, _, conj => Bool.noConfusion conj
+
+/-- `rightFlag = true` from `leftFlag && rightFlag = true` — full-enum (propext-clean). -/
+private theorem bunchedBimonoidBoolAndRightCombInsert :
+    (leftFlag rightFlag : Bool) → (leftFlag && rightFlag) = true → rightFlag = true
+  | true, _, conj => conj
+  | false, _, conj => Bool.noConfusion conj
+
+/-- `lower <= upper` from `Nat.ble lower upper = true` — structural on both (propext-clean). -/
+private theorem bunchedBimonoidNatLeOfBleCombInsert :
+    (lower upper : Nat) → Nat.ble lower upper = true → lower ≤ upper
+  | 0, _, _ => Nat.zero_le _
+  | _ + 1, 0, h => Bool.noConfusion h
+  | lower + 1, upper + 1, h => Nat.succ_le_succ (bunchedBimonoidNatLeOfBleCombInsert lower upper h)
+
+/-- `lower < upper` from `Nat.blt lower upper = true` (`Nat.blt lower upper` is `Nat.ble (lower + 1) upper`). -/
+private theorem bunchedBimonoidNatLtOfBltCombInsert (lower upper : Nat)
+    (h : Nat.blt lower upper = true) : lower < upper :=
+  bunchedBimonoidNatLeOfBleCombInsert (lower + 1) upper h
+
+/-- List right-identity `list ++ [] = list` — structural on `list`. -/
+private theorem bunchedBimonoidAppendNilCombInsert {alpha : Type _} :
+    (list : List alpha) → list ++ [] = list
+  | [] => rfl
+  | head :: rest => congrArg (head :: ·) (bunchedBimonoidAppendNilCombInsert rest)
+
+/-- ★★★ **THE COMB-FOLD CONV (from any state).**  Fold the F2 `combInsertConv` step down the remaining word,
+threading the state invariants — the CONV mirror of the r14 pure `bunchedBimonoidCombFoldPreservesPerm`.
+Structural on `rest`: the `[]` case is `refl` modulo the `list ++ [] = list` right-identity; the `letter :: restTail`
+case chains the IH (from the post-insert state) with a B1 reshape splitting off `restTail`, the F2 step on the
+head factor (via `vcompCongrLeft`), one `vcompAssoc` regrouping, and the B1 reshape run backwards to recombine
+`(statePrefix ++ run) ++ (letter :: restTail)`. -/
+theorem bunchedBimonoidCombFoldConv (generatorCount : Nat) (genPos : 1 ≤ generatorCount) :
+    (rest : List Nat) → (statePrefix : List Nat) → (stateRun : Nat) →
+    bunchedBimonoidMentionsOnlyBelow (generatorCount - 1) statePrefix = true → stateRun ≤ generatorCount →
+    bunchedBimonoidMentionsOnlyBelow generatorCount rest = true →
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidPermWord
+        ((rest.foldl (bunchedBimonoidCombInsertData generatorCount) (statePrefix, stateRun)).1
+          ++ bunchedBimonoidDescendingPositions (generatorCount - 1)
+              (rest.foldl (bunchedBimonoidCombInsertData generatorCount) (statePrefix, stateRun)).2)
+        (generatorCount + 1))
+      (bunchedBimonoidPermWord
+        ((statePrefix ++ bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun) ++ rest)
+        (generatorCount + 1))
+  | [], statePrefix, stateRun, _, _, _ => by
+      show SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+          (bunchedBimonoidPermWord
+            (statePrefix ++ bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun) (generatorCount + 1))
+          (bunchedBimonoidPermWord
+            ((statePrefix ++ bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun) ++ [])
+            (generatorCount + 1))
+      rw [bunchedBimonoidAppendNilCombInsert
+        (statePrefix ++ bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun)]
+      exact SaturatedConvOverWithId.refl _
+  | letter :: restTail, statePrefix, stateRun, uBelow, runLe, hRange => by
+      have letterLt : letter < generatorCount :=
+        bunchedBimonoidNatLtOfBltCombInsert letter generatorCount
+          (bunchedBimonoidBoolAndLeftCombInsert _ _ hRange)
+      have restValid : bunchedBimonoidMentionsOnlyBelow generatorCount restTail = true :=
+        bunchedBimonoidBoolAndRightCombInsert _ _ hRange
+      obtain ⟨belowMid, runLeMid⟩ :=
+        bunchedBimonoidCombInsertPreservesInvariants generatorCount genPos statePrefix stateRun uBelow runLe
+          letter letterLt
+      have ihConv := bunchedBimonoidCombFoldConv generatorCount genPos restTail
+        (bunchedBimonoidCombInsertData generatorCount (statePrefix, stateRun) letter).1
+        (bunchedBimonoidCombInsertData generatorCount (statePrefix, stateRun) letter).2 belowMid runLeMid restValid
+      show SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+          (bunchedBimonoidPermWord
+            ((restTail.foldl (bunchedBimonoidCombInsertData generatorCount)
+                (bunchedBimonoidCombInsertData generatorCount (statePrefix, stateRun) letter)).1
+              ++ bunchedBimonoidDescendingPositions (generatorCount - 1)
+                  (restTail.foldl (bunchedBimonoidCombInsertData generatorCount)
+                    (bunchedBimonoidCombInsertData generatorCount (statePrefix, stateRun) letter)).2)
+            (generatorCount + 1))
+          (bunchedBimonoidPermWord
+            ((statePrefix ++ bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun)
+              ++ (letter :: restTail)) (generatorCount + 1))
+      refine SaturatedConvOverWithId.trans ihConv ?_
+      refine SaturatedConvOverWithId.trans
+        (bunchedBimonoidPermWordAppendConv (generatorCount + 1)
+          ((bunchedBimonoidCombInsertData generatorCount (statePrefix, stateRun) letter).1
+            ++ bunchedBimonoidDescendingPositions (generatorCount - 1)
+                (bunchedBimonoidCombInsertData generatorCount (statePrefix, stateRun) letter).2)
+          restTail restValid) ?_
+      refine SaturatedConvOverWithId.trans
+        (SaturatedConvOverWithId.vcompCongrLeft
+          (bunchedBimonoidPermWord restTail (generatorCount + 1))
+          (bunchedBimonoidCombInsertConv generatorCount genPos statePrefix stateRun runLe letter letterLt)) ?_
+      refine SaturatedConvOverWithId.trans
+        (bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+          (StrictAxiomRel.vcompAssoc
+            (bunchedBimonoidPermWord
+              (statePrefix ++ bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun) (generatorCount + 1))
+            (bunchedBimonoidSigmaAt (generatorCount + 1) letter)
+            (bunchedBimonoidPermWord restTail (generatorCount + 1)))) ?_
+      exact SaturatedConvOverWithId.symm
+        (bunchedBimonoidPermWordAppendConv (generatorCount + 1)
+          (statePrefix ++ bunchedBimonoidDescendingPositions (generatorCount - 1) stateRun)
+          (letter :: restTail) hRange)
+
+/-- ★★★ **THE ONE-LEVEL NORMAL-FORM CONV (F3).**  `permWord (combNormalizeForm gc input) (gc+1) ~ permWord input
+(gc+1)` for in-range `input` — the CONV mirror of the r14 pure `bunchedBimonoidCombNormalizeFormPreservesPerm`.
+`combFoldConv` from the empty state, with the empty-state word `([] ++ descendingPositions (gc-1) 0) ++ input`
+reduced to `input` on the nose. -/
+theorem bunchedBimonoidCombNormalizeFormConv (generatorCount : Nat) (genPos : 1 ≤ generatorCount)
+    (input : List Nat) (inRange : bunchedBimonoidMentionsOnlyBelow generatorCount input = true) :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidPermWord (bunchedBimonoidCombNormalizeForm generatorCount input) (generatorCount + 1))
+      (bunchedBimonoidPermWord input (generatorCount + 1)) := by
+  have folded := bunchedBimonoidCombFoldConv generatorCount genPos input [] 0 rfl
+    (Nat.zero_le generatorCount) inRange
+  have startEq : ([] ++ bunchedBimonoidDescendingPositions (generatorCount - 1) 0) ++ input = input := rfl
+  rw [startEq] at folded
+  exact folded
+
+/-! # =========================================================================================
     # THE r25 NON-VACUITY + MATRIX SOUNDNESS PINS
     # =========================================================================================
 -/
@@ -757,6 +887,16 @@ theorem bunchedBimonoidCombInsertConvCommuteInstance :
         (bunchedBimonoidSigmaAt 4 0)) :=
   bunchedBimonoidCombInsertConv 3 (by decide) [] 0 (by decide) 0 (by decide)
 
+/-- ★ **`combNormalizeFormConv` (F3) fires at the r9 jam word** — `generatorCount = 3`, `input = [2, 0, 1, 2]`
+(the exact word the Brauer insertion residual jammed on): one comb level converts `permWord (combNormalizeForm 3
+[2,0,1,2]) 4 ~ permWord [2,0,1,2] 4` over the star scope.  A hypothesis-free inhabitant of the one-level fold at
+the recon's headline configuration. -/
+theorem bunchedBimonoidCombNormalizeFormConvJamInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidPermWord (bunchedBimonoidCombNormalizeForm 3 [2, 0, 1, 2]) 4)
+      (bunchedBimonoidPermWord [2, 0, 1, 2] 4) :=
+  bunchedBimonoidCombNormalizeFormConv 3 (by decide) [2, 0, 1, 2] (by decide)
+
 /-! # =========================================================================================
     # THE r25 HONESTY MARKERS (fresh markers per literal delivery; owners + r23/r24 markers byte-intact)
     # =========================================================================================
@@ -784,15 +924,24 @@ stays `= false` byte-intact cross-file, superseded by the r24 braid atom).  Non-
 instances).  Zero-axiom. -/
 def fxBunchedBimonoid_combInsertConvShipped : Bool := true
 
-/-- ★ **THE FOLD + THE OWNER FLIP STAY OPEN — the honest r25 census, no fabricated flip.**  `= false` records
-what this round does NOT reach: the one-level fold `combNormalizeFormConv` (F3, the structural-on-word fold of
-`combInsertConv`, threading `combInsertPreservesInvariants`), the recursive comb staircase `recCombConv` (F4,
-structural on the generator count), and the `CoxeterUniqueness` owner flip (F4 twice + the shipped r18 T3
-`recCombEqOfEvalEq`).  With F2 shipped, F3 is the next node (fold `combInsertConv` over the word); F4 then the
-level recursion.  The four star owners (StarAssembly / RiffleAssembly / CollisionCanonForm / CoxeterUniqueness)
-stay `= false` byte-intact; `StrictAxioms.lean` + the shipped star scope are untouched (only the shipped
+/-- ★★★ **ESTABLISHED (F3) — the one-level comb normal-form CONV `combNormalizeFormConv` is DELIVERED.**
+`= true` records `bunchedBimonoidCombNormalizeFormConv`: `permWord (combNormalizeForm gc input) (gc+1) ~ permWord
+input (gc+1)` for in-range `input`, the CONV mirror of the r14 pure `bunchedBimonoidCombNormalizeFormPreservesPerm`.
+Built by folding the F2 `combInsertConv` step down the word (`bunchedBimonoidCombFoldConv`, structural on the
+remaining word, threading the shipped `combInsertPreservesInvariants` and the B1 `permWordAppendConv` reshape),
+from the empty state.  Non-vacuous (the r9 jam-word instance `[2,0,1,2]` at generator count 3).  Closes the F3
+clause of the r25 census.  Zero-axiom. -/
+def fxBunchedBimonoid_combNormalizeFormConvShipped : Bool := true
+
+/-- ★ **THE LEVEL RECURSION + THE OWNER FLIP STAY OPEN — the honest r25 census, no fabricated flip.**  `= false`
+records what this round does NOT reach: the recursive comb staircase `recCombConv` (F4, structural on the generator
+count, recursing through F3 `combNormalizeFormConv`) and the `CoxeterUniqueness` owner flip (F4 twice + the shipped
+r18 T3 `recCombEqOfEvalEq`).  With F2 (`combInsertConv`) and F3 (`combNormalizeFormConv`) shipped this round, F4 is
+the SOLE remaining CONV node before the owner flip; everything under it (F2, F3, the T3 data half, `combCanonicity`)
+is now shipped.  The four star owners (StarAssembly / RiffleAssembly / CollisionCanonForm / CoxeterUniqueness) stay
+`= false` byte-intact; `StrictAxioms.lean` + the shipped star scope are untouched (only the shipped
 `StrictAxiomRel.{vcompAssoc, vcompUnitLeft, vcompUnitRight}` rows consumed).  The r23 census marker and the r24
 braid marker keep their names and values byte-intact.  No fabricated star flip. -/
-def fxBunchedBimonoid_combNormalizeFormFoldAndOwnerFlipStillOpen : Bool := false
+def fxBunchedBimonoid_recCombConvAndOwnerFlipStillOpen : Bool := false
 
 end FX1Poly.Polygraph.Omega
