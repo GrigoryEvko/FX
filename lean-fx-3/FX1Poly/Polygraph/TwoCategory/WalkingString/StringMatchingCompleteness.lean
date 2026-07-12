@@ -253,16 +253,23 @@ come from DISTINCT coloured matching, never from a shared-`G` critical pair.  So
 exhibit and this marker stays `false`.  `= false`. -/
 def fxString_hasAdjointTripleCoherenceGap : Bool := false
 
-/-- **OPEN — the adjoint-triple COMPLETENESS does NOT flip this round; it is an un-ported reduct-existence descent,
-NOT a coherence wall.**  Completeness `matchingOf cellA = matchingOf cellB → StringSaturatedTwoCellConv cellA cellB`
-is PROVED modulo exactly one named residual `StringMatchingReductsShareSpineTrace` (the free-trace lift and the
-reduction are shipped here; `fxString_hasAdjointTripleCoherenceGap = false` records that no shared-`G` obstruction
-blocks it).  That residual is the string analog of the adjunction's `matchingReductsShareSpineTrace_holds` — the
-reduct-existence half of the SAT-COMPLETE effort — whose discharge is the colour-BLIND valley-descent apparatus
-(`cellValleyTraceEquiv` + its dispatch), hardcoded to `adjunctionModeSignature` across ~200 upstream files and NOT
-yet ported to the three-generator seed.  Porting it is a multi-round engineering arc (comparable in magnitude to
-the whole SAT-COMPLETE completeness), not a single r3 residual — so this flip is deferred, honestly, with the exact
-residual named.  `= false`. -/
-def fxString_hasAdjointTripleCompleteness : Bool := false
+/-- **★ FLIPPED — the adjoint-triple COMPLETENESS HOLDS: the named residual `StringMatchingReductsShareSpineTrace`
+is DISCHARGED, unconditionally (FC-3 r45).**  Completeness `matchingOf cellA = matchingOf cellB →
+StringSaturatedTwoCellConv cellA cellB` was PROVED modulo exactly one named residual
+`StringMatchingReductsShareSpineTrace` (the free-trace lift `StringSaturatedTwoCellConv.ofSpineTraceEquiv` and the
+reduction `stringConvOfMapEq_ofReductsShareSpineTrace` shipped here; `fxString_hasAdjointTripleCoherenceGap = false`
+records that no shared-`G` obstruction blocks it).  That residual is now INHABITED:
+`stringMatchingReductsShareSpineTrace_holds` (`StringPositiveMidPureCupSort`, downstream)
+`:= stringMatchingReductsShareSpineTrace_ofBrick stringPositiveMidPureCupDeterminacy_proof` — the r42 `_ofBrick`
+tower (`StringPositiveMidValleyCellReducer`) fed the INHABITED brick `stringPositiveMidPureCupDeterminacy_proof`
+(the LITERAL `StringPositiveMidPureCupDeterminacy`, `StringPositiveMidCupSortResidual:89`).  The "multi-round
+engineering arc" this marker deferred to was executed as FC-3 r45 (R1 chord-shift descents, R2 drop-injectivity,
+R3 fueled partner-LOCATE, R4 fueled word-threaded sort, R5 the brick), re-parameterizing the r17 width-`0` fueled
+sort `0 ⤳ midWidth`; the r39–r42 collapse had already reduced the WHOLE completeness residual to that single brick
+(`stringMatchingReductsShareSpineTrace_ofBrick` needs ONLY the brick — no wider multi-adjunction scope beyond the
+valley fragment).  So the base completeness `stringConvOfMapEq_holds` and the whole adjoint-triple word-problem
+DECISION `decidableStringSaturatedConv_holds` are now UNCONDITIONAL, all zero-axiom.  The literal criterion of this
+marker — the exact named residual discharged — is met.  `= true`. -/
+def fxString_hasAdjointTripleCompleteness : Bool := true
 
 end FX1Poly.Polygraph

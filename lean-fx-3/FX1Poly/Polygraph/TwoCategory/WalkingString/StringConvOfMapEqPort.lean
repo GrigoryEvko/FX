@@ -211,17 +211,23 @@ producers, machine-named.  The crux configuration is machine-witnessed on the ex
 `= true`. -/
 def fxString_hasConvOfMapEqPortModuloTwoResiduals : Bool := true
 
-/-- **OPEN (honest) — the UNCONDITIONAL `convOfMapEq` flip is PAUSED at the colour-aware Piece-II valley
-reconstruction; NO marker moved.**  `stringConvOfMapEq_ofOracleAndValleyTraceEquiv` needs the two sub-producers, and
-neither ports by instantiation: the string quiver is NOT length-rigid (`fxString_hasStringLengthRigidityFailure`), so
-the STRAIGHTEN band collapse and the Piece-II valley reconstruction — both resting on the adjunction's
-`adjunctionPath_eq_of_length_eq` — must be re-derived colour-aware, reading atoms off the BOUNDARY labels rather than
-lengths.  This is a genuine PORT of new mathematics (no citable free-adjoint-STRING word-problem NF theorem), NOT a
-shared-`G` coherence gap (`fxString_hasAdjointTripleCoherenceGap` stays `false`).  The lane PAUSES here; the future
-routes are bequeathed in the file header (comb / word-bookkeeping per Landau + Di Francesco–Zuber; the Δ/simplicial
-glue the monad lane used; and the recommended #2021 idempotent-quadruple thinness pivot via
-`idempotentThinness_ofNormalize`).  `fxString_hasAdjointTripleCompleteness` (in `StringMatchingCompleteness`) is NOT
-moved and stays `false`.  `= false`. -/
-def fxString_hasConvOfMapEqPortFlip : Bool := false
+/-- **★ FLIPPED — the UNCONDITIONAL `convOfMapEq` HOLDS: the two sub-producers this port was PAUSED on are both
+DISCHARGED by the single brick (FC-3 r45).**  When this marker was written (FC-9),
+`stringConvOfMapEq_ofOracleAndValleyTraceEquiv` needed the two sub-producers `(StringCellDescentStepOracle ×
+StringCellValleyTraceEquiv)`, and neither ported by instantiation (the string quiver is NOT length-rigid,
+`fxString_hasStringLengthRigidityFailure`, so the STRAIGHTEN band collapse and the Piece-II valley reconstruction had
+to be re-derived colour-aware).  That standing residual has since COLLAPSED: r38 discharged the Piece-I oracle and the
+mid-`0` producer hypothesis-free, r39 wired the shipped width-`0` proof, r40–r42 reduced the last standing
+sub-producer `StringCellValleyTraceEquivPositive` to the SINGLE cup-sort brick `StringPositiveMidPureCupDeterminacy`,
+and FC-3 r45 (R1–R5) INHABITED that brick (`stringPositiveMidPureCupDeterminacy_proof`, the LITERAL
+`StringPositiveMidCupSortResidual:89`, re-parameterizing the r17 width-`0` fueled sort `0 ⤳ midWidth`).  So the
+unconditional `convOfMapEq` is now established: `stringConvOfMapEq_holds` (`StringPositiveMidPureCupSort`, downstream)
+`:= stringConvOfMapEq_ofReductsShareSpineTrace stringMatchingReductsShareSpineTrace_holds` — every parallel pair with
+equal boundary matching is `StringSaturatedTwoCellConv`, with NO standing sub-producer hypothesis — and
+`decidableStringSaturatedConv_holds` is the now-TOTAL word-problem decision, all zero-axiom.  This is NOT a
+shared-`G` coherence gap (`fxString_hasAdjointTripleCoherenceGap` stays `false`).  `fxString_hasAdjointTripleCompleteness`
+(in `StringMatchingCompleteness`) is MOVED to `true` this same round (the same discharge).  The literal criterion of
+this marker — the unconditional `convOfMapEq` flip — is met.  `= true`. -/
+def fxString_hasConvOfMapEqPortFlip : Bool := true
 
 end FX1Poly.Polygraph
