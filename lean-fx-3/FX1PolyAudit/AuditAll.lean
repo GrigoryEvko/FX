@@ -997,6 +997,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidDropLas
 -- FC-3 r45 R3 — the positive-mid fueled partner-LOCATE (the width-0 locate re-parameterized 0 ⤳ midWidth): stringMatchingLocateAuxMid bubbles the target cup to the tail over matchingOfSpineList midWidth threading BOTH the length + WORD chains, riding R1 chord-shifts + P2a snake exclusion (the one 0 < midWidth) + P2b readoff + P2c survivor-identity base floor; structural fuel recursion
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLocateAux
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLocateAuxAxiomWitness
+-- FC-3 r45 R4 + R5 — THE BRICK: stringPositiveMidPureCupDeterminacy_proof INHABITS the LITERAL StringPositiveMidPureCupDeterminacy (StringPositiveMidCupSortResidual:89, verbatim) via the width-0 fueled sort re-parameterized 0 ⤳ midWidth (base floor forces second spine empty from the survivor open-wire count); the r42 _ofBrick tower then fires end-to-end: stringMatchingReductsShareSpineTrace_holds discharges the completeness residual UNCONDITIONALLY, stringConvOfMapEq_holds is the unconditional convOfMapEq, decidableStringSaturatedConv_holds is the total adjoint-triple word-problem decision; the brick FIRES on the shipped distinct double-cup at midWidth 2 (non-diagonal: refl fails)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidPureCupSort
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidPureCupSortAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
@@ -1328,6 +1331,8 @@ import FX1PolyAudit.Polygraph.Homology.PresentationOpDualityHomology
 import FX1PolyAudit.Polygraph.Homology.PolygraphHomologyFinitenessInvariant
 import FX1PolyAudit.Polygraph.Homology.SquierNoGoInterface
 import FX1PolyAudit.Polygraph.Homology.PeriodicTowerChainComplex
+import FX1PolyAudit.Polygraph.Homology.PeriodicTowerCohomologyCupProduct
+import FX1PolyAudit.Polygraph.Homology.PeriodicTowerCohomologyCupProductAxiomWitness
 import FX1PolyAudit.Polygraph.Homology.FreeGroupReducedWord
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleCyclicThree
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleIdentityInvariant
@@ -1512,8 +1517,6 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidIdentityPointUnitorAud
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidDistantCommuteOverSiblingAudit
 -- WP-PROP r20 U3 — the first CONV run-commute lemma over the U1 sibling: the distant pair commutes at the HEAD of any run (vcompAssoc regrouping around the U2 atom), generic in the run tail, non-vacuous; the r17-marker LITERAL delivery (fxBunchedBimonoid_runCommuteConvGatedOnWhiskerAssociatorAndUnitors stays false byte-intact — shipped scope still lacks the unitor; the closure is over the additive sibling) + the honest star-chain census after U3 (generic-(w,i,j) atom + braid + trailing-boundary reshape + combInsert/recComb folds + Omega combCanonicity port remain); four star owners false, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRunCommuteConvOverSiblingAudit
--- WP-PROP r21 G1+G2 — the FULLY GENERIC distant-commute (sigmaAt w i ; sigmaAt w j ~ sigmaAt w j ; sigmaAt w i, j >= i+2) as ONE Godement interchange fire under a left pad, additive-parameter form, over the SHIPPED star scope: REFUTES the r20 census 'completeness-star fragment' denotation (interchange is already generic in alpha/beta; the r19 whiskerAssocLeft + the r15 aWordPow word-fold bricks close the padding); STRONGER than the U2 sibling (4,0,2) which it subsumes at (0,0,0); concrete sigmaAt-form instances (5,0,2)/(5,0,3)/(5,1,3)/(6,1,4) by rfl-transport; adjacent braid stays compute-walled + the permWord lift is r22; shipped StrictAxioms + star scope + four star owners byte-intact, zero-axiom
-import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidDistantCommuteGenericAudit
 -- WP-PROP r18 T3 — the matrix->recComb leg of CoxeterWordUnique (unblocked by r18 T1): evalCell (permWord w1) = evalCell (permWord w2) -> recComb (W-1) w1 = recComb (W-1) w2, composing the r11 generic extractor + injective read-off (matrix -> permOfWord-equality) with the r18 T1 canonicity (permOfWord-equality -> recComb-equality) via the positionsValid->mentionsOnlyBelow bridge; fires on the braid pair; pure List Nat + Mat(N), ZERO CONV, star not flipped
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordMatrixToRecCombAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
