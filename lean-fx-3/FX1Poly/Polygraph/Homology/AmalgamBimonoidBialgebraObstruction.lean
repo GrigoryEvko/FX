@@ -398,4 +398,379 @@ theorem bimonoidTwoComplexComparison : BimonoidTwoComplexComparisonStatement :=
    bimonoidWithoutLawDegreeOneHomologyFreeRankIsOne, bimonoidWithLawDegreeOneHomologyFreeRankIsZero,
    bimonoidWithoutLawHasNoTorsion, bimonoidWithLawHasNoTorsion⟩
 
+/-! ## B3 — the probe-decided theorem: the class nontrivial WITHOUT the law, killed WITH it
+
+The explicit class `[mu + delta] = [0, 1, 0, 1]` is a 1-cycle.  WITHOUT the law it escapes the integer
+span of the six relation boundaries (detected by the relative cocycle `phi = eta* - mu* = [1, -1, 0, 0]`
+— the exact mirror of r1's `phi`), so it is nontrivial in `H1`.  WITH the law it is the boundary of the
+negated bialgebra 2-cell, so it dies.  Each part alone (monoid `(eta, mu)`, comonoid `(eps, delta)`)
+has `H1 = 0`, so the class is genuinely CROSS.  The escape upgrade over ALL integer combinations reuses
+the r1 Fubini / distributivity kit by import (never redeclared). -/
+
+/-- The candidate degree-1 class `[mu + delta] = [0, 1, 0, 1]` in `C1 = ZZ^4`, as a column vector. -/
+def bimonoidClassMuPlusDelta : IntMatrix := ⟨[[0], [1], [0], [1]]⟩
+
+/-- ★ **The class is a 1-cycle** — `d1 . [mu + delta] = (-1)(1) + (1)(1) = 0`; neither `mu` nor `delta`
+is a cycle alone (`d1 . mu = -1`, `d1 . delta = +1`), but their sum is. -/
+theorem bimonoidClassIsCycle :
+    comparisonProductEntry bimonoidArityBoundary bimonoidClassMuPlusDelta 4 0 0 = 0 := rfl
+
+/-- The relative 1-cocycle `phi = eta* - mu* = [1, -1, 0, 0]`, a functional row on `C1 = ZZ^4`
+(`+1` on `eta`, `-1` on `mu`) — the exact mirror of r1's `phi = mu_a - eta_a`. -/
+def bimonoidRelativeCocycle : IntMatrix := ⟨[[1, -1, 0, 0]]⟩
+
+/-- The `generatorIndex` coordinate of an integer combination of the six without-law relation
+boundaries. -/
+def withoutLawBoundaryCombinationCoordinate (coeffs : Nat → Int) (generatorIndex : Nat) : Int :=
+  sumOverIndices 6 (fun col =>
+    bimonoidRelationBoundaryWithoutLaw.entryAt generatorIndex col * coeffs col)
+
+/-- **`phi` vanishes on every without-law relation boundary** — `phi . column = 0` for each of the six
+relation columns (`rfl` per column; the monoid/comonoid alphabets are disjoint, so `phi` sees no cross
+term). -/
+theorem cocycleVanishesOnWithoutLawBoundaries :
+    ∀ colIndex, colIndex < 6 →
+      sumOverIndices 4 (fun generatorIndex =>
+        bimonoidRelativeCocycle.entryAt 0 generatorIndex *
+        bimonoidRelationBoundaryWithoutLaw.entryAt generatorIndex colIndex) = 0
+  | 0, _ => rfl
+  | 1, _ => rfl
+  | 2, _ => rfl
+  | 3, _ => rfl
+  | 4, _ => rfl
+  | 5, _ => rfl
+  | _ + 6, colBound => columnIndexOutOfRangeAbsurd _ 6 colBound
+
+/-- ★ **`phi` annihilates EVERY integer combination of the six relation boundaries** — the linearity
+upgrade of `cocycleVanishesOnWithoutLawBoundaries` (Fubini + distributivity, the r1 kit by import):
+for any coefficient vector, `phi` paired with the combination is `0`. -/
+theorem cocycleAnnihilatesEveryWithoutLawCombination (coeffs : Nat → Int) :
+    sumOverIndices 4 (fun generatorIndex =>
+      bimonoidRelativeCocycle.entryAt 0 generatorIndex *
+      withoutLawBoundaryCombinationCoordinate coeffs generatorIndex) = 0 :=
+  (sumOverIndicesCongrEverywhere
+    (fun generatorIndex =>
+      (sumOverIndicesLeftDistrib (bimonoidRelativeCocycle.entryAt 0 generatorIndex)
+        (fun col => bimonoidRelationBoundaryWithoutLaw.entryAt generatorIndex col * coeffs col)
+        6).trans
+        (sumOverIndicesCongrEverywhere
+          (fun col =>
+            (intMulAssoc (bimonoidRelativeCocycle.entryAt 0 generatorIndex)
+              (bimonoidRelationBoundaryWithoutLaw.entryAt generatorIndex col) (coeffs col)).symm)
+          6))
+    4).trans
+    ((sumOverIndicesSwap
+        (fun generatorIndex col =>
+          bimonoidRelativeCocycle.entryAt 0 generatorIndex *
+          bimonoidRelationBoundaryWithoutLaw.entryAt generatorIndex col * coeffs col)
+        6 4).trans
+      (sumOverIndicesZeroWithinBound _ 6
+        (fun col colBelow =>
+          (sumOverIndicesCongrEverywhere
+            (fun generatorIndex =>
+              intMulComm
+                (bimonoidRelativeCocycle.entryAt 0 generatorIndex *
+                  bimonoidRelationBoundaryWithoutLaw.entryAt generatorIndex col)
+                (coeffs col))
+            4).trans
+            ((sumOverIndicesLeftDistrib (coeffs col)
+              (fun generatorIndex =>
+                bimonoidRelativeCocycle.entryAt 0 generatorIndex *
+                bimonoidRelationBoundaryWithoutLaw.entryAt generatorIndex col) 4).symm.trans
+              ((congrArg (coeffs col * ·) (cocycleVanishesOnWithoutLawBoundaries col colBelow)).trans
+                (intMulZero (coeffs col)))))))
+
+/-- ★ **`phi` DETECTS the class** — `phi . [mu + delta] = -1 != 0`.  The class is the one direction
+`phi` does not annihilate. -/
+theorem cocycleDetectsClass :
+    sumOverIndices 4 (fun generatorIndex =>
+      bimonoidRelativeCocycle.entryAt 0 generatorIndex *
+      bimonoidClassMuPlusDelta.entryAt generatorIndex 0) = -1 := rfl
+
+/-- ★★ **THE CLASS IS NONTRIVIAL WITHOUT THE LAW.**  `[mu + delta]` is NOT any integer combination of
+the six relation boundaries — if it were, `phi` paired with it would be `0`
+(`cocycleAnnihilatesEveryWithoutLawCombination`), yet `phi . [mu + delta] = -1` (`cocycleDetectsClass`).
+So the class survives as a nonzero element of `H1(without the bialgebra law)`. -/
+theorem classEscapesWithoutLawBoundarySpan :
+    ¬ ∃ coeffs : Nat → Int, ∀ generatorIndex,
+        bimonoidClassMuPlusDelta.entryAt generatorIndex 0
+          = withoutLawBoundaryCombinationCoordinate coeffs generatorIndex :=
+  fun witness =>
+    match witness with
+    | ⟨coeffs, agreement⟩ =>
+        absurd
+          (cocycleDetectsClass.symm.trans
+            ((sumOverIndicesCongrEverywhere
+              (fun generatorIndex =>
+                congrArg (bimonoidRelativeCocycle.entryAt 0 generatorIndex * ·)
+                  (agreement generatorIndex))
+              4).trans
+              (cocycleAnnihilatesEveryWithoutLawCombination coeffs)))
+          (by decide)
+
+/-- The `generatorIndex` coordinate of an integer combination of the seven with-law relation
+boundaries. -/
+def withLawBoundaryCombinationCoordinate (coeffs : Nat → Int) (generatorIndex : Nat) : Int :=
+  sumOverIndices 7 (fun col =>
+    bimonoidRelationBoundaryWithLaw.entryAt generatorIndex col * coeffs col)
+
+/-- The killing coefficients: `-1` on the bialgebra column (index 6), `0` elsewhere — the coordinates
+of `-(bialgebra 2-cell)`. -/
+def bimonoidBialgebraKillingCoefficients : Nat → Int := fun col => if col = 6 then -1 else 0
+
+/-- **The class is the with-law boundary of the negated bialgebra 2-cell** — `class = d2with . coeffs`
+for the killing coefficients, on every generator coordinate (`rfl` per generator; the out-of-range peel
+reuses the shipped helper). -/
+theorem classIsWithLawBoundary :
+    ∀ generatorIndex, generatorIndex < 4 →
+      bimonoidClassMuPlusDelta.entryAt generatorIndex 0
+        = withLawBoundaryCombinationCoordinate bimonoidBialgebraKillingCoefficients generatorIndex
+  | 0, _ => rfl
+  | 1, _ => rfl
+  | 2, _ => rfl
+  | 3, _ => rfl
+  | _ + 4, rowBound => columnIndexOutOfRangeAbsurd _ 4 rowBound
+
+/-- ★★ **THE CLASS DIES WITH THE LAW.**  `[mu + delta]` IS an integer combination of the seven with-law
+relation boundaries (the boundary of the negated bialgebra 2-cell), so `[mu + delta] = 0` in
+`H1(with the bialgebra law)` — the killer hypothesis, confirmed. -/
+theorem classDiesWithLaw :
+    ∃ coeffs : Nat → Int, ∀ generatorIndex, generatorIndex < 4 →
+        bimonoidClassMuPlusDelta.entryAt generatorIndex 0
+          = withLawBoundaryCombinationCoordinate coeffs generatorIndex :=
+  ⟨bimonoidBialgebraKillingCoefficients, classIsWithLawBoundary⟩
+
+/-! ### Each part alone has `H1 = 0` (so the class is genuinely CROSS)
+
+The monoid part `(eta, mu)` and the comonoid part `(eps, delta)` are the two halves of the without-law
+complex; each is an exact mirror of the other.  For each, `d1` is the arity row and `d2` the two unit
+relations (`assoc`/`coassoc` is homogeneous), so `rank d1 = 1`, `rank d2 = 1`, and
+`H1 = (C1 - rank d1) - rank d2 = (2 - 1) - 1 = 0`. -/
+
+/-- The monoid part `d1` — arity of `[eta, mu] = [+1, -1]`. -/
+def bimonoidMonoidPartArityBoundary : IntMatrix := ⟨[[1, -1]]⟩
+
+/-- The monoid part `d2` — rows `[eta, mu]`, columns `[assoc_mu, lunit, runit]`. -/
+def bimonoidMonoidPartRelationBoundary : IntMatrix := ⟨[[0, 1, 1], [0, 1, 1]]⟩
+
+/-- The comonoid part `d1` — arity of `[eps, delta] = [-1, +1]`. -/
+def bimonoidComonoidPartArityBoundary : IntMatrix := ⟨[[-1, 1]]⟩
+
+/-- The comonoid part `d2` — rows `[eps, delta]`, columns `[coassoc, lcounit, rcounit]`. -/
+def bimonoidComonoidPartRelationBoundary : IntMatrix := ⟨[[0, 1, 1], [0, 1, 1]]⟩
+
+/-- The monoid `d1` reduction `[[1, -1]] -> [[1, 0]]`. -/
+def bimonoidMonoidPartAritySmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations := [ .columnOperation (.addColumnMultiple 0 1 1) ] }
+
+/-- The monoid `d1` Smith normal form `[[1, 0]]`. -/
+def bimonoidMonoidPartAritySmithNormalForm : IntMatrix := ⟨[[1, 0]]⟩
+
+/-- **The monoid `d1` certificate produces its Smith normal form** — `rfl` bridge. -/
+theorem bimonoidMonoidPartArityProducesSmithNormalForm :
+    bimonoidMonoidPartArityBoundary.applyOperations
+        bimonoidMonoidPartAritySmithCertificate.operations
+      = bimonoidMonoidPartAritySmithNormalForm := rfl
+
+/-- **The monoid `d1` reduces to Smith normal form** — rank 1 within its `1 x 2` window. -/
+theorem bimonoidMonoidPartArityReducesToSmith :
+    bimonoidMonoidPartAritySmithCertificate.reducesToSmithForm bimonoidMonoidPartArityBoundary 1 2 :=
+  show bimonoidMonoidPartAritySmithNormalForm.IsSmithNormalFormWithin 1 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 1 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          bimonoidMonoidPartAritySmithNormalForm.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow)) }
+
+/-- The monoid `d2` reduction `-> diag(1, 0)`. -/
+def bimonoidMonoidPartRelationSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ .columnOperation (.swapColumns 0 1)
+      , .rowOperation (.addRowMultiple 0 1 (-1))
+      , .columnOperation (.addColumnMultiple 0 2 (-1)) ] }
+
+/-- The monoid `d2` Smith normal form `[[1, 0, 0], [0, 0, 0]]` (`2 x 3`, rank 1). -/
+def bimonoidMonoidPartRelationSmithNormalForm : IntMatrix := ⟨[[1, 0, 0], [0, 0, 0]]⟩
+
+/-- **The monoid `d2` certificate produces its Smith normal form** — `rfl` bridge. -/
+theorem bimonoidMonoidPartRelationProducesSmithNormalForm :
+    bimonoidMonoidPartRelationBoundary.applyOperations
+        bimonoidMonoidPartRelationSmithCertificate.operations
+      = bimonoidMonoidPartRelationSmithNormalForm := rfl
+
+/-- **The monoid `d2` reduces to `diag(1, 0)`** — rank 1 within its `2 x 3` window. -/
+theorem bimonoidMonoidPartRelationReducesToSmith :
+    bimonoidMonoidPartRelationSmithCertificate.reducesToSmithForm
+      bimonoidMonoidPartRelationBoundary 2 3 :=
+  show bimonoidMonoidPartRelationSmithNormalForm.IsSmithNormalFormWithin 2 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          bimonoidMonoidPartRelationSmithNormalForm.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyond =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyond))) }
+
+/-- The comonoid `d1` reduction `[[-1, 1]] -> [[1, 0]]` (clear, then negate the pivot column). -/
+def bimonoidComonoidPartAritySmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ .columnOperation (.addColumnMultiple 0 1 1)
+      , .columnOperation (.negateColumn 0) ] }
+
+/-- The comonoid `d1` Smith normal form `[[1, 0]]`. -/
+def bimonoidComonoidPartAritySmithNormalForm : IntMatrix := ⟨[[1, 0]]⟩
+
+/-- **The comonoid `d1` certificate produces its Smith normal form** — `rfl` bridge. -/
+theorem bimonoidComonoidPartArityProducesSmithNormalForm :
+    bimonoidComonoidPartArityBoundary.applyOperations
+        bimonoidComonoidPartAritySmithCertificate.operations
+      = bimonoidComonoidPartAritySmithNormalForm := rfl
+
+/-- **The comonoid `d1` reduces to Smith normal form** — rank 1 within its `1 x 2` window. -/
+theorem bimonoidComonoidPartArityReducesToSmith :
+    bimonoidComonoidPartAritySmithCertificate.reducesToSmithForm
+      bimonoidComonoidPartArityBoundary 1 2 :=
+  show bimonoidComonoidPartAritySmithNormalForm.IsSmithNormalFormWithin 1 2 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 1 → ∀ colIndex, colIndex < 2 →
+          rowIndex ≠ colIndex →
+          bimonoidComonoidPartAritySmithNormalForm.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow)) }
+
+/-- The comonoid `d2` reduction `-> diag(1, 0)` (same shape as the monoid part). -/
+def bimonoidComonoidPartRelationSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ .columnOperation (.swapColumns 0 1)
+      , .rowOperation (.addRowMultiple 0 1 (-1))
+      , .columnOperation (.addColumnMultiple 0 2 (-1)) ] }
+
+/-- The comonoid `d2` Smith normal form `[[1, 0, 0], [0, 0, 0]]` (`2 x 3`, rank 1). -/
+def bimonoidComonoidPartRelationSmithNormalForm : IntMatrix := ⟨[[1, 0, 0], [0, 0, 0]]⟩
+
+/-- **The comonoid `d2` certificate produces its Smith normal form** — `rfl` bridge. -/
+theorem bimonoidComonoidPartRelationProducesSmithNormalForm :
+    bimonoidComonoidPartRelationBoundary.applyOperations
+        bimonoidComonoidPartRelationSmithCertificate.operations
+      = bimonoidComonoidPartRelationSmithNormalForm := rfl
+
+/-- **The comonoid `d2` reduces to `diag(1, 0)`** — rank 1 within its `2 x 3` window. -/
+theorem bimonoidComonoidPartRelationReducesToSmith :
+    bimonoidComonoidPartRelationSmithCertificate.reducesToSmithForm
+      bimonoidComonoidPartRelationBoundary 2 3 :=
+  show bimonoidComonoidPartRelationSmithNormalForm.IsSmithNormalFormWithin 2 3 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 2 → ∀ colIndex, colIndex < 3 →
+          rowIndex ≠ colIndex →
+          bimonoidComonoidPartRelationSmithNormalForm.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨0, rfl⟩
+      | _ + 1, isBeyond =>
+          Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyond))) }
+
+/-- The monoid part's degree-1 homology free rank `= (2 - rank d1) - rank d2 = (2 - 1) - 1 = 0`. -/
+def bimonoidMonoidPartDegreeOneHomologyFreeRank : Nat :=
+  (2 - smithRankWithin bimonoidMonoidPartAritySmithNormalForm 1)
+    - smithRankWithin bimonoidMonoidPartRelationSmithNormalForm 2
+
+/-- **The monoid part alone has `H1 = 0`.** -/
+theorem bimonoidMonoidPartDegreeOneHomologyIsZero :
+    bimonoidMonoidPartDegreeOneHomologyFreeRank = 0 := rfl
+
+/-- The comonoid part's degree-1 homology free rank `= (2 - rank d1) - rank d2 = (2 - 1) - 1 = 0`. -/
+def bimonoidComonoidPartDegreeOneHomologyFreeRank : Nat :=
+  (2 - smithRankWithin bimonoidComonoidPartAritySmithNormalForm 1)
+    - smithRankWithin bimonoidComonoidPartRelationSmithNormalForm 2
+
+/-- **The comonoid part alone has `H1 = 0`** — the exact mirror of the monoid part. -/
+theorem bimonoidComonoidPartDegreeOneHomologyIsZero :
+    bimonoidComonoidPartDegreeOneHomologyFreeRank = 0 := rfl
+
+/-! ### The killer theorem -/
+
+/-- ★★ **THE BIMONOID AMALGAMATION OBSTRUCTION, and its resolution by the bialgebra law.**  In the PROP
+grading of the bunched bimonoid (monoid `(eta, mu)` + comonoid `(eps, delta)` over one shared object):
+**(i)** the class `[mu + delta]` is a 1-cycle that ESCAPES the integer span of the six relation
+boundaries, so `H1(without the bialgebra law)` contains it as a nonzero element (detected by the
+relative cocycle `phi = eta* - mu*`); **(ii)** each part alone has `H1 = 0`, so the class is genuinely
+CROSS; **(iii)** WITH the bialgebra law the class is the boundary of the negated compatibility 2-cell,
+so `[mu + delta] = 0` in `H1(with the law)` — the obstruction is killed by exactly the compatibility
+axiom.  Every claim is instance-level and decided off unit-only Smith normal forms. -/
+def BimonoidBialgebraObstructionStatement : Prop :=
+  comparisonProductEntry bimonoidArityBoundary bimonoidClassMuPlusDelta 4 0 0 = 0 ∧
+  (¬ ∃ coeffs : Nat → Int, ∀ generatorIndex,
+      bimonoidClassMuPlusDelta.entryAt generatorIndex 0
+        = withoutLawBoundaryCombinationCoordinate coeffs generatorIndex) ∧
+  bimonoidMonoidPartDegreeOneHomologyFreeRank = 0 ∧
+  bimonoidComonoidPartDegreeOneHomologyFreeRank = 0 ∧
+  (∃ coeffs : Nat → Int, ∀ generatorIndex, generatorIndex < 4 →
+      bimonoidClassMuPlusDelta.entryAt generatorIndex 0
+        = withLawBoundaryCombinationCoordinate coeffs generatorIndex)
+
+/-- ★★★ **THE PROBE-DECIDED THEOREM** — the bimonoid amalgamation obstruction is a genuine degree-1
+homology class, nontrivial WITHOUT the bialgebra law and killed WITH it, genuinely cross, all
+instance-level and zero-axiom. -/
+theorem bimonoidBialgebraObstruction : BimonoidBialgebraObstructionStatement :=
+  ⟨bimonoidClassIsCycle, classEscapesWithoutLawBoundarySpan,
+   bimonoidMonoidPartDegreeOneHomologyIsZero, bimonoidComonoidPartDegreeOneHomologyIsZero,
+   classDiesWithLaw⟩
+
+/-! ## B4 — the round-3 ledger (honest markers + the r4 bill)
+
+### What round 3 SHIPS (all zero-axiom, all instance-level)
+
+  * **B1** — the bunched bimonoid PROP presentation (`bimonoidArityBoundary` = the re-graded r1 B6
+    literal; `bimonoidRelationBoundaryWithoutLaw`) and its chain complex
+    (`bimonoidWithoutLawIsChainComplex`).
+  * **B2** — the with-law complex (`bimonoidRelationBoundaryWithLaw`, the bialgebra column
+    `bimonoidBialgebraLawColumn = -(mu + delta)`; `bimonoidWithLawIsChainComplex`) and the two-complex
+    Smith comparison (`bimonoidTwoComplexComparison`): `rank d2` rises `2 -> 3`, `H1` free rank
+    `1 -> 0`, no torsion either way.
+  * **B3** — the probe-decided theorem (`bimonoidBialgebraObstruction`): the class `[mu + delta]` is a
+    cycle that escapes the without-law boundary span (nontrivial in `H1`), is a boundary with the law
+    (killed), and each part alone has `H1 = 0` (genuinely cross).
+
+### The r4 bill (NAMED, NOT flipped)
+
+  * the Mayer-Vietoris LONG EXACT SEQUENCE for the bimonoid amalgam and the homology-level connecting
+    map (the LES packaging);
+  * the general CFND-5 FAILURE-CERTIFICATE interface that WP-AMALG-3 consumes;
+  * the full four-law bialgebra (all four compatibility laws map onto the same `H1` generator, so
+    `rank d2` saturates at 3 — a corollary);
+  * the decidedness / completeness of the PROP critical-pair set (Lafont's coherence: `C3` is empty
+    until the law, Lafont-complete after). -/
+
+/-- ★ **The kill marker.**  What stands, zero-axiom and instance-level: the bunched-bimonoid degree-1
+class `[mu + delta]` is nontrivial in `H1(without the bialgebra law)`
+(`classEscapesWithoutLawBoundarySpan`) and a boundary in `H1(with the law)` (`classDiesWithLaw`) — the
+obstruction is killed by exactly the compatibility axiom.  The general polygraphic theorem stays
+UNCLAIMED.  Read the meaning from THIS docstring. -/
+def bimonoidBialgebraLawKillsH1ClassIsLive : Bool := true
+
+/-- ★ **The re-grading marker.**  The bimonoid obstruction lives at `H1`, not `H2`: bimonoid generators
+`(eta, mu, eps, delta)` are 1-cells of a PROP with nonzero arity displacement, so `d1` is the
+arity-difference row (`bimonoidArityBoundaryIsR1Regrade`: EXACTLY r1's B6 literal, re-graded from the
+refuted `d2` to `d1`).  The r1 B6 defect (`d d = -2` in the walker/2-cell grading) and this
+chain-complex (in the PROP grading) are the same matrix read in two carriers — no contradiction.  The
+r2 bicomplex conjecture (`bimonoidBicomplexIsR3Bill`) is NOT flipped: the single-complex PROP route
+resolves the obstruction, and the bicomplex remains an honest heavier alternative.  Read the meaning
+from THIS docstring. -/
+def bimonoidPropRegradingIsHonest : Bool := true
+
 end FX1Poly.Polygraph.Homology

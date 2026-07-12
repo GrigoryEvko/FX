@@ -20,5 +20,16 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Homology.bimonoidWithoutLawReducesToSmith
 #print axioms FX1Poly.Polygraph.Homology.bimonoidWithLawReducesToSmith
 #print axioms FX1Poly.Polygraph.Homology.bimonoidTwoComplexComparison
+#print axioms FX1Poly.Polygraph.Homology.bimonoidClassIsCycle
+#print axioms FX1Poly.Polygraph.Homology.cocycleAnnihilatesEveryWithoutLawCombination
+#print axioms FX1Poly.Polygraph.Homology.cocycleDetectsClass
+#print axioms FX1Poly.Polygraph.Homology.classEscapesWithoutLawBoundarySpan
+#print axioms FX1Poly.Polygraph.Homology.classIsWithLawBoundary
+#print axioms FX1Poly.Polygraph.Homology.classDiesWithLaw
+#print axioms FX1Poly.Polygraph.Homology.bimonoidMonoidPartDegreeOneHomologyIsZero
+#print axioms FX1Poly.Polygraph.Homology.bimonoidComonoidPartDegreeOneHomologyIsZero
+#print axioms FX1Poly.Polygraph.Homology.bimonoidBialgebraObstruction
+#print axioms FX1Poly.Polygraph.Homology.bimonoidBialgebraLawKillsH1ClassIsLive
+#print axioms FX1Poly.Polygraph.Homology.bimonoidPropRegradingIsHonest
 
 end FX1PolyAudit
