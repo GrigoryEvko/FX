@@ -1396,6 +1396,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCollisionCanonFormAudi
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorAudit
 -- WP-PROP r12 — the matrix-algebra kit gating the generic permutation-matrix extractor: the shared relabel keystone RELABEL-GET (reading a swapped range entry IS swapValue, k+1<width the boundary-excluder) + its map-form + gate (c) cons-relabel (permOfWord (k::rest) = (permOfWord rest).map (swapValue k)) + the length-preservation chain + the boundary-excluding valid-word predicate; gates (a) sigmaAt-as-transposition and (b) matMul column-swap stay named, the wall stays false, star not flipped
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorKitAudit
+-- WP-PROP r13 — the matrix-algebra gates (a)/(b) + the K1 generic permutation-matrix extractor: gate (a) sigmaAt-as-transposition (block-form 4-band entry match), gate (b) matMul column-swap (matMulEntryRead + delta-collapse), K1 evalCell (permWord) = permMatrixOf (permOfWord) at generic width; the wall genericPermMatrixExtractorGatedOnMatrixAlgebraKit is FLIPPED true
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorGatesAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
