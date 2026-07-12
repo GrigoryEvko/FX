@@ -929,6 +929,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineValleyMidZero
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyProducer
 -- FC-3 r37 — the shared-`midWord` brick (top-word-length = mid-width bridge + length-`0` path uniqueness → equal cap top words at mid-width `0`)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSharedMidWord
+-- FC-3 r38 — the mid-width-`0` valley determinacy CELL reducer (inhabits StringMidZeroValleyTraceEquiv unconditionally; the standing residual drops from three colour-keyed sub-producers to two)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyCellReducer
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
@@ -1281,6 +1283,7 @@ import FX1PolyAudit.Polygraph.Homology.FiniteCarrierWalkPigeonhole
 import FX1PolyAudit.Polygraph.Homology.NaryAlphabetObstructionChainEnumerator
 import FX1PolyAudit.Polygraph.Homology.AcyclicSoundnessLoopExtractionAndSaturation
 import FX1PolyAudit.Polygraph.Homology.AcyclicSystemTruncationCertificate
+import FX1PolyAudit.Polygraph.Homology.AcyclicTruncationDownwardClosureAndBlockAdditivity
 import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
 import FX1PolyAudit.Polygraph.Homology.BlockDiagonalCertificateLifting
 import FX1PolyAudit.Polygraph.Homology.FreshGeneratorTietzeExpansionInvariance
