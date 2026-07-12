@@ -25,5 +25,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.arcGodementSamePartitionFreshProof_staysFalse_rootComm
 #assert_no_axioms FX1Poly.Polygraph.arcPeelGeneralSignature_staysFalse_rootComm
 #assert_no_axioms FX1Poly.Polygraph.arcGodementSwapRenameableProof2_staysFalse_rootComm
+#assert_no_axioms FX1Poly.Polygraph.twoCupGodement_arcRenameRel
+#assert_no_axioms FX1Poly.Polygraph.twoCupBundle_concrete_arcRenameRel
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementSwapCupCupExtract
 
 end FX1PolyAudit

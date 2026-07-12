@@ -572,4 +572,55 @@ above (`ArcStepSimCount`) is the LIVE vehicle; the refuted `renameState`-EQUALIT
 theorem arcGodementSwapRenameableProof2_staysFalse_rootComm :
     fxMode_hasArcGodementSwapRenameableProof2 = false := rfl
 
+/-! ## C4 — the `ArcRenameRel` read-off corollary + the B3 cap-arm wall
+
+The shipped read-off chain `arcRenameRel_of_arcStepSimCount` reads the full bundle DIRECTLY into `ArcRenameRel`
+(its `cupCorr` / `capCorr` COUNT fields ARE the `ArcRenameRel` count fields — no derivation).  Its side-conditions
+under `σ = blockRotate nextFresh 3 3`: `inj` is unconditional (`blockRotate_inj`); `sigmaFixesZero` needs
+`0 < nextFresh` (at `nextFresh = 0` the degenerate `σ 0 = 3`); `fixesBoundary` needs `bottomCount ≤ nextFresh` (a
+boundary port `< bottomCount ≤ nextFresh` is below the swapped window, so `blockRotate_fixesBelow`).  Both hold on
+every reachable state.
+
+The B3 keystone (a GENERAL Godement-swap decision) stays an HONEST WALL: the cup × cup case is closed here, and
+the cross-pairs commute by literal state equality (`stepCrossArc` leaves links / nextFresh / loops / events
+untouched — string lane), but the CAP-involving pairs are genuinely FALSE at `renameState` level (the cap MERGE
+flips a merged pre-existing root with the join order — `MatchingSwapObstruction` / `ArcCoreSwapCapFlipRefutation`),
+which is why residual (2)'s `renameState`-EQUALITY marker stays `false` (re-asserted above).  No positive B3 marker
+is minted; only the cup × cup extract corollary below. -/
+
+/-- ★ **The pure cup × cup Godement swap read into `ArcRenameRel`** (B2 extract corollary).  The full bundle fed
+through the shipped `arcRenameRel_of_arcStepSimCount`, with the two side-conditions discharged: `sigmaFixesZero`
+from `0 < state.nextFresh` and `fixesBoundary` from `bottomCount ≤ state.nextFresh` (both via
+`blockRotate_fixesBelow`).  This is the partition-relation the keystone-soundness consumer reads — the concrete
+payoff of the residual-(2) heart on the cup × cup fragment. -/
+theorem twoCupGodement_arcRenameRel (state : ArcWireState) (lowPosition gap bottomCount : Nat)
+    (fresh : ArcStateFresh state) (window : gap + lowPosition ≤ state.openWires.length)
+    (forest : isUnionFindForest state.links) (nfPos : 0 < state.nextFresh)
+    (bottomLeNf : bottomCount ≤ state.nextFresh) :
+    ArcRenameRel bottomCount (blockRotate state.nextFresh 3 3)
+      (stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition))
+      (stepCupArc (stepCupArc state (gap + lowPosition)) lowPosition) :=
+  arcRenameRel_of_arcStepSimCount bottomCount (blockRotate state.nextFresh 3 3)
+    (blockRotate_inj state.nextFresh 3 3)
+    (blockRotate_fixesBelow state.nextFresh 3 3 0 nfPos)
+    (fun identifier hid =>
+      blockRotate_fixesBelow state.nextFresh 3 3 identifier (Nat.lt_of_lt_of_le hid bottomLeNf))
+    _ _ (twoCupGodement_arcStepSimCount state lowPosition gap fresh window forest)
+
+/-- ★ Non-vacuity of the `ArcRenameRel` corollary: at the concrete width-6 seed (`bottomCount = 6`) the partition
+relation is inhabited. -/
+theorem twoCupBundle_concrete_arcRenameRel :
+    ArcRenameRel 6 (blockRotate 6 3 3)
+      (stepCupArc (stepCupArc twoCupBundleSeed 1) 5) (stepCupArc (stepCupArc twoCupBundleSeed 3) 1) :=
+  twoCupGodement_arcRenameRel twoCupBundleSeed 1 2 6 (arcStateFresh_initial 6) (by decide) isUnionFindForest_nil
+    (by decide) (Nat.le_refl _)
+
+/-- **Honesty marker — the cup × cup Godement swap is closed to the `ArcRenameRel` READ-OFF; the general B3
+keystone stays a WALL.**  `twoCupGodement_arcRenameRel` reads the full `ArcStepSimCount` bundle into the partition
+relation the keystone soundness consumes, for the pure cup × cup interchange (conditional on `0 < nextFresh` and
+`bottomCount ≤ nextFresh`).  A GENERAL Godement-swap decision is NOT clean — the cap-involving pairs are refuted at
+`renameState` level (`MatchingSwapObstruction`), so residual (2)'s `renameState`-EQUALITY marker stays `false` and
+NO positive B3 keystone is minted.  This marker records only the cup × cup extract.  `= true`. -/
+def fxMode_hasArcGodementSwapCupCupExtract : Bool := true
+
 end FX1Poly.Polygraph

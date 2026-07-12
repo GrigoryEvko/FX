@@ -17,5 +17,8 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.twoCupGodement_arcStepSimCount
 #print axioms FX1Poly.Polygraph.twoCupBundle_concrete
 #print axioms FX1Poly.Polygraph.fxMode_hasArcTwoCupGodementSwapCountBundle
+#print axioms FX1Poly.Polygraph.twoCupGodement_arcRenameRel
+#print axioms FX1Poly.Polygraph.twoCupBundle_concrete_arcRenameRel
+#print axioms FX1Poly.Polygraph.fxMode_hasArcGodementSwapCupCupExtract
 
 end FX1PolyAudit
