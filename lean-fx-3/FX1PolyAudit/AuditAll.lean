@@ -853,6 +853,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringRightStraightenPro
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringDescentStepOracleInhabited
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyDegenerateSplit
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyDecisionAssembly
+-- FC-3 r46 — THE IDENTIFICATION CAPSTONE: post-flip harvest (coloured completeness, full valley trace-equiv, second valley-assembly decision) + the packaged #2209 identification biconditional stringSaturatedConv_iff_matchingOf_eq
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringIdentificationCapstone
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineAtomWordPin
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringWidthZeroCupProbe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringLastCupSharedTopPin
@@ -1005,6 +1007,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLocateA
 -- FC-3 r45 R4 + R5 — THE BRICK: stringPositiveMidPureCupDeterminacy_proof INHABITS the LITERAL StringPositiveMidPureCupDeterminacy (StringPositiveMidCupSortResidual:89, verbatim) via the width-0 fueled sort re-parameterized 0 ⤳ midWidth (base floor forces second spine empty from the survivor open-wire count); the r42 _ofBrick tower then fires end-to-end: stringMatchingReductsShareSpineTrace_holds discharges the completeness residual UNCONDITIONALLY, stringConvOfMapEq_holds is the unconditional convOfMapEq, decidableStringSaturatedConv_holds is the total adjoint-triple word-problem decision; the brick FIRES on the shipped distinct double-cup at midWidth 2 (non-diagonal: refl fails)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidPureCupSort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidPureCupSortAxiomWitness
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringIdentificationCapstoneAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
