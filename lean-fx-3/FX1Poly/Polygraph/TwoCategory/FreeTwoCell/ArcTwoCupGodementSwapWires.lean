@@ -189,16 +189,19 @@ is the redex's relabelled by the fresh block rotation `blockRotate state.nextFre
 simulation, general over the seed / positions and non-vacuous (`twoCupSwap_concrete_openWires`).  `= true`. -/
 def fxMode_hasArcTwoCupSwapOpenWireBlockTransform : Bool := true
 
-/-- **Honesty marker — the FULL pure-cup swap `ArcStepSimCount` bundle is NOT shipped (the residual-(2) heart).**
-The two shipped legs are `openMap` (block transform) and the byte-identity that collapses `nfEq` / `loopsEq` /
-`cupCorr` / `capCorr`'s link arguments; the THIRD leg — `rootComm`, the union-find automorphism
-`∀ x, unionFindRootOf L' (σ x) = σ (unionFindRootOf L' x)` of the shared forest `L'` — is the disjoint-two-block
-automorphism at the heart of residual (2).  It is genuinely NOT a consequence of the shipped per-atom transports:
-`stepCupArc_rootComm` (and every `stepArcAtom_*` transport) requires `σ` to FIX the future-allocation tail, which
-the block-swap `σ = blockRotate nextFresh 3 3` violates by construction (it permutes exactly the freshly-allocated
-`[nextFresh, nextFresh + 6)`).  Discharging it needs the disjoint-block forest-reorder invariance (`σ` maps
-block-one's edges to block-two's and back), the honest standing obligation.  `= false`. -/
-def fxMode_hasArcTwoCupGodementSwapSim : Bool := false
+/-- **Honesty marker — the FULL pure-cup swap `ArcStepSimCount` bundle IS shipped (residual-(2) heart CLOSED).**
+All eight fields of `ArcStepSimCount (blockRotate state.nextFresh 3 3) redex reduct` are delivered by
+`twoCupGodement_arcStepSimCount` (in `ArcTwoCupGodementSwapRootComm`) at general parameters, under the freshness /
+disjoint-window / forest side-conditions.  The THIRD leg — `rootComm`, the union-find automorphism
+`∀ x, unionFindRootOf L' (σ x) = σ (unionFindRootOf L' x)` of the shared forest `L'` — is now proven
+(`twoCupGodement_rootComm`, the 4-edge `unionFindRootOf_consJoin`-tower port of the matching twin
+`blockSwap_rootComm`): the block rotation `σ = blockRotate nextFresh 3 3` swaps the two disjoint fresh three-id
+blocks (roots `nf+1 ↔ nf+4`) and fixes base + tail.  The count fields (`cupCorr` / `capCorr`) ride on it via the
+shipped `countEventsInRoot_rootComm`.  This is NO LONGER a consequence of the per-atom transports (`σ` still
+violates their future-fix requirement); it is the DIRECT final-state construction on the two-cup forest.
+Non-vacuous (`twoCupBundle_concrete`, width-6).  Only the CAP-involving Godement pairs stay walled (residual (2)'s
+`renameState`-EQUALITY route — the cap MERGE flips a merged root with the join order).  `= true`. -/
+def fxMode_hasArcTwoCupGodementSwapSim : Bool := true
 
 /-- **Honesty pin — the general keystone `:545` stays false.**  A faithful pure-cup swap witness is a NEW marker
 (above); the general `ArcGodementSamePartitionFresh` signature marker in `ArcPartitionCommute` remains `false`. -/

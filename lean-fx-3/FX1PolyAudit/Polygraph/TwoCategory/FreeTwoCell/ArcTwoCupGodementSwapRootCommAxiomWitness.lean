@@ -13,5 +13,9 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.stepCupArc_links_cons
 #print axioms FX1Poly.Polygraph.twoCupArcLinks_cons
 #print axioms FX1Poly.Polygraph.twoCupGodement_rootComm
+#print axioms FX1Poly.Polygraph.countEventsInRoot_swap_head
+#print axioms FX1Poly.Polygraph.twoCupGodement_arcStepSimCount
+#print axioms FX1Poly.Polygraph.twoCupBundle_concrete
+#print axioms FX1Poly.Polygraph.fxMode_hasArcTwoCupGodementSwapCountBundle
 
 end FX1PolyAudit

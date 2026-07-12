@@ -18,5 +18,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stepCupArc_links_cons
 #assert_no_axioms FX1Poly.Polygraph.twoCupArcLinks_cons
 #assert_no_axioms FX1Poly.Polygraph.twoCupGodement_rootComm
+#assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_swap_head
+#assert_no_axioms FX1Poly.Polygraph.twoCupGodement_arcStepSimCount
+#assert_no_axioms FX1Poly.Polygraph.twoCupBundle_concrete
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcTwoCupGodementSwapCountBundle
+#assert_no_axioms FX1Poly.Polygraph.arcGodementSamePartitionFreshProof_staysFalse_rootComm
+#assert_no_axioms FX1Poly.Polygraph.arcPeelGeneralSignature_staysFalse_rootComm
+#assert_no_axioms FX1Poly.Polygraph.arcGodementSwapRenameableProof2_staysFalse_rootComm
 
 end FX1PolyAudit

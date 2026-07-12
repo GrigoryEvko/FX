@@ -439,4 +439,137 @@ theorem twoCupGodement_rootComm (nf : Nat) (orig : List (Nat × Nat))
                     rw [rootL4 x, hL3x, if_neg (natBeqNeTrue (fun h => (neOfBeqFalse hbNf5) h.symm))]
                   rw [hσx, hLpx, hσx]
 
+/-! ## C3 — the count fields ride on `rootComm`, and the full `ArcStepSimCount` bundle
+
+The per-root cup/cap COUNT fields fall out of C2 via the shipped `countEventsInRoot_rootComm`: `σ` permutes the two
+freshly-allocated cup events (`nf+2 ↔ nf+5`) and fixes the pre-existing cup/cap events (all `< nf`).  The cup
+side needs one head-swap (the two fresh events are consed in the opposite order the `σ`-image lands them); the cap
+side is direct (cups add no cap events, so `σ` fixes the whole cap-event list).  Assembling these with the two
+shipped legs (open-wire block transform + link byte-identity companions) and the forest-preservation lemmas gives
+the literal full 8-field `ArcStepSimCount` for the pure cup × cup Godement interchange. -/
+
+/-- The per-root event count is BLIND to swapping the first two events (they add independently; `Nat.add_left_comm`
+on the two indicator contributions).  The exact difference between `E_cup` and its `σ`-image for the two-cup swap. -/
+theorem countEventsInRoot_swap_head (links : List (Nat × Nat)) (rootHere a b : Nat) (rest : List Nat) :
+    countEventsInRoot links rootHere (a :: b :: rest) = countEventsInRoot links rootHere (b :: a :: rest) := by
+  show (if unionFindRootOf links a == rootHere then 1 else 0)
+        + ((if unionFindRootOf links b == rootHere then 1 else 0) + countEventsInRoot links rootHere rest)
+     = (if unionFindRootOf links b == rootHere then 1 else 0)
+        + ((if unionFindRootOf links a == rootHere then 1 else 0) + countEventsInRoot links rootHere rest)
+  rw [Nat.add_left_comm]
+
+/-- ★ **The FULL pure cup × cup Godement swap `ArcStepSimCount` bundle** — all eight fields at general parameters
+(`state`, `lowPosition`, `gap`) under the freshness / disjoint-window / forest side-conditions.  `openMap` is the
+shipped open-wire block transform; `nfEq` / `loopsEq` and the count fields' links are the shipped byte-identity
+companions; `rootComm` is the C2 automorphism (`twoCupGodement_rootComm` on the C1 concrete forest); `cupCorr` /
+`capCorr` ride on `rootComm` through `countEventsInRoot_rootComm` (cup: one head-swap for the two fresh events;
+cap: `σ` fixes the whole list); `forestS` / `forestT` from the cup-step forest preservation.  This is the literal
+delivery that discharges the residual-(2) heart and flips `fxMode_hasArcTwoCupGodementSwapSim`. -/
+theorem twoCupGodement_arcStepSimCount (state : ArcWireState) (lowPosition gap : Nat)
+    (fresh : ArcStateFresh state) (window : gap + lowPosition ≤ state.openWires.length)
+    (forest : isUnionFindForest state.links) :
+    ArcStepSimCount (blockRotate state.nextFresh 3 3)
+      (stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition))
+      (stepCupArc (stepCupArc state (gap + lowPosition)) lowPosition) := by
+  have hlinksRedex : (stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition)).links
+      = (state.nextFresh + 5, state.nextFresh + 4) :: (state.nextFresh + 3, state.nextFresh + 4)
+        :: (state.nextFresh + 2, state.nextFresh + 1) :: (state.nextFresh, state.nextFresh + 1) :: state.links :=
+    twoCupArcLinks_cons state lowPosition gap fresh forest
+  have hlinksReduct : (stepCupArc (stepCupArc state (gap + lowPosition)) lowPosition).links
+      = (state.nextFresh + 5, state.nextFresh + 4) :: (state.nextFresh + 3, state.nextFresh + 4)
+        :: (state.nextFresh + 2, state.nextFresh + 1) :: (state.nextFresh, state.nextFresh + 1) :: state.links :=
+    (stepCupArc_stepCupArc_links_eq state lowPosition gap).symm.trans hlinksRedex
+  have hRootLp := twoCupGodement_rootComm state.nextFresh state.links fresh.2.1 forest
+  have hσinj := blockRotate_inj state.nextFresh 3 3
+  have hEcup : (stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition)).cupEventNodes
+      = (state.nextFresh + 5) :: (state.nextFresh + 2) :: state.cupEventNodes := rfl
+  have hEcap : (stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition)).capEventNodes
+      = state.capEventNodes := rfl
+  -- the two fresh cup events map to each other; the pre-existing ones are fixed
+  have s2 : blockRotate state.nextFresh 3 3 (state.nextFresh + 2) = state.nextFresh + 5 :=
+    blockRotate_firstBlock state.nextFresh 3 3 (state.nextFresh + 2) (Nat.le_add_right _ _)
+      (Nat.add_lt_add_left (by decide) state.nextFresh)
+  have s5 : blockRotate state.nextFresh 3 3 (state.nextFresh + 5) = state.nextFresh + 2 := by
+    have hlo : state.nextFresh + 3 ≤ state.nextFresh + 5 := Nat.add_le_add_left (by decide) state.nextFresh
+    have hhi : state.nextFresh + 5 < state.nextFresh + 3 + 3 := by
+      show state.nextFresh + 5 < state.nextFresh + 6; exact Nat.add_lt_add_left (by decide) state.nextFresh
+    rw [blockRotate_secondBlock state.nextFresh 3 3 (state.nextFresh + 5) hlo hhi]
+    exact addSubCancelRight (state.nextFresh + 2) 3
+  have hEcupMap : ((state.nextFresh + 5) :: (state.nextFresh + 2) :: state.cupEventNodes).map
+        (blockRotate state.nextFresh 3 3)
+      = (state.nextFresh + 2) :: (state.nextFresh + 5) :: state.cupEventNodes := by
+    show blockRotate state.nextFresh 3 3 (state.nextFresh + 5)
+        :: blockRotate state.nextFresh 3 3 (state.nextFresh + 2)
+        :: state.cupEventNodes.map (blockRotate state.nextFresh 3 3)
+      = (state.nextFresh + 2) :: (state.nextFresh + 5) :: state.cupEventNodes
+    rw [s5, s2, mapFixedOn (blockRotate state.nextFresh 3 3) state.cupEventNodes
+      (fun node hn => blockRotate_fixesBelow state.nextFresh 3 3 node (fresh.2.2.1 node hn))]
+  have hCapFix : state.capEventNodes.map (blockRotate state.nextFresh 3 3) = state.capEventNodes :=
+    mapFixedOn (blockRotate state.nextFresh 3 3) state.capEventNodes
+      (fun node hn => blockRotate_fixesBelow state.nextFresh 3 3 node (fresh.2.2.2 node hn))
+  exact
+    { openMap := stepCupArc_stepCupArc_openWires_blockSwap state lowPosition gap fresh window
+      nfEq := stepCupArc_stepCupArc_nextFresh_eq state lowPosition gap
+      rootComm := fun x => by rw [hlinksReduct, hlinksRedex]; exact hRootLp x
+      loopsEq := (stepCupArc_stepCupArc_loops_eq state lowPosition gap).symm
+      cupCorr := fun r => by
+        rw [hlinksReduct, hlinksRedex, (stepCupArc_stepCupArc_cupEventNodes_eq state lowPosition gap).symm, hEcup]
+        have key := countEventsInRoot_rootComm (blockRotate state.nextFresh 3 3) hσinj
+          ((state.nextFresh + 5, state.nextFresh + 4) :: (state.nextFresh + 3, state.nextFresh + 4)
+            :: (state.nextFresh + 2, state.nextFresh + 1) :: (state.nextFresh, state.nextFresh + 1) :: state.links)
+          _ r hRootLp ((state.nextFresh + 5) :: (state.nextFresh + 2) :: state.cupEventNodes)
+        rw [hEcupMap] at key
+        rw [countEventsInRoot_swap_head _ (blockRotate state.nextFresh 3 3 r) (state.nextFresh + 5)
+          (state.nextFresh + 2) state.cupEventNodes]
+        exact key
+      capCorr := fun r => by
+        rw [hlinksReduct, hlinksRedex, (stepCupArc_stepCupArc_capEventNodes_eq state lowPosition gap).symm, hEcap]
+        have key := countEventsInRoot_rootComm (blockRotate state.nextFresh 3 3) hσinj
+          ((state.nextFresh + 5, state.nextFresh + 4) :: (state.nextFresh + 3, state.nextFresh + 4)
+            :: (state.nextFresh + 2, state.nextFresh + 1) :: (state.nextFresh, state.nextFresh + 1) :: state.links)
+          _ r hRootLp state.capEventNodes
+        rw [hCapFix] at key
+        exact key
+      forestS := isUnionFindForest_stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition)
+        (isUnionFindForest_stepCupArc state lowPosition forest)
+      forestT := isUnionFindForest_stepCupArc (stepCupArc state (gap + lowPosition)) lowPosition
+        (isUnionFindForest_stepCupArc state (gap + lowPosition) forest) }
+
+/-! ## Non-vacuity — a concrete full bundle at the width-6 re-probe seed -/
+
+/-- The concrete two-cup seed (width 6, `nextFresh = 6`) — the re-probe's seed, matching `ArcTwoCupGodementSwapWires`. -/
+private def twoCupBundleSeed : ArcWireState := ArcWireState.mk (List.range 6) [] 6 0 [] []
+
+/-- ★ Non-vacuity of the full bundle: at the concrete width-6 seed with the low cup at `1` and the high cup gap `2`
+the eight-field `ArcStepSimCount` for `blockRotate 6 3 3` is inhabited — confirming the general theorem is not
+vacuous. -/
+theorem twoCupBundle_concrete :
+    ArcStepSimCount (blockRotate 6 3 3)
+      (stepCupArc (stepCupArc twoCupBundleSeed 1) 5) (stepCupArc (stepCupArc twoCupBundleSeed 3) 1) :=
+  twoCupGodement_arcStepSimCount twoCupBundleSeed 1 2 (arcStateFresh_initial 6) (by decide) isUnionFindForest_nil
+
+/-! ## Honesty markers -/
+
+/-- **Honesty marker — the FULL pure-cup swap `ArcStepSimCount` bundle IS shipped (residual-(2) heart CLOSED).**
+`twoCupGodement_arcStepSimCount` delivers all eight fields of `ArcStepSimCount (blockRotate state.nextFresh 3 3)
+redex reduct` at general parameters (under freshness / disjoint-window / forest side-conditions): `rootComm` is the
+union-find automorphism of the two-cup shared forest (`twoCupGodement_rootComm`, the C2 heart), and `cupCorr` /
+`capCorr` ride on it via `countEventsInRoot_rootComm`.  Non-vacuous (`twoCupBundle_concrete`).  This is the literal
+full-bundle delivery that flips `fxMode_hasArcTwoCupGodementSwapSim`.  `= true`. -/
+def fxMode_hasArcTwoCupGodementSwapCountBundle : Bool := true
+
+/-- **Honesty pin — the general keystone `:545` stays false FOREVER.** -/
+theorem arcGodementSamePartitionFreshProof_staysFalse_rootComm :
+    fxMode_hasArcGodementSamePartitionFreshProof = false := rfl
+
+/-- **Honesty pin — the peel-general signature `:137` stays false FOREVER.** -/
+theorem arcPeelGeneralSignature_staysFalse_rootComm : fxMode_hasArcPeelGeneralSignature = false := rfl
+
+/-- **Honesty pin — residual (2)'s renameable-level marker `:3046` stays false FOREVER.**  The count-level bundle
+above (`ArcStepSimCount`) is the LIVE vehicle; the refuted `renameState`-EQUALITY route
+(`fxMode_hasArcGodementSwapRenameableProof2`) stays walled (the cap MERGE flips a merged root with the join order —
+`MatchingSwapObstruction`), so the general Godement swap over cap-involving pairs is NOT clean. -/
+theorem arcGodementSwapRenameableProof2_staysFalse_rootComm :
+    fxMode_hasArcGodementSwapRenameableProof2 = false := rfl
+
 end FX1Poly.Polygraph
