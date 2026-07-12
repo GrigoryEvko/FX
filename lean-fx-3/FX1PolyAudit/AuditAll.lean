@@ -535,6 +535,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFlatDescriptorExtract
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFlatDescriptorExtractorAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFlatDescriptorArms
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescFlatDescriptorArmsAxiomWitness
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingLeftCommuteContinue
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCrossingLeftCommuteContinueAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldR5Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryComponents
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGeneratorBridge
@@ -1462,6 +1464,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordAppendRes
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordRunCommuteConvAudit
 -- WP-PROP r18 T2 — the whisker-vs-1-cell coherence ADJUDICATION: the associator / identity-whisker-unitor / whisker-commute (the r17 residual) are STRUCTURAL (Cat-enrichment / sesquicategory axioms, literature-confirmed) — matrix-sound by rfl AND non-boundary-parallel (they violate the cast-free StrictAxiomRel invariant); WALLED out of StrictAxiomRel (byte-intact) as the WP-PROP-owned residual since landing them is a coordinated substrate-owner change across >=5 lanes, NOT a lane-local row-addition; star not flipped, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidWhiskerOneCellCoherenceWallAudit
+-- WP-PROP r18 T3 — the matrix->recComb leg of CoxeterWordUnique (unblocked by r18 T1): evalCell (permWord w1) = evalCell (permWord w2) -> recComb (W-1) w1 = recComb (W-1) w2, composing the r11 generic extractor + injective read-off (matrix -> permOfWord-equality) with the r18 T1 canonicity (permOfWord-equality -> recComb-equality) via the positionsValid->mentionsOnlyBelow bridge; fires on the braid pair; pure List Nat + Mat(N), ZERO CONV, star not flipped
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordMatrixToRecCombAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
