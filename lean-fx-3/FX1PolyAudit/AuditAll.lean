@@ -991,6 +991,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringEmptyMidSurvivorId
 -- FC-3 r45 R1 — the positive-mid chord-shift LOCATE descents (the seed-offset ports of the r16 width-0 chord-shifts): stringMatchingChordShift_below/above_mid ride the byte-for-byte-REUSED diagramPartner_stepCup at seedBoundary := midWidth + the one new midWidth ≤ nextFresh obligation off processSpine_nextFresh_le; colour-blind, positivity-FREE (subsumes the r16 width-0 descents)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidChordShift
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidChordShiftAxiomWitness
+-- FC-3 r45 R2 — the positive-mid drop-injectivity linchpin + back-append (the seed-offset ports of the r16 width-0 drop): stringDropLastCup_matching_injective_mid / stringBackAppend_matching_congr_mid ride diagramPartner_stepCup at seedBoundary := midWidth + the already-seed-general stringExtractDiagram_stepCup_congr, with the midWidth ≤ nextFresh witnesses off processSpine_nextFresh_le; colour-blind, positivity-FREE
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidDropLastCup
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidDropLastCupAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
