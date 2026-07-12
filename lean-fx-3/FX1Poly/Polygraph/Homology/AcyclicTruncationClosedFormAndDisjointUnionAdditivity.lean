@@ -299,6 +299,17 @@ proofs:
   (iii) **the topological-sort longest-path bound**: an acyclic graph's longest walk is `≤ vertexCount`,
       so chains die above it.
 
+★ **FLIP (r14, literal delivery).**  All three ingredients are now supplied and ASSEMBLED: (i)
+`listOverCarrierRepeats` (r11), (ii)+(iii) `closedEdgeWalkImpliesCheckerFalse` (r13, the loose single-fuel
+bound subsuming saturation), and the closed form `acyclicCensusZeroAboveAlphabetLength` (r14,
+`AcyclicSystemTruncationCertificate`).  The delivered statement is the FINDING-A-healed n-ary form
+(`isAcyclicUfnarovskiGraph edges alphabet.length = true ==> ∀ degree, alphabet.length ≤ degree ==>
+multiObstructionChainRankOracleOver alphabet edges degree = 0`), at the LOOSE bound `alphabet.length` — the
+literal binary-`vertexCount` `multiObstructionChainRankOracle` phrasing above is SUPERSEDED by the n-ary
+oracle (r12's FINDING A), not itself re-proved.  `acyclicSystemExactAboveAlphabetLength` lifts it to
+eventual exactness (monomial/zero-boundary model); the general-CONVERGENT tower
+(`generalTelescopeHomologyIsNamedNode`) stays OPEN.  `Bool := true` unchanged (the honest-record convention).
+
 Read the meaning from THIS docstring.  `= true`. -/
 def generalGraphLongestPathBoundIsNamedNode : Bool := true
 
