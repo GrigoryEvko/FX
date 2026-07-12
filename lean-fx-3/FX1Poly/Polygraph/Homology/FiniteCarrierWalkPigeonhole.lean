@@ -443,12 +443,14 @@ theorem pigeonholeHoldsOverNonBinaryCarrier :
 
 /-! ## Ledger — the r11 delivery and the standing residuals -/
 
-/-- ★ **The general-graph acyclicity-soundness node still stands, with ingredient (i) DELIVERED.**  This
+/-- ★ **The general-graph acyclicity-soundness node — ingredient (i) DELIVERED here; (0) in r12,
+(ii)/(iii) in r13, the assembly (c)+(d) in r14; only the general-convergent tower still stands.**  This
 module ships `listOverCarrierRepeats` (the classical finite-carrier walk pigeonhole, alphabet-agnostic,
 zero-axiom), which is r10's named ingredient (i) of `generalGraphLongestPathBoundIsNamedNode`.  The
 general statement `isAcyclicUfnarovskiGraph edges vertexCount = true ==> ∀ degree, vertexCount ≤ degree
-==> multiObstructionChainRankOracle edges degree = 0` still needs the following (residual (0) now
-DELIVERED in r12; (ii)/(iii)/assembly still open), recorded honestly:
+==> multiObstructionChainRankOracle edges degree = 0` is now DELIVERED in its FINDING-A-healed n-ary form
+(residual (0) DELIVERED in r12; (ii)/(iii) DELIVERED in r13; the assembly (c)+(d) DELIVERED in r14 —
+n-ary oracle, monomial model, loose bound), recorded honestly per ingredient:
 
   (0) **the n-ary alphabet enumerator** — DELIVERED (r12,
       `FX1Poly.Polygraph.Homology.NaryAlphabetObstructionChainEnumerator`).  The shipped
@@ -461,12 +463,18 @@ DELIVERED in r12; (ii)/(iii)/assembly still open), recorded honestly:
       longest path, the 3-cycle constant).  The general node has FOUR ingredients, not the three r10
       recorded — this one now supplied.
   (ii) **checker saturation** — FINDING B: `isAcyclicUfnarovskiGraph edges vertexCount = true` is sound
-      only at saturating fuel (a length-`L` cycle is caught only at `fuel ≥ L - 1`); proving `fuel =
-      vertexCount` captures every cycle is a separate hard lemma the pigeonhole does not touch.
+      only at saturating fuel (a length-`L` cycle is caught only at `fuel ≥ L - 1`).  DELIVERED (r13,
+      `AcyclicSoundnessLoopExtractionAndSaturation`): SUBSUMED by the loose single fuel `alphabet.length`
+      via the pigeonhole-contrapositive length bound `loopIsShort`, not a fixpoint lemma.
   (iii) **the topological-sort longest-path bound** — a valid walk in an acyclic graph has no repeated
       vertex (the semantic converse the pigeonhole's `hasRepeatedVertex` contradicts), so chains die above
-      `vertexCount`.
-  plus the final assembly wiring (0)+(i)+(ii)+(iii) into the census-zero closed form.
+      `vertexCount`.  DELIVERED (r13): `closedEdgeWalkImpliesCheckerFalse` drives the checker to `false`
+      from any edge-walk with a repeat, so a longer-than-carrier walk cannot be acyclic (loose bound).
+  plus the final assembly wiring (0)+(i)+(ii)+(iii) into the census-zero closed form — DELIVERED (r14,
+      `AcyclicSystemTruncationCertificate`): `acyclicCensusZeroAboveAlphabetLength` (c) +
+      `acyclicSystemExactAboveAlphabetLength` (d), in the n-ary oracle `multiObstructionChainRankOracleOver`
+      at the loose bound `alphabet.length`, monomial (zero-boundary) model.  The general-CONVERGENT tower
+      (`generalTelescopeHomologyIsNamedNode`, non-vanishing Anick differential) stays OPEN.
 
 Read the meaning from THIS docstring.  `= true`. -/
 def generalGraphSoundnessResidualsAfterPigeonhole : Bool := true
