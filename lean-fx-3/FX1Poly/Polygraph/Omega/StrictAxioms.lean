@@ -85,6 +85,29 @@ inductive StrictAxiomRel (computad : OmegaComputad) :
           (CellExpr.whiskerLeft (boundaryTarget cellAlpha) cellBeta))
         (CellExpr.vcomp (CellExpr.whiskerLeft (boundarySource cellAlpha) cellBeta)
           (CellExpr.whiskerRight cellAlpha (boundaryTarget cellBeta)))
+  /-- The **whisker-1-cell associator (left)** `(P . Q) <| X ~ P <| (Q <| X)` — the sesquicategory
+  whisker-action associativity `(xy).a = x.(y.a)`.  NON-boundary-parallel (its two `boundarySource`s differ by
+  `vcompAssoc`, `WhiskerOneCellCoherenceWall`), so it discharges NOT by `rfl` but by `addCoordinates_assoc` at
+  chain granularity (WP-PROP r19 substrate round). -/
+  | whiskerAssocLeft {dim : Nat} (whiskP whiskQ : CellExpr computad (dim + 1))
+      (inner : CellExpr computad (dim + 2)) :
+      StrictAxiomRel computad
+        (CellExpr.whiskerLeft (CellExpr.vcomp whiskP whiskQ) inner)
+        (CellExpr.whiskerLeft whiskP (CellExpr.whiskerLeft whiskQ inner))
+  /-- The **whisker-1-cell associator (right dual)** `X |> (P . Q) ~ (X |> P) |> Q`. -/
+  | whiskerAssocRight {dim : Nat} (inner : CellExpr computad (dim + 2))
+      (whiskP whiskQ : CellExpr computad (dim + 1)) :
+      StrictAxiomRel computad
+        (CellExpr.whiskerRight inner (CellExpr.vcomp whiskP whiskQ))
+        (CellExpr.whiskerRight (CellExpr.whiskerRight inner whiskP) whiskQ)
+  /-- The **whisker left/right commute** `(P <| X) |> Q ~ P <| (X |> Q)` — the sesquicategory whisker-action
+  compatibility `x.(a.y) = (x.a).y`.  Like the associators, non-boundary-parallel but chain-sound via
+  `addCoordinates_assoc`. -/
+  | whiskerLeftRightCommute {dim : Nat} (whiskP : CellExpr computad (dim + 1))
+      (inner : CellExpr computad (dim + 2)) (whiskQ : CellExpr computad (dim + 1)) :
+      StrictAxiomRel computad
+        (CellExpr.whiskerRight (CellExpr.whiskerLeft whiskP inner) whiskQ)
+        (CellExpr.whiskerLeft whiskP (CellExpr.whiskerRight inner whiskQ))
 
 /-! ## The free strict congruence and the presentation union -/
 

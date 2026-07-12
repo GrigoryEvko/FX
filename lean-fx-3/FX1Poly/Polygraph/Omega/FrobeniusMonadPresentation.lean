@@ -1114,6 +1114,9 @@ def frobMonadOmegaFourCountAbsorbs :
         | whiskerLeftFunctorial w b c => rfl
         | whiskerRightFunctorial a b w => rfl
         | interchange a b => exact fourAdd_comm _ _
+        | whiskerAssocLeft _ _ _ => rfl
+        | whiskerAssocRight _ _ _ => rfl
+        | whiskerLeftRightCommute _ _ _ => rfl
     | inr frob =>
         cases frob with
         | monadUnitUnit => rfl

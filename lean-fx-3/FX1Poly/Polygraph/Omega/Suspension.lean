@@ -215,6 +215,13 @@ theorem suspendStrictRow {computad : OmegaComputad} {dim : Nat}
       rw [suspendCell_boundarySource, suspendCell_boundaryTarget,
         suspendCell_boundarySource, suspendCell_boundaryTarget]
       exact StrictAxiomRel.interchange (suspendCell cellAlpha) (suspendCell cellBeta)
+  | whiskerAssocLeft whiskP whiskQ inner =>
+      exact StrictAxiomRel.whiskerAssocLeft (suspendCell whiskP) (suspendCell whiskQ) (suspendCell inner)
+  | whiskerAssocRight inner whiskP whiskQ =>
+      exact StrictAxiomRel.whiskerAssocRight (suspendCell inner) (suspendCell whiskP) (suspendCell whiskQ)
+  | whiskerLeftRightCommute whiskP inner whiskQ =>
+      exact StrictAxiomRel.whiskerLeftRightCommute (suspendCell whiskP) (suspendCell inner)
+        (suspendCell whiskQ)
 
 /-- ★ **PRESERVATION — the free strict congruence is FAITHFULLY embedded by suspension.**  If `a` and `b` are
 free-strict convertible, their suspensions are convertible one dimension up: the 8-arm `SaturatedConvOver`

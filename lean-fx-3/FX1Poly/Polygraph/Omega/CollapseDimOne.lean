@@ -243,6 +243,9 @@ theorem dimOneGenListInvariant_isSaturatedCongruence (computad : OmegaComputad) 
     | whiskerLeftFunctorial _ _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
     | whiskerRightFunctorial _ _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
     | interchange _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+    | whiskerAssocLeft _ _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+    | whiskerAssocRight _ _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
+    | whiskerLeftRightCommute _ _ _ => exact dimOneGenListInvariant_trivial_succSucc _ _
   vcompCongrLeft := by
     intro dim _ _ cellBeta hyp
     cases dim with

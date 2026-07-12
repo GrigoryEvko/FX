@@ -208,6 +208,17 @@ theorem opStrictAxiomStable {computad : OmegaComputad} {dim : Nat}
         opCellExpr_boundarySource cellAlpha, opCellExpr_boundaryTarget cellBeta]
       exact SaturatedConvOverWithId.ofRelation
         (StrictAxiomRel.interchange (opCellExpr cellBeta) (opCellExpr cellAlpha))
+  | whiskerAssocLeft whiskP whiskQ inner =>
+      exact SaturatedConvOverWithId.ofRelation
+        (StrictAxiomRel.whiskerAssocRight (opCellExpr inner) (opCellExpr whiskQ) (opCellExpr whiskP))
+  | whiskerAssocRight inner whiskP whiskQ =>
+      exact SaturatedConvOverWithId.ofRelation
+        (StrictAxiomRel.whiskerAssocLeft (opCellExpr whiskQ) (opCellExpr whiskP) (opCellExpr inner))
+  | whiskerLeftRightCommute whiskP inner whiskQ =>
+      exact SaturatedConvOverWithId.symm
+        (SaturatedConvOverWithId.ofRelation
+          (StrictAxiomRel.whiskerLeftRightCommute (opCellExpr whiskQ) (opCellExpr inner)
+            (opCellExpr whiskP)))
 
 /-! ## The op'd relation and the generic convertibility transport -/
 

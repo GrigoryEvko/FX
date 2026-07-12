@@ -75,6 +75,9 @@ def linearizeAbsorbs {computad : OmegaComputad} (valuation : ComputadValuation c
         exact congrArg SteinerCell.mk
           (addCoordinates_comm (linearize valuation cellAlpha).coordinates
             (linearize valuation cellBeta).coordinates)
+    | whiskerAssocLeft _ _ _ => rfl
+    | whiskerAssocRight _ _ _ => rfl
+    | whiskerLeftRightCommute _ _ _ => rfl
   vcompCongrLeft := by
     intro _dim _cellAlpha _cellAlpha' _cellBeta convFactor
     rw [linearize_vcomp, linearize_vcomp, convFactor]

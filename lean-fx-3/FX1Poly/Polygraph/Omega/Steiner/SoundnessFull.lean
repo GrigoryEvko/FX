@@ -11,16 +11,16 @@ than the single-vector one, this promotes the whisker-fix (B3) from a data fact 
 NON-CONVERTIBILITY refutation: `not_conv_of_linearizeFull_ne` refutes the exact whisker-conflated pair
 that `not_conv_of_linearize_ne` could not.
 
-## The soundness fold is CLEAN (the poles ride rfl, the top rides the shipped fold)
+## The soundness fold (the poles ride rfl on the parallel rows, addCoordinates_assoc on the whisker coherences)
 
-Every one of the eight `StrictAxiomRel` rows discharges with its POLES definitionally equal
-(`polesOf_ofRelation_eq` — `cases row <;> rfl`, because each row is boundary-parallel at chain
-granularity) and its TOP row exactly the shipped single-vector proof (`linearizeAbsorbs.ofRelation`,
-`Soundness.lean`).  The genuine NEW content — verifying that the whisker-unit and interchange rows agree
-on their BOUNDARY rows, not just the degenerate top — is discharged by the total boundary computation
-(all boundaries coincide definitionally), so `cases row <;> rfl` closes the poles uniformly.  The four
-one-hole congruences are the B2 congruence lemmas (`linearizeFull_vcompCongrLeft` etc.); `refl` / `symm`
-/ `trans` are `rfl` / `Eq.symm` / `Eq.trans`.
+The eight boundary-parallel `StrictAxiomRel` rows discharge their POLES definitionally
+(`polesOf_ofRelation_eq`, `rfl`) and their TOP row by the shipped single-vector proof
+(`linearizeAbsorbs.ofRelation`, `Soundness.lean`).  The three WP-PROP-r19 whisker-1-cell coherences
+(`whiskerAssocLeft` / `whiskerAssocRight` / `whiskerLeftRightCommute`) are non-boundary-parallel, so their
+poles do NOT close by `rfl`: the top pole reassociates by `addCoordinates_assoc` (source + target) while the
+boundary spine below is definitionally shared — this is the one place `polesOf_ofRelation_eq` is not uniform.
+The four one-hole congruences are the B2 congruence lemmas (`linearizeFull_vcompCongrLeft` etc.); `refl` /
+`symm` / `trans` are `rfl` / `Eq.symm` / `Eq.trans`.
 
 ## The id-dissolution assessment (recon JOB 5, executed)
 
@@ -38,16 +38,82 @@ open FX1Poly.Polygraph.Steiner
 
 /-! ## The per-row poles agreement (all eight rows are boundary-parallel) -/
 
-/-- ★ **Every strict-axiom row is boundary-parallel at chain granularity.**  For each of the eight rows
-the two sides have definitionally-equal boundary poles (`cases row <;> rfl`): the associativity/unit rows
-keep the same `boundarySource`/`boundaryTarget`, and the whisker-unit / interchange rows agree on their
-boundary rows by the total boundary computation.  This is the genuine chain-level strengthening the top
-vector did not need. -/
+/-- ★ **Every strict-axiom row absorbs into `polesOf` at chain granularity.**  The eight boundary-parallel
+rows (assoc, the two units, the two whisker-units, the two whisker-functorialities, the Godement interchange)
+have definitionally-equal boundary poles, so they close by `rfl`.  The three WP-PROP-r19 whisker-1-cell
+coherences (`whiskerAssocLeft` / `whiskerAssocRight` / `whiskerLeftRightCommute`) are NOT boundary-parallel —
+their `boundarySource`/`boundaryTarget` differ by exactly `vcompAssoc` — yet their poles STILL agree at chain
+granularity: the top pole reassociates by `addCoordinates_assoc` (twice, source + target) while the boundary
+SPINE below is definitionally shared.  This is the substrate-round distinction the r18 wall was too coarse to
+see: "non-boundary-parallel" is NOT "chain-unsound".  (The identity-whisker unitor, by contrast, IS
+chain-unsound — its spine visits the free whiskering 1-cell — and stays OUT of `StrictAxiomRel`.) -/
 theorem polesOf_ofRelation_eq {computad : OmegaComputad} (valuation : ComputadValuation computad)
     {dim : Nat} {cellAlpha cellBeta : CellExpr computad dim}
     (row : StrictAxiomRel computad cellAlpha cellBeta) :
     polesOf valuation cellAlpha = polesOf valuation cellBeta := by
-  cases row <;> rfl
+  cases row with
+  | vcompAssoc _ _ _ => rfl
+  | vcompUnitLeft _ => rfl
+  | vcompUnitRight _ => rfl
+  | whiskerLeftUnit _ _ => rfl
+  | whiskerRightUnit _ _ => rfl
+  | whiskerLeftFunctorial _ _ _ => rfl
+  | whiskerRightFunctorial _ _ _ => rfl
+  | interchange _ _ => rfl
+  | whiskerAssocLeft whiskP whiskQ inner =>
+      show (addCoordinates (addCoordinates (linearize valuation whiskP).coordinates
+              (linearize valuation whiskQ).coordinates)
+              (linearize valuation (boundarySource inner)).coordinates,
+            addCoordinates (addCoordinates (linearize valuation whiskP).coordinates
+              (linearize valuation whiskQ).coordinates)
+              (linearize valuation (boundaryTarget inner)).coordinates)
+            :: polesOf valuation (CellExpr.vcomp (CellExpr.vcomp whiskP whiskQ) (boundarySource inner))
+          = (addCoordinates (linearize valuation whiskP).coordinates
+              (addCoordinates (linearize valuation whiskQ).coordinates
+                (linearize valuation (boundarySource inner)).coordinates),
+             addCoordinates (linearize valuation whiskP).coordinates
+              (addCoordinates (linearize valuation whiskQ).coordinates
+                (linearize valuation (boundaryTarget inner)).coordinates))
+            :: polesOf valuation (CellExpr.vcomp whiskP (CellExpr.vcomp whiskQ (boundarySource inner)))
+      rw [addCoordinates_assoc (linearize valuation whiskP).coordinates
+            (linearize valuation whiskQ).coordinates (linearize valuation (boundarySource inner)).coordinates,
+          addCoordinates_assoc (linearize valuation whiskP).coordinates
+            (linearize valuation whiskQ).coordinates (linearize valuation (boundaryTarget inner)).coordinates]
+      rfl
+  | whiskerAssocRight inner whiskP whiskQ =>
+      show (addCoordinates (linearize valuation (boundarySource inner)).coordinates
+              (addCoordinates (linearize valuation whiskP).coordinates (linearize valuation whiskQ).coordinates),
+            addCoordinates (linearize valuation (boundaryTarget inner)).coordinates
+              (addCoordinates (linearize valuation whiskP).coordinates (linearize valuation whiskQ).coordinates))
+            :: polesOf valuation (CellExpr.vcomp (boundarySource inner) (CellExpr.vcomp whiskP whiskQ))
+          = (addCoordinates (addCoordinates (linearize valuation (boundarySource inner)).coordinates
+                (linearize valuation whiskP).coordinates) (linearize valuation whiskQ).coordinates,
+             addCoordinates (addCoordinates (linearize valuation (boundaryTarget inner)).coordinates
+                (linearize valuation whiskP).coordinates) (linearize valuation whiskQ).coordinates)
+            :: polesOf valuation (CellExpr.vcomp (CellExpr.vcomp (boundarySource inner) whiskP) whiskQ)
+      rw [addCoordinates_assoc (linearize valuation (boundarySource inner)).coordinates
+            (linearize valuation whiskP).coordinates (linearize valuation whiskQ).coordinates,
+          addCoordinates_assoc (linearize valuation (boundaryTarget inner)).coordinates
+            (linearize valuation whiskP).coordinates (linearize valuation whiskQ).coordinates]
+      rfl
+  | whiskerLeftRightCommute whiskP inner whiskQ =>
+      show (addCoordinates (addCoordinates (linearize valuation whiskP).coordinates
+                (linearize valuation (boundarySource inner)).coordinates) (linearize valuation whiskQ).coordinates,
+            addCoordinates (addCoordinates (linearize valuation whiskP).coordinates
+                (linearize valuation (boundaryTarget inner)).coordinates) (linearize valuation whiskQ).coordinates)
+            :: polesOf valuation (CellExpr.vcomp (CellExpr.vcomp whiskP (boundarySource inner)) whiskQ)
+          = (addCoordinates (linearize valuation whiskP).coordinates
+              (addCoordinates (linearize valuation (boundarySource inner)).coordinates
+                (linearize valuation whiskQ).coordinates),
+             addCoordinates (linearize valuation whiskP).coordinates
+              (addCoordinates (linearize valuation (boundaryTarget inner)).coordinates
+                (linearize valuation whiskQ).coordinates))
+            :: polesOf valuation (CellExpr.vcomp whiskP (CellExpr.vcomp (boundarySource inner) whiskQ))
+      rw [addCoordinates_assoc (linearize valuation whiskP).coordinates
+            (linearize valuation (boundarySource inner)).coordinates (linearize valuation whiskQ).coordinates,
+          addCoordinates_assoc (linearize valuation whiskP).coordinates
+            (linearize valuation (boundaryTarget inner)).coordinates (linearize valuation whiskQ).coordinates]
+      rfl
 
 /-- The full-chain table absorbs a strict-axiom row: poles by `polesOf_ofRelation_eq`, top by the shipped
 single-vector fold `linearizeAbsorbs.ofRelation`. -/
