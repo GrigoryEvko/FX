@@ -442,22 +442,26 @@ def fxBunchedBimonoid_permMatrixInjectiveReadOffShipped : Bool := true
     # =========================================================================================
 -/
 
-/-- ★ **THE GENERIC EXTRACTOR STAYS WALLED (r12) — on the matrix-algebra kit, precisely named, no flip.**  `=
-false` records the exact remaining node.  The GENERIC extractor
-`evalCell (permWord w width) = permMatrixOf width (permOfWord w width)` (currently pinned at widths 3, 4, 5) is
-gated on exactly three lemmas at generic width, all clean of the CONV layer: (a) `sigmaAt`-as-transposition —
-`evalCell (sigmaAt width k) = permMatrixOf width (applyAdjacentSwap (List.range width) k)` (the block-diagonal
-`directSum` of the swap generator equals the transposition matrix); (b) the matMul column-swap law —
-`matMul (permMatrixOf width p) (permMatrixOf width (applyAdjacentSwap (List.range width) k))
-= permMatrixOf width (p.map (swapValue k))` (a finite-sum-over-`List.range` "indicator picks one term" argument,
-the honest `Mat(N)` matrix-algebra kit the r2 `fxBunchedBimonoid_matrixStrictLawExtensionReached = false` wall
-already names); and (c) the pure `List Nat` relabel `permOfWord (k :: rest) width = (permOfWord rest width).map
-(swapValue k)` (from `bunchedBimonoidFoldlApplyAdjacentSwapMapCommute` (B2) plus the range-relabel
-`(List.range width).map (swapValue k) = applyAdjacentSwap (List.range width) k` for `k + 1 < width`).  With (a),
-(b), (c) the extractor induction closes; combined with the B2 injective read-off it gives the GENERIC
-`evalCell (permWord w1) = evalCell (permWord w2) -> permOfWord w1 = permOfWord w2` on valid words.  NOT shipped
-here — the concrete pins stand in for it this round. -/
-def fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit : Bool := false
+/-- ★★★ **THE GENERIC EXTRACTOR IS DELIVERED (r13) — the wall's exact goal is literally shipped, FLIPPED to
+`= true`.**  `= true` records that the GENERIC extractor
+`evalCell (permWord positions width) = permMatrixOf width (permOfWord positions width)` (formerly pinned only at
+widths 3, 4, 5) now holds at generic width for every valid word — `bunchedBimonoidPermWordExtractor` in the r13
+`WalkingBunchedBimonoidPermMatrixExtractorGates` sibling.  The three gates the wall named are all machine-checked,
+zero-axiom: (a) `sigmaAt`-as-transposition `evalCell (sigmaAt width k) = permMatrixOf width (applyAdjacentSwap
+(List.range width) k)` for `k + 2 <= width` (`bunchedBimonoidSigmaAtIsTransposition` — the block-form 4-band entry
+match over the `directSum` quadrant reads + RELABEL-GET); (b) the matMul column-swap law
+`matMul (permMatrixOf width p) (permMatrixOf width (applyAdjacentSwap (List.range width) k)) = permMatrixOf width
+(p.map (swapValue k))` (`bunchedBimonoidMatMulColumnSwapLaw` — `matMulEntryRead` + the left delta-collapse, the
+finite-sum "indicator picks one term"); and (c) the pure `List Nat` relabel `permOfWord (k :: rest) width =
+(permOfWord rest width).map (swapValue k)` (`bunchedBimonoidPermOfWordConsRelabel`, r12 Kit).  With (a), (b), (c)
+the extractor induction closes; combined with the B2 injective read-off (`bunchedBimonoidPermMatrixInjective`) it
+gives the GENERIC `evalCell (permWord w1) = evalCell (permWord w2) -> permOfWord w1 = permOfWord w2` on valid
+words — the perm-middle determinism the star's `retract = retract` step needs, now at generic width.  The star
+markers (`fxBunchedBimonoid_correctedWellTypedStarStillOpen*`,
+`fxBunchedBimonoid_collisionGeneralStepStillGatedOnBracketMatch`,
+`fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid`) keep their names and `= false` values byte-intact — this
+flip is the extractor node ONLY, not the CONV-mirror braid fold. -/
+def fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit : Bool := true
 
 /-- ★★★ **ESTABLISHED — the WP-PROP r11 permutation-matrix read-off ledger (the honest scoreboard).**  `= true`
 records the complete r11 delivery.  B1: the pure `List Nat` symmetric-group engine + `permMatrixOf` + the

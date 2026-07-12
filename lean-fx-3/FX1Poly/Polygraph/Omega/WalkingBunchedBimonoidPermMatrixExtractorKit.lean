@@ -28,9 +28,9 @@ This file ships the SHARED KEYSTONE that (a),(b),(c) all rest on, plus (a) and (
   * the infra the extractor induction needs: `bunchedBimonoidMatEqOfEntries`, `bunchedBimonoidAWordPowWidth`,
     `bunchedBimonoidPermOfWordLength`, `bunchedBimonoidPositionsValid` (the boundary-excluding Bool predicate).
 
-The GENERIC extractor (K1) + the matMul column-swap law (gate (b), K2) are r13; the wall
-`fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit` stays `= false` byte-intact, the star does NOT
-flip.
+The GENERIC extractor (K1) + the matMul column-swap law (gate (b), K2) are DELIVERED in r13 (the
+`WalkingBunchedBimonoidPermMatrixExtractorGates` sibling), where the wall
+`fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit` is FLIPPED `= true`; the star does NOT flip.
 
 Raw Lean 4 + Init; STRUCTURAL only; ASCII-only.  Per-declaration `#assert_no_axioms` AND independent
 `#print axioms` gated in the audit twin.  Mirror of the Brauer canonicity lane; never imported from it. -/
@@ -365,10 +365,12 @@ records: the `aWordPow` width (`bunchedBimonoidAWordPowWidth`), matrix extension
 dimension identity `k + (2 + (width - k - 2)) = width` for `k + 2 <= width` (`bunchedBimonoidSigmaAtDimArith`), and
 GATE (a)'s CLOSED BLOCK-FORM `evalCell (sigmaAt width k) = directSum (identityMat k) (directSum sigma2x2
 (identityMat (width - k - 2)))` at ALL widths (`bunchedBimonoidSigmaAtBlockForm`, generalizing the r11 concrete
-pins).  Gate (a) is thereby reduced to the pure `directSum`-quadrant entry analysis (r13); gate (b) the matMul
-column-swap law is r13.  The wall `fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit` stays
-`= false` byte-intact, the star does NOT flip.  Zero-axiom (per-decl `#assert_no_axioms` + independent
-`#print axioms` in the twin). -/
+pins).  Gate (a) is thereby reduced to the pure `directSum`-quadrant entry analysis, DELIVERED in r13
+(`bunchedBimonoidSigmaAtIsTransposition`); gate (b) the matMul column-swap law is DELIVERED in r13
+(`bunchedBimonoidMatMulColumnSwapLaw`).  With them the wall
+`fxBunchedBimonoid_genericPermMatrixExtractorGatedOnMatrixAlgebraKit` is FLIPPED `= true` (the
+`WalkingBunchedBimonoidPermMatrixExtractorGates` sibling); the star does NOT flip.  Zero-axiom (per-decl
+`#assert_no_axioms` + independent `#print axioms` in the twin). -/
 def fxBunchedBimonoid_permMatrixKitSigmaAtBlockFormShipped : Bool := true
 
 end FX1Poly.Polygraph.Omega
