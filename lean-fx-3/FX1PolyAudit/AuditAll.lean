@@ -914,6 +914,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupTopTopFol
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupTopTopSeed
 -- FC-3 r34 — Piece-II cup assembly closed: the UNCONDITIONAL cup-side DiagramType.ext (case-3 gate discharged)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupReconstructUngated
+-- FC-3 r35 — M3: the string mid-width-`0` cup-block reconstruction (the shift-simulation port; the mid-zero producer's floor-`0` residual)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineValleyMidZeroCupReconstruct
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
