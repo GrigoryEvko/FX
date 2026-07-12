@@ -966,6 +966,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringOneSubProducerBeam
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidCupSortResidual
 -- FC-3 r41 — the positive-mid whole-valley producer: the append-split assembled from a SINGLE whole-boundary matchingOf equality (seam absorbed on-the-nose into capRestrict/cupRestrict), gated on the ONE cup-sort brick + the genuine distinct-double-cup fire
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidValleyProducer
+-- FC-3 r42 — the positive-mid valley CELL reducer (L3): inhabits StringCellValleyTraceEquivPositive gated on the ONE cup-sort brick (shared midWord via the BRICK-FREE cap-trace route) + the brick→master implications collapsing the whole #2020 residual to the single brick
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidValleyCellReducer
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
