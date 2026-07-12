@@ -934,6 +934,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyProdu
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSharedMidWord
 -- FC-3 r38 — the mid-width-`0` valley determinacy CELL reducer (inhabits StringMidZeroValleyTraceEquiv unconditionally; the standing residual drops from three colour-keyed sub-producers to two)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyCellReducer
+-- FC-3 r38 — the beam re-wired from three colour-keyed sub-producers to two (mid-zero producer discharged; the #2020 decision now gated on two)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringTwoSubProducerBeam
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
