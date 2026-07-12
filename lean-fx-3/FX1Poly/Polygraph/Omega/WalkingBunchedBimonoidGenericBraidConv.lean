@@ -370,6 +370,35 @@ theorem bunchedBimonoidGenericBraidThreeZeroMatrixShared :
         (CellExpr.vcomp (CellExpr.vcomp (bunchedBimonoidSigmaAt 3 1) (bunchedBimonoidSigmaAt 3 0))
           (bunchedBimonoidSigmaAt 3 1)) := rfl
 
+/-! ## A6 non-vacuity — the generic braid FIRED at two fresh concrete widths (4 and 5), beyond the width-3 core -/
+
+/-- ★★ **NON-VACUITY (width 4, position 1).**  The generic braid fired at a concrete FRESH width beyond the
+width-3 core: `s_1 s_2 s_1 ~ s_2 s_1 s_2` at width 4, position 1 (`inRange : 1 + 2 < 4` by `decide`) — a direct
+application of `bunchedBimonoidGenericBraidConv`, no matrix evaluation.  Demonstrates the generic theorem is not
+vacuous at a width the r20/r21 endpoint-matrix strategy could not reach by `rfl`. -/
+theorem bunchedBimonoidGenericBraidFourOneInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (CellExpr.vcomp
+        (CellExpr.vcomp (bunchedBimonoidSigmaAt 4 1) (bunchedBimonoidSigmaAt 4 2))
+        (bunchedBimonoidSigmaAt 4 1))
+      (CellExpr.vcomp
+        (CellExpr.vcomp (bunchedBimonoidSigmaAt 4 2) (bunchedBimonoidSigmaAt 4 1))
+        (bunchedBimonoidSigmaAt 4 2)) :=
+  bunchedBimonoidGenericBraidConv 4 1 (by decide)
+
+/-- ★★ **NON-VACUITY (width 5, position 1).**  A second fresh concrete width: `s_2 s_3 s_2 ~ s_3 s_2 s_3` at
+width 5, position 1 (`inRange : 1 + 2 < 5` by `decide`) — again a direct application of the generic braid, no
+matrix evaluation.  Two distinct fresh widths fired, the generic theorem subsuming every wider case. -/
+theorem bunchedBimonoidGenericBraidFiveOneInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (CellExpr.vcomp
+        (CellExpr.vcomp (bunchedBimonoidSigmaAt 5 1) (bunchedBimonoidSigmaAt 5 2))
+        (bunchedBimonoidSigmaAt 5 1))
+      (CellExpr.vcomp
+        (CellExpr.vcomp (bunchedBimonoidSigmaAt 5 2) (bunchedBimonoidSigmaAt 5 1))
+        (bunchedBimonoidSigmaAt 5 2)) :=
+  bunchedBimonoidGenericBraidConv 5 1 (by decide)
+
 /-! ## The A6 delivery marker (a FRESH marker; the residual + star owners stay byte-intact) -/
 
 /-- ★★★ **ESTABLISHED (A6) — the generic-width adjacent-braid CONV atom is DELIVERED.**  `= true` records

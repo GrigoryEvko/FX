@@ -39,6 +39,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBraidTripleReshapeLeftSide
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBraidTripleReshapeRightSide
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidConv
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidFourOneInstance
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidFiveOneInstance
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidThreeZeroMatrixShared
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_genericAdjacentBraidConvShipped
 
@@ -54,6 +56,8 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBraidTripleReshapeLeftSide
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidBraidTripleReshapeRightSide
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidConv
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidFourOneInstance
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidFiveOneInstance
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidGenericBraidThreeZeroMatrixShared
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_genericAdjacentBraidConvShipped
 
