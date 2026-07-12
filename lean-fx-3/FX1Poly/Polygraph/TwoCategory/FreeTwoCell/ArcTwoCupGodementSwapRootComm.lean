@@ -426,7 +426,7 @@ theorem twoCupGodement_rootComm (nf : Nat) (orig : List (Nat × Nat))
                   have ge4 : nf + 4 ≤ x := Nat.lt_of_le_of_ne ge3 (neOfBeqFalse hbNf3).symm
                   have ge5 : nf + 5 ≤ x := Nat.lt_of_le_of_ne ge4 (neOfBeqFalse hbNf4).symm
                   have ge6 : nf + 6 ≤ x := Nat.lt_of_le_of_ne ge5 (neOfBeqFalse hbNf5).symm
-                  have hσx : blockRotate nf 3 3 x = x := blockRotate_above nf 3 3 x ge6
+                  have hSigmaFixesX : blockRotate nf 3 3 x = x := blockRotate_above nf 3 3 x ge6
                   have hRx : unionFindRootOf orig x = x := rootOrigGe x hge
                   have hL1x : unionFindRootOf ((nf, nf + 1) :: orig) x = x := by
                     rw [rootL1 x, hRx, if_neg (natBeqNeTrue (fun h => (neOfBeqFalse hbNf) h.symm))]
@@ -437,7 +437,7 @@ theorem twoCupGodement_rootComm (nf : Nat) (orig : List (Nat × Nat))
                   have hLpx : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1)
                       :: (nf, nf + 1) :: orig) x = x := by
                     rw [rootL4 x, hL3x, if_neg (natBeqNeTrue (fun h => (neOfBeqFalse hbNf5) h.symm))]
-                  rw [hσx, hLpx, hσx]
+                  rw [hSigmaFixesX, hLpx, hSigmaFixesX]
 
 /-! ## C3 — the count fields ride on `rootComm`, and the full `ArcStepSimCount` bundle
 
@@ -480,7 +480,7 @@ theorem twoCupGodement_arcStepSimCount (state : ArcWireState) (lowPosition gap :
         :: (state.nextFresh + 2, state.nextFresh + 1) :: (state.nextFresh, state.nextFresh + 1) :: state.links :=
     (stepCupArc_stepCupArc_links_eq state lowPosition gap).symm.trans hlinksRedex
   have hRootLp := twoCupGodement_rootComm state.nextFresh state.links fresh.2.1 forest
-  have hσinj := blockRotate_inj state.nextFresh 3 3
+  have hSigmaInj := blockRotate_inj state.nextFresh 3 3
   have hEcup : (stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition)).cupEventNodes
       = (state.nextFresh + 5) :: (state.nextFresh + 2) :: state.cupEventNodes := rfl
   have hEcap : (stepCupArc (stepCupArc state lowPosition) (gap + 2 + lowPosition)).capEventNodes
@@ -514,7 +514,7 @@ theorem twoCupGodement_arcStepSimCount (state : ArcWireState) (lowPosition gap :
       loopsEq := (stepCupArc_stepCupArc_loops_eq state lowPosition gap).symm
       cupCorr := fun r => by
         rw [hlinksReduct, hlinksRedex, (stepCupArc_stepCupArc_cupEventNodes_eq state lowPosition gap).symm, hEcup]
-        have key := countEventsInRoot_rootComm (blockRotate state.nextFresh 3 3) hσinj
+        have key := countEventsInRoot_rootComm (blockRotate state.nextFresh 3 3) hSigmaInj
           ((state.nextFresh + 5, state.nextFresh + 4) :: (state.nextFresh + 3, state.nextFresh + 4)
             :: (state.nextFresh + 2, state.nextFresh + 1) :: (state.nextFresh, state.nextFresh + 1) :: state.links)
           _ r hRootLp ((state.nextFresh + 5) :: (state.nextFresh + 2) :: state.cupEventNodes)
@@ -524,7 +524,7 @@ theorem twoCupGodement_arcStepSimCount (state : ArcWireState) (lowPosition gap :
         exact key
       capCorr := fun r => by
         rw [hlinksReduct, hlinksRedex, (stepCupArc_stepCupArc_capEventNodes_eq state lowPosition gap).symm, hEcap]
-        have key := countEventsInRoot_rootComm (blockRotate state.nextFresh 3 3) hσinj
+        have key := countEventsInRoot_rootComm (blockRotate state.nextFresh 3 3) hSigmaInj
           ((state.nextFresh + 5, state.nextFresh + 4) :: (state.nextFresh + 3, state.nextFresh + 4)
             :: (state.nextFresh + 2, state.nextFresh + 1) :: (state.nextFresh, state.nextFresh + 1) :: state.links)
           _ r hRootLp state.capEventNodes
