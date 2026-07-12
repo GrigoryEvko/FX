@@ -2,9 +2,20 @@ import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidMatrixSemantics
 import FX1Poly.Polygraph.Omega.StrictAxioms
 
 /-! # Polygraph/Omega/WalkingBunchedBimonoidWhiskerOneCellCoherenceWall — the three whisker-vs-1-cell coherences:
-matrix-sound, non-boundary-parallel, WALLED out of `StrictAxiomRel` (WP-PROP r18, T2 adjudication)
+matrix-sound, non-boundary-parallel (WP-PROP r18 adjudication); TWO of the three now LANDED (WP-PROP r19)
 
-★ **THE r18 COHERENCE ADJUDICATION — machine-checked, honest, NON-silent.**  The r17 CONV-fold wall
+★★ **WP-PROP r19 SUPERSESSION.**  The r18 adjudication below walled ALL THREE coherences on the test
+"non-boundary-parallel".  The r19 substrate round corrected that test — "non-boundary-parallel" is NOT
+"chain-unsound".  The **associator** (both duals) and the **whisker left/right commute** ARE chain-sound and
+are now genuine `StrictAxiomRel` rows (`StrictAxioms.whiskerAssocLeft` / `whiskerAssocRight` /
+`whiskerLeftRightCommute`); the landing witnesses + the machine-checked identity-whisker-UNITOR STOP + the M4
+cost table live in `WalkingBunchedBimonoidWhiskerCoherenceLanded`.  The five `...MatrixSound` and the
+non-parallelism theorems below STAY VALID (matrix-soundness and the boundary-source disequalities are
+unchanged facts).  The marker `fxBunchedBimonoid_whiskerOneCellCoherencesWalledNotLanded` is now scoped to the
+SOLE residual, the identity-whisker unitor (still `= false` = "a walled whisker-coherence residual remains").
+
+★ **THE r18 COHERENCE ADJUDICATION (superseded for assoc+commute) — machine-checked, honest, NON-silent.**  The
+r17 CONV-fold wall
 (`fxBunchedBimonoid_runCommuteConvGatedOnWhiskerAssociatorAndUnitors`) named three whisker-vs-1-cell coherences as
 the residual gating the `recCombConv`-over-cells lift:
 
@@ -170,19 +181,18 @@ theorem bunchedBimonoidVcompAssocBoundaryParallel :
     # =========================================================================================
 -/
 
-/-- ★★★ **WALLED (r18 T2) — the three whisker-vs-1-cell coherences are matrix-sound and non-boundary-parallel, NOT
-landed in `StrictAxiomRel`.**  `= false` records that these three genuine free-strict-2-category identities (the
-Cat-enrichment / sesquicategory whisker-action axioms — literature-confirmed STRUCTURAL) are NOT added as
-`StrictAxiomRel` rows in this lane: they VIOLATE the substrate's cast-free (boundary-parallel) invariant
-(`bunchedBimonoidWhiskerOneCellAssocSourcesNotParallel` /
-`bunchedBimonoidWhiskerOneCellUnitorSourcesNotParallel`, machine-checked), so landing them would break
-`Steiner/SoundnessFull`'s `cases row <;> rfl` and need new non-`rfl` soundness-master arms across >=5 concurrent
-lanes — a coordinated `StrictAxioms.lean` substrate-owner change, NOT a WP-PROP-lane in-place row-addition under the
-six-lane `AuditAll` race.  `StrictAxioms.lean` stays BYTE-INTACT.  Machine-checked here: the five instances are
-matrix-sound by `rfl` (`...MatrixSound`), the associator + unitor are non-parallel, and the existing `vcompAssoc` is
-the boundary-parallel contrast.  The `recCombConv`-over-cells lift stays gated on the eventual coordinated substrate
-change.  The four star owners keep their name and `= false` value byte-intact (cross-file, not edited); NO fabricated
-star flip.  Zero-axiom (per-decl `#assert_no_axioms` in the twin). -/
+/-- ★★★ **WALLED (r19-scoped) — the identity-whisker UNITOR is the SOLE whisker-vs-1-cell residual not landed in
+`StrictAxiomRel`.**  `= false` records that a walled whisker-coherence residual remains.  As of WP-PROP r19 the
+associator (both duals) and the whisker left/right commute ARE `StrictAxiomRel` rows
+(`WalkingBunchedBimonoidWhiskerCoherenceLanded`); this marker now tracks ONLY the identity-whisker unitor
+`whiskerLeft (id c) X ~ X`, which stays OUT because it is chain-UNSOUND for a free `c`
+(`whiskerIdentityUnitor_not_conv`, machine-checked) — landing it as a free row would falsify the shipped ★★
+`Steiner/SoundnessFull.linearizeFullSoundness`.  Machine-checked here (all still valid): the five instances are
+matrix-sound by `rfl` (`...MatrixSound`), the associator + unitor are non-parallel
+(`...SourcesNotParallel` — true, but the r19 round showed non-parallel is NOT chain-unsound), and the existing
+`vcompAssoc` is the boundary-parallel contrast.  The `recCombConv`-over-cells lift stays gated on the pinned
+unitor.  The four star owners keep their name and `= false` value byte-intact (cross-file, not edited); NO
+fabricated star flip.  Zero-axiom (per-decl `#assert_no_axioms` in the twin). -/
 def fxBunchedBimonoid_whiskerOneCellCoherencesWalledNotLanded : Bool := false
 
 end FX1Poly.Polygraph.Omega
