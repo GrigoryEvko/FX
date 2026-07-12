@@ -189,4 +189,128 @@ theorem arcBelowBaseForestState_runNilCell_isWellFormed :
   wellFormedArcState_runArcCell arcBelowBaseForestState nilTipPath nilTipPath identityCellOnNilTip
     arcBelowBaseForestState_isWellFormed
 
+/-! ## The joint simulation, re-stated over the bundle (residual (1), genuine consumption) -/
+
+/-- ★ **The fold-level joint simulation over the bundle.**  The shipped `arcStepSimCount_processArcSpine`
+threads BOTH the open-wire `sigma`-image (`openMap`) AND the fresh counter (`nfEq`) — together with
+`rootComm` / `cupCorr` / `capCorr` / forests — across a whole spine, requiring the
+`(freshSource, freshTarget, nonDegenerateSource)` triple as separate arguments.  Here that triple is
+read off the two bundles ONCE: `wellFormedSource.isFresh` / `wellFormedTarget.isFresh` /
+`wellFormedSource.isNonDegenerate`.  Genuine consumption of the r19-era fold lever — no re-derivation.
+This IS residual (1): `openWires` and `nextFresh` transport jointly along `sigma`, now over the
+bundle. -/
+theorem arcStepSimCount_processArcSpine_ofWellFormed {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (isInjective : ∀ firstId secondId, sigma firstId = sigma secondId → firstId = secondId)
+    (sigmaFixesZero : sigma 0 = 0)
+    (atoms : List (SpineAtom signature sourceMode targetMode)) (stateSource stateTarget : ArcWireState)
+    (wellFormedSource : WellFormedArcState stateSource) (wellFormedTarget : WellFormedArcState stateTarget)
+    (fixesAbove : ∀ identifier, stateSource.nextFresh ≤ identifier → sigma identifier = identifier)
+    (simulation : ArcStepSimCount sigma stateSource stateTarget) :
+    ArcStepSimCount sigma (processArcSpine stateSource atoms) (processArcSpine stateTarget atoms) :=
+  arcStepSimCount_processArcSpine sigma isInjective sigmaFixesZero atoms stateSource stateTarget
+    wellFormedSource.isFresh wellFormedTarget.isFresh wellFormedSource.isNonDegenerate fixesAbove simulation
+
+/-- ★ **The joint simulation over the bundle, at whole-cell granularity** — the same triple read off the
+two bundles, feeding the shipped `arcStepSimCount_runArcCell`. -/
+theorem arcStepSimCount_runArcCell_ofWellFormed {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (isInjective : ∀ firstId secondId, sigma firstId = sigma secondId → firstId = secondId)
+    (sigmaFixesZero : sigma 0 = 0)
+    (stateSource stateTarget : ArcWireState)
+    (wellFormedSource : WellFormedArcState stateSource) (wellFormedTarget : WellFormedArcState stateTarget)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod)
+    (fixesAbove : ∀ identifier, stateSource.nextFresh ≤ identifier → sigma identifier = identifier)
+    (simulation : ArcStepSimCount sigma stateSource stateTarget) :
+    ArcStepSimCount sigma (runArcCell stateSource leftAcc rightAcc cell)
+      (runArcCell stateTarget leftAcc rightAcc cell) :=
+  arcStepSimCount_runArcCell sigma isInjective sigmaFixesZero stateSource stateTarget
+    wellFormedSource.isFresh wellFormedTarget.isFresh wellFormedSource.isNonDegenerate
+    leftAcc rightAcc cell fixesAbove simulation
+
+/-! ## The compound-sigma joint per-step lever (residuals (1) + (3) + (4) tied) -/
+
+/-- ★ **The cup-step joint lever at the r22 compound sigma.**  Instantiates the shipped whole-state
+`stepCupArc_renameState` at `sigma := compoundFreshBlockTransposition baseFresh widthA widthB`,
+discharging injectivity by r22's `compoundFreshBlockTransposition_injective` and `fixesAbove` by r22's
+`compoundFreshBlockTransposition_fixesAbove` — GATED on the width seam
+`baseFresh + widthA + widthB <= state.nextFresh` (residual (3)).  Because `renameState` renames
+`openWires`, `links`, and events together while holding `nextFresh`, this single equation transports
+the WHOLE state jointly (residual (1)) through one cup step. -/
+theorem stepCupArc_renameState_compoundTransposition (baseFresh widthA widthB : Nat)
+    (state : ArcWireState) (position : Nat)
+    (seam : baseFresh + widthA + widthB ≤ state.nextFresh) :
+    stepCupArc (renameState (compoundFreshBlockTransposition baseFresh widthA widthB) state) position
+      = renameState (compoundFreshBlockTransposition baseFresh widthA widthB) (stepCupArc state position) :=
+  stepCupArc_renameState (compoundFreshBlockTransposition baseFresh widthA widthB)
+    (fun firstId secondId imagesEqual =>
+      compoundFreshBlockTransposition_injective baseFresh widthA widthB firstId secondId imagesEqual)
+    state position
+    (fun identifier atLeastFresh =>
+      compoundFreshBlockTransposition_fixesAbove baseFresh widthA widthB identifier
+        (Nat.le_trans seam atLeastFresh))
+
+/-- ★ **The cap-step joint lever at the r22 compound sigma.**  Same as the cup lever, additionally
+discharging `sigmaFixesZero` (the cap's past-the-end wire-read default `0`) by r22's
+`compoundFreshBlockTransposition_fixesZero` — GATED on `0 < baseFresh` (residual (4)) — alongside the
+width seam (residual (3)).  Transports the whole state jointly (residual (1)) through one cap step. -/
+theorem stepCapArc_renameState_compoundTransposition (baseFresh widthA widthB : Nat)
+    (state : ArcWireState) (position : Nat)
+    (basePositive : 0 < baseFresh)
+    (seam : baseFresh + widthA + widthB ≤ state.nextFresh) :
+    stepCapArc (renameState (compoundFreshBlockTransposition baseFresh widthA widthB) state) position
+      = renameState (compoundFreshBlockTransposition baseFresh widthA widthB) (stepCapArc state position) :=
+  stepCapArc_renameState (compoundFreshBlockTransposition baseFresh widthA widthB)
+    (fun firstId secondId imagesEqual =>
+      compoundFreshBlockTransposition_injective baseFresh widthA widthB firstId secondId imagesEqual)
+    (compoundFreshBlockTransposition_fixesZero baseFresh widthA widthB basePositive)
+    state position
+    (fun identifier atLeastFresh =>
+      compoundFreshBlockTransposition_fixesAbove baseFresh widthA widthB identifier
+        (Nat.le_trans seam atLeastFresh))
+
+/-! ## Firing probes — the joint lever on concrete instances (incl. the seam negative control) -/
+
+/-- ★ **Positive joint-cup fire, seam satisfied.**  Base `2`, widths `(1,1)`, so the seam
+`2 + 1 + 1 = 4 ≤ 4 = nextFresh` holds (`Nat.le_refl`).  The compound-sigma cup lever fires: the two run
+orders coincide as WHOLE states through one cup step on `arcBelowBaseForestState`. -/
+theorem arcJointCupFire_seamSatisfied :
+    stepCupArc (renameState (compoundFreshBlockTransposition 2 1 1) arcBelowBaseForestState) 0
+      = renameState (compoundFreshBlockTransposition 2 1 1) (stepCupArc arcBelowBaseForestState 0) :=
+  stepCupArc_renameState_compoundTransposition 2 1 1 arcBelowBaseForestState 0 (Nat.le_refl _)
+
+/-- The transported cup-reduct's open wires compute to `[4,5,3,2]` — a machine-checked snapshot of the
+seam-satisfied joint fire (the committed-census value the fire realises). -/
+theorem arcJointCupFire_openWires :
+    (stepCupArc (renameState (compoundFreshBlockTransposition 2 1 1) arcBelowBaseForestState) 0).openWires
+      = [4, 5, 3, 2] := rfl
+
+/-- The transported cup-reduct's `nextFresh` computes to `7`. -/
+theorem arcJointCupFire_nextFresh :
+    (stepCupArc (renameState (compoundFreshBlockTransposition 2 1 1) arcBelowBaseForestState) 0).nextFresh
+      = 7 := rfl
+
+/-- The transported cup-reduct's links compute to `[(6,5),(4,5),(3,2)]`. -/
+theorem arcJointCupFire_links :
+    (stepCupArc (renameState (compoundFreshBlockTransposition 2 1 1) arcBelowBaseForestState) 0).links
+      = [(6, 5), (4, 5), (3, 2)] := rfl
+
+/-- A seam-VIOLATING fixture (the r23 probe shape): base `10`, widths `(2,3)`, but `nextFresh = 10 <
+15 = baseFresh + widthA + widthB`, so the `fixesAbove` premise FAILS. -/
+def arcSeamViolatingFixture : ArcWireState := ArcWireState.mk [0, 1] [(0, 1)] 10 0 [] []
+
+/-- ★ **The seam-boundary NEGATIVE control (lever necessity).**  On the seam-violating fixture the two
+run orders DIVERGE in their open wires: running-then-renaming renames the two fresh legs (`[13,14,0,1]`)
+while renaming-then-running leaves them fresh (`[10,11,0,1]`).  Machine-checked inequality — the width
+seam of `stepCupArc_renameState_compoundTransposition` is load-bearing, not decorative, and this is
+exactly why r23 could ship only the unconditional LINKS lever and not the joint lever. -/
+theorem arcSeamViolation_openWiresDiffer :
+    (stepCupArc (renameState (compoundFreshBlockTransposition 10 2 3) arcSeamViolatingFixture) 0).openWires
+      ≠ (renameState (compoundFreshBlockTransposition 10 2 3) (stepCupArc arcSeamViolatingFixture 0)).openWires := by
+  decide
+
 end FX1Poly.Polygraph

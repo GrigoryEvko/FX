@@ -28,4 +28,14 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.arcBelowBaseForestState_cupReduct_isWellFormed
 #print axioms FX1Poly.Polygraph.arcBelowBaseForestState_capReduct_isWellFormed
 #print axioms FX1Poly.Polygraph.arcBelowBaseForestState_runNilCell_isWellFormed
+#print axioms FX1Poly.Polygraph.arcStepSimCount_processArcSpine_ofWellFormed
+#print axioms FX1Poly.Polygraph.arcStepSimCount_runArcCell_ofWellFormed
+#print axioms FX1Poly.Polygraph.stepCupArc_renameState_compoundTransposition
+#print axioms FX1Poly.Polygraph.stepCapArc_renameState_compoundTransposition
+#print axioms FX1Poly.Polygraph.arcJointCupFire_seamSatisfied
+#print axioms FX1Poly.Polygraph.arcJointCupFire_openWires
+#print axioms FX1Poly.Polygraph.arcJointCupFire_nextFresh
+#print axioms FX1Poly.Polygraph.arcJointCupFire_links
+#print axioms FX1Poly.Polygraph.arcSeamViolatingFixture
+#print axioms FX1Poly.Polygraph.arcSeamViolation_openWiresDiffer
 end FX1PolyAudit
