@@ -35,7 +35,6 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithColumnCleanDescentInsuffi
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithAcrossRoundsContentInvariant
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithSubBlockContentInvariantProof
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithBlockDivisibilityKeystone
-import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithBlockFindRepairDriver
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
@@ -655,6 +654,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommuteRefutat
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshnessInvariant
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshGatedPartitionCommute
+-- MODE-COMMUTE r22 — the COMPOUND fresh-block transposition at SYMBOLIC cell widths: the r20 WALL-WIDTH lift from per-generator {1,3} to symbolic widthA/widthB. compoundFreshBlockTransposition (definitional over the width-generic arcFreshBlockTransposition, reconciled with the r17 blockRotate by blockRotate_eq_arcFreshBlockTransposition := rfl) + the four UF-automorphism obligations (fixesZero/fixesBelow/fixesAbove/leftInverse/injective) + the two renaming-commutation cruxes (unionFindRootOf_compoundTransposition, isSameComponent_compoundTransposition) + the consumer bridge renameLinks_compoundTransposition_ofBelow (the r23 disjointWhiskerSupport hook) + two fires ((2,3)/(3,2)/(1,4) shapes by rfl; the crux universally on [(0,1),(1,2),(3,4)]). r23 blockSwapCore stays OPEN; fxMode_hasArcGodementSamePartitionFreshProof stays false FOREVER (guards the refuted :472/:545 literal). zero-axiom
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcCompoundBlockTransposition
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcCompoundBlockTranspositionAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcForestFreshSoundnessBridge
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcCoreSwapCapFlipRefutation
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcRootFlipExtractionSurvival
@@ -1028,12 +1030,6 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringKParameterizationC
 -- FC-4 r1 OPENER O2 — the n-letter orientation label-pinning crux: the generic ascendingPair_ne_descendingPair (List Nat), the k=2 bridge recovering the FROZEN stringCupCod_ne_capDom on the nose (stringCupCod_ne_capDom_viaOrientation, identical signature), the k=3 fresh firing over the adjoint-quadruple grid (quadCupCod_ne_capDom_fired, fresh letter L4); flips the O1 census crux marker
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointStringOrientationCrux
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointStringOrientationCruxAxiomWitness
--- FC-4 r2 R1 — the k=3 adjoint-quadruple seed (L1..L4, two modes, six unit/counit generators); its six boundary words abstracted by quadIndexWord coincide on the nose with the census carrier at k=3 (quadCupCods_eq_carrierAtThree), the HONESTY-LAW bridge that this seed IS the k=3 instance of the family
-import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleSeed
-import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleSeedAxiomWitness
--- FC-4 r2 R2+R1/R3 — the cup-restricted COD atom-pin reroute (dom->cod STILL refuted at k=3 by the eta1/eta3 witness as a pin; rerouted to stringQuadTwoCell_domPack_uniqueOfCod_forCups + the cap DOM dual, wide-truth-probed at k=3 AND k=4) + the k=3 engine fire (matchingOfSpineList machine-fired on genuine quadruple spines, new marker fxString_hasKGenericConnectivityEngineFired)
-import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleAtomPinReroute
-import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleAtomPinRerouteAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
@@ -1367,6 +1363,8 @@ import FX1PolyAudit.Polygraph.Homology.SquierNoGoInterface
 import FX1PolyAudit.Polygraph.Homology.PeriodicTowerChainComplex
 import FX1PolyAudit.Polygraph.Homology.PeriodicTowerCohomologyCupProduct
 import FX1PolyAudit.Polygraph.Homology.PeriodicTowerCohomologyCupProductAxiomWitness
+import FX1PolyAudit.Polygraph.Homology.PeriodicTowerDiagonalChainMap
+import FX1PolyAudit.Polygraph.Homology.PeriodicTowerDiagonalChainMapAxiomWitness
 import FX1PolyAudit.Polygraph.Homology.FreeGroupReducedWord
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleCyclicThree
 import FX1PolyAudit.Polygraph.Homology.CrossedModuleIdentityInvariant
@@ -1557,8 +1555,6 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidDistantCommuteGenericA
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermWordDistantCommuteConvAudit
 -- WP-PROP r23 F1 - the Below twin of the first Cartier-Foata fold rung: swapCommutesRunBelowConv (a HIGH letter commutes past a descending run BELOW it, gate runTop+2<=letter), the CONV mirror of the r14 pure swapCommutesRunBelow, P3 with the gate flipped and the P2 head-pair atom .symm-ed; closes the Below-twin clause of the r22 census, F2/F3/F4 (combInsert/combNormalizeForm/recComb Conv) stay braid-walled at the CARRY case, F5 (Brauer combCanonicity clone) already shipped r18 T1; four star owners + StrictAxioms byte-intact, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRunBelowCommuteConvAudit
--- WP-PROP r24 THE BRAID DECISION branch (a) - the generic-width adjacent-braid CONV atom sigmaAt w i ; sigmaAt w (i+1) ; sigmaAt w i ~ sigmaAt w (i+1) ; sigmaAt w i ; sigmaAt w (i+1), DERIVED term-mode by whisker-embedding the axiomatic width-3 yangBaxter hexagon row over the shipped star scope (NO wide kernel rfl; the r20/r21 compute wall was on the endpoint-matrix strategy, sidestepped); NO new engine row (StrictAxioms CLOSED); the braid ingredient the CARRY unblock F2 needs, does NOT flip any star owner (combInsertConv also needs the r15 append-reshape part (b)); four star owners + the distantCommuteGenericBraidAndPermWordLift residual marker byte-intact, zero-axiom
-import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidGenericBraidConvAudit
 -- WP-PROP r18 T3 — the matrix->recComb leg of CoxeterWordUnique (unblocked by r18 T1): evalCell (permWord w1) = evalCell (permWord w2) -> recComb (W-1) w1 = recComb (W-1) w2, composing the r11 generic extractor + injective read-off (matrix -> permOfWord-equality) with the r18 T1 canonicity (permOfWord-equality -> recComb-equality) via the positionsValid->mentionsOnlyBelow bridge; fires on the braid pair; pure List Nat + Mat(N), ZERO CONV, star not flipped
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordMatrixToRecCombAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
