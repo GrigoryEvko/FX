@@ -362,7 +362,7 @@ def h2CrossCheckStar : H2CrossCheckStar :=
   { cyclicProperPowerRow :=
       { abelianizedH2 := AbelianizedHomologyShadow.vanishes
       , piTwo := PiTwoStatus.nontrivial
-      , establishment := CyclicPowerObligationStatus.generalInvariantResidualR8 }
+      , establishment := CyclicPowerObligationStatus.shippedThisRound }
   , commutatorAsphericalRow :=
       { abelianizedH2 := AbelianizedHomologyShadow.freeRankOne
       , piTwo := PiTwoStatus.trivial
@@ -393,7 +393,7 @@ H₂ cross-check star recorded. -/
 def cyclicPowerArcLedger : CyclicPowerArcLedger :=
   { generalBoundaryVanishing := CyclicPowerObligationStatus.shippedThisRound
   , properPowerCertificate := CyclicPowerObligationStatus.shippedThisRound
-  , generalSeparatingInvariant := CyclicPowerObligationStatus.generalInvariantResidualR8
+  , generalSeparatingInvariant := CyclicPowerObligationStatus.shippedThisRound
   , twoGeneratorCarrier := CyclicPowerObligationStatus.shippedThisRound
   , twoGeneratorAsphericity := CyclicPowerObligationStatus.asphericityResidualR9
   , inheritedHopfCoker := CyclicPowerObligationStatus.inheritedHopfResidual }
