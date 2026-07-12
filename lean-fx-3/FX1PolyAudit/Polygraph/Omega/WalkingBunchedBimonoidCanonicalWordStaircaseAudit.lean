@@ -31,11 +31,44 @@ namespace FX1PolyAudit
 -- The C0 marker.
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordStaircaseEngineShipped
 
--- Independent (non-fuel) axiom prints on the engine defs, the round-trip pin, and the marker.
+-- C1 — the pure `applyAdjacentSwap` identities + the append/snoc laws (private helpers covered transitively).
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermOfWordAppendSplit
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidPermOfWordSnoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidApplyAdjacentSwapInvolutive
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidApplyAdjacentSwapSwapDisjoint
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidApplyAdjacentSwapBraid
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidApplyAdjacentSwapCommuteOfLe
+
+-- C1 — the run-commutation lemmas + the permutation-carry crux.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSwapCommutesRunAbove
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSwapCommutesRunBelow
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCarryPerm
+
+-- C1 — the KEYSTONE (each step = one adjacent swap) + the state-invariant preservation.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertDataRealizesSwap
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidMentionsOnlyBelowSnoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertPreservesInvariants
+
+-- C1 — the fold + the normal-form permutation preservation.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombFoldPreservesPerm
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombNormalizeFormPreservesPerm
+
+-- The C1 marker + the r15 residual + the star-open marker + the round ledger.
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_combInsertionRealizesSwapAndPreservesPermShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_combInsertStepConvGatedOnSpellingBridge
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_correctedWellTypedStarStillOpenAfterCanonicalWord
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordStaircaseRoundFourteenLedgerShipped
+
+-- Independent (non-fuel) axiom prints on the engine defs, the KEYSTONE + preservesPerm, the round-trip pin, and the markers.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertData
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRecComb
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRecComb_r9_stuck_word
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidRecComb_r9_roundTrip
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertDataRealizesSwap
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCarryPerm
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombNormalizeFormPreservesPerm
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordStaircaseEngineShipped
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_combInsertionRealizesSwapAndPreservesPermShipped
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordStaircaseRoundFourteenLedgerShipped
 
 end FX1PolyAudit
