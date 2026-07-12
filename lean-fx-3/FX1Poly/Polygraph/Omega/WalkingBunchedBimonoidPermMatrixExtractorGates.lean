@@ -408,4 +408,141 @@ theorem bunchedBimonoidMatMulColumnSwapLaw (width k : Nat) (perm : List Nat)
   rw [bunchedBimonoidPermMatrixEntryAt width (perm.map (bunchedBimonoidSwapValue k)) rowIndex colIndex hiWidth hjWidth,
     bunchedBimonoidGetMapNat (bunchedBimonoidSwapValue k) perm rowIndex (by rw [hLen]; exact hiWidth)]
 
+/-! # =========================================================================================
+    # K1 PREREQUISITES — the base identity + the fold boundedness side-lemma
+    # =========================================================================================
+-/
+
+/-- ★ **The identity permutation's matrix IS the identity matrix.**  `permMatrixOf width (List.range width) =
+identityMat width` — the extractor's base case (`permWord []` is the width-`width` identity cell).  Entry-wise:
+`natListGet (range width) i = i` (RELABEL) makes the permutation-matrix indicator `[i == j]`, the identity entry. -/
+theorem bunchedBimonoidPermMatrixOfRangeIsIdentity (width : Nat) :
+    bunchedBimonoidPermMatrixOf width (List.range width) = bunchedBimonoidIdentityMat width := by
+  refine bunchedBimonoidMatExtByEntries _ _
+    (bunchedBimonoidPermMatrixWellFormed width (List.range width))
+    (bunchedBimonoidIdentityMatWellFormed width) rfl rfl ?_
+  intro rowIndex colIndex rowBelow colBelow
+  have hiWidth : rowIndex < width := rowBelow
+  have hjWidth : colIndex < width := colBelow
+  rw [bunchedBimonoidPermMatrixEntryAt width (List.range width) rowIndex colIndex hiWidth hjWidth,
+    bunchedBimonoidGetRange width rowIndex hiWidth,
+    bunchedBimonoidIdentityMatEntry width rowIndex colIndex hiWidth hjWidth]
+
+/-- **One adjacent swap preserves the entries-below bound** — if every in-range entry of `list` is `< bound`, so is
+every in-range entry of `applyAdjacentSwap list position`.  Structural on `(list, position, index)`, mirroring the
+swap's own matcher; a swapped entry is one of the original list's entries. -/
+theorem bunchedBimonoidApplyAdjacentSwapEntryBelow (bound : Nat) :
+    (list : List Nat) → (position index : Nat) →
+    (∀ innerIndex, innerIndex < list.length → bunchedBimonoidNatListGet list innerIndex < bound) →
+    index < (bunchedBimonoidApplyAdjacentSwap list position).length →
+    bunchedBimonoidNatListGet (bunchedBimonoidApplyAdjacentSwap list position) index < bound
+  | [], _, index, _, hindex => absurd hindex (Nat.not_lt_zero index)
+  | _ :: [], _, index, hall, hindex => by
+      match index with
+      | 0 => exact hall 0 hindex
+      | m + 1 => exact absurd (Nat.lt_of_succ_lt_succ hindex) (Nat.not_lt_zero m)
+  | _ :: _ :: rest, 0, index, hall, hindex => by
+      match index with
+      | 0 => exact hall 1 (Nat.succ_lt_succ (Nat.succ_pos rest.length))
+      | 1 => exact hall 0 (Nat.succ_pos _)
+      | m + 2 => exact hall (m + 2) hindex
+  | first :: second :: rest, position + 1, index, hall, hindex => by
+      match index with
+      | 0 => exact hall 0 (Nat.succ_pos _)
+      | j + 1 =>
+          exact bunchedBimonoidApplyAdjacentSwapEntryBelow bound (second :: rest) position j
+            (fun innerIndex hinner => hall (innerIndex + 1) (Nat.succ_lt_succ hinner))
+            (Nat.lt_of_succ_lt_succ hindex)
+
+/-- **The whole swap fold preserves the entries-below bound** — every in-range entry of `positions.foldl
+applyAdjacentSwap init` is `< bound` when every in-range entry of `init` is.  Structural on `positions`, one step
+by `bunchedBimonoidApplyAdjacentSwapEntryBelow`. -/
+theorem bunchedBimonoidFoldlApplyAdjacentSwapEntryBelow (bound : Nat) :
+    (positions : List Nat) → (init : List Nat) → (index : Nat) →
+    (∀ innerIndex, innerIndex < init.length → bunchedBimonoidNatListGet init innerIndex < bound) →
+    index < (positions.foldl bunchedBimonoidApplyAdjacentSwap init).length →
+    bunchedBimonoidNatListGet (positions.foldl bunchedBimonoidApplyAdjacentSwap init) index < bound
+  | [], _, index, hall, hindex => hall index hindex
+  | position :: rest, init, index, hall, hindex =>
+      bunchedBimonoidFoldlApplyAdjacentSwapEntryBelow bound rest
+        (bunchedBimonoidApplyAdjacentSwap init position) index
+        (fun innerIndex hinner =>
+          bunchedBimonoidApplyAdjacentSwapEntryBelow bound init position innerIndex hall hinner)
+        hindex
+
+/-- ★ **`permOfWord` entries stay below `width`** — every in-range entry of `permOfWord positions width` is
+`< width` (the fold starts at `range width`, whose entries are `< width`, and each swap preserves the bound).  The
+boundedness side-condition gate (b) demands of the permutation `p`. -/
+theorem bunchedBimonoidPermOfWordEntriesBelow (positions : List Nat) (width index : Nat)
+    (hindex : index < width) :
+    bunchedBimonoidNatListGet (bunchedBimonoidPermOfWord positions width) index < width :=
+  bunchedBimonoidFoldlApplyAdjacentSwapEntryBelow width positions (List.range width) index
+    (fun innerIndex hinner => by
+      rw [bunchedBimonoidRangeLength] at hinner
+      rw [bunchedBimonoidGetRange width innerIndex hinner]
+      exact hinner)
+    (by
+      rw [bunchedBimonoidFoldlApplyAdjacentSwapLength positions (List.range width),
+        bunchedBimonoidRangeLength]
+      exact hindex)
+
+/-! # =========================================================================================
+    # K1 — THE GENERIC PERMUTATION-MATRIX EXTRACTOR (structural on the word)
+    # =========================================================================================
+-/
+
+/-- ★★★ **K1 — THE GENERIC EXTRACTOR.**  For every VALID sigma-word (positions `<= width - 2`),
+`evalCell (permWord positions width) = permMatrixOf width (permOfWord positions width)`.  The r11 wall's headline
+identity at generic width.  Structural on the word: the base `permWord []` is the identity cell whose matrix is
+`permMatrixOf width (range width)` (`permMatrixOfRangeIsIdentity`); the step composes the IH with gate (a)
+(`sigmaAt`-as-transposition), gate (b) (the matMul column-swap law, its boundedness discharged by
+`permOfWordEntriesBelow`), and gate (c) (the pure `List Nat` cons-relabel), the head `sigmaAt` sitting as the
+matMul-earlier operand (the `vcomp` order). -/
+theorem bunchedBimonoidPermWordExtractor :
+    (positions : List Nat) → (width : Nat) →
+    bunchedBimonoidPositionsValid width positions = true →
+    (bunchedBimonoidEvalCell (bunchedBimonoidPermWord positions width) : BunchedBimonoidMat)
+      = bunchedBimonoidPermMatrixOf width (bunchedBimonoidPermOfWord positions width)
+  | [], width, _ => by
+      show bunchedBimonoidEvalId 1 (bunchedBimonoidEvalCell (bunchedBimonoidAWordPow width))
+        = bunchedBimonoidPermMatrixOf width (List.range width)
+      rw [bunchedBimonoidAWordPowWidth width]
+      exact (bunchedBimonoidPermMatrixOfRangeIsIdentity width).symm
+  | position :: rest, width, hvalid => by
+      have hk : position + 1 < width := bunchedBimonoidPositionsValidHead width position rest hvalid
+      have hrestValid : bunchedBimonoidPositionsValid width rest = true :=
+        bunchedBimonoidPositionsValidTail width position rest hvalid
+      show bunchedBimonoidMatMul (bunchedBimonoidEvalCell (bunchedBimonoidPermWord rest width))
+          (bunchedBimonoidEvalCell (bunchedBimonoidSigmaAt width position))
+        = bunchedBimonoidPermMatrixOf width (bunchedBimonoidPermOfWord (position :: rest) width)
+      rw [bunchedBimonoidPermWordExtractor rest width hrestValid,
+        bunchedBimonoidSigmaAtIsTransposition width position hk,
+        bunchedBimonoidMatMulColumnSwapLaw width position (bunchedBimonoidPermOfWord rest width) hk
+          (bunchedBimonoidPermOfWordLength rest width)
+          (fun index hindex => bunchedBimonoidPermOfWordEntriesBelow rest width index hindex),
+        bunchedBimonoidPermOfWordConsRelabel position rest width hk]
+
+/-! ## The K1 honesty markers -/
+
+/-- ★★ **ESTABLISHED (r13) — the matrix-algebra gates (a)/(b) + the K1 extractor prerequisites are SHIPPED.**
+`= true` records: the well-formedness kit (`bunchedBimonoidRangeMapMatWellFormed` + the `identityMat` /
+`permMatrixOf` / `matMul` / `directSum` / `sigma2x2` instances), matrix extensionality by entries
+(`bunchedBimonoidMatExtByEntries`, via reconstruction — no `List (List Nat)` extensionality), the shift
+arithmetic (`...ReassembleAboveTwo`, `...ShiftBeqCancel`, `...SubTwoBelow`, `...SwapValueGeOfGe`,
+`...TwoLeSubOfAdd`), GATE (a) (`bunchedBimonoidSigmaAtIsTransposition` — the block-form entry match), GATE (b)
+(`bunchedBimonoidMatMulColumnSwapLaw` — the indicator-picks-one-term column swap), and the K1 base + boundedness
+(`bunchedBimonoidPermMatrixOfRangeIsIdentity`, `bunchedBimonoidPermOfWordEntriesBelow`).  Zero-axiom (per-decl
+`#assert_no_axioms` + independent `#print axioms` in the twin). -/
+def fxBunchedBimonoid_permMatrixGatesAndK1PrereqsShipped : Bool := true
+
+/-- ★★★ **ESTABLISHED (r13) — the GENERIC EXTRACTOR (K1) is SHIPPED.**  `= true` records
+`bunchedBimonoidPermWordExtractor`: `evalCell (permWord positions width) = permMatrixOf width (permOfWord positions
+width)` for EVERY valid sigma-word, at generic width — the r11 wall's headline identity, no longer only the
+concrete widths-3/4/5 pins.  Delivered by the extractor induction (base = `permMatrixOfRangeIsIdentity`; step =
+IH + gate (a) + gate (b) + gate (c), the `vcomp` order placing the head `sigmaAt` as the matMul-earlier operand).
+Combined with the B2 injective read-off (`bunchedBimonoidPermMatrixInjective`) this gives the GENERIC
+`evalCell (permWord w1) = evalCell (permWord w2) -> permOfWord w1 = permOfWord w2` on valid words.  Zero-axiom;
+STRUCTURAL on the word. -/
+def fxBunchedBimonoid_genericPermMatrixExtractorK1Shipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
