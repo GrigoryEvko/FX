@@ -28,6 +28,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithReachableImageSeedRestric
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithReachablePrefixConfinement
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithReachableKeystoneReduction
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithReachableMagnitudeResidual
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithReachableMagnitudeWitnesses
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
@@ -956,6 +957,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyDisti
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringOneSubProducerBeam
 -- FC-3 r40 — the doubly-positive wall decomposed to ONE named cup-sort brick (StringPositiveMidPureCupDeterminacy) + the colour-blind block reassembly gated on it PROVED + the genuine distinct-double-cup fire (equal matchingOfSpineList 2, distinct spines [0,4] vs [2,0])
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidCupSortResidual
+-- FC-3 r41 — the positive-mid whole-valley producer: the append-split assembled from a SINGLE whole-boundary matchingOf equality (seam absorbed on-the-nose into capRestrict/cupRestrict), gated on the ONE cup-sort brick + the genuine distinct-double-cup fire
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidValleyProducer
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
