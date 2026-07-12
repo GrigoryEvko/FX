@@ -1429,6 +1429,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorGat
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordStaircaseAudit
 -- WP-PROP r15 — the CONV-fold spelling bridge: dim-1 word-boundary facts (aWordPow boundary is the mode point on the nose; sigmaAt boundary is the sigma-source tree) + the whisker-over-vcomp sigmaAt-chain bridge (whiskerRightFunctorial + whiskerLeftFunctorial, Or.inl into the star scope) firing the CANCEL letter's s_k s_k = e; star not flipped, append reshape (gap ii) named as the residual
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordConvFoldAudit
+-- WP-PROP r16 — the full append-vs-vcomp reshape (gap ii CLOSED): permWord (front ++ back) w ~ vcomp (permWord front w) (permWord back w), the front-induction threading the r15 S4 sigma-source boundary reshape via vcompIdLeft_bridgedWithId + vcompUnitLeft/vcompAssoc, carrying the mentionsOnlyBelow (w-1) position-validity; star not flipped
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordAppendReshapeAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
