@@ -1,0 +1,75 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithAcrossRoundsContentInvariant
+
+/-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithAcrossRoundsContentInvariant — zero-axiom gate
+    (H2-SMITH r42, #2261 — the per-round magnitude family exhausted; across-rounds carriers recorded)
+
+Per-declaration zero-axiom gate for the r42 across-rounds refounding: the two per-round descent
+refutations (the 7th graveyard entry — the not-divided count and the magnitude+fuel sum), the recorded
+across-rounds content carrier and its constancy pins, and the recorded round-pair magnitude descent
+carrier with its graveyard-guard single-round rise.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`.  Both the fuel-based `#assert_no_axioms` AND the independent (non-fuel)
+`#print axioms` are run on every declaration (the project macro is fuel-based — not trusted alone). -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRoundStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCountFrom
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCount
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPivotPlusMinorAbsSumMeasure
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithLaterDiagonalNotDividedCountDescendsPerRound
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithPivotPlusMinorAbsSumDescendsPerRound
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitnessIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitnessPivotPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitnessFindsSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCountRisesOnRefuter
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCountDescendsPerRoundIsRefuted
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitnessIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitnessPivotPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitnessFindsSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPivotPlusMinorAbsSumRisesOnRefuter
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPivotPlusMinorAbsSumDescendsPerRoundIsRefuted
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithSubBlockContentStableAcrossRound
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSubBlockContentStableOnReachableRiseWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSubBlockContentStableOnSumMeasureRefuter
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithSubBlockContentConstantAcrossReachableTrajectory
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithRoundPairPivotMagnitudeDescends
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithPivotMagnitudeRisesInOneRoundOnReachableWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRoundPairPivotMagnitudeDropsOnReachableWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRoundPairPivotMagnitudeDropsOnBackupWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithRoundPairPivotMagnitudeDropsOnSmallDirtySeed
+
+-- Independent (non-fuel) axiom prints on every declaration.
+#print axioms FX1Poly.ComputerAlgebra.smithRoundStep
+#print axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCountFrom
+#print axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCount
+#print axioms FX1Poly.ComputerAlgebra.smithPivotPlusMinorAbsSumMeasure
+#print axioms FX1Poly.ComputerAlgebra.SmithLaterDiagonalNotDividedCountDescendsPerRound
+#print axioms FX1Poly.ComputerAlgebra.SmithPivotPlusMinorAbsSumDescendsPerRound
+#print axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitness
+#print axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitness
+#print axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitnessIsRectangular
+#print axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitnessPivotPositive
+#print axioms FX1Poly.ComputerAlgebra.smithNotDividedCountRiseWitnessFindsSome
+#print axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCountRisesOnRefuter
+#print axioms FX1Poly.ComputerAlgebra.smithLaterDiagonalNotDividedCountDescendsPerRoundIsRefuted
+#print axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitnessIsRectangular
+#print axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitnessPivotPositive
+#print axioms FX1Poly.ComputerAlgebra.smithSumMeasureRiseWitnessFindsSome
+#print axioms FX1Poly.ComputerAlgebra.smithPivotPlusMinorAbsSumRisesOnRefuter
+#print axioms FX1Poly.ComputerAlgebra.smithPivotPlusMinorAbsSumDescendsPerRoundIsRefuted
+#print axioms FX1Poly.ComputerAlgebra.SmithSubBlockContentStableAcrossRound
+#print axioms FX1Poly.ComputerAlgebra.smithSubBlockContentStableOnReachableRiseWitness
+#print axioms FX1Poly.ComputerAlgebra.smithSubBlockContentStableOnSumMeasureRefuter
+#print axioms FX1Poly.ComputerAlgebra.smithSubBlockContentConstantAcrossReachableTrajectory
+#print axioms FX1Poly.ComputerAlgebra.SmithRoundPairPivotMagnitudeDescends
+#print axioms FX1Poly.ComputerAlgebra.smithPivotMagnitudeRisesInOneRoundOnReachableWitness
+#print axioms FX1Poly.ComputerAlgebra.smithRoundPairPivotMagnitudeDropsOnReachableWitness
+#print axioms FX1Poly.ComputerAlgebra.smithRoundPairPivotMagnitudeDropsOnBackupWitness
+#print axioms FX1Poly.ComputerAlgebra.smithRoundPairPivotMagnitudeDropsOnSmallDirtySeed
+
+end FX1PolyAudit
