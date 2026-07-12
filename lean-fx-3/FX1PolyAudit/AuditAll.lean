@@ -988,6 +988,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLastCup
 -- FC-3 r44 P2c partial — the ONE genuinely-new positive-mid LOCATE invariant: the empty-mid matching survivor identity (emptyMidMatching_topPort_lt, the matching-carrier port of the arc initialPartner_topPort_lt) + the no-forward-chord base-case corollary; the residual chord-shift/drop/fueled-sort LOCATE ports named forward, the brick stays OPEN
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringEmptyMidSurvivorIdentity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringEmptyMidSurvivorIdentityAxiomWitness
+-- FC-3 r45 R1 — the positive-mid chord-shift LOCATE descents (the seed-offset ports of the r16 width-0 chord-shifts): stringMatchingChordShift_below/above_mid ride the byte-for-byte-REUSED diagramPartner_stepCup at seedBoundary := midWidth + the one new midWidth ≤ nextFresh obligation off processSpine_nextFresh_le; colour-blind, positivity-FREE (subsumes the r16 width-0 descents)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidChordShift
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidChordShiftAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
