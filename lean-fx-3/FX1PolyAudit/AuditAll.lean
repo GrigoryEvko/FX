@@ -980,6 +980,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidSnakeEx
 -- FC-3 r44 P2b — the positive-mid last-cup short-chord readoff (the LOCATE readoff for StringPositiveMidPureCupDeterminacy generalized off matchingOfSpineList 0 to matchingOfSpineList midWidth): stringMatchingLastCup_isShortChord_mid rides the SHIPPED seed-general generalStateCupForwardPartnerMatching (positivity-FREE, subsumes the r16 width-0 readoff), fired at mid-1 AND mid-2 on genuine single-/double-survivor cup fixtures
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLastCupShortChord
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLastCupShortChordAxiomWitness
+-- FC-3 r44 P2c partial — the ONE genuinely-new positive-mid LOCATE invariant: the empty-mid matching survivor identity (emptyMidMatching_topPort_lt, the matching-carrier port of the arc initialPartner_topPort_lt) + the no-forward-chord base-case corollary; the residual chord-shift/drop/fueled-sort LOCATE ports named forward, the brick stays OPEN
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringEmptyMidSurvivorIdentity
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringEmptyMidSurvivorIdentityAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
