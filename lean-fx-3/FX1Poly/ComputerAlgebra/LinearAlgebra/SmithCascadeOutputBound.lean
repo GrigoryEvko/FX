@@ -316,7 +316,9 @@ footer named as still-missing.  This is the single-cascade bound; the full-repai
 by folding later diagonals in.
 
 The corrected-driver totality residual is UNCHANGED.  `SmithReduceCompleteDriverStatement` stays
-UNINHABITED hypothesis-free; the single hypothesis-free residual is K2 = `landed ∣ gcd(minor)`
+UNINHABITED hypothesis-free [r33: the K2 residual below is REFUTED AS STATED in general —
+`SmithLandedMagnitudeRefuted`, seed `[[0,6,0],[0,0,10],[0,0,0]]`; only the RESTRICTED diagonal form is
+OPEN]; the single hypothesis-free residual is K2 = `landed ∣ gcd(minor)`
 (`LandedPivotDividesMinorGcd`, `SmithMinorGcdReduction`; equivalently, with the shipped converse
 `minorGcdDividesLanded`, the symmetric magnitude `|landed| = gcd(minor)`).  The next rung consumes r30's
 bound on the FOLDED matrix to discharge the r28 obligation `SmithFoldDescendsOnNonzeroPivot`

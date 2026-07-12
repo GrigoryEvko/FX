@@ -475,7 +475,9 @@ exit under zero-trailing).  So NO lex refinement is needed: the r26-demanded sec
 scoping the single seam away.  The budget clash (recon Delta2) is dodged because `pivotAbs` is a plain `Nat`
 that fits the fuel (`pivotMagnitudeLeMinorAbsSum`), not a lex collapse.
 
-**THE OPEN OBLIGATIONS, named EXACTLY.**
+**THE OBLIGATIONS, named EXACTLY [r33: the general keystone they serve —
+`SmithCascadeLandedPivotDividesMinor` / K2 — is REFUTED AS STATED (`SmithLandedMagnitudeRefuted`); the
+RESTRICTED diagonal / in-driver-image form is OPEN, and the descent measures below remain its lever].**
 
   * `SmithFoldDescendsOnNonzeroPivot` (r28) — `pivotMagnitudeWithin` strictly descends on every nonzero-pivot
     fold.  Battery-verified TRUE (`smithFoldDescendsHoldsOnBattery`); the general proof is the cascade-inner

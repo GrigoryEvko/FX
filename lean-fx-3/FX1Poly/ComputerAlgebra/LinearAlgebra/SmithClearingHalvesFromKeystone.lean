@@ -188,7 +188,7 @@ even); not proven in general.
 **Honest verdict.**  r28 does NOT move the frontier.  It removes the r27 (K1, K2) re-split and the
 strictly-weaker fold-descent sub-arc, collapsing the corrected-driver totality back onto the single r22
 keystone via `smithReduceCompleteDriverOfKeystoneViaHalves`.  No flip is fabricated; the honest pair is
-`(SmithReduceCompleteDriverStatement ⟸ SmithCascadeOutputMinorDivides`, that keystone OPEN)`.  The r18–r27
+`(SmithReduceCompleteDriverStatement ⟸ SmithCascadeOutputMinorDivides`, that keystone REFUTED AS STATED — `SmithLandedMagnitudeRefuted`, r33; RESTRICTED diagonal form OPEN)`.  The r18–r27
 world stays byte-intact (additive only). -/
 
 end FX1Poly.ComputerAlgebra

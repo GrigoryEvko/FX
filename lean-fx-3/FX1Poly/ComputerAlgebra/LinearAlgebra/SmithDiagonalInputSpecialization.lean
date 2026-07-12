@@ -344,7 +344,11 @@ theorem landedPivotDividesMinorOnPhaseAOutputAtZero
     supplied by the shipped Phase-A diagonalization.
 
 **THE EXACT SURVIVING GOAL, named (NOT a fabricated flip).**  `SmithReduceCompleteDriverStatement` is
-NOT inhabited hypothesis-free.  Two nested residuals survive, both OPEN:
+NOT inhabited hypothesis-free.  [r33: residual 1 below — the UNRESTRICTED keystone — is now REFUTED AS
+STATED (`SmithLandedMagnitudeRefuted`, seed `[[0,6,0],[0,0,10],[0,0,0]]` lands `6` vs minor gcd `2`), NOT
+merely OPEN; the machine-refuted non-diagonality of the advanced matrices noted in residual 1 is exactly
+why.  Residual 2 (the diagonal-input evaluation) stays OPEN and is the honest surviving content.]  Two
+nested residuals survive:
 
   1. `SmithCascadeLandedPivotDividesMinor` (the shipped r22 residual) — the UNRESTRICTED keystone the
      driver totality rests on (`smithReduceCompleteDriverOfLandedPivotDividesMinor`).  The

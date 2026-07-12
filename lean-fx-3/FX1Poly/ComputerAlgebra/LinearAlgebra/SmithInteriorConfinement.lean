@@ -154,7 +154,9 @@ This file inhabits NOTHING hypothesis-free.  It establishes:
     keystone, conditional on it, spelling out that the keystone confines every interior cell to the landed
     pivot's ideal.
 
-**THE OPEN OBLIGATION, named EXACTLY.**  `SmithCascadeLandedPivotDividesMinor`
+**THE OBLIGATION, named EXACTLY [r33: REFUTED AS STATED — `SmithLandedMagnitudeRefuted`, seed
+`[[0,6,0],[0,0,10],[0,0,0]]`; only the RESTRICTED diagonal / in-driver-image form is OPEN].**
+`SmithCascadeLandedPivotDividesMinor`
 (⟺ `SmithCascadeOutputMinorDivides`) — the min-abs Euclid cascade LANDS the minor gcd (`g ∣ every input
 minor entry`, the direction `g ∣ gcd` that gcd-invariance CANNOT give,
 `SmithWindowGcdInvariance.lean`).  This is the r11+ "cascade-computes-gcd" MAJOR ARC, decisively NOT

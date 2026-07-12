@@ -35,7 +35,9 @@ the keystone): the classic "min-abs Euclid diagonal descent reaches the gcd".
     `divisor := minorGcdWithin`).
   * `landedMagnitudeEqMinorGcdOfKeystone` — `keystone → |landed| = gcd(minor)` (the symmetric residual).
 
-**HONEST SIZING — this does NOT flip the driver.**  The keystone stays OPEN; nothing here inhabits
+**HONEST SIZING — this does NOT flip the driver.**  [r33: the general keystone is REFUTED AS STATED —
+`SmithLandedMagnitudeRefuted`, seed `[[0,6,0],[0,0,10],[0,0,0]]` lands `6` vs minor gcd `2`; only the
+RESTRICTED diagonal / in-driver-image form survives OPEN.]  The keystone stays OPEN; nothing here inhabits
 `SmithReduceCompleteDriverStatement` hypothesis-free.  This file RETIRES the interior-fill-in worry
 (the 2-D block obligation is proven a spectator, auto-confined) and pins the surviving wall to the
 single diagonal fact `landed ∣ gcd(minor)`.  The surviving wall is named at the foot of the file.

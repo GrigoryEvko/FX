@@ -4,6 +4,24 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithMinorGcdReduction
     crispest arithmetic form, and its kernel-checked truth on the decision-round hostile seeds
     (H2-SMITH r32, #2261 — THE DECISION ROUND)
 
+## r33 CORRECTION (supersedes the "TRUE where hardest" framing below)
+
+The general keystone stated here — `SmithCascadeLandedPivotDividesMinor`, equivalently
+`MinAbsEuclidLandsMinorGcdMagnitude` (`|landed| = gcd(minor)`) — is **REFUTED AS STATED**, not merely
+OPEN.  The non-diagonal seed `[[0, 6, 0], [0, 0, 10], [0, 0, 0]]` at pivot `0` lands `6` (min-abs at
+column 1, cross clean, cascade stops) while the minor `{6, 10}` has `gcd = 2` and `6 ∤ 10` — the `10`
+sits off the pivot cross, in the interior the cross-clear terminator never inspects.  Machine-checked in
+`SmithLandedMagnitudeRefuted` (`minAbsEuclidLandsMinorGcdMagnitudeIsRefuted`,
+`smithCascadeLandedPivotDividesMinorIsRefuted`, and the load-bearing
+`smithCascadeLandsDivisibleSubBlockIsRefuted` — the driver's sole hypothesis).
+
+EVERY hostile seed pinned TRUE below is DIAGONAL: the fixtures are evidence for the RESTRICTED
+(diagonal / in-driver-image) form, which DOES hold, NOT for the general `∀`-keystone, which does not.
+Read all phrasings below — "the open wall is TRUE where hardest", "single surviving wall", "SURVIVING
+WALL", "UNINHABITED hypothesis-free GIVEN the keystone" — as the RESTRICTED form; the general form is
+refuted.  The shipped theorems (`keystoneIffLandedMagnitudeEqMinorGcd`, the diagonal fixtures) stay
+byte-intact and correct; only this framing is corrected.
+
 ## The decision
 
 The user-ordered mandate (#2261) is `SmithReduceCompleteDriverStatement` inhabited with ZERO
@@ -132,8 +150,9 @@ theorem keystoneIffLandedMagnitudeEqMinorGcd :
 /-! ## The decision-round fixtures — the RHS body kernel-checked TRUE on the decisive hostile seeds
 
 Each pins the `MinAbsEuclidLandsMinorGcdMagnitude` body `|landed| = gcd(minor)` at a concrete
-hostile input/pivot by `decide` (kernel reduction, at or below the 4x4 defeq ceiling).  These are the
-decision-round evidence that the open wall is TRUE precisely where it is hardest to see. -/
+hostile input/pivot by `decide` (kernel reduction, at or below the 4x4 defeq ceiling).  These are all
+DIAGONAL seeds: evidence that the RESTRICTED (diagonal / in-driver-image) form holds, NOT that the
+general keystone is TRUE — the general form is REFUTED (`SmithLandedMagnitudeRefuted`, r33). -/
 
 set_option maxRecDepth 16000 in
 /-- **The killer seed at pivot 0.**  On `diag(4, 6, 9, 7)` — the seed on which every candidate per-fold
@@ -206,7 +225,9 @@ theorem smithMinorAbsSumRisesOnKillerSeedFold :
           0 4 4 := by
   decide
 
-/-! ## SURVIVING WALL (H2-SMITH r32, #2261)
+/-! ## SURVIVING WALL (H2-SMITH r32, #2261) — [r33: the GENERAL form is REFUTED; only the RESTRICTED
+    diagonal / in-driver-image form survives — see the r33 correction banner above and
+    `SmithLandedMagnitudeRefuted`]
 
 After r32 the corrected-driver totality residual is UNCHANGED in strength but SHARPENED to its crispest
 equivalent: `keystoneIffLandedMagnitudeEqMinorGcd` reduces `SmithReduceCompleteDriverStatement` (given
@@ -226,7 +247,9 @@ r25) and admits NO per-fold `Nat` descent measure: `smithMinorAbsSum` RISES on f
 zero-pivot-bootstrap folds (r26), `pivotMagnitudeWithin` RISES on the raw fold step (r31).  A strict
 measure must lex-refine `minNonzeroAbsWithin` and proving THAT refinement descends across the whole
 cascade IS the standalone multi-round "cascade-computes-gcd" arc — decisively NOT r32-sized.  No flip is
-fabricated: `SmithReduceCompleteDriverStatement` stays UNINHABITED hypothesis-free, and the honest pair
-is `(SmithReduceCompleteDriverStatement ⟸ MinAbsEuclidLandsMinorGcdMagnitude, that identity OPEN)`. -/
+fabricated: `SmithReduceCompleteDriverStatement` stays UNINHABITED hypothesis-free.  [r33: the honest
+pair is now `(SmithReduceCompleteDriverStatement ⟸ MinAbsEuclidLandsMinorGcdMagnitude, that identity
+REFUTED in general — `SmithLandedMagnitudeRefuted`)`; the surviving OPEN content is the RESTRICTED
+(diagonal / in-driver-image) form, a standalone multi-round arc.] -/
 
 end FX1Poly.ComputerAlgebra

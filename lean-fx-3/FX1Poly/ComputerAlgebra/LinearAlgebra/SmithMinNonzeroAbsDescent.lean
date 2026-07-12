@@ -137,7 +137,10 @@ machine-checks that it (a) strictly DESCENDS on the `diag(6, 10, 8)` fold where 
 and on `diag(6, 9, 10)`, but (b) STALLS on `diag(15, 10, 6, 4)` (already-minimal) and `diag(0, 4)`
 (zero-pivot bootstrap) — so it is non-increasing but NOT strictly monotone.
 
-**THE OPEN OBLIGATION, named EXACTLY.**  `foldDescends` (the r21 NODE D per-fold strict drop) needs a lex
+**THE OPEN OBLIGATION, named EXACTLY.**  [r33: the general keystone this measure serves —
+`SmithCascadeLandedPivotDividesMinor` — is REFUTED AS STATED (`SmithLandedMagnitudeRefuted`); the descent
+measure below remains the OPEN lever for the RESTRICTED diagonal / in-driver-image form.]  `foldDescends`
+(the r21 NODE D per-fold strict drop) needs a lex
 refinement `(minNonzeroAbsWithin, secondaryKey)` whose secondary key strictly descends on the two stall
 classes above; proving THAT descends across the whole min-abs Euclid cascade IS the "cascade-computes-gcd"
 major arc underlying the keystone `SmithCascadeLandedPivotDividesMinor` (`SmithWindowedChainReduction.lean`

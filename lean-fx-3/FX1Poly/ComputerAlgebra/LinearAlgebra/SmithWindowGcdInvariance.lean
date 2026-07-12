@@ -154,8 +154,9 @@ minimal in the gcd-ideal* — is the r11+ "min-abs Euclid computes the gcd" wall
 gcd-invariance argument.  Probe-TRUE (`smithClearingSweepLandsMinorGcdOnConcreteWindow`,
 `SmithWindowedChainReduction.lean`: `diag(6,10,8)` lands `2 = gcd`) but a standalone multi-round arc;
 `smithSweepLeavesInteriorNonzeroOnCoprimeWindow` above exhibits exactly the off-diagonal residual that
-direction must clear.  `SmithReduceCompleteDriverStatement` therefore stays UNINHABITED hypothesis-free
-after r25; the driver is inhabited GIVEN the keystone via
+direction must clear.  [r33: the general keystone is REFUTED AS STATED — `SmithLandedMagnitudeRefuted`;
+only the RESTRICTED diagonal / in-driver-image form is OPEN.]  `SmithReduceCompleteDriverStatement`
+therefore stays UNINHABITED hypothesis-free after r25; the driver is inhabited GIVEN the keystone via
 `smithReduceCompleteDriverOfLandedPivotDividesMinor` (already wired). -/
 
 end FX1Poly.ComputerAlgebra
