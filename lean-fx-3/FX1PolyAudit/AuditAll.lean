@@ -518,6 +518,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescCupArrivalPeel
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescSeamRungs
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescSingleCupPeelDriver
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescSingleCupRegionDriver
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescSingleCupEagerDriver
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldR5Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryComponents
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGeneratorBridge
