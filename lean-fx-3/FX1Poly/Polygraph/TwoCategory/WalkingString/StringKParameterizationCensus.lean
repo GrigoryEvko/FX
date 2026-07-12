@@ -190,13 +190,16 @@ signature-polymorphism, established by the file:line evidence in the header, not
 `k = 3` `matchingOf` instantiation awaits the r2+ `k = 3` seed).  `= true`. -/
 def fxString_hasKGenericConnectivityEngine : Bool := true
 
-/-- **OPEN — the `n`-colour orientation label-pinning crux is NOT yet proven (O2 flips this).**  The census records
+/-- **★ ESTABLISHED — the `n`-colour orientation label-pinning crux is SHIPPED (flipped by O2).**  The census records
 the orientation invariant (cup cods ascending, cap doms descending, disjoint at every `k`,
-`adjointStringCupCods_allAscending_atThree` + `adjointStringCapDoms_allDescending_atThree`) but does NOT yet ship the
-GENERIC inequality `ascendingPair_ne_descendingPair` nor its `k = 2` bridge / `k = 3` firing — that is the O2
-deliverable (`StringAdjointStringOrientationCrux`), which flips this marker `:= true` in the same commit.  Held
-`false` here so the census is honest about what it has and has not delivered.  `= false`. -/
-def fxString_hasNColourOrientationLabelPinningCrux : Bool := false
+`adjointStringCupCods_allAscending_atThree` + `adjointStringCapDoms_allDescending_atThree`); the O2 deliverable
+(`StringAdjointStringOrientationCrux`) makes it a theorem — the GENERIC inequality `ascendingPair_ne_descendingPair`
+(over `List Nat`), its `k = 2` bridge recovering the FROZEN shipped crux on the nose
+(`stringCupCod_ne_capDom_viaOrientation`, identical signature), and its `k = 3` fresh firing over the genuine adjoint-
+quadruple fixtures (`quadCupCod_ne_capDom_fired`, fresh letter `L4`).  Flipped `:= true` in the O2 commit that ships
+the crux (the HONESTY LAW: the `k`-generic statement is instantiated at `k = 2` AND fired fresh at `k = 3`).
+`= true`. -/
+def fxString_hasNColourOrientationLabelPinningCrux : Bool := true
 
 /-- **OPEN — the `k ≥ 3` atom-pin reroute is a NAMED r2+ bill, not delivered here.**  The shipped determinacy brick's
 atom pin routes through `stringTwoCell_codPack_uniqueOfDom` ("dom determines cod", `StringSpineAtomWordPin.lean:84`),
