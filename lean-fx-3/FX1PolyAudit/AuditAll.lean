@@ -35,7 +35,6 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithColumnCleanDescentInsuffi
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithAcrossRoundsContentInvariant
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithSubBlockContentInvariantProof
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithBlockDivisibilityKeystone
-import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithBlockFindRepairDriver
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
@@ -1556,6 +1555,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidDistantCommuteGenericA
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermWordDistantCommuteConvAudit
 -- WP-PROP r23 F1 - the Below twin of the first Cartier-Foata fold rung: swapCommutesRunBelowConv (a HIGH letter commutes past a descending run BELOW it, gate runTop+2<=letter), the CONV mirror of the r14 pure swapCommutesRunBelow, P3 with the gate flipped and the P2 head-pair atom .symm-ed; closes the Below-twin clause of the r22 census, F2/F3/F4 (combInsert/combNormalizeForm/recComb Conv) stay braid-walled at the CARRY case, F5 (Brauer combCanonicity clone) already shipped r18 T1; four star owners + StrictAxioms byte-intact, zero-axiom
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRunBelowCommuteConvAudit
+-- WP-PROP r24 THE BRAID DECISION branch (a) - the generic-width adjacent-braid CONV atom sigmaAt w i ; sigmaAt w (i+1) ; sigmaAt w i ~ sigmaAt w (i+1) ; sigmaAt w i ; sigmaAt w (i+1), DERIVED term-mode by whisker-embedding the axiomatic width-3 yangBaxter hexagon row over the shipped star scope (NO wide kernel rfl; the r20/r21 compute wall was on the endpoint-matrix strategy, sidestepped); NO new engine row (StrictAxioms CLOSED); the braid ingredient the CARRY unblock F2 needs, does NOT flip any star owner (combInsertConv also needs the r15 append-reshape part (b)); four star owners + the distantCommuteGenericBraidAndPermWordLift residual marker byte-intact, zero-axiom (re-landed after the ebefd31ab cross-lane AuditAll rewrite dropped this line)
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidGenericBraidConvAudit
 -- WP-PROP r18 T3 — the matrix->recComb leg of CoxeterWordUnique (unblocked by r18 T1): evalCell (permWord w1) = evalCell (permWord w2) -> recComb (W-1) w1 = recComb (W-1) w2, composing the r11 generic extractor + injective read-off (matrix -> permOfWord-equality) with the r18 T1 canonicity (permOfWord-equality -> recComb-equality) via the positionsValid->mentionsOnlyBelow bridge; fires on the braid pair; pure List Nat + Mat(N), ZERO CONV, star not flipped
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordMatrixToRecCombAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
