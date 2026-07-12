@@ -1348,6 +1348,7 @@ import FX1PolyAudit.Polygraph.Homology.TietzeZmodThreeInvarianceInstance
 import FX1PolyAudit.Polygraph.Homology.BlockDiagonalCertificateLifting
 import FX1PolyAudit.Polygraph.Homology.FreshGeneratorTietzeExpansionInvariance
 import FX1PolyAudit.Polygraph.Homology.Type2CompletionCyclicThreeInstance
+import FX1PolyAudit.Polygraph.Homology.SquierNoGoRestingFrontier
 import FX1PolyAudit.Polygraph.TwoCategory.Table.ContextClosure
 import FX1PolyAudit.Polygraph.TwoCategory.Table.FrobeniusSeed
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerMigration
