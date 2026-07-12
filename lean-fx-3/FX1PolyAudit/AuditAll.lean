@@ -1403,6 +1403,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorAud
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorKitAudit
 -- WP-PROP r13 — the matrix-algebra gates (a)/(b) + the K1 generic permutation-matrix extractor: gate (a) sigmaAt-as-transposition (block-form 4-band entry match), gate (b) matMul column-swap (matMulEntryRead + delta-collapse), K1 evalCell (permWord) = permMatrixOf (permOfWord) at generic width; the wall genericPermMatrixExtractorGatedOnMatrixAlgebraKit is FLIPPED true
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorGatesAudit
+-- WP-PROP r14 — the canonical reduced-word engine (Omega mirror of the Brauer recComb staircase): the Coxeter–Moser comb combInsertData + one-level combNormalizeForm + recursive recComb (Regev–Roichman/Lehmer unique reduced word) + descending run + mentionsOnlyBelow, over the shipped symmetric-group engine; r9/r11 pins, the braid-pair unification, the permutation round-trip; pure List Nat, ZERO CONV, star not flipped
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordStaircaseAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
