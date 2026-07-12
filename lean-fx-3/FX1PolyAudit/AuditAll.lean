@@ -33,6 +33,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithPrefixSettledDescentInsuf
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithConfinedColumnDescentInsufficient
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithColumnCleanDescentInsufficient
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithAcrossRoundsContentInvariant
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SmithSubBlockContentInvariantProof
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
@@ -1529,8 +1530,6 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidDistantCommuteOverSibl
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidRunCommuteConvOverSiblingAudit
 -- WP-PROP r21 G1+G2 — the fully generic distant-commute over the SHIPPED star scope: vcomp (sigmaAt w i) (sigmaAt w j) ~ vcomp (sigmaAt w j) (sigmaAt w i) at arbitrary (leftPad, gap, rightPad) with j >= i+2 structurally forced — ONE StrictAxiomRel.interchange fire under whiskerLeftCongr (A^leftPad); refutes the r20 census claim that generic padding needed a completeness-star fragment; subsumes the U2 sibling instance at (0,0,0); adjacents type-excluded; engine byte-frozen, zero-axiom (re-landed after the b672c5e71 cross-lane AuditAll rewrite dropped this line)
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidDistantCommuteGenericAudit
--- WP-PROP r22 P1+P2+P3 - the permWord-level distant-commute + the first Cartier-Foata fold rung: sigmaAt trailing-boundary reshape (P1) + sigmaAt-form / permWord [i,j]~[j,i] distant-commute (P2, the r21 additive atom transported along A1/A2 truncated-subtraction) + swapCommutesRunAboveConv (P3, a low letter past a descending run); closes clauses (2)+(first rung of 3) of the r21 census, adjacent braid stays compute-walled, four star owners + StrictAxioms byte-intact, zero-axiom
-import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermWordDistantCommuteConvAudit
 -- WP-PROP r18 T3 — the matrix->recComb leg of CoxeterWordUnique (unblocked by r18 T1): evalCell (permWord w1) = evalCell (permWord w2) -> recComb (W-1) w1 = recComb (W-1) w2, composing the r11 generic extractor + injective read-off (matrix -> permOfWord-equality) with the r18 T1 canonicity (permOfWord-equality -> recComb-equality) via the positionsValid->mentionsOnlyBelow bridge; fires on the braid pair; pure List Nat + Mat(N), ZERO CONV, star not flipped
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordMatrixToRecCombAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
