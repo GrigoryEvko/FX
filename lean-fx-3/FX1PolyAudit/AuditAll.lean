@@ -1440,6 +1440,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordStaircase
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordConvFoldAudit
 -- WP-PROP r16 — the full append-vs-vcomp reshape (gap ii CLOSED): permWord (front ++ back) w ~ vcomp (permWord front w) (permWord back w), the front-induction threading the r15 S4 sigma-source boundary reshape via vcompIdLeft_bridgedWithId + vcompUnitLeft/vcompAssoc, carrying the mentionsOnlyBelow (w-1) position-validity; star not flipped
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordAppendReshapeAudit
+-- WP-PROP r17 — the CONV run-commute atoms (distant-commutation + braid at the sigmaAt word level) + the buildable whiskering-aWordPow split reshape + the exact whisker-coherence wall: distant-commute matrix-sound at widths 4/5, the split reshape delivered via whiskerLeftWhiskerCongr + aWordPowSplitConv, the associator/identity-whisker-unitor/whisker-commute coherences named as the residual (fragments of the unproven completeness star); the whole CONV fold tower (carryPermConv/swapCommutesRun*Conv/combInsertConv/combNormalizeFormConv/recCombConv) reduces to this one wall, star NOT flipped, zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordRunCommuteConvAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
