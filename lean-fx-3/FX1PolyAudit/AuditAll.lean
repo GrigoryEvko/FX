@@ -638,6 +638,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcJoinReachabilityProbe
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcDisjointBlockCommuteProbe
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcGodementCellAscentWall
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcGodementCellAscentWallAxiomWitness
+-- MODE-COMMUTE r21 branch (a) — the FOREST-GAP adjudication: the LITERAL fresh residual ArcGodementSamePartitionFresh (:472) is machine-refuted at a fresh-but-cyclic state (2-cycle {0,1} + loop-forming forest edge {2,3}); the two CAP-CAP Godement orders diverge on the internal cap-event count at port 0 (1 vs 0) via the unionFindRoot links.length-parity flip; :545 pin fxMode_hasArcGodementSamePartitionFreshProof stays false FOREVER, corrected target ArcGodementSamePartitionFreshForest already ships (fxMode_hasArcForestFreshResidualClosed stays false), counterexample EXCLUDED by isUnionFindForest; zero-axiom decide
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcGodementFreshForestGapRefutation
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcGodementFreshForestGapRefutationAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcGodementSoundnessPeel
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcGodementSoundnessPeelEmptyBoundary
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPeelSignatureCeiling
