@@ -215,4 +215,145 @@ theorem bunchedBimonoidSwapValueGeOfGe (k value : Nat) (hge : k ≤ value) :
     | true => exact Nat.le_refl k
     | false => exact hge
 
+/-- **Two below the shifted difference** — for `k + 2 <= a`, `2 <= a - k`; the bottom-right block index sits at or
+above the `sigma2x2` block's two rows/cols.  Via `Nat.le.dest` + the additive left-cancel. -/
+theorem bunchedBimonoidTwoLeSubOfAdd (k a : Nat) (hAbove : k + 2 ≤ a) : 2 ≤ a - k := by
+  obtain ⟨diff, hdiff⟩ := Nat.le.dest hAbove
+  have hstep : a - k = 2 + diff := by
+    rw [← hdiff, Nat.add_assoc k 2 diff, bunchedBimonoidAddSubCancelLeft k (2 + diff)]
+  rw [hstep]; exact Nat.le_add_right 2 diff
+
+/-! # =========================================================================================
+    # GATE (a) — `evalCell (sigmaAt width k) = permMatrixOf width (swap range k)` (entry-wise)
+    # =========================================================================================
+-/
+
+/-- ★★★ **GATE (a) — `sigmaAt`-as-transposition, generic width.**  For `k + 2 <= width`,
+`evalCell (sigmaAt width k) = permMatrixOf width (applyAdjacentSwap (List.range width) k)`.  The r11 wall's first
+named gate.  Via the shipped closed block-form (`bunchedBimonoidSigmaAtBlockForm`) + `matExtByEntries`, then a
+4-band index case split (`i < k`, `i = k`, `i = k + 1`, `i > k + 1`, each crossed with the `j`-bands) over the
+`directSum` quadrant reads + `identityMatEntry` + the `sigma2x2` literal + RELABEL-GET; the bottom-right identity
+band closes via the shift-`beq` cancellation.  Every band ties the block-form entry to `if swapValue k i == j`. -/
+theorem bunchedBimonoidSigmaAtIsTransposition (width k : Nat) (hValid : k + 2 ≤ width) :
+    bunchedBimonoidEvalCell (bunchedBimonoidSigmaAt width k)
+      = bunchedBimonoidPermMatrixOf width (bunchedBimonoidApplyAdjacentSwap (List.range width) k) := by
+  rw [bunchedBimonoidSigmaAtBlockForm width k]
+  have wfIDk := bunchedBimonoidIdentityMatWellFormed k
+  have wfIDr := bunchedBimonoidIdentityMatWellFormed (width - k - 2)
+  have wfIB := bunchedBimonoidDirectSumWellFormed { rows := 2, cols := 2, entries := [[0, 1], [1, 0]] }
+    (bunchedBimonoidIdentityMat (width - k - 2)) bunchedBimonoidSigma2x2WellFormed wfIDr
+  have arith : k + (2 + (width - k - 2)) = width := bunchedBimonoidSigmaAtDimArith k width hValid
+  refine bunchedBimonoidMatExtByEntries _ _
+    (bunchedBimonoidDirectSumWellFormed (bunchedBimonoidIdentityMat k) _ wfIDk wfIB)
+    (bunchedBimonoidPermMatrixWellFormed width (bunchedBimonoidApplyAdjacentSwap (List.range width) k))
+    arith arith ?_
+  intro rowIndex colIndex rowBelow colBelow
+  have hiWidth : rowIndex < width := Nat.lt_of_lt_of_le rowBelow (Nat.le_of_eq arith)
+  have hjWidth : colIndex < width := Nat.lt_of_lt_of_le colBelow (Nat.le_of_eq arith)
+  have hk : k + 1 < width := hValid
+  have hkk : k - k = 0 := bunchedBimonoidAddSubCancelLeft k 0
+  have hk1k : k + 1 - k = 1 := bunchedBimonoidAddSubCancelLeft k 1
+  have idkRows : (bunchedBimonoidIdentityMat k).rows = k := rfl
+  have idkCols : (bunchedBimonoidIdentityMat k).cols = k := rfl
+  have sigRows : ({ rows := 2, cols := 2, entries := [[0, 1], [1, 0]] } : BunchedBimonoidMat).rows = 2 := rfl
+  have sigCols : ({ rows := 2, cols := 2, entries := [[0, 1], [1, 0]] } : BunchedBimonoidMat).cols = 2 := rfl
+  rw [bunchedBimonoidPermMatrixEntryAt width (bunchedBimonoidApplyAdjacentSwap (List.range width) k)
+      rowIndex colIndex hiWidth hjWidth,
+    bunchedBimonoidGetApplyAdjacentSwapRange width k rowIndex hk hiWidth]
+  -- Goal: matEntryAt blockForm i j = if swapValue k i == j then 1 else 0
+  rcases Nat.lt_or_ge rowIndex k with hiLtK | hiGeK
+  · -- i < k : outer top blocks; swapValue k i = i
+    rw [bunchedBimonoidSwapValueElsewhere k rowIndex (Nat.ne_of_lt hiLtK)
+        (Nat.ne_of_lt (Nat.lt_trans hiLtK (Nat.lt_succ_self k)))]
+    rcases Nat.lt_or_ge colIndex k with hjLtK | hjGeK
+    · rw [bunchedBimonoidDirectSumEntryTopLeft (bunchedBimonoidIdentityMat k) _ wfIDk rowIndex colIndex hiLtK hjLtK,
+        bunchedBimonoidIdentityMatEntry k rowIndex colIndex hiLtK hjLtK]
+    · rw [bunchedBimonoidDirectSumEntryTopRight (bunchedBimonoidIdentityMat k) _ wfIDk rowIndex colIndex hiLtK hjGeK,
+        if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq)
+          (Nat.ne_of_lt (Nat.lt_of_lt_of_le hiLtK hjGeK)))]
+  · -- i ≥ k
+    rcases Nat.lt_or_ge rowIndex (k + 1) with hiLtK1 | hiGeK1
+    · -- i = k : swapValue k k = k + 1
+      have hiEqK : rowIndex = k := Nat.le_antisymm (Nat.le_of_lt_succ hiLtK1) hiGeK
+      subst rowIndex
+      rw [bunchedBimonoidSwapValueAtK k]
+      rcases Nat.lt_or_ge colIndex k with hjLtK | hjGeK
+      · rw [bunchedBimonoidDirectSumEntryBottomLeft (bunchedBimonoidIdentityMat k) _ wfIDk wfIB k colIndex hiGeK rowBelow hjLtK,
+          if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq)
+            (Nat.ne_of_gt (Nat.lt_trans hjLtK (Nat.lt_succ_self k))))]
+      · rw [bunchedBimonoidDirectSumEntryBottomRight (bunchedBimonoidIdentityMat k) _ wfIDk wfIB k colIndex hiGeK rowBelow hjGeK,
+          idkRows, idkCols, hkk]
+        rcases Nat.lt_or_ge colIndex (k + 1) with hjLtK1 | hjGeK1
+        · have hjEqK : colIndex = k := Nat.le_antisymm (Nat.le_of_lt_succ hjLtK1) hjGeK
+          subst colIndex
+          rw [hkk, bunchedBimonoidDirectSumEntryTopLeft _ _ bunchedBimonoidSigma2x2WellFormed 0 0 (by decide) (by decide)]
+          show (0 : Nat) = if k + 1 == k then 1 else 0
+          rw [if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq) (Nat.ne_of_gt (Nat.lt_succ_self k)))]
+        · rcases Nat.lt_or_ge colIndex (k + 2) with hjLtK2 | hjGeK2
+          · have hjEqK1 : colIndex = k + 1 := Nat.le_antisymm (Nat.le_of_lt_succ hjLtK2) hjGeK1
+            subst colIndex
+            rw [hk1k, bunchedBimonoidDirectSumEntryTopLeft _ _ bunchedBimonoidSigma2x2WellFormed 0 1 (by decide) (by decide)]
+            show (1 : Nat) = if k + 1 == k + 1 then 1 else 0
+            rw [if_pos (bunchedBimonoidNatBeqSelf (k + 1))]
+          · rw [bunchedBimonoidDirectSumEntryTopRight _ _ bunchedBimonoidSigma2x2WellFormed 0 (colIndex - k)
+              (by decide) (bunchedBimonoidTwoLeSubOfAdd k colIndex hjGeK2),
+              if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq) (Nat.ne_of_lt hjGeK2))]
+    · rcases Nat.lt_or_ge rowIndex (k + 2) with hiLtK2 | hiGeK2
+      · -- i = k + 1 : swapValue k (k+1) = k
+        have hiEqK1 : rowIndex = k + 1 := Nat.le_antisymm (Nat.le_of_lt_succ hiLtK2) hiGeK1
+        subst rowIndex
+        rw [bunchedBimonoidSwapValueAtKSucc k]
+        rcases Nat.lt_or_ge colIndex k with hjLtK | hjGeK
+        · rw [bunchedBimonoidDirectSumEntryBottomLeft (bunchedBimonoidIdentityMat k) _ wfIDk wfIB (k + 1) colIndex hiGeK rowBelow hjLtK,
+            if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq) (Nat.ne_of_gt hjLtK))]
+        · rw [bunchedBimonoidDirectSumEntryBottomRight (bunchedBimonoidIdentityMat k) _ wfIDk wfIB (k + 1) colIndex hiGeK rowBelow hjGeK,
+            idkRows, idkCols, hk1k]
+          rcases Nat.lt_or_ge colIndex (k + 1) with hjLtK1 | hjGeK1
+          · have hjEqK : colIndex = k := Nat.le_antisymm (Nat.le_of_lt_succ hjLtK1) hjGeK
+            subst colIndex
+            rw [hkk, bunchedBimonoidDirectSumEntryTopLeft _ _ bunchedBimonoidSigma2x2WellFormed 1 0 (by decide) (by decide)]
+            show (1 : Nat) = if k == k then 1 else 0
+            rw [if_pos (bunchedBimonoidNatBeqSelf k)]
+          · rcases Nat.lt_or_ge colIndex (k + 2) with hjLtK2 | hjGeK2
+            · have hjEqK1 : colIndex = k + 1 := Nat.le_antisymm (Nat.le_of_lt_succ hjLtK2) hjGeK1
+              subst colIndex
+              rw [hk1k, bunchedBimonoidDirectSumEntryTopLeft _ _ bunchedBimonoidSigma2x2WellFormed 1 1 (by decide) (by decide)]
+              show (0 : Nat) = if k == k + 1 then 1 else 0
+              rw [if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq) (Nat.ne_of_lt (Nat.lt_succ_self k)))]
+            · rw [bunchedBimonoidDirectSumEntryTopRight _ _ bunchedBimonoidSigma2x2WellFormed 1 (colIndex - k)
+                (by decide) (bunchedBimonoidTwoLeSubOfAdd k colIndex hjGeK2),
+                if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq)
+                  (Nat.ne_of_lt (Nat.lt_of_le_of_lt (Nat.le_succ k) hjGeK2)))]
+      · -- i > k + 1 : swapValue k i = i
+        have hne0 : rowIndex ≠ k := Nat.ne_of_gt (Nat.lt_of_lt_of_le (Nat.le_succ (k + 1)) hiGeK2)
+        have hne1 : rowIndex ≠ k + 1 := Nat.ne_of_gt hiGeK2
+        rw [bunchedBimonoidSwapValueElsewhere k rowIndex hne0 hne1]
+        rcases Nat.lt_or_ge colIndex k with hjLtK | hjGeK
+        · rw [bunchedBimonoidDirectSumEntryBottomLeft (bunchedBimonoidIdentityMat k) _ wfIDk wfIB rowIndex colIndex hiGeK rowBelow hjLtK,
+            if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq)
+              (Nat.ne_of_gt (Nat.lt_of_lt_of_le hjLtK (Nat.le_of_lt (Nat.lt_of_lt_of_le (Nat.le_succ (k + 1)) hiGeK2)))))]
+        · rw [bunchedBimonoidDirectSumEntryBottomRight (bunchedBimonoidIdentityMat k) _ wfIDk wfIB rowIndex colIndex hiGeK rowBelow hjGeK,
+            idkRows, idkCols]
+          have twoLeIRel : 2 ≤ rowIndex - k := bunchedBimonoidTwoLeSubOfAdd k rowIndex hiGeK2
+          have iRelBelow : rowIndex - k < 2 + (width - k - 2) := bunchedBimonoidSubLtOfLtAdd hiGeK rowBelow
+          rcases Nat.lt_or_ge colIndex (k + 1) with hjLtK1 | hjGeK1
+          · have hjEqK : colIndex = k := Nat.le_antisymm (Nat.le_of_lt_succ hjLtK1) hjGeK
+            subst colIndex
+            rw [hkk, bunchedBimonoidDirectSumEntryBottomLeft _ _ bunchedBimonoidSigma2x2WellFormed wfIDr
+              (rowIndex - k) 0 twoLeIRel iRelBelow (by decide),
+              if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq) hne0)]
+          · rcases Nat.lt_or_ge colIndex (k + 2) with hjLtK2 | hjGeK2
+            · have hjEqK1 : colIndex = k + 1 := Nat.le_antisymm (Nat.le_of_lt_succ hjLtK2) hjGeK1
+              subst colIndex
+              rw [hk1k, bunchedBimonoidDirectSumEntryBottomLeft _ _ bunchedBimonoidSigma2x2WellFormed wfIDr
+                (rowIndex - k) 1 twoLeIRel iRelBelow (by decide),
+                if_neg (fun heq => absurd (bunchedBimonoidNatEqOfBeqTrue _ _ heq) hne1)]
+            · rw [bunchedBimonoidDirectSumEntryBottomRight _ _ bunchedBimonoidSigma2x2WellFormed wfIDr
+                (rowIndex - k) (colIndex - k) twoLeIRel iRelBelow (bunchedBimonoidTwoLeSubOfAdd k colIndex hjGeK2),
+                sigRows, sigCols,
+                bunchedBimonoidIdentityMatEntry (width - k - 2) (rowIndex - k - 2) (colIndex - k - 2)
+                  (bunchedBimonoidSubTwoBelow k rowIndex width hiGeK2 hValid hiWidth)
+                  (bunchedBimonoidSubTwoBelow k colIndex width hjGeK2 hValid hjWidth),
+                bunchedBimonoidShiftBeqCancel k rowIndex colIndex hiGeK2 hjGeK2]
+
 end FX1Poly.Polygraph.Omega
