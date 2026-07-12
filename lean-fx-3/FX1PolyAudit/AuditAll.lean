@@ -1041,6 +1041,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleSeedAxiom
 -- FC-4 r2 R2+R1/R3 — the cup-restricted COD atom-pin reroute (dom->cod STILL refuted at k=3 by the eta1/eta3 witness as a pin; rerouted to stringQuadTwoCell_domPack_uniqueOfCod_forCups + the cap DOM dual, wide-truth-probed at k=3 AND k=4) + the k=3 engine fire (matchingOfSpineList machine-fired on genuine quadruple spines, new marker fxString_hasKGenericConnectivityEngineFired)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleAtomPinReroute
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleAtomPinRerouteAxiomWitness
+-- FC-4 r3 K1+K2 - the k=3 determinacy keystone: the dual arity-keyed atom pin re-founded past the refuted dom->cod node (cap keystone stringQuadCapSpineAtom_eq_of_domWordReadOffs routed through the cap-DOM pin, cup keystone stringQuadCupSpineAtom_eq_of_codWordReadOffs routed through the cup-COD pin, both consuming ONLY the FROZEN r2 restricted pins) + the two atom-level consumers (C2 shared-dom cap pin, C3 shared-cod cup pin DIRECT) fired fresh at k=3 on L4-carrying fixtures with negative controls; new marker fxString_hasNColourAtomPinKeystone (the census fxString_hasNColourAtomPinReroute stays false, its bill bundles the r4 width-0 sort)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleDeterminacyKeystone
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleDeterminacyKeystoneAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
