@@ -313,4 +313,34 @@ theorem arcSeamViolation_openWiresDiffer :
       ≠ (renameState (compoundFreshBlockTransposition 10 2 3) (stepCupArc arcSeamViolatingFixture 0)).openWires := by
   decide
 
+/-! ## Honesty markers -/
+
+/-- **Honesty marker — the well-formed-arc-state bundle + preservation + joint lever are SHIPPED.**  The
+carrier `WellFormedArcState`, its five preservation lemmas, the r21 cyclic negative control, the
+positive control, the two bundle-threaded joint-simulation re-exports, and the compound-sigma joint
+per-step lever — all zero-axiom.  `= true`. -/
+def fxMode_hasWellFormedArcStateBundle : Bool := true
+
+/-- **Honesty pin — the FULL whole-cell disjoint whisker-support list-equality stays OPEN.**  r24 ships
+the bundle, its preservation, and the compound-sigma joint per-step lever (tying the
+`openWires`/`nextFresh` transport, the width seam `nextFresh = baseFresh + widthA + widthB`, and the
+`0 < baseFresh` corner into one reusable adapter).  The joint `openWires`/`nextFresh` simulation was
+already available per-step and fold-level; the SOLE remaining obligation is the base `ArcStepSimCount`
+at the two Godement cores, `ArcGodementCoreSwapSimCount`
+(`fxMode_hasArcGodementSwapRenameableProof2 = false`) — the horizontal-disjointness geometric fitting
+(residual (2)).  The r23 pin stays `false`. -/
+theorem arcWellFormedStateBundle_disjointWhiskerSupport_stays_false :
+    fxMode_hasDisjointWhiskerSupport = false := rfl
+
+/-- **Honesty pin — the base Godement-core swap simulation (residual (2)) stays OPEN.**  The whole
+remaining hard core the bundle does NOT touch.  `false`. -/
+theorem arcWellFormedStateBundle_swapRenameableProof2_stays_false :
+    fxMode_hasArcGodementSwapRenameableProof2 = false := rfl
+
+/-- **Honesty pin — the refuted same-partition-fresh keystone is NEVER flipped.**  The `:545` guard of
+the MACHINE-REFUTED `ArcGodementSamePartitionFresh` (`ArcPartitionCommute.lean:472`) stays `false`; the
+bundle's `isForest` field EXCLUDES its cyclic counterexample rather than re-proving it.  `rfl`. -/
+theorem arcWellFormedStateBundle_samePartitionFresh_stays_false :
+    fxMode_hasArcGodementSamePartitionFreshProof = false := rfl
+
 end FX1Poly.Polygraph

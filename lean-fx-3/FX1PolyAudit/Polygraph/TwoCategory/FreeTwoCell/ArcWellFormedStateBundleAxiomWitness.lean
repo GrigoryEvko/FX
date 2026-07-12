@@ -38,4 +38,9 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.arcJointCupFire_links
 #print axioms FX1Poly.Polygraph.arcSeamViolatingFixture
 #print axioms FX1Poly.Polygraph.arcSeamViolation_openWiresDiffer
+#print axioms FX1Poly.Polygraph.fxMode_hasWellFormedArcStateBundle
+#print axioms FX1Poly.Polygraph.arcWellFormedStateBundle_disjointWhiskerSupport_stays_false
+#print axioms FX1Poly.Polygraph.arcWellFormedStateBundle_swapRenameableProof2_stays_false
+#print axioms FX1Poly.Polygraph.arcWellFormedStateBundle_samePartitionFresh_stays_false
+
 end FX1PolyAudit
