@@ -238,8 +238,14 @@ theorem stringMidZeroValleyTraceEquiv_holds : StringMidZeroValleyTraceEquiv := b
 the upper unit `η'`) as BOTH valleys runs the WHOLE reducer end-to-end: block-split extracts `capBlock = [ε]`,
 `cupBlock = [η']`; the derivation supplies all seven word arguments; the producer closes.  The concrete hypotheses
 are machine-checked (`decide`): the spine is a cap-then-cup valley, `stringGF` has positive length `2`, and the
-cap `ε` consumes both bottom wires so the mid-width is `0` — a genuine positive-source mid-width-`0` valley, so the
-fire is not vacuous. -/
+cap `ε` consumes both bottom wires so the mid-width is `0` — a genuine positive-source mid-width-`0` valley.  This
+probe is DIAGONAL, though: it feeds the SAME cell `stringCrossLevelCell` as both valleys, so its conclusion is
+`SpineTraceEquiv X X` with `X := stringCrossLevelCell.spine`, which `SpineTraceEquiv.refl X` proves outright — the
+probe exercises the whole reducer machinery but establishes nothing `refl` could not.  The genuine NON-diagonal
+witness (two SYNTACTICALLY DISTINCT spines with equal `matchingOf`, on which `SpineTraceEquiv.refl` FAILS with a type
+mismatch) is `stringMidZeroValleyTraceEquiv_firesOnDistinctDoubleCap` (`StringMidZeroValleyDistinctFire`): the two
+firing orders of the disjoint double-cap `ε ▷ (G·F)` / `(G·F) ◁ ε` then `ε` on `G·F·G·F ⇒ id_tip` (bottomCount `4`,
+mid-width `0`, equal `matchingOf`, leftContext-length spine projections `[0, 0]` vs `[2, 0]`). -/
 theorem stringMidZeroValleyTraceEquiv_firesOnCrossLevelValley :
     SpineTraceEquiv adjointTripleModeSignature stringCrossLevelCell.spine stringCrossLevelCell.spine :=
   stringMidZeroValleyTraceEquiv_holds stringCrossLevelCell stringCrossLevelCell
@@ -265,7 +271,9 @@ block-splits the two `RawTwoCellExpr` valleys and DERIVES the seven boundary-wor
 
 The truth-probe `stringMidZeroValleyTraceEquiv_firesOnCrossLevelValley` fires the whole reducer on the genuine
 cross-level valley `ε` then `η'` (`stringCrossLevelCell : G·F ⇒ G·H`, source length `2`, mid-width `0`), with the
-concrete valley / positivity / mid-`0` hypotheses machine-checked — so the fire is not vacuous.
+concrete valley / positivity / mid-`0` hypotheses machine-checked — but as BOTH valleys, so it is DIAGONAL
+(conclusion `SpineTraceEquiv X X`, `refl`-provable); the genuine non-diagonal distinct-pair witness is
+`stringMidZeroValleyTraceEquiv_firesOnDistinctDoubleCap` (`StringMidZeroValleyDistinctFire`).
 
   What this does NOT flip (honestly): the completeness masters `fxString_hasAdjointTripleCompleteness`
   (`StringMatchingCompleteness`) and `fxString_hasConvOfMapEqPortFlip` (`StringConvOfMapEqPort`) stay `false`.  This
