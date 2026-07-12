@@ -451,6 +451,19 @@ induction identically to r10's two-block `disjointUnionAdditivityIsNamedNode`.
 monochromaticity (`guardUnionForwardToBlock`) + the disjoint-filter-length lemma (`filterOrLengthSplit`); the
 GENERAL `k`-block additivity over arbitrary letter-disjoint blocks stays NAMED.  `Bool := true` unchanged.
 
+★★ **FLIP (r16, GENERAL delivery — DELIVERED).**  The GENERAL k-block additivity over ARBITRARY
+letter-disjoint blocks is now DELIVERED `∀ degree ≥ 1` (`kBlockAdditivity`, file
+`DisjointBlockUnionAdditivityGeneral`): the two-block case is re-proved over an abstract Bool `separator`
+(`twoBlockAdditivityOverSeparator`, replacing r15's literal `|| false` reductions by
+`isObstructionPairAppendSplit` + separator agreement), then folded to k blocks by List induction (the one
+new leg `restPairSeparatorFalse`, base case `emptyEdgesCensusZeroAtPositiveDegree`), recovering r15's
+`twoBlockDisjointAdditivity` as the corollary `twoBlockDisjointAdditivityViaSeparator` and witnessed k=3
+end-to-end by `threeSelfLoopBlockAdditivity`.  Block-locality (pairwise alphabet disjointness) is NECESSARY
+— the r16 cross-edge negative control breaks additivity without it.  The monomial-model additivity leg of
+#2145 now RESTS; the general-CONVERGENT telescope wall `generalTelescopeHomologyIsNamedNode` stays
+EXPLICITLY WALLED (census = homology only where the Anick differential is zero).  `Bool := true` unchanged
+(the honest-record convention: the node's marker is stable; its DELIVERED status is recorded here).
+
 Read the meaning from THIS docstring.  `= true`. -/
 def naryDisjointAdditivityGeneralIsNamedNode : Bool := true
 
