@@ -522,6 +522,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescSingleCupRegionDriver
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescSingleCupEagerDriver
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescLoopBubbleEngine
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStraddleSinkOrdered
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescRegionTransportKit
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescStandardFoldR5Ledger
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescBoundedBoundaryComponents
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescGeneratorBridge
