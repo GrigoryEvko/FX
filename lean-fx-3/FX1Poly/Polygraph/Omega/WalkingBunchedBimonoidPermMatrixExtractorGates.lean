@@ -356,4 +356,56 @@ theorem bunchedBimonoidSigmaAtIsTransposition (width k : Nat) (hValid : k + 2 �
                   (bunchedBimonoidSubTwoBelow k colIndex width hjGeK2 hValid hjWidth),
                 bunchedBimonoidShiftBeqCancel k rowIndex colIndex hiGeK2 hjGeK2]
 
+/-! # =========================================================================================
+    # GATE (b) — the matMul column-swap law (indicator picks one term)
+    # =========================================================================================
+-/
+
+/-- ★★★ **GATE (b) — the matMul column-swap law.**  `matMul (permMatrixOf width p) (permMatrixOf width
+(applyAdjacentSwap (List.range width) k)) = permMatrixOf width (p.map (swapValue k))` for `k + 1 < width`, a
+length-`width` permutation `p` with entries `< width`.  The r11 wall's second named gate.  Entry-wise via
+`matMulEntryRead` (expose the contraction), `permMatrixEntryAt` + RELABEL-GET on each factor, then the LEFT delta
+collapse picks the single term `c = p[i]`; the right side reads through `getMapNat`.  The finite-sum
+"indicator-picks-one-term" argument. -/
+theorem bunchedBimonoidMatMulColumnSwapLaw (width k : Nat) (perm : List Nat)
+    (hk : k + 1 < width) (hLen : perm.length = width)
+    (hBound : ∀ index, index < width → bunchedBimonoidNatListGet perm index < width) :
+    bunchedBimonoidMatMul (bunchedBimonoidPermMatrixOf width perm)
+        (bunchedBimonoidPermMatrixOf width (bunchedBimonoidApplyAdjacentSwap (List.range width) k))
+      = bunchedBimonoidPermMatrixOf width (perm.map (bunchedBimonoidSwapValue k)) := by
+  have tkRows : (bunchedBimonoidPermMatrixOf width (bunchedBimonoidApplyAdjacentSwap (List.range width) k)).rows
+      = width := rfl
+  refine bunchedBimonoidMatExtByEntries _ _
+    (bunchedBimonoidMatMulWellFormed (bunchedBimonoidPermMatrixOf width perm)
+      (bunchedBimonoidPermMatrixOf width (bunchedBimonoidApplyAdjacentSwap (List.range width) k)))
+    (bunchedBimonoidPermMatrixWellFormed width (perm.map (bunchedBimonoidSwapValue k)))
+    rfl rfl ?_
+  intro rowIndex colIndex rowBelow colBelow
+  have hiWidth : rowIndex < width := rowBelow
+  have hjWidth : colIndex < width := colBelow
+  rw [bunchedBimonoidMatMulEntryRead (bunchedBimonoidPermMatrixOf width perm)
+      (bunchedBimonoidPermMatrixOf width (bunchedBimonoidApplyAdjacentSwap (List.range width) k))
+      rowIndex colIndex hiWidth hjWidth, tkRows]
+  rw [bunchedBimonoidRangeMapCongr
+    (fun contractionIndex =>
+      bunchedBimonoidMatEntryAt (bunchedBimonoidPermMatrixOf width perm) rowIndex contractionIndex
+        * bunchedBimonoidMatEntryAt
+            (bunchedBimonoidPermMatrixOf width (bunchedBimonoidApplyAdjacentSwap (List.range width) k))
+            contractionIndex colIndex)
+    (fun contractionIndex =>
+      (if bunchedBimonoidNatListGet perm rowIndex == contractionIndex then 1 else 0)
+        * (if bunchedBimonoidSwapValue k contractionIndex == colIndex then 1 else 0))
+    width
+    (fun contractionIndex hc => by
+      dsimp only
+      rw [bunchedBimonoidPermMatrixEntryAt width perm rowIndex contractionIndex hiWidth hc,
+        bunchedBimonoidPermMatrixEntryAt width (bunchedBimonoidApplyAdjacentSwap (List.range width) k)
+          contractionIndex colIndex hc hjWidth,
+        bunchedBimonoidGetApplyAdjacentSwapRange width k contractionIndex hk hc])]
+  rw [bunchedBimonoidDeltaCollapseLeft
+    (fun contractionIndex => if bunchedBimonoidSwapValue k contractionIndex == colIndex then 1 else 0)
+    width (bunchedBimonoidNatListGet perm rowIndex) (hBound rowIndex hiWidth)]
+  rw [bunchedBimonoidPermMatrixEntryAt width (perm.map (bunchedBimonoidSwapValue k)) rowIndex colIndex hiWidth hjWidth,
+    bunchedBimonoidGetMapNat (bunchedBimonoidSwapValue k) perm rowIndex (by rw [hLen]; exact hiWidth)]
+
 end FX1Poly.Polygraph.Omega
