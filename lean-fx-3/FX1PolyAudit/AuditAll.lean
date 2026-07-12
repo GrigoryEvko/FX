@@ -941,6 +941,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyCellR
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringTwoSubProducerBeam
 -- FC-3 r39 — the genuine non-diagonal distinct-pair fire of the mid-width-`0` valley reducer (r38 diagonal probe superseded; two distinct spines [0,0] vs [2,0], equal matchingOf)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyDistinctFire
+-- FC-3 r39 — the beam re-wired from two colour-keyed sub-producers to one (width-`0` wall was never open math: the r17 proof wired in; residual now one brick)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringOneSubProducerBeam
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
