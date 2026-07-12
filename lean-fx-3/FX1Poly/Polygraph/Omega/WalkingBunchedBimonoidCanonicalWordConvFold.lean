@@ -152,4 +152,96 @@ the star scope.  Matrix-soundness pinned at width 3 (`...WhiskerMatrixShared`). 
 Brauer flat-`List` lane.  Zero-axiom (per-decl `#assert_no_axioms` + independent `#print axioms` in the twin). -/
 def fxBunchedBimonoid_whiskerOverVcompSpellingBridgeShipped : Bool := true
 
+/-! # =========================================================================================
+    # S2 — THE GENERIC WHISKER-OVER-VCOMP BRIDGE + THE CANCEL LETTER CONV (`s_k s_k ~ id`)
+    # =========================================================================================
+
+★ The involution bridge S1 is the `upper = lower = addSigmaGen` instance of a GENERIC whisker-over-vcomp bridge:
+any inner vertical composite `vcomp upper lower` in whisker position distributes into the vcomp of the two
+whiskered factors, over the star scope, by the same two `StrictAxiomRel` rows.  Composed with the shipped r9
+`bunchedBimonoidInvolutionAtPosition` and the two strict `id`-whisker units, this fires the CANCEL letter's
+`s_k s_k = e` all the way to the identity `id (boundarySource (sigmaAt w k))` — a complete letter-level case
+bridge, needing NO append reshape (gap (ii)). -/
+
+/-- ★★ **THE GENERIC WHISKER-OVER-VCOMP BRIDGE.**  For any pads `leftPad`, `rightPad` and any inner factors
+`upperCell`, `lowerCell`, the whisker of an inner `vcomp` distributes over the star scope:
+
+  `whiskerLeft L (whiskerRight (upper . lower) R) ~ vcomp (whiskerLeft L (whiskerRight upper R)) (whiskerLeft L
+   (whiskerRight lower R))`.
+
+`whiskerRightFunctorial upper lower R` under `whiskerLeftCongr L`, then `whiskerLeftFunctorial L _ _` — both
+`StrictAxiomRel`, `Or.inl` into the star scope.  The S1 involution bridge is the `(addSigmaGen, addSigmaGen)`
+instance (`SigmaInvolutionLeftLeg = vcomp addSigmaGen addSigmaGen`, and `whiskerLeft (a^k) (whiskerRight
+addSigmaGen (a^(w-k-2))) = sigmaAt w k` definitionally). -/
+theorem bunchedBimonoidWhiskerOverVcompConv (leftPad rightPad : CellExpr bunchedBimonoidOmegaComputad 1)
+    (upperCell lowerCell : CellExpr bunchedBimonoidOmegaComputad 2) :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (CellExpr.whiskerLeft leftPad (CellExpr.whiskerRight (CellExpr.vcomp upperCell lowerCell) rightPad))
+      (CellExpr.vcomp (CellExpr.whiskerLeft leftPad (CellExpr.whiskerRight upperCell rightPad))
+        (CellExpr.whiskerLeft leftPad (CellExpr.whiskerRight lowerCell rightPad))) :=
+  SaturatedConvOverWithId.trans
+    (SaturatedConvOverWithId.whiskerLeftCongr leftPad
+      (bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+        (StrictAxiomRel.whiskerRightFunctorial upperCell lowerCell rightPad)))
+    (bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+      (StrictAxiomRel.whiskerLeftFunctorial leftPad
+        (CellExpr.whiskerRight upperCell rightPad) (CellExpr.whiskerRight lowerCell rightPad)))
+
+/-- ★★★ **THE CANCEL LETTER CONV — `s_k s_k ~ id` at the star scope, the CANCEL case bridge.**  The `sigmaAt`-chain
+`vcomp (sigmaAt w k) (sigmaAt w k)` converts, over the star scope, to the identity on the letter's source word
+`id (boundarySource (sigmaAt w k))` (= `id (vcomp (a^k) (vcomp aaWord (a^(w-k-2))))`, by S0):
+
+  1. `symm` of the S1 whisker-over-vcomp bridge lands `whiskerLeft (a^k) (whiskerRight (sigma . sigma) (a^(w-k-2)))`;
+  2. the shipped r9 `bunchedBimonoidInvolutionAtPosition` fires `sigma . sigma ~ id_{a.a}`
+     (`SigmaInvolutionRightLeg = id aaWord`);
+  3. `whiskerRightUnit` absorbs the right whisker of the identity (`whiskerRight (id aaWord) (a^(w-k-2)) ~
+     id (vcomp aaWord (a^(w-k-2)))`) under `whiskerLeftCongr (a^k)`;
+  4. `whiskerLeftUnit` absorbs the left whisker of the identity — reaching `id (vcomp (a^k) (vcomp aaWord
+     (a^(w-k-2))))`.
+
+This is the DATA-level CANCEL branch of `bunchedBimonoidCombInsertDataRealizesSwap` (r14) lifted to a CONV over the
+star scope, at letter granularity — no append reshape (gap (ii)) required, because the CANCEL letter's target is a
+bare identity whose word is exactly the letter's source boundary. -/
+theorem bunchedBimonoidCancelLetterConv (wordWidth positionK : Nat) :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (CellExpr.vcomp (bunchedBimonoidSigmaAt wordWidth positionK)
+        (bunchedBimonoidSigmaAt wordWidth positionK))
+      (CellExpr.id (boundarySource (bunchedBimonoidSigmaAt wordWidth positionK))) :=
+  SaturatedConvOverWithId.trans
+    (SaturatedConvOverWithId.symm (bunchedBimonoidSigmaChainInvolutionWhiskerConv wordWidth positionK))
+    (SaturatedConvOverWithId.trans
+      (bunchedBimonoidInvolutionAtPosition (bunchedBimonoidAWordPow positionK)
+        (bunchedBimonoidAWordPow (wordWidth - positionK - 2)))
+      (SaturatedConvOverWithId.trans
+        (SaturatedConvOverWithId.whiskerLeftCongr (bunchedBimonoidAWordPow positionK)
+          (bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+            (StrictAxiomRel.whiskerRightUnit bunchedBimonoidAaWord
+              (bunchedBimonoidAWordPow (wordWidth - positionK - 2)))))
+        (bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+          (StrictAxiomRel.whiskerLeftUnit (bunchedBimonoidAWordPow positionK)
+            (CellExpr.vcomp bunchedBimonoidAaWord (bunchedBimonoidAWordPow (wordWidth - positionK - 2)))))))
+
+/-! ## S2 truth-probe (the CANCEL letter is matrix-sound: both endpoints are the identity; width 3) -/
+
+/-- The CANCEL letter's endpoints share their matrix at width 3, position 0 (`rfl`): both `vcomp (sigmaAt 3 0)
+(sigmaAt 3 0)` and `id (boundarySource (sigmaAt 3 0))` evaluate to the identity `[[1,0,0],[0,1,0],[0,0,1]]`. -/
+theorem bunchedBimonoidCancelLetterMatrixShared :
+    bunchedBimonoidEvalCell
+        (CellExpr.vcomp (bunchedBimonoidSigmaAt 3 0) (bunchedBimonoidSigmaAt 3 0))
+      = bunchedBimonoidEvalCell
+        (CellExpr.id (boundarySource (bunchedBimonoidSigmaAt 3 0))) := rfl
+
+/-! ## The S2 marker -/
+
+/-- ★★★ **ESTABLISHED (S2) — the generic whisker-over-vcomp bridge + the CANCEL letter CONV are DELIVERED.**
+`= true` records `bunchedBimonoidWhiskerOverVcompConv` (the generic distribution of an inner whiskered vcomp over
+the star scope) and `bunchedBimonoidCancelLetterConv` (the CANCEL case bridge: `vcomp (sigmaAt w k) (sigmaAt w k)`
+converts to `id (boundarySource (sigmaAt w k))` over the star scope, via the S1 bridge + the shipped r9
+`bunchedBimonoidInvolutionAtPosition` + the two strict `id`-whisker units).  This is the letter-level CONV realising
+the r14 CANCEL branch of `bunchedBimonoidCombInsertDataRealizesSwap` — DELIVERED with NO append reshape (gap (ii))
+needed, since the CANCEL target is a bare identity whose word is exactly the letter's source boundary.
+Matrix-soundness pinned at width 3 (`...CancelLetterMatrixShared`).  Zero-axiom (per-decl `#assert_no_axioms` +
+independent `#print axioms` in the twin). -/
+def fxBunchedBimonoid_cancelLetterConvShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega

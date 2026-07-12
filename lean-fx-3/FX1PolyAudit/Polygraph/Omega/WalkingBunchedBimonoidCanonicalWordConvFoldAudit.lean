@@ -21,11 +21,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaChainInvolutionWhiskerMatrixShared
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_whiskerOverVcompSpellingBridgeShipped
 
--- Independent (non-fuel) axiom prints on the boundary facts, the bridge, and the marker.
+-- S2 — the generic whisker-over-vcomp bridge + the CANCEL letter CONV + its pin + the marker.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWhiskerOverVcompConv
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCancelLetterConv
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCancelLetterMatrixShared
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_cancelLetterConvShipped
+
+-- Independent (non-fuel) axiom prints on the boundary facts, the bridges, the CANCEL letter, and the markers.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowBoundarySource
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtBoundarySource
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaChainInvolutionWhiskerConv
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaChainInvolutionWhiskerMatrixShared
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWhiskerOverVcompConv
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCancelLetterConv
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCancelLetterMatrixShared
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_whiskerOverVcompSpellingBridgeShipped
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_cancelLetterConvShipped
 
 end FX1PolyAudit
