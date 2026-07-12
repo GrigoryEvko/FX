@@ -32,11 +32,43 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Homology.censusZeroPropagatesUpward
 #assert_no_axioms FX1Poly.Polygraph.Homology.acyclicCensusZeroPropagatesFromAlphabetLength
 
+-- T2: the filter-length toolkit
+#assert_no_axioms FX1Poly.Polygraph.Homology.filterConsFalse
+#assert_no_axioms FX1Poly.Polygraph.Homology.filterConsTrue
+#assert_no_axioms FX1Poly.Polygraph.Homology.filterCongr
+#assert_no_axioms FX1Poly.Polygraph.Homology.natAddOnePullLeft
+#assert_no_axioms FX1Poly.Polygraph.Homology.filterOrLengthSplit
+
+-- T2: the pair-level append split + the reverse (block -> union) containment
+#assert_no_axioms FX1Poly.Polygraph.Homology.isObstructionPairAppendSplit
+#assert_no_axioms FX1Poly.Polygraph.Homology.guardAppendOfLeft
+#assert_no_axioms FX1Poly.Polygraph.Homology.guardAppendOfRight
+
+-- T2: the forward (hard) monochromaticity
+#assert_no_axioms FX1Poly.Polygraph.Homology.unionPairLeadZeroForcesZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.unionPairLeadOneForcesOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.unionPairFirstLetterCases
+#assert_no_axioms FX1Poly.Polygraph.Homology.guardXxOfUnionLeadZero
+#assert_no_axioms FX1Poly.Polygraph.Homology.guardYyOfUnionLeadOne
+#assert_no_axioms FX1Poly.Polygraph.Homology.guardUnionForwardToBlock
+
+-- T2: the pointwise identity, disjointness, and the additivity headline
+#assert_no_axioms FX1Poly.Polygraph.Homology.guardUnionEqualsBlockOr
+#assert_no_axioms FX1Poly.Polygraph.Homology.xxTrueImpliesYyFalse
+#assert_no_axioms FX1Poly.Polygraph.Homology.guardBlocksDisjoint
+#assert_no_axioms FX1Poly.Polygraph.Homology.twoBlockDisjointAdditivity
+
+-- the r15 ledger marker
+#assert_no_axioms FX1Poly.Polygraph.Homology.acyclicTruncationDownwardClosureAndBlockAdditivityIsComplete
+
 /-! ### Independent `#print axioms` cross-check for the load-bearing decls (not trusting the fuel-based
     macro alone) — each must report "does not depend on any axioms". -/
 
 #print axioms FX1Poly.Polygraph.Homology.censusZeroPropagatesUpward
 #print axioms FX1Poly.Polygraph.Homology.censusPositiveDownwardClosed
 #print axioms FX1Poly.Polygraph.Homology.memWordsOverAlphabetConsSplit
+#print axioms FX1Poly.Polygraph.Homology.twoBlockDisjointAdditivity
+#print axioms FX1Poly.Polygraph.Homology.guardUnionEqualsBlockOr
+#print axioms FX1Poly.Polygraph.Homology.filterOrLengthSplit
 
 end FX1PolyAudit
