@@ -210,4 +210,233 @@ theorem twoCupArcLinks_cons (state : ArcWireState) (lowPosition gap : Nat)
   exact unionFindJoin_cons_of_roots _ (state.nextFresh + 3 + 2) (state.nextFresh + 3) (state.nextFresh + 5)
     (state.nextFresh + 4) rootNf5M3 rootNf3M3 distinctNf5Nf4
 
+/-! ## C2 — the `rootComm` union-find automorphism of the two-cup shared forest
+
+`blockRotate nf 3 3` — the swap of block1 `[nf, nf+3)` with block2 `[nf+3, nf+6)`, fixing base and tail — is a
+union-find automorphism of `L' = (nf+5, nf+4) :: (nf+3, nf+4) :: (nf+2, nf+1) :: (nf, nf+1) :: orig`.  The 4-edge
+port of `MatchingCupSwapRootComm.blockSwap_rootComm`: the four nested `unionFindRootOf_consJoin` give the closed
+root table (block1 ⇒ `nf+1`, block2 ⇒ `nf+4`, base/tail unchanged), and the finite case analysis on where `x`
+sits relative to `nf … nf+5` discharges the equivariance `root(σ x) = σ(root x)` in every zone using the
+block-rotation read-offs. -/
+
+/-- ★ **The cup-restricted `rootComm` (the residual-(2) heart), general form.**  Over a fresh forest `orig`
+(every edge endpoint `< nf`), the block rotation `blockRotate nf 3 3` is a union-find automorphism of the two-cup
+shared forest `L' = (nf+5, nf+4) :: (nf+3, nf+4) :: (nf+2, nf+1) :: (nf, nf+1) :: orig`:
+
+  `unionFindRootOf L' (blockRotate nf 3 3 x) = blockRotate nf 3 3 (unionFindRootOf L' x)`.
+
+This is the CUP restriction of the machine-refuted general `MatchingGodementCoreSwapSim.rootComm` (the cap MERGE
+flips a merged root with the join order); TRUE here because cups allocate FRESH legs, so `σ` swaps the two
+disjoint fresh three-id blocks (roots `nf+1 ↔ nf+4`) and fixes base and tail.  The printed
+equivariance-of-a-definable-map identity `f(g·x) = g·f(x)` (Nominal Sets), instantiated by `f = root`, `g = σ`. -/
+theorem twoCupGodement_rootComm (nf : Nat) (orig : List (Nat × Nat))
+    (origBelow : ∀ edge ∈ orig, edge.1 < nf ∧ edge.2 < nf)
+    (origForest : isUnionFindForest orig) :
+    ∀ x, unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig)
+        (blockRotate nf 3 3 x)
+       = blockRotate nf 3 3 (unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1)
+          :: (nf, nf + 1) :: orig) x) := by
+  have childrenBelow : ∀ edge ∈ orig, edge.1 < nf := fun edge he => (origBelow edge he).1
+  have parentsBelow : ∀ edge ∈ orig, edge.2 < nf := fun edge he => (origBelow edge he).2
+  -- children-below bounds up the tower
+  have childrenBelowL1 : ∀ edge ∈ (nf, nf + 1) :: orig, edge.1 < nf + 1 := by
+    intro edge he
+    cases he with
+    | head => exact Nat.lt_add_of_pos_right (by decide)
+    | tail _ heRest => exact Nat.lt_trans (childrenBelow edge heRest) (Nat.lt_add_of_pos_right (by decide))
+  have childrenBelowL2 : ∀ edge ∈ (nf + 2, nf + 1) :: (nf, nf + 1) :: orig, edge.1 < nf + 3 := by
+    intro edge he
+    cases he with
+    | head => exact Nat.add_lt_add_left (by decide) nf
+    | tail _ heRest =>
+        cases heRest with
+        | head => exact Nat.lt_add_of_pos_right (by decide)
+        | tail _ heRest2 => exact Nat.lt_trans (childrenBelow edge heRest2) (Nat.lt_add_of_pos_right (by decide))
+  have childrenBelowL3 : ∀ edge ∈ (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig, edge.1 < nf + 4 := by
+    intro edge he
+    cases he with
+    | head => exact Nat.add_lt_add_left (by decide) nf
+    | tail _ heRest => exact Nat.lt_trans (childrenBelowL2 edge heRest) (Nat.add_lt_add_left (by decide) nf)
+  -- parentless facts at each level
+  have plNf : unionFindParent orig nf = none :=
+    unionFindParent_none_of_lt nf orig childrenBelow nf (Nat.le_refl _)
+  have plNf1 : unionFindParent orig (nf + 1) = none :=
+    unionFindParent_none_of_lt nf orig childrenBelow (nf + 1) (Nat.le_add_right _ _)
+  have plNf1L1 : unionFindParent ((nf, nf + 1) :: orig) (nf + 1) = none :=
+    unionFindParent_none_of_lt (nf + 1) _ childrenBelowL1 (nf + 1) (Nat.le_refl _)
+  have plNf2L1 : unionFindParent ((nf, nf + 1) :: orig) (nf + 2) = none :=
+    unionFindParent_none_of_lt (nf + 1) _ childrenBelowL1 (nf + 2) (Nat.add_le_add_left (by decide) nf)
+  have plNf3L2 : unionFindParent ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 3) = none :=
+    unionFindParent_none_of_lt (nf + 3) _ childrenBelowL2 (nf + 3) (Nat.le_refl _)
+  have plNf4L2 : unionFindParent ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 4) = none :=
+    unionFindParent_none_of_lt (nf + 3) _ childrenBelowL2 (nf + 4) (Nat.add_le_add_left (by decide) nf)
+  have plNf5L2 : unionFindParent ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 5) = none :=
+    unionFindParent_none_of_lt (nf + 3) _ childrenBelowL2 (nf + 5) (Nat.add_le_add_left (by decide) nf)
+  have plNf4L3 : unionFindParent ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 4) = none :=
+    unionFindParent_none_of_lt (nf + 4) _ childrenBelowL3 (nf + 4) (Nat.le_refl _)
+  have plNf5L3 : unionFindParent ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 5) = none :=
+    unionFindParent_none_of_lt (nf + 4) _ childrenBelowL3 (nf + 5) (Nat.add_le_add_left (by decide) nf)
+  -- distinctness facts (¬ (a == b) = true)
+  have dNf01 : ¬ (nf == nf + 1) = true := natBeqNeTrue (Nat.ne_of_lt (Nat.lt_add_of_pos_right (by decide)))
+  have dNf02 : ¬ (nf == nf + 2) = true := natBeqNeTrue (Nat.ne_of_lt (Nat.lt_add_of_pos_right (by decide)))
+  have dNf21 : ¬ (nf + 2 == nf + 1) = true := natBeqNeTrue (Nat.ne_of_gt (Nat.add_lt_add_left (by decide) nf))
+  have dNf31 : ¬ (nf + 3 == nf + 1) = true := natBeqNeTrue (Nat.ne_of_gt (Nat.add_lt_add_left (by decide) nf))
+  have dNf34 : ¬ (nf + 3 == nf + 4) = true := natBeqNeTrue (Nat.ne_of_lt (Nat.add_lt_add_left (by decide) nf))
+  have dNf35 : ¬ (nf + 3 == nf + 5) = true := natBeqNeTrue (Nat.ne_of_lt (Nat.add_lt_add_left (by decide) nf))
+  have dNf51 : ¬ (nf + 5 == nf + 1) = true := natBeqNeTrue (Nat.ne_of_gt (Nat.add_lt_add_left (by decide) nf))
+  have dNf54 : ¬ (nf + 5 == nf + 4) = true := natBeqNeTrue (Nat.ne_of_gt (Nat.add_lt_add_left (by decide) nf))
+  -- forests up the tower
+  have forestL1 : isUnionFindForest ((nf, nf + 1) :: orig) := ⟨plNf, plNf1, dNf01, origForest⟩
+  have forestL2 : isUnionFindForest ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) :=
+    ⟨plNf2L1, plNf1L1, dNf21, forestL1⟩
+  have forestL3 : isUnionFindForest ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) :=
+    ⟨plNf3L2, plNf4L2, dNf34, forestL2⟩
+  -- the four consJoin root laws
+  have rootL1 : ∀ node, unionFindRootOf ((nf, nf + 1) :: orig) node
+      = if nf == unionFindRootOf orig node then nf + 1 else unionFindRootOf orig node := fun node =>
+    unionFindRootOf_consJoin orig nf (nf + 1) origForest plNf plNf1 dNf01 node
+  have rootL2 : ∀ node, unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) node
+      = if nf + 2 == unionFindRootOf ((nf, nf + 1) :: orig) node then nf + 1
+        else unionFindRootOf ((nf, nf + 1) :: orig) node := fun node =>
+    unionFindRootOf_consJoin ((nf, nf + 1) :: orig) (nf + 2) (nf + 1) forestL1 plNf2L1 plNf1L1 dNf21 node
+  have rootL3 : ∀ node, unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) node
+      = if nf + 3 == unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) node then nf + 4
+        else unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) node := fun node =>
+    unionFindRootOf_consJoin ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 3) (nf + 4) forestL2 plNf3L2 plNf4L2
+      dNf34 node
+  have rootL4 : ∀ node,
+      unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) node
+      = if nf + 5 == unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) node then nf + 4
+        else unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) node := fun node =>
+    unionFindRootOf_consJoin ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 5) (nf + 4)
+      forestL3 plNf5L3 plNf4L3 dNf54 node
+  -- base / tail roots
+  have rootOrigGe : ∀ node, nf ≤ node → unionFindRootOf orig node = node := fun node hle =>
+    unionFindRootOf_of_parentless orig node (unionFindParent_none_of_lt nf orig childrenBelow node hle)
+  have rootOrigLt : ∀ node, node < nf → unionFindRootOf orig node < nf := fun node hlt =>
+    unionFindRootOf_lt_of_fresh orig nf parentsBelow node hlt
+  -- block1 root chain (nf, nf+1, nf+2 → nf+1)
+  have rootL1_nf : unionFindRootOf ((nf, nf + 1) :: orig) nf = nf + 1 := by
+    rw [rootL1 nf, rootOrigGe nf (Nat.le_refl _), if_pos (natBeqSelf nf)]
+  have rootL1_nf1 : unionFindRootOf ((nf, nf + 1) :: orig) (nf + 1) = nf + 1 := by
+    rw [rootL1 (nf + 1), rootOrigGe (nf + 1) (Nat.le_add_right _ _), if_neg dNf01]
+  have rootL1_nf2 : unionFindRootOf ((nf, nf + 1) :: orig) (nf + 2) = nf + 2 := by
+    rw [rootL1 (nf + 2), rootOrigGe (nf + 2) (Nat.le_add_right _ _), if_neg dNf02]
+  have rootL2_nf : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) nf = nf + 1 := by
+    rw [rootL2 nf, rootL1_nf, if_neg dNf21]
+  have rootL2_nf1 : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 1) = nf + 1 := by
+    rw [rootL2 (nf + 1), rootL1_nf1, if_neg dNf21]
+  have rootL2_nf2 : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 2) = nf + 1 := by
+    rw [rootL2 (nf + 2), rootL1_nf2, if_pos (natBeqSelf (nf + 2))]
+  -- block2 roots in L2 (parentless: fresh above)
+  have rootL2_nf3 : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 3) = nf + 3 :=
+    unionFindRootOf_of_parentless _ (nf + 3) plNf3L2
+  have rootL2_nf4 : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 4) = nf + 4 :=
+    unionFindRootOf_of_parentless _ (nf + 4) plNf4L2
+  have rootL2_nf5 : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 5) = nf + 5 :=
+    unionFindRootOf_of_parentless _ (nf + 5) plNf5L2
+  -- L3 adds edge (nf+3, nf+4): block1 stays nf+1, block2 collapses nf+3 → nf+4
+  have rootL3_nf : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) nf = nf + 1 := by
+    rw [rootL3 nf, rootL2_nf, if_neg dNf31]
+  have rootL3_nf1 : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 1)
+      = nf + 1 := by rw [rootL3 (nf + 1), rootL2_nf1, if_neg dNf31]
+  have rootL3_nf2 : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 2)
+      = nf + 1 := by rw [rootL3 (nf + 2), rootL2_nf2, if_neg dNf31]
+  have rootL3_nf3 : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 3)
+      = nf + 4 := by rw [rootL3 (nf + 3), rootL2_nf3, if_pos (natBeqSelf (nf + 3))]
+  have rootL3_nf4 : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 4)
+      = nf + 4 := by rw [rootL3 (nf + 4), rootL2_nf4, if_neg dNf34]
+  have rootL3_nf5 : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) (nf + 5)
+      = nf + 5 := by rw [rootL3 (nf + 5), rootL2_nf5, if_neg dNf35]
+  -- L' adds edge (nf+5, nf+4): block2's nf+5 collapses to nf+4, block1 unchanged
+  have rootLp_nf : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig)
+      nf = nf + 1 := by rw [rootL4 nf, rootL3_nf, if_neg dNf51]
+  have rootLp_nf1 : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1)
+      :: orig) (nf + 1) = nf + 1 := by rw [rootL4 (nf + 1), rootL3_nf1, if_neg dNf51]
+  have rootLp_nf2 : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1)
+      :: orig) (nf + 2) = nf + 1 := by rw [rootL4 (nf + 2), rootL3_nf2, if_neg dNf51]
+  have rootLp_nf3 : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1)
+      :: orig) (nf + 3) = nf + 4 := by rw [rootL4 (nf + 3), rootL3_nf3, if_neg dNf54]
+  have rootLp_nf4 : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1)
+      :: orig) (nf + 4) = nf + 4 := by rw [rootL4 (nf + 4), rootL3_nf4, if_neg dNf54]
+  have rootLp_nf5 : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1)
+      :: orig) (nf + 5) = nf + 4 := by rw [rootL4 (nf + 5), rootL3_nf5, if_pos (natBeqSelf (nf + 5))]
+  -- the block-rotation per-id read-offs (block1 shifts up by 3, block2 shifts down by 3)
+  have sig0 : blockRotate nf 3 3 nf = nf + 3 :=
+    blockRotate_firstBlock nf 3 3 nf (Nat.le_refl _) (Nat.lt_add_of_pos_right (by decide))
+  have sig1 : blockRotate nf 3 3 (nf + 1) = nf + 4 :=
+    blockRotate_firstBlock nf 3 3 (nf + 1) (Nat.le_add_right _ _) (Nat.add_lt_add_left (by decide) nf)
+  have sig2 : blockRotate nf 3 3 (nf + 2) = nf + 5 :=
+    blockRotate_firstBlock nf 3 3 (nf + 2) (Nat.le_add_right _ _) (Nat.add_lt_add_left (by decide) nf)
+  have sig3 : blockRotate nf 3 3 (nf + 3) = nf := by
+    rw [blockRotate_secondBlock nf 3 3 (nf + 3) (Nat.le_refl _) (Nat.lt_add_of_pos_right (by decide))]
+    exact addSubCancelRight nf 3
+  have sig4 : blockRotate nf 3 3 (nf + 4) = nf + 1 := by
+    have hlo : nf + 3 ≤ nf + 4 := Nat.add_le_add_left (by decide) nf
+    have hhi : nf + 4 < nf + 3 + 3 := by show nf + 4 < nf + 6; exact Nat.add_lt_add_left (by decide) nf
+    rw [blockRotate_secondBlock nf 3 3 (nf + 4) hlo hhi]
+    exact addSubCancelRight (nf + 1) 3
+  have sig5 : blockRotate nf 3 3 (nf + 5) = nf + 2 := by
+    have hlo : nf + 3 ≤ nf + 5 := Nat.add_le_add_left (by decide) nf
+    have hhi : nf + 5 < nf + 3 + 3 := by show nf + 5 < nf + 6; exact Nat.add_lt_add_left (by decide) nf
+    rw [blockRotate_secondBlock nf 3 3 (nf + 5) hlo hhi]
+    exact addSubCancelRight (nf + 2) 3
+  -- the main equivariance case analysis on where `x` sits among nf … nf+5
+  intro x
+  cases hbNf : x == nf with
+  | true => rw [of_decide_eq_true hbNf, rootLp_nf, sig0, rootLp_nf3, sig1]
+  | false =>
+    cases hbNf1 : x == nf + 1 with
+    | true => rw [of_decide_eq_true hbNf1, rootLp_nf1, sig1, rootLp_nf4]
+    | false =>
+      cases hbNf2 : x == nf + 2 with
+      | true => rw [of_decide_eq_true hbNf2, rootLp_nf2, sig2, rootLp_nf5, sig1]
+      | false =>
+        cases hbNf3 : x == nf + 3 with
+        | true => rw [of_decide_eq_true hbNf3, rootLp_nf3, sig3, rootLp_nf, sig4]
+        | false =>
+          cases hbNf4 : x == nf + 4 with
+          | true => rw [of_decide_eq_true hbNf4, rootLp_nf4, sig4, rootLp_nf1]
+          | false =>
+            cases hbNf5 : x == nf + 5 with
+            | true => rw [of_decide_eq_true hbNf5, rootLp_nf5, sig5, rootLp_nf2, sig4]
+            | false =>
+              cases Nat.lt_or_ge x nf with
+              | inl hlt =>
+                  have hRx : unionFindRootOf orig x < nf := rootOrigLt x hlt
+                  have hL1x : unionFindRootOf ((nf, nf + 1) :: orig) x = unionFindRootOf orig x := by
+                    rw [rootL1 x, if_neg (natBeqNeTrue (Nat.ne_of_gt hRx))]
+                  have hL2x : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) x
+                      = unionFindRootOf orig x := by
+                    rw [rootL2 x, hL1x,
+                      if_neg (natBeqNeTrue (Nat.ne_of_gt (Nat.lt_of_lt_of_le hRx (Nat.le_add_right nf 2))))]
+                  have hL3x : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) x
+                      = unionFindRootOf orig x := by
+                    rw [rootL3 x, hL2x,
+                      if_neg (natBeqNeTrue (Nat.ne_of_gt (Nat.lt_of_lt_of_le hRx (Nat.le_add_right nf 3))))]
+                  have hLpx : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1)
+                      :: (nf, nf + 1) :: orig) x = unionFindRootOf orig x := by
+                    rw [rootL4 x, hL3x,
+                      if_neg (natBeqNeTrue (Nat.ne_of_gt (Nat.lt_of_lt_of_le hRx (Nat.le_add_right nf 5))))]
+                  rw [blockRotate_below nf 3 3 x hlt, hLpx, blockRotate_below nf 3 3 (unionFindRootOf orig x) hRx]
+              | inr hge =>
+                  have ge1 : nf + 1 ≤ x := Nat.lt_of_le_of_ne hge (neOfBeqFalse hbNf).symm
+                  have ge2 : nf + 2 ≤ x := Nat.lt_of_le_of_ne ge1 (neOfBeqFalse hbNf1).symm
+                  have ge3 : nf + 3 ≤ x := Nat.lt_of_le_of_ne ge2 (neOfBeqFalse hbNf2).symm
+                  have ge4 : nf + 4 ≤ x := Nat.lt_of_le_of_ne ge3 (neOfBeqFalse hbNf3).symm
+                  have ge5 : nf + 5 ≤ x := Nat.lt_of_le_of_ne ge4 (neOfBeqFalse hbNf4).symm
+                  have ge6 : nf + 6 ≤ x := Nat.lt_of_le_of_ne ge5 (neOfBeqFalse hbNf5).symm
+                  have hσx : blockRotate nf 3 3 x = x := blockRotate_above nf 3 3 x ge6
+                  have hRx : unionFindRootOf orig x = x := rootOrigGe x hge
+                  have hL1x : unionFindRootOf ((nf, nf + 1) :: orig) x = x := by
+                    rw [rootL1 x, hRx, if_neg (natBeqNeTrue (fun h => (neOfBeqFalse hbNf) h.symm))]
+                  have hL2x : unionFindRootOf ((nf + 2, nf + 1) :: (nf, nf + 1) :: orig) x = x := by
+                    rw [rootL2 x, hL1x, if_neg (natBeqNeTrue (fun h => (neOfBeqFalse hbNf2) h.symm))]
+                  have hL3x : unionFindRootOf ((nf + 3, nf + 4) :: (nf + 2, nf + 1) :: (nf, nf + 1) :: orig) x
+                      = x := by rw [rootL3 x, hL2x, if_neg (natBeqNeTrue (fun h => (neOfBeqFalse hbNf3) h.symm))]
+                  have hLpx : unionFindRootOf ((nf + 5, nf + 4) :: (nf + 3, nf + 4) :: (nf + 2, nf + 1)
+                      :: (nf, nf + 1) :: orig) x = x := by
+                    rw [rootL4 x, hL3x, if_neg (natBeqNeTrue (fun h => (neOfBeqFalse hbNf5) h.symm))]
+                  rw [hσx, hLpx, hσx]
+
 end FX1Poly.Polygraph

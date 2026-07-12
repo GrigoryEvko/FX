@@ -12,5 +12,6 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.unionFindJoin_cons_of_roots
 #print axioms FX1Poly.Polygraph.stepCupArc_links_cons
 #print axioms FX1Poly.Polygraph.twoCupArcLinks_cons
+#print axioms FX1Poly.Polygraph.twoCupGodement_rootComm
 
 end FX1PolyAudit
