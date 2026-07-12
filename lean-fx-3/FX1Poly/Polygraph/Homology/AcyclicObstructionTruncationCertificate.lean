@@ -252,8 +252,18 @@ What REMAINS named is the GENERAL-graph soundness only: `isAcyclicUfnarovskiGrap
 ==> forall degree, vertexCount <= degree ==> multiObstructionChainRankOracle edges degree = 0`, which
 needs the classical pigeonhole + checker saturation + the topological-sort longest-path bound (the `{xy}`
 instance uses the bespoke `noLinearChainOfLengthThreeOrMore` in place of the pigeonhole).  Recorded as
-`generalGraphLongestPathBoundIsNamedNode` downstream.  The `Bool := true` value is unchanged (the
-honest-record convention).  Read the meaning from THIS docstring.  `= true`. -/
+`generalGraphLongestPathBoundIsNamedNode` downstream.
+
+★ **FLIP (r14, literal delivery).**  The general-graph `acyclic ==> census 0` is now DELIVERED in its
+FINDING-A-healed n-ary form: `acyclicCensusZeroAboveAlphabetLength` (r14, `AcyclicSystemTruncationCertificate`)
+proves `isAcyclicUfnarovskiGraph edges alphabet.length = true ==> forall degree, alphabet.length <= degree
+==> multiObstructionChainRankOracleOver alphabet edges degree = 0`, assembling the pigeonhole (r11) + the
+checker-soundness core (r13) at the LOOSE bound `alphabet.length`; `acyclicSystemExactAboveAlphabetLength`
+lifts it to eventual exactness (monomial/zero-boundary model).  The literal binary-`vertexCount`
+`multiObstructionChainRankOracle` phrasing above is SUPERSEDED by the n-ary oracle, not itself re-proved; the
+general-CONVERGENT tower (`generalTelescopeHomologyIsNamedNode`, non-vanishing Anick differential) stays
+OPEN.  The `Bool := true` value is unchanged (the honest-record convention).  Read the meaning from THIS
+docstring.  `= true`. -/
 def acyclicToCensusZeroIsNamedNode : Bool := true
 
 /-! ### The TOWER-ANICK (#2144 / #2145) r6 truncation-certificate ledger
