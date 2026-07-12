@@ -40,9 +40,11 @@ letters in the alphabet).
 
 This ships residuals (ii) + (iii): `shortSimpleLoopImpliesCheckerFalse` (the checker is sound on any
 simple short edge-loop) and `closedEdgeWalkImpliesCheckerFalse` (any edge-respecting word with a repeat
-and letters in an `alphabet` drives the checker at `fuel = alphabet.length` to `false`).  It does NOT
-ship (c) the census-zero closed form nor (d) the eventual-exactness assembly — both r14, named in the
-r11/r12 residual ledgers.  No Smith import, no Homology<->Omega edge.
+and letters in an `alphabet` drives the checker at `fuel = alphabet.length` to `false`).  r13 itself does
+NOT ship (c) the census-zero closed form nor (d) the eventual-exactness assembly; those are SHIPPED in the
+r14 file `AcyclicSystemTruncationCertificate` (`acyclicCensusZeroAboveAlphabetLength` (c) +
+`acyclicSystemExactAboveAlphabetLength` (d), the monomial model at the loose `alphabet.length` bound).  No
+Smith import, no Homology<->Omega edge.
 
 ## Zero-axiom design decisions (the lane's propext minefield)
 
@@ -881,8 +883,10 @@ guard transported by `guardTakePrefix`/`guardDropPrefix`, length bounded by the 
 shipped `listOverCarrierRepeats`).  Assembled in ★★ `closedEdgeWalkImpliesCheckerFalse`: any edge-walk with
 a repeated vertex over `alphabet` drives `isAcyclicUfnarovskiGraph edges alphabet.length` to `false` — the
 checker-soundness core.  Witnessed end-to-end on the 3-cycle (`threeCycleClosedWalkRefutesAcyclicity`).
-It does NOT ship (c) the census-zero closed form nor (d) the eventual-exactness assembly — both r14, named
-in the r11/r12 residual ledgers.  No Smith import, no Homology<->Omega edge.  Read the meaning from THIS
+r13 itself does NOT ship (c) the census-zero closed form nor (d) the eventual-exactness assembly; those are
+SHIPPED in the r14 file `AcyclicSystemTruncationCertificate` (`acyclicCensusZeroAboveAlphabetLength` (c) +
+`acyclicSystemExactAboveAlphabetLength` (d), the monomial model at the loose `alphabet.length` bound).  No
+Smith import, no Homology<->Omega edge.  Read the meaning from THIS
 docstring (the honest-record convention). -/
 def acyclicSoundnessLoopExtractionAndSaturationIsComplete : Bool := true
 
