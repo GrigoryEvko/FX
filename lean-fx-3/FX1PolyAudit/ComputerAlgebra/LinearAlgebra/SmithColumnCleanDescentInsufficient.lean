@@ -1,0 +1,86 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithColumnCleanDescentInsufficient
+
+/-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithColumnCleanDescentInsufficient — zero-axiom gate
+    (H2-SMITH r41 — the r40 `belowPivotColumnClean` descent candidate is FALSE, and reachable states VIOLATE
+    the clean guard while the fold RISES on them)
+
+Per-declaration zero-axiom gate for the r41 graveyard round: GRAVEYARD A (the mask witness
+`smithColumnCleanFoldMaskWitness` and its pins, `smithFoldDescendsOnColumnCleanNonzeroPivotIsRefuted` — the
+r40 candidate is machine-FALSE via a dirty pivot-row mask), GRAVEYARD B (the genuine reachable state
+`smithReachablePivotTwoState`, its `ReachableFromPhaseA` witness, the confinement violation, the find-fire,
+the fold RISE, the leg-3 Prop `ReachableImpliesBelowColumnClean`, and `reachableImpliesBelowColumnCleanIsRefuted`),
+the same-family fold-rise backup (`smithConfinementViolatingFoldRiseWitness*`), and the recorded non-composable
+repair (`belowPivotRowRightZero`, `belowPivotCrossClean`, `smithCrossCleanExcludesFoldMask`,
+`smithCrossCleanViolatedAtReachableEntry`).
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`,
+`omega`.  Both the fuel-based `#assert_no_axioms` AND the independent (non-fuel) `#print axioms` are run on
+every declaration (the project macro is fuel-based — not trusted alone). -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessConfined
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessColumnZeroDeep
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessColumnClean
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessPivotPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessFindsSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessFoldStalls
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithFoldDescendsOnColumnCleanNonzeroPivotIsRefuted
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachableConfinementInput
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePhaseAState
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotZeroState
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoState
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachableConfinementInputRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePhaseAStateRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotZeroStateRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateIsReachable
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateNotConfined
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateFindsSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateFoldRises
+#assert_no_axioms FX1Poly.ComputerAlgebra.ReachableImpliesBelowColumnClean
+#assert_no_axioms FX1Poly.ComputerAlgebra.reachableImpliesBelowColumnCleanIsRefuted
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithConfinementViolatingFoldRiseWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithConfinementViolatingFoldRiseWitnessFindsSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithConfinementViolatingFoldRiseWitnessRises
+#assert_no_axioms FX1Poly.ComputerAlgebra.belowPivotRowRightZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.belowPivotCrossClean
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCrossCleanExcludesFoldMask
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithCrossCleanViolatedAtReachableEntry
+
+-- Independent (non-fuel) axiom prints on every declaration.
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitness
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessRectangular
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessConfined
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessColumnZeroDeep
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessColumnClean
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessPivotPositive
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessFindsSome
+#print axioms FX1Poly.ComputerAlgebra.smithColumnCleanFoldMaskWitnessFoldStalls
+#print axioms FX1Poly.ComputerAlgebra.smithFoldDescendsOnColumnCleanNonzeroPivotIsRefuted
+#print axioms FX1Poly.ComputerAlgebra.smithReachableConfinementInput
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePhaseAState
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotZeroState
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoState
+#print axioms FX1Poly.ComputerAlgebra.smithReachableConfinementInputRectangular
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePhaseAStateRectangular
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotZeroStateRectangular
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateRectangular
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateIsReachable
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateNotConfined
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateFindsSome
+#print axioms FX1Poly.ComputerAlgebra.smithReachablePivotTwoStateFoldRises
+#print axioms FX1Poly.ComputerAlgebra.ReachableImpliesBelowColumnClean
+#print axioms FX1Poly.ComputerAlgebra.reachableImpliesBelowColumnCleanIsRefuted
+#print axioms FX1Poly.ComputerAlgebra.smithConfinementViolatingFoldRiseWitness
+#print axioms FX1Poly.ComputerAlgebra.smithConfinementViolatingFoldRiseWitnessFindsSome
+#print axioms FX1Poly.ComputerAlgebra.smithConfinementViolatingFoldRiseWitnessRises
+#print axioms FX1Poly.ComputerAlgebra.belowPivotRowRightZero
+#print axioms FX1Poly.ComputerAlgebra.belowPivotCrossClean
+#print axioms FX1Poly.ComputerAlgebra.smithCrossCleanExcludesFoldMask
+#print axioms FX1Poly.ComputerAlgebra.smithCrossCleanViolatedAtReachableEntry
+
+end FX1PolyAudit
