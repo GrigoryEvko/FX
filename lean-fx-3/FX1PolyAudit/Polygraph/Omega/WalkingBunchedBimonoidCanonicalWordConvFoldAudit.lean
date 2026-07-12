@@ -27,6 +27,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCancelLetterMatrixShared
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_cancelLetterConvShipped
 
+-- S3 — the dim-1 aWordPow-split reshape + the aWordPow-2-is-aaWord base + pins + the markers/ledger.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowSplitConv
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowTwoIsAaWordConv
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowSplitMatrixShared
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowTwoIsAaWordMatrixShared
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_dimOneWordSplitReshapeShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_appendReshapeGatedOnBoundaryAndValidityThreading
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordConvFoldRoundFifteenLedgerShipped
+
 -- Independent (non-fuel) axiom prints on the boundary facts, the bridges, the CANCEL letter, and the markers.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowBoundarySource
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtBoundarySource
@@ -37,5 +46,10 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCancelLetterMatrixShared
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_whiskerOverVcompSpellingBridgeShipped
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_cancelLetterConvShipped
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowSplitConv
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowTwoIsAaWordConv
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_dimOneWordSplitReshapeShipped
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_appendReshapeGatedOnBoundaryAndValidityThreading
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordConvFoldRoundFifteenLedgerShipped
 
 end FX1PolyAudit

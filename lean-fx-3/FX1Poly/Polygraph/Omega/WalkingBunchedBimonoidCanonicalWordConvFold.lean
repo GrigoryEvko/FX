@@ -244,4 +244,129 @@ Matrix-soundness pinned at width 3 (`...CancelLetterMatrixShared`).  Zero-axiom 
 independent `#print axioms` in the twin). -/
 def fxBunchedBimonoid_cancelLetterConvShipped : Bool := true
 
+/-! # =========================================================================================
+    # S3 — THE DIM-1 `aWordPow`-SPLIT RESHAPE (the core of gap (ii)) + the honest append residual
+    # =========================================================================================
+
+★ Gap (ii) — the append-vs-vcomp reshape — bottoms out at a DIM-1 fact: the flat word `aWordPow (a + b)` is
+convertible over the star scope to `vcomp (aWordPow a) (aWordPow b)`.  Unlike the sigmaAt-chain (whose head is a
+whisker, giving a tree boundary), `aWordPow`'s head is the plain generator `additiveGen`, so its boundary is the
+mode point ON THE NOSE (S0) — the nil case of the split fires `vcompUnitLeft` cleanly.  The `cons` case threads the
+IH under `vcompCongrRight` and reassociates with `vcompAssoc`.  This is the exact dim-1 analogue of the CollapseDimOne
+`realizePath_composePath_conv`, ported to `aWordPow` + the star scope + `SaturatedConvOverWithId`.
+
+The FULL append reshape `permWord (front ++ back) w ~ vcomp (permWord front w) (permWord back w)` needs, at its nil
+case, `aWordPow w ~ boundarySource (permWord back w)` = `aWordPow w ~ vcomp (aWordPow k) (vcomp aaWord (aWordPow
+(w-k-2)))` for `back`'s head `k` — a reshape assembled from TWO `aWordPowSplitConv` firings plus the truncated-
+subtraction arithmetic `k + (2 + (w-k-2)) = w`, gated on the position-validity `k + 2 ≤ w` threaded from
+`mentionsOnlyBelow`.  This round SHIPS the dim-1 split (the core); the front-induction threading is the named
+residual. -/
+
+/-! ## S3.arith — the propext-clean Nat backbone for `aWordPow (a + b)` peeling (add is right-recursive) -/
+
+private theorem bunchedBimonoidNatZeroAddConvFold : (value : Nat) → 0 + value = value
+  | 0 => rfl
+  | value + 1 => congrArg Nat.succ (bunchedBimonoidNatZeroAddConvFold value)
+
+private theorem bunchedBimonoidNatSuccAddConvFold :
+    (leadValue offset : Nat) → (leadValue + 1) + offset = (leadValue + offset) + 1
+  | _, 0 => rfl
+  | leadValue, offset + 1 => congrArg Nat.succ (bunchedBimonoidNatSuccAddConvFold leadValue offset)
+
+/-- ★★★ **THE DIM-1 `aWordPow`-SPLIT RESHAPE (the core of gap (ii)).**  The flat word `aWordPow (a + b)` converts,
+over the star scope, to `vcomp (aWordPow a) (aWordPow b)`.  Structural on `a`: the `0` case rewrites `0 + b` to `b`
+and fires `vcompUnitLeft (aWordPow b)` (its identity is on `boundarySource (aWordPow b) = point`, by S0, matching
+`aWordPow 0 = id point`); the `a+1` case rewrites `(a+1)+b` to `(a+b)+1`, peels `aWordPow ((a+b)+1) = vcomp
+additiveGen (aWordPow (a+b))`, threads the IH under `vcompCongrRight additiveGen`, and reassociates with the `symm`
+of `vcompAssoc` — landing `vcomp (aWordPow (a+1)) (aWordPow b)`.  The dim-1 analogue of the CollapseDimOne
+`realizePath_composePath_conv`, over `SaturatedConvOverWithId` + the star scope (both rows `Or.inl`). -/
+theorem bunchedBimonoidAWordPowSplitConv :
+    (segmentA segmentB : Nat) →
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidAWordPow (segmentA + segmentB))
+      (CellExpr.vcomp (bunchedBimonoidAWordPow segmentA) (bunchedBimonoidAWordPow segmentB))
+  | 0, segmentB => by
+      rw [bunchedBimonoidNatZeroAddConvFold segmentB]
+      have unitRow := bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+        (StrictAxiomRel.vcompUnitLeft (bunchedBimonoidAWordPow segmentB))
+      rw [bunchedBimonoidAWordPowBoundarySource segmentB] at unitRow
+      exact unitRow.symm
+  | segmentA + 1, segmentB => by
+      rw [bunchedBimonoidNatSuccAddConvFold segmentA segmentB]
+      exact SaturatedConvOverWithId.trans
+        (SaturatedConvOverWithId.vcompCongrRight bunchedBimonoidAdditiveGen
+          (bunchedBimonoidAWordPowSplitConv segmentA segmentB))
+        (SaturatedConvOverWithId.symm
+          (bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+            (StrictAxiomRel.vcompAssoc bunchedBimonoidAdditiveGen
+              (bunchedBimonoidAWordPow segmentA) (bunchedBimonoidAWordPow segmentB))))
+
+/-- ★★ **`aWordPow 2 ~ aaWord` — the two-strand word identifies its bracketing.**  `aWordPow 2 = vcomp additiveGen
+(vcomp additiveGen (id point))` reshapes to `aaWord = vcomp additiveGen additiveGen` over the star scope, by
+`vcompUnitRight additiveGen` (stripping the trailing identity, `id point = id (boundaryTarget additiveGen)`) under
+`vcompCongrRight additiveGen`.  The base the sigma-source reshape needs (`aaWord = boundarySource addSigmaGen`). -/
+theorem bunchedBimonoidAWordPowTwoIsAaWordConv :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidAWordPow 2) bunchedBimonoidAaWord :=
+  SaturatedConvOverWithId.vcompCongrRight bunchedBimonoidAdditiveGen
+    (bunchedBimonoidStrictAxiomEmbedsIntoStarScope
+      (StrictAxiomRel.vcompUnitRight bunchedBimonoidAdditiveGen))
+
+/-! ## S3 truth-probes (the dim-1 split relates two cells of the same width; width 3) -/
+
+/-- The split endpoints share their matrix at `(1, 2)` (`rfl`): both `aWordPow (1 + 2)` and `vcomp (aWordPow 1)
+(aWordPow 2)` evaluate to the width-3 identity `[[1,0,0],[0,1,0],[0,0,1]]`. -/
+theorem bunchedBimonoidAWordPowSplitMatrixShared :
+    bunchedBimonoidEvalCell (bunchedBimonoidAWordPow (1 + 2))
+      = bunchedBimonoidEvalCell
+        (CellExpr.vcomp (bunchedBimonoidAWordPow 1) (bunchedBimonoidAWordPow 2)) := rfl
+
+/-- `aWordPow 2` and `aaWord` share their matrix (`rfl`, the width-2 identity). -/
+theorem bunchedBimonoidAWordPowTwoIsAaWordMatrixShared :
+    bunchedBimonoidEvalCell (bunchedBimonoidAWordPow 2) = bunchedBimonoidEvalCell bunchedBimonoidAaWord := rfl
+
+/-! ## The S3 marker + the honest append residual -/
+
+/-- ★★★ **ESTABLISHED (S3) — the dim-1 `aWordPow`-split reshape (the core of gap (ii)) is DELIVERED.**  `= true`
+records `bunchedBimonoidAWordPowSplitConv` (the general dim-1 split `aWordPow (a+b) ~ vcomp (aWordPow a) (aWordPow
+b)` over the star scope, structural on `a`, resting on the clean `aWordPow`-boundary-is-point fact S0) and
+`bunchedBimonoidAWordPowTwoIsAaWordConv` (`aWordPow 2 ~ aaWord`).  Together these are the dim-1 heart of gap (ii):
+the sigma-source tree `vcomp (aWordPow k) (vcomp aaWord (aWordPow (w-k-2)))` — which is exactly `boundarySource
+(sigmaAt w k)` (S0) — reshapes to the flat `aWordPow w` by two `aWordPowSplitConv` firings.  Matrix-soundness pinned
+at width 3.  Zero-axiom (per-decl `#assert_no_axioms` + independent `#print axioms` in the twin). -/
+def fxBunchedBimonoid_dimOneWordSplitReshapeShipped : Bool := true
+
+/-- ★ **THE FULL APPEND RESHAPE (gap (ii)) STAYS WALLED (r15) — the exact residual named, no flip.**  `= false`
+records the ONE remaining node of the CONV fold: the append-vs-vcomp bridge `permWord (front ++ back) w ~ vcomp
+(permWord front w) (permWord back w)` is NOT assembled here.  Its dim-1 core is SHIPPED (S3
+`bunchedBimonoidAWordPowSplitConv`), and the whisker-over-vcomp + CANCEL letter case are SHIPPED (S1/S2), so the
+residual is precisely: (a) the sigma-source boundary reshape `aWordPow w ~ boundarySource (sigmaAt w k)` under `k +
+2 ≤ w` (two `aWordPowSplitConv` firings + the truncated-subtraction arithmetic `k + (2 + (w-k-2)) = w`); (b)
+threading it through the FRONT-induction of `permWordAppendConv` via `vcompIdLeft_bridgedWithId`, carrying the
+`bunchedBimonoidMentionsOnlyBelow` position-validity (each head `k` satisfies `k + 2 ≤ w`) — the exact jamming case.
+With (a)+(b) the four case bridges (COMMUTE / EXTEND / CANCEL / CARRY) fold to `combNormalizeFormConv`, then
+`recCombConv` (structural on the generator count), then `coxeterWordUnique`.  The star does NOT flip: no
+hypothesis-free inhabitant of `bunchedBimonoidStarStatementAdditiveWellTyped` is produced.  The star / residual
+markers (`fxBunchedBimonoid_correctedWellTypedStarStillOpen*`,
+`fxBunchedBimonoid_coxeterWordUniqueGatedOnGenericBraid`,
+`fxBunchedBimonoid_collisionGeneralStepStillGatedOnBracketMatch`,
+`fxBunchedBimonoid_coxeterWordUniqueBubbleSortStillUnbuilt`, the r14
+`fxBunchedBimonoid_combInsertStepConvGatedOnSpellingBridge`) keep their names and `= false` values byte-intact
+(cross-file, not edited). -/
+def fxBunchedBimonoid_appendReshapeGatedOnBoundaryAndValidityThreading : Bool := false
+
+/-- ★★★ **ESTABLISHED — the WP-PROP r15 CONV-fold spelling-bridge ledger (the honest scoreboard).**  `= true`
+records the complete r15 round: S0 the dim-1 word-boundary facts; S1 the whisker-over-vcomp spelling bridge (gap
+(i) DELIVERED, `fxBunchedBimonoid_whiskerOverVcompSpellingBridgeShipped`); S2 the generic whisker-over-vcomp bridge
++ the CANCEL letter CONV `s_k s_k ~ id` (`fxBunchedBimonoid_cancelLetterConvShipped`, a complete letter-level case
+bridge, no append reshape needed); S3 the dim-1 `aWordPow`-split reshape — the core of gap (ii)
+(`fxBunchedBimonoid_dimOneWordSplitReshapeShipped`).  The FULL append reshape (gap (ii)) + the four-case fold +
+`recCombConv` + `coxeterWordUnique` are precisely named and DEFERRED
+(`fxBunchedBimonoid_appendReshapeGatedOnBoundaryAndValidityThreading = false`); the star does NOT flip, and every
+upstream star / residual marker keeps its name and value byte-intact (cross-file, not edited).  Zero-axiom (per-decl
+`#assert_no_axioms` + independent `#print axioms` in the twin); STRUCTURAL only.  Genuinely wider than the Brauer
+flat-`List` lane (the Omega `permWord` folds into real `CellExpr` vcomp trees, so the spelling bridge is genuine
+CONV content).  NO fabricated star flip. -/
+def fxBunchedBimonoid_canonicalWordConvFoldRoundFifteenLedgerShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
