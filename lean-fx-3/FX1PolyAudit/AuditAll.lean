@@ -1031,6 +1031,12 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringKParameterizationC
 -- FC-4 r1 OPENER O2 — the n-letter orientation label-pinning crux: the generic ascendingPair_ne_descendingPair (List Nat), the k=2 bridge recovering the FROZEN stringCupCod_ne_capDom on the nose (stringCupCod_ne_capDom_viaOrientation, identical signature), the k=3 fresh firing over the adjoint-quadruple grid (quadCupCod_ne_capDom_fired, fresh letter L4); flips the O1 census crux marker
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointStringOrientationCrux
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringAdjointStringOrientationCruxAxiomWitness
+-- FC-4 r2 R1 — the k=3 adjoint-quadruple seed (L1..L4, two modes, six unit/counit generators); its six boundary words abstracted by quadIndexWord coincide on the nose with the census carrier at k=3 (quadCupCods_eq_carrierAtThree), the HONESTY-LAW bridge that this seed IS the k=3 instance of the family (re-landed after the ebefd31ab cross-lane bundling dropped these lines)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleSeedAxiomWitness
+-- FC-4 r2 R2+R1/R3 — the cup-restricted COD atom-pin reroute (dom->cod STILL refuted at k=3 by the eta1/eta3 witness as a pin; rerouted to stringQuadTwoCell_domPack_uniqueOfCod_forCups + the cap DOM dual, wide-truth-probed at k=3 AND k=4) + the k=3 engine fire (matchingOfSpineList machine-fired on genuine quadruple spines, new marker fxString_hasKGenericConnectivityEngineFired)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleAtomPinReroute
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringQuadrupleAtomPinRerouteAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
