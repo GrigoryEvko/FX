@@ -411,7 +411,14 @@ one-file token-swap.  Until that ships as `stringCupTopTopPartner`, `stringCupRe
 `stringValleyAppend_split` / `stringValleysWithEqualMatching_spineTraceEquiv` (the latter also needs the un-ported
 `valleysWithBlockMatchingEq_spineTraceEquiv` interface) remain unreachable, and the completeness/producer flips
 `fxString_hasAdjointTripleCompleteness` (`StringMatchingCompleteness`) / `fxString_hasConvOfMapEqPortFlip`
-(`StringConvOfMapEqPort`) stay `false`.  This round flips ONLY this NEW cup marker.  `= true`. -/
+(`StringConvOfMapEqPort`) stay `false`.  This round flips ONLY this NEW cup marker.
+
+**UPDATE (FC-3 r34):** the case-3 port SHIPPED — `stringCupTopTopPartner` (`StringValleyCupTopTopSeed`, zero-axiom,
+via the `StringValleyCupCapStatePromotion` + `StringValleyCupTopTopFold` substrate) now DISCHARGES this gate, and the
+UNCONDITIONAL reconstruct `stringCupRestrict_reconstructs_unconditional` (`StringValleyCupReconstructUngated`) fires
+on the wide (mid-width `2`) valley.  This shipped `stringCupRestrict_reconstructs` keeps its case-3 binder (its BODY
+stays gated); the r33 sizing above is preserved as the historical multi-session estimate, which the generic/already
+-ported substrate ultimately collapsed to a one-round port.  `= true`. -/
 def fxString_hasCupRestrictReconstructsGatedOnCupTopTop : Bool := true
 
 end FX1Poly.Polygraph
