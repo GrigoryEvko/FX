@@ -310,6 +310,14 @@ oracle (r12's FINDING A), not itself re-proved.  `acyclicSystemExactAboveAlphabe
 eventual exactness (monomial/zero-boundary model); the general-CONVERGENT tower
 (`generalTelescopeHomologyIsNamedNode`) stays OPEN.  `Bool := true` unchanged (the honest-record convention).
 
+★ **FLIP (r15, literal delivery).**  The TIGHT truncation that ingredient (iii) reached for (the
+topological-sort longest-path bound) is now DELIVERED in a cleaner form: `censusZeroPropagatesUpward`
+(`AcyclicTruncationDownwardClosureAndBlockAdditivity`) proves the census SUPPORT is downward-closed, so a
+census `0` at ANY witnessed degree propagates upward — STRICTLY tighter than r14's loose `alphabet.length`
+(the star graph `[(0,1)…(0,5)]` truncates at degree `2`, far below `alphabet.length = 6`).  The longest-path
+route (iii) is SUPERSEDED by this self-propagating form, not delivered; the census-count sequence is
+genuinely NON-MONOTONE (only the support is closed).  `Bool := true` unchanged (the honest-record convention).
+
 Read the meaning from THIS docstring.  `= true`. -/
 def generalGraphLongestPathBoundIsNamedNode : Bool := true
 
@@ -327,6 +335,15 @@ non-trivial pieces recorded here:
       element)) ==> (items.filter (predicateA || predicateB)).length = (items.filter predicateA).length
       + (items.filter predicateB).length`, structural, the disjointness holding only for length-`≥ 2`
       words (excluding the degree-0 double-count).
+
+★ **FLIP (r15, literal delivery).**  Both pieces (a)+(b) are now SUPPLIED and ASSEMBLED for the SELF-LOOP
+two-block union `[(0,0),(1,1)]`: (a) the pointwise `guard_union word = guard_xx word || guard_yy word` is
+`guardUnionEqualsBlockOr` (off the forward monochromaticity `guardUnionForwardToBlock` + the reverse
+`guardAppendOfLeft` / `guardAppendOfRight`), (b) the disjoint-filter-length lemma is `filterOrLengthSplit`,
+and the `∀ degree ≥ 1` additivity is `twoBlockDisjointAdditivity`
+(`AcyclicTruncationDownwardClosureAndBlockAdditivity`, the r15 T2 headline).  The GENERAL k-block additivity
+over arbitrary letter-disjoint blocks stays NAMED (`naryDisjointAdditivityGeneralIsNamedNode`).  `Bool :=
+true` unchanged (the honest-record convention).
 
 Read the meaning from THIS docstring.  `= true`. -/
 def disjointUnionAdditivityIsNamedNode : Bool := true

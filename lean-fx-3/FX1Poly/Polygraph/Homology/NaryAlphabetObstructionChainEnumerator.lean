@@ -444,8 +444,14 @@ three-block witnesses are SHIPPED (`naryDisjointUnionListSplitAndAdditivity`: th
 the degree-3 rank additivity, both `rfl`).  The general `rank_union degree = Σ_block rank_block degree`
 (`∀ degree >= 1`, arbitrary letter-disjoint blocks) rests on whole-word monochromaticity (no chain over a
 disjoint union mixes letters from different blocks) plus a disjoint-filter-length lemma — resisting
-induction identically to r10's two-block `disjointUnionAdditivityIsNamedNode`.  Read the meaning from
-THIS docstring.  `= true`. -/
+induction identically to r10's two-block `disjointUnionAdditivityIsNamedNode`.
+
+★ **FLIP (r15, literal delivery).**  The TWO-BLOCK self-loop instance is now DELIVERED `∀ degree ≥ 1`
+(`twoBlockDisjointAdditivity`, `AcyclicTruncationDownwardClosureAndBlockAdditivity`) via whole-word
+monochromaticity (`guardUnionForwardToBlock`) + the disjoint-filter-length lemma (`filterOrLengthSplit`); the
+GENERAL `k`-block additivity over arbitrary letter-disjoint blocks stays NAMED.  `Bool := true` unchanged.
+
+Read the meaning from THIS docstring.  `= true`. -/
 def naryDisjointAdditivityGeneralIsNamedNode : Bool := true
 
 /-! ### The TOWER-ANICK (#2144) r12 ledger — residual (0) DELIVERED, the general node still NAMED
