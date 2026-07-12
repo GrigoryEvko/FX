@@ -887,6 +887,33 @@ theorem bunchedBimonoidCombInsertConvCommuteInstance :
         (bunchedBimonoidSigmaAt 4 0)) :=
   bunchedBimonoidCombInsertConv 3 (by decide) [] 0 (by decide) 0 (by decide)
 
+/-- ★ **`combInsertConv` fires at a concrete EXTEND step** — `generatorCount = 3`, `statePrefix = []`,
+`stateRun = 2`, `letter = 0` (so `letter + stateRun + 1 = 3 = generatorCount`, the EXTEND branch): the run snocs
+`letter` at its bottom, extending `descendingPositions 2 2` to `descendingPositions 2 3`. -/
+theorem bunchedBimonoidCombInsertConvExtendInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidPermWord
+        ((bunchedBimonoidCombInsertData 3 ([], 2) 0).1
+          ++ bunchedBimonoidDescendingPositions 2 (bunchedBimonoidCombInsertData 3 ([], 2) 0).2) 4)
+      (CellExpr.vcomp
+        (bunchedBimonoidPermWord ([] ++ bunchedBimonoidDescendingPositions 2 2) 4)
+        (bunchedBimonoidSigmaAt 4 0)) :=
+  bunchedBimonoidCombInsertConv 3 (by decide) [] 2 (by decide) 0 (by decide)
+
+/-- ★ **`combInsertConv` fires at a concrete CANCEL step** — `generatorCount = 2`, `statePrefix = []`,
+`stateRun = 1`, `letter = 1` (so `letter + stateRun = 2 = generatorCount`, the CANCEL branch): the snocked
+`s_letter` meets the run's trailing `s_letter` and cancels `s_k s_k ~ id`, dropping the run from
+`descendingPositions 1 1` to `descendingPositions 1 0 = []`. -/
+theorem bunchedBimonoidCombInsertConvCancelInstance :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidPermWord
+        ((bunchedBimonoidCombInsertData 2 ([], 1) 1).1
+          ++ bunchedBimonoidDescendingPositions 1 (bunchedBimonoidCombInsertData 2 ([], 1) 1).2) 3)
+      (CellExpr.vcomp
+        (bunchedBimonoidPermWord ([] ++ bunchedBimonoidDescendingPositions 1 1) 3)
+        (bunchedBimonoidSigmaAt 3 1)) :=
+  bunchedBimonoidCombInsertConv 2 (by decide) [] 1 (by decide) 1 (by decide)
+
 /-- ★ **`combNormalizeFormConv` (F3) fires at the r9 jam word** — `generatorCount = 3`, `input = [2, 0, 1, 2]`
 (the exact word the Brauer insertion residual jammed on): one comb level converts `permWord (combNormalizeForm 3
 [2,0,1,2]) 4 ~ permWord [2,0,1,2] 4` over the star scope.  A hypothesis-free inhabitant of the one-level fold at

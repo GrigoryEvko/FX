@@ -42,6 +42,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCarryPermBraidMatrixShared
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvCarryInstance
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvCommuteInstance
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvExtendInstance
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvCancelInstance
 #assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombNormalizeFormConvJamInstance
 
 -- The delivery markers.
@@ -63,6 +65,8 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCarryPermBraidMatrixShared
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvCarryInstance
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvCommuteInstance
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvExtendInstance
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombInsertConvCancelInstance
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCombNormalizeFormConvJamInstance
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_carryPermConvShipped
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_combInsertConvShipped
