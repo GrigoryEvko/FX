@@ -1013,6 +1013,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLocateA
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidPureCupSort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidPureCupSortAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringIdentificationCapstoneAxiomWitness
+-- FC-4 r1 OPENER O1 — the k-parameterization census: the 2-baked seed/label sites named, the k-generic index-word carrier (adjointStringCupCods/CapDoms) elaborating at k=2 AND k=3 (fresh letter L4), the shipped k=2 boundary words embedding into it on the nose (shippedCupCods_eq_carrierAtTwo), road markers posted
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringKParameterizationCensus
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringKParameterizationCensusAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
