@@ -14,5 +14,11 @@ namespace FX1PolyAudit
 
 #print axioms FX1Poly.Polygraph.Homology.bimonoidArityBoundaryIsR1Regrade
 #print axioms FX1Poly.Polygraph.Homology.bimonoidWithoutLawIsChainComplex
+#print axioms FX1Poly.Polygraph.Homology.bimonoidWithLawIsChainComplex
+#print axioms FX1Poly.Polygraph.Homology.bimonoidBialgebraColumnIsLastWithLawColumn
+#print axioms FX1Poly.Polygraph.Homology.bimonoidArityBoundaryReducesToSmith
+#print axioms FX1Poly.Polygraph.Homology.bimonoidWithoutLawReducesToSmith
+#print axioms FX1Poly.Polygraph.Homology.bimonoidWithLawReducesToSmith
+#print axioms FX1Poly.Polygraph.Homology.bimonoidTwoComplexComparison
 
 end FX1PolyAudit

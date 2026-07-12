@@ -158,4 +158,244 @@ theorem bimonoidWithoutLawIsChainComplex :
   | 5, _ => rfl
   | _ + 6, colBound => columnIndexOutOfRangeAbsurd _ 6 colBound
 
+/-! ## B2 — the with-law complex and the two-complex Smith comparison
+
+Adding the bialgebra law `delta . mu = (mu | mu) . sigma . (delta | delta)` as the seventh relation.
+Its LHS is `{mu, delta}`, its RHS `{mu:2, delta:2}`, so its boundary is `{mu:-1, delta:-1} =
+[0, -1, 0, -1] = -(mu + delta)`.  The with-law complex is still a chain complex; the ONLY thing that
+changes between the two complexes is `rank d2`, which rises from `2` to `3` because the bialgebra
+column supplies the one missing independent boundary — the class generator. -/
+
+/-- The bialgebra-law relation boundary column `[0, -1, 0, -1] = -(mu + delta)` in `C1 = ZZ^4`. -/
+def bimonoidBialgebraLawColumn : IntMatrix := ⟨[[0], [-1], [0], [-1]]⟩
+
+/-- `d2 (with the bialgebra law) : C2 = ZZ^7 -> C1 = ZZ^4` — the six without-law columns plus the
+seventh bialgebra column `[0, -1, 0, -1]`. -/
+def bimonoidRelationBoundaryWithLaw : IntMatrix :=
+  ⟨[ [0, 1, 1, 0, 0, 0, 0]
+   , [0, 1, 1, 0, 0, 0, -1]
+   , [0, 0, 0, 0, 1, 1, 0]
+   , [0, 0, 0, 0, 1, 1, -1] ]⟩
+
+-- Committed census pins:  C2(with) = 7, and the bialgebra column is the last with-law column.
+#eval bimonoidRelationBoundaryWithLaw.rows            -- the 4 x 7 relation boundary
+#eval bimonoidBialgebraLawColumn.rows                 -- [[0], [-1], [0], [-1]]
+
+/-- **The bialgebra column is the seventh with-law relation boundary** — the added law's boundary is
+exactly `-(mu + delta)` (`rfl` per generator; the out-of-range peel reuses the shipped helper). -/
+theorem bimonoidBialgebraColumnIsLastWithLawColumn :
+    ∀ generatorIndex, generatorIndex < 4 →
+      bimonoidRelationBoundaryWithLaw.entryAt generatorIndex 6
+        = bimonoidBialgebraLawColumn.entryAt generatorIndex 0
+  | 0, _ => rfl
+  | 1, _ => rfl
+  | 2, _ => rfl
+  | 3, _ => rfl
+  | _ + 4, rowBound => columnIndexOutOfRangeAbsurd _ 4 rowBound
+
+/-- ★ **The with-law bimonoid IS a chain complex** — `d1 . d2with = 0` on every one of the seven
+relation columns, including the bialgebra column (`d1 . [0,-1,0,-1] = (-1)(-1) + 1(-1) = 0`). -/
+theorem bimonoidWithLawIsChainComplex :
+    ∀ colIndex, colIndex < 7 →
+      comparisonProductEntry bimonoidArityBoundary bimonoidRelationBoundaryWithLaw 4 0 colIndex = 0
+  | 0, _ => rfl
+  | 1, _ => rfl
+  | 2, _ => rfl
+  | 3, _ => rfl
+  | 4, _ => rfl
+  | 5, _ => rfl
+  | 6, _ => rfl
+  | _ + 7, colBound => columnIndexOutOfRangeAbsurd _ 7 colBound
+
+/-! ### The unimodular Smith reductions (unit-only normal forms) -/
+
+/-- The `d1` reduction certificate `[[1, -1, -1, 1]]` -> `[[1, 0, 0, 0]]` (clear columns 1,2,3 by
+`col += -+ col0`). -/
+def bimonoidArityBoundarySmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ .columnOperation (.addColumnMultiple 0 1 1)
+      , .columnOperation (.addColumnMultiple 0 2 1)
+      , .columnOperation (.addColumnMultiple 0 3 (-1)) ] }
+
+/-- The Smith normal form of `d1` — the literal `[[1, 0, 0, 0]]` (rank 1, unit factor). -/
+def bimonoidAritySmithNormalForm : IntMatrix := ⟨[[1, 0, 0, 0]]⟩
+
+/-- **The `d1` certificate produces its Smith normal form** — `rfl` bridge. -/
+theorem bimonoidArityCertificateProducesSmithNormalForm :
+    bimonoidArityBoundary.applyOperations bimonoidArityBoundarySmithCertificate.operations
+      = bimonoidAritySmithNormalForm := rfl
+
+/-- **`d1` reduces to Smith normal form** — rank 1 within the `1 x 4` window, unit factor. -/
+theorem bimonoidArityBoundaryReducesToSmith :
+    bimonoidArityBoundarySmithCertificate.reducesToSmithForm bimonoidArityBoundary 1 4 :=
+  show bimonoidAritySmithNormalForm.IsSmithNormalFormWithin 1 4 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 1 → ∀ colIndex, colIndex < 4 →
+          rowIndex ≠ colIndex → bimonoidAritySmithNormalForm.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      Nat.noConfusion (natEqZeroOfLeZero (natLeOfSuccLeSucc isPositionBelow)) }
+
+/-- The `d2without` reduction certificate `-> diag(1, 1, 0, 0)`: two unit pivots cleared column-and-row
+(the monoid pivot from `lunit`, the comonoid pivot from `lcounit`). -/
+def bimonoidWithoutLawSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ .columnOperation (.swapColumns 0 1)
+      , .rowOperation (.addRowMultiple 0 1 (-1))
+      , .columnOperation (.addColumnMultiple 0 2 (-1))
+      , .rowOperation (.addRowMultiple 2 1 1)
+      , .rowOperation (.addRowMultiple 1 2 (-1))
+      , .rowOperation (.addRowMultiple 1 3 (-1))
+      , .columnOperation (.swapColumns 1 4)
+      , .columnOperation (.addColumnMultiple 1 5 (-1)) ] }
+
+/-- The Smith normal form of `d2without` — the literal `diag(1, 1, 0, 0)` (`4 x 6`), rank 2. -/
+def bimonoidWithoutLawSmithNormalForm : IntMatrix :=
+  ⟨[ [1, 0, 0, 0, 0, 0]
+   , [0, 1, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0] ]⟩
+
+/-- **The `d2without` certificate produces its Smith normal form** — `rfl` bridge. -/
+theorem bimonoidWithoutLawCertificateProducesSmithNormalForm :
+    bimonoidRelationBoundaryWithoutLaw.applyOperations bimonoidWithoutLawSmithCertificate.operations
+      = bimonoidWithoutLawSmithNormalForm := rfl
+
+/-- **`d2without` reduces to `diag(1, 1, 0, 0)` within its `4 x 6` window** — rank 2, all invariant
+factors the unit `1` (no torsion). -/
+theorem bimonoidWithoutLawReducesToSmith :
+    bimonoidWithoutLawSmithCertificate.reducesToSmithForm bimonoidRelationBoundaryWithoutLaw 4 6 :=
+  show bimonoidWithoutLawSmithNormalForm.IsSmithNormalFormWithin 4 6 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 4 → ∀ colIndex, colIndex < 6 →
+          rowIndex ≠ colIndex →
+          bimonoidWithoutLawSmithNormalForm.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨1, rfl⟩
+      | 1, _ => ⟨0, rfl⟩
+      | 2, _ => ⟨0, rfl⟩
+      | _ + 3, isBeyond =>
+          Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyond))))) }
+
+/-- The `d2with` reduction certificate `-> diag(1, 1, 1, 0)`: three unit pivots, the THIRD driven by
+the bialgebra column (its `-1` at `mu`/`delta` becomes the third pivot after column threading). -/
+def bimonoidWithLawSmithCertificate : IntMatrix.SmithReductionCertificate :=
+  { operations :=
+      [ .columnOperation (.swapColumns 0 1)
+      , .rowOperation (.addRowMultiple 0 1 (-1))
+      , .columnOperation (.addColumnMultiple 0 2 (-1))
+      , .columnOperation (.swapColumns 1 4)
+      , .rowOperation (.addRowMultiple 2 1 1)
+      , .rowOperation (.addRowMultiple 1 2 (-1))
+      , .rowOperation (.addRowMultiple 1 3 (-1))
+      , .columnOperation (.addColumnMultiple 1 5 (-1))
+      , .columnOperation (.addColumnMultiple 1 6 1)
+      , .columnOperation (.swapColumns 2 6) ] }
+
+/-- The Smith normal form of `d2with` — the literal `diag(1, 1, 1, 0)` (`4 x 7`), rank 3. -/
+def bimonoidWithLawSmithNormalForm : IntMatrix :=
+  ⟨[ [1, 0, 0, 0, 0, 0, 0]
+   , [0, 1, 0, 0, 0, 0, 0]
+   , [0, 0, 1, 0, 0, 0, 0]
+   , [0, 0, 0, 0, 0, 0, 0] ]⟩
+
+/-- **The `d2with` certificate produces its Smith normal form** — `rfl` bridge. -/
+theorem bimonoidWithLawCertificateProducesSmithNormalForm :
+    bimonoidRelationBoundaryWithLaw.applyOperations bimonoidWithLawSmithCertificate.operations
+      = bimonoidWithLawSmithNormalForm := rfl
+
+/-- **`d2with` reduces to `diag(1, 1, 1, 0)` within its `4 x 7` window** — rank 3, all invariant
+factors the unit `1` (no torsion).  The rank rises to 3 precisely because the bialgebra column adds the
+one missing independent boundary. -/
+theorem bimonoidWithLawReducesToSmith :
+    bimonoidWithLawSmithCertificate.reducesToSmithForm bimonoidRelationBoundaryWithLaw 4 7 :=
+  show bimonoidWithLawSmithNormalForm.IsSmithNormalFormWithin 4 7 from
+  { offDiagonalVanishes := by
+      have offDiagonalLiteral : ∀ rowIndex, rowIndex < 4 → ∀ colIndex, colIndex < 7 →
+          rowIndex ≠ colIndex →
+          bimonoidWithLawSmithNormalForm.entryAt rowIndex colIndex = 0 := by decide
+      exact fun rowIndex colIndex isRowInRange isColInRange isOffDiagonal =>
+        offDiagonalLiteral rowIndex isRowInRange colIndex isColInRange isOffDiagonal
+    diagonalIsNonnegative := by decide
+    diagonalDividesSuccessor := fun position isPositionBelow =>
+      match position, isPositionBelow with
+      | 0, _ => ⟨1, rfl⟩
+      | 1, _ => ⟨1, rfl⟩
+      | 2, _ => ⟨0, rfl⟩
+      | _ + 3, isBeyond =>
+          Nat.noConfusion (natEqZeroOfLeZero
+            (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc (natLeOfSuccLeSucc isBeyond))))) }
+
+/-! ### The rank + degree-1 homology read-offs (the comparison table) -/
+
+#eval smithRankWithin bimonoidAritySmithNormalForm 1        -- 1  (rank d1)
+#eval smithRankWithin bimonoidWithoutLawSmithNormalForm 4   -- 2  (rank d2 without)
+#eval smithRankWithin bimonoidWithLawSmithNormalForm 4      -- 3  (rank d2 with)
+
+/-- `rank(d1) = 1` — one nonzero diagonal entry in the `1 x 4` SNF window. -/
+theorem bimonoidArityRank : smithRankWithin bimonoidAritySmithNormalForm 1 = 1 := rfl
+
+/-- `rank(d2without) = 2` — two nonzero diagonal entries in the `4 x 6` SNF window. -/
+theorem bimonoidWithoutLawRank : smithRankWithin bimonoidWithoutLawSmithNormalForm 4 = 2 := rfl
+
+/-- `rank(d2with) = 3` — three nonzero diagonal entries in the `4 x 7` SNF window (the bialgebra
+column supplies the third). -/
+theorem bimonoidWithLawRank : smithRankWithin bimonoidWithLawSmithNormalForm 4 = 3 := rfl
+
+/-- The degree-1 homology free rank WITHOUT the law: `(C1 - rank d1) - rank d2without =
+(4 - 1) - 2 = 1`. -/
+def bimonoidWithoutLawDegreeOneHomologyFreeRank : Nat :=
+  (4 - smithRankWithin bimonoidAritySmithNormalForm 1)
+    - smithRankWithin bimonoidWithoutLawSmithNormalForm 4
+
+/-- **`H1(without law)` has free rank `1`** — the class survives (`= ZZ`).  By `rfl` on the `Nat`
+literals. -/
+theorem bimonoidWithoutLawDegreeOneHomologyFreeRankIsOne :
+    bimonoidWithoutLawDegreeOneHomologyFreeRank = 1 := rfl
+
+/-- The degree-1 homology free rank WITH the law: `(C1 - rank d1) - rank d2with = (4 - 1) - 3 = 0`. -/
+def bimonoidWithLawDegreeOneHomologyFreeRank : Nat :=
+  (4 - smithRankWithin bimonoidAritySmithNormalForm 1)
+    - smithRankWithin bimonoidWithLawSmithNormalForm 4
+
+/-- **`H1(with law) = 0`** — the class is killed.  By `rfl` on the `Nat` literals. -/
+theorem bimonoidWithLawDegreeOneHomologyFreeRankIsZero :
+    bimonoidWithLawDegreeOneHomologyFreeRank = 0 := rfl
+
+/-- **No `H1` torsion WITHOUT the law** — `d2without` SNF is `diag(1, 1, 0, 0)`, unit factors. -/
+theorem bimonoidWithoutLawHasNoTorsion :
+    hasNoSmithTorsionWithin bimonoidWithoutLawSmithNormalForm 4 :=
+  ⟨⟨⟨⟨True.intro, Or.inr rfl⟩, Or.inr rfl⟩, Or.inl rfl⟩, Or.inl rfl⟩
+
+/-- **No `H1` torsion WITH the law** — `d2with` SNF is `diag(1, 1, 1, 0)`, unit factors. -/
+theorem bimonoidWithLawHasNoTorsion : hasNoSmithTorsionWithin bimonoidWithLawSmithNormalForm 4 :=
+  ⟨⟨⟨⟨True.intro, Or.inr rfl⟩, Or.inr rfl⟩, Or.inr rfl⟩, Or.inl rfl⟩
+
+/-- ★ **The two-complex comparison table** — the whole degree-1 census off the unit-only Smith normal
+forms: `rank d1 = 1`; `rank d2without = 2`, `rank d2with = 3`; `H1(without) = ZZ` (free rank 1),
+`H1(with) = 0`; no torsion either way.  The single number that changes is `rank d2` (2 -> 3), driven by
+the bialgebra column. -/
+def BimonoidTwoComplexComparisonStatement : Prop :=
+  smithRankWithin bimonoidAritySmithNormalForm 1 = 1 ∧
+  smithRankWithin bimonoidWithoutLawSmithNormalForm 4 = 2 ∧
+  smithRankWithin bimonoidWithLawSmithNormalForm 4 = 3 ∧
+  bimonoidWithoutLawDegreeOneHomologyFreeRank = 1 ∧
+  bimonoidWithLawDegreeOneHomologyFreeRank = 0 ∧
+  hasNoSmithTorsionWithin bimonoidWithoutLawSmithNormalForm 4 ∧
+  hasNoSmithTorsionWithin bimonoidWithLawSmithNormalForm 4
+
+/-- ★★ **The comparison table is DECIDED** — every entry proved off the kernel-checked Smith normal
+forms. -/
+theorem bimonoidTwoComplexComparison : BimonoidTwoComplexComparisonStatement :=
+  ⟨bimonoidArityRank, bimonoidWithoutLawRank, bimonoidWithLawRank,
+   bimonoidWithoutLawDegreeOneHomologyFreeRankIsOne, bimonoidWithLawDegreeOneHomologyFreeRankIsZero,
+   bimonoidWithoutLawHasNoTorsion, bimonoidWithLawHasNoTorsion⟩
+
 end FX1Poly.Polygraph.Homology
