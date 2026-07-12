@@ -48,8 +48,8 @@ The union-find `matchingOf` reads only a generator's ARITY (`0 ⇒ 2` cup, `2 �
 (colour-blind, r2).  The two `G`-triangles collapse to the SAME `matchingOf stringIdentityG` on the nose
 (`matchingOf_stringTriangleGlo` / `matchingOf_stringTriangleGhi`, both `rfl`), so the two per-colour reconstructions
 agree at the shared-`G` boundary by construction — there is no orientation/coherence obstruction to exhibit.  The
-completeness residual therefore stays a PORT (`fxString_hasAdjointTripleCompleteness = false`), NOT a wall
-(`fxString_hasAdjointTripleCoherenceGap = false`).
+completeness residual was a PORT, not a wall (`fxString_hasAdjointTripleCoherenceGap = false`), and the port was
+DISCHARGED at FC-3 r45: `fxString_hasAdjointTripleCompleteness = true` below.
 
 ## What this file ships
 
@@ -242,9 +242,11 @@ UNCONDITIONALLY (`decideStringSaturated_gSnakes_convertible` isTrue, `stringUnit
 `= true`. -/
 def fxString_hasSpineTraceLiftIntoStringSaturated : Bool := true
 
-/-- **★ HONEST WALL RECORD — there is NO shared-`G` coherence gap.**  The literature (nLab adjoint+string:
-the free adjoint string is the simplex category as a locally-POSETAL 2-category — at most one 2-cell per parallel
-pair; nLab adjoint+triple: the two adjunctions couple at `G` by MATES, `G·F ⊣ G·H`) and the Lean substrate agree:
+/-- **★ HONEST WALL RECORD — there is NO shared-`G` coherence gap.**  The literature (Schanuel-Street "The free
+adjunction": the hom-categories of the free adjunction are the (augmented) simplex category — NOT posetal: parallel
+2-cells can genuinely differ, and this walker is NOT thin (witness `stringUnitFaces_notSaturatedConv` below and
+`StringReconstructionInterface`); nLab adjoint+triple: the two adjunctions couple at `G` by MATES, `G·F ⊣ G·H`) and
+the Lean substrate agree:
 `matchingOf` is colour-BLIND, and the two `G`-triangles collapse to the SAME `matchingOf stringIdentityG` on the
 nose (`matchingOf_stringTriangleGlo` / `matchingOf_stringTriangleGhi`, `rfl`, r2), so the two per-colour
 reconstructions agree at the shared-`G` boundary by construction.  There is NO pair with equal `ColouredDiagramType`

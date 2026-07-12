@@ -158,9 +158,11 @@ node the width-only classifier could not (`stringSharedLegForcesSameColour`).  B
 `StringCellDescentStepOracle` still requires re-deriving the whole colour-aware STRAIGHTEN assembly + COMMUTE
 producer, and proving `StringCellValleyTraceEquiv` still requires the colour-aware valley reconstruction — both the
 ~92K-line `adjunctionModeSignature`-hardcoded valley apparatus re-derived with word bookkeeping, a genuinely
-MULTI-ROUND arc.  So `fxString_hasAdjointTripleCompleteness` (in `StringMatchingCompleteness`) stays `false` and
-`decidableStringSaturatedConv` stays gated on the residual.  The honest ledger: SOUNDNESS DECIDED (r2), COMPLETENESS
-OPEN research-grade with the pin now shipped and the exact remaining site named; the recommended next target is the
+MULTI-ROUND arc.  That multi-round arc ran and closed: the flip came via the r45 determinacy brick, NOT via this
+pin — `fxString_hasAdjointTripleCompleteness` (in `StringMatchingCompleteness`) is now `true` and
+`decidableStringSaturatedConv_holds` is unconditional; this FromPin marker records only what the pin ITSELF
+delivers and stays `false`.  The honest ledger at the time of this file (r6): SOUNDNESS DECIDED (r2), COMPLETENESS
+then-open with the pin shipped and the exact remaining site named; the then-recommended next target was the
 #2021 idempotent-quadruple pivot (thinness route via `idempotentThinness_ofNormalize`, see the file header spec),
 which BYPASSES this residual entirely.  `= false`. -/
 def fxString_hasAdjointTripleCompletenessFromPin : Bool := false
