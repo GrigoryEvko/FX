@@ -1,0 +1,81 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcDisjointCapMixedSwapSimCount
+
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcDisjointCapMixedSwapSimCount — zero-axiom gate (MODE-COMMUTE r26)
+
+Per-declaration zero-axiom gate for the r26 CAP x CAP and MIXED disjoint atom-swap arms: the three arms'
+seeds / forests / well-formedness, their redex/reduct bundle-closure corollaries (general + concrete),
+the block-swap carriers' `openMap` / bounded `rootComm` / `cupCorr` / `capCorr` / scalar fields, the
+window-disjoint-but-component-shared `rootComm` negative control, the window-overlap `loopsEq` negative
+control, the shipped marker, and the four untouched-false honesty pins.
+
+Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`.
+Registered in `AuditAll` (paired with the independent `#print axioms` witness). -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSeed
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSeed_isForest
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSeed_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointRedex
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointReduct
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_redexWellFormed
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_reductWellFormed
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointRedex_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointReduct_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_nextFreshAgree
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_loopsAgree
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_capEventNodesAgree
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_openMap
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_rootCommOnSupport
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_cupCorrOnSupport
+#assert_no_axioms FX1Poly.Polygraph.capCapDisjointSwap_capCorrOnSupport
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSeed
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSeed_isForest
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSeed_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapRedex
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapReduct
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_redexWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_reductWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapRedex_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapReduct_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_nextFreshAgree
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_loopsAgree
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_openMap
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_rootCommOnSupport
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_cupCorrOnSupport
+#assert_no_axioms FX1Poly.Polygraph.mixedCupCapSwap_capCorrOnSupport
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSeed
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSeed_isForest
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSeed_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupCapFirst
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupCupFirst
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_capFirstWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_cupFirstWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupCapFirst_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupCupFirst_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_nextFreshAgree
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_loopsAgree
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_openMap
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_rootCommOnSupport
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_cupCorrOnSupport
+#assert_no_axioms FX1Poly.Polygraph.mixedCapCupSwap_capCorrOnSupport
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareSeed
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareSeed_isForest
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareSeed_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareSeed_readsShareComponent
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareRedex
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareReduct
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareSwap_rootDiverges
+#assert_no_axioms FX1Poly.Polygraph.capCapComponentShareSwap_rootValues
+#assert_no_axioms FX1Poly.Polygraph.overlappingCapControlSeed
+#assert_no_axioms FX1Poly.Polygraph.overlappingCapControlSeed_isForest
+#assert_no_axioms FX1Poly.Polygraph.overlappingCapControlSeed_isWellFormed
+#assert_no_axioms FX1Poly.Polygraph.overlappingCapControlSwap_loopsDiffer
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasDisjointCapMixedSwapSupportVerified
+#assert_no_axioms FX1Poly.Polygraph.arcDisjointCapMixedSwap_swapRenameableProof2_stays_false
+#assert_no_axioms FX1Poly.Polygraph.arcDisjointCapMixedSwap_disjointWhiskerSupport_stays_false
+#assert_no_axioms FX1Poly.Polygraph.arcDisjointCapMixedSwap_partitionCommute_stays_false
+#assert_no_axioms FX1Poly.Polygraph.arcDisjointCapMixedSwap_samePartitionFresh_stays_false
+
+end FX1PolyAudit
