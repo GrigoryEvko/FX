@@ -970,6 +970,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidCupSort
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidValleyProducer
 -- FC-3 r42 — the positive-mid valley CELL reducer (L3): inhabits StringCellValleyTraceEquivPositive gated on the ONE cup-sort brick (shared midWord via the BRICK-FREE cap-trace route) + the brick→master implications collapsing the whole #2020 residual to the single brick
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidValleyCellReducer
+-- FC-3 r43 P2a — the positive-mid snake exclusion + cup-end split (the LOCATE foundation for StringPositiveMidPureCupDeterminacy): stringMatchingForwardChordsNotAdjacent_mid rides the shipped positive-boundary involution (0 < midWidth used) + stringMatchingOpenWiresCupEndSplit_mid (seed-offset), fired on the shipped mid-2 cup fixture
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidSnakeExclusion
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
