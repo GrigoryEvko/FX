@@ -1413,6 +1413,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorKit
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidPermMatrixExtractorGatesAudit
 -- WP-PROP r14 — the canonical reduced-word engine (Omega mirror of the Brauer recComb staircase): the Coxeter–Moser comb combInsertData + one-level combNormalizeForm + recursive recComb (Regev–Roichman/Lehmer unique reduced word) + descending run + mentionsOnlyBelow, over the shipped symmetric-group engine; r9/r11 pins, the braid-pair unification, the permutation round-trip; pure List Nat, ZERO CONV, star not flipped
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordStaircaseAudit
+-- WP-PROP r15 — the CONV-fold spelling bridge: dim-1 word-boundary facts (aWordPow boundary is the mode point on the nose; sigmaAt boundary is the sigma-source tree) + the whisker-over-vcomp sigmaAt-chain bridge (whiskerRightFunctorial + whiskerLeftFunctorial, Or.inl into the star scope) firing the CANCEL letter's s_k s_k = e; star not flipped, append reshape (gap ii) named as the residual
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidCanonicalWordConvFoldAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
