@@ -977,6 +977,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidValleyP
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidValleyCellReducer
 -- FC-3 r43 P2a — the positive-mid snake exclusion + cup-end split (the LOCATE foundation for StringPositiveMidPureCupDeterminacy): stringMatchingForwardChordsNotAdjacent_mid rides the shipped positive-boundary involution (0 < midWidth used) + stringMatchingOpenWiresCupEndSplit_mid (seed-offset), fired on the shipped mid-2 cup fixture
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidSnakeExclusion
+-- FC-3 r44 P2b — the positive-mid last-cup short-chord readoff (the LOCATE readoff for StringPositiveMidPureCupDeterminacy generalized off matchingOfSpineList 0 to matchingOfSpineList midWidth): stringMatchingLastCup_isShortChord_mid rides the SHIPPED seed-general generalStateCupForwardPartnerMatching (positivity-FREE, subsumes the r16 width-0 readoff), fired at mid-1 AND mid-2 on genuine single-/double-survivor cup fixtures
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLastCupShortChord
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringPositiveMidLastCupShortChordAxiomWitness
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
