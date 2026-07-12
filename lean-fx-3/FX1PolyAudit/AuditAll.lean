@@ -923,6 +923,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupReconstru
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSpineValleyMidZeroCupReconstruct
 -- FC-3 r36 — the gated mid-width-`0` whole-valley producer (gate inlined; the mid-zero producer's block-level headline)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringMidZeroValleyProducer
+-- FC-3 r37 — the shared-`midWord` brick (top-word-length = mid-width bridge + length-`0` path uniqueness → equal cap top words at mid-width `0`)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringSharedMidWord
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
