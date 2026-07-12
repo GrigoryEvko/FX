@@ -907,6 +907,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupReconstru
 -- FC-3 r34 — Piece-II tail: the string top-top cup-arc cluster (cap-state promotion + the two-floor peel fold)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupCapStatePromotion
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupTopTopFold
+-- FC-3 r34 — Piece-II tail: CLOSING the string top-top cup-arc partner (the case-3 gate of stringCupRestrict_reconstructs)
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingString.StringValleyCupTopTopSeed
 -- FC-3 r25 B4 — the valley-program ledger (descent re-founding scoreboard: B1 forward invariant / B2 re-founded descent / B3 pin-prime)
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingInvolution.InvolutionOneCellConv
