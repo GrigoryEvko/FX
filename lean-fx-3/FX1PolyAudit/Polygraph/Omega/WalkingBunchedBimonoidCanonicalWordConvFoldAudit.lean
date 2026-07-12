@@ -36,6 +36,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_appendReshapeGatedOnBoundaryAndValidityThreading
 #assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordConvFoldRoundFifteenLedgerShipped
 
+-- S4 — the sigma-source boundary reshape (append residual part (a)) + the marker.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtBoundaryReshapeConv
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_sigmaSourceBoundaryReshapeShipped
+
 -- Independent (non-fuel) axiom prints on the boundary facts, the bridges, the CANCEL letter, and the markers.
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAWordPowBoundarySource
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtBoundarySource
@@ -51,5 +55,7 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_dimOneWordSplitReshapeShipped
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_appendReshapeGatedOnBoundaryAndValidityThreading
 #print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_canonicalWordConvFoldRoundFifteenLedgerShipped
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidSigmaAtBoundaryReshapeConv
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_sigmaSourceBoundaryReshapeShipped
 
 end FX1PolyAudit

@@ -369,4 +369,82 @@ flat-`List` lane (the Omega `permWord` folds into real `CellExpr` vcomp trees, s
 CONV content).  NO fabricated star flip. -/
 def fxBunchedBimonoid_canonicalWordConvFoldRoundFifteenLedgerShipped : Bool := true
 
+/-! # =========================================================================================
+    # S4 — THE SIGMA-SOURCE BOUNDARY RESHAPE (part (a) of the append residual, DELIVERED)
+    # =========================================================================================
+
+★ Part (a) of the named append residual: the sigma-source tree IS convertible to the flat word.  `boundarySource
+(sigmaAt w k) = vcomp (aWordPow k) (vcomp aaWord (aWordPow (w-k-2)))` (S0) reshapes to `aWordPow w`, over the star
+scope, by two `aWordPowSplitConv` firings (split at `k`, then split off the `aaWord` block via `aWordPowSplitConv 2`
++ `aWordPowTwoIsAaWordConv`), transported along the truncated-subtraction arithmetic `k + (2 + (w-k-2)) = w` under
+`k + 2 ≤ w`.  The arithmetic is re-derived propext-clean (the core `Nat.sub` lemmas leak propext; the structural
+`commuteHighEq` + `Nat.add_comm`/`Nat.add_assoc` do not).  With this, the append residual narrows to part (b) alone
+(the front-induction threading of `mentionsOnlyBelow` position-validity through `permWordAppendConv`). -/
+
+/-! ## S4.arith — the propext-clean truncated-subtraction backbone -/
+
+private theorem bunchedBimonoidSubTwoAddTwoConvFold : (value : Nat) → 2 ≤ value → value - 2 + 2 = value
+  | 0, twoLe => absurd twoLe (by decide)
+  | 1, twoLe => absurd twoLe (by decide)
+  | _ + 2, _ => rfl
+
+private theorem bunchedBimonoidCommuteHighEqConvFold :
+    (low high : Nat) → low + 2 ≤ high → low + (high - low - 2) + 2 = high
+  | 0, high, hLe => by
+      rw [Nat.zero_add]
+      exact bunchedBimonoidSubTwoAddTwoConvFold high hLe
+  | _ + 1, 0, hLe => absurd hLe (Nat.not_succ_le_zero _)
+  | low + 1, high + 1, hLe => by
+      have inner : low + (high - low - 2) + 2 = high :=
+        bunchedBimonoidCommuteHighEqConvFold low high (Nat.le_of_succ_le_succ hLe)
+      rw [Nat.succ_sub_succ, Nat.succ_add, Nat.succ_add]
+      exact congrArg Nat.succ inner
+
+private theorem bunchedBimonoidReshapeArithConvFold (positionK wordWidth : Nat)
+    (inRange : positionK + 2 ≤ wordWidth) :
+    positionK + (2 + (wordWidth - positionK - 2)) = wordWidth := by
+  have staircase : positionK + (wordWidth - positionK - 2) + 2 = wordWidth :=
+    bunchedBimonoidCommuteHighEqConvFold positionK wordWidth inRange
+  rw [Nat.add_comm 2 (wordWidth - positionK - 2), ← Nat.add_assoc]
+  exact staircase
+
+/-- ★★★ **THE SIGMA-SOURCE BOUNDARY RESHAPE (append residual part (a), DELIVERED).**  Under `k + 2 ≤ w`, the
+letter's source boundary `boundarySource (sigmaAt w k)` (= the tree `vcomp (aWordPow k) (vcomp aaWord (aWordPow
+(w-k-2)))`, by S0) converts, over the star scope, to the flat word `aWordPow w`.  `aWordPowSplitConv positionK (2 +
+(w-k-2))` splits off the `k`-prefix; `vcompCongrRight` then `aWordPowSplitConv 2 (w-k-2)` splits the `aaWord` block;
+`vcompCongrLeft` fires `aWordPowTwoIsAaWordConv`.  The whole is transported along
+`bunchedBimonoidReshapeArithConvFold` (`k + (2 + (w-k-2)) = w`), rewriting ONLY the `aWordPow w` argument via
+`congrArg`.  Exactly the reshape `permWordAppendConv`'s nil case needs (`aWordPow w ~ boundarySource (permWord back
+w)` when `back`'s head is `k`). -/
+theorem bunchedBimonoidSigmaAtBoundaryReshapeConv (wordWidth positionK : Nat)
+    (inRange : positionK + 2 ≤ wordWidth) :
+    SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidAWordPow wordWidth)
+      (boundarySource (bunchedBimonoidSigmaAt wordWidth positionK)) := by
+  show SaturatedConvOverWithId bunchedBimonoidOmegaComputad bunchedBimonoidStarCongruenceScope
+      (bunchedBimonoidAWordPow wordWidth)
+      (CellExpr.vcomp (bunchedBimonoidAWordPow positionK)
+        (CellExpr.vcomp bunchedBimonoidAaWord (bunchedBimonoidAWordPow (wordWidth - positionK - 2))))
+  rw [congrArg bunchedBimonoidAWordPow (bunchedBimonoidReshapeArithConvFold positionK wordWidth inRange).symm]
+  exact SaturatedConvOverWithId.trans
+    (bunchedBimonoidAWordPowSplitConv positionK (2 + (wordWidth - positionK - 2)))
+    (SaturatedConvOverWithId.vcompCongrRight (bunchedBimonoidAWordPow positionK)
+      (SaturatedConvOverWithId.trans
+        (bunchedBimonoidAWordPowSplitConv 2 (wordWidth - positionK - 2))
+        (SaturatedConvOverWithId.vcompCongrLeft (bunchedBimonoidAWordPow (wordWidth - positionK - 2))
+          bunchedBimonoidAWordPowTwoIsAaWordConv)))
+
+/-! ## The S4 marker -/
+
+/-- ★★★ **ESTABLISHED (S4) — the sigma-source boundary reshape (append residual part (a)) is DELIVERED.**  `= true`
+records `bunchedBimonoidSigmaAtBoundaryReshapeConv`: under `k + 2 ≤ w`, the whiskered `sigmaAt` letter's source
+boundary tree converts over the star scope to the flat `aWordPow w`, assembled from the S3 dim-1 split fired twice +
+the propext-clean truncated-subtraction arithmetic.  This is EXACTLY part (a) the residual marker
+`fxBunchedBimonoid_appendReshapeGatedOnBoundaryAndValidityThreading` named; with it, the FULL append reshape
+narrows to part (b) alone — threading `mentionsOnlyBelow` position-validity through `permWordAppendConv`'s
+front-induction via `vcompIdLeft_bridgedWithId`.  The star does NOT flip; the residual marker stays `= false`
+byte-intact (the full append assembly is still unbuilt).  Zero-axiom (per-decl `#assert_no_axioms` + independent
+`#print axioms` in the twin). -/
+def fxBunchedBimonoid_sigmaSourceBoundaryReshapeShipped : Bool := true
+
 end FX1Poly.Polygraph.Omega
