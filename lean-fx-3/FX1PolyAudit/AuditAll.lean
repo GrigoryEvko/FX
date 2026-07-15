@@ -1724,6 +1724,8 @@ import FX1PolyAudit.Polygraph.Omega.TypedKernelTupleAudit
 import FX1PolyAudit.Polygraph.Omega.SubstitutionPastingLedgerAudit
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCoreSwapBridgedSeedRefutation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCoreSwapBridgedSeedRefutationAxiomWitness
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutArcRetagTransport
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutArcRetagTransportAxiomWitness
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
