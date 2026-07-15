@@ -70,6 +70,47 @@ theorem StepChildren.no_step_at_empty_spine
   intro witness
   cases witness
 
+/-- **A step in a two-child spine is a step at slot 0 or a step at slot 1.**
+
+The arity-2 slot decomposition, stated on the SPINE ALONE — no generator, no
+payload, no `binderShifts` transport.  `StepChildren`'s indices already range
+over a head shift and a tail shift independently, so the two child scopes
+(`parentScope + shiftZero`, `parentScope + shiftOne`) stay heterogeneous: this
+one lemma serves `gen_lam`'s `[0, 1]` (domain at scope, body under a binder)
+exactly as it serves `gen_pair`'s `[0, 0]`.
+
+Every arity-2 root inversion below used to re-derive this by hand: a `here`
+arm, a `there`/`here` arm, and a `there`/`there` arm refuted through
+`no_step_at_empty_spine`.  That walk is not per-generator content — it is the
+same fact about two-element spines fourteen times over.  Naming it once lets
+each inversion state only what IS per-generator: which disjunct of ITS
+conclusion each slot feeds. -/
+theorem StepChildren.invertTwoChildSpine
+    {parentScope : Nat} {shiftZero shiftOne : Nat}
+    {childZero : RawTerm (parentScope + shiftZero)}
+    {childOne : RawTerm (parentScope + shiftOne)}
+    {spineAfter : RawTermChildren [shiftZero, shiftOne] parentScope}
+    (childStep :
+      StepChildren
+        (.childCons childZero (.childCons childOne .childNil)) spineAfter) :
+    (∃ childZeroAfter,
+        spineAfter = .childCons childZeroAfter (.childCons childOne .childNil) ∧
+        Step childZero childZeroAfter) ∨
+    (∃ childOneAfter,
+        spineAfter = .childCons childZero (.childCons childOneAfter .childNil) ∧
+        Step childOne childOneAfter) := by
+  cases childStep with
+  | here _ stepAtZero =>
+      rename_i childZeroAfter
+      exact Or.inl ⟨childZeroAfter, rfl, stepAtZero⟩
+  | there _ tailStep =>
+      cases tailStep with
+      | here _ stepAtOne =>
+          rename_i childOneAfter
+          exact Or.inr ⟨childOneAfter, rfl, stepAtOne⟩
+      | there _ restStep =>
+          exact absurd restStep StepChildren.no_step_at_empty_spine
+
 /-- **The unit term admits no Step reduction.**
 
 `(.mkGen .gen_unit () .childNil)` is a leaf term: 0-arity
@@ -269,17 +310,10 @@ theorem Step.from_lam
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ domainStep =>
-          rename_i domainAfter
-          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
-      | there _ restStep =>
-          cases restStep with
-          | here _ bodyStep =>
-              rename_i bodyAfter
-              exact Or.inr ⟨bodyAfter, targetEq, bodyStep⟩
-          | there _ emptyStep =>
-              exact absurd emptyStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨domainAfter, spineEq, domainStep⟩ | ⟨bodyAfter, spineEq, bodyStep⟩
+      · exact Or.inl ⟨domainAfter, spineEq ▸ targetEq, domainStep⟩
+      · exact Or.inr ⟨bodyAfter, spineEq ▸ targetEq, bodyStep⟩
 
 /-- **Inversion for `pathLam`-rooted Step.**
 
@@ -536,17 +570,10 @@ theorem Step.from_pair
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ firstStep =>
-          rename_i firstAfter
-          exact Or.inl ⟨firstAfter, targetEq, firstStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ secondStep =>
-              rename_i secondAfter
-              exact Or.inr ⟨secondAfter, targetEq, secondStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨firstAfter, spineEq, firstStep⟩ | ⟨secondAfter, spineEq, secondStep⟩
+      · exact Or.inl ⟨firstAfter, spineEq ▸ targetEq, firstStep⟩
+      · exact Or.inr ⟨secondAfter, spineEq ▸ targetEq, secondStep⟩
 
 /-- **Inversion for `listCons`-rooted Step.**
 
@@ -576,17 +603,10 @@ theorem Step.from_listCons
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ headStep =>
-          rename_i headAfter
-          exact Or.inl ⟨headAfter, targetEq, headStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ tailValStep =>
-              rename_i tailAfter
-              exact Or.inr ⟨tailAfter, targetEq, tailValStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨headAfter, spineEq, headStep⟩ | ⟨tailAfter, spineEq, tailValStep⟩
+      · exact Or.inl ⟨headAfter, spineEq ▸ targetEq, headStep⟩
+      · exact Or.inr ⟨tailAfter, spineEq ▸ targetEq, tailValStep⟩
 
 /-- **Inversion for `glueIntro`-rooted Step.**
 
@@ -614,17 +634,10 @@ theorem Step.from_glueIntro
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ baseStep =>
-          rename_i baseAfter
-          exact Or.inl ⟨baseAfter, targetEq, baseStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ partialStep =>
-              rename_i partialAfter
-              exact Or.inr ⟨partialAfter, targetEq, partialStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨baseAfter, spineEq, baseStep⟩ | ⟨partialAfter, spineEq, partialStep⟩
+      · exact Or.inl ⟨baseAfter, spineEq ▸ targetEq, baseStep⟩
+      · exact Or.inr ⟨partialAfter, spineEq ▸ targetEq, partialStep⟩
 
 /-! ## 2-child same-scope type-code inversions
 
@@ -654,17 +667,10 @@ theorem Step.from_arrowCode
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ domainStep =>
-          rename_i domainAfter
-          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ codomainStep =>
-              rename_i codomainAfter
-              exact Or.inr ⟨codomainAfter, targetEq, codomainStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨domainAfter, spineEq, domainStep⟩ | ⟨codomainAfter, spineEq, codomainStep⟩
+      · exact Or.inl ⟨domainAfter, spineEq ▸ targetEq, domainStep⟩
+      · exact Or.inr ⟨codomainAfter, spineEq ▸ targetEq, codomainStep⟩
 
 /-- **Inversion for `productCode`-rooted Step.** -/
 theorem Step.from_productCode
@@ -689,17 +695,10 @@ theorem Step.from_productCode
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ leftTypeStep =>
-          rename_i leftTypeAfter
-          exact Or.inl ⟨leftTypeAfter, targetEq, leftTypeStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ rightTypeStep =>
-              rename_i rightTypeAfter
-              exact Or.inr ⟨rightTypeAfter, targetEq, rightTypeStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨leftTypeAfter, spineEq, leftTypeStep⟩ | ⟨rightTypeAfter, spineEq, rightTypeStep⟩
+      · exact Or.inl ⟨leftTypeAfter, spineEq ▸ targetEq, leftTypeStep⟩
+      · exact Or.inr ⟨rightTypeAfter, spineEq ▸ targetEq, rightTypeStep⟩
 
 /-- **Inversion for `sumCode`-rooted Step.** -/
 theorem Step.from_sumCode
@@ -724,17 +723,10 @@ theorem Step.from_sumCode
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ leftTypeStep =>
-          rename_i leftTypeAfter
-          exact Or.inl ⟨leftTypeAfter, targetEq, leftTypeStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ rightTypeStep =>
-              rename_i rightTypeAfter
-              exact Or.inr ⟨rightTypeAfter, targetEq, rightTypeStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨leftTypeAfter, spineEq, leftTypeStep⟩ | ⟨rightTypeAfter, spineEq, rightTypeStep⟩
+      · exact Or.inl ⟨leftTypeAfter, spineEq ▸ targetEq, leftTypeStep⟩
+      · exact Or.inr ⟨rightTypeAfter, spineEq ▸ targetEq, rightTypeStep⟩
 
 /-- **Inversion for `eitherCode`-rooted Step.** -/
 theorem Step.from_eitherCode
@@ -759,17 +751,10 @@ theorem Step.from_eitherCode
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ leftTypeStep =>
-          rename_i leftTypeAfter
-          exact Or.inl ⟨leftTypeAfter, targetEq, leftTypeStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ rightTypeStep =>
-              rename_i rightTypeAfter
-              exact Or.inr ⟨rightTypeAfter, targetEq, rightTypeStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨leftTypeAfter, spineEq, leftTypeStep⟩ | ⟨rightTypeAfter, spineEq, rightTypeStep⟩
+      · exact Or.inl ⟨leftTypeAfter, spineEq ▸ targetEq, leftTypeStep⟩
+      · exact Or.inr ⟨rightTypeAfter, spineEq ▸ targetEq, rightTypeStep⟩
 
 /-- **Inversion for `equivCode`-rooted Step.** -/
 theorem Step.from_equivCode
@@ -794,17 +779,10 @@ theorem Step.from_equivCode
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ sourceTypeStep =>
-          rename_i sourceTypeAfter
-          exact Or.inl ⟨sourceTypeAfter, targetEq, sourceTypeStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ targetTypeStep =>
-              rename_i targetTypeAfter
-              exact Or.inr ⟨targetTypeAfter, targetEq, targetTypeStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨sourceTypeAfter, spineEq, sourceTypeStep⟩ | ⟨targetTypeAfter, spineEq, targetTypeStep⟩
+      · exact Or.inl ⟨sourceTypeAfter, spineEq ▸ targetEq, sourceTypeStep⟩
+      · exact Or.inr ⟨targetTypeAfter, spineEq ▸ targetEq, targetTypeStep⟩
 
 /-! ## 2-child mixed binder inversions
 
@@ -835,17 +813,10 @@ theorem Step.from_piTyCode
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ domainStep =>
-          rename_i domainAfter
-          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ codomainStep =>
-              rename_i codomainAfter
-              exact Or.inr ⟨codomainAfter, targetEq, codomainStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨domainAfter, spineEq, domainStep⟩ | ⟨codomainAfter, spineEq, codomainStep⟩
+      · exact Or.inl ⟨domainAfter, spineEq ▸ targetEq, domainStep⟩
+      · exact Or.inr ⟨codomainAfter, spineEq ▸ targetEq, codomainStep⟩
 
 /-- **Inversion for `sigmaTyCode`-rooted Step.** -/
 theorem Step.from_sigmaTyCode
@@ -870,17 +841,10 @@ theorem Step.from_sigmaTyCode
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ domainStep =>
-          rename_i domainAfter
-          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ codomainStep =>
-              rename_i codomainAfter
-              exact Or.inr ⟨codomainAfter, targetEq, codomainStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨domainAfter, spineEq, domainStep⟩ | ⟨codomainAfter, spineEq, codomainStep⟩
+      · exact Or.inl ⟨domainAfter, spineEq ▸ targetEq, domainStep⟩
+      · exact Or.inr ⟨codomainAfter, spineEq ▸ targetEq, codomainStep⟩
 
 /-- **Inversion for `bridgeCode`-rooted Step.**  `gen_bridgeCode` is a pure type former (no head redex —
 the weak-head case is the vacuous `rootIota`), so a step out of `bridgeTypeCell typeCode left right`
@@ -954,17 +918,11 @@ theorem Step.from_polyFunctor
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ positionTypeStep =>
-          rename_i positionTypeAfter
-          exact Or.inl ⟨positionTypeAfter, targetEq, positionTypeStep⟩
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ positionFamilyStep =>
-              rename_i positionFamilyAfter
-              exact Or.inr ⟨positionFamilyAfter, targetEq, positionFamilyStep⟩
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨positionTypeAfter, spineEq, positionTypeStep⟩
+        | ⟨positionFamilyAfter, spineEq, positionFamilyStep⟩
+      · exact Or.inl ⟨positionTypeAfter, spineEq ▸ targetEq, positionTypeStep⟩
+      · exact Or.inr ⟨positionFamilyAfter, spineEq ▸ targetEq, positionFamilyStep⟩
 
 /-! ## Eliminator inversions (introducing iota disjuncts)
 
@@ -1153,17 +1111,12 @@ theorem Step.from_boolElim
           | here _ thenStep =>
               exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, thenStep⟩)))
           | there _ restStep =>
-              cases restStep with
-              | here _ elseStep =>
-                  exact Or.inr (Or.inr (Or.inr (Or.inr
-                    (Or.inl ⟨_, targetEq, elseStep⟩))))
-              | there _ restRestStep =>
-                  cases restRestStep with
-                  | here _ scrutineeStep =>
-                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨_, targetEq, scrutineeStep⟩))))
-                  | there _ restRestRestStep =>
-                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
+              rcases StepChildren.invertTwoChildSpine restStep with
+                ⟨elseAfter, spineEq, elseStep⟩ | ⟨scrutineeAfter, spineEq, scrutineeStep⟩
+              · exact Or.inr (Or.inr (Or.inr (Or.inr
+                  (Or.inl ⟨elseAfter, spineEq ▸ targetEq, elseStep⟩))))
+              · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                  ⟨scrutineeAfter, spineEq ▸ targetEq, scrutineeStep⟩))))
 
 /-- **Inversion for `natElim`-rooted Step.**
 
@@ -1257,17 +1210,12 @@ theorem Step.from_natElim
           | here _ zeroStep =>
               exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, zeroStep⟩)))
           | there _ restStep =>
-              cases restStep with
-              | here _ succStep =>
-                  exact Or.inr (Or.inr (Or.inr (Or.inr
-                    (Or.inl ⟨_, targetEq, succStep⟩))))
-              | there _ restRestStep =>
-                  cases restRestStep with
-                  | here _ scrutineeStep =>
-                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨_, targetEq, scrutineeStep⟩))))
-                  | there _ restRestRestStep =>
-                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
+              rcases StepChildren.invertTwoChildSpine restStep with
+                ⟨succAfter, spineEq, succStep⟩ | ⟨scrutineeAfter, spineEq, scrutineeStep⟩
+              · exact Or.inr (Or.inr (Or.inr (Or.inr
+                  (Or.inl ⟨succAfter, spineEq ▸ targetEq, succStep⟩))))
+              · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                  ⟨scrutineeAfter, spineEq ▸ targetEq, scrutineeStep⟩))))
 
 /-- **Inversion for `natRec`-rooted Step.**
 
@@ -1348,17 +1296,12 @@ theorem Step.from_natRec
           | here _ zeroStep =>
               exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, zeroStep⟩)))
           | there _ restStep =>
-              cases restStep with
-              | here _ succStep =>
-                  exact Or.inr (Or.inr (Or.inr (Or.inr
-                    (Or.inl ⟨_, targetEq, succStep⟩))))
-              | there _ restRestStep =>
-                  cases restRestStep with
-                  | here _ scrutineeStep =>
-                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨_, targetEq, scrutineeStep⟩))))
-                  | there _ restRestRestStep =>
-                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
+              rcases StepChildren.invertTwoChildSpine restStep with
+                ⟨succAfter, spineEq, succStep⟩ | ⟨scrutineeAfter, spineEq, scrutineeStep⟩
+              · exact Or.inr (Or.inr (Or.inr (Or.inr
+                  (Or.inl ⟨succAfter, spineEq ▸ targetEq, succStep⟩))))
+              · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                  ⟨scrutineeAfter, spineEq ▸ targetEq, scrutineeStep⟩))))
 
 /-- **Inversion for `listElim`-rooted Step.**
 
@@ -1460,17 +1403,12 @@ theorem Step.from_listElim
           | here _ nilStep =>
               exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, nilStep⟩)))
           | there _ restStep =>
-              cases restStep with
-              | here _ consStep =>
-                  exact Or.inr (Or.inr (Or.inr (Or.inr
-                    (Or.inl ⟨_, targetEq, consStep⟩))))
-              | there _ restRestStep =>
-                  cases restRestStep with
-                  | here _ scrutineeStep =>
-                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨_, targetEq, scrutineeStep⟩))))
-                  | there _ restRestRestStep =>
-                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
+              rcases StepChildren.invertTwoChildSpine restStep with
+                ⟨consAfter, spineEq, consStep⟩ | ⟨scrutineeAfter, spineEq, scrutineeStep⟩
+              · exact Or.inr (Or.inr (Or.inr (Or.inr
+                  (Or.inl ⟨consAfter, spineEq ▸ targetEq, consStep⟩))))
+              · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                  ⟨scrutineeAfter, spineEq ▸ targetEq, scrutineeStep⟩))))
 
 /-- **Inversion for `optionMatch`-rooted Step.**
 
@@ -1552,17 +1490,12 @@ theorem Step.from_optionMatch
           | here _ noneStep =>
               exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, noneStep⟩)))
           | there _ restStep =>
-              cases restStep with
-              | here _ someStep =>
-                  exact Or.inr (Or.inr (Or.inr (Or.inr
-                    (Or.inl ⟨_, targetEq, someStep⟩))))
-              | there _ restRestStep =>
-                  cases restRestStep with
-                  | here _ scrutineeStep =>
-                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨_, targetEq, scrutineeStep⟩))))
-                  | there _ restRestRestStep =>
-                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
+              rcases StepChildren.invertTwoChildSpine restStep with
+                ⟨someAfter, spineEq, someStep⟩ | ⟨scrutineeAfter, spineEq, scrutineeStep⟩
+              · exact Or.inr (Or.inr (Or.inr (Or.inr
+                  (Or.inl ⟨someAfter, spineEq ▸ targetEq, someStep⟩))))
+              · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                  ⟨scrutineeAfter, spineEq ▸ targetEq, scrutineeStep⟩))))
 
 /-- **Inversion for `eitherMatch`-rooted Step.**
 
@@ -1649,17 +1582,12 @@ theorem Step.from_eitherMatch
           | here _ leftStep =>
               exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, leftStep⟩)))
           | there _ restStep =>
-              cases restStep with
-              | here _ rightStep =>
-                  exact Or.inr (Or.inr (Or.inr (Or.inr
-                    (Or.inl ⟨_, targetEq, rightStep⟩))))
-              | there _ restRestStep =>
-                  cases restRestStep with
-                  | here _ scrutineeStep =>
-                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨_, targetEq, scrutineeStep⟩))))
-                  | there _ restRestRestStep =>
-                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
+              rcases StepChildren.invertTwoChildSpine restStep with
+                ⟨rightAfter, spineEq, rightStep⟩ | ⟨scrutineeAfter, spineEq, scrutineeStep⟩
+              · exact Or.inr (Or.inr (Or.inr (Or.inr
+                  (Or.inl ⟨rightAfter, spineEq ▸ targetEq, rightStep⟩))))
+              · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                  ⟨scrutineeAfter, spineEq ▸ targetEq, scrutineeStep⟩))))
 
 /-- **Inversion for `idJ`-rooted Step.**
 
@@ -1829,15 +1757,10 @@ theorem Step.from_app
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ fnStep =>
-          exact Or.inr (Or.inl ⟨_, targetEq, fnStep⟩)
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ argStep =>
-              exact Or.inr (Or.inr ⟨_, targetEq, argStep⟩)
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨fnAfter, spineEq, fnStep⟩ | ⟨argAfter, spineEq, argStep⟩
+      · exact Or.inr (Or.inl ⟨fnAfter, spineEq ▸ targetEq, fnStep⟩)
+      · exact Or.inr (Or.inr ⟨argAfter, spineEq ▸ targetEq, argStep⟩)
 
 /-- Root inversion for a `pathApp` reduction: a step out of `pathApp(function, argument)` is either the
 endpoint-β redex (`function = pathLam body`, `target = subst0 body argument`), a congruence reducing the
@@ -1872,14 +1795,9 @@ theorem Step.from_pathApp
       | rootIota iotaHead => cases iotaHead
   | inr congShape =>
       obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
-      cases childStep with
-      | here _ functionStep =>
-          exact Or.inr (Or.inl ⟨_, targetEq, functionStep⟩)
-      | there _ tailStep =>
-          cases tailStep with
-          | here _ argumentStep =>
-              exact Or.inr (Or.inr ⟨_, targetEq, argumentStep⟩)
-          | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+      rcases StepChildren.invertTwoChildSpine childStep with
+        ⟨functionAfter, spineEq, functionStep⟩ | ⟨argumentAfter, spineEq, argumentStep⟩
+      · exact Or.inr (Or.inl ⟨functionAfter, spineEq ▸ targetEq, functionStep⟩)
+      · exact Or.inr (Or.inr ⟨argumentAfter, spineEq ▸ targetEq, argumentStep⟩)
 
 end FX1Poly.Core
