@@ -28,6 +28,15 @@ import FX1PolyAudit.Tier0.Term.Core.RawTermFoldNonVarCommute
 import FX1PolyAudit.Tier0.Term.Generator.GeneratorCountPinCoreCellsAudit
 import FX1PolyAudit.Core.Substrate.Neutral.NeutralSubstReflection
 import FX1PolyAudit.Core.Substrate.Profile.ProtocolCellInhabitance
+import FX1PolyAudit.Core.Substrate.Univalence.DefUnivSnResolution
+import FX1PolyAudit.Core.Substrate.Univalence.GelBetaTableDecidableConv
+import FX1PolyAudit.Core.Substrate.Univalence.GelTriadOverTables
+import FX1PolyAudit.Core.Substrate.Univalence.LexMeasureTowerSN
+import FX1PolyAudit.Core.Substrate.Univalence.SizeGrowingTransportTableDecidableConv
+import FX1PolyAudit.Core.Substrate.Univalence.TranspensionAffineContractionEquivariance
+import FX1PolyAudit.Core.Substrate.Univalence.UnifiedDefinitionalTableDecidableConv
+import FX1PolyAudit.Core.Substrate.Univalence.UnifiedSamenessTableDecidableConv
+import FX1PolyAudit.Core.Substrate.Univalence.UnivalenceTableDecidableConv
 
 /-! # FX1PolyAudit.AuditCoreSubstrate — aggregator over the per-kernel-module audit shards
 
