@@ -1726,6 +1726,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCoreSwapBridgedSe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCoreSwapBridgedSeedRefutationAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutArcRetagTransport
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutArcRetagTransportAxiomWitness
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCrossComponentBlockDispatch
+import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCrossComponentBlockDispatchAxiomWitness
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
