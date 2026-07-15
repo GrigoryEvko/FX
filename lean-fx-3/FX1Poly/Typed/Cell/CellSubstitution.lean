@@ -1,11 +1,11 @@
 import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Typed.Cell.CellRenaming
-import FX1Poly.Tier0.Term.Rename.RawTermRename
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
-import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
-import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
-import FX1Poly.Tier0.Term.Subst.RawTermSubstRenameCommute
+import FX1Poly.Axis.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Rename.RawTermStrengthen
+import FX1Poly.Axis.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstRenameCommute
 
 /-! # FX1Poly/Typed/CellSubstitution — how `RawTerm.subst` acts on the typing cells
 
@@ -33,7 +33,7 @@ The leaf-cell computations reduce by `rfl`; `subst_lift_weaken_commute` is the
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- Substituting at a variable cell applies the substitution to the index —
 the substituent REPLACES the variable (unlike renaming, which keeps it a

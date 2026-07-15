@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Dimensions.Graded.GradedTableCoherence
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermOccurrenceSubst
+import FX1Poly.Axis.Term.Subst.RawTermOccurrenceSubstLift
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
 
 /-! # FX1Poly/Typed/BetaStablePathLamGrade — the BETA-STABLE dimension-usage grade for `pathLam`
 
@@ -113,7 +113,7 @@ right-distributivity rearrangement at the child-spine cons node. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- The four-way addition exchange `(a + b) + (c + d) = (a + c) + (b + d)` — the commutative-monoid
 rearrangement the child-spine cons node needs, by explicit `add_assoc` / `add_left_comm` (axiom-free,

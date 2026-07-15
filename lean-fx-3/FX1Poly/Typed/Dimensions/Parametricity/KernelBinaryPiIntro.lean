@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryPiElim
 import FX1Poly.Core.Metatheory.Reducibility.Core.HeadExpansionClosure
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/KernelBinaryPiIntro

@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMember
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Typed.Engine.Classifier.TypingContext
 
 /-! # FX1Poly/Typed/ReducibleEnvAt
@@ -46,7 +46,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- The level-indexed reducible closing-substitution environment: `substitution` sends each context
 variable to a reducible member (at `level`) of that variable's looked-up type, itself closed by the same

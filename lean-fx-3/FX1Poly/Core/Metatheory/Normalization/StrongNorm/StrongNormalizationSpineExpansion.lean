@@ -36,7 +36,7 @@ congruence lifts.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 namespace StepStar
 
 /-- Strong normalization descends along a multi-step reduction: if `source` is strongly

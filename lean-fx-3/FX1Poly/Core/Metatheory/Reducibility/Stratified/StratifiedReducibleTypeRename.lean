@@ -42,7 +42,7 @@ declaration in `FX1PolyAudit/AuditCoreSubstrate.lean`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Neutral-leaf rename-closure of the stratified reducibility step-functor.**  A weak-head-normal,

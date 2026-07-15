@@ -10,7 +10,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.Fib.unionClassifierIsType_iff_typedAtAxisCode
 #assert_no_axioms FX1Poly.Core.Fib.axisCodeToCell_unionClassifierIsType
-#assert_no_axioms FX1Poly.Tier0.ClassifiedCell.IsAdmittedByUnion
+#assert_no_axioms FX1Poly.Axis.ClassifiedCell.IsAdmittedByUnion
 #assert_no_axioms FX1Poly.Core.Fib.classifiedCellOfUnionTyping
 #assert_no_axioms FX1Poly.Core.Fib.displayClassifier_classifiedCellOfUnionTyping
 #assert_no_axioms FX1Poly.Core.Fib.genericClassifiedCell_admittedByUnion

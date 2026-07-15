@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Normalize.NormalFormUnique
-import FX1Poly.Tier0.Term.Core.RawTermDecEq
+import FX1Poly.Axis.Term.Core.RawTermDecEq
 
 /-! # FX1Poly/Core/StronglyNormalizingConvDecision
     — Conv = normal-form equality on the *strongly-normalizing* fragment, confluence discharged per-term.
@@ -36,7 +36,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Conv = normal-form equality on the SN fragment** (global confluence discharged).  For two
 strongly-normalizing terms whose normal forms are in hand, conversion is exactly equality of those normal

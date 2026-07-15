@@ -1,11 +1,11 @@
-import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
+import FX1Poly.Axis.Context.Instances.Subst.FxBaseSubstDisplayMap
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescDecidable
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 
 /-! # FX1Poly/Typed/DisplayMapDecidableFibration
     — the Tm↠Ty display map's typed refinement is a DECIDABLE fibration (SN-086 payoff, #486)
 
-`FX1Poly/Tier0/FxBaseSubstDisplayMap.lean` ships the raw cellular display map `displayClassifier :
+`FX1Poly/Axis/FxBaseSubstDisplayMap.lean` ships the raw cellular display map `displayClassifier :
 Tm ↠ Ty` over the term-carrying base, with its comprehension pullback (representability in the
 Natural-Model generalized-element sense).  This file adds the FX-specific content the #486 reading
 names: **"representability = the decidable typing fibration — a term's type is computable."**
@@ -47,11 +47,11 @@ definitional), `weakening_subst_eq_rename`, and `HasTypeDescPi.ofFormation`.  No
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 
 /-- **The typed refinement of the display map's total space.**  A classified cell is admitted when
 the formation engine types its subject at its classifier — the judgmental gate over the raw `Tm`. -/
-def _root_.FX1Poly.Tier0.ClassifiedCell.IsAdmittedByFormation (profile : PolyProfile)
+def _root_.FX1Poly.Axis.ClassifiedCell.IsAdmittedByFormation (profile : PolyProfile)
     {scope : Nat} (context : TypingContext profile scope) (cell : ClassifiedCell scope) : Prop :=
   HasTypeDesc profile context cell.subjectCell cell.classifierCell
 
@@ -59,7 +59,7 @@ def _root_.FX1Poly.Tier0.ClassifiedCell.IsAdmittedByFormation (profile : PolyPro
 membership in the typed refinement of every display fiber is decidable, via the shipped total
 formation-engine decider.  The categorical reading of decidable typing (#486); honestly a
 repackaging of `HasTypeDesc.decidableOfWellFormed`, not a new decidability result. -/
-def _root_.FX1Poly.Tier0.ClassifiedCell.decideAdmittedByFormation {profile : PolyProfile}
+def _root_.FX1Poly.Axis.ClassifiedCell.decideAdmittedByFormation {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope}
     (wellFormed : WfContextDesc context) (cell : ClassifiedCell scope) :
     Decidable (cell.IsAdmittedByFormation profile context) :=

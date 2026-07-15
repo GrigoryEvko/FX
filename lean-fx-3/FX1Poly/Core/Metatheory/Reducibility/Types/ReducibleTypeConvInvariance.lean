@@ -25,7 +25,7 @@ Destructure the `Conv` Join, transport each candidate to the common reduct by `f
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Conversion-invariance of the dependent reducibility relation.**  Convertible types denote pointwise-
 equivalent candidates: if `typeLeft` and `typeRight` are each reducible and `Conv typeLeft typeRight`, the

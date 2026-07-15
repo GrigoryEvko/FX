@@ -44,7 +44,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Open-context SN of a universe code.**  In the non-empty well-formed context `Γ = (.empty).cons (Type@e)`,

@@ -39,7 +39,7 @@ arbitrary-current quantification — the CR1 shadow of the Tait member the value
 namespace FX1Poly.Core
 namespace StepStar
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **The reduct-tracking `listElim` cell-SN engine (satisfiable firing premise).**  A `listElim` cell with a
 NORMAL scrutinee and strongly-normalizing branches is strongly normalizing, given the reachability-aware firing

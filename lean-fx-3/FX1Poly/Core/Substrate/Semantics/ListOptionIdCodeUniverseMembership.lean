@@ -33,7 +33,7 @@ Per-declaration gated in `FX1PolyAudit/AuditCore.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax FX1Poly.Universe StepStar
+open FX1Poly.Axis.Syntax FX1Poly.Universe StepStar
 
 /-- **`listCode elementCode` is a reducible member of its universe.**  The one-child list type code, with a
 strongly-normalizing element code, is a reducible member of `Type@levelExpr` at `predLevel + 1` via the generic

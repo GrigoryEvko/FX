@@ -1,9 +1,9 @@
 import FX1Poly.Polygraph.Computad.Signature
 import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
 
-/-! # Tier0/Mode/SemiThueReduction — the Burroni bridge: semi-Thue systems ARE one-object 2-polygraphs
+/-! # Axis/Mode/SemiThueReduction — the Burroni bridge: semi-Thue systems ARE one-object 2-polygraphs
 
-FLAG A (`FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality = false`, `Mode.lean`) is the rung-3 wall of the
+FLAG A (`FX1Poly.Axis.fxMode_hasDecidableTwoCellEquality = false`, `Mode.lean`) is the rung-3 wall of the
 2-cell word problem: 1-cell convertibility under the 2-cells of an ARBITRARY finite one-object 2-polygraph is
 the word problem of the finitely presented monoid it presents, which is undecidable (Markov 1947, Post 1947;
 the polygraphic framing is Burroni's, *Higher-dimensional word problems*, Theoret. Comput. Sci. 115 (1993)).
@@ -69,7 +69,7 @@ markers state the boundary exactly: `fxMode_hasSemiThueReductionMechanized = tru
 ledger's `fxMode_hasArbitraryTwoCellUndecidabilityReduction = false` (the full reduction to a known-undecidable
 instance).  FLAG A itself stays `false` — the general decision genuinely does not exist.
 
-Lives in `Tier0/Mode/` (cross-layer top file — the ledger pins it) although its declarations are in
+Lives in `Axis/Mode/` (cross-layer top file — the ledger pins it) although its declarations are in
 `FX1Poly.Polygraph`, mirroring `DecidableCeilingLedger` / `ExhibitedConvergentDecision`.  Raw Lean 4 + Init;
 core `List.append_assoc` / `List.append_nil` leak `propext` in this Init-only setting, so this file provides
 its own structural `appendAssocClean` / `appendNilClean`; every other step is a structural induction over the

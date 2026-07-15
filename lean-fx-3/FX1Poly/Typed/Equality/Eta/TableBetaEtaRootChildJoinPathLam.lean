@@ -4,7 +4,7 @@ import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaTableBackward
 import FX1Poly.Core.Equality.Eta.EtaRowFiringSubstrate
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableRenameReflection
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
 
 /-! # FX1Poly/Typed/TableBetaEtaRootChildJoinPathLam
     — the per-child copy-replacement join for the path-lambda eta row.
@@ -44,7 +44,7 @@ substrate decompositions; no `axiom`, `sorry`, `propext`, `Quot.sound`,
 namespace FX1Poly.Typed
 
 open FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- The `etaPathLamRow` membership pin in the eta-rule table (third row). -/
 theorem etaPathLamRow_memTable : etaPathLamRow ∈ etaRuleTable :=

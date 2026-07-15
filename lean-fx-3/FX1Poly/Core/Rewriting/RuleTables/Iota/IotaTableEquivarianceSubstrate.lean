@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
 
 /-! # FX1Poly/Core/IotaTableEquivarianceSubstrate — IOTA-T2 substrate
@@ -43,7 +43,7 @@ declaration in `FX1PolyAudit/AuditIotaTableEquivariance.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The fold engine's lift-iterate, pinned on substitutions -/
 

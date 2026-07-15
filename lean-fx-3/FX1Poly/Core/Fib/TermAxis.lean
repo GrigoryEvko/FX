@@ -3,55 +3,55 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
 import FX1Poly.Polygraph.Rewriting.Confluence.ModularConfluence
 import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
 import FX1Poly.Polygraph.Rewriting.Confluence.DecreasingDiagrams
-import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
-import FX1Poly.Tier0.Term.Action.FoldUniqueness
-import FX1Poly.Tier0.Term.Action.InitialAlgebra
+import FX1Poly.Axis.Term.Subst.RawTermSubstBetaBridge
+import FX1Poly.Axis.Term.Action.FoldUniqueness
+import FX1Poly.Axis.Term.Action.InitialAlgebra
 import FX1Poly.Core.Rewriting.Reduction.Dim1FreePreorder
-import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
+import FX1Poly.Axis.Term.Codata.TerminalCoalgebra
 import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 import FX1Poly.Polygraph.Rewriting.Coherence.PolygraphicResolution
 import FX1Poly.Core.Rewriting.LevyOptimality
-import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
+import FX1Poly.Axis.Term.Action.SubstitutionMonoid
 import FX1Poly.Core.Unification.PatternUnification
 import FX1Poly.Polygraph.Rewriting.Standardization
 import FX1Poly.Core.Rewriting.BohmTree
-import FX1Poly.Tier0.Term.Codata.MixedFixpoint
-import FX1Poly.Tier0.Term.Codata.CopatternCoverage
+import FX1Poly.Axis.Term.Codata.MixedFixpoint
+import FX1Poly.Axis.Term.Codata.CopatternCoverage
 import FX1Poly.Polygraph.Rewriting.RewritingModulo
 import FX1Poly.Polygraph.Rewriting.Coherence.FreeStrictOmega
 import FX1Poly.Polygraph.Marked.MarkedComplicial
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.ModularSNBoundary
 import FX1Poly.Core.Rewriting.Word.WordProblem
-import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
-import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
-import FX1Poly.Tier0.Term.Semantics.GeometryOfInteraction
-import FX1Poly.Tier0.Term.Semantics.GameSemantics
-import FX1Poly.Tier0.Term.Semantics.DifferentialLambda
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
-import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
-import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
-import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
-import FX1Poly.Tier0.Term.Subst.RawTermSubstRenameCommute
+import FX1Poly.Axis.Term.Semantics.DenotationalDomain
+import FX1Poly.Axis.Term.Semantics.IntersectionTypes
+import FX1Poly.Axis.Term.Semantics.GeometryOfInteraction
+import FX1Poly.Axis.Term.Semantics.GameSemantics
+import FX1Poly.Axis.Term.Semantics.DifferentialLambda
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Axis.Term.Rename.RawTermStrengthen
+import FX1Poly.Axis.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstRenameCommute
 
 /-! # Core/Fib/TermAxis — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
 HOME NOTE (2026-07-02): this ledger aggregates theorems shipped in `Core/Rewriting/` and
-`Core/Metatheory/Normalization/` alongside the `Tier0/Term/` and `Polygraph/` substrate, so under
-the dependency spine (Tier0 may not import Core) it lives at the meeting point `Core/Fib/`, next to
+`Core/Metatheory/Normalization/` alongside the `Axis/Term/` and `Polygraph/` substrate, so under
+the dependency spine (Axis may not import Core) it lives at the meeting point `Core/Fib/`, next to
 its consumer `FibrationArchitecture`.  The other axis ledgers cite only their own axis and stay in
-`Tier0/`.
+`Axis/`.
 
 The Tier-0 restructure splits the kernel into four ω-categorical axes — **context · mode ·
-term · type** — each its own `Tier0/` namespace, meeting at `Core/`.  The CONTEXT axis
-(`Tier0/Context/`, 59 modules) and the MODE axis (`Tier0/Mode/`, 35 modules) are the finished
+term · type** — each its own `Axis/` namespace, meeting at `Core/`.  The CONTEXT axis
+(`Axis/Context/`, 59 modules) and the MODE axis (`Axis/Mode/`, 35 modules) are the finished
 templates: each presents its rungs with `def fxContext_…` / `def fxMode_… : Bool` honesty markers
 and a per-file `FX1PolyAudit` zero-axiom gate.
 
 The TERM axis is the polygraph of term-formers and the rewriting that lives over it.  Its deep
 mathematics is already shipped — but scattered across `Core/Rewriting/`,
-`Core/Metatheory/Normalization/`, `Tier0/Term/{Action,Generator,Rename,Subst}/`, and
-`Tier0/OmegacE/` — and, until this file, the axis had NO honesty-marker convention, NO rung index,
+`Core/Metatheory/Normalization/`, `Axis/Term/{Action,Generator,Rename,Subst}/`, and
+`Axis/OmegacE/` — and, until this file, the axis had NO honesty-marker convention, NO rung index,
 and NO audit gate of its own.  This module is the `term-0` design-lock: it adopts the Mode-style
 marker convention for the term axis and discharges the metatheory the RAW term layer genuinely
 earns, each flip backed (per the SN-103 discipline) by a named shipped theorem, not a bare slogan.
@@ -205,10 +205,10 @@ No `axiom`,
 `FX1PolyAudit/Core/Fib/TermAxis.lean` (+ `TermAxisMore`).
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Axis
 
 open FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The three backed metatheory flips (the raw term layer's genuine wins) -/
 
@@ -300,7 +300,7 @@ theorem fxTerm_modularConfluenceCriterion_isBacked :
 /-- **Honesty marker** — `term-beta` / `term-26`.  The `×term` β-substitution bridge is now re-homed
 in the term axis, TERM-NATIVE: `body[cons arg sigma] = body[sigma⁺][⟨arg⟩]`, proved purely in the
 `RawTermSubst` algebra (no `SubstVec`, no lateral `term → context` import) —
-`RawTerm.subst_cons_eq_singleton_after_lift` in `Tier0/Term/Subst/RawTermSubstBetaBridge.lean`.  The
+`RawTerm.subst_cons_eq_singleton_after_lift` in `Axis/Term/Subst/RawTermSubstBetaBridge.lean`.  The
 context-9 `SubstVec` corollary stays as the context-side shadow; this is the term axis owning its
 β-law (refactor by addition, not deletion).  Backed in `fxTerm_betaSubstitutionBridge_isBacked`.
 `= true`. -/
@@ -325,7 +325,7 @@ theorem fxTerm_betaSubstitutionBridge_isBacked :
 /-- **Honesty marker** — `term-1` (SOAS-initiality).  `RawTerm` is the INITIAL ALGEBRA of its term
 signature: for any model `CarrierAlgebra C` into an arbitrary carrier family `C : Nat → Type`, the
 catamorphism `cata` is the UNIQUE homomorphism `RawTerm → C` — existence (`cataHomomorphism`) + uniqueness
-(`IsCarrierHomomorphism.unique`) in `Tier0/Term/Action/InitialAlgebra.lean`.  The dependent eliminator
+(`IsCarrierHomomorphism.unique`) in `Axis/Term/Action/InitialAlgebra.lean`.  The dependent eliminator
 `RawTerm.rec` is its constant-motive instance.  HONEST SCOPE: this is the fixed-FX-signature,
 arbitrary-CARRIER initiality; the arbitrary-binding-SIGNATURE lift (SigTerm initial; CwR bi-initiality) is
 SIG-5.  (The RawTerm-valued action-fold's own uniqueness — the rename/subst engine — is the separate
@@ -411,7 +411,7 @@ TERMINAL COALGEBRA with corecursion (anamorphism) and bisimulation: the final co
 functor `X ↦ A × X` (`FinalStream`), with the anamorphism `StreamCoalgebra.ana` from an arbitrary source
 coalgebra, its coalgebra-homomorphism laws + fusion, terminality (`ana_unique`), the coinduction
 principle (`FinalStream.bisim_observe`), the constructor `cons` with Lambek's fixpoint iso, and a
-concrete computing witness (`constStream`) — in `Tier0/Term/Codata/TerminalCoalgebra.lean`.  HONEST SCOPE: the CANONICAL
+concrete computing witness (`constStream`) — in `Axis/Term/Codata/TerminalCoalgebra.lean`.  HONEST SCOPE: the CANONICAL
 stream instance, generic over the SOURCE coalgebra carrier (the op-dual of `term-1`'s fixed-signature
 arbitrary-carrier initiality — `RawTerm` was the FX term former, streams are NOT the FX co-signature); the
 terminal-coalgebra semantics for the codata generators (`gen_codataUnfold` / `gen_codataDest` / `gen_polyNu`)
@@ -451,7 +451,7 @@ lift of `term-2`), the homotopy congruence on parallel paths (`RewriteHomotopy`,
 generating-confluences (`SquierDiamond`), COHERENT CONFLUENCE (`SquierDiamond.confluent` — the diamonds
 join divergences with a homotopy witness, NON-VACUOUS via `completeCoherentJoin`), and the LEAST-CONGRUENCE
 universal property (`RewriteHomotopy.toModel` — the diamonds GENERATE the homotopy, the dim-2 analogue of
-`term-2`'s `mediate`) — in `Tier0/Term/Rewrite/SquierCoherence.lean`.  HONEST SCOPE: the abstract DIAMOND
+`term-2`'s `mediate`) — in `Axis/Term/Rewrite/SquierCoherence.lean`.  HONEST SCOPE: the abstract DIAMOND
 case (the FX bundle IS orthogonal — `fxRewriteBundle_rowsDisjoint = true`).  The single-step `SquierDiamond`
 forces every step-target to have an outgoing residual (`joinLeft s s`), so a reachable NORMAL FORM is
 impossible and coherence-to-NF (`SquierDiamond.coherence`) is its (true but VACUOUS) NF specialization; a
@@ -658,7 +658,7 @@ theorem fxTerm_levyOptimality_isBacked :
 /-! ## term-10: the Fiore-Plotkin-Turi substitution monoid -/
 
 /-- **Honesty marker** — `term-10` (FPT substitution Σ-monoid).  The Fiore-Plotkin-Turi substitution monoid
-is shipped (in `Tier0/Term/Action/SubstitutionMonoid.lean`): `SubstitutionMonoid` (variables `var` = the
+is shipped (in `Axis/Term/Action/SubstitutionMonoid.lean`): `SubstitutionMonoid` (variables `var` = the
 unit, parallel substitution `subst` = the multiplication, + the three monoid laws `(var i)[σ]=σ i` /
 `t[var]=t` / `t[σ][τ]=t[σ;τ]`), and the genuine FPT consequence — the monoid laws PRESENT THE SUBSTITUTION
 (KLEISLI) CATEGORY (`kleisli_leftId`/`kleisli_rightId`/`kleisli_assoc`, pointwise / funext-free).  ★ The
@@ -856,7 +856,7 @@ theorem fxTerm_meaninglessGenericity_isBacked :
 
 /-- **Honesty marker** — `term-14` (mixed inductive-coinductive types, the μ/ν parity).  The LEFT (`term-1`,
 initial algebra `μ`) and RIGHT (`term-3`, terminal coalgebra `ν`) meet (in
-`Tier0/Term/Codata/MixedFixpoint.lean`): the least fixpoint `MuTree` (finite trees) with the catamorphism
+`Axis/Term/Codata/MixedFixpoint.lean`): the least fixpoint `MuTree` (finite trees) with the catamorphism
 `MuTree.fold` and its INDUCTION principle `MuTree.fold_unique`; the greatest fixpoint `NuStream` (= the
 terminal coalgebra of `X ↦ A × X`) with `NuStream.corec` and its COINDUCTION principle `NuStream.corec_unique`
 (pointwise, funext-free); the MIXED type `MixedMuNu = νX. MuTree × X` (a productive stream of finite trees)
@@ -918,7 +918,7 @@ theorem fxTerm_mixedFixpointParity_isBacked :
 
 /-- **Honesty marker** — `term-15` (copattern coverage checking).  The DUAL of `term-11` (patterns): a
 COPATTERN specifies a codata value by its OBSERVATIONS, and coverage checking is the dual of pattern-match
-exhaustiveness.  Shipped (in `Tier0/Term/Codata/CopatternCoverage.lean`): the copattern decision trie
+exhaustiveness.  Shipped (in `Axis/Term/Codata/CopatternCoverage.lean`): the copattern decision trie
 (`CopatternTrie`, with `undefined` = a coverage GAP), the decidable COVERAGE CHECKER (`isCovering` — every
 `split` exhaustive over `Fin destructorCount`, no reachable gap), and COMPLETENESS
 (`covering_resolves_without_gap` — a covering trie resolves every observation without getting stuck, dual to
@@ -1010,7 +1010,7 @@ theorem fxTerm_rewritingModulo_isBacked :
 /-! ## term-17: the free strict ω-category on the term polygraph + the Gray tensor -/
 
 /-- **Honesty marker** — `term-17` (the free strict ω-category on the term polygraph + the Gray tensor,
-mirrors `mode-5`).  Shipped (in `Tier0/Term/Rewrite/FreeStrictOmega.lean`, over `term-4`'s proof-relevant
+mirrors `mode-5`).  Shipped (in `Axis/Term/Rewrite/FreeStrictOmega.lean`, over `term-4`'s proof-relevant
 rewriting 2-category): the FREE-CATEGORY UNIVERSAL PROPERTY at dimension 1 — `RewritePath.foldMap` is the
 unique structure-preserving extension of a generator-map, with FUNCTORIALITY (`foldMap_comp`, the existence
 half) and UNIQUENESS (`foldMap_unique`); this is the proof-RELEVANT free category, of which `term-2`'s
@@ -1090,7 +1090,7 @@ theorem fxTerm_freeStrictOmegaCategory_isBacked :
 /-! ## term-18: the marked / complicial structure of the term rewriting ω-category -/
 
 /-- **Honesty marker** — `term-18` (the marked/complicial structure of the term rewriting ω-category,
-mirrors `mode-7`).  Shipped (in `Tier0/Term/Rewrite/MarkedComplicial.lean`): the complicial STRATIFICATION
+mirrors `mode-7`).  Shipped (in `Axis/Term/Rewrite/MarkedComplicial.lean`): the complicial STRATIFICATION
 of `term-4`'s rewriting ω-category in Verity's "thin = equivalence" sense — the dimension-1 MARKING
 (`IsRewriteEquivalence`: a reduction path is thin iff invertible up to homotopy), the ELEMENTARY
 STRATIFICATION AXIOMS (`rewriteEquivalence_nil` — identities/degeneracies are thin; `rewriteEquivalence_comp`
@@ -1237,7 +1237,7 @@ def fxTerm_hasKnuthBendixCompletion : Bool := false
 /-! ## term-21: denotational semantics — the domain-theoretic fixpoint core -/
 
 /-- **Honesty marker** — `term-21` (denotational semantics: the domain / fixpoint core).  Shipped (in
-`Tier0/Term/Semantics/DenotationalDomain.lean`): the pointed ω-CPO interface (`PointedDcpo` + `Continuous`),
+`Axis/Term/Semantics/DenotationalDomain.lean`): the pointed ω-CPO interface (`PointedDcpo` + `Continuous`),
 and the KLEENE LEAST-FIXPOINT theorem — `kleeneFixpoint = ⊔ₙ fⁿ(⊥)` is a fixpoint of any continuous `f`
 (`kleeneFixpoint_isFixpoint`) and is BELOW every other fixpoint (`kleeneFixpoint_isLeast`), i.e.
 RECURSION = LEAST FIXPOINT, the foundation of denotational semantics — plus PARK INDUCTION (the least
@@ -1277,7 +1277,7 @@ theorem fxTerm_denotationalDomainFixpoint_isBacked :
 /-! ## term-22: intersection types — BCD subtyping + the filter model -/
 
 /-- **Honesty marker** — `term-22` (intersection types: the BCD algebra + the filter model).  Shipped (in
-`Tier0/Term/Semantics/IntersectionTypes.lean`): `IntersectionType` + BCD `Subtype` as a MEET-SEMILATTICE
+`Axis/Term/Semantics/IntersectionTypes.lean`): `IntersectionType` + BCD `Subtype` as a MEET-SEMILATTICE
 WITH TOP — `omega` is the top (`omega_isTop`), `∩` is the greatest lower bound
 (`inter_isGreatestLowerBound`); FILTERS (`IsFilter`) with the LEAST filter `omegaFilter`
 (`omegaFilter_isLeast`) and the order-reversing `principalFilter` embedding; and the FILTER MODEL is
@@ -1332,7 +1332,7 @@ theorem fxTerm_intersectionFilterModel_isBacked :
 /-! ## term-23: geometry of interaction — the token machine -/
 
 /-- **Honesty marker** — `term-23` (geometry of interaction: the token machine).  Shipped (in
-`Tier0/Term/Semantics/GeometryOfInteraction.lean`): the deterministic `TokenMachine` (`step_deterministic`)
+`Axis/Term/Semantics/GeometryOfInteraction.lean`): the deterministic `TokenMachine` (`step_deterministic`)
 with fuel-bounded `execute`, the absorption laws (`execute_halted` / `execute_succ_of_halted` /
 `reaches_stable`), EXECUTION DETERMINACY (`reaches_unique` — a configuration reaches at most one exit, so
 the token machine computes a well-defined partial function: the GoI denotation), EXECUTION TOTALITY from a
@@ -1376,7 +1376,7 @@ theorem fxTerm_geometryOfInteraction_isBacked :
 /-! ## term-24: game semantics — arenas, plays, deterministic strategies -/
 
 /-- **Honesty marker** — `term-24` (game semantics: arenas, plays, strategies).  Shipped (in
-`Tier0/Term/Semantics/GameSemantics.lean`): the `Polarity` duality (`flip_flip` / `flip_ne`), `Arena` +
+`Axis/Term/Semantics/GameSemantics.lean`): the `Polarity` duality (`flip_flip` / `flip_ne`), `Arena` +
 `dualArena` (the linear-logic dual, involutive POINTWISE — `dualArena_involutive_pointwise`), `EvenPlay`
 (Opponent/Player move pairs) with the Opponent projection `opponentMoves`, arena-legality (`RespectsArena` /
 `respectsArena_prefixClosed`), and DETERMINISTIC strategies (`Strategy`) with the headline
@@ -1422,7 +1422,7 @@ theorem fxTerm_gameSemantics_isBacked :
 /-! ## term-25: the differential λ-calculus — derivations + linear substitution -/
 
 /-- **Honesty marker** — `term-25` (the differential λ-calculus: derivations + linear substitution).  Shipped
-(in `Tier0/Term/Semantics/DifferentialLambda.lean`): the abstract `DifferentialAlgebra` (LINEARITY
+(in `Axis/Term/Semantics/DifferentialLambda.lean`): the abstract `DifferentialAlgebra` (LINEARITY
 `deriv_zero` / `deriv_add` + the LEIBNIZ product rule `deriv_mul`) with the derived power rule
 `deriv_square` and TWO models — the terminal `onePointDifferentialAlgebra` and the binary
 `productDifferentialAlgebra` (differential algebras are closed under PRODUCTS); and the concrete differential
@@ -1648,4 +1648,4 @@ only the syntactic generator stubs
 `= false`. -/
 def fxTerm_hasDenotationalAdequacy : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Axis

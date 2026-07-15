@@ -36,7 +36,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- The `natElim` cell — `gen_natElim` in the Phase-Z motive shape (arity 4, `binderShifts =
 [1, 0, 2, 0]`).  Author order `(motive, scrutinee, zero-branch, succ-branch)`; emitted spine

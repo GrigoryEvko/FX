@@ -36,7 +36,7 @@ TRUE under T2; keeping `_isFalse` theorems for them would be dishonest. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- The variable-domain Π-code `Π (var 0). (var 1)` at scope 1 — a NORMAL classifier whose domain is
 the fresh variable itself. -/

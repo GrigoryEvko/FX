@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMember
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Typed.Engine.Classifier.TypingContext
 
 /-! # FX1Poly/Typed/ReducibleEnvVec
@@ -37,7 +37,7 @@ lookups are rewritten by `TypingContext.lookup_cons_zero` / `lookup_cons_succ` a
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- Cons a fresh head level onto a tail level vector — the propext-free `Fin`-position structure match
 (position 0 takes the head level; position `k + 1` reads the tail at `k`).  Avoids `Fin.cons` (which pulls

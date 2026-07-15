@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaTableSubstitution
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
+import FX1Poly.Axis.Term.Subst.RawTermSubstPair
 
 /-! # EtaTableStar — ETA-T5 increment 4.1: the table eta star and its
 substitution diagonals
@@ -29,7 +29,7 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax (RawRenaming)
+open FX1Poly.Axis.Syntax (RawRenaming)
 
 /-! ## The stars -/
 

@@ -40,7 +40,7 @@ reflects through the closing substitution).  No `axiom`, `sorry`, `propext`, `Qu
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **SN-for-well-typed, open form (the SN-043 wiring).**  Any grown derivation, given a `BoundExceedsPi` budget and

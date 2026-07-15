@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Generator.GeneratorCore
+import FX1Poly.Axis.Term.Generator.GeneratorCore
 
 /-! # FX1Poly/Typed/Metatheory/Reducibility/Candidate/ReducibilityCandidateDesc
     — the UNIVERSAL reducibility-candidate signature (FTGEN-1 design spike, the data layer)

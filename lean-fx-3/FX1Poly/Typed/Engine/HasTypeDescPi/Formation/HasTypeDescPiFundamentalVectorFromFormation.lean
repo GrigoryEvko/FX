@@ -7,7 +7,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.Engine.Formation.GenericDataFormationUnderSubst
 import FX1Poly.Typed.Engine.RuleTables.TelescopeArityDispatchNormalization
 import FX1Poly.Typed.Engine.Formation.FormationTableShapeFacts
-import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Axis.Term.Rename.RawTermRenameSubstCommute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRename
 
 /-! # FX1Poly/Typed/HasTypeDescPiFundamentalVectorFromFormation
@@ -37,7 +37,7 @@ head and tail induction hypotheses plus `FormerChildrenReducible.ofTelescopeRedu
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Vector reducibility for a grown premise telescope.**  Under a per-variable-level reducible

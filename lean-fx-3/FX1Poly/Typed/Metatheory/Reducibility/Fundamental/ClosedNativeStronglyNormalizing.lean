@@ -77,7 +77,7 @@ member→SN bridges + `Fin.elim0` + `ReducibleEnvAtBounded.empty`.  No `axiom`, 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **★ NATIVE closed-term strong normalization, conditional on the three table-arm FTs (TYTAB-4 step 5).**  Every

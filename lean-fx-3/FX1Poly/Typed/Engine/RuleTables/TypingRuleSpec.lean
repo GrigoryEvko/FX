@@ -11,7 +11,7 @@ PURE SYNTAX — they mention only `RawTerm`, `LevelExpr`, `UniverseFlag`, `Gener
 They were formerly hosted inside the grown engine file (`HasTypeDesc.lean`), which forced every
 pure-spec consumer of the rule table (the union's formation rule-table layer) to import the grown
 engine transitively.  This module extracts the spec so the formation rule tables reach it grown-free
-(one import, `CellConstructors`, itself Tier0-only).  The grown engine re-imports this module, so the
+(one import, `CellConstructors`, itself Axis-only).  The grown engine re-imports this module, so the
 54 engine consumers resolve every name unchanged.
 
 ## Zero-axiom

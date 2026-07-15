@@ -31,7 +31,7 @@ the shipped Tarski decode lemmas instantiated at the bridged payload.  No `axiom
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Axis FX1Poly.Typed FX1Poly.Universe
 
 /-- **★ The typing tie-in.**  The bridged universe code is typed at the bridged successor — the type axis's
 `successor` IS the kernel's `HasTypeUnion.universeFormation` classifier (`Type@L : Type@(L+1)`), now at the

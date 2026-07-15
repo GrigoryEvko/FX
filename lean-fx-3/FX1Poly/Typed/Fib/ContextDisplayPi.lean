@@ -14,7 +14,7 @@ import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 reindexing along a display map (`democracyLCC_hasLocalExponentials := false`,
 `fxComprehensionCategory_hasFibredPiRightAdjoint := false`) — as the `×type` core, "deferred to fib-1".  That
 deferred right adjoint is NOT missing from the kernel: the kernel's Π-former (`piTyCodeCell` + `lam`/`app` with
-β/η) IS it.  fib-1d performs the genuine `Core → Tier0/Context` REWIRE that realizes the deferred core: it
+β/η) IS it.  fib-1d performs the genuine `Core → Axis/Context` REWIRE that realizes the deferred core: it
 exhibits the kernel's typed Π-introduction as the fibred-Π right adjoint's CURRYING transpose over the
 comprehension `Γ.A` that fib-1c identified with `TypingContext.cons`.
 
@@ -47,7 +47,7 @@ obligations supplied by `List.Mem` head/tail decomposition (no `mem_cons` iff, p
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Tier0.Syntax FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Axis.Syntax FX1Poly.Typed FX1Poly.Universe
 
 /-- **★ fib-1d (i): `lam` realizes the fibred-Π right adjoint's forward transpose (currying).**  Given the
 display fibre's domain `A : Type@level0` over `Γ`, a codomain `B : Type@level1` over the comprehension `Γ.A`

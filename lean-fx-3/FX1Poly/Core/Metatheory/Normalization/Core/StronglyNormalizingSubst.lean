@@ -37,7 +37,7 @@ fed `Step.subst` as the sub-relation witness.  No `axiom`, `sorry`, `propext`, `
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Strong normalization is reflected by substitution.**  If `subst σ term` is strongly normalizing, so is
 `term`: every successor of `term` lifts (via `Step.subst`) to a successor of `subst σ term`, so `term`'s

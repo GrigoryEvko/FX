@@ -37,7 +37,7 @@ FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **A neutral term admits no weak-head step.**  Stuck at the root: no β (the head/scrutinee never reaches

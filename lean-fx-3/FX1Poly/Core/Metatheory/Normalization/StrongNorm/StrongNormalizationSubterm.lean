@@ -31,7 +31,7 @@ compound `Acc` index directly).
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 namespace StepStar
 
 /-- The first component of a strongly-normalizing pair is strongly

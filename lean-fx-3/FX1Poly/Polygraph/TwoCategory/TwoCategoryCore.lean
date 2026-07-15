@@ -11,7 +11,7 @@ consequence `rigidTwoCellDecEq` + the witness `locallyDiscreteTwoCategory_isRigi
 This is pure category theory over an ARBITRARY `RawCategory` — nothing here mentions the mode quiver, modality
 paths, or any PolyCell axis.  The mode-axis specialisation — the free 1-category / free 2-category on a `ModeGraph`,
 the §3.13 `ModeTheory` / `RigidModeTheory` and their free constructions — lives in
-`FX1Poly.Tier0.Mode.TwoCategoryCore` and builds on this core.
+`FX1Poly.Axis.Mode.TwoCategoryCore` and builds on this core.
 
 Zero external dependencies beyond the `RawCategory` substrate.  Raw Lean 4 + Init.
 -/

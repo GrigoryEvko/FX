@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.RuleTables.Tables.TableParallelReduction
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubstPair
 
 /-! # FX1Poly/Core/TableParallelSubstitution — IOTA-T6: parallel equivariance engines
 
@@ -45,7 +45,7 @@ declaration in `FX1PolyAudit/AuditTableParallelReduction.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## One fixed substitution, both sides -/
 

@@ -23,7 +23,7 @@ The proof composes `fundamentalPiIntroAtAll`, `tarskiDecode`, `subst_universeCod
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Dependent Π-introduction from recursive member premises.**  The domain premise remains an all-level
 fundamental-theorem result.  The codomain/body premises are stated exactly as the recursor produces them

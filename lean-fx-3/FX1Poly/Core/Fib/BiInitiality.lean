@@ -1,5 +1,5 @@
 import FX1Poly.Core.Fib.FibrationArchitecture
-import FX1Poly.Tier0.Context.Initiality
+import FX1Poly.Axis.Context.Initiality
 
 /-! # FX1Poly/Core/Fib/BiInitiality — fib-5 (b/d): the fibred kernel's object-level bi-initiality + the honest boundary
 
@@ -13,11 +13,11 @@ This file ships the GENUINELY-REACHABLE residue — the OBJECT-LEVEL (context) b
 `fxFibredKernel` and `= true` zero-axiom — by REUSING the per-axis initialities already proven (NO new
 quotient, NO funext):
 
-  * **context-5** (`Tier0/Context/Initiality`) proved the syntactic CONTEXT structure `fxBaseSubstContextAlgebra`
+  * **context-5** (`Axis/Context/Initiality`) proved the syntactic CONTEXT structure `fxBaseSubstContextAlgebra`
     is the INITIAL context-extension algebra: `syntacticRealizationMorphism` is the interpretation morphism OUT
     of it into ANY model (EXISTENCE, the recursor on scopes), and `syntacticRealizationMorphism_unique` proves
     it is the ONLY one (UNIQUENESS) — both zero-axiom, the type abstracted away (the `×type` deferral).
-  * **term-1** (SOAS-initiality, `Tier0/Term`) is the dual term-axis fact: `RawTerm` is the initial algebra over
+  * **term-1** (SOAS-initiality, `Axis/Term`) is the dual term-axis fact: `RawTerm` is the initial algebra over
     the signature.
 
 This file ties context-5's object-level initiality to the fib-0 `FibredKernel` (the four-axis glue), so the
@@ -44,7 +44,7 @@ Re-exposes context-5's zero-axiom `syntacticRealizationMorphism` / `_unique` at 
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 
 /-- The fibred kernel's OBJECT-LEVEL syntactic context structure: the `context-5` initial context-extension
 algebra `fxBaseSubstContextAlgebra` (carrier = scopes, empty = `0`, extend = `+1`) — the object-action of the

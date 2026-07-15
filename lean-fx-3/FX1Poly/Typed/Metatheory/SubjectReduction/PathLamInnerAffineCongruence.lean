@@ -24,7 +24,7 @@ honest bridge that closes `PathLamBodyStepPreservesAppScaledAffine`. -/
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Modal
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /- **The inner-affine structural invariant.**  `AllInnerPathLamAffine body` holds when every `pathLam`
 subterm of `body` has an App-scaled-affine body (`appScaledDimensionGrade innerBody 0 ≤ one`).  Two

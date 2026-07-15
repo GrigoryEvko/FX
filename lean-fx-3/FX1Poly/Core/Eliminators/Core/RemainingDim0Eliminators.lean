@@ -34,7 +34,7 @@ Each declaration follows the 4-child Phase-Z template from
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## listElim -/
 

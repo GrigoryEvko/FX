@@ -5,7 +5,7 @@ import FX1Poly.Typed.Metatheory.Canonicity.Core.NatElimComputingCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ListElimComputingCanonicity
 import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
 import FX1Poly.Typed.Cell.ListElimDependentConsType
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 
 /-! # FX1Poly/Typed/UnionCellSubstitution — how `RawTerm.subst` acts on the native-union cells
 
@@ -260,8 +260,8 @@ binding `subst (iterateLiftRaw σ 1) (rename weaken resultType)` without unfoldi
 theorem subst_iterateLift_one_renameWeaken_commute {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope) (sourceTerm : RawTerm sourceScope) :
     RawTerm.subst (iterateLiftRaw substitution 1)
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken sourceTerm)
-      = RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Axis.Syntax.RawRenaming.weaken sourceTerm)
+      = RawTerm.rename FX1Poly.Axis.Syntax.RawRenaming.weaken
           (RawTerm.subst substitution sourceTerm) :=
   subst_lift_weaken_commute substitution sourceTerm
 
@@ -273,10 +273,10 @@ twice-weakened result-type step-branch classifier after substitution. -/
 theorem subst_iterateLift_two_weaken_weaken_commute {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope) (sourceTerm : RawTerm sourceScope) :
     RawTerm.subst (iterateLiftRaw substitution 2)
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
-          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken sourceTerm))
-      = RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
-          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Axis.Syntax.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Axis.Syntax.RawRenaming.weaken sourceTerm))
+      = RawTerm.rename FX1Poly.Axis.Syntax.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Axis.Syntax.RawRenaming.weaken
             (RawTerm.subst substitution sourceTerm)) := by
   show RawTerm.subst (iterateLiftRaw (iterateLiftRaw substitution 1) 1)
       (RawTerm.weaken (RawTerm.weaken sourceTerm))

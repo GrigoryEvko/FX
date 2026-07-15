@@ -50,7 +50,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- ★ **Forward η-expansion preserves typing for an arbitrary grown function.**  Given a well-formed
 grown context and `f : piTyCodeCell D C` in the grown engine, the η-redex `etaLamSource f = λ. (weaken f

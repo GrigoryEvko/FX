@@ -1,9 +1,9 @@
 import FX1Poly.Core.Substrate.Certifier.CertifiedRawCell
 import FX1Poly.Core.Substrate.Certifier.BuildGeneratingCellExact
 import FX1Poly.Core.Substrate.Certifier.BuildVerticalCompositeExact
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 import FX1Poly.Core.Substrate.Profile.PolyCellHelpers
-import FX1Poly.Tier0.Term.Cell.RawCellDecEq
+import FX1Poly.Axis.Term.Cell.RawCellDecEq
 
 /-! # Foundation/PolyCell/Core/CertifyRawCellExact — the recursive workhorse
 

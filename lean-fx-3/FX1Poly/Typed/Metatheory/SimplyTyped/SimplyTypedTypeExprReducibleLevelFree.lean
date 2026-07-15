@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeWellFormed
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRenameForwardGeneral
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
@@ -50,7 +50,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax StepStar
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax StepStar
 
 /-- **Level-free non-dependent arrow type builder.**  From domain reducibility and codomain reducibility, the
 simple arrow `A → B` (code `piTyCodeCell domainCode (RawTerm.weaken codomainBase)`) is a reducible type at the

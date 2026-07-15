@@ -38,7 +38,7 @@ forward constructor mapping.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Cla
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Root-iota reduction.**  Contract an eliminator-on-constructor redex at the root.  Deterministic by
 construction: the root generator and scrutinee constructor select a unique rule with a unique

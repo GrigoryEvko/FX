@@ -2,12 +2,12 @@ import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
-import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
-import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
-import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Axis.Term.Subst.RawTermSubstCompose
+import FX1Poly.Axis.Term.Subst.RawTermSubstPointwise
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Axis.Term.Rename.RawTermRenameComposeFusion
 
 /-! # FX1Poly/Typed/Cell/OptionMatchDependentSomeBranchType
     — the dependent `optionMatch` `some` branch CODOMAIN (the one-binder dependent-eliminator branch crux)
@@ -42,7 +42,7 @@ directly (the `bool`-style nullary classifier), discharged in the rule without a
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-! ## The `some` branch codomain -/
 

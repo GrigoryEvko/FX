@@ -58,7 +58,7 @@ Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **A first-order box around a Kripke candidate.**  Wrapping `KripkeCand` (which is FUNCTION-valued,
 `∀ {targetScope}, RawRenaming … → RawTerm … → Prop`) in a structure makes it a first-order value, so it can

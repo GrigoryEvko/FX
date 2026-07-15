@@ -50,7 +50,7 @@ SR-U route — route B is now a CONFIRMING alternative path, not the open one.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The leveled transport across context conversion**, conditional on the neutral-arm reconstruction
 `neutralRecon`.  By induction on the leveled relation: the `universeType` arm is FREE (universe codes are

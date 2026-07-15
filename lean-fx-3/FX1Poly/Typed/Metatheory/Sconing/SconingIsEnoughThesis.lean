@@ -57,7 +57,7 @@ and the shipped normalizer — plus one `rfl` identity.  No `axiom`, `sorry`, `p
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 open StepStar
 
 /-- ★ **The sconing-is-enough thesis** (SN-110, the Leg-1 capstone): for every glued type, ONE

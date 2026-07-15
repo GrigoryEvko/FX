@@ -34,7 +34,7 @@ candidate identity is definitional.  No `axiom`, `sorry`, `propext`, `Quot.sound
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- **A bounded member of `boolTypeCell` is a member of `dataTaitCandidate boolIsValue`.**  The bool type code
 pins to `dataTaitCandidate (flatCodeValuePredicate gen_boolCode) = dataTaitCandidate boolIsValue` via the

@@ -39,7 +39,7 @@ the `.star` cases by the shipped `isStronglyNormalizing_isReducibilityCandidate`
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- Simple kinds for the type-level fragment: a proper type (`star`), or an operator from one kind to

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
-import FX1Poly.Tier0.Type.Level.LevelExprSimplify
+import FX1Poly.Axis.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Typed/FormerOutputLevelBounds
     — each Π/Σ-former child level is ≤ the former's output level (the genFormationPi `belowOutput` premises)

@@ -48,7 +48,7 @@ mirror of `typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval`.  No `axiom
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The interval-non-fibrancy discipline (dual of `AllLocksAreInterval`).**  No `cons`-bound
 (dimensionally-INaccessible) position looks up to the interval: an ordinary binding is never the interval, so

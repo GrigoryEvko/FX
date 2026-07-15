@@ -1,20 +1,20 @@
-import FX1Poly.Tier0.Context.StandaloneModalRMC
-import FX1Poly.Tier0.Mode.ModeOmega
-import FX1Poly.Tier0.Type.TypeAxis
+import FX1Poly.Axis.Context.StandaloneModalRMC
+import FX1Poly.Axis.Mode.ModeOmega
+import FX1Poly.Axis.Type.TypeAxis
 import FX1Poly.Core.Fib.TermAxis
-import FX1Poly.Tier0.Term.Generator.GeneratorSignatureValue
+import FX1Poly.Axis.Term.Generator.GeneratorSignatureValue
 import FX1Poly.Core.CellRuleFibration
 
 /-! # FX1Poly/Core/Fib/FibrationArchitecture — fib-0 design-lock: the four ω-categories meet at Core/
 
-The FX kernel is built as FOUR standalone ω-category axes, each its own `Tier0/` tower with a capstone:
+The FX kernel is built as FOUR standalone ω-category axes, each its own `Axis/` tower with a capstone:
 
-  * **term**    — `RawTerm` as a SOAS INITIAL ALGEBRA (`Tier0/Term`, `fxTerm_hasInitialAlgebraUniqueness`);
-  * **type**    — a standalone Tarski universe + level normalizer (`Tier0/Type`, `TypeAxis` / `fxTypeAxis`);
-  * **context** — a modal Representable Map Category / Uemura CwR (`Tier0/Context`, `StandaloneModalRMC` /
+  * **term**    — `RawTerm` as a SOAS INITIAL ALGEBRA (`Axis/Term`, `fxTerm_hasInitialAlgebraUniqueness`);
+  * **type**    — a standalone Tarski universe + level normalizer (`Axis/Type`, `TypeAxis` / `fxTypeAxis`);
+  * **context** — a modal Representable Map Category / Uemura CwR (`Axis/Context`, `StandaloneModalRMC` /
     `fxStandaloneModalRMC`), whose `comprehension` field is the display fibration with the representability
     bijection `Sub(Delta, Gamma.A) ~= Sub(Delta, Gamma) x Tm(Delta, A)`;
-  * **mode**    — a (weak) higher polygraph carried as data (`Tier0/Mode`, `ModeOmega` / `fxModeOmega`).
+  * **mode**    — a (weak) higher polygraph carried as data (`Axis/Mode`, `ModeOmega` / `fxModeOmega`).
 
 Until now those four towers were GLUED NOWHERE: the running judgment `HasTypeUnion`/`TypingContext`
 (`Typed/Engine`) imports ONLY the term axis (and the `LevelExpr`/`UniverseFlag` floor of the type axis);
@@ -92,27 +92,27 @@ future agent EXECUTE the gluings without re-exploring.
   * **context** 0 / 0 — ORPHANED from the engine (grazes only `Typed/Dimensions/AxisObligation/*` +
     `Typed/Metatheory/Sconing/*`).
   * **mode** 0 / 0 — ORPHANED (one peripheral importer, `Typed/Dimensions/Parametricity/GelIsTranspensionAtAffine`).
-    Headline flag `fxMode_hasModeFibration := false` (`Tier0/Mode/Mode.lean:261`); 16 sibling
+    Headline flag `fxMode_hasModeFibration := false` (`Axis/Mode/Mode.lean:261`); 16 sibling
     `fxMode_hasKernel*Connection := false` flags are the literal honesty ledger of the gap.
 
 ### The reuse skeleton (fill it; do NOT fork — "no remnants")
-  * `Tier0/RuleFibration.lean:24-67` — the index-abstract `RuleFibration (Axis)(Head)(payload)` engine.
+  * `Axis/RuleFibration.lean:24-67` — the index-abstract `RuleFibration (Axis)(Head)(payload)` engine.
   * `Core/CellRuleFibration.lean:28` — `CellRuleBundle payload := RuleFibration CellSort Generator payload` over
-    the 7 sorts `context·type·term·mode·effect·grade·protocol` (`Tier0/Term/Cell/CellSort.lean:16`).
+    the 7 sorts `context·type·term·mode·effect·grade·protocol` (`Axis/Term/Cell/CellSort.lean:16`).
   * `Typed/CellRuleFibration.lean:60` — `fxCellRules`: ONLY `.type` is wired (↦ `typingRowsOf fxTypingBundle`,
     `:63`); `context`/`term`/`mode` are `PEmpty`/`[]`. **fib-1/2/3 = populate those three empty sorts.**
   * Everything else "glue"-named is NOT four-axis glue: `GluedModel*`/`SconingWitness`/`BksMetatheoryPackage`
-    are Artin/reducibility sconing; `Tier0/Context/FibrationCategory.lean` is context-only Brown model structure;
+    are Artin/reducibility sconing; `Axis/Context/FibrationCategory.lean` is context-only Brown model structure;
     `ProfileFibration/ProfileMorphism.lean` is a dead axis-8 ledger.
 
 ### fib-2 [type ↔ term / El] — SMALLEST gap, do FIRST
-  * Term IS type already: ONE `RawTerm` (`Tier0/Term/Core/RawTerm.lean:13`), `.type`/`.term` is only a `CellSort`
+  * Term IS type already: ONE `RawTerm` (`Axis/Term/Core/RawTerm.lean:13`), `.type`/`.term` is only a `CellSort`
     tag — so "a term can be a type code" holds structurally.
   * El already ships as the Tarski roundtrip: `IsReducibleMemberAt.tarskiDecode` / `tarskiEncode` /
     `universeMembership_iff` (`Core/Metatheory/Reducibility/Stratified/StratifiedReducibleUniverseDecode.lean:64-110`).
   * The axis code = the kernel payload, ON THE NOSE: `StandaloneTarskiUniverse.Code = UniverseCode =
-    LevelExpr × UniverseFlag` (`Tier0/Type/TypeAxis.lean:74-98`) is EXACTLY `gen_universeCode`'s payload
-    (`Tier0/Term/Generator/GeneratorCore.lean:952`); kernel term is `universeCodeCell`
+    LevelExpr × UniverseFlag` (`Axis/Type/TypeAxis.lean:74-98`) is EXACTLY `gen_universeCode`'s payload
+    (`Axis/Term/Generator/GeneratorCore.lean:952`); kernel term is `universeCodeCell`
     (`Typed/Cell/CellConstructors.lean:38-40`).
   * Predicativity (Tarski not Russell) proven: `grownUniverseCode_notTypedAtSelf`
     (`Typed/Metatheory/Canonicity/Consistency/GrownUniverseConsistency.lean:58-67`), no-top
@@ -129,9 +129,9 @@ future agent EXECUTE the gluings without re-exploring.
     (`Typed/Engine/WfContext/WfContextDesc.lean:33-39`).  Substitution on classifiers: `RawTerm.subst`/`subst0`/
     `rename` (eliminator outputs are literally `subst0`-driven).
   * Context side: `FxComprehensionCategory`/`fxComprehensionCategory`
-    (`Tier0/Context/ComprehensionCategory.lean:87-192`, cleavage = de Bruijn lift, Beck-Chevalley,
+    (`Axis/Context/ComprehensionCategory.lean:87-192`, cleavage = de Bruijn lift, Beck-Chevalley,
     `comprehensionIso : Sub(Δ,Γ.A) ≅ Sub(Δ,Γ)×Tm(Δ,A)`); the cellular `Tm↠Ty` `displayClassifier`
-    (`Tier0/Context/Instances/Subst/FxBaseSubstDisplayMap.lean:99-213`).
+    (`Axis/Context/Instances/Subst/FxBaseSubstDisplayMap.lean:99-213`).
   * The shipped PROTOTYPE: `Typed/Dimensions/AxisObligation/DisplayMapDecidableFibration.lean:54-101`
     (`ClassifiedCell.IsAdmittedByFormation := HasTypeDesc …`, `decideAdmittedByFormation`,
     `genericClassifiedCell_admittedByFormation`).
@@ -141,7 +141,7 @@ future agent EXECUTE the gluings without re-exploring.
     (`fxComprehensionCategory_hasFibredPiRightAdjoint := false`, `:197`); flip `fxFib_hasTypeContextDisplay`.
 
 ### fib-3 ★ [everything ⊣ mode] — the HARD keystone, gated
-  * Index by `ModalityPath` (`Tier0/Mode/Mode.lean:91-98`: `nil`=identity, `cons`=prepend).
+  * Index by `ModalityPath` (`Axis/Mode/Mode.lean:91-98`: `nil`=identity, `cons`=prepend).
   * **★★ THE WRINKLE (do NOT conflate two distinct facts):** affineness (mode-2
     `MultiplierStructureClass.affine` = NO diagonal, `MultiplierStructureClass.lean:57-58,198`) ≠ unpointedness
     (mode-12 `Multiplier.IsUnpointable := multiplier.dimension → False`, `MultiplierEndofunctor.lean:67-68`,
@@ -150,7 +150,7 @@ future agent EXECUTE the gluings without re-exploring.
     to a mode-12 UNPOINTABLE multiplier + the genuine ABSENCE of a `twoCell μ⇒identity` generator
     (`ModeSignature.twoCell`, `Mode.lean:131-136`) — it is NOT readable off the affine structure class.
   * The bespoke mirror to RETIRE: `ObligationModality {fibrant,dimensional}`
-    (`Typed/Engine/Classifier/DimensionLockAccessibility.lean:216-220`, NO `Tier0.Mode` import);
+    (`Typed/Engine/Classifier/DimensionLockAccessibility.lean:216-220`, NO `Axis.Mode` import);
     `dimensionIsNotAccessibleFibrantly` (`:257-261`) ASSERTED by a `rfl`-level `false` match arm (`:70`), NOT
     derived; `isSubjectUsableAtModality` called in NO file but its own; the `ElimObligation.modality` field
     (`ElimRuleTable.lean:72`, pathApp arg `.dimensional`) is threaded but the conjunct is unconsumed.
@@ -163,14 +163,14 @@ future agent EXECUTE the gluings without re-exploring.
     A1-MODE-AFFINE and retires the bespoke enum (A1-RETIRE).
 
 ### fib-5 ★ [weak bi-initiality] — the constraint on the whole shape
-  * 2-category: `RepresentableMapCategory` + `CwRMorphism` (`Tier0/Context/RepresentableMapCategory.lean:288,327`);
+  * 2-category: `RepresentableMapCategory` + `CwRMorphism` (`Axis/Context/RepresentableMapCategory.lean:288,327`);
     representable class = the DISPLAY maps `Tm↠Ty` (NOT the trivial iso class the standalone witnesses use,
     `StandaloneModalRMC.lean:153-159`).
   * ZERO-AXIOM CEILING: on-the-nose CwF/QIIT initiality needs `Quot.sound`/`funext` (off-limits —
-    `Tier0/Context/Initiality.lean:7-10`; toy `fxMode_hasStrictBiInitialUniqueness := false`,
-    `Tier0/Mode/TwoMonadDoctrine.lean:271-275`).  ⟹ ship bi-initiality WEAK (up-to-iso 2-categorical: data +
+    `Axis/Context/Initiality.lean:7-10`; toy `fxMode_hasStrictBiInitialUniqueness := false`,
+    `Axis/Mode/TwoMonadDoctrine.lean:271-275`).  ⟹ ship bi-initiality WEAK (up-to-iso 2-categorical: data +
     EXISTENCE of the interpreting `CwRMorphism`), leave strict uniqueness to an honest fib-5 marker.
-  * Presentation-as-data already exists: `fxSignature` (`Tier0/Term/Generator/GeneratorSignatureValue.lean:107`),
+  * Presentation-as-data already exists: `fxSignature` (`Axis/Term/Generator/GeneratorSignatureValue.lean:107`),
     `fxTypingBundle` (`Typed/Engine/RuleTables/TypingTableBundle.lean:105`), `Conv`; the premises-as-data
     design-lock is `Typed/Engine/RuleTables/UnifiedRuleSignature.lean:17`.  polycell.md:10407 = "kernel presented
     as a bi-initial model over (signature, rule-tables, Conv)" = SIG-3/SIG-5.
@@ -183,7 +183,7 @@ Per-declaration audit-gated in `FX1PolyAudit/`. -/
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 
 /-- The four glue axes — the four of the seven `CellSort` strata the fibred kernel assembles. -/
 inductive FibAxis where
@@ -220,7 +220,7 @@ structure FibredKernel where
   presentation : List GeneratorDescriptor
 
 /-- **★ The FX fibred kernel** — the four shipped capstone witnesses assembled at Core for the first time.
-The four `Tier0` towers (`fxStandaloneModalRMC` / `fxModeOmega` / `fxTypeAxis` / `fxSignature`) glued into one
+The four `Axis` towers (`fxStandaloneModalRMC` / `fxModeOmega` / `fxTypeAxis` / `fxSignature`) glued into one
 value; the gluing PROOFS are fib-1..5 (the `fxFib_has*` ledger below). -/
 def fxFibredKernel : FibredKernel where
   base := fxStandaloneModalRMC

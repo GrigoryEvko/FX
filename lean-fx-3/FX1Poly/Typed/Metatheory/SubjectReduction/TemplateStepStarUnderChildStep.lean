@@ -40,7 +40,7 @@ inductions, with the propext-clean `bindEqSomeIff` (reused from SR-DSL-1).  No `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-! ## Pointwise directed children relation (the `ConvChildren` directed twin) -/
 

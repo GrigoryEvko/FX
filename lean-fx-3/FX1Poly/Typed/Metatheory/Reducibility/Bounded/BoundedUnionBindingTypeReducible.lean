@@ -31,7 +31,7 @@ A linear composition of shipped zero-axiom results.  No `axiom`, `sorry`, `prope
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The DISCHARGED native union fundamental theorem at the kernel bundle.**  Under a `BoundExceedsUnion env

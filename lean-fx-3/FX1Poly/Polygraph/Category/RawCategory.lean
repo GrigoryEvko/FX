@@ -10,7 +10,7 @@ a (large) category.
 This is pure category theory over an ARBITRARY `RawCategory` — nothing here
 mentions contexts, representable maps, or any PolyCell axis.  The
 context-specific Representable-Map-Category layer (`RepresentableMapCategory`,
-`CwRMorphism`) lives in `FX1Poly.Tier0.Context.RepresentableMapCategory` and
+`CwRMorphism`) lives in `FX1Poly.Axis.Context.RepresentableMapCategory` and
 specialises this core.
 
 Zero external dependencies. Raw Lean 4 + Init only.

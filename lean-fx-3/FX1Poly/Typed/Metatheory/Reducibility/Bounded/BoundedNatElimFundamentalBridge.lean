@@ -50,7 +50,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The two-binder succ-branch under-binders strong normalization (the elim ROW's `succBranchStronglyNormalizing`

@@ -36,7 +36,7 @@ of the rule output to `subst0` + `HasTypeDescPi.piElim`.  No `axiom`, `sorry`, `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- An elimination-rule description: the rule's OUTPUT TYPE as a function of the scope, the eliminated
 type's relevant component (for Π-elim: the codomain, at `scope+1`), and the eliminated CHILD (the

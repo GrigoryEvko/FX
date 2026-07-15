@@ -27,7 +27,7 @@ positions split by the blessed `⟨0, _⟩` / `⟨k + 1, _⟩` match.  No `axiom
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- A candidate environment is head-expansion-closed when every entry is. -/

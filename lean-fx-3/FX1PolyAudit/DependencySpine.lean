@@ -5,7 +5,7 @@ import FX1PolyAudit.AuditAll
 
 The dependency spine (frontiers.md §16 rail 9):
 
-    Init  ⟶  ComputerAlgebra/  ⟶  Polygraph/  ⟶  Tier0/  ⟶  Core/  ⟶  Typed/
+    Init  ⟶  ComputerAlgebra/  ⟶  Polygraph/  ⟶  Axis/  ⟶  Core/  ⟶  Typed/
 
 Later layers may import earlier ones, never the reverse.  Until 2026-07-02 this was enforced
 socially; the POLYGRAPH-5 carve-out exposed a silent transitive-import reliance and POLYGRAPH-14..17
@@ -37,19 +37,19 @@ exactly the LATER layers). -/
 def spineRules : List SpineRule :=
   [ { layerDirectory := "FX1Poly/ComputerAlgebra"
       forbiddenModulePrefixes :=
-        ["FX1Poly.Polygraph.", "FX1Poly.Tier0.", "FX1Poly.Core.", "FX1Poly.Typed."]
+        ["FX1Poly.Polygraph.", "FX1Poly.Axis.", "FX1Poly.Core.", "FX1Poly.Typed."]
       allowlistedDebtSuffixes := [] },
     { layerDirectory := "FX1Poly/Polygraph"
-      forbiddenModulePrefixes := ["FX1Poly.Tier0.", "FX1Poly.Core.", "FX1Poly.Typed."]
+      forbiddenModulePrefixes := ["FX1Poly.Axis.", "FX1Poly.Core.", "FX1Poly.Typed."]
       allowlistedDebtSuffixes := [] },
-    { layerDirectory := "FX1Poly/Tier0"
+    { layerDirectory := "FX1Poly/Axis"
       forbiddenModulePrefixes := ["FX1Poly.Core.", "FX1Poly.Typed."]
       allowlistedDebtSuffixes :=
         [ -- Context-axis instances entangled with Core.Metatheory sconing/reducibility;
           -- relocation pending the Context-wave move-out (they cascade through Instances/Subst/).
-          "Tier0/Context/Instances/Subst/FxBaseSubstWitnessScone.lean",
-          "Tier0/Context/Instances/Subst/FxBaseSubstConcreteScone.lean",
-          "Tier0/Context/Instances/Subst/FxBaseSubstComprehension.lean" ] },
+          "Axis/Context/Instances/Subst/FxBaseSubstWitnessScone.lean",
+          "Axis/Context/Instances/Subst/FxBaseSubstConcreteScone.lean",
+          "Axis/Context/Instances/Subst/FxBaseSubstComprehension.lean" ] },
     { layerDirectory := "FX1Poly/Core"
       forbiddenModulePrefixes := ["FX1Poly.Typed."]
       allowlistedDebtSuffixes := [] } ]
@@ -118,7 +118,7 @@ elab "#assert_dependency_spine" : command => do
       {debtReports.size} allowlisted debt edge(s) remaining"
   else
     throwError "dependency-spine audit FAILED — back-edge(s) against the layer DAG \
-      (Init ⟶ ComputerAlgebra ⟶ Polygraph ⟶ Tier0 ⟶ Core ⟶ Typed):\n  \
+      (Init ⟶ ComputerAlgebra ⟶ Polygraph ⟶ Axis ⟶ Core ⟶ Typed):\n  \
       {String.intercalate "\n  " violationReports.toList}"
 
 #assert_dependency_spine

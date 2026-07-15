@@ -32,7 +32,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **A variable is a bound-reducible member of any bound-reducible type.**  Given that `typeCode` is

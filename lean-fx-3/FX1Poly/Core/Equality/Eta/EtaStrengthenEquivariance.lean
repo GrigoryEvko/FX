@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.Eta.EtaRuleTable
-import FX1Poly.Tier0.Term.Subst.RawTermSubstRenameCommute
-import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstRenameCommute
+import FX1Poly.Axis.Term.Rename.RawTermRenameSubstCommute
 
 /-! # EtaStrengthenEquivariance — ETA-T2: strengthening commutes with
 binder-lifted substitution and renaming
@@ -28,7 +28,7 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax (RawRenaming)
+open FX1Poly.Axis.Syntax (RawRenaming)
 
 /-! ## The single-depth substitution square -/
 

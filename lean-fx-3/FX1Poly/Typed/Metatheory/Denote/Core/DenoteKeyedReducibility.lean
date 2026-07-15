@@ -78,7 +78,7 @@ introduced pointwise, NOT `funext`, which would itself pull `Quot.sound`).  No `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis.Syntax FX1Poly.Universe
 open StepStar
 
 /-- **The denote-keyed universe candidate predicate.**  Unlike `universeReducibilityPredicate` (which uses a

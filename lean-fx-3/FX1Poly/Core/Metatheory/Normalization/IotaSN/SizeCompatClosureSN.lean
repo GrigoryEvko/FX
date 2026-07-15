@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 
 /-! # FX1Poly/Core/.../IotaSN/SizeCompatClosureSN
     — the generic strong-normalization-by-size combinator: ANY reduction relation on `RawTerm` whose

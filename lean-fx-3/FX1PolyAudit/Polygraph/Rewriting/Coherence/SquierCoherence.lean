@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
-/-! # FX1PolyAudit/AuditTier0TermSquier — zero-axiom gate for term-4 (Squier coherence)
+/-! # FX1PolyAudit/AuditAxisTermSquier — zero-axiom gate for term-4 (Squier coherence)
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/SquierCoherence.lean`: the proof-relevant
+Per-declaration zero-axiom gate for `FX1Poly/Axis/Term/Rewrite/SquierCoherence.lean`: the proof-relevant
 rewriting 2-category (`RewritePath` + composition + category laws), the homotopy congruence
 (`RewriteHomotopy` + whiskering), the diamond generating-confluences (`DiamondProperty`), and the
 coherence theorem (`DiamondConfluence` + `strip` + `confluent` + `coherence`: the diamonds are a homotopy

@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
-/-! # Tier0/Term — the marked / complicial structure of the term rewriting ω-category (term-18)
+/-! # Axis/Term — the marked / complicial structure of the term rewriting ω-category (term-18)
 
 The term-axis mirror of `mode-7` (semistrictification / the thin-cell structure).  A COMPLICIAL set
 (Verity) is a simplicial set equipped with a STRATIFICATION — a distinguished set of MARKED ("thin")
@@ -38,7 +38,7 @@ identities at every dimension), the SATURATION 2-out-of-3, and the general (∞,
 `term-4`'s `comp_assoc` (`rw`) then chains `whiskerLeftPath`/`whiskerRightPath`/`trans`;
 `rewriteOmega_twoTrivial` is `rfl` (definitional proof irrelevance on the thin `RewriteHomotopy`
 `Prop`).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration gated in `FX1PolyAudit/AuditTier0TermMarkedComplicial.lean`.
+Per-declaration gated in `FX1PolyAudit/AuditAxisTermMarkedComplicial.lean`.
 -/
 
 namespace FX1Poly.Core

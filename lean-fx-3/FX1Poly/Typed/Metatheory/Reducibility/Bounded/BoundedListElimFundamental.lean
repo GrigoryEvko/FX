@@ -44,7 +44,7 @@ four per-value premises discharged by the shipped bounded lemmas (`listMemberAtB
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- The `listElim` cons-ι contractum — mirrors Core's own private `listElimConsContractum` byte-for-byte (defeq to

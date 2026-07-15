@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionCongruenceClosesGeneric
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/UnionChildSubjectReductionBounded
     — the fuel-bounded single-step-SR predicate + the closure frame (SR-WF-TIEOFF step 1)

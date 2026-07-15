@@ -1,4 +1,4 @@
-/-! # Tier0/Term — Lévy optimality: redex families + the no-duplication bound (term-9)
+/-! # Axis/Term — Lévy optimality: redex families + the no-duplication bound (term-9)
 
 Lévy's theory of OPTIMAL REDUCTION groups redexes into FAMILIES — a redex and all its copies (residuals
 created by duplicating a common ancestor) share a Lévy LABEL, and are the "same redex" to be contracted

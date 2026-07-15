@@ -24,7 +24,7 @@ uniform vector; the simple-arrow pi-introduction bridge delegates to
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- The canonical uniform level vector: every variable position is assigned `level`, with the recursive
 definition chosen so `positiveUniformLevels (scope+1) level` is definitionally

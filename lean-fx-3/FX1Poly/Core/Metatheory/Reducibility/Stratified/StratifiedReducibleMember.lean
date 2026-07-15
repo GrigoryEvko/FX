@@ -38,7 +38,7 @@ The `piIntro` (`abstraction`) rule is DEFERRED: it needs the stratified head-exp
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Semantic well-formed type (level-indexed).**  A code is a reducible type at `level` when it denotes

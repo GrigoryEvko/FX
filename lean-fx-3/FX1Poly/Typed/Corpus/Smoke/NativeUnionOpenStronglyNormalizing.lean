@@ -37,7 +37,7 @@ would leak `propext`).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The reducible closing environment for a UNION-well-formed context.**  Native twin of

@@ -49,7 +49,7 @@ to it, no formation-table enumeration) + the formation context-conversion (`conv
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **A universe-code cell admits no Step.**  `universeCodeCell` is a nullary leaf
 (`mkGen gen_universeCode (level, flag) childNil`): no eliminator fires on it and its child spine is empty, so

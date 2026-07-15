@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Neutral.NeutralTerm
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationSubst
-import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Axis.Term.Core.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/Substrate/Neutral/NeutralSubstReflection
     — no neutral term is the closed-term image of a substitution (reverse neutral reflection)

@@ -2,7 +2,7 @@ import FX1Poly.Core.Rewriting.Reduction.Step.StepRename
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRenameForward
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationRename
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStepRenameReflect
-import FX1Poly.Tier0.Term.Core.RawTermFresh
+import FX1Poly.Axis.Term.Core.RawTermFresh
 
 /-! # FX1Poly/Core/StepRenameReflect — pulling a `Step` BACK along an injective renaming
 
@@ -40,7 +40,7 @@ The round-trip `rename leftInverse (rename forward sourceTerm) = sourceTerm` is 
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Generic head-recovery for a renamed cell.**  If `rename rho term` is a `gen`-headed cell, then so is

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedTelescopeReducible
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedTelescopeProjection
     — project the two-child bounded telescope into the discharge's domain/codomain member shape

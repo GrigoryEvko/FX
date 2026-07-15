@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Cell.CellShorthands
-import FX1Poly.Tier0.Mode.GradeAlgebra.ResourceGraded
-import FX1Poly.Tier0.Term.Core.RawTermFreeVars
+import FX1Poly.Axis.Mode.GradeAlgebra.ResourceGraded
+import FX1Poly.Axis.Term.Core.RawTermFreeVars
 
 /-! # FX1Poly/Typed/Engine/RuleTables/GradedIntroRule — the v2 graded-introduction table (live rule-data)
 

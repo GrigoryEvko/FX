@@ -56,7 +56,7 @@ or `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The Π-former recursion step of `ConvContextPreservesPiValidity`.**  Given the universe-code-PRESERVING
 context conversions of the domain type-code (`domainConverts`, at `sourceContext`) and the codomain type-code

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/PlateauDescentSubstrate — descent obligations for the plateau master
 
@@ -26,7 +26,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- A λ's body is strictly smaller than the λ (Church-style: the body is the second child, after the
 domain annotation). -/

@@ -5,8 +5,8 @@ import FX1Poly.Typed.Dimensions.AxisObligation.DisplayMapDecidableFibration
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.ClassifiedCell.IsAdmittedByFormation
-#assert_no_axioms FX1Poly.Tier0.ClassifiedCell.decideAdmittedByFormation
+#assert_no_axioms FX1Poly.Axis.ClassifiedCell.IsAdmittedByFormation
+#assert_no_axioms FX1Poly.Axis.ClassifiedCell.decideAdmittedByFormation
 #assert_no_axioms FX1Poly.Typed.displayFiberTypedMembershipDecidable
 #assert_no_axioms FX1Poly.Typed.classifiedCellOfTyping
 #assert_no_axioms FX1Poly.Typed.displayClassifier_classifiedCellOfTyping

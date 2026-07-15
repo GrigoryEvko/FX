@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalLevelIndexed
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.TypeFundamentalLevelIndexed
-import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Axis.Term.Rename.RawTermRenameSubstCommute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRename
 
 /-! # FX1Poly/Typed/ClosedLevelIndexed
@@ -30,7 +30,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- The empty per-variable level vector (`Fin 0 → Nat`, vacuous) — the level assignment the empty-context

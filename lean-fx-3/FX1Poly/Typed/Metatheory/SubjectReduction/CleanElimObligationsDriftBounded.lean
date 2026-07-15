@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.IntroObligationsDriftBounded
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/CleanElimObligationsDriftBounded
     — SR-WF-TIEOFF (elim third): the FUEL-BOUNDED `ObligationsDriftBelow` for the CLEAN eliminators

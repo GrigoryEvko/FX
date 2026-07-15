@@ -36,7 +36,7 @@ weakening normal-form preservation + `IsNeutral.noClosedSubstImage` + the nullar
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The nullary bool-value reflection through the closing weakening.**  For a CLOSED normal form whose

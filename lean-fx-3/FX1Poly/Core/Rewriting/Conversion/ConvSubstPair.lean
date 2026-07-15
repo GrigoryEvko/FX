@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
+import FX1Poly.Axis.Term.Subst.RawTermSubstPair
 
 /-! # ConvSubstPair — two-variable substitution congruence for raw conversion
 
@@ -31,7 +31,7 @@ per-position `Fin` `match` closing by `rfl` / the supplied chains.  No `axiom`, 
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **The two-substituent substitution is pointwise `StepStar`-related when its substituents are.**  The
 `pair` analog of `RawTermSubst.singleton_pointwise_stepStar`: `pair inner outer = cons inner (singleton

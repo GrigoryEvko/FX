@@ -1,8 +1,8 @@
 import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Typed.Cell.CellSubstitution
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
-import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Axis.Term.Subst.RawTermSubstPair
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Rename.RawTermRenameAsSubst
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 import FX1Poly.Core.Rewriting.Conversion.ConvCongruence
 
@@ -33,7 +33,7 @@ delegate to the proven `substPair` commute laws.  No `axiom`, `sorry`, `propext`
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- The dependent `idJ` motive instantiated at endpoint `point` (the outer `b` binder, `var 1`) and path
 `path` (the inner `p` binder, `var 0`): `idJMotiveAt motive point path := substPair motive path point`.  The

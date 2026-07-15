@@ -32,7 +32,7 @@ LOCK.  This file harvests that discipline:
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The interval is renaming-fixed under conversion (weakening instance).**  If a term is not convertible to
 the interval, neither is its single-binder weakening: `intervalTypeCell` is closed (`rename_intervalTypeCell`), so

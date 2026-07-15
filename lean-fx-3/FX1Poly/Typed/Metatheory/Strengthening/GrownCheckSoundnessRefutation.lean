@@ -39,7 +39,7 @@ reassembly) remain the toolbox for whichever annotated judgment lands. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- The Π-former body `Π (var 0). Type@0` — the recursive-type generator's body. -/
 def piFormerBody : RawTerm 1 :=

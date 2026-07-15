@@ -41,7 +41,7 @@ row-in-any-context is already derivable, and `contextClosureRel signature baseRe
 signature baseRel` itself, with the intro / monotone / idempotence package as its algebra (`Table/ContextClosure.lean`).
 Rejected: (i) EXTEND with a new context ctor (forces edits to `recInto` + every lane iso, ~9 sites x N lanes);
 (iii) a new inductive (duplicates the whole machine).  Evidence it is right: the newest offender `EncodedConv`
-(Tier0/.../UndecidabilityReduction.lean) independently has EXACTLY the six ctors `rule / whiskerLeft / whiskerRight
+(Axis/.../UndecidabilityReduction.lean) independently has EXACTLY the six ctors `rule / whiskerLeft / whiskerRight
 / refl / symm / trans` — the universal shape.
 
 The load-bearing corollary: the row-SUFFIX congruence is `whiskerRightCongr`, ONE constructor

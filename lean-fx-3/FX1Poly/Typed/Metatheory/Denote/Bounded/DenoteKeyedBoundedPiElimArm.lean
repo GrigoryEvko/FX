@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedBoundedFundamentalMotive
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedPiElimArm
@@ -39,7 +39,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Π-code shape inversion for the bounded relation (direct induction port).**  A `gen_piTyCode`-rooted
 bound-reducible type came through the `piType` arm; recovers the domain/codomain candidates as BOUNDED

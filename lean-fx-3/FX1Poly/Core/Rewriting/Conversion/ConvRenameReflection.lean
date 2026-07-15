@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRenameReflectAssembly
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
-import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
+import FX1Poly.Axis.Term.Rename.RawTermStrengthen
 
 /-! # FX1Poly/Core/ConvRenameReflection — `Conv` reflects an injective renaming (the grown-strengthening primitive)
 
@@ -38,7 +38,7 @@ audit-gated in `FX1PolyAudit/AuditCore.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- Lift `Step.reflectRename` over a whole `StepStar` chain: a chain out of a renamed term reflects to a
 chain out of the source whose image under the renaming is the original chain target. -/

@@ -41,7 +41,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The soundness-threaded cost fold -/
 

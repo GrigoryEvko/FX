@@ -24,7 +24,7 @@ lives in the signature-free `Polygraph/` library.
     free 1-cells (their boundary).
 
 The RawCategory / RawTwoCategory PACKAGING of the free category (`freeModeCategory`, the §3.13 `ModeTheory`
-structure) is the mode-axis specialisation and stays in `FX1Poly.Tier0.Mode.TwoCategoryCore`.
+structure) is the mode-axis specialisation and stays in `FX1Poly.Axis.Mode.TwoCategoryCore`.
 
 Zero external dependencies.  Raw Lean 4 + Init only.
 -/

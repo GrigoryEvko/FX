@@ -49,7 +49,7 @@ both `propext`-clean); the head-disjointness facts are `rfl` over the
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The δ-redex cells are canonical β/ι normal forms
 

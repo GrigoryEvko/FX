@@ -29,7 +29,7 @@ The proofs compose already-gated arm bodies, `tarskiDecode`, `subst_universeCode
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The dependent fundamental theorem's conclusion over the strengthened environment.**  A subject is a

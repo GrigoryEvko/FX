@@ -2,7 +2,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.GrownPinnedReflection
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPiLookup
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVarInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
-import FX1Poly.Tier0.Term.Core.RawTermFresh
+import FX1Poly.Axis.Term.Core.RawTermFresh
 
 /-! # FX1Poly/Typed/PinnedReflectionPiElimCore — the pinned-function piElim discharge
      (route-H reflection, the residual's core + first concrete instance)
@@ -40,7 +40,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The pinned-function piElim core**: the residual conclusion, given a pin for the FUNCTION's Π
 classifier.  This is the consumer shape for every head analysis: whatever pins the function's Π

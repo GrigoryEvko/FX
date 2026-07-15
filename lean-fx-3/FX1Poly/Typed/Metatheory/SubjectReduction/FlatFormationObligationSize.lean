@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.RuleTables.FormationRuleTable
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/FlatFormationObligationSize
     — flat-formation obligation subjects are strictly smaller than the cell (SR-WF-TIEOFF step 2, flat family)

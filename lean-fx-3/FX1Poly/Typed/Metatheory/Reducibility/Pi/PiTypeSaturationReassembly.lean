@@ -45,7 +45,7 @@ existential repackaging.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classic
 namespace FX1Poly.Typed
 
 open FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Π type-saturation reassembly** (the Π arm of the #672 type-level fuel-saturation).  From the domain's

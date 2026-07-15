@@ -1,8 +1,8 @@
 import FX1Poly.Typed.Dimensions.Graded.AppScaledPathLamGrade
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
+import FX1Poly.Axis.Term.Subst.RawTermOccurrenceSubst
+import FX1Poly.Axis.Term.Subst.RawTermOccurrenceSubstLift
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubstBetaBridge
 
 /-! # FX1Poly/Typed/AppScaledSubstMetatheory — the App-SCALED grade's substitution metatheory
 
@@ -62,7 +62,7 @@ reassociation; the row lemmas are grade-arithmetic.  No `axiom`, `sorry`, `prope
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Modal
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Grade-arithmetic helpers -/
 

@@ -1,10 +1,10 @@
 import FX1Poly.Core.Substrate.Profile.PolyProfile
-import FX1Poly.Tier0.Term.Cell.CellSort
-import FX1Poly.Tier0.Term.Cell.RawCell
+import FX1Poly.Axis.Term.Cell.CellSort
+import FX1Poly.Axis.Term.Cell.RawCell
 import FX1Poly.Core.Substrate.Cell.CellBoundary
-import FX1Poly.Tier0.Term.Generator.GeneratorMetadata
-import FX1Poly.Tier0.Term.Generator.GeneratorAdmission
-import FX1Poly.Tier0.Term.Generator.GenPayloadEvidence
+import FX1Poly.Axis.Term.Generator.GeneratorMetadata
+import FX1Poly.Axis.Term.Generator.GeneratorAdmission
+import FX1Poly.Axis.Term.Generator.GenPayloadEvidence
 import FX1Poly.Core.Substrate.Cell.HasEqualDim
 import FX1Poly.Core.Rewriting.RuleTables.Core.RuleSpec
 

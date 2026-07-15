@@ -7559,7 +7559,7 @@ zero-axiom, audit-gated):
   is IMPOSSIBLE into any Nat-ranked enum (the `nMahlo n` /
   `indescribable n` rungs are unbounded families later rungs must
   dominate); the lower-bound reading is the honest one.
-* `FX1Poly.Tier0.ConsistencyStrength` (the 5-ctor Tier-0 ledger
+* `FX1Poly.Axis.ConsistencyStrength` (the 5-ctor Tier-0 ledger
   tags) stays as coarse obligation-bookkeeping vocabulary;
   `toCoreStrength` calibrates it monotonically (and deliberately
   non-injectively — `leanCore` and `zfc` share the `impredicative`

@@ -1,7 +1,7 @@
 import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverBundleConv
 
-/-! # Tier0/Term — the dim-1 rewrite preorder: StepOver as the 1-cell generators (term-2)
+/-! # Axis/Term — the dim-1 rewrite preorder: StepOver as the 1-cell generators (term-2)
 
 `term-1` showed `RawTerm` is the INITIAL ALGEBRA of its signature — the dim-0 universal property
 (terms as 0-cells / objects).  `term-2` is the MIDDLE of the term ω-category: the dim-1 structure,

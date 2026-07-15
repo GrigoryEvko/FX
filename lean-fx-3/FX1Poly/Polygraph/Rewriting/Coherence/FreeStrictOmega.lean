@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
-/-! # Tier0/Term — the free strict ω-category on the term polygraph + the Gray tensor (term-17)
+/-! # Axis/Term — the free strict ω-category on the term polygraph + the Gray tensor (term-17)
 
 The term-axis mirror of `mode-5` (the Gray / semistrict 3-category).  Where `mode-5` builds a
 `RawGrayCategory` over the mode-1 `RawTwoCategory`, the term axis already carries a genuine
@@ -38,7 +38,7 @@ structural induction on the path using `term-4`'s `nil_comp`/`cons_comp` laws + 
 associativity/left-unit hypotheses; `rewriteInterchange_strict` is `rfl` (definitional proof
 irrelevance on the thin `RewriteHomotopy` `Prop`).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTier0TermFreeStrictOmega.lean`.
+`FX1PolyAudit/AuditAxisTermFreeStrictOmega.lean`.
 -/
 
 namespace FX1Poly.Core

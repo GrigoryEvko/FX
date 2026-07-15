@@ -41,7 +41,7 @@ Composition of `classifierIsTypeDesc` + `inversion{Pi,Sigma}CodeComponents` +
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- The output type of Π-ELIMINATION is well-formed: if `functionTerm : Π domainCode.
 codomainCode` and `argument : domainCode`, then `codomainCode[argument]` (the application's

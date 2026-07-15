@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Cell.RawCell
+import FX1Poly.Axis.Term.Cell.RawCell
 
 /-! # FX1Poly/Core/RawCellWordEncoding
     — the dim-1 free-monoid rule-word encoding of the RawCell composite layer

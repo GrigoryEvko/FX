@@ -52,7 +52,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditProfile.lean`. -/
 
 namespace FX1Poly.Extension
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 
 /-- The ADVANCE-form admission obligation: a claimed capability must be
 backed by the EXTENDED profile's ledger AND not already backed by the

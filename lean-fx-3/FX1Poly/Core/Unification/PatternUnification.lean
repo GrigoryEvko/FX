@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.Preservation.RawTermRenameInjective
-import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
-import FX1Poly.Tier0.Term.Rename.RawTermRenamePointwise
-import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
+import FX1Poly.Axis.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Axis.Term.Rename.RawTermRenamePointwise
+import FX1Poly.Axis.Term.Rename.RawTermStrengthen
 
 /-! # FX1Poly/Core — higher-order PATTERN unification: the inversion engine (term-11)
 
@@ -55,7 +55,7 @@ irrelevance on the `Fin` bound — no `Nat.add_comm`, no `Fin.cases`, no `Option
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The pattern predicate + MGU uniqueness (real `RawTerm`) -/
 

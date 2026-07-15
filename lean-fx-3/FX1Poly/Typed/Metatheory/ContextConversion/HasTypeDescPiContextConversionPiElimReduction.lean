@@ -62,7 +62,7 @@ argument reclassify) + `inversionPiCodeComponentsUnconditional` + `piElim` + `Co
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The GrownCtxConv-5 residual, named.**  A `Π`-type-code's validity is stable under context conversion: if
 `piTyCodeCell domainCode codomainCode` is a grown type under `sourceContext`, then it is a grown type under any

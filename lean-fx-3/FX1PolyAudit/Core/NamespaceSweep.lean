@@ -14,14 +14,14 @@ import FX1Poly.Core.Substrate.Certifier.CheckResult
 import FX1Poly.Core.Substrate.Profile.ConsistencyStrength
 import FX1Poly.Core.Substrate.Profile.CoreFxProfile
 import FX1Poly.Core.Metatheory.Normalization.Core.FoldShiftGreaterThanOne
-import FX1Poly.Tier0.Term.Generator.GenPayloadEvidence
-import FX1Poly.Tier0.Term.Generator.GeneratorChildSpecsDim0
-import FX1Poly.Tier0.Term.Generator.GeneratorTotalityClass
+import FX1Poly.Axis.Term.Generator.GenPayloadEvidence
+import FX1Poly.Axis.Term.Generator.GeneratorChildSpecsDim0
+import FX1Poly.Axis.Term.Generator.GeneratorTotalityClass
 import FX1Poly.Core.Substrate.Cell.HasEqualDim
 import FX1Poly.Core.Substrate.Cell.RawCellCascadeLaws
-import FX1Poly.Tier0.Term.Cell.RawCellCode
-import FX1Poly.Tier0.Term.Subst.RawTermSubstAction
-import FX1Poly.Tier0.Term.Core.RawTermChildrenUnique
+import FX1Poly.Axis.Term.Cell.RawCellCode
+import FX1Poly.Axis.Term.Subst.RawTermSubstAction
+import FX1Poly.Axis.Term.Core.RawTermChildrenUnique
 import FX1Poly.Core.Rewriting.RuleTables.Core.RuleSpec
 import FX1Poly.Core.Substrate.Profile.SiteOpenness
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
@@ -70,7 +70,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniver
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMemberNonDependent
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleSmoke
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ArrowCandidateMembership
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.Substrate.Certifier.CertifiedRawCell
 import FX1Poly.Core.Substrate.Certifier.CertifiedTermSpineProjections
@@ -101,7 +101,7 @@ import FX1Poly.Core.Substrate.Certifier.HasCertifiedHonestyProbes
 import FX1Poly.Core.Equality.Eta.SubjectReductionEtaStructural
 import FX1Poly.Core.Rewriting.Reduction.Preservation.CompoundRenamePreservation
 import FX1Poly.Core.Rewriting.Reduction.Preservation.CompoundSubstPreservation
-import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Axis.Term.Core.RawTermFoldNonVarCommute
 import FX1Poly.Core.Rewriting.Reduction.Preservation.BetaRedexDoublingSpike
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
 import FX1Poly.Core.Eliminators.Core.PairEliminatorLayer
@@ -176,14 +176,14 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSmoke
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationFormerCorpus
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationApplication
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationEta
-import FX1Poly.Tier0.Term.Generator.GeneratorCountPin
+import FX1Poly.Axis.Term.Generator.GeneratorCountPin
 
-/-! # FX1PolyAudit.Core.NamespaceSweep — Core / Tier0.Syntax namespace floor sweeps
+/-! # FX1PolyAudit.Core.NamespaceSweep — Core / Axis.Syntax namespace floor sweeps
 
 The two `#audit_namespace` + `#assert_namespace_min_count` floor gates (relocated
 verbatim from the former `AuditCoreSubstrateSweeps` monolith).  These depend on the
 FULL foundational import closure above so the sweep sees every loaded
-`FX1Poly.Core` / `FX1Poly.Tier0.Syntax` declaration; the per-declaration
+`FX1Poly.Core` / `FX1Poly.Axis.Syntax` declaration; the per-declaration
 `#assert_no_axioms` gates that accompanied them now live in the per-kernel-module
 mirror shards under `FX1PolyAudit/Core/...`. -/
 
@@ -215,5 +215,5 @@ mirror shards under `FX1PolyAudit/Core/...`. -/
 -- shrank from 13 to 11 fields (the retired ModeOmega mode-theory axis).
 -- Floor 2987 → 2977: ditched the §3.1-3.6 scaffold axes (10 PolyProfile projections).
 #assert_namespace_min_count FX1Poly.Core 2977
-#audit_namespace FX1Poly.Tier0.Syntax
-#assert_namespace_min_count FX1Poly.Tier0.Syntax 59
+#audit_namespace FX1Poly.Axis.Syntax
+#assert_namespace_min_count FX1Poly.Axis.Syntax 59

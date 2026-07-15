@@ -1,10 +1,10 @@
 import FX1Poly.Typed.Cell.CellConstructors
-import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
-import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
-import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Axis.Term.Subst.RawTermSubstCompose
+import FX1Poly.Axis.Term.Subst.RawTermSubstPointwise
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Axis.Term.Rename.RawTermRenameComposeFusion
 
 /-! # FX1Poly/Typed/Cell/NatElimDependentSuccType
     — the dependent `natElim` / `natRec` SUCC-branch type (DEP-NAT-WIRE, the two-binder recursor crux)
@@ -38,7 +38,7 @@ weakening's bound is `Nat.add_lt_add_right` (NO `omega`).  No `axiom`, `sorry`, 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- The dependent recursor succ-branch type: `motive` re-based at `natSucc (var 1)` (the predecessor binder),
 the motive's context shifted past the two succ-branch binders (`var 0` = recursive result, `var 1` =

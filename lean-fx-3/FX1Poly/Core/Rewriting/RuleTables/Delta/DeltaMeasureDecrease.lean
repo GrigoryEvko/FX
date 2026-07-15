@@ -30,7 +30,7 @@ closes by `Nat.succ_pos`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## `deltaConstantCount` is invariant under renaming
 

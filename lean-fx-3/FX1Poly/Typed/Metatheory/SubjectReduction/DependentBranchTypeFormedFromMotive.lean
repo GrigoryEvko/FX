@@ -34,7 +34,7 @@ a `Fin` 0/successor split; the re-basing's variable images land via `RawTerm.wea
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- The succ-branch re-basing substitution: the source nat binder (`var 0`) maps to `natSucc (var 1)` (the
 predecessor lifted past the IH binder) and every ambient context variable shifts up by two (past the two succ

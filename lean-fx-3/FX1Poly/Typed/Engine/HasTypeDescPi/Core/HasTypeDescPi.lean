@@ -66,7 +66,7 @@ in `ofFormation`) + `HasTypeDesc.substituteUnderBinding` + `ofFormation`.  No
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-! The λ/app term-cell smart constructors (`lamCell`, `appCell`) are the live cell VOCABULARY now
 homed in `FX1Poly.Typed.Cell.CellShorthands` (pure syntax, no typing-judgment reference); this module

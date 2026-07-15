@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryParametricity
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 
 /-! # FX1Poly/Typed/KernelBinaryPiElim
     — binary determinism + the Π-ELIMINATION pair arm + the binary FT motive (OP1-K2 brick 1)

@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.StepStar
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
-import FX1Poly.Tier0.Term.Core.RawTermFresh
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubstPair
+import FX1Poly.Axis.Term.Core.RawTermFresh
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
@@ -25,7 +25,7 @@ names any redex constructor.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- One-step reduction is stable under raw substitution — through the
 table pivot: cross to the legacy-table relation, fire the generic

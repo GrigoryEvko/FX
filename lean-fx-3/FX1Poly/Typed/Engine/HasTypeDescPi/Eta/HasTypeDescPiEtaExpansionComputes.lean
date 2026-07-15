@@ -1,6 +1,6 @@
 import FX1Poly.Core.Equality.Eta.EtaSources
 import FX1Poly.Core.Rewriting.Reduction.Step.StepStar
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralTyping
 import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaExpansionGrown

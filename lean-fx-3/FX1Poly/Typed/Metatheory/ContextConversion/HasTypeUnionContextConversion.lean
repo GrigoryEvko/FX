@@ -30,7 +30,7 @@ Per-declaration audit-gated in `FX1PolyAudit/`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The identity substitution between two `Conv`-converted head bindings is union-typed.**  Maps the source
 context `context.cons oldBinding` into the target `context.cons newBinding`: `var 0` resolves at the new binding

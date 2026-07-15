@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMember
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 
 /-! # FX1Poly/Core/StrongNormalizationReflection
     — strong normalization is REFLECTED by `subst0` instantiation
@@ -28,7 +28,7 @@ transported to an instantiation step by `Step.subst`.  No `axiom`, `sorry`, `pro
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **`subst0` reflects strong normalization.**  If the instantiation `subst0 body argument` is strongly

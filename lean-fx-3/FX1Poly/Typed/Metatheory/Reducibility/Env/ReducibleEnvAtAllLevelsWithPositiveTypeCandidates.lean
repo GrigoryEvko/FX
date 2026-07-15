@@ -35,7 +35,7 @@ The only rewrites are `TypingContext.lookup_cons_zero`, `TypingContext.lookup_co
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- A proof-relevant all-level reducible environment carrying the positive-fuel type-candidate companion
 for every looked-up binding type.  The first projection is the ordinary all-level environment.  The second

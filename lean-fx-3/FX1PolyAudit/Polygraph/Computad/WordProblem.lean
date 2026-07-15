@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.Computad.WordProblem
 
-/-! # FX1PolyAudit/AuditTier0ModeComputadWordProblem — zero-axiom gate for mode-8
+/-! # FX1PolyAudit/AuditAxisModeComputadWordProblem — zero-axiom gate for mode-8
 
-Per-declaration zero-axiom gate for `mode-8` (`FX1Poly/Tier0/Mode/ComputadWordProblem.lean`): the 2-computad
+Per-declaration zero-axiom gate for `mode-8` (`FX1Poly/Axis/Mode/ComputadWordProblem.lean`): the 2-computad
 framing + free 2-category accessors, the dimension-1 free-monoid word-length homomorphism
 (`ModalityPath.length_composePath`), the dimension-2 word length (`RawTwoCellExpr.generatorCount`) + its
 conversion invariance + the sound distinguisher, the word-problem interface, and the honesty markers.

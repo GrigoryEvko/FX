@@ -30,7 +30,7 @@ the verbatim structure of `fundamentalGenFormationListFromTelescopeAtBoundedSucc
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The bounded `genFormationPi` recursor arm for the `optionCode` data former (one-child data former).**  From

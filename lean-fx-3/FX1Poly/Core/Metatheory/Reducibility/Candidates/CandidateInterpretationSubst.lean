@@ -1,6 +1,6 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationRename
-import FX1Poly.Tier0.Term.Subst.RawTermSubst
-import FX1Poly.Tier0.Term.Rename.RawTermWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubst
+import FX1Poly.Axis.Term.Rename.RawTermWeaken
 
 /-! # Foundation/PolyCell/Core/CandidateInterpretationSubst
     — the semantic substitution lemma (the crux of polymorphic SN)
@@ -32,7 +32,7 @@ non-variable branch with `dsimp only [fold]` (NOT `unfold`, which pulls `Quot.so
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- Substituting into a Π-type code distributes: the domain by `σ`, the codomain (under one binder)

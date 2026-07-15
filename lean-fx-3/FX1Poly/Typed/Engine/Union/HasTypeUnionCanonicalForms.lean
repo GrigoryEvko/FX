@@ -42,7 +42,7 @@ rigidity refuter destructs `Conv`'s common reduct and runs the shipped head-stab
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Generator-occurrence containment (the honest bridge-fragment boundary) -/
 
@@ -166,7 +166,7 @@ end FX1Poly.Core
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis.Syntax FX1Poly.Universe
 
 /-! ## Head-stability wrappers (every lane former reaches only its own head) -/
 

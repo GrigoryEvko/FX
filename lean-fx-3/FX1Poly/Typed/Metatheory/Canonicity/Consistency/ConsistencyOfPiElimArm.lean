@@ -43,7 +43,7 @@ Structural recursion on the `StepStar` chain + the single-step master SR `subjec
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Iterated (multi-step) subject reduction, conditional on the `piElim` arm.**  A grown-typed subject
 is preserved along an entire `StepStar` reduction chain, at the SAME classifier, given the lone `piElim`

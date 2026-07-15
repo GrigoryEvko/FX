@@ -84,12 +84,12 @@ import FX1PolyAudit.Core.Substrate.Semantics.EitherEquivCodeUniverseMembership
 import FX1PolyAudit.Core.Substrate.Semantics.LinearFormerUniverseMembership
 import FX1PolyAudit.Core.Substrate.Semantics.ListOptionIdCodeUniverseMembership
 import FX1PolyAudit.Core.Substrate.Semantics.UniverseModeBridgeReducibility
-import FX1PolyAudit.Tier0.Term.Cell.CellSort
-import FX1PolyAudit.Tier0.Term.Generator.GeneratorFinitePolygraphCoreCellsAudit
-import FX1PolyAudit.Tier0.Term.Generator.GeneratorPolygraphMap
-import FX1PolyAudit.Tier0.Term.Generator.GeneratorRedexHead
-import FX1PolyAudit.Tier0.Term.Generator.GeneratorTagRoundTrip
-import FX1PolyAudit.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1PolyAudit.Axis.Term.Cell.CellSort
+import FX1PolyAudit.Axis.Term.Generator.GeneratorFinitePolygraphCoreCellsAudit
+import FX1PolyAudit.Axis.Term.Generator.GeneratorPolygraphMap
+import FX1PolyAudit.Axis.Term.Generator.GeneratorRedexHead
+import FX1PolyAudit.Axis.Term.Generator.GeneratorTagRoundTrip
+import FX1PolyAudit.Axis.Term.Subst.RawTermSubstLiftWeaken
 import FX1PolyAudit.Typed.Corpus.Smoke.RawBetaNotRpoOrientable
 
 /-! # FX1PolyAudit.AuditCore — aggregator over the per-kernel-module audit shards

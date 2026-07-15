@@ -26,7 +26,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `ome
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The type-level fundamental conclusion** (decoupled-`typeLevel`).  A type code is a reducible TYPE at
 `typeLevel` under every per-variable-level closing environment — the `ReducibleTypeAt`-valued analogue of

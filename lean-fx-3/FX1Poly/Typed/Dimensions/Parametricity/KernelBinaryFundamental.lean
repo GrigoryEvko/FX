@@ -38,7 +38,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-! ## The conjoined motives -/

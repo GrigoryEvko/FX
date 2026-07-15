@@ -32,7 +32,7 @@ WITHOUT the `scope + 1` / `predLevel + 1` restriction of the general CR1
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The strong-normalization candidate is the stratified reducible-type denotation of a neutral classifier.**

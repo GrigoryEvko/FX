@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryFundamental
 import FX1Poly.Typed.Corpus.Smoke.TypedLambdaDerivations
-import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
+import FX1Poly.Axis.Term.Rename.RawTermStrengthen
 
 /-! # FX1Poly/Typed/KernelAbstractionTheorem
     — ★ kernel free theorems from closed binary parametricity (OP1-K3)
@@ -37,7 +37,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-! ## De Bruijn cancellation -/

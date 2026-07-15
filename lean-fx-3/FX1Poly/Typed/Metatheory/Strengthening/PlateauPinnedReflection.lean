@@ -38,7 +38,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- Formation-side pin extraction: a formation classifier is pinned — variable classifiers by the
 Kripke condition + `lookupIsType`, universe/former classifiers by rename-invariance. -/

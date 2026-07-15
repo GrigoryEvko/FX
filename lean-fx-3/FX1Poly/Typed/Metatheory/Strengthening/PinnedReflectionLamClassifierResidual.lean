@@ -37,7 +37,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The λ-classifier pin residual** — the campaign's remaining open core: a NORMAL, IN-IMAGE,
 grown-typed λ has a pinned classifier.  The λ-complement of the shipped

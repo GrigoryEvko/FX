@@ -148,7 +148,7 @@ end FX1Poly.Core.Fib
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.Fib FX1Poly.Polygraph FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Core.Fib FX1Poly.Polygraph FX1Poly.Axis.Syntax
 
 /-- The **lock-shape** of a kernel typing context as a mode-indexed telescope over the affine dimension graph:
 forget the bindings and the dimension types, keep only the `empty` / `cons` / `lockCons` shape.  Each kernel

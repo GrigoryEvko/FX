@@ -62,7 +62,7 @@ discharged by the logical relation.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The flexible-route GrownCtxConv-5 residual: type validity survives reduction.**  If `subjectType` is a grown type
 (`IsTypeDescPi`) and it reduces to `reductType`, then `reductType` is a grown type.  A single-context statement

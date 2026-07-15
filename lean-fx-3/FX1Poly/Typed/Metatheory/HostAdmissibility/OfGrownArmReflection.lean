@@ -40,7 +40,7 @@ Per-declaration audit-gated in
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-! ## The headline capstone: the retired `ofGrown` conclusion, native -/
 

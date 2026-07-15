@@ -27,7 +27,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- Pointwise logical equivalence of two candidate predicates. -/

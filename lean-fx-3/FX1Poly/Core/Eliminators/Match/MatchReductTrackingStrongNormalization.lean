@@ -56,7 +56,7 @@ Four-fold `Acc.ndrec` / `Acc.intro` well-founded recursion, the pinned `Step.fro
 namespace FX1Poly.Core
 namespace StepStar
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **The reduct-tracking `optionMatch` cell-SN engine for a REDUCING scrutinee (satisfiable firing premise).**
 A four-fold `Acc.ndrec` on (scrutinee, motive, noneBranch, someBranch) threading a `StepStar` reachability

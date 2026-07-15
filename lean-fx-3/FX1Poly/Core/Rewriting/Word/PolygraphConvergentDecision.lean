@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Conversion.ConvNormalForm
-import FX1Poly.Tier0.Term.Core.RawTermDecEq
+import FX1Poly.Axis.Term.Core.RawTermDecEq
 
 /-! # Foundation/PolyCell/Core/PolygraphConvergentDecision
     — Path B: Conv = normal-form word equality on the convergent polygraph presentation
@@ -33,7 +33,7 @@ the decision instance is `decidable_of_iff` over `instDecidableEqRawTerm`.  No `
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- A normalizer for the raw rewrite system: a total normal-form function, each cell reducing to its
 normal form, the normal form having no outgoing `Step`.  Its EXISTENCE is the strong-normalization

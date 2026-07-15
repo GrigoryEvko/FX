@@ -32,7 +32,7 @@ at the longer spine discharges the goal.  No domain-candidate hypothesis is need
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- Applying a spined application to one more argument lengthens the spine:

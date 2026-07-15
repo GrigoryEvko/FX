@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaRootTable
 import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaTableBackward
 import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaRootTableSourceShape
@@ -27,9 +27,9 @@ relation.)
 
 namespace FX1Poly.Core
 
--- `RawRenaming` lives in `FX1Poly.Tier0.Syntax`, which does not enclose
+-- `RawRenaming` lives in `FX1Poly.Axis.Syntax`, which does not enclose
 -- `FX1Poly.Core`, so open it explicitly.
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 mutual
 
@@ -37,7 +37,7 @@ mutual
 dispatcher: variables rebuild as variables, and non-variable generators
 preserve size by recursively preserving their child spine size. -/
 theorem RawTerm.size_rename {sourceScope targetScope : Nat}
-    (someRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
+    (someRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope)
     (sourceTerm : RawTerm sourceScope) :
     (RawTerm.rename someRenaming sourceTerm).size = sourceTerm.size := by
   match sourceTerm with
@@ -57,7 +57,7 @@ theorem RawTerm.size_rename {sourceScope targetScope : Nat}
 /-- Renaming preserves raw child-spine size. -/
 theorem RawTermChildren.size_rename {sourceScope targetScope : Nat}
     {binderShifts : List Nat}
-    (someRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
+    (someRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope)
     (someChildren : RawTermChildren binderShifts sourceScope) :
     (RawTermChildren.rename someRenaming someChildren).size =
       someChildren.size := by

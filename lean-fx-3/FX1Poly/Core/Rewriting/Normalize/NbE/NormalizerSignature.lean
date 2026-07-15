@@ -1,8 +1,8 @@
 import FX1Poly.Core.Rewriting.Normalize.RawTermNF
-import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Rename.RawTermRename
 import FX1Poly.Core.Rewriting.Normalize.NbE.DesignDecision
 import FX1Poly.Core.Rewriting.Normalize.NbE.ReductionStrategy
-import FX1Poly.Tier0.Term.Rename.RenameDefs
+import FX1Poly.Axis.Term.Rename.RenameDefs
 
 /-! # Foundation/PolyCell/NbE/NormalizerSignature
    — NbE substrate: canonical normalizer signature contract
@@ -134,7 +134,7 @@ structure Normalizer where
   target` family).  An implementation proves this via the
   fold-based Action laws. -/
   normalize_renaming_commute : ∀ {sourceScope targetScope : Nat}
-      (someRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
+      (someRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope)
       (term : FX1Poly.Core.RawTerm sourceScope),
     normalize
         (FX1Poly.Core.RawTerm.rename

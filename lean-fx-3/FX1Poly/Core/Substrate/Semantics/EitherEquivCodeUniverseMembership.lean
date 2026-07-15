@@ -32,7 +32,7 @@ weak-head-normal `cases iotaStep` (a type former has no root redex — only `roo
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax FX1Poly.Universe StepStar
+open FX1Poly.Axis.Syntax FX1Poly.Universe StepStar
 
 /-- **`eitherCode leftCode rightCode` is a reducible member of its universe** when both summand codes are
 strongly normalizing — a direct `dataFormerInUniverse` instance on the shipped two-child SN combinator

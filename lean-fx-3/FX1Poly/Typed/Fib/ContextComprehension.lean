@@ -1,12 +1,12 @@
 import FX1Poly.Typed.Fib.DisplayFibre
-import FX1Poly.Tier0.Context.ComprehensionCategory
+import FX1Poly.Axis.Context.ComprehensionCategory
 
 /-! # FX1Poly/Typed/Fib/ContextComprehension — fib-1c: the kernel's `TypingContext.cons` IS the context axis's comprehension `Γ.A`
 
-The CONTEXT axis (`Tier0/Context`, `fxComprehensionCategory` / `StandaloneModalRMC`) was ORPHANED from the
+The CONTEXT axis (`Axis/Context`, `fxComprehensionCategory` / `StandaloneModalRMC`) was ORPHANED from the
 running kernel: zero engine files imported its comprehension structure, even though the context axis is BUILT
 OVER the same `SubstVec` parallel-substitution substrate the kernel's `TypingContext` / `RawTerm.subst` use.
-This file performs the genuine `Core → Tier0/Context` REWIRE the "delegate, axis-by-axis" directive calls for:
+This file performs the genuine `Core → Axis/Context` REWIRE the "delegate, axis-by-axis" directive calls for:
 it imports `fxComprehensionCategory` and proves the kernel's de Bruijn context extension `TypingContext.cons`
 realizes the context axis's Σ-comprehension `Γ.A` on the nose.
 
@@ -31,7 +31,7 @@ kernel's `SubstVec` comprehension iso definitionally.  No `axiom`, `sorry`, `pro
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Typed FX1Poly.Universe
 
 /-- The forgetful COMPREHENSION OBJECT of a typing context: its de Bruijn scope — the bare object of the
 context axis's base category `fxBaseSubstCategory` (whose objects ARE `Nat`).  A typing context is the

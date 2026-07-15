@@ -123,7 +123,7 @@ NOT force to be thin: the idempotence collapses touch only modality-internal pow
 Aufhebung `♯∅ ≃ ∅`).  So the FULL decision is gated on the SAME cross-modality-thinness collapse the walking
 adjoint triple leaves open (`fxString_hasAdjointTripleCompleteness = false`).  This lane ships the presentation, the
 soundness (the saturated congruence), the thin fragment, and the EXACT residual (the transform), and does NOT force
-a global thinness claim.  The downstream Tier0 `fxMode_hasCohesionModalityComputation` remains gated on this exact
+a global thinness claim.  The downstream Axis `fxMode_hasCohesionModalityComputation` remains gated on this exact
 residual.  `= false`. -/
 def fxCohesion_hasCohesionQuadrupleDecision : Bool := false
 

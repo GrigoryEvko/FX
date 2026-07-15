@@ -1,6 +1,6 @@
-import FX1Poly.Tier0.Mode.MultiplierStructureClass
-import FX1Poly.Tier0.Mode.SamenessUnification
-import FX1Poly.Tier0.Mode.Transpension
+import FX1Poly.Axis.Mode.MultiplierStructureClass
+import FX1Poly.Axis.Mode.SamenessUnification
+import FX1Poly.Axis.Mode.Transpension
 import FX1Poly.Core.Equality.Gel.GelRelationRetract
 
 /-! # FX1Poly/Typed/Dimensions/Parametricity/GelIsTranspensionAtAffine
@@ -44,7 +44,7 @@ already-shipped `Core.gelRelationRetract_witnessProjectionLeg` (a `Conv` from th
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 open FX1Poly.Core
 
 /-! ## The Gel former's multiplier structure-class -/

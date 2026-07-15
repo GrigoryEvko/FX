@@ -3,7 +3,7 @@ import FX1Poly.Typed.Fib.ModeLockMultiplier
 
 /-! # FX1PolyAudit.Typed.Fib.ModeLockMultiplier — zero-axiom gate (fib-3a / A1-FIB3-SEED)
 
-Per-declaration zero-axiom gate for the Core→Tier0/Mode rewire: the affine dimension lock's mode-12 void
+Per-declaration zero-axiom gate for the Core→Axis/Mode rewire: the affine dimension lock's mode-12 void
 multiplier, its unpointedness, and the wiring tying the kernel's structural fibrant-inaccessibility to the
 mode-axis unpointedness. Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`,
 `omega`. -/

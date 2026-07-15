@@ -38,7 +38,7 @@ Swept per declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **A head weak-head-step lifts through an application spine.**  If the head weak-head-steps, the whole

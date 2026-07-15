@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretation
-import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Rename.RawTermRename
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationProbes
 
 /-! # Foundation/PolyCell/Core/CandidateInterpretationRename
@@ -31,7 +31,7 @@ so no `funext` is needed.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classi
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Renaming preserves the head generator.**  `rename` is `fold` with the canonical algebra: the

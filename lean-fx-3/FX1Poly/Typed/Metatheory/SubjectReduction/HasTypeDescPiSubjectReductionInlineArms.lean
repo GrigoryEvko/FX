@@ -35,7 +35,7 @@ dispatcher's induction calls them with the IHs verbatim:
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Dispatcher λ arm (specific-IH).**  Given the λ's domain/codomain universe-typings and the body's SR at
 its specific classifier, a `Step (lamCell body) reduct` rebuilds `reduct` at the λ's Π type via `piIntro`. -/

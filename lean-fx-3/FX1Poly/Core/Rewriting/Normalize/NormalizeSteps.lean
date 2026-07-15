@@ -43,7 +43,7 @@ For the term normalizer the truthful answer is:
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **The normalizer's exact step counter** — the `Acc.rec` twin of `RawTerm.normalize`: same
 scrutinee (`reduceOnce`), same descent (`reduceOnce_sound`), but accumulating one unit per fired

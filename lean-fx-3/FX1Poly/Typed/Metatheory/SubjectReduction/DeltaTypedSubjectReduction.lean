@@ -31,7 +31,7 @@ equation.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-! ## The canonical δ-constant heads are RESERVED -/
 

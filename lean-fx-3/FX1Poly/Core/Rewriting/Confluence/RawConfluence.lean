@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Normalize.NormalFormUnique
-import FX1Poly.Tier0.Term.Core.RawTermDecEq
+import FX1Poly.Axis.Term.Core.RawTermDecEq
 import FX1Poly.Core.Rewriting.Word.PolygraphConvergentDecision
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluenceViaTable
 

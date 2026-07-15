@@ -19,7 +19,7 @@ collapsing every flag negotiation of the pinned-reflection campaign to a one-ste
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 mutual
 

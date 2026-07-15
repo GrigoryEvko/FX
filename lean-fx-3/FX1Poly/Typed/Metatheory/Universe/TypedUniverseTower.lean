@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeConversion
-import FX1Poly.Tier0.Type.Level.LevelExprTower
+import FX1Poly.Axis.Type.Level.LevelExprTower
 
 /-! # FX1Poly/Typed/TypedUniverseTower — the predicative universe hierarchy is an infinite non-collapsing tower
 

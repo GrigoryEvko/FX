@@ -41,7 +41,7 @@ and the cons-lookup all reduce definitionally).  The image escape is two levels 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis.Syntax FX1Poly.Universe
 
 /-- The escaping reclassifier `(λ. Type@1) (var 0)` — β-convertible to `Type@1` but syntactically
 mentioning the fresh variable, hence outside the weaken image from scope 0. -/

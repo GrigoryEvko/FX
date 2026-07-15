@@ -54,7 +54,7 @@ bounded `memberWeakHeadExpansion` / `isReducibilityCandidate` / `deterministic`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The bounded dependent `eitherMatch` member arm.**  Given the result type `subst0 motive scrutinee` is

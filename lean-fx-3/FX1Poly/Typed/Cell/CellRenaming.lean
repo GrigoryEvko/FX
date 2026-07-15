@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Cell.CellConstructors
-import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Rename.RawTermRename
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 
 /-! # FX1Poly/Typed/CellRenaming — how `RawTerm.rename` acts on the typing cells
@@ -26,7 +26,7 @@ Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- Renaming a variable cell applies the renaming to the de Bruijn index. -/
 theorem rename_variableCell {sourceScope targetScope : Nat}

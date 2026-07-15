@@ -52,7 +52,7 @@ Structural recursion over the children spine + `cases` on `List.Mem` constructor
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- ★ **Subject usability transports along EVERY raw-term morphism whose variable images are
 usable.**  The single content behind `subjectUsabilityPreservedUnderRename` /

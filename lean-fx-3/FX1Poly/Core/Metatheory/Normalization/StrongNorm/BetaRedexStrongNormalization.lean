@@ -33,7 +33,7 @@ inversion + `StepStar.subst0Body` + `descendStepStar`.  No `funext`.  No `axiom`
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **lam-StepStar inversion (full form).**  A `StepStar` chain out of a lambda lands on a lambda, and the

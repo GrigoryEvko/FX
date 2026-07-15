@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Rename.RawTermRename
 
 /-! # Foundation/PolyCell/Core/FoldShiftGreaterThanOne
    — regression smoke for `iterateLiftRaw` + `foldChildren` at binder
@@ -64,7 +64,7 @@ beyond what pure definitional reduction supplies.  Audit-gated in
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Section 1 — `iterateLiftRaw` equational smokes -/
 

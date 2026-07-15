@@ -44,7 +44,7 @@ Self-recursion + the `conv` rule + `universeFormation` + `Conv.rename`/`Conv.ref
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Conv-back to a universe code (formation engine).**  A subject typed at any classifier `reachedCode`
 convertible FROM the universe code `Type@(level, flag)` is typed at that universe code itself —

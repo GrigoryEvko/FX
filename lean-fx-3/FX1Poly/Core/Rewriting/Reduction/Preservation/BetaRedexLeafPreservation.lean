@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedIntros
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
 
 /-! # Foundation/PolyCell/Core/BetaRedexLeafPreservation
    — beta-redex leaf preservations
@@ -63,7 +63,7 @@ Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Section 1 — Additional subst0 reduction probes
 

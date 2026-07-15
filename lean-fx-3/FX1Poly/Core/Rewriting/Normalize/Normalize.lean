@@ -46,7 +46,7 @@ declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **The normalizer.**  Iterate `reduceOnce` along the accessibility witness until it halts; the result is
 the (unique) normal form of `term`.  Written with `Acc.rec` because the descent shrinks the accessibility

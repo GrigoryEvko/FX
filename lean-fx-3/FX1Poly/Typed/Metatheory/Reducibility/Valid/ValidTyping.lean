@@ -59,7 +59,7 @@ non-self-referential).  `fundamental` is `ValidTyping.rec` (propext-free recurso
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Level-annotated formation typing** (the Abel validity-derivation-indexed relation, leaf+conv core).  The

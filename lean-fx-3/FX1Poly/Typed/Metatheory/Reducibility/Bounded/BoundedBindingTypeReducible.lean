@@ -40,7 +40,7 @@ A linear composition of shipped zero-axiom results (FT + decode + cumulativity) 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **A universe-typed subject is bound-reducible-as-type under a reducible env.**  Given a grown

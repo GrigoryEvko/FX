@@ -38,7 +38,7 @@ before landing).  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Closed universe-code typing.**  `Type@s : Type@(s+1)` at the empty context, by the universe-formation rule
 bridged into the grown engine — a concrete closed term inhabiting a universe. -/

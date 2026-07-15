@@ -61,7 +61,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **GrownCtxConv-5 closure modulo the single residual.**  Under `ConvContextPreservesPiValidity` and source
 well-formedness `WfContextDescPi sourceContext`, a grown derivation survives replacing the context by any

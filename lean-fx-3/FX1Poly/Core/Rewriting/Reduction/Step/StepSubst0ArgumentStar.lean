@@ -22,7 +22,7 @@ hypothesis via `StepStar.trans_compose`).  No `axiom`, `sorry`, `propext`, `Quot
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **`StepStar` lift of `Step.subst0Argument`.**  When the argument reduces by `StepStar`, `subst0 body`
 reduces in lockstep: `StepStar argument updatedArgument → StepStar (subst0 body argument) (subst0 body

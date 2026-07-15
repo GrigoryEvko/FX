@@ -83,7 +83,7 @@ Both laws close by `Iff.rfl` (definitional composition-associativity on `RawRena
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **A Kripke-indexed reducibility candidate at `sourceScope`.**  Unlike a plain `RawTerm sourceScope →

@@ -8,8 +8,8 @@ import FX1Poly.Polygraph.Omega.TypedKernelTuple
 ★ **THE GRAND-RUNG r1 LEDGER — "substitution = pasting", the honest scoreboard.**  Mirrors
 `GradedCompositionLedger` / `WeakDirectedCeilingLedger`: it gates on what compiles (it imports the Polygraph-side OMEGA-7
 r1 pieces — `PresentedKernelSeed`, `AdmissionChainSeed` — plus the OMEGA-6 wall ledger it inherits; the B1
-identification `SubstPasting` lives at `Tier0/Term/Subst/` because it imports the kernel substitution
-engine and the layer DAG forbids Polygraph -> Tier0, so its gate is its audit twin, not this import),
+identification `SubstPasting` lives at `Axis/Term/Subst/` because it imports the kernel substitution
+engine and the layer DAG forbids Polygraph -> Axis, so its gate is its audit twin, not this import),
 records the anchored-vs-walled line as hypothesis-free `Bool` markers, names the PERMANENT walls (Makkai
 general familial representability, Burroni general presented word problem) by CITATION rather than
 axiomatization, states every surviving jam with its EXACT goal and NAMED blocking node, and specifies the
@@ -89,8 +89,8 @@ originally misnamed `substCell`) never routes through `RawTermSubst`, and the pa
 variable-disjoint CONJUNCTION, not an identification.  What r2 genuinely lifts is r1's single-vector
 arithmetic shadow to the boundary-faithful CHAIN map: **composition = pasting**.  The genuine
 "substitution = pasting" glue is the NEW named node `fxOmega7_fragmentTermToCellActionReached` below.
-The pieces live at `Tier0/Term/Subst/PastingCompositeLinearization.lean` (they sit BESIDE the kernel
-term-side law `substCompose_assoc`; Polygraph may not import Tier0, so these `Bool` markers gate against
+The pieces live at `Axis/Term/Subst/PastingCompositeLinearization.lean` (they sit BESIDE the kernel
+term-side law `substCompose_assoc`; Polygraph may not import Axis, so these `Bool` markers gate against
 the audit twin `PastingCompositeLinearizationAudit.lean`, not this import).  Each is machine-checked
 zero-axiom (independent `#print axioms`: "does not depend on any axioms"). -/
 
@@ -134,7 +134,7 @@ def fxOmega7_r2FragmentRoundComplete : Bool := true
     on the STRONG-STEINER fragment as a GENUINE MAP (not only the arithmetic shadow), with the substitution
     lemma discharged VIA `addCoordinates_assoc`.  `pasteAlong` on the `CellExpr` carrier aligned with
     `boundarySource` / `boundaryTarget` (the pasting engine on the fragment); r1 did only the arithmetic shadow
-    (`linearize_vcomp_assoc`).  DONE at `Tier0/Term/Subst/PastingCompositeLinearization.lean`, machine-checked zero-axiom.
+    (`linearize_vcomp_assoc`).  DONE at `Axis/Term/Subst/PastingCompositeLinearization.lean`, machine-checked zero-axiom.
     `fxOmega7_fragmentPastingCompositeLinearized = true`.
 
   * **JAM — the total `termToCell` model homomorphism (Form A).**  Goal: a TOTAL `termToCell : RawTerm →
@@ -166,13 +166,13 @@ OMEGA-7(c)). -/
 def fxOmega7_totalTermToCellModelReached : Bool := false
 
 /-- ★ **The fragment-level `composeLinearized = pasteAlong` genuine map is REACHED (r2).**  `= true` — SHIPPED at
-`Tier0/Term/Subst/PastingCompositeLinearization.lean`: `pasteAlong` on the `CellExpr` carrier (boundary-aligned with the
+`Axis/Term/Subst/PastingCompositeLinearization.lean`: `pasteAlong` on the `CellExpr` carrier (boundary-aligned with the
 shipped `boundarySource`/`boundaryTarget`), `composeLinearized` its boundary-faithful chain realization
 (`composeAtFull` on `linearizeFull`), and `linearizeFull_pasteAlong_eq_composeLinearized` the GENUINE MAP equality (whole chain,
 boundary poles included, the rfl-anchor `linearizeFull_vcomp_composeAtFull`) with `linearizeFull_pasteAlong_assoc` discharged
 VIA `addCoordinates_assoc` (poles by `rfl`) — the boundary-faithful upgrade over r1's single-vector shadow
 (`linearize_vcomp_assoc`).  Machine-checked zero-axiom (independent `#print axioms`), gated by the audit twin
-`PastingCompositeLinearizationAudit.lean` (this ledger cannot import Tier0).  Scope: RELATIVE to a `ComputadValuation` on
+`PastingCompositeLinearizationAudit.lean` (this ledger cannot import Axis).  Scope: RELATIVE to a `ComputadValuation` on
 the STRONG-STEINER fragment (Makkai wall NEVER widened). -/
 def fxOmega7_fragmentPastingCompositeLinearized : Bool := true
 
@@ -202,7 +202,7 @@ def fxOmega7_kernelAsValueTuple : Bool := true
 
 /-- ★ **The fragment term-to-cell ACTION is REACHED (r4) — the genuine "substitution = pasting" glue (the
 r2 verifier's named node), machine-checked zero-axiom.**  `= true` — SHIPPED at
-`Tier0/Term/Subst/FragmentTermCellAction.lean`.  On the strong-Steiner successor-tower fragment
+`Axis/Term/Subst/FragmentTermCellAction.lean`.  On the strong-Steiner successor-tower fragment
 (`omegaSuccTower`, the `gen_natSucc` tower over one `gen_var`, closed under the tower substitutions
 `towerSubst`), relative to `towerValuation`, the action equation
 
@@ -220,7 +220,7 @@ genuinely composes a `[1]`-cell with a `[2]`-cell.  The proof: the subst leg red
 `linearizeFull_eq_of` closes it (poles `[([0],[0])]` both sides by the boundary lemmas, tops add via
 `addCoordinates_assoc` / `_comm`).  Machine-checked zero-axiom (audit twin `FragmentTermCellActionAudit.lean` +
 independent `#print axioms`: "does not depend on any axioms"), gated by that twin (this ledger cannot import
-Tier0).  Scope: RELATIVE to `towerValuation` on the strong-Steiner fragment — arbitrary lambda-terms with
+Axis).  Scope: RELATIVE to `towerValuation` on the strong-Steiner fragment — arbitrary lambda-terms with
 binders stay Makkai / Form-A-walled (`fxOmega7_totalTermToCellModelReached = false`, NEVER widened). -/
 def fxOmega7_fragmentTermToCellActionReached : Bool := true
 
@@ -288,7 +288,7 @@ def fxOmega7_substitutionPastingStaircaseClosed : Bool := true
 
 /-! ## The r4 section — the fragment term→cell ACTION SHIPPED (the r3 residual CLOSED)
 
-★ **What OMEGA-7 r4 SHIPPED (machine-checked zero-axiom, `Tier0/Term/Subst/FragmentTermCellAction.lean`).**
+★ **What OMEGA-7 r4 SHIPPED (machine-checked zero-axiom, `Axis/Term/Subst/FragmentTermCellAction.lean`).**
 The r2 verifier's named node — the shared-variable "substitution = pasting" glue — is now inhabited on a
 genuine, non-degenerate fragment:
 
@@ -306,7 +306,7 @@ genuine, non-degenerate fragment:
     certificate being the action equation itself; the r3 disclosed uniform-singleton seating weakness is
     de-degenerated.  The `AdmittedTable` `TeleType` bridge stays the documented residual (below).
 
-Gated by the audit twin `FragmentTermCellActionAudit.lean` (this ledger cannot import Tier0).  Scope RELATIVE
+Gated by the audit twin `FragmentTermCellActionAudit.lean` (this ledger cannot import Axis).  Scope RELATIVE
 to `towerValuation` on the strong-Steiner fragment — the Makkai / Form-A wall is NEVER widened. -/
 
 /-- ★ **The OMEGA-7 r4 fragment-action round is COMPLETE.**  `= true`: the fragment (`omegaSuccTower` closed

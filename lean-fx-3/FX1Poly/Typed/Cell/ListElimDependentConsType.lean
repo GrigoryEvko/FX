@@ -2,12 +2,12 @@ import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Typed.Cell.NatElimDependentSuccType
-import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
-import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
-import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Axis.Term.Subst.RawTermSubstCompose
+import FX1Poly.Axis.Term.Subst.RawTermSubstPointwise
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Axis.Term.Rename.RawTermRenameComposeFusion
 
 /-! # FX1Poly/Typed/Cell/ListElimDependentConsType
     — the dependent `listElim` CONS-branch type (DEP-LIST sub-D1, the three-binder recursive Pi crux)
@@ -62,7 +62,7 @@ substitution / renaming naturality of the WRAPPED type lives downstream with the
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- **Triple weakening as the shift-by-three substitution.**  `weaken ∘ weaken ∘ weaken` (raise scope by three
 via three `Fin.succ` shifts) equals substituting every variable by the variable shifted up by three — the

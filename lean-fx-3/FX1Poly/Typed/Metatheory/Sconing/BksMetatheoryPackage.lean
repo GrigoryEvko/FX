@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Sconing.ParametricityTransferLedger
-import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecSconingPreservation
+import FX1Poly.Axis.Context.Instances.Renaming.FxBaseRenamingVecSconingPreservation
 
 /-! # FX1Poly/Typed/BksMetatheoryPackage
     — ★ the BKS sconing metatheory package: preservation + the three transfers, bundled (SN-096, #599)
@@ -38,7 +38,7 @@ instance, inhabited by direct application.  No `axiom`, `sorry`, `propext`, `Quo
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 open StepStar
 
 /-- **The BKS sconing metatheory package**: the concrete preservation instance plus the three

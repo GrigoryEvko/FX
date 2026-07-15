@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Rename.RawTermWeaken
+import FX1Poly.Axis.Term.Rename.RawTermWeaken
 
 /-! # Foundation/PolyCell/Core/EtaSources — raw eta-redex source shapes
 
@@ -23,7 +23,7 @@ content.  Per-declaration audit-gated via the substrate sweeps. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 namespace RawTerm
 

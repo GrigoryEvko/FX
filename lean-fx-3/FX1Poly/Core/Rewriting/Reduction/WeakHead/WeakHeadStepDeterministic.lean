@@ -28,7 +28,7 @@ route used by `HeadStep.deterministic` / `IotaHeadStep.deterministic`.  No `axio
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Weak-head reduction is deterministic**: a term has at most one weak-head reduct. -/
 theorem WeakHeadStep.deterministic {scope : Nat} {term firstReduct : RawTerm scope}

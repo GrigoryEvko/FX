@@ -43,7 +43,7 @@ single invocation of the appropriate step helper.  Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Section 1 — Cell-level (Type-valued) smokes via step renamers -/
 

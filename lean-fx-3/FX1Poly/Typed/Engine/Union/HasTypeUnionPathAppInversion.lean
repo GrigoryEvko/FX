@@ -36,7 +36,7 @@ unconditional `Conv.trans` / `Conv.sym` / `Conv.refl` + `childCons` injection dr
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **★ Path-elimination (pathApp) inversion for the union.**  A union typing of a `pathAppCell path
 argument`-headed subject has the path union-typed at a bridge code, the argument union-typed at the interval

@@ -45,7 +45,7 @@ glued type's `fundamental` hypothesis, CR1 (`GluedTypeCell.isCandidate`), and th
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 open StepStar
 
 /-- **The lawless record inhabited by the constant singleton family.**  `ParametricityExtraction`

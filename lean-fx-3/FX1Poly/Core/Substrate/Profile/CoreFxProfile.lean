@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Generator.GeneratorAdmission
+import FX1Poly.Axis.Term.Generator.GeneratorAdmission
 
 /-! # Foundation/PolyCell/Core/CoreFxProfile — restricted-profile admission demonstration
 

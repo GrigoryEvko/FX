@@ -33,7 +33,7 @@ Swept per declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- A weak-head step only fires on an application-headed term: both `HeadStep` constructors conclude a

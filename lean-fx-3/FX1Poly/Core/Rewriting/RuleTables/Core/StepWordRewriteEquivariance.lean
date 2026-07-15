@@ -41,7 +41,7 @@ followed by the word-rewrite soundness / the rule-map membership; the inversion 
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **rename-equivariance (single step)**: renaming the redex/reduct and encoding gives a one-step word rewrite,
 via the renamed reduction `Step.rename`. -/

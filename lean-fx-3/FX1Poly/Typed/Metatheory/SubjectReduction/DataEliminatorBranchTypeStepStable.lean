@@ -24,7 +24,7 @@ in its codomain leg while the element-type domain stays fixed.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The `optionMatch` some-branch type reduces when the motive reduces.**  `optionMatchDependentSomeBranchType
 motive valueType = piTyCodeCell valueType (optionMatchDependentSomeBranchCodomain motive)`, the codomain a single

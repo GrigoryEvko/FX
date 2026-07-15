@@ -20,7 +20,7 @@ lets the caller's `invertLam` components select the condition pair's flag. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Conv-lifted universe-classification uniqueness**: convertible subjects classified at
 universe codes carry EQUAL (level, flag) — wf-conditioned (open SN), table-generic. -/

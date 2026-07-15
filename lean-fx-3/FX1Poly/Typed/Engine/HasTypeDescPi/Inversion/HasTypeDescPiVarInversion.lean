@@ -41,7 +41,7 @@ Subject-generalised structural recursion + the subject `injection` + the uncondi
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- Formation-engine var inversion: a `variableCell index` typed in the FORMATION engine has its classifier
 convertible to the looked-up type.  Subject-generalised so the match stays propext-free; the formation `conv`

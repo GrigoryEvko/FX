@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Rename.RawTermRename
 import FX1Poly.Core.Substrate.Profile.PolyProfile
 
 /-! # FX1Poly/Typed/TypingContext — the native de Bruijn typing telescope
@@ -64,7 +64,7 @@ Structural recursion + `rfl`-closed unfolders + one `induction` with
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- A `TypingContext profile scope` is a de Bruijn telescope of exactly
 `scope` binding-type cells.  `cons` stores the new binding's type at the

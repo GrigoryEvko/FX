@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Profile.PolyProfile
-import FX1Poly.Tier0.Context.AxisObligation
+import FX1Poly.Axis.Context.AxisObligation
 /-! # FX1Poly/Core/ProfileAdmission — the KERNEL-NATIVE admission discipline
 
 A profile's capability claims must be BACKED by its own construction
@@ -33,7 +33,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditProfile.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 
 /-! ## AdmissibleProfile — the ledger-backed admission predicate -/
 

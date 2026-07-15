@@ -24,7 +24,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `ome
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **UNCONDITIONAL strong normalization of a closed universe code.**  The first end-to-end SN result via the

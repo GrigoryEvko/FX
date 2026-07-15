@@ -13,7 +13,7 @@ tuple, made explicit.
 
 The tuple's PRODUCTION instance over the actual FX kernel is:
 
-  * **signature** = `fxSignature` (`Tier0/…/GeneratorSignatureValue.lean`), packaged as
+  * **signature** = `fxSignature` (`Axis/…/GeneratorSignatureValue.lean`), packaged as
     `fxFibredKernel.presentation` (`Core/Fib/FibrationArchitecture.lean`, `= fxSignature` by `rfl`);
   * **table2** = the term/iota rewrite ROWS — `IotaRuleTable`, `fxTypingBundle` / `TypingTableBundle`
     (`Typed/Engine/RuleTables/`), `StepOverTable` (`Core/Rewriting/RuleTables/StepOver/`): the dim-2

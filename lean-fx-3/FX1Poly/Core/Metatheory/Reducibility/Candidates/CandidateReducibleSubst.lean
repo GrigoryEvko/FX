@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretation
-import FX1Poly.Tier0.Term.Subst.RawTermSubst
+import FX1Poly.Axis.Term.Subst.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/CandidateReducibleSubst
     — the reducible term-substitution environment for the fundamental theorem
@@ -29,7 +29,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 -- `RawTermSubst.cons` (the term-level substitution extension, dual to `lift`) was relocated to
 -- `FX1Poly/Core/RawTermSubst.lean` so the low-level reduction substrate (`Step`'s natElim/natRec

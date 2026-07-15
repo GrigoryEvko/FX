@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.Rewriting.Coherence.FreeStrictOmega
 
-/-! # FX1PolyAudit/AuditTier0TermFreeStrictOmega — zero-axiom gate for term-17 (free strict ω-cat + Gray)
+/-! # FX1PolyAudit/AuditAxisTermFreeStrictOmega — zero-axiom gate for term-17 (free strict ω-cat + Gray)
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/FreeStrictOmega.lean`: the free-category
+Per-declaration zero-axiom gate for `FX1Poly/Axis/Term/Rewrite/FreeStrictOmega.lean`: the free-category
 universal property at dimension 1 (`RewritePath.foldMap` + `foldMap_nil` / `foldMap_single` /
 `foldMap_comp` functoriality / `foldMap_unique` / `foldMap_id`) and the strict interchange at dimension 2
 (`interchangeWhiskerSource` / `interchangeWhiskerTarget` / `rewriteInterchange_strict`).

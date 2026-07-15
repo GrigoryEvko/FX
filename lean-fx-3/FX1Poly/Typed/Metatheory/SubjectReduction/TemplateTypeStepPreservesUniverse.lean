@@ -30,7 +30,7 @@ A single `obtain` + `exact` over the two shipped zero-axiom keystones.  No `prop
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **★ SR-DSL-2 capstone — generic type-SR over the `CellTemplate` DSL.**  Given a branch / obligation classifier
 that `interpret?` builds from a cell's `argsBefore` / `paramsBefore` and that is a well-formed union type, when the

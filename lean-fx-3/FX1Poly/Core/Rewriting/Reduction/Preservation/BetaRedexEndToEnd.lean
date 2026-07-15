@@ -54,7 +54,7 @@ Both theorems compose existing zero-axiom lemmas.  Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Beta-redex source projection (chained).**
 

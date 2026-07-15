@@ -20,7 +20,7 @@ grown engine.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-! ## The redundancy of `ofGrown`: `HasTypeUnion` reflects fully into `HasTypeUnionNativeOnly` -/
 

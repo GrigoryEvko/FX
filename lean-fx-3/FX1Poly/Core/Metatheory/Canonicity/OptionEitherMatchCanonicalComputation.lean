@@ -35,7 +35,7 @@ chained by `StepStar.transLast`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, 
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- The application cell `app function argument` — the shape an `optionMatch`/`eitherMatch` ι produces when it
 applies a branch to the wrapped payload. -/

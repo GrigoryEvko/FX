@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Generator.GeneratorCountPin
+import FX1Poly.Axis.Term.Generator.GeneratorCountPin
 
 /-! # FX1PolyAudit.Typed.RegionD.Contested.GeneratorCountPin — zero-axiom gate (REGION-D contested-module mirror, region-D restructure) -/
 

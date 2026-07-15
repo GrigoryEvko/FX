@@ -6,7 +6,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Cell.UnionCellSubstitution
 import FX1Poly.Typed.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormerWeakening
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
+import FX1Poly.Axis.Term.Subst.RawTermOccurrenceSubstLift
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
 /-! # FX1Poly/Typed/HasTypeUnionSubstitution — NATIVE-37 part b: the SUBSTITUTION lemma for the
@@ -69,7 +69,7 @@ audit-gated in `FX1PolyAudit/AuditUnionSubstitution.lean`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-- The host-substituent context condition for the native union: every variable image is HOST-typed at
 the substituted lookup type. -/

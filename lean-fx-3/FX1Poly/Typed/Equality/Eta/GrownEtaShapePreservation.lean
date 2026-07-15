@@ -4,7 +4,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiAppInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.Engine.Classifier.UntypableHeadDecision
 import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaExpansionGrown
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
 
 /-! # FX1Poly/Typed/GrownEtaShapePreservation — shape-stated grown η subject
 reduction (bespoke-import-free), extracted from `GrownEtaSubjectReduction`
@@ -40,7 +40,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **η-SR, λ-arm (STR-10)**: a grown typing of the function-η source
 `lam domainAnn (app (weaken f) newestVar)` in a well-formed context descends to `f` at the SAME

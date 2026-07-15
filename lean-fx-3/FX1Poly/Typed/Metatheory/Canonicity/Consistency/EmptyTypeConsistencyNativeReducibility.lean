@@ -6,8 +6,8 @@ import FX1Poly.Core.Metatheory.Normalization.Core.StronglyNormalizingSubst
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
 import FX1Poly.Core.Rewriting.Conversion.ConvRenameEquivariance
-import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
+import FX1Poly.Axis.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Axis.Term.Subst.RawTermSubstPointwise
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnly
 
 /-! # FX1Poly/Typed/.../EmptyTypeConsistencyNativeReducibility
@@ -51,7 +51,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **★★★ UNCONDITIONAL NATIVE CONSISTENCY (consistency leg #1697, closed).**  No closed term is union-typed at

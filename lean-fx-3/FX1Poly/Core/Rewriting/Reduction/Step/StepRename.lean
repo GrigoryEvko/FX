@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
 
 /-! # Foundation/PolyCell/Core/StepRename
 
@@ -22,7 +22,7 @@ closure.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- One-step beta+iota reduction is stable under raw renaming. -/
 theorem Step.rename {sourceScope targetScope : Nat}

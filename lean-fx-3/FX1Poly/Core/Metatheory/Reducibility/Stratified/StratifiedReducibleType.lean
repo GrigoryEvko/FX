@@ -47,7 +47,7 @@ guard) and `Iff.rfl` (two universe arms share the candidate at a fixed lower rel
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The Tarski-universe candidate predicate.**  A universe code's candidate: a type code is in the

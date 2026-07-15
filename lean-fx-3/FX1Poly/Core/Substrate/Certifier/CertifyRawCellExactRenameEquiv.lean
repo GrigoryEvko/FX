@@ -103,21 +103,21 @@ adding one fresh free variable slot at the top of the scope. -/
 
 /-- `unitTermRaw` (scope 0) renamed to scope 1 via weaken. -/
 def unitRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken unitTermRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken unitTermRaw
 
 /-- `varZeroRaw` (scope 1, `Fin 1` payload at 0) renamed to scope 2
 via weaken (`Fin 2` payload at 1 -- the index shifts up). -/
 def varZeroRenamedToScope2 : RawCell 2 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken varZeroRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken varZeroRaw
 
 /-- `pairUnitsRaw` (scope 0, arity-2 spine of units) renamed to
 scope 1. -/
 def pairUnitsRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken pairUnitsRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken pairUnitsRaw
 
 /-- `identityUnitCellRaw` (cell-layer fixture) renamed to scope 1. -/
 def identityUnitCellRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken identityUnitCellRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken identityUnitCellRaw
 
 end Coverage
 
@@ -232,31 +232,31 @@ namespace Coverage
 
 /-- `boolTrueRaw` weakened to scope 1. -/
 def boolTrueRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken boolTrueRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken boolTrueRaw
 
 /-- `boolFalseRaw` weakened to scope 1. -/
 def boolFalseRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken boolFalseRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken boolFalseRaw
 
 /-- `natZeroRaw` weakened to scope 1. -/
 def natZeroRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken natZeroRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken natZeroRaw
 
 /-- `listNilRaw` weakened to scope 1. -/
 def listNilRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken listNilRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken listNilRaw
 
 /-- `optionNoneRaw` weakened to scope 1. -/
 def optionNoneRenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken optionNoneRaw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken optionNoneRaw
 
 /-- `interval0Raw` weakened to scope 1. -/
 def interval0RenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken interval0Raw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken interval0Raw
 
 /-- `interval1Raw` weakened to scope 1. -/
 def interval1RenamedToScope1 : RawCell 1 :=
-  RawCell.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken interval1Raw
+  RawCell.rename FX1Poly.Axis.Syntax.RawRenaming.weaken interval1Raw
 
 end Coverage
 

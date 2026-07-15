@@ -49,7 +49,7 @@ The genuinely dependent cumulative formers' formation FT — the hard binder-cro
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The binder-crossing two-child formation telescope bridge (TYTAB-4 step 4).**  From the domain obligation IH

@@ -27,7 +27,7 @@ native `var` / `weakenUnderBinding`.  No `axiom`, `sorry`, `propext`, `Quot.soun
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-- **The native substitution-context condition (A1-RESTRICT, single-goal, MODALITY-GENERAL #1795).**  Every
 variable accessible at a USE-MODALITY has its image UNION-typed at the substituted lookup type — the union

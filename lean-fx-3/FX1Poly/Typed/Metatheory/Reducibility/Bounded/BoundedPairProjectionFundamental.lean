@@ -47,7 +47,7 @@ or `omega`.  Per-declaration gated in `FX1PolyAudit/`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The bounded `fst` member arm (projection candidate, residue-free).**  Given the first component type

@@ -356,7 +356,7 @@ theorem flatFormationObligations_pushRename {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
     (targetContext : TypingContext profile targetScope)
-    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) (flag : UniverseFlag) :
+    (rawRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope) (flag : UniverseFlag) :
     ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
       (levels : List LevelExpr),
       (∀ (subject classifier : RawTerm sourceScope),
@@ -377,7 +377,7 @@ theorem termIndexedEndpointObligations_pushRename {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
     (targetContext : TypingContext profile targetScope)
-    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope)
     (carrier : RawTerm sourceScope) :
     ∀ {shifts : List Nat} (children : RawTermChildren shifts sourceScope),
       (∀ (subject classifier : RawTerm sourceScope),
@@ -400,7 +400,7 @@ theorem cumulativeFormationObligations_pushRename {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
     (targetContext : TypingContext profile targetScope)
-    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) (flag : UniverseFlag) :
+    (rawRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope) (flag : UniverseFlag) :
     ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
       (levels : List LevelExpr),
       (∀ (subject classifier : RawTerm sourceScope),
@@ -431,7 +431,7 @@ theorem FormationRule.obligations_pushRename {profile : PolyProfile}
     {sourceScope targetScope : Nat} (rule : FormationRule)
     {sourceContext : TypingContext profile sourceScope}
     (targetContext : TypingContext profile targetScope)
-    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope)
     {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
     (levels : List LevelExpr) (carrier : RawTerm sourceScope) (level : LevelExpr) (flag : UniverseFlag)
     (baseTypings : ∀ (subject classifier : RawTerm sourceScope),

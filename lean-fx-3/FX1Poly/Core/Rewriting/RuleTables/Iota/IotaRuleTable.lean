@@ -1,6 +1,6 @@
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
-import FX1Poly.Tier0.Term.Rename.RawTermWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubstPair
+import FX1Poly.Axis.Term.Rename.RawTermWeaken
 
 /-! # FX1Poly/Core/IotaRuleTable — reduction rules as DATA (the ι-rule table)
 
@@ -134,7 +134,7 @@ declaration in `FX1PolyAudit/AuditIotaRuleTable.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open FX1Poly.Universe (LevelExpr UniverseFlag)
 
 /-! ## The shift-erased child view -/

@@ -34,7 +34,7 @@ reflection); no `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Typed annotation joinability at a lambda eta root.**  If the eta source
 `lam domainAnn (app (weaken innerFunction) newestVar)` is grown-typed and the inner function

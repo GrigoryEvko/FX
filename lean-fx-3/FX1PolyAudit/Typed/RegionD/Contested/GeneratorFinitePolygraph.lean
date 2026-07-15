@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Generator.GeneratorFinitePolygraph
+import FX1Poly.Axis.Term.Generator.GeneratorFinitePolygraph
 
 /-! # FX1PolyAudit.Typed.RegionD.Contested.GeneratorFinitePolygraph — zero-axiom gate (REGION-D contested-module mirror, region-D restructure) -/
 

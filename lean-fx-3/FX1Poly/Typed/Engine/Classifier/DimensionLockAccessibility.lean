@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.Classifier.TypingContext
-import FX1Poly.Tier0.Term.Cell.RawCellCode
+import FX1Poly.Axis.Term.Cell.RawCellCode
 
 /-! # FX1Poly/Typed/DimensionLockAccessibility — the Fitch variable-accessibility discipline for the affine lock
 
@@ -53,7 +53,7 @@ Audit-gated in `FX1PolyAudit/`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- Decide whether the de Bruijn variable `index` may be used as a FIBRANT value in `context` under the Fitch
 affine-lock discipline: `true` iff the binding `index` resolves to is a plain `cons` (an ordinary variable),

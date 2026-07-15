@@ -1,6 +1,6 @@
 import FX1Poly.Core.Equality.Eta.EtaContractionNaturality
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
-import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Axis.Term.Rename.RawTermRenameAsSubst
 
 /-! # StepEtaTableSubstitution — ETA-T2: the relation closure
 
@@ -27,7 +27,7 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax (RawRenaming)
+open FX1Poly.Axis.Syntax (RawRenaming)
 
 /-! ## The mutual closure -/
 

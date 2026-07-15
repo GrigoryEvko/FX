@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Corpus.Faithfulness.NatElimFaithfulMul
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
@@ -57,7 +57,7 @@ the discharge chain is `IotaHeadStep.iotaNatElimSucc.toStep` + `rfl`-computing c
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **★ The typed 2-variable substitution lemma** (the Phase-Z substPair lemma).  A grown derivation
 under two binders — outer binder `outerType`, inner binder `innerType` (which may mention the outer

@@ -4,7 +4,7 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 /-! # FX1PolyAudit/TypeAxisLedger — audit record for the type-axis rungs (type-1 .. type-8)
 
 This file replaces the eight deleted `FX1Poly/Typed/Ledger/TypeAxis/Type{One..Eight}.lean` "ledger" modules
-and their eight `AuditTier0Type{One..Eight}.lean` gates.
+and their eight `AuditAxisType{One..Eight}.lean` gates.
 
 Honest accounting.  Those ledgers were NOT new mathematics.  Each "backed flip" was a `Bool := true` marker
 paired with a theorem `marker = true ∧ <conjunction of already-proven facts>`; the `= true` conjunct is `rfl`,

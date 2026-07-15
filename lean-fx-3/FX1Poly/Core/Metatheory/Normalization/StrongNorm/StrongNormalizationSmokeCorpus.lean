@@ -20,7 +20,7 @@ identity contractum is the argument itself by `subst0` on the bound variable).  
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Smoke: a variable cell is strongly normalizing.**  A variable is a normal form (no `Step` fires), so

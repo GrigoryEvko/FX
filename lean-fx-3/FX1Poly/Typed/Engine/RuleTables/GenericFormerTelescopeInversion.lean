@@ -17,7 +17,7 @@ strengthening master. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Generic grown former inversion, telescope-keeping**: a grown typing of a subject rooted at
 ANY generator carrying a formation rule yields a premise telescope over the subject's own

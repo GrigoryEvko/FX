@@ -58,7 +58,7 @@ A `Prop` definition plus a one-line reflexive smoke.  No `axiom`, `sorry`, `prop
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **★ The SN-only type-Conv-closure — a REFUTED over-approximation, NOT a sound residual.**  Reads: a type
 `Conv`-equal to a VALID type and itself STRONGLY NORMALIZING is a valid type.  This is FALSE (see the file

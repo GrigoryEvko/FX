@@ -20,7 +20,7 @@ Per-declaration audit-gated in
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-- **The native-only formation telescope.**  The children form a cumulative dependent telescope of TYPES
 at `levels`, each head typed by `HasTypeUnionNativeOnly` (the `ofGrown`-free judgment).  The native-only

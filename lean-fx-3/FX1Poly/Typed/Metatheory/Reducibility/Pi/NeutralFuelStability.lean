@@ -31,7 +31,7 @@ and at each target positive level, plus the existential repackaging of `IsReduci
 namespace FX1Poly.Typed
 
 open FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Fuel stability for neutral types** (the neutral arm of the #672 gate).  A weak-head-normal,

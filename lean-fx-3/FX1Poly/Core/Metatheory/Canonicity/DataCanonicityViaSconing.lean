@@ -45,7 +45,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **The GENERIC data-canonicity sconing witness (Path C), parametric in the value predicate.**
 Relative to any notion of well-typedness `isWellTyped` and any value predicate `isValue`, the data

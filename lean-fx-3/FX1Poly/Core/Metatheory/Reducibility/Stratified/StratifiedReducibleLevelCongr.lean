@@ -42,7 +42,7 @@ case via `and_congr_right` on the lower-existence equivalence, the others by rec
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Candidate-congruence of the reducibility step-functor under lower-existence-equivalence.**  If two lower

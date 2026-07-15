@@ -24,7 +24,7 @@ import FX1PolyAudit.Polygraph.Rewriting.WordSystems.WordProblem
 /-! # FX1PolyAudit.AuditOmegacE — aggregator over the per-kernel-module audit shards
 
 The omega-cE / Makkai word-problem leg, now mirrored one-file-per-kernel-module
-under `FX1PolyAudit/Tier0/OmegacE/...` (auto-discovered by the lakefile
+under `FX1PolyAudit/Axis/OmegacE/...` (auto-discovered by the lakefile
 `.submodules` glob, elaborating in parallel).  This aggregator re-imports them so
 `lake build FX1PolyAudit.AuditOmegacE` still pulls the whole word-problem gate
 set. -/

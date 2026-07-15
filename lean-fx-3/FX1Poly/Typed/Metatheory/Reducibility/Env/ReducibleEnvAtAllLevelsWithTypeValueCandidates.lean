@@ -34,7 +34,7 @@ environment lemmas.  The only rewrites are `subst_variableCell`, `TypingContext.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis.Syntax FX1Poly.Universe
 
 /-- A strengthened closing environment carrying:
 

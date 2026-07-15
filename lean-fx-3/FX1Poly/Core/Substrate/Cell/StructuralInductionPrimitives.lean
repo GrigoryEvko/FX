@@ -1,8 +1,8 @@
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedComposition
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedProjections
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Generator.GenAlgebra
-import FX1Poly.Tier0.Term.Core.RawTermNonVarReduces
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Generator.GenAlgebra
+import FX1Poly.Axis.Term.Core.RawTermNonVarReduces
 
 /-! # Foundation/PolyCell/Core/StructuralInductionPrimitives
    — building blocks for the structural induction over PolyCell
@@ -56,7 +56,7 @@ or direct hypothesis application.  Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Section 1 — Shape extraction from HasCertifiedCellDim0 -/
 
@@ -77,7 +77,7 @@ theorem HasCertifiedCellDim0.mkGen_shape
   | @gen _ generator payload children _ _ _ =>
     exact ⟨generator, payload, children, rfl⟩
 
-/-! ## Section 2 — Non-var fold reductions: see `Tier0.Syntax.RawTermNonVarReduces`
+/-! ## Section 2 — Non-var fold reductions: see `Axis.Syntax.RawTermNonVarReduces`
 
 `RawTerm.rename_nonVar_reduces` / `RawTerm.subst_nonVar_reduces` are pure
 de Bruijn-syntax facts; they moved down to the Tier-0 syntax substrate

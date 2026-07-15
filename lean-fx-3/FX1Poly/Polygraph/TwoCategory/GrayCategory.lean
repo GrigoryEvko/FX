@@ -12,7 +12,7 @@ what is deferred (non-trivial interchanger, Gray tensor product, GPS tricategory
 
 This is pure category theory over an ARBITRARY base 2-category — nothing here mentions the mode quiver.  The
 mode-axis specialisation — the free mode 1-category exhibited as a (strict) Gray-category — lives in
-`FX1Poly.Tier0.Mode.GrayCategory` and builds on this core.
+`FX1Poly.Axis.Mode.GrayCategory` and builds on this core.
 
 Zero external dependencies beyond the 2-category core.  Raw Lean 4 + Init.
 -/

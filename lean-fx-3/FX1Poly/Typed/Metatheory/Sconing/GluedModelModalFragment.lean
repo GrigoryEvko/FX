@@ -64,7 +64,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 open StepStar
 
 /-- **The one-child modality TYPE formers of the generator table**: the cohesive trio

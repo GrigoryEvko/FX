@@ -1,6 +1,6 @@
 import FX1Poly.Core.Fib.FibrationArchitecture
-import FX1Poly.Tier0.Mode.Transpension
-import FX1Poly.Tier0.Mode.MultiplierStructureClass
+import FX1Poly.Axis.Mode.Transpension
+import FX1Poly.Axis.Mode.MultiplierStructureClass
 
 /-! # FX1Poly/Core/Fib/CrossAxisCoherence — fib-4 substrate: the cross-axis right-adjoints + the transpension universal home
 
@@ -30,7 +30,7 @@ are deferred (`fxMode_hasTranspensionZooRecovery := false`).
 
 `fxFib_hasCrossAxisRightAdjointCoherence` STAYS `false`.  NOT done: (a) the per-operator zoo RECOVERIES — each
 of the eight as a CONCRETE transpension instance (`fxMode_hasTranspensionZooRecovery := false`, deferred even in
-Tier0/mode-11); (b) the affine multiplier's NON-trivial transpension instance (only the trivial
+Axis/mode-11); (b) the affine multiplier's NON-trivial transpension instance (only the trivial
 `identityTranspension` is shipped); (c) the cross-axis Beck–Chevalley coherence tying the per-axis adjoints
 through the transpension.  This file is fib-4 SUBSTRATE (the assembled status + the deferred-work map), not the
 flag flip.
@@ -43,7 +43,7 @@ the affine-multiplier classification.  No `axiom`, `sorry`, `propext`, `Quot.sou
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 
 /-- **★ fib-4 substrate: the three per-axis right-adjoints are all REALIZED.**  The fibred-Π right adjoint
 (fib-1, type ↠ context), the El reflection (fib-2, type ↔ term), and the mode fibration structure (fib-3,

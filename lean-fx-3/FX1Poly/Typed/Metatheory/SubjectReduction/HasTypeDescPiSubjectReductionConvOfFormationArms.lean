@@ -34,7 +34,7 @@ multi-fire mutual development.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **SR routing arm at an `ofFormation` subject.**  A formation-typed subject admits no `Step`
 (`HasTypeDesc.subjectAdmitsNoStep`: the formation engine types only normal forms), so any reduct claim follows

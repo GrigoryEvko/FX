@@ -649,7 +649,7 @@ at higher law count), plus the per-mechanism dependent `StrategyCertificate` rec
 ### (c) The EncodedConv question — ARGUED and DECIDED: STAYS BESPOKE-BY-DESIGN
 
 Question: does the word-level undecidability-ceiling lane (`EncodedConv` / `SemiThueReduction`,
-Tier0/.../UndecidabilityReduction.lean) migrate onto the table, or stay bespoke-by-design as the reduction artifact?
+Axis/.../UndecidabilityReduction.lean) migrate onto the table, or stay bespoke-by-design as the reduction artifact?
 
   * **For migration:** `EncodedConv` independently has EXACTLY the six-ctor universal shape (rule / whiskerLeft /
     whiskerRight / refl / symm / trans) that the r0 lock cited as CORROBORATING the generic design, so structurally

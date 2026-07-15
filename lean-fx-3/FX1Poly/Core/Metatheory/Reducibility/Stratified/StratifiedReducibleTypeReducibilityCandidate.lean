@@ -49,7 +49,7 @@ universe-nesting depth, so the level-0 degeneracy is never invoked.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The dependent arrow construction is a reducibility candidate (stratified).**  The verbatim port of

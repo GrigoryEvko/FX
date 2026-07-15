@@ -36,7 +36,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Re-type a FORMATION codomain under a `Conv`-stepped domain.**  If `codomainCode` is FORMATION-typed at a
 universe code under `cons domainCode`, and `domainCode` is `Conv`-equal to `domainCode'` (as a domain step

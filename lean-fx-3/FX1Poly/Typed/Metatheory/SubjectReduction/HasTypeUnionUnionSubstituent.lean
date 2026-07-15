@@ -45,7 +45,7 @@ binder-lift + `Conv.subst` + `RawTerm.subst0_subst_commute`.  No `axiom`, `sorry
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-! `HasTypeUnion.SubstUnionTyped` (the native substitution-context condition) + its one/two-binder lift
 API (`cons` / `consTwice`) now live upstream in `FX1Poly.Typed.Engine.Union.HasTypeUnionSubstUnionTyped`

@@ -24,8 +24,8 @@ import FX1PolyAudit.Core.Rewriting.Reduction.WeakHead.WeakHeadStepRenameReflect
 import FX1PolyAudit.Core.Substrate.Certifier.HorizontalCompositeAdmission
 import FX1PolyAudit.Core.Substrate.Neutral.NeutralStepClosure
 import FX1PolyAudit.Core.Substrate.Neutral.NeutralTermRename
-import FX1PolyAudit.Tier0.Term.Core.RawTermFoldNonVarCommute
-import FX1PolyAudit.Tier0.Term.Generator.GeneratorCountPinCoreCellsAudit
+import FX1PolyAudit.Axis.Term.Core.RawTermFoldNonVarCommute
+import FX1PolyAudit.Axis.Term.Generator.GeneratorCountPinCoreCellsAudit
 import FX1PolyAudit.Core.Substrate.Neutral.NeutralSubstReflection
 import FX1PolyAudit.Core.Substrate.Profile.ProtocolCellInhabitance
 import FX1PolyAudit.Core.Substrate.Univalence.DefUnivSnResolution

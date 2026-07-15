@@ -1,4 +1,4 @@
-/-! # Tier0/Term — Squier coherence: the proof-relevant rewriting 2-category (term-4)
+/-! # Axis/Term — Squier coherence: the proof-relevant rewriting 2-category (term-4)
 
 `term-2` built the dim-1 rewriting layer as a `Prop`-valued PREORDER (a thin category — all parallel
 reduction paths collapse by proof irrelevance), and flagged that the proof-RELEVANT 1-cells, with
@@ -37,7 +37,7 @@ substrate it rests on.
 Two inductives, structural recursion (`comp`) + `rfl`/structural-induction category laws (no
 `List.append_assoc`, which leaks `propext` in this Init-only setting), and induction over the homotopy
 congruence.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration gated in `FX1PolyAudit/AuditTier0TermSquier.lean`.
+Per-declaration gated in `FX1PolyAudit/AuditAxisTermSquier.lean`.
 -/
 
 namespace FX1Poly.Core

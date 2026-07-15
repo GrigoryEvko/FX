@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Universe.UniverseTypingSuccessor
-import FX1Poly.Tier0.Type.Level.LevelExprSimplify
+import FX1Poly.Axis.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Typed/UniverseClassificationAcyclic
     — universe classification is irreflexive at EVERY length (no Girard cycle of any length, §27.2 / §1.4)

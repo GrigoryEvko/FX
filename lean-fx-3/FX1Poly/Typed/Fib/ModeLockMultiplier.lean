@@ -1,15 +1,15 @@
-import FX1Poly.Tier0.Mode.MultiplierEndofunctor
+import FX1Poly.Axis.Mode.MultiplierEndofunctor
 import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 
 /-! # FX1Poly/Typed/Fib/ModeLockMultiplier — fib-3a: rewire Core onto the mode axis — the affine dimension lock IS a mode-12 UNPOINTABLE multiplier
 
-The MODE axis (`Tier0/Mode`, `ModeOmega` / the `Multiplier` endofunctor) was ORPHANED from the kernel: zero
+The MODE axis (`Axis/Mode`, `ModeOmega` / the `Multiplier` endofunctor) was ORPHANED from the kernel: zero
 engine files imported it, and the kernel's affine dimension LOCK (`TypingContext.lockCons` + the bespoke
 `ObligationModality` in `DimensionLockAccessibility`) asserted its discipline STRUCTURALLY — the locked
 dimension is "not fibrantly accessible" (`dimensionIsNotAccessibleFibrantly`, a `rfl`-false `Bool` arm) — with
 NO link to the real mode theory.
 
-This file performs the first genuine `Core → Tier0/Mode` REWIRE (mirroring `fib-1c`'s context rewire): it
+This file performs the first genuine `Core → Axis/Mode` REWIRE (mirroring `fib-1c`'s context rewire): it
 imports the mode axis and pins the affine dimension lock's multiplier to the mode-12 VOID multiplier, whose
 dimension is empty — UNPOINTABLE (`voidMultiplier.dimension → False`, no global point).  Unpointedness is the
 mode-theoretic JUSTIFICATION for the kernel's structural fibrant-inaccessibility: a fibrant (global-point)
@@ -37,7 +37,7 @@ inaccessibility from unpointedness via the semantic bridge, retire the bespoke `
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Typed FX1Poly.Universe
 
 /-- The affine dimension LOCK's mode-axis multiplier: the mode-12 VOID multiplier, whose dimension is empty —
 UNPOINTABLE (no global point).  The mode-theoretic carrier of the kernel's affine dimension lock; the correct

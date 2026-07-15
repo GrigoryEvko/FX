@@ -15,7 +15,7 @@ re-thread of the pinned-reflection master arms over the flag-coherent condition.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The pin selects the caller's pair**: a classifier pinned to a renamed base, with the base
 valid at some source pair and the classifier valid at the caller's target pair, forces the two

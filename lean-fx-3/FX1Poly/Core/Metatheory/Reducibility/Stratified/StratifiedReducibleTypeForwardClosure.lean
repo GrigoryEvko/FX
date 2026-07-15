@@ -35,7 +35,7 @@ by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Weak-head-normal root stability along `StepStar`.**  A weak-head-NORMAL term stays weak-head-normal
 under any multi-step reduction, AND its root generator is preserved.  Weak-head-normality descends

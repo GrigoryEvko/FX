@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.Rewriting.Coherence.SquierCoherence
 
-/-! # Tier0/Term — the polygraphic resolution + 𝔽₂ polygraphic homology (term-5)
+/-! # Axis/Term — the polygraphic resolution + 𝔽₂ polygraphic homology (term-5)
 
 `term-4` shipped Squier coherence: the proof-relevant rewriting 2-category and the diamonds as a
 homotopy basis.  `term-5` goes one dimension further — the (∞)-polygraphic resolution (an acyclic
@@ -49,7 +49,7 @@ polygraphic chain complex over the 205-generator table (the abelianization of `f
 A record bundle + `Prop` definitions, `Bool` case-analysis for the 𝔽₂ laws (`add_self`/`add_zero`), `rfl`
 for the trivial/`Unit`-eta witness, `Bool.noConfusion` for the non-vanishing witness, and `term-4`'s
 `coherence` for the dim-2 connection.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTier0TermPolygraphicResolution.lean`.
+`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditAxisTermPolygraphicResolution.lean`.
 -/
 
 namespace FX1Poly.Core

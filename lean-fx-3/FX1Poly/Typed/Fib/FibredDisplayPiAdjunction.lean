@@ -5,7 +5,7 @@ import FX1Poly.Typed.Fib.ContextDisplayPi
 
 ## Why this is NOT a `ContextLock`
 
-`Tier0/Context/ModalLock.lean` ships `fxWeakeningLock K : RawEndofunctor fxBaseSubstCategory` (`A ↦ A + K`) as
+`Axis/Context/ModalLock.lean` ships `fxWeakeningLock K : RawEndofunctor fxBaseSubstCategory` (`A ↦ A + K`) as
 a lock CARRIER ONLY, by explicit design (its docstring, `:959-964`): `(− + K)` has NO endo-right-adjoint in
 the bare context category, so it is deliberately NOT bundled into a `ContextLock`.  A `ContextLock` demands an
 `IsEndoAdjunction lock dra` — a STRICT, on-the-nose natural bijection of the BASE category's morphisms
@@ -42,7 +42,7 @@ Field-by-field application of the four shipped ContextDisplayPi theorems.  No `a
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Tier0.Syntax FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Axis.Syntax FX1Poly.Typed FX1Poly.Universe
 
 /-- ★ **The honest WEAK fibred-Π adjunction bundle.**  Over a lock-free context `Γ` and a display domain
 `A = domainCode`, the four shipped facts that make the kernel's `lam`/`app` the fibred-Π right adjoint to
@@ -54,7 +54,7 @@ display-map reindexing `Tm(Γ.A, B) ≅ Tm(Γ, Π_A B)`:
   * `betaTriangle` — backward ∘ forward = id up to `Conv` (`fibredPiBetaTriangle`);
   * `etaTriangle` — forward ∘ backward = id in `StepOver fxBundle` (`fibredPiEtaTriangle`).
 
-This is the WEAK, up-to-`Conv` analogue of `Tier0/Context/ModalLock.ContextLock`; it does NOT provide an
+This is the WEAK, up-to-`Conv` analogue of `Axis/Context/ModalLock.ContextLock`; it does NOT provide an
 `IsEndoAdjunction` over `fxBaseSubstCategory` and hence does NOT promote `fxWeakeningLock` to a `ContextLock`
 (see the file header). -/
 structure FibredDisplayPiAdjunction {profile : PolyProfile} {scope : Nat}

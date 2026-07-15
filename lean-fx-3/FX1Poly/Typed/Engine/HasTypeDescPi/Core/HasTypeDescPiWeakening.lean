@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
-import FX1Poly.Tier0.Term.Core.RawTermFresh
+import FX1Poly.Axis.Term.Core.RawTermFresh
 
 /-! # FX1Poly/Typed/HasTypeDescPiWeakening — INTRINSIC renaming/weakening (P6) for the GROWN
     engine `HasTypeDescPi` (formation + Π-intro/elim): its first fibration leg (cartesian lift).
@@ -53,7 +53,7 @@ Self-recursion + `HasTypeDesc.renameRespectingContext` + `Conv.rename` + the
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- Renaming distributes over the Church-style `lamCell`: the domain annotation (child shift `0`)
 is renamed directly, the body (child shift `1`) is renamed under one lift — same `[0, 1]` shape as

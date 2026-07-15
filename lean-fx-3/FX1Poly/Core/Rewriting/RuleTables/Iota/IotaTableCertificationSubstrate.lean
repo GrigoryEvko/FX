@@ -1,9 +1,9 @@
 import FX1Poly.Core.Substrate.Certifier.CertifiedTermSpineProjections
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
-import FX1Poly.Tier0.Term.Generator.GeneratorChildSpecsDim0
+import FX1Poly.Axis.Term.Generator.GeneratorChildSpecsDim0
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationMutual
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedIntros
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
+import FX1Poly.Axis.Term.Subst.RawTermSubstPair
 
 /-! # FX1Poly/Core/IotaTableCertificationSubstrate — IOTA-T3 bricks
 
@@ -40,7 +40,7 @@ declaration in `FX1PolyAudit/AuditIotaTableCertification.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The dim-0 boundary collapse, factored -/
 

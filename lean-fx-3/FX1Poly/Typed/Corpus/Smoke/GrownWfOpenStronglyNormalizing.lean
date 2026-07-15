@@ -28,7 +28,7 @@ Same zero-axiom discipline as the formation versions: SUM bounds via `Nat.le_add
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The reducible closing environment for a GROWN-well-formed context.**  Mirror of

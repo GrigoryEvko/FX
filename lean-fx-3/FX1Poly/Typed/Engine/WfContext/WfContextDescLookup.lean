@@ -24,7 +24,7 @@ Structural context induction + `HasTypeDesc.weakenUnderBinding` (formation renam
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- `IsTypeDesc` survives a binding extension: if `classifier` is a formation type in `context`, its weakening is
 a formation type in `context.cons newBinding`.  The formation weakening of the universe-typing witness (the

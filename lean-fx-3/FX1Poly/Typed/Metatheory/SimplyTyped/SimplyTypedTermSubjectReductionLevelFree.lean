@@ -4,7 +4,7 @@ import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermSubstLevelFree
 import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedNormalForm
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeShape
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Rewriting.Normalize.Normalize
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRenameReflectAssembly
@@ -46,7 +46,7 @@ per declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **A reducible type expression is a step-normal form.**  `IsReducibleTypeExprLF` codes are built only
 from `universeCodeCell` leaves and `piTyCodeCell` arrows over (weakened) reducible codes — there is no

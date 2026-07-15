@@ -33,7 +33,7 @@ over the `subst0`-argument `StepStar` (`Step.subst0Argument`).  No `axiom`, `sor
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- The DEPENDENT function-space reducibility predicate: `function` is dependent-arrow-reducible when

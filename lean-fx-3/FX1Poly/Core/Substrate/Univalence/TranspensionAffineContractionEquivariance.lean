@@ -45,7 +45,7 @@ Zero-axiom; audit-gated in
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax (RawRenaming)
+open FX1Poly.Axis.Syntax (RawRenaming)
 
 /-- ★ **TRANSP-DSL GO (subst half)** — the transpension/gel-β affine
 contraction (`strengthenBy? 1`, drop one fresh shape binder) commutes

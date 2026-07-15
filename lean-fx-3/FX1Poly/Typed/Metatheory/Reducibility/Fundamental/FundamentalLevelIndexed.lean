@@ -55,7 +55,7 @@ Gated per declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The decoupled-level fundamental-theorem conclusion.**  Under a closing substitution and a
 per-variable-level reducible environment (`ReducibleEnvVec contextLevels`, each variable at its OWN rung

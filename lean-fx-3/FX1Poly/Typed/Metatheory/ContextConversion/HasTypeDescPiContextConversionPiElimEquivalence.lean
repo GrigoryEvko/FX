@@ -57,7 +57,7 @@ audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **★ The reverse equivalence: `piElimArm → residual`, with NO well-formedness premise.**  The residual
 transports a Π-CODE's universe typing; `convContextOfPiElimArm piElimArm` does exactly that (up to a `Conv`-equal

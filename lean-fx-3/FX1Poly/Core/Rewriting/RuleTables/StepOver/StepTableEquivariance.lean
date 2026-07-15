@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableEquivariance
-import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Axis.Term.Rename.RawTermRenameAsSubst
 
 /-! # FX1Poly/Core/StepTableEquivariance — substitution closure of the table relation
 
@@ -34,7 +34,7 @@ derivation.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Firing-dispatcher naturality -/
 

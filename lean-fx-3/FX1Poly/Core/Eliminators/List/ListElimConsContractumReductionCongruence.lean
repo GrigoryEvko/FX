@@ -47,7 +47,7 @@ or `omega`.  Per-declaration gated in `FX1PolyAudit/`.
 namespace FX1Poly.Core
 namespace StepStar
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Motive-position chain congruence for `listElim`.**  A reduction chain in the motive (the first,
 binder-shifted `scope + 1` child) lifts to the whole `listElim` cell, the nil/cons branches + scrutinee fixed.

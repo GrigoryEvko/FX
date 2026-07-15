@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedIntros
-import FX1Poly.Tier0.Term.Rename.RawTermRename
-import FX1Poly.Tier0.Term.Subst.RawTermSubst
+import FX1Poly.Axis.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Subst.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/SubstPreservationProbes — rename/subst leaf probes
 
@@ -66,7 +66,7 @@ generators are handled there.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Section 1 — rename reduces on nullary leaves -/
 

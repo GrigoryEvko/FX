@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
-import FX1Poly.Tier0.Term.Subst.RawTermSubstIdentity
+import FX1Poly.Axis.Term.Subst.RawTermSubstIdentity
 
 /-! # FX1Poly/Typed/DenoteKeyedClosedMember
     — closed-term reducibility from the denote fundamental-theorem conclusion (route-E / SN-D6 precursor toward SN-043)
@@ -30,7 +30,7 @@ Instantiate the conclusion at `RawTermSubst.identity` and `ReducibleEnvAtDenote.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Closed-term reducibility from the empty-context fundamental-theorem conclusion.**  A closed subject
 satisfying the denote fundamental-theorem conclusion at the empty context (and classifier) is a denote-reducible

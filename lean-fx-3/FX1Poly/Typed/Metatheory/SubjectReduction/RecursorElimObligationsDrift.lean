@@ -31,7 +31,7 @@ audit-gated. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **A universe-code membership survives one reduction step at its SAME universe code.**  Given
 `subject : universeCode level flag` and `subject ⟶ subjectAfter`, single-step subject reduction re-types the reduct

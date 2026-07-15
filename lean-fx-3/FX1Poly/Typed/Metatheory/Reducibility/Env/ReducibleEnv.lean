@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Members.ReducibleMember
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Typed.Engine.Classifier.TypingContext
 
 /-! # FX1Poly/Typed/ReducibleEnv
@@ -45,7 +45,7 @@ the propext-free structure match) whose lookups are rewritten by `TypingContext.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- The reducible closing-substitution environment: `substitution` sends each context variable to a
 reducible member of that variable's looked-up type, itself closed by the same substitution. -/

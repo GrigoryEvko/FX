@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.Marked.MarkedComplicial
 
-/-! # FX1PolyAudit/AuditTier0TermMarkedComplicial — zero-axiom gate for term-18 (marked/complicial)
+/-! # FX1PolyAudit/AuditAxisTermMarkedComplicial — zero-axiom gate for term-18 (marked/complicial)
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/MarkedComplicial.lean`: the dimension-1
+Per-declaration zero-axiom gate for `FX1Poly/Axis/Term/Rewrite/MarkedComplicial.lean`: the dimension-1
 equivalence marking (`IsRewriteEquivalence`), the stratification axioms (`rewriteEquivalence_nil` /
 `rewriteEquivalence_symm` / `rewriteEquivalence_comp`), 2-triviality (`rewriteOmega_twoTrivial`), and the
 packaged marked rewriting ω-category (`RewriteMarking` / `equivalenceMarking`).

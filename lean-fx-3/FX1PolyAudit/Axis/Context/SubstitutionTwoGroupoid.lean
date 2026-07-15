@@ -1,0 +1,49 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Axis.Context.SubstitutionTwoGroupoid
+
+/-! # FX1PolyAudit/AuditAxisContextSubstitutionTwoGroupoid — zero-axiom gate for context-20
+
+Per-declaration zero-axiom gate for `context-20`'s context-side deliverable
+(`FX1Poly/Axis/Context/SubstitutionTwoGroupoid.lean`): the dim-2 homotopy layer of the substitution
+category — the equality-2-cell (2,1)-category structure + the substitution-specific characterization of
+2-cells as pointwise lookup-homotopies.
+
+  * `RawCategory.whiskerLeft` / `whiskerRight` / `horizontalCompose` — whiskering + Godement horizontal
+    composition of 2-cells, generic over any `RawCategory`;
+  * `RawCategory.whiskerLeft_id` / `whiskerRight_id` / `whiskerLeft_vcomp` / `whiskerRight_vcomp` — the
+    whisker functoriality laws;
+  * `RawCategory.whisker_exchange` / `horizontalCompose_eq_whiskers` — the exchange law + the whisker
+    decomposition of `hcomp`;
+  * `RawCategory.interchange` — ★ THE INTERCHANGE LAW (the defining (2,1)-category coherence);
+  * `SubstVec.twoCellOfPointwise` / `pointwiseOfTwoCell` — ★ a 2-cell IS a pointwise lookup-homotopy
+    (`ext` ↔ `congrArg`);
+  * `FxSubstitutionTwoGroupoid` / `fxSubstitutionTwoGroupoid` — the assembled witness (invertibility +
+    interchange + the pointwise characterization);
+  * `fxSubstitutionTwoGroupoid_higherCellsAreContentful` — the honesty marker (`= false`); the dim-2
+    layer is strict/discrete (set-level base, 1-truncated ω-groupoid), contentful higher cells are the
+    `×type` identity layer;
+  * `fxSubstitutionTwoGroupoid_whiskerLeft_id_smoke` — left-whiskering the identity 2-cell is identity.
+
+Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerLeft
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerRight
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.horizontalCompose
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerLeft_id
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerRight_id
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerLeft_vcomp
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerRight_vcomp
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whisker_exchange
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.horizontalCompose_eq_whiskers
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.interchange
+#assert_no_axioms FX1Poly.Axis.SubstVec.twoCellOfPointwise
+#assert_no_axioms FX1Poly.Axis.SubstVec.pointwiseOfTwoCell
+#assert_no_axioms FX1Poly.Axis.FxSubstitutionTwoGroupoid
+#assert_no_axioms FX1Poly.Axis.fxSubstitutionTwoGroupoid
+#assert_no_axioms FX1Poly.Axis.fxSubstitutionTwoGroupoid_higherCellsAreContentful
+#assert_no_axioms FX1Poly.Axis.fxSubstitutionTwoGroupoid_whiskerLeft_id_smoke
+
+end FX1PolyAudit

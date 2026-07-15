@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.Model
 
-/-! # FX1PolyAudit/AuditTier0ModeFreeTwoCell — zero-axiom gate for mode-3's free 2-cell model
+/-! # FX1PolyAudit/AuditAxisModeFreeTwoCell — zero-axiom gate for mode-3's free 2-cell model
 
-Per-declaration zero-axiom gate for `mode-3`'s first deliverable (`FX1Poly/Tier0/Mode/FreeTwoCellModel.lean`):
+Per-declaration zero-axiom gate for `mode-3`'s first deliverable (`FX1Poly/Axis/Mode/FreeTwoCellModel.lean`):
 the FREE 2-CELL TERM MODEL over a `ModeSignature` (`RawTwoCellExpr`, the five-generator indexed inductive of
 2-cell expressions between parallel 1-cells), its structural `size` measure, the DERIVED horizontal composition
 (`hcomp`, the Godement product), the generator embedding of the adjunction seed's unit / counit, a

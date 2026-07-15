@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRename
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
 
 /-! # Foundation/PolyCell/Core/ConvSubstRename
    — Conv preservation under substitution + renaming + β-redex shape
@@ -88,9 +88,9 @@ Conv. -/
 
 namespace FX1Poly.Core
 
--- `RawRenaming` lives in `FX1Poly.Tier0.Syntax`, which does not enclose
+-- `RawRenaming` lives in `FX1Poly.Axis.Syntax`, which does not enclose
 -- `FX1Poly.Core`, so open it explicitly.
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Pointwise StepStar lift to singleton substitutions.**
 

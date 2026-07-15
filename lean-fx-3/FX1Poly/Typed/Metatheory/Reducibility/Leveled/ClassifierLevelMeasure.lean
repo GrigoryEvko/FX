@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Leveled.ClassifierLevelDiagnosis
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleTypeNeutral
-import FX1Poly.Tier0.Type.Level.LevelExprSimplify
+import FX1Poly.Axis.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Typed/ClassifierLevelMeasure
     — SN-003: the predicative well-founded measure for classifier-level reducibility + non-degenerate base
@@ -42,7 +42,7 @@ per declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- `valueA ≤ levelMax valueA valueB` for the custom structural `LevelExpr.levelMax` (`= max`), by

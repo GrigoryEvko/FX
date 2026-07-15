@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstCanonicityExtraction
+import FX1Poly.Axis.Context.Instances.Subst.FxBaseSubstCanonicityExtraction
 import FX1Poly.Core.Rewriting.Normalize.NormalizeMeta
 import FX1Poly.Typed.Metatheory.Sconing.GluedModelTypeFormers
 import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
@@ -55,7 +55,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 open StepStar
 
 /-- **The singleton-collapse instance**: a fully lawful `NormalizationExtraction` whose normal-form

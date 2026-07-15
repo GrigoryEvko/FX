@@ -23,8 +23,8 @@ import FX1PolyAudit.Dimensions.Security.UsageDiscipline
 import FX1PolyAudit.Dimensions.Semiring.GradeSemiringFunctorial
 import FX1PolyAudit.Dimensions.Semiring.GradeSemiringMonoidal
 import FX1PolyAudit.Dimensions.Semiring.GradeSemiringProduct
-import FX1PolyAudit.Tier0.Mode.GradeAlgebra.ResourceGraded
-import FX1PolyAudit.Tier0.Mode.GradeAlgebra.ResourceGradedMore
+import FX1PolyAudit.Axis.Mode.GradeAlgebra.ResourceGraded
+import FX1PolyAudit.Axis.Mode.GradeAlgebra.ResourceGradedMore
 import FX1PolyAudit.Dimensions.Graded.GradeErasureGeneric
 import FX1PolyAudit.Dimensions.Graded.GradedGradeExactness
 import FX1PolyAudit.Dimensions.Graded.GradedSubstitutionGeneric
@@ -35,7 +35,7 @@ import FX1PolyAudit.Dimensions.Lattice.BoundedJoinSemilatticeUniversal
 import FX1PolyAudit.Dimensions.Lattice.OverflowLatticeDimension
 import FX1PolyAudit.Dimensions.Semiring.ComplexitySemiring
 import FX1PolyAudit.Dimensions.Semiring.UnifiedGradeMonoid
-import FX1PolyAudit.Tier0.Mode.GradeAlgebra.EffectLatticeClassification
+import FX1PolyAudit.Axis.Mode.GradeAlgebra.EffectLatticeClassification
 import FX1PolyAudit.Dimensions.Graded.GradedBinaryParametricity
 import FX1PolyAudit.Dimensions.Graded.GradedCompositionGeneric
 import FX1PolyAudit.Dimensions.Graded.GradedFundamentalTheorem

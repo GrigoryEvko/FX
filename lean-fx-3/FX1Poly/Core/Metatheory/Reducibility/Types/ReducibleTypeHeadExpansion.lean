@@ -28,7 +28,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Every dependent-reducible type's candidate is head-expansion-closed.**  By induction: a

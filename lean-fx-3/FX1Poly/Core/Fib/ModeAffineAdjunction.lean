@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjointStrings
-import FX1Poly.Tier0.Mode.Mode
+import FX1Poly.Axis.Mode.Mode
 
 /-! # FX1Poly/Core/Fib/ModeAffineAdjunction — A1-MODE-AFFINE: the affine dimension modality μ_affine ⊣ μ_affine†
 
@@ -43,7 +43,7 @@ Definitions naming the seed's modalities + a re-export of mode-4's `adjunctionSe
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 open FX1Poly.Polygraph
 
 /-- **★ The sinister (left) affine dimension modality `μ_affine`** — the left modality `base ⟶ tip` of the

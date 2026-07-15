@@ -32,7 +32,7 @@ in `FX1PolyAudit/Typed/Engine/Union/RawTermMorphismFormationObligations.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- ★ **The flat-family obligation push, generic in the morphism.**  The single content
 behind `flatFormationObligations_pushSubst` / `flatFormationObligations_pushRename`:

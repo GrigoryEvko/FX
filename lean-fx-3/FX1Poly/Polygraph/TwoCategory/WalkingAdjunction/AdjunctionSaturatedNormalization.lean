@@ -1,7 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTriangleObstruction
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.StrongNormalization
 
-/-! # FX1Poly/Tier0/Mode/AdjunctionSaturatedNormalization
+/-! # FX1Poly/Axis/Mode/AdjunctionSaturatedNormalization
     — the KB-completed walking-adjunction rewrite terminates UNCONDITIONALLY (structural floor discharged, fib-3 dim-2)
 
 `AdjunctionTriangleObstruction` ships the Knuth–Bendix completion of the walking-adjunction word problem: the two

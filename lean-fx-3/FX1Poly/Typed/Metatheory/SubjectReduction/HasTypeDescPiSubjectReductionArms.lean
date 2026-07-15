@@ -32,7 +32,7 @@ with a GROWN codomain needs that; the formation-codomain former case is already 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **SR routing arm at a λ.**  A `Step (lamCell body) reduct` is necessarily body congruence (a λ heads no
 redex), so — given the body's SR (`bodyPreserves`) — `reduct` is typed at the same classifier through

@@ -51,7 +51,7 @@ normalization).  No induction, no `funext`.  No `axiom`, `sorry`, `propext`, `Qu
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax StepStar
+open FX1Poly.Axis.Syntax StepStar
 
 /-- **The weak-normalization predicate.**  A term `reachesStepNormalForm` when it `StepStar`-reduces to a
 structural normal form — the extraction target of the normalization sconing witness. -/

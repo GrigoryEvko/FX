@@ -46,7 +46,7 @@ Three direct `ValidTyping` constructor applications wrapped in existentials; no 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Leveling-bridge var arm.**  A variable cell bridges to `ValidTyping` at its OWN context level
 (`subjectLevel := contextLevels index`), unconditionally — the off-by-one-free var leg (SN-024). -/

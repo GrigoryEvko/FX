@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
-import FX1Poly.Tier0.Term.Generator.GeneratorChildSpecsDim0
+import FX1Poly.Axis.Term.Generator.GeneratorChildSpecsDim0
 
 /-! # Foundation/PolyCell/Core/CellNonVarStepSubstituter
    — abstract non-recursive cell substituter step (subst-direction sibling)
@@ -57,7 +57,7 @@ Both helpers compose `subst_nonVar_reduces`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Cell-level subst step for the non-var case.**
 

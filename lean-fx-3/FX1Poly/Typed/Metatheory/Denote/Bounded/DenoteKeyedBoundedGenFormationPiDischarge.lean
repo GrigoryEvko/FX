@@ -53,7 +53,7 @@ routes through `fundamentalGenFormationPiAtBounded` with the three premises supp
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **THE PAYOFF — the non-uniform member discharge via free bounded cumulativity.**  `Π domain. codomain` is a

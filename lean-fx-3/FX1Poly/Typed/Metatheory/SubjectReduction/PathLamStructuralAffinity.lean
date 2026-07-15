@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionGenericVariableInversion
 import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
-import FX1Poly.Tier0.Term.Rename.RawTermWeaken
+import FX1Poly.Axis.Term.Rename.RawTermWeaken
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/PathLamStructuralAffinity — the structural-affinity theorem
 

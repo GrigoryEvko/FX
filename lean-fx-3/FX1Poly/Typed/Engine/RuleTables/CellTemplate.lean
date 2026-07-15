@@ -1,6 +1,6 @@
-import FX1Poly.Tier0.Term.Generator.GeneratorCore
-import FX1Poly.Tier0.Type.Level.LevelExpr
-import FX1Poly.Tier0.Type.Universe.UniverseFlag
+import FX1Poly.Axis.Term.Generator.GeneratorCore
+import FX1Poly.Axis.Type.Level.LevelExpr
+import FX1Poly.Axis.Type.Universe.UniverseFlag
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 import FX1Poly.Typed.Cell.NatElimDependentSuccType
@@ -49,7 +49,7 @@ where it is consumed).  Per-declaration audit-gated. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- A reference to one of the typing cell's own children (the rule's `args`) or to a derivation-chosen
 type-index `param`.  Positional, never by name — the args/params split mirrors the `ElimRule`/`IntroRule`

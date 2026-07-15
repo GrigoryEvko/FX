@@ -40,7 +40,7 @@ candidate's `closedUnderStep`.  No induction, no `axiom`, `sorry`, `propext`, `Q
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- The dependent-arrow candidate produced by `ReducibleType.piType`: a function is reducible when it

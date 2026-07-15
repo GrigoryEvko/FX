@@ -1,7 +1,7 @@
 import FX1PolyAudit.AuditGen
 import FX1Poly.Core.Substrate.Profile.PolyProfile
-import FX1Poly.Tier0.Context.InternalSconing
-import FX1Poly.Tier0.Context.FireTriangle
+import FX1Poly.Axis.Context.InternalSconing
+import FX1Poly.Axis.Context.FireTriangle
 import FX1Poly.Extension.ProfileExtension
 import FX1Poly.Extension.AdmissibleProfileTensor
 import FX1Poly.Extension.FxWithEtaCertifier
@@ -26,7 +26,7 @@ import FX1PolyAudit.STC.FxIndependenceBoundary
 import FX1PolyAudit.STC.FxLogicalRelation
 import FX1PolyAudit.STC.FxNormalization
 import FX1PolyAudit.STC.Modalities
-import FX1PolyAudit.Tier0.Context.AxisObligation
+import FX1PolyAudit.Axis.Context.AxisObligation
 
 /-! # FX1PolyAudit/AuditProfile — region-D aggregator + namespace sweeps (restructured)
 
@@ -47,8 +47,8 @@ namespace FX1PolyAudit
 #assert_namespace_min_count FX1Poly.SSC 30
 #audit_namespace FX1Poly.STC
 #assert_namespace_min_count FX1Poly.STC 95
-#audit_namespace FX1Poly.Tier0
-#assert_namespace_min_count FX1Poly.Tier0 439
+#audit_namespace FX1Poly.Axis
+#assert_namespace_min_count FX1Poly.Axis 439
 #audit_namespace FX1Poly.Extension
 #assert_namespace_min_count FX1Poly.Extension 197
 

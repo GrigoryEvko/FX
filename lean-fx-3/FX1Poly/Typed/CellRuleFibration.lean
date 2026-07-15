@@ -10,7 +10,7 @@ seven `CellSort`s — `context · type · term · mode · effect · grade · pro
 a cell can live in.
 
 The generic machinery — the bundle structure, the per-axis `lookup`, the decidable `inhabits` test,
-and the per-cell / per-roster orthogonality certificates — lives ONCE in `FX1Poly.Tier0.RuleFibration`
+and the per-cell / per-roster orthogonality certificates — lives ONCE in `FX1Poly.Axis.RuleFibration`
 (index-abstract) and is instantiated at the kernel's own axes/heads by `FX1Poly.Core.CellRuleBundle`
 (`= RuleFibration CellSort Generator payload`).  This file does NOT re-roll any of that; it adds only
 what is FX-specific: the rule-payload family and the wiring of the `.type` axis to the typing-row
@@ -24,7 +24,7 @@ fold in (`.grade` ← the `HasGradeOver` semiring rules, `.term` ← the `StepOv
 lookup/inhabitation/orthogonality, no new machinery.
 
 Zero-axiom: a sort-indexed payload family, one structure instance, and `rfl`/`decide` facts over the
-generator roster (the substrate's own zero-axiom proofs are gated alongside Tier0/Core).  Audit-gated
+generator roster (the substrate's own zero-axiom proofs are gated alongside Axis/Core).  Audit-gated
 in `FX1PolyAudit/AuditCellRuleFibration.lean`. -/
 
 namespace FX1Poly.Typed
@@ -52,7 +52,7 @@ def fxCellPayload : CellRulePayloadFamily
   | .grade => PEmpty
   | .protocol => PEmpty
 
-/-- ★ **The FX cell-rule fibration** — the `Core.CellRuleBundle` (= the Tier0 `RuleFibration` at the
+/-- ★ **The FX cell-rule fibration** — the `Core.CellRuleBundle` (= the Axis `RuleFibration` at the
 seven `CellSort` axes and the `Generator` heads) at the FX payload.  The `.type` axis is
 `typingRowsOf fxTypingBundle` — the type concept piped through the generator, exactly the TYTAB
 lookup.  The other axes are honestly empty here (their rules live in their own substrates for now).

@@ -34,7 +34,7 @@ Induction on the `StepStar` chain; each leading step both preserves weak-head-no
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **A weak-head-normal term keeps its root generator along `StepStar`.**  If `start` admits no weak-head
 step and reduces (in any number of steps) to `finish`, then `start` and `finish` share a root generator —

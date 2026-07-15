@@ -1,10 +1,10 @@
-import FX1Poly.Tier0.Type.TypeAxis
+import FX1Poly.Axis.Type.TypeAxis
 import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/Fib/UniverseCodeBridge — fib-2a: the type ↔ term universe-code bridge
 
 The first concrete fib-2 gluing (the `type ↔ term` connection point of the fib-0 design-lock).  The type axis
-(`Tier0/Type`) packages the universe as a STANDALONE Tarski structure whose codes are the abstract carrier
+(`Axis/Type`) packages the universe as a STANDALONE Tarski structure whose codes are the abstract carrier
 `StandaloneTarskiUniverse.Code`; the FX witness pins that carrier to `UniverseCode = { level : LevelExpr,
 flag : UniverseFlag }`.  The running kernel represents a universe AS A TERM: `universeCodeCell levelExpr flag =
 .mkGen .gen_universeCode (levelExpr, flag) .childNil`, backed by the generator `gen_universeCode` whose payload
@@ -27,7 +27,7 @@ eta + the `fxTarskiUniverse.successor` projection).  No term-head partial match,
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Typed FX1Poly.Universe
 
 /-- **The forward bridge: a type-axis universe code becomes the kernel's term-level universe cell.**  Maps the
 standalone Tarski code `{ level, flag }` to `universeCodeCell level flag`, the `.type`-sorted kernel term. -/

@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Mode.Mode
+import FX1Poly.Axis.Mode.Mode
 import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 
 /-! # FX1Poly/Typed/Fib/ModeLockPath — fib-3b: the bespoke ObligationModality as a mode-axis ModalityPath
@@ -29,7 +29,7 @@ Per-declaration audit-gated in `FX1PolyAudit/`. -/
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Core
+open FX1Poly.Axis FX1Poly.Typed FX1Poly.Core
 open FX1Poly.Polygraph
 
 /-- The minimal POLYGRAPH presentation of the affine dimension modality: ONE mode (the dimension mode) with ONE

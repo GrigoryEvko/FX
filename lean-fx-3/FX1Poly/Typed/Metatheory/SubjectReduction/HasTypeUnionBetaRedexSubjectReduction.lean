@@ -35,7 +35,7 @@ The two shipped inversions + `Conv.piTyCode_inj` / `Conv.subst0` (raw-confluence
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **β-row firing pins the redex/reduct shape.**  A successful `betaIotaRow` firing forces the redex cell to
 be a literal application of a lambda — `appCell (lamCell domain body) argument` — with the reduct the body

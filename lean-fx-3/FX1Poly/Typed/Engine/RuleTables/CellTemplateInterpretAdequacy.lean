@@ -29,7 +29,7 @@ Pure `rfl` proofs over the (audited zero-axiom) `interpret?` + the (audited zero
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- The `app` output type as a `CellTemplate`: `subst0` of the one-binder codomain param (`paramChild 1`) by the
 argument (`argChild 1`).  Mirrors `appElimRule.outputType`'s `subst0 codomainCode argument`. -/

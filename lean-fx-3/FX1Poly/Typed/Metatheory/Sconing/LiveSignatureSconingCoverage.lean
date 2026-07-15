@@ -71,7 +71,7 @@ one-liners.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 open StepStar
 
 /-- **The live signature, enumerated**: one constructor per generator with `semanticTier = .live` —

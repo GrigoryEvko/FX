@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstTypeFormers
+import FX1Poly.Axis.Context.Instances.Subst.FxBaseSubstTypeFormers
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibleTypeReducibilityCandidate
 import FX1Poly.Core.Metatheory.Sconing.SconingWitness
 import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleSemanticRules
@@ -63,7 +63,7 @@ direct application of the shipped capstones.  No `axiom`, `sorry`, `propext`, `Q
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Universe
 open StepStar
 
 /-- **The glued-model type object**: a type cell paired with its computability predicate (the scone

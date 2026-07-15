@@ -41,7 +41,7 @@ Each declaration composes `RawTerm.normalize` / its metatheory with the already-
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Canonical-NF extractor for a closed FT-certified term.**  The closed term is strongly normalizing by the

@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Core.RawTermFreeVars
+import FX1Poly.Axis.Term.Core.RawTermFreeVars
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Rewriting.RuleTables.Tables.TableFireRoot
 
@@ -22,7 +22,7 @@ need beta+eta normality should define it against `Step.betaEta`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 namespace RawVarSet
 

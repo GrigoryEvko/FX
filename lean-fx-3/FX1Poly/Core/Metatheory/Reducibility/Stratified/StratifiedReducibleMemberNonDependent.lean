@@ -1,7 +1,7 @@
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMemberAbstraction
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DependentArrowReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidateArrow
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 
 /-! # FX1Poly/Core/StratifiedReducibleMemberNonDependent
     — the non-dependent (simply-typed) arrow: choice-free Π-introduction/formation for the
@@ -53,7 +53,7 @@ declaration by `#audit_namespace FX1Poly.Core` in `FX1PolyAudit/AuditCoreSubstra
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The non-dependent (simply-typed) arrow type former.**  From a reducible domain `A` (candidate

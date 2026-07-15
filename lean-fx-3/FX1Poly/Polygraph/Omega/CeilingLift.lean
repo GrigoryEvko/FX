@@ -2,7 +2,7 @@ import FX1Poly.Polygraph.Rewriting.SemiThueReduction
 
 /-! # Polygraph/Omega/CeilingLift — the undecidability ceiling lifted by suspension (OMEGA-3 r1, B4)
 
-★ The FORM-A undecidability ceiling (`Tier0/Mode/SemiThueReduction`, Burroni-bridge `semiThue_iff_encodedTwoCell`,
+★ The FORM-A undecidability ceiling (`Axis/Mode/SemiThueReduction`, Burroni-bridge `semiThue_iff_encodedTwoCell`,
 Post-Markov CITED) reappears at EVERY suspended dimension.  This file lifts it — self-contained on the
 `ModalityPath` / `EncodedConv` substrate, deliberately DODGING the walled `toCellDimTwo` conv-leg
 (`Omega/BridgeDimTwo.lean`): we suspend `EncodedConv` NATIVELY, never bridging into `CellExpr`.

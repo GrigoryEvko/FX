@@ -34,7 +34,7 @@ and the adequacy.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Completeness of `reduceOnce`.**  A term the reducer cannot step is structurally normal: were
 it not, redex extraction would witness a bespoke `Step`, whose legacy-table image contradicts the

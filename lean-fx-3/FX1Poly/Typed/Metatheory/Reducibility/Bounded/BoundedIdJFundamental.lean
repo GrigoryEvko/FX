@@ -69,7 +69,7 @@ base-case residue.  No induction, no `funext`.  No `axiom`, `sorry`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The bounded `idJ` member arm.**  Given the result type `resultType` is bound-reducible (candidate

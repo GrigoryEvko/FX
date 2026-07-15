@@ -44,7 +44,7 @@ with the shipped `DescTelescope.convTelescope` on the `.1` projection.  No `axio
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The enriched context-conversion condition.**  Old entries are `Conv` to the new entries AND ALSO valid in the new
 context.  Free for a directed single step (unchanged prefix ⟹ old entry valid by weakening), but FAILS for arbitrary

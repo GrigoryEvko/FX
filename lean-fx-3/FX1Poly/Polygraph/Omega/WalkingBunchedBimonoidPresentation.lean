@@ -1296,7 +1296,7 @@ multiplicative bunch — exactly the FX §6.4 separation-logic-as-usage-grade re
 conjunction `*` IS the `+` of the usage grade algebra (the permission PCM `Frac`) and the multiplicative
 context is the ordinary product.  The additive `a` = the separating/BI bunch, the multiplicative `m` = the
 Cartesian bunch.  NAMED in the ledger, NOT imported: the `bunch` / `BI` markers live in
-`FX1Poly/Tier0/Mode/Linear.lean` (the §6.4 linear/BI exponential + separation-PCM markers) and importing them
+`FX1Poly/Axis/Mode/Linear.lean` (the §6.4 linear/BI exponential + separation-PCM markers) and importing them
 into the Omega lane is forbidden — this is the docstring cross-reference only. -/
 def fxBunchedBimonoid_gradeAlgebraTieInNamed : Bool := true
 

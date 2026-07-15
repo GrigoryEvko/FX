@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.Conversion.ConvRenameReflection
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationProbes
-import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Axis.Term.Core.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/RawTermRenameInjective — term-level rename injectivity from Fin-injectivity
 
@@ -32,7 +32,7 @@ syntactically).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `nat
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 universe u
 

@@ -51,7 +51,7 @@ Each arm is `classifierIsType` (or a shipped output helper) feeding the unified 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-! ## (1) The six branch-selecting rows -/
 

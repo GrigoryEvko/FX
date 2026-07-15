@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Cell.CellSort
+import FX1Poly.Axis.Term.Cell.CellSort
 
 /-! # Foundation/PolyCell/Core/RuleSpec — dim-1 generating-rule admission
 

@@ -54,7 +54,7 @@ Each declaration follows the proven template from
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Section 1 — Intro -/
 

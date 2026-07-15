@@ -37,7 +37,7 @@ on closed boolean residues, and dispatch to the per-redex bricks.  No `axiom`, `
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 mutual
 

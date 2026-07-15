@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 import FX1Poly.Typed.Fib.UniverseCodeBridge
-import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
-import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstWeakening
+import FX1Poly.Axis.Context.Instances.Subst.FxBaseSubstDisplayMap
+import FX1Poly.Axis.Context.Instances.Subst.FxBaseSubstWeakening
 
 /-! # FX1Poly/Typed/Fib/DisplayFibre — fib-1a: the display fibre + its type-axis indexing
 
@@ -30,7 +30,7 @@ witness as a `UniverseCode` and back (defeq through `axisCodeToCell`).  No `axio
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Typed FX1Poly.Universe
 
 /-- **★ The display fibre is indexed by the type-axis universe codes (fib-1 ⋈ fib-2).**  A classifier is a
 well-formed union type (the display fibre `UnionClassifierIsType`) iff it is typed at SOME bridged type-axis
@@ -62,7 +62,7 @@ SHIPPED kernel judgment, lifted from the formation-engine prototype `DisplayMapD
 /-- **The union-level typed refinement of the display map's total space.**  A classified cell is admitted when
 the SHIPPED kernel judgment `HasTypeUnion` types its subject at its classifier — the `HasTypeUnion` lift of
 `ClassifiedCell.IsAdmittedByFormation` (which used the formation engine `HasTypeDesc`). -/
-def _root_.FX1Poly.Tier0.ClassifiedCell.IsAdmittedByUnion (profile : PolyProfile)
+def _root_.FX1Poly.Axis.ClassifiedCell.IsAdmittedByUnion (profile : PolyProfile)
     {scope : Nat} (context : TypingContext profile scope) (cell : ClassifiedCell scope) : Prop :=
   HasTypeUnion profile context cell.subjectCell cell.classifierCell
 

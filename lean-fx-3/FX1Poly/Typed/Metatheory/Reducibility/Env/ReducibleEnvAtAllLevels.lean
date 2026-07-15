@@ -44,7 +44,7 @@ the shipped, zero-axiom `ReducibleEnvAt.{lookupReducible,empty,cons}`.  No new i
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis.Syntax FX1Poly.Universe
 
 /-- The ∀-level (Kripke) reducible closing-substitution environment: `substitution` sends each context
 variable to a reducible member of its looked-up (closed) type at EVERY positive level `level + 1`.  The

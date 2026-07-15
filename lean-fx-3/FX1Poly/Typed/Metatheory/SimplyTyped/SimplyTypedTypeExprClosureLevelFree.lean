@@ -61,7 +61,7 @@ theorem IsReducibleTypeExprLF.subst {scope targetScope : Nat} (sigma : RawTermSu
 itself; an arrow renames component-wise, the lift pulled back through the weakened codomain by
 `rename_lift_weaken_commute`. -/
 theorem IsReducibleTypeExprLF.rename {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Axis.Syntax.RawRenaming sourceScope targetScope)
     {typeExpr : RawTerm sourceScope} (reducible : IsReducibleTypeExprLF typeExpr) :
     IsReducibleTypeExprLF (RawTerm.rename rawRenaming typeExpr) := by
   induction reducible with

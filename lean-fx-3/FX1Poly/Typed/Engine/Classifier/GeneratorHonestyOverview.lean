@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Engine.Classifier.GeneratorSemanticTier
-import FX1Poly.Tier0.Term.Generator.GeneratorFinitePolygraph
-import FX1Poly.Tier0.Term.Generator.GeneratorTagRoundTrip
-import FX1Poly.Tier0.Term.Generator.GeneratorCountPin
+import FX1Poly.Axis.Term.Generator.GeneratorFinitePolygraph
+import FX1Poly.Axis.Term.Generator.GeneratorTagRoundTrip
+import FX1Poly.Axis.Term.Generator.GeneratorCountPin
 
 /-! # FX1Poly/Typed/GeneratorHonestyOverview — the build-time honesty overview (HON-4)
 

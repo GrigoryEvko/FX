@@ -1,10 +1,10 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1Poly.Typed.Engine.Classifier.UntypableHeadDecision
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
-import FX1Poly.Tier0.Term.Subst.RawTermSubstIdentity
-import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
-import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
-import FX1Poly.Tier0.Term.Rename.RawTermOccurrenceRename
+import FX1Poly.Axis.Term.Subst.RawTermSubstIdentity
+import FX1Poly.Axis.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstPointwise
+import FX1Poly.Axis.Term.Rename.RawTermOccurrenceRename
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
 
 /-! # FX1Poly/Typed/BridgeEndpointStep — the endpoint-β computation, DERIVED from the iota TABLE
@@ -89,7 +89,7 @@ theorem RawTerm.subst0_weaken {scope : Nat}
   rw [RawTerm.weaken_eq_rename, RawTerm.rename_subst_commute]
   have collapseToIdentity :
       RawTermSubst.PointwiseEq
-        (RawRenaming.thenSubst FX1Poly.Tier0.Syntax.RawRenaming.weaken
+        (RawRenaming.thenSubst FX1Poly.Axis.Syntax.RawRenaming.weaken
           (RawTermSubst.singleton rawArg))
         RawTermSubst.identity := by
     intro position

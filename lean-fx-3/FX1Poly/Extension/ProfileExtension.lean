@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.AxisObligation
+import FX1Poly.Axis.Context.AxisObligation
 import FX1Poly.Core.Substrate.Profile.PolyProfile
 /-!
 # ProfileExtension — The Current Admission Ledger (§3.14)
@@ -19,7 +19,7 @@ Zero external dependencies.
 
 namespace FX1Poly.Extension
 
-open Core Tier0
+open Core Axis
 
 /-- A construction-level ledger for the profile-extension subsystem.
 

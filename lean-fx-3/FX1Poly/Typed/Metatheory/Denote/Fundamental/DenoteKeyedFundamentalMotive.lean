@@ -52,7 +52,7 @@ direct `universeFormationMemberUnderClosingSubstitution`.  No induction, no `fun
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The denote fundamental-theorem conclusion (single uniform level).**  Under a closing substitution and a
 denote-reducible environment at the uniform ambient `level`, the substituted subject is a denote-reducible

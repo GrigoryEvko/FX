@@ -1,9 +1,9 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
 import FX1Poly.Typed.Cell.CellSubstitution
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
-import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 
 /-! # FX1Poly/Typed/HasTypeDescSubstitution — INTRINSIC substitution (P6, the β-engine)
@@ -51,7 +51,7 @@ lift_weaken_commute,singleton_renameWeaken_cancel}` bricks + `Conv.subst` +
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Row-shape-agnostic output subst-stability** — the substitution twin of
 `typingRuleDescOf_output_renameStable`, uniform across the flag-using and the flag-pinned

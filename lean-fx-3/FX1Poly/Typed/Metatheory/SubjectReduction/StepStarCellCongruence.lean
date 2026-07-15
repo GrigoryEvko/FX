@@ -4,7 +4,7 @@ import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst0ArgumentStar
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRename
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstPair
-import FX1Poly.Tier0.Term.Rename.RenameDefs
+import FX1Poly.Axis.Term.Rename.RenameDefs
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeForwardClosure
 import FX1Poly.Typed.Cell.CellConstructors
 
@@ -32,7 +32,7 @@ audit-gated. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- `StepStar` through `subst0` in BOTH the body and the argument: step the body (argument fixed at the start),
 then step the argument (body fixed at the target), composed.  The directed twin of `Conv.subst0`. -/
@@ -97,7 +97,7 @@ end FX1Poly.Core
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- Replay a `StepStar` chain in the DOMAIN code of a `piTyCodeCell` (codomain fixed).  Induction on the chain,
 each head step lifted by `Step.cong gen_piTyCode` at the head child position (`StepChildren.here`); the concrete

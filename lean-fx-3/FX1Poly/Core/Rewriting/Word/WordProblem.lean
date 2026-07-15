@@ -2,7 +2,7 @@ import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.ModularSNBoundary
 
-/-! # Tier0/Term — the word problem: decidable Conv as a function of convergence (term-20, CAPSTONE)
+/-! # Axis/Term — the word problem: decidable Conv as a function of convergence (term-20, CAPSTONE)
 
 The term-axis CAPSTONE.  The word problem for a rewrite system is its convertibility relation
 `⟷*` (`EquationalTheory`); deciding it is "given `a`, `b`, is `a ⟷* b`?".  The capstone result —

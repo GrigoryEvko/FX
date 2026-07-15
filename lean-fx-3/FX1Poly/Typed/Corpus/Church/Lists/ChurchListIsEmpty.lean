@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Corpus.Church.Lists.ChurchLists
 import FX1Poly.Typed.Corpus.Church.Booleans.TypedChurchBooleans
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Core.Rewriting.Conversion.ConvCongruence
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 

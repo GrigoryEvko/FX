@@ -44,7 +44,7 @@ per declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **`SimplyTypedTermLF` is preserved by any well-typed substitution.**  A substitution `substitution` whose
 substituent at each source variable is typed in the target context at the binding's substituted type carries

@@ -38,7 +38,7 @@ gated in `FX1PolyAudit/`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The single-child formation telescope bridge (TYTAB-4 step 4).**  From the element obligation IH, the one
 child forms the List/Option telescope at the former's output level `denote (lmaxAll [elementLevel]) env`.  The

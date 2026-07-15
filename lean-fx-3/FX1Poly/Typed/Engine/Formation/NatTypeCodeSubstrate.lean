@@ -1,5 +1,5 @@
-import FX1Poly.Tier0.Term.Generator.GeneratorAdmission
-import FX1Poly.Tier0.Term.Generator.GeneratorMetadata
+import FX1Poly.Axis.Term.Generator.GeneratorAdmission
+import FX1Poly.Axis.Term.Generator.GeneratorMetadata
 
 /-! # FX1Poly/Typed/NatTypeCodeSubstrate
     — substrate certificate for the `gen_natCode` Nat type-code generator

@@ -35,7 +35,7 @@ lookups are rewritten by `TypingContext.lookup_cons_zero` / `lookup_cons_succ` a
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- **Semantic member (bound-carrying).**  `term` is a bound-reducible member of `typeCode` at `bound` when
 `typeCode` is bound-reducible there with some candidate and `term` lies in it.  The bounded analogue of

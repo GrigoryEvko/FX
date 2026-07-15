@@ -50,7 +50,7 @@ The childless atomic `var` arm refutes the impossible cong-into-leaf spine by `c
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Neutrality reflects backward across an arbitrary single step.**  If `subjectTerm` reduces to
 `reductTerm` and `reductTerm` is neutral, then `subjectTerm` is EITHER neutral itself OR has a weak-head

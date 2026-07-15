@@ -1,8 +1,8 @@
 import FX1Poly.Dimensions.Cohesion.CohesiveFocus
 import FX1Poly.ProfileFibration.ProfileMorphism
 import FX1Poly.Polygraph.Rewriting.WordSystems.OmegacEAt
-import FX1Poly.Tier0.Type.Universe.UniverseConfig
-import FX1Poly.Tier0.Term.SSC.Backbone
+import FX1Poly.Axis.Type.Universe.UniverseConfig
+import FX1Poly.Axis.Term.SSC.Backbone
 import FX1Poly.STC.Modalities
 /-!
 # PolyProfile — The Axis Ledger Assembling the Live Axes
@@ -18,7 +18,7 @@ Every future feature = a ProfileExtension over fxProfile.
 The §3.1-3.6 imported-(∞,ω)-math scaffold axes (shape / polynomial /
 stratification / saturation / enrichment / Gray) have been dropped from
 the ledger; they are to be redone natively inside the cell-sort axis
-directories (Tier0/Context|Mode|Term|Type) rather than carried as
+directories (Axis/Context|Mode|Term|Type) rather than carried as
 standalone scaffold fields.
 
 Reference: polycell.md §4.

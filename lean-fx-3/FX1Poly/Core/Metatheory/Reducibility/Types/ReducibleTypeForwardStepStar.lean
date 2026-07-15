@@ -33,7 +33,7 @@ per declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Forward closure of a `whnfExpand` code along `StepStar`.**  Given a weak-head step
 `firstType ↝ʰ weakHeadReduct` with `weakHeadReduct` reducible at `candidate` and every further reduct of

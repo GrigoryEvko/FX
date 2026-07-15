@@ -42,7 +42,7 @@ term-axis congruence / substitution-stability of one-step reduction).  No `axiom
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **★ Type-formedness is preserved under one reduction step (type-level subject reduction at the universe).**
 A well-formed union type `classifier` that steps `classifier ⟶ classifierAfter` stays a well-formed type.  The

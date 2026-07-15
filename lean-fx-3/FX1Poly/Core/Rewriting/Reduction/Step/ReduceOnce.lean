@@ -33,7 +33,7 @@ Direct instantiations of the separately-gated generic table walk (`reduceOnceOve
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **One reduction step, as a function.**  The generic table walk at the canonical `iotaRuleTable`:
 fire a root redex if some rule matches; otherwise descend the child spine to the first reducible

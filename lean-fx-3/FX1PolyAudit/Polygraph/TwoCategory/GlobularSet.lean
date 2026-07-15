@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.GlobularSet
 
-/-! # FX1PolyAudit/AuditTier0ModeGlobularSet — zero-axiom gate for mode-6's globular sets
+/-! # FX1PolyAudit/AuditAxisModeGlobularSet — zero-axiom gate for mode-6's globular sets
 
-Per-declaration zero-axiom gate for `mode-6` (`FX1Poly/Tier0/Mode/GlobularSet.lean`): the globular-set
+Per-declaration zero-axiom gate for `mode-6` (`FX1Poly/Axis/Mode/GlobularSet.lean`): the globular-set
 foundation (`RawGlobularSet` with the globular identities), the terminal/discrete instances, globular-set
 morphisms (`GlobularMap` + identity/compose), Leinster's contraction (`IsParallel` + `GlobularContraction`),
 the contractible-globular-set bundle, and the honesty markers.

@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Profile.ConsistencyStrength
-import FX1Poly.Tier0.Type.Universe.UniverseFlagStrength
-import FX1Poly.Tier0.Context.AxisObligation
+import FX1Poly.Axis.Type.Universe.UniverseFlagStrength
+import FX1Poly.Axis.Context.AxisObligation
 /-! # FX1Poly/Core/StrengthCalibration — ONE strength enum, two calibrations
 
 Reconciles the tree's consistency-strength vocabulary (polycell.md
@@ -16,10 +16,10 @@ types are calibrated INTO it here:
   admission ladder) gets `consistencyStrengthBound` (a LOWER-BOUND
   calibration into the canonical enum), monotone along the Tier-0
   ladder rank `UniverseFlag.strengthBand`
-  (`Tier0/Type/Universe/UniverseFlagStrength`): a higher ladder rung
+  (`Axis/Type/Universe/UniverseFlagStrength`): a higher ladder rung
   never calibrates lower.
 
-* `FX1Poly.Tier0.ConsistencyStrength` (the 5-ctor ledger tag used in
+* `FX1Poly.Axis.ConsistencyStrength` (the 5-ctor ledger tag used in
   Tier-0 obligation bookkeeping) gets `rank` and `toCoreStrength`
   (the same lower-bound calibration shape), with monotonicity proved.
   It is NOT an embedding — `leanCore` and `zfc` share the
@@ -106,7 +106,7 @@ theorem UniverseFlag.vopenka_calibratesTo_customZero :
 
 end FX1Poly.Universe
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Axis
 
 /-- Declaration-order rank of the Tier-0 ledger tags. -/
 @[reducible] def ConsistencyStrength.rank :
@@ -155,4 +155,4 @@ theorem ConsistencyStrength.toCoreStrength_not_injective :
     ConsistencyStrength.leanCore.toCoreStrength =
       ConsistencyStrength.zfc.toCoreStrength := rfl
 
-end FX1Poly.Tier0
+end FX1Poly.Axis

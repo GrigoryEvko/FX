@@ -38,7 +38,7 @@ One `BoundExceedsUnion.rec` application; arms reuse the shipped grown master / l
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The native union fundamental theorem, conditional on the three table-arm FTs (TYTAB-4 step 3).**  Under a

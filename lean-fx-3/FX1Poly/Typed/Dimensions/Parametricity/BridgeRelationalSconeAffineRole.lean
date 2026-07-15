@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Dimensions.Parametricity.BridgeRelationalSconeIdentityPath
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
-import FX1Poly.Tier0.Term.Core.RawTermFreeVars
-import FX1Poly.Tier0.Term.Rename.RawTermOccurrenceRename
+import FX1Poly.Axis.Term.Core.RawTermFreeVars
+import FX1Poly.Axis.Term.Rename.RawTermOccurrenceRename
 
 /-! # FX1Poly/Typed/BridgeRelationalSconeAffineRole — the affine premise's semantic role (NATIVE-59)
 

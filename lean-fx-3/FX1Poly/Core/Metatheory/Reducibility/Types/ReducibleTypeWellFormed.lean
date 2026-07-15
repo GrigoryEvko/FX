@@ -34,7 +34,7 @@ by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax FX1Poly.Universe
+open FX1Poly.Axis.Syntax FX1Poly.Universe
 open StepStar
 
 /-- **The semantic well-formed-type predicate.**  A code is a reducible type when it denotes some

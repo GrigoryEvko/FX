@@ -72,7 +72,7 @@ Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Semantic neutral-type validity is CONTEXT-FREE.**  A neutral type code is `ReducibleTypeStep`-reducible
 (with a reducibility candidate) — and crucially this judgment carries NO typing context (note this theorem

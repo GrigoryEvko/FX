@@ -5,8 +5,8 @@ import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.Model
 The presentation of the WALKING (idempotent) COHESION mode theory as a 2-computad (`ModeSignature`).  Where the
 walking MONAD seed (`Computad/MonadSeed`) has one mode and one endo-1-cell `t`, and the walking ADJOINT-TRIPLE
 seed (`WalkingString/StringSeed`) has two modes and a three-generator adjoint triple `F ⊣ G ⊣ H`, the walking
-COHESION seed is the ONE-MODE idempotent form the Tier0 cohesion mode theory demands
-(`Tier0/Mode/CohesionAdjointString`): ONE mode `point`, THREE endo-1-cell generators — the cohesive modalities
+COHESION seed is the ONE-MODE idempotent form the Axis cohesion mode theory demands
+(`Axis/Mode/CohesionAdjointString`): ONE mode `point`, THREE endo-1-cell generators — the cohesive modalities
 
   * **`shape` (ʃ)** — an idempotent MONAD (reflective subuniverse), unit `id ⇒ shape`, mult `shape·shape ⇒ shape`,
   * **`flat` (♭)** — an idempotent COMONAD (coreflective subuniverse), counit `flat ⇒ id`, comult `flat ⇒ flat·flat`,

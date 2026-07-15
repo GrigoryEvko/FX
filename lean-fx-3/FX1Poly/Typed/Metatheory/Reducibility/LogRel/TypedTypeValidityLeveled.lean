@@ -47,7 +47,7 @@ field; the non-vacuity smoke is `universeType ∘ ofFormation ∘ universeFormat
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The universe-TRACKING typed type-validity logical relation.**  Indexed by `(context, typeCode, level, flag,
 candidate-box)`: the universe `(level, flag)` the type code inhabits is now part of the index.  Each arm's

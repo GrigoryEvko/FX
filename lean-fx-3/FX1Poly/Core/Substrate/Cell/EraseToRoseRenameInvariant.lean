@@ -1,7 +1,7 @@
 import FX1Poly.Core.Metatheory.Normalization.Orders.RawIotaRpoBridge
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationProbes
-import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
-import FX1Poly.Tier0.Term.Rename.RawTermRenamePointwise
+import FX1Poly.Axis.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Axis.Term.Rename.RawTermRenamePointwise
 
 /-!
 # `eraseToRose` is rename-invariant — the eta-embedding substrate
@@ -38,7 +38,7 @@ cons case forces the `RawTermChildren.rename` reduction by `show`
 (it is definitional, exactly as in `rename_pointwise`).
 -/
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open FX1Poly.Core.RawIotaRpo
 open FX1Poly.Core.RpoInductive
 

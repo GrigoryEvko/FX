@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Reduction.Spine.SpineConsStep
-import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Rename.RawTermRename
 
 /-! # Foundation/PolyCell/Core/SpineRenameStep
    — rename-shaped spine step helpers for structural preservation
@@ -18,7 +18,7 @@ repeating the `foldChildren` shape and dim-0 cons rebuild.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- Empty spines are stable under renaming.  This is the nil arm of
 the certified-spine rename recursion. -/

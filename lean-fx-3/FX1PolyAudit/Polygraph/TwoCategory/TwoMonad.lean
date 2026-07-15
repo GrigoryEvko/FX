@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.TwoMonad
 
-/-! # FX1PolyAudit/AuditTier0ModeTwoMonadDoctrine — zero-axiom gate for mode-17
+/-! # FX1PolyAudit/AuditAxisModeTwoMonadDoctrine — zero-axiom gate for mode-17
 
-Per-declaration zero-axiom gate for `mode-17` (`FX1Poly/Tier0/Mode/TwoMonadDoctrine.lean`): the 2-monad + the
+Per-declaration zero-axiom gate for `mode-17` (`FX1Poly/Axis/Mode/TwoMonadDoctrine.lean`): the 2-monad + the
 identity / reader witnesses, the algebra / morphism / free-algebra machinery, the EM adjunction hom-iso (both
 round trips), the bi-initial model + its morphism, and the honesty markers.
 

@@ -28,7 +28,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- A counted chain of length zero is reflexivity. -/
 theorem StepStarN.eq_of_zero {scope : Nat} {firstTerm thirdTerm : RawTerm scope}

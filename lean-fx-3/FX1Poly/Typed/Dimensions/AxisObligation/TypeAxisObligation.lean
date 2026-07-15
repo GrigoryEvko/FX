@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.AxisObligation
+import FX1Poly.Axis.Context.AxisObligation
 import FX1Poly.Typed.Metatheory.Sconing.SconingIsEnoughThesis
 import FX1Poly.Typed.Metatheory.Canonicity.Core.GrownRigidityCanonicity
 import FX1Poly.Typed.Metatheory.Sconing.NormalizationTransferLedger
@@ -61,7 +61,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0
+open FX1Poly.Core FX1Poly.Axis
 open StepStar
 
 /-- **The FX type-axis capability ledger**: all eight metatheoretic capabilities available — the

@@ -35,7 +35,7 @@ consContextHeadConv}` + the shipped motive-step congruence / formedness lemmas +
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **`natZero : natType` in any context.**  The nullary `natZero` introducer typed at `natTypeCell` — the data
 argument the base-branch output-formedness (`dependentMotiveOutputFormed_ofMotiveAndArgument`) substitutes for the

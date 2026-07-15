@@ -45,7 +45,7 @@ lands in `elimRuleDescOf` reuses this theorem by the same `Option.some.inj` tabl
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The generic ι-computation typing rule (GTL-18).**  An eliminator application whose function is a
 `lamCell body` and whose `rule` is read from the table (`elimRuleDescOf .gen_app = some rule`) has its

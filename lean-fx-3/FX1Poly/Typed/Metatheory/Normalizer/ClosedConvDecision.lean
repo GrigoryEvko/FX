@@ -41,7 +41,7 @@ FT-SN results and `Step.beta`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `C
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The lane-crossing bridge: FT-certified closed terms have decidable conversion.**  Two closed terms, each

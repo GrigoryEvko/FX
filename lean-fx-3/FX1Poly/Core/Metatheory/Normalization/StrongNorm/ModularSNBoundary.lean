@@ -1,4 +1,4 @@
-/-! # Tier0/Term — the exact strong-normalization boundary: modular / persistent SN (term-19)
+/-! # Axis/Term — the exact strong-normalization boundary: modular / persistent SN (term-19)
 
 The term-axis mirror of `term-6` (Toyama modularity) from the SN side.  `term-6` shipped the POSITIVE
 modular criterion — the union of two commuting / disjoint strongly-normalizing systems is strongly

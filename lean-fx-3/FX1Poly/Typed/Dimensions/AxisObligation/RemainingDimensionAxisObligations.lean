@@ -52,7 +52,7 @@ One generic conjunction proved from the shipped generic graded results, obligati
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Modal
 
 /-! ## The generic graded bundle -/
 

@@ -61,7 +61,7 @@ constructor application with `Iff.rfl` for the SN-pointwise field.  No `axiom`, 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **Pointwise agreement of two Kripke candidates.**  They accept the same terms at every renaming index —
 the up-to-pointwise-iff equivalence at which reducibility candidates are used (mirroring the shipped

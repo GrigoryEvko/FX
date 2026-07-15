@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Church.Sums.ChurchSums
-import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Axis.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Typed/ChurchSumsGeneral — Church-sum case selection for an ARBITRARY symbolic payload

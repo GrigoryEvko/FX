@@ -8,11 +8,11 @@ mode axis already HAS the 2-computad: `mode-0`'s `ModeSignature` IS one (modes =
 2-category — 1-cells = `ModalityPath` (free category on the quiver), 2-cells = `RawTwoCellExpr` (free 2-cells)
 modulo the `TwoCellStep` 3-polygraph (`TwoCellConv`).  This file names the computad explicitly and connects its
 WORD PROBLEM to the machinery that already decides word problems in this kernel: the **ωcE / Makkai leg**
-(`FX1Poly/Tier0/OmegacE/`, Path B), NOT a reinvented measure.
+(`FX1Poly/Axis/OmegacE/`, Path B), NOT a reinvented measure.
 
 ## The word problem is already an engine — reuse it, do not rebuild it
 
-`FX1Poly/Tier0/OmegacE/` ships, generically and zero-axiom:
+`FX1Poly/Axis/OmegacE/` ships, generically and zero-axiom:
 
   * `OmegacEWord` — finite words (lists of generators) with a propext-free `DecidableEq`, and (in
     `WordFreeMonoid`) the FREE MONOID laws `append_assoc` / `empty_append` / `append_empty` — i.e. THE

@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
+import FX1Poly.Axis.Term.Subst.RawTermOccurrenceSubst
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
 
 /-! # FX1Poly/Typed/GradedBetaSubjectReductionGhost — NATIVE-22: graded β-SR respects the usage bound (ghost)
@@ -44,7 +44,7 @@ by `cases` on the recursion argument + `Nat.noConfusion`).  The ghost equation a
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 universe u v
 

@@ -40,7 +40,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Weak-head reduction commutes with arbitrary single-step reduction.**  Given a weak-head step
 `term ↝ᴴ reduct` and any step `term ↝ other`, either the arbitrary step contracted the same head redex

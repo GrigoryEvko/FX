@@ -505,12 +505,12 @@ theorem quadStraddleDiscUnitInvCounitJoin :
 
 /-- **Bridge note (docstrings only) — the ZOO-COHESION and MODE-ADMIT consumption points.**
 
-  * **ZOO-COHESION (Tier0 `Mode/CohesionModalityMetatheory`, `Mode/Transpension`).**  The Tier0 cohesion modality
+  * **ZOO-COHESION (Axis `Mode/CohesionModalityMetatheory`, `Mode/Transpension`).**  The Axis cohesion modality
     zoo consumes an idempotence/adjoint-string presentation for the `ʃ ⊣ ♭ ⊣ ♯` modalities.  This quadruple lane
     is the FUNCTOR-level refinement one granularity below the induced `WalkingCohesion` presentation the zoo
     currently references: it exhibits the induced (co)monad idempotence as DERIVED from `Disc`/`coDisc` full
     faithfulness (`quadReflectionsAreIdempotent`), the honest provenance the zoo's `fxMode`-side cohesion markers
-    want.  No Tier0 edit here — this is the note.
+    want.  No Axis edit here — this is the note.
 
   * **MODE-ADMIT (`Amalgam/ModeAdmit`, the registry gate #2214).**  MODE-ADMIT admits a presented mode theory by
     matching it against a registry of DECIDED walkers and handing back the packaged decider.  A quadruple decider

@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Dimensions.AxisObligation.UsageAxisObligation
 import FX1Poly.Dimensions.Security.SecurityNoninterferenceGeneral
 import FX1Poly.Dimensions.Lattice.EffectLatticeClassification
-import FX1Poly.Tier0.Context.FireTriangle
+import FX1Poly.Axis.Context.FireTriangle
 
 /-! # FX1Poly/Typed/EffectSecurityAxisObligations
     — the security + effect AxisObligations: the graded twin and the honest BOTTOM (SN-106, #609)
@@ -60,7 +60,7 @@ one-liners, and the discharged witness.  No `axiom`, `sorry`, `propext`, `Quot.s
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Modal
 
 /-! ## The security axis -/
 

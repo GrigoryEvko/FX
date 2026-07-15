@@ -54,7 +54,7 @@ The η identity: `subst0` def + `rename_subst_commute` + `subst_pointwise` (poin
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The η identity** (load-bearing substrate lemma).  Lifting a codomain past a fresh binder
 (`rename (iterateLiftRaw weaken 1) codomain` — the shape `rename_piTyCodeCell` produces) then instantiating

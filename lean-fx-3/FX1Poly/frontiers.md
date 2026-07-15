@@ -5,7 +5,7 @@
 > (b) its honest reachability tier, (c) its FX task IDs, and — the point of this
 > file — **exactly where it lives in the `FX1Poly/` tree** (which axis, which
 > substrate layer, which new module). It is the companion to `polycell.md` (the
-> roadmap) and `Tier0/Mode/grade-mode-spectrum.md` (the grade↔mode design). Read
+> roadmap) and `Axis/Mode/grade-mode-spectrum.md` (the grade↔mode design). Read
 > those for *why*; read this for *what* and *where*.
 >
 > **Legend.** `[S]` shipped · `[R]` reachable now (T1 engineering, zero-axiom) ·
@@ -37,11 +37,11 @@ Q1  Is it GENERIC (∞,ω)-category theory / rewriting / word-problem, with NO
 Q2  Is it the STANDALONE STRUCTURE OF ONE AXIS (term / type / context / mode)
     as an ω-category — signature-specific, but PRE-gluing (before the four axes
     meet)?
-        → Tier0/<Axis>/             (each axis its own namespace; meets at Core/Fib)
+        → Axis/<Axis>/             (each axis its own namespace; meets at Core/Fib)
 
 Q3  Is it a CROSS-AXIS CLASSIFIER or GRADE (the grade↔mode spectrum, the
     universe-strength dial) that every axis instantiates?
-        → Tier0/Type/Strength/  |  Tier0/Mode/GradeAlgebra/
+        → Axis/Type/Strength/  |  Axis/Mode/GradeAlgebra/
           (a standalone classifier the axes import; NOT under any single axis)
 
 Q4  Is it the SHARED CELL SUBSTRATE, the REDUCTION ENGINE, the REDUCIBILITY
@@ -60,7 +60,7 @@ Q6  Is it a STRENGTH / PROFILE / EXTENSION artifact (a consistency-strength flag
 **Two invariants that never bend.**
 
 - **Namespaces are decoupled from paths.** A file's `namespace` (`FX1Poly.Core`,
-  `FX1Poly.Tier0`, `FX1Poly.Polygraph`) is independent of its directory. The
+  `FX1Poly.Axis`, `FX1Poly.Polygraph`) is independent of its directory. The
   lakefile globs `.submodules`, so *relocating* a file is import-line surgery
   only; consumer references stay valid. This is why the whole Polygraph move-out
   cost nothing semantic. Place by *concept*, not by *namespace*.
@@ -72,7 +72,7 @@ Q6  Is it a STRENGTH / PROFILE / EXTENSION artifact (a consistency-strength flag
 **The dependency spine (who may import whom).**
 
 ```
-Init  ⟶  ComputerAlgebra/  ⟶  Polygraph/  ⟶  Tier0/{Term,Type,Context,Mode}
+Init  ⟶  ComputerAlgebra/  ⟶  Polygraph/  ⟶  Axis/{Term,Type,Context,Mode}
                                                      │
                                                      ▼
                                                   Core/       (Substrate, Rewriting,
@@ -94,7 +94,7 @@ axes are allowed to meet. The spine is to become a CHECKED artifact (rail 9,
 ## 2. Directory skeleton + the new-modules manifest
 
 Current top level: `Core/ Dimensions/ Extension/ FXProfile/ Polygraph/
-ProfileFibration/ STC/ Tier0/ Typed/`. The frontier work adds directories in
+ProfileFibration/ STC/ Axis/ Typed/`. The frontier work adds directories in
 three places; here is the manifest of *new* homes this file proposes (each is
 justified in its domain section).
 
@@ -136,7 +136,7 @@ ComputerAlgebra/       [S seed / R] ★   # Init-only, certificate-first computa
                                         # payoffs (Steiner homology,
                                         # Moscow certificates, matroid-Hodge)
 
-Tier0/
+Axis/
   Term/ …              [S]              # the reduction axis (Cell, Rewrite, Generator, SSC…)
   Type/                                 # the type/universe axis
     Level/ Universe/   [S]
@@ -409,13 +409,13 @@ Makkai FOLDS (ties `OmegacE`).
 
 **Home law.** "Fibrancy" is the universal question *"what structure do the ≥1-cells
 carry?"* — strict / groupoidal(Path) / directed(Hom) / relational(Bridge). It is
-**one property of the mode axis** → `Tier0/Mode/FibrancyMode` (no standalone
+**one property of the mode axis** → `Axis/Mode/FibrancyMode` (no standalone
 cross-axis classifier). Its **type-level
 realizations** (interval theories, universe columns, Kan ops) are the type axis
-(Q2) → `Tier0/Type/Interval/` + `Tier0/Type/Universe/`. Its **computational
+(Q2) → `Axis/Type/Interval/` + `Axis/Type/Universe/`. Its **computational
 content** (def-univalence SN, reify) is metatheory (Q5) → `Typed/Metatheory/` +
 `Core/Rewriting/Normalize/NbE/`. The cubical *models* are context-side (Q2/Q4) →
-`Tier0/Context/`.
+`Axis/Context/`.
 
 ### 4.1 Fibrancy as a mode property — strict / Path / Bridge / Hom `[S]` {mode-13, FibrancyMode}
 
@@ -426,9 +426,9 @@ read per axis: term (α-eq / Conv / Step / reducibility), type (UIP / Path / Hom
 Bridge), context (raw / univalent / directed / sconing), mode (strict-2cat / equiv
 / adjoint / Galois).
 
-**Home** `Tier0/Mode/FibrancyMode.lean` (shipped) — the 2LTT f/e presentation
+**Home** `Axis/Mode/FibrancyMode.lean` (shipped) — the 2LTT f/e presentation
 (`FibrancyKind` + `joinFibrancy`, the f/e 2-category, the non-sharp ι). Fibrancy is
-**not** a standalone cross-axis classifier — the earlier `Tier0/Fibrancy/` proposal
+**not** a standalone cross-axis classifier — the earlier `Axis/Fibrancy/` proposal
 is dropped; it is just one mode property. Per-axis consumers read the fibrancy kind
 off the mode property; "fibred over mode" is a Core/Fib gluing statement, not a
 separate folder.
@@ -444,7 +444,7 @@ the twist correctly does *not* apply → validates keeping them reversal-free. E
 φ-column = a chosen interval theory (the formal skeleton for the multigrade
 universe).
 
-**Home** `Tier0/Type/Interval/IntervalTheory.lean` — new: the SOGAT-style
+**Home** `Axis/Type/Interval/IntervalTheory.lean` — new: the SOGAT-style
 interval-theory data + the self-dual predicate + the twist; `AffineInterval.lean`
 (no diagonal — the A1 substrate), `CartesianInterval.lean`, `LatticeInterval.lean`.
 Consumed by the universe columns (§4.4) and the mode multiplier (§5.x).
@@ -475,10 +475,10 @@ wild-category (up-to-equality) univalence, computes strictly (the *definitional*
 layer, zero-axiom); FE = the graded homotopy layer. CUA ⊬ FE (Von Glehn polynomial
 model). Grades univalence-strength: def-categorical-univalence as its own grade.
 
-**Home** `Tier0/Type/Universe/MultigradeUniverse.lean` — new: the universe as a
+**Home** `Axis/Type/Universe/MultigradeUniverse.lean` — new: the universe as a
 product-graded object `𝒰[ℓ,κ,φ]` + the orthogonality theorems; `CategoricalUnivalence.lean`
 (CUA, the computing layer); the FE layer is a graded flag consumed by the
-def-univalence row. Imports `Tier0/Type/Interval/` + `Tier0/Mode/FibrancyMode`.
+def-univalence row. Imports `Axis/Type/Interval/` + `Axis/Mode/FibrancyMode`.
 
 ### 4.5 Definitional univalence — `Id_𝒰 ↝ Equiv` computes `[C]` {type-7 [S], EXT-4 #1373, DEFUNIV-SN #1647}
 
@@ -504,11 +504,11 @@ univalence). **Directed univalence** `hom_𝒰 ↝ Fun`: FX ships the *space-lev
 `hom_Cat ≃ ⟨b|A→B⟩` needs the **flat/cohesion `b` modality**.
 
 **Home** the standalone synthetic ∞-cat of contexts is shipped in
-`Tier0/Context/ContextSyntheticInfinityCategory.lean` +
+`Axis/Context/ContextSyntheticInfinityCategory.lean` +
 `ContextDirectedUniverse.lean` (`hasFullSegalDirectedUA = false` — the honest wall).
-The category-level flip needs the `b` modality from `Tier0/Mode/Cohesion*`;
+The category-level flip needs the `b` modality from `Axis/Mode/Cohesion*`;
 directed reify (directed-univalence computes) → `Typed/Metatheory/Normalizer/`
-(DIRECTED-NBE). The directed *interval* is a `Tier0/Type/Interval/DirectedInterval.lean`.
+(DIRECTED-NBE). The directed *interval* is a `Axis/Type/Interval/DirectedInterval.lean`.
 
 ### 4.7 Cubical Kan operations & the contortion/Kan decidability split `[R ops / O Kan] `{type-23, NBE-DECCONV #1893}
 
@@ -521,7 +521,7 @@ one cube) is *decidable* (P→NP-complete by interval theory; affine = sub-carte
 theory (= f.p.-group word problem). So a *complete* hcomp decider is provably
 impossible — route via SMT/search, never claim completeness.
 
-**Home** the Kan-op *generators + rows* → `Tier0/Type/Interval/KanOperations.lean`
+**Home** the Kan-op *generators + rows* → `Axis/Type/Interval/KanOperations.lean`
 + the iota rows in `Core/Rewriting/RuleTables/`. The contortion decider (FX's
 sub-cartesian affine advantage) → `Core/Rewriting/Word/ContortionDecider.lean`. FX
 keeps its interval **non-fibrant by design** (parametricity + def-univalence, not
@@ -536,17 +536,17 @@ geometric grade (Nuyts 2024, internalizable now). Chromatic/motivic height (Mora
 K(n)) is the deepest external prize — essentially not internalized in any type
 theory; a first synthetic internalization would be genuinely new mathematics.
 
-**Home** the multi-circle product → `Tier0/Type/Interval/ShapeProduct.lean`
+**Home** the multi-circle product → `Axis/Type/Interval/ShapeProduct.lean`
 (reachable). Chromatic height is marked `[O]` and lives (if ever) as a design note
 only — no code obligation.
 
 ---
 
-## 5. Domain III — modalities & the mode theory (`Tier0/Mode/`)
+## 5. Domain III — modalities & the mode theory (`Axis/Mode/`)
 
 **Home law.** The mode axis is the classifier of *grading shapes* (Q2 for the
 axis; Q3 for the grade↔mode spectrum). The whole modal apparatus — MTT/MATT,
-transpension, cohesion, the A1 lock — lives in `Tier0/Mode/`; the *fibration* over
+transpension, cohesion, the A1 lock — lives in `Axis/Mode/`; the *fibration* over
 the mode base (fib-3) lives in `Core/Fib/`.
 
 ### 5.1 MTT / MATT & the doctrine `[S mode-1..27]` {mode-0..27}
@@ -556,9 +556,9 @@ modalities/locks, 2-cells = transformations); judgments carry positions. MATT =
 the modal-annotated variant. The mode theory is a 2-monad (mode-17), with a
 bi-initial model. All 27 mode rungs are shipped standalone.
 
-**Home** shipped across `Tier0/Mode/Mode.lean`, `TwoMonadDoctrine.lean`, the
+**Home** shipped across `Axis/Mode/Mode.lean`, `TwoMonadDoctrine.lean`, the
 modality suite. The generic 2-cat/Gray/ω-cat *cores* were extracted to
-`Polygraph/TwoCategory/`; `Tier0/Mode/` now holds genuine mode content
+`Polygraph/TwoCategory/`; `Axis/Mode/` now holds genuine mode content
 (`freeModeCategory` + the modalities).
 
 ### 5.2 Transpension — the universal right adjoint `[S/C]` {mode-11 [S], TRANSP-0..4}
@@ -569,9 +569,9 @@ admission (the multiplier's affine/cartesian/symmetric class decides which zoo
 member is sound). Instances: affine → parametricity (`TRANSP-PARAM-RETIRE #1437`),
 clock → guarded `later` + Löb (`TRANSP-3`), cartesian → cohesion √ (`TRANSP-4`).
 
-**Home** `Tier0/Mode/Transpension.lean` + `MultiplierStructureClass.lean` +
+**Home** `Axis/Mode/Transpension.lean` + `MultiplierStructureClass.lean` +
 `MultiplierEndofunctor.lean` (shipped); the admission table `TRANSP-ADMIT` →
-`Tier0/Mode/TranspensionAdmission.lean`; the gel-boundary iota rows → `Core/Equality/Gel/`.
+`Axis/Mode/TranspensionAdmission.lean`; the gel-boundary iota rows → `Core/Equality/Gel/`.
 
 ### 5.3 The A1 lock = context-restriction left adjoint `[R]` ★ {A1-* #1788-1809, fib-3}
 
@@ -585,12 +585,12 @@ open form. The affine interval *breaks HITs* (the `line`-HIT reason) — which i
 soundness reason FX's interval is **non-fibrant**.
 
 **Home** the lock former + discipline are shipped/in-flight in
-`Tier0/Context/` (`lockCons`, the FitchTT accessibility) and the mode modality in
-`Tier0/Mode/` (`μ_affine`, `μ_affine†`). The **new construction** — realizing the
-lock *as* the `Γ\r ⊣ −.𝕀` adjoint — goes in `Tier0/Context/DimensionLockAdjoint.lean`
+`Axis/Context/` (`lockCons`, the FitchTT accessibility) and the mode modality in
+`Axis/Mode/` (`μ_affine`, `μ_affine†`). The **new construction** — realizing the
+lock *as* the `Γ\r ⊣ −.𝕀` adjoint — goes in `Axis/Context/DimensionLockAdjoint.lean`
 (`A1-CODEXTRIFY`) and the substitution-pushes-under-open metatheory in
 `Typed/Metatheory/Strengthening/` (`A1-SUBST-OPEN`). The negative modal *type*
-former → `Core/Equality/` or a new `Tier0/Type/NegativeModality.lean` (A1-NEG-TRANSPENSION).
+former → `Core/Equality/` or a new `Axis/Type/NegativeModality.lean` (A1-NEG-TRANSPENSION).
 
 ### 5.4 Cohesion — ♭/♯/ʃ, real-cohesive, differential `[C]` {type-11, ZOO-COHESION-* #1925-1934}
 
@@ -601,7 +601,7 @@ morphism `Γ: Psh(W)→Set`; ♭ = Disc∘Γ (flat/discrete comonad), ♯ = coDi
 type-11. The `b` modality here is what category-level directed univalence needs
 (§4.6).
 
-**Home** shipped/in-flight across `Tier0/Mode/Cohesion*.lean` (the whole
+**Home** shipped/in-flight across `Axis/Mode/Cohesion*.lean` (the whole
 `Cohesion*` family) + `RealCohesion.lean` + `ModalFracture.lean`. The metatheory
 (SR/SN/FT/canonicity for the cohesion family) → `Typed/Metatheory/` via the
 generic modal arm.
@@ -618,9 +618,9 @@ calculus falls out of the free-D-category small-object construction. **Galois
 modalities** = each FX lattice-dimension's Galois connection as a ◇/□ adjoint
 (FX-native frontier).
 
-**Home** shipped in `Tier0/Mode/{GuardedRecursion,Linear,Graded,Session}.lean`;
-the LNL-doctrine framing → `Tier0/Mode/LnlDoctrine.lean` (new, the entries-only
-admissibility predicate = the ASCII sort-discipline); Galois → `Tier0/Mode/GaloisModality.lean`.
+**Home** shipped in `Axis/Mode/{GuardedRecursion,Linear,Graded,Session}.lean`;
+the LNL-doctrine framing → `Axis/Mode/LnlDoctrine.lean` (new, the entries-only
+admissibility predicate = the ASCII sort-discipline); Galois → `Axis/Mode/GaloisModality.lean`.
 
 ### 5.6 O-COMBINE — decidable "do great ideas combine" `[R decidable / O the H²]` {mode-18 [S], O-COMBINE #1435, CFND-* #1473-1477}
 
@@ -629,7 +629,7 @@ decidable feature-combination predicate; the extension poset; the join. The **H�
 semantic obstruction** (whether two features combine *soundly*, not just
 syntactically) is the ★OPEN half.
 
-**Home** shipped `Tier0/Mode/CombineAmalgamation.lean`; the decidable
+**Home** shipped `Axis/Mode/CombineAmalgamation.lean`; the decidable
 combination-predicate + periodic-table matrix → `Typed/Dimensions/AxisObligation/`
 (CFND); the H² obstruction target signature is `[O]`, documented only.
 
@@ -638,9 +638,9 @@ combination-predicate + periodic-table matrix → `Typed/Dimensions/AxisObligati
 ## 6. Domain IV — universes, size & proof-theoretic strength (the ℓ axis)
 
 **Home law.** Universe *structure* (Tarski, cumulativity, coherence) is the type
-axis (Q2) → `Tier0/Type/Universe/`. The *strength dial* (reflection-rank-indexed
+axis (Q2) → `Axis/Type/Universe/`. The *strength dial* (reflection-rank-indexed
 flags, the content-vs-flag tags) is a cross-axis grade + a profile artifact (Q3/Q6)
-→ `Tier0/Type/Strength/` + `FXProfile/`. Ordinal analysis (the SN ordinal = the
+→ `Axis/Type/Strength/` + `FXProfile/`. Ordinal analysis (the SN ordinal = the
 resolution height) is metatheory (Q4) → `Core/Metatheory/Ordinal/`.
 
 ### 6.1 Tarski universe & strict-universe coherence (Glue/realignment) `[S/R]` {type-0/15/20, TRANSP-GLUE #1438}
@@ -653,9 +653,9 @@ type-former** (the *same* connective as cubical), and **U8 ⟺ Glue exists**.
 Constructively, realignment holds *exactly for decidable monos* (Orton–Pitts; Swan
 sharp) — FX's native home.
 
-**Home** shipped `Tier0/Type/TypeAxis.lean` (the Tarski universe) +
-`Tier0/Type/Universe/` (cumulativity, no-top). The **new** reachable win:
-zero-axiom `Glue`-for-decidable-monos → `Tier0/Type/Universe/GlueRealignment.lean`
+**Home** shipped `Axis/Type/TypeAxis.lean` (the Tarski universe) +
+`Axis/Type/Universe/` (cumulativity, no-top). The **new** reachable win:
+zero-axiom `Glue`-for-decidable-monos → `Axis/Type/Universe/GlueRealignment.lean`
 (makes U8 a *theorem*, grounds Tarski coherence, powers STC). The shipped STC
 scaffold is in the top-level `STC/`.
 
@@ -667,9 +667,9 @@ univalence-preserving. **Impredicativity** (`limax`, impredicative Prop `Π(x:Ty
 *never a tower* (Type:Type / System-U inconsistent). This is the one object-level
 ZF-ish strength; keeping it is the type-13/19/26 design fork.
 
-**Home** `Tier0/Type/Level/LevelExpr.lean` (the level algebra incl. `limax`, the
+**Home** `Axis/Type/Level/LevelExpr.lean` (the level algebra incl. `limax`, the
 `ne_lsucc_self` no-Type-in-Type guard); the univalence-preservation theorems →
-`Tier0/Type/Universe/CumulativityUnivalence.lean`. The impredicative-Prop sort is a
+`Axis/Type/Universe/CumulativityUnivalence.lean`. The impredicative-Prop sort is a
 *flag* gated in the profile.
 
 ### 6.3 Large-cardinal universe operators — the content ceiling `[R]` ★ {type-14, LARGE-CARD-CONTENT #1456}
@@ -681,7 +681,7 @@ ordinal has been computed for even *one* inaccessible, so everything higher is a
 *posited flag* with no normalizing operator. The **two-ceiling split** — content
 (where FX lives) vs consistency-flags (arbitrarily high) — governs everything.
 
-**Home** the reachable IR operator → `Tier0/Type/Universe/MahloUniverse.lean`
+**Home** the reachable IR operator → `Axis/Type/Universe/MahloUniverse.lean`
 (new; induction-recursion, zero-axiom). Internal-Mahlo-and-above are flags in the
 strength dial (§6.5), kernel-*proven* to add no canonicity.
 
@@ -697,7 +697,7 @@ Woodins), with *partial* content (strategies as witnesses). "Past I0 into Berkel
 is an **overclaim + category error** (the lift is consistency-only, content-null).
 
 **Home** these are *flags* in the strength dial (`FXProfile/` +
-`Tier0/Type/Strength/`), each carrying a `frontier` tag and kernel-proven
+`Axis/Type/Strength/`), each carrying a `frontier` tag and kernel-proven
 content-null. No operators. The `◇_j` self-embedding modality (j:V→V as a graded
 comodality; critical sequence = reflection tower; choice-freedom = the Kunen
 loophole) is the wildest moonshot, marked `[O]`, pursued only as a content-null
@@ -713,7 +713,7 @@ map):** gate each strength grant on a **reflection-rank / Π¹₁-soundness
 certificate, NOT ordinal height** — Feferman–Spector intensionality means height
 certifies nothing. Beklemishev worm-notation = the recursive certificate to ε₀/Γ₀.
 
-**Home** `Tier0/Type/Strength/StrengthDial.lean` — new: the level = reflection-rank
+**Home** `Axis/Type/Strength/StrengthDial.lean` — new: the level = reflection-rank
 index; `ReflectionRankCertificate.lean` (the Pakhomov–Walsh gate); the ordinal
 machinery it reads from `Core/Metatheory/Ordinal/`. The dial's *tags* (certified /
 believed / frontier) ride as profile data in `FXProfile/` + `ProfileFibration/`.
@@ -729,8 +729,8 @@ presheaf/sheaf comonad — a T1 mechanism. Independence statements themselves ar
 multiverse), not internal theorems. A concrete duality (Stone, Gabriel–Ulmer) as a
 univalence between two presented profiles is T1 for the finite/concrete case.
 
-**Home** the forcing comonad → `Tier0/Mode/ForcingModality.lean` (new; ties the
-shipped context-26 forcing CwF in `Tier0/Context/`); profile multiplicity →
+**Home** the forcing comonad → `Axis/Mode/ForcingModality.lean` (new; ties the
+shipped context-26 forcing CwF in `Axis/Context/`); profile multiplicity →
 `ProfileFibration/`. DUAL-UNIV → `Typed/Dimensions/` (a cross-dimension univalence
 instance).
 
@@ -739,7 +739,7 @@ instance).
 ## 7. Domain V — grading & the graded-everything unification
 
 **Home law.** The grade↔mode spectrum is the meta-structure over *all* axes (Q3);
-its realization goes in `Tier0/Grade/` (new) + `Tier0/Mode/GradeAlgebra/`; the 21
+its realization goes in `Axis/Grade/` (new) + `Axis/Mode/GradeAlgebra/`; the 21
 concrete dimensions are typing-level (Q5) → `Typed/Dimensions/`; the graded
 metatheorem (prove once over the product) is a `Typed/Metatheory/` capstone.
 
@@ -752,9 +752,9 @@ orthogonal dials: beneath↔alongside (mode-26) and static↔value-dependent (th
 genuine break — value-dependent grades cannot be a static 𝓜). The φ/δ/ℓ trinity
 sits at R4/R3/R1-2. `categorify ⊣ decategorify`: `grade = π₀(mode)` (CSHD #1483).
 
-**Home** the design lives in `Tier0/Mode/grade-mode-spectrum.md` (shipped). The
+**Home** the design lives in `Axis/Mode/grade-mode-spectrum.md` (shipped). The
 *realization* (the ladder as a value, the rung classifier `mode-2`/`mode-12`) →
-`Tier0/Grade/Spectrum.lean` (new) + `Tier0/Mode/GradeAlgebra/`. The R7 fixpoint ties
+`Axis/Grade/Spectrum.lean` (new) + `Axis/Mode/GradeAlgebra/`. The R7 fixpoint ties
 `Core/Fib/` (THE-ONE-OBJECT).
 
 ### 7.2 FRONTIER-GRADED-EVERYTHING — the 21 dims as one product-graded object `[C]` {#1872, TYTAB-5 #1399}
@@ -776,7 +776,7 @@ categorical isos (not `Nat` lemmas); the decategorification functor
 `grade = π₀(mode)`; primes as ×-indecomposables (the inverse-categorification
 frontier).
 
-**Home** `Tier0/Grade/Decategorification.lean` (new; the FinSet-groupoid + `card` +
+**Home** `Axis/Grade/Decategorification.lean` (new; the FinSet-groupoid + `card` +
 the functor). Standalone; imported by the spectrum realization.
 
 ### 7.4 Equality = indistinguishability under graded observation `[C]` {EQ-OBSERVATION #1652, GRADED-ID #1651, OP3-SAMENESS #1439}
@@ -787,7 +787,7 @@ construction (Conv / univalence / bisimulation / ctx-equiv / constant-time all
 identity as a resource (the HoTT × complexity unification).
 
 **Home** the sameness-unification → `Typed/Metatheory/SamenessUnification.lean`
-(ties the shipped `Tier0/Mode/SamenessUnification.lean`); graded-Id → a row in
+(ties the shipped `Axis/Mode/SamenessUnification.lean`); graded-Id → a row in
 `Typed/Dimensions/` + `Core/Rewriting/RuleTables/`. Relational Σ-algebra candidate
 in `Core/Metatheory/Reducibility/Candidates/`.
 
@@ -819,7 +819,7 @@ one permanent price, already paid).
 **Home** the rows via EXT-2/3/6 in `Core/Rewriting/RuleTables/`; the definitional
 tier through `Extension/` (EXT-7) + `Polygraph/` convergence certificates; the
 admission table → `Typed/Dimensions/QuotientAdmission.lean` (new); the collapse
-theorems tie `Tier0/Grade/` (CSHD).
+theorems tie `Axis/Grade/` (CSHD).
 
 ---
 
@@ -850,7 +850,7 @@ cases). The (∞,ω)-container calculus = higher-dimensional polynomial functors
 the higher cells.
 
 **Home** `Core/Metatheory/Reducibility/PolynomialData.lean` (new) +
-`Tier0/Term/Codata/` (shipped codata) + the container calculus in
+`Axis/Term/Codata/` (shipped codata) + the container calculus in
 `Polygraph/OmegaCategory/ContainerOmega.lean` (the (∞,ω)-generic version, `[O]` at
 full strength).
 
@@ -979,7 +979,7 @@ RPO/multiset machinery = the SN-ordinal.
 **Home** `Core/Metatheory/Reflection/GlpAlgebra.lean` (worms, the reflection
 calculus RC/GLP) + `Core/Metatheory/Ordinal/` (the ordinal notations, reading the
 Steiner loop-free order and the shipped `Normalization/Orders/`). The GLP modality
-itself is shipped in `Tier0/Mode/Provability.lean` (mode-23). Ties the strength dial
+itself is shipped in `Axis/Mode/Provability.lean` (mode-23). Ties the strength dial
 (§6.5).
 
 ### 9.5 THE-ONE-OBJECT / the R7 fixpoint `[T1 structural / O semantic]` {THE-ONE-OBJECT #1443, fib-13 #1591}
@@ -994,7 +994,7 @@ each rung n+1⊢Con(n) is genuinely provable).
 
 **Home** `Core/Fib/TheOneObject.lean` (the structural fixpoint; ties all four axes)
 + `Typed/SelfFormalize/` (the climbing ladder). The design is anchored in
-`Tier0/Mode/grade-mode-spectrum.md` §6/§7.
+`Axis/Mode/grade-mode-spectrum.md` §6/§7.
 
 ### 9.6 Self-extend & the discovery engine `[R orthogonal / C strength-increasing]` {SELF-EXTEND #1834, ENGINE-DISCOVERS #1833, SYNTH-* #1445-1446}
 
@@ -1181,7 +1181,7 @@ black/red-blue/reversible over finite DAGs) + `InPlaceTheorem.lean` (copy ⟺
 ## 12. Domain X — the four-axis fibration & the telos (`Core/Fib/`)
 
 **Home law.** `Core/Fib/` is the *only* place the four axes meet (Q4). Everything
-here glues Tier0/{Term,Type,Context,Mode} into the one kernel. The fib-* arc is the
+here glues Axis/{Term,Type,Context,Mode} into the one kernel. The fib-* arc is the
 assembly; THE-ONE-OBJECT is its fixpoint.
 
 ### 12.1 The display fibration & the universe reflection `[S/in-flight]` {fib-1/2}
@@ -1203,7 +1203,7 @@ unpointable multiplier, `ObligationModality → ModalityPath`, the judgment inde
 walking-equivalence polygraph (§3.5) supplies the SN precedence.
 
 **Home** `Core/Fib/FibrationArchitecture.lean` + the fib-3 files; consumes
-`Polygraph/WalkingEquivalence/` + `Tier0/Mode/ModeOmega`.
+`Polygraph/WalkingEquivalence/` + `Axis/Mode/ModeOmega`.
 
 ### 12.3 Cross-axis coherence, bi-initiality, joint canonicity `[in-flight/C]` {fib-4/5/6/7/8}
 
@@ -1241,7 +1241,7 @@ self-application via internal-parametricity initiality, POPL24 blueprint). fib-1
 → executable, the simulation).
 
 **Home** `Core/Fib/` — fib-11..13; the QIIT presentation ties `Polygraph/Homotopy/`
-(the clan/hyperdoctrine) + `Tier0/Grade/` (the product-graded self-indexing). fib-13
+(the clan/hyperdoctrine) + `Axis/Grade/` (the product-graded self-indexing). fib-13
 is the telos; fib-16 extraction → the LowX pipeline (`IFACE-EXTRACTION #1850`, a
 dimension-generic erasure functor).
 
@@ -1300,7 +1300,7 @@ real?" to a build and making every failed attempt a durable lemma.
 ## 12B. Domain XII — the synthetic discrete engine & condensed/chromatic shadows
 
 **Home law.** Combinatorics-without-walking assembles from tracker parts:
-`Tier0/Grade/` (CSHD groupoid cardinality) + ISO-CONV #1452 + type-16 polynomial
+`Axis/Grade/` (CSHD groupoid cardinality) + ISO-CONV #1452 + type-16 polynomial
 functors/species + SEARCH-1 #1269 + DPROP-1 #1268, plus a new `Typed/Corpus/Discrete/`.
 The condensed/chromatic entries are *shadows*: reachable low rungs of frontier
 fields, honestly tiered; the full theories stay `[O]`.
@@ -1375,7 +1375,7 @@ ComputerAlgebra/ (Init only)  ⟶  Polygraph/  (Init, + ComputerAlgebra for Stei
   Steiner ──────────────┐        (⊕ Computad ⊕ WalkingEquivalence ⊕ SemiModel ⊕ Homotopy)
         │               │
         ▼               ▼
-Tier0/  Term ── Type(Level,Universe,Interval,Strength) ── Context ── Mode(GradeAlgebra,Cohesion,Transp,A1,Lnl,Galois)
+Axis/  Term ── Type(Level,Universe,Interval,Strength) ── Context ── Mode(GradeAlgebra,Cohesion,Transp,A1,Lnl,Galois)
         └──────────────── Fibrancy ◄── (imported by all four axes) ──────────────┘
         └──────────────── Grade (Spectrum, Decategorification) ◄── Mode.GradeAlgebra
                                         │
@@ -1393,7 +1393,7 @@ Typed/  Engine(Union,tables) ── Metatheory(SR,FT,Denote,Normalizer,Sconing,G
                                         ▼
 FXProfile / ProfileFibration / Extension   (profiles, strength flags, admissible extensions)
 ```
-Rule: an arrow means *may-import*. `Core/Fib/` is downstream of all four Tier0 axes
+Rule: an arrow means *may-import*. `Core/Fib/` is downstream of all four Axis axes
 and of `Polygraph/`; `Typed/` is downstream of `Core/`; the profile layer is the
 sink. `FX1PolyAudit/` mirrors every path with `#assert_no_axioms` twins.
 
@@ -1410,15 +1410,15 @@ sink. `FX1PolyAudit/` mirrors every path with `#assert_no_axioms` twins.
 | SemiModel/{FibrationCategory,EnrichedWFS,Saturation} | I | R/O | `Polygraph/SemiModel/` |
 | Computad/* (re-home FreeTwoCell, signature-generic) | I | R | `Polygraph/Computad/` |
 | Homotopy/{HomotopyLanguage,ClanHyperdoctrine} | I/VIII | C | `Polygraph/Homotopy/` |
-| Interval/{IntervalTheory,Affine,Directed,Kan,ShapeProduct} | II | R | `Tier0/Type/Interval/` |
-| MultigradeUniverse, CategoricalUnivalence, GlueRealignment | II/IV | C/R | `Tier0/Type/Universe/` |
+| Interval/{IntervalTheory,Affine,Directed,Kan,ShapeProduct} | II | R | `Axis/Type/Interval/` |
+| MultigradeUniverse, CategoricalUnivalence, GlueRealignment | II/IV | C/R | `Axis/Type/Universe/` |
 | Rott/{Relativity,SrpRows,ObservationalDsl} | II | R | `Typed/Rott/` |
 | DefunivMeasure | II | C | `Core/Metatheory/Normalization/StrongNorm/` |
-| DimensionLockAdjoint, NegativeModality | III | R | `Tier0/Context/`, `Tier0/Type/` |
-| LnlDoctrine, GaloisModality, ForcingModality, TranspensionAdmission | III | R/C | `Tier0/Mode/` |
-| MahloUniverse | IV | R | `Tier0/Type/Universe/` |
-| Strength/{StrengthDial,ReflectionRankCertificate} | IV | R/C | `Tier0/Type/Strength/` |
-| Grade/{Spectrum,Decategorification} | V | C/R | `Tier0/Grade/` |
+| DimensionLockAdjoint, NegativeModality | III | R | `Axis/Context/`, `Axis/Type/` |
+| LnlDoctrine, GaloisModality, ForcingModality, TranspensionAdmission | III | R/C | `Axis/Mode/` |
+| MahloUniverse | IV | R | `Axis/Type/Universe/` |
+| Strength/{StrengthDial,ReflectionRankCertificate} | IV | R/C | `Axis/Type/Strength/` |
+| Grade/{Spectrum,Decategorification} | V | C/R | `Axis/Grade/` |
 | GradedMetatheory, SamenessUnification | V | C | `Typed/Metatheory/` |
 | SigAlgebraCandidate, PolynomialData | VI | C | `Core/Metatheory/Reducibility/` |
 | NbE reify arms (Sigma,Modal,Universe,Directed), DecConvHybrid | VI | C | `Core/Rewriting/Normalize/NbE/` |
@@ -1433,7 +1433,7 @@ sink. `FX1PolyAudit/` mirrors every path with `#assert_no_axioms` twins.
 | ComputerAlgebra/{Number,LinearAlgebra,Polynomial,Positivity} | XI | S seed/R★ | `ComputerAlgebra/` |
 | Steiner homology via SNF (H₁/H₂ + torsion) | I/IX | R | `Polygraph/Steiner/` + `ComputerAlgebra/` |
 | Certificates/{MoscowInstance,MoscowNbyTwo,Interlacing} | XI | R/C | `Typed/Corpus/Certificates/` |
-| Discrete/{UnivalentCount,Species,BalmerSpectrum} | XII | R/C | `Typed/Corpus/Discrete/` + `Tier0/Grade/` |
+| Discrete/{UnivalentCount,Species,BalmerSpectrum} | XII | R/C | `Typed/Corpus/Discrete/` + `Axis/Grade/` |
 | Cost/{ParetoNormalForm,PebbleGames,InPlaceTheorem} | IX | R | `Typed/Dimensions/Cost/` |
 | ObservationalId table (funext/univalence/quot as rows) | VI | C★ | `Core/Rewriting/RuleTables/ObservationalId/` |
 | QuotientAdmission (the tier grade) | V | R/C | `Typed/Dimensions/QuotientAdmission.lean` |
@@ -1531,7 +1531,7 @@ frontier contribution real. Each is enforced by a grade the kernel propagates.
    Steiner mis-attribution (the "linear algebra" reading is ours, §3.1). Dim-8
    provenance applied to the development itself.
 9. **The spine is a checked artifact.** The dependency DAG (§13) gets a
-   build-time tripwire (e.g. `rg "^import FX1Poly.Tier0" FX1Poly/Polygraph` must
+   build-time tripwire (e.g. `rg "^import FX1Poly.Axis" FX1Poly/Polygraph` must
    be empty, and its siblings per layer) — the 2026-07-02 refactor exposed a
    silent transitive-import reliance; architecture is enforced like axioms and
    deletions, not socially.
@@ -1595,19 +1595,19 @@ theorem grayTensorPreservesLoopFree (left right) (hl hr) :
 **Depends** `Init` only. **Feeds** `fib-3` (SN precedence), `term-GRAY-FULL`
 (Gray tensor), the free-ω-cat monad. **Audit** twin `FX1PolyAudit/Polygraph/Steiner/`.
 
-### A.2 Fibrancy is a mode property — the `Tier0/Fibrancy/` classifier is dropped
+### A.2 Fibrancy is a mode property — the `Axis/Fibrancy/` classifier is dropped
 
 Fibrancy is **not** a standalone cross-axis classifier. It is one property of the
-mode axis, shipped in `Tier0/Mode/FibrancyMode.lean` (`FibrancyKind` +
+mode axis, shipped in `Axis/Mode/FibrancyMode.lean` (`FibrancyKind` +
 `joinFibrancy`, the 2LTT f/e presentation, mode-13). The earlier proposal for a
-zero-dependency `Tier0/Fibrancy/` imported by all four axes has been dropped —
+zero-dependency `Axis/Fibrancy/` imported by all four axes has been dropped —
 per-axis consumers read the fibrancy kind off the mode property, and "fibred over
 mode" is a Core/Fib gluing statement, not a separate folder.
 
-### A.3 `Tier0/Type/Strength/` — the reflection-rank strength dial (Q3/Q6)
+### A.3 `Axis/Type/Strength/` — the reflection-rank strength dial (Q3/Q6)
 
 ```lean
-namespace FX1Poly.Tier0.Type.Strength
+namespace FX1Poly.Axis.Type.Strength
 
 -- a strength level is a CERTIFIED reflection rank (Pakhomov-Walsh), NOT a raw ordinal height
 structure StrengthLevel where
@@ -1627,7 +1627,7 @@ theorem flagAddsNoCanonicity (level : StrengthLevel)
     forall term reduct, StepUnderFlag level term reduct -> StepBaseline term reduct
     -- ⇒ the flag is kernel-PROVEN content-null : honest-by-construction
 ```
-**Depends** `Core/Metatheory/Ordinal/` (the notations), `Tier0/Type/Universe/`.
+**Depends** `Core/Metatheory/Ordinal/` (the notations), `Axis/Type/Universe/`.
 **The novelty** first foundation carrying a per-rung machine-checked
 content-vs-flag tag. **Feeds** `FXProfile/`, `ProfileFibration/`.
 
@@ -1677,7 +1677,7 @@ theorem provesConOfWeakerRung (rung : StrengthLevel) (lower : StrengthLevel)
 -- the autonomous progression : grant Con only against a certified well-ordering (Turing-Feferman)
 def autonomousProgression : StrengthLevel -> Option StrengthLevel  -- deny-by-default; the certified climb
 ```
-**Depends** `Core/Metatheory/Ordinal/`, the shipped `Tier0/Mode/Provability.lean`
+**Depends** `Core/Metatheory/Ordinal/`, the shipped `Axis/Mode/Provability.lean`
 (mode-23 GLP). **The novelty (triple-confirmed unclaimed)** first mechanized
 autonomous progression = first machine-checked ordinal analysis of a theory.
 **Boundary** `GodelBoundary.lean` states the walls the ladder respects.
@@ -1768,14 +1768,14 @@ theorem eachRungProvesNormalizationOfThePrior (rung : Nat) :
     ProvableAt (climbingLadder (rung + 1)) (StrongNormalizes (climbingLadder rung))
     -- Gentzen/Lean4Lean : provable at n+1, NEVER at n (Gödel-II) ; the ladder never closes
 ```
-**Depends** all four `Tier0/<Axis>`, `Polygraph/`, `Typed/SelfFormalize/`,
-`Tier0/Grade/`. **The telos** fib-13. **Rail** semantic self-reading is T3; the
+**Depends** all four `Axis/<Axis>`, `Polygraph/`, `Typed/SelfFormalize/`,
+`Axis/Grade/`. **The telos** fib-13. **Rail** semantic self-reading is T3; the
 climb is T2 (unbounded, not closable — incompleteness is generative).
 
-### A.9 `Tier0/Type/Interval/` — interval theories & the affine substrate (Q2)
+### A.9 `Axis/Type/Interval/` — interval theories & the affine substrate (Q2)
 
 ```lean
-namespace FX1Poly.Tier0.Type.Interval
+namespace FX1Poly.Axis.Type.Interval
 
 -- an interval theory = a single-sorted algebraic theory over the two endpoints
 structure IntervalTheory where
@@ -1832,10 +1832,10 @@ theorem structureOnGeneratorsSaturatesToAllCells (backdrop) (structureOnGenerato
 **Depends** `Polygraph/Category/`. **The constructive substrate** for the SemiModel
 core; the ∞-localization stays `[O]`, deliberately bypassed.
 
-### A.12 `Tier0/Mode/LnlDoctrine.lean` — the grade↔mode crossover (Q3)
+### A.12 `Axis/Mode/LnlDoctrine.lean` — the grade↔mode crossover (Q3)
 
 ```lean
-namespace FX1Poly.Tier0.Mode
+namespace FX1Poly.Axis.Mode
 
 -- an LNL doctrine : nonlinear (all structural rules) + linear (exchange only), joined by F ⊣ U
 inductive ObjectSort | nonlinear | linear
@@ -1848,7 +1848,7 @@ structure LnlDoctrine where
 -- a doctrine = "one grade-checker parameterized by a semiring/tier" ⇒ 21 dims = a PRODUCT of doctrines
 def gradeCheckerOfDoctrine (doctrine : LnlDoctrine) : GradeChecker
 ```
-**Depends** `Tier0/Mode/GradeAlgebra/`. **Feeds** `mode-22/25/26`,
+**Depends** `Axis/Mode/GradeAlgebra/`. **Feeds** `mode-22/25/26`,
 `FRONTIER-GRADED-EVERYTHING`, the grade-mode spectrum R1–R3.
 
 ---
@@ -1860,7 +1860,7 @@ atomic-green (`lake build FX1Poly FX1PolyAudit` clean) with a zero-axiom twin.
 
 **Substrate (Domain I).** `Computad/` re-home SHIPPED 2026-07-02 (POLYGRAPH-4..9:
 the carrier carve-out + the 40-file FreeTwoCell/WalkingAdjunction tower + TwoMonad;
-Tier0/Mode 79→38 files, zero Polygraph→Mode back-edges; residue: `ModeOmegaWeakGray`
+Axis/Mode 79→38 files, zero Polygraph→Mode back-edges; residue: `ModeOmegaWeakGray`
 deferred on generalizing `GrayCategory` over an arbitrary `RawTwoCategory`, plus a
 namespace-normalization sweep). Remaining order: `ComputerAlgebra/` (ℤ/ℚ substrate; brick 1 shipped) →
 `Polygraph/Steiner/` (ADC + coords + decidable-eq + loop-free order) →
@@ -1871,8 +1871,8 @@ do EARLY, pure OmegacE reuse, discharges #638) → `SemiModel/Saturation` →
 `Homotopy/`. Steiner first — it de-risks fib-3 by handing over the SN precedence.
 
 **Identity/interval (Domain II).** Fibrancy is one mode property
-(`Tier0/Mode/FibrancyMode`, shipped — no standalone classifier step).
-`Tier0/Type/Interval/{IntervalTheory,AffineInterval}` → `Typed/Rott/{Relativity,SrpRows}`
+(`Axis/Mode/FibrancyMode`, shipped — no standalone classifier step).
+`Axis/Type/Interval/{IntervalTheory,AffineInterval}` → `Typed/Rott/{Relativity,SrpRows}`
 → `MultigradeUniverse` + `CategoricalUnivalence` (CUA/FE grade) → `DefunivMeasure`
 (the SN gate) → `DirectedInterval` + directed reify.
 
@@ -1881,11 +1881,11 @@ do EARLY, pure OmegacE reuse, discharges #638) → `SemiModel/Saturation` →
 → `LnlDoctrine` → cohesion `b` → `GaloisModality` → `ForcingModality`.
 
 **Strength (Domain IV).** `Core/Metatheory/Ordinal/` (notations + Steiner-order SN)
-→ `GlpAlgebra` (worms) → `Tier0/Type/Strength/{StrengthDial,ReflectionRankCertificate}`
+→ `GlpAlgebra` (worms) → `Axis/Type/Strength/{StrengthDial,ReflectionRankCertificate}`
 → `MahloUniverse` (IR, the content ceiling) → `GlueRealignment` (U8 theorem)
 → the flag `hasNo…=false` content-null proofs.
 
-**Grade (Domain V).** `Tier0/Grade/{Decategorification,Spectrum}` →
+**Grade (Domain V).** `Axis/Grade/{Decategorification,Spectrum}` →
 `Typed/Dimensions/Graded/` (grade-vector premises) → `GradedMetatheory` (prove once)
 → `SamenessUnification`.
 
@@ -1931,15 +1931,15 @@ Concepts real to the program but compressed above; each still gets a home.
 
 - **type-16 polynomial-functor calculus** `[C]` — derivative, composition, the
   polynomial monad; the data fragment's semantic engine (§8.2). Home
-  `Core/Metatheory/Reducibility/PolynomialData.lean` + `Tier0/Type/PolynomialFunctor.lean`.
+  `Core/Metatheory/Reducibility/PolynomialData.lean` + `Axis/Type/PolynomialFunctor.lean`.
 - **type-17 guarded recursive types** `[C]` — the later modality, Löb, guarded domain
-  equations. Home `Tier0/Mode/GuardedRecursion.lean` (shipped mode-15) +
-  `Tier0/Type/GuardedType.lean` (the domain-equation solver).
+  equations. Home `Axis/Mode/GuardedRecursion.lean` (shipped mode-15) +
+  `Axis/Type/GuardedType.lean` (the domain-equation solver).
 - **mode-25 session/protocol duality** `[S]` — duality as a self-inverse 2-cell;
   protocol metatheory as a modal instance (BRIDGE-SESSION-DUAL). Home
-  `Tier0/Mode/Session.lean` (shipped).
+  `Axis/Mode/Session.lean` (shipped).
 - **BRIDGE-EFFECTS-MODAL** `[C]` — algebraic effects / graded monads as instances of
-  the modality calculus. Home `Tier0/Mode/EffectModality.lean` (new).
+  the modality calculus. Home `Axis/Mode/EffectModality.lean` (new).
 - **LEARN-AD** `[R]` — reverse-mode automatic differentiation as a graded-optics kernel
   construction with a *definitional* chain rule. Home `Typed/Dimensions/Optics.lean` (new).
 - **PHYS-LANDAUER** `[C]` — Landauer erasure as a grade; the second law as
@@ -1948,9 +1948,9 @@ Concepts real to the program but compressed above; each still gets a home.
 - **SEARCH-1 searchable types** `[R]` — via selection functions; decidable
   quantification over exponential spaces. Home `Typed/Dimensions/Searchable.lean` (new).
 - **DPROP-1 dProp / Sierpinski split** `[R]` — decidable and semi-decidable proposition
-  universes. Home `Tier0/Type/Universe/DecidableProp.lean` (new).
+  universes. Home `Axis/Type/Universe/DecidableProp.lean` (new).
 - **COHESION-O4 condensed / cohesion focus** `[C]` — what the shipped modality substrate
-  gives condensed mathematics. Home a survey note under `Tier0/Mode/Cohesion*`.
+  gives condensed mathematics. Home a survey note under `Axis/Mode/Cohesion*`.
 - **ARITH-TOTALITY** `[R encode / O inhabit]` — a Π⁰₁ conjecture as a kernel totality
   type (inhabitation = truth). Home `Typed/Dimensions/ArithTotality.lean` (the *encoding*
   is the contribution; the proof term is not on offer). §9.
@@ -1958,7 +1958,7 @@ Concepts real to the program but compressed above; each still gets a home.
   univalent finite universe (GI reframed; decidability only, never efficiency). Home
   `Typed/Complexity/IsoConv.lean`. §11.6.
 - **term-SSC / Fiore-Plotkin-Turi** `[S]` — the single-substitution Σ-monoid; SOAS
-  completeness. Home `Tier0/Term/SSC/` (shipped). The substitution-algebra spine under
+  completeness. Home `Axis/Term/SSC/` (shipped). The substitution-algebra spine under
   the free-ω-cat monad.
 
 ---
@@ -1975,7 +1975,7 @@ Where the deep detail for each domain persists (recall these before building).
 | II/VII — displayed-TT, directed, universe-coherence, self-formalization | `reference_displayed_directed_universe_cluster` |
 | III — mode theory, transpension, A1 lock, cohesion | `reference_mtt_matt_papers`, `reference_transp_norm_paper_reads`, `project_transpension_zoo_honest_architecture`, the A1 `project_*` set |
 | IV — universes, large cardinals, the strength dial | `reference_large_cardinal_ceiling`, `project_zf_strength_audit` |
-| V — grade↔mode spectrum, decategorification | `Tier0/Mode/grade-mode-spectrum.md` (design doc, in-tree) |
+| V — grade↔mode spectrum, decategorification | `Axis/Mode/grade-mode-spectrum.md` (design doc, in-tree) |
 | VI — dissolution, NbE, metatheory-by-universal-property | `project_milestone_a_route_plan`, the DISSOLVE/FTGEN `project_*` set |
 | VII — reflection, GLP, autonomous progression, the bootstrap | `project_self_reference_reflection_ceiling` |
 | VIII — ZF-strength, constructivity | `project_zf_strength_audit` |
@@ -1989,7 +1989,7 @@ proof obligation; the Lean realizations it points at are tracked tasks (the fib-
 DISSOLVE-*, FRONTIER-*, ZOO-*, LB-*, COPT-*/CNOS-*, and the axis rung families).
 Constituent detail lives in the memory reference-maps (the five paper-cluster reads
 + the three ceiling maps + `project_polygraph_beyond_sota`) and in
-`Tier0/Mode/grade-mode-spectrum.md`. When a placement here conflicts with a shipped
+`Axis/Mode/grade-mode-spectrum.md`. When a placement here conflicts with a shipped
 reality, the shipped reality wins and this file is corrected. The Lean skeletons in
 Appendix A are shape sketches, not compiling code — they fix intent and home, and
 must be re-derived against the live APIs when built.*

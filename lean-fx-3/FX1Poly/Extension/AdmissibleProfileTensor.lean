@@ -9,7 +9,7 @@ that used to live here — the capability lattice ORDER theory, the
 `AdmissibleProfile` admission discipline, the cellular tensor
 obligation shapes with their diagonal inhabitant, and the (T7)
 Zwart-Marsden register + gate — is INTEGRATED INTO THE KERNEL:
-`FX1Poly/Tier0/AxisObligation.lean` (the lattice order) and
+`FX1Poly/Axis/AxisObligation.lean` (the lattice order) and
 `FX1Poly/Core/ProfileAdmission.lean` (admissions, tensor shapes,
 register).  What remains here is exactly the PoC-specific fragment:
 theorems ABOUT `extendProfile` and `ProfileExtension`.
@@ -33,7 +33,7 @@ Reference: polycell.md §3.0.7 (T1)-(T8), §3.14.
 
 namespace FX1Poly.Extension
 
-open Core Tier0
+open Core Axis
 
 /-! ## The headline (#216) — proved for the ledger reading
 

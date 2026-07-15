@@ -61,7 +61,7 @@ pin-free host formation master + `renameEqMkGenInversion` + the per-cell rename 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-- **The union renaming-reflection context condition.**  Each source binding's looked-up type, renamed,
 is `Conv` to the target's looked-up binding — the union mirror of the host `ContextReflectsRename`

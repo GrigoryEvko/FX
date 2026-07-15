@@ -22,7 +22,7 @@ actual children.  The `pathLam` intro row additionally reads its `sideCondition`
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Modal
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **The intro-table cell lemma.**  Under the per-obligation inner-affine IH (and, for `pathLam`, the row's
 App-scaled affine `sideCondition`), every introducer member cell satisfies `AllInnerPathLamAffine`.  Sixteen

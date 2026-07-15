@@ -26,7 +26,7 @@ by `HeadStep.deterministic` + `rw`.  No `axiom`, `sorry`, `propext`, `Quot.sound
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Forward weak-head reduction respect**: if a type-code interprets to a candidate and weak-head

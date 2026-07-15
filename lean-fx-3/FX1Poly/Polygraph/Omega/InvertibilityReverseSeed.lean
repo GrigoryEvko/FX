@@ -26,7 +26,7 @@ NOT ship a bare "reverse" theorem — that would be false.
 r1 already shipped the guarded collapse as `omegaFixpointsAgree_of_wellFounded` (the HL23 Cor 4.35 recall over
 the ω-carrier; its `→` half IS the conditional reverse).  The guard (`WellFounded` on cell-reduction) is
 globally FALSE at the raw ω-layer (the F1 memo pin; its discharge lives Core-side at
-`StrongNormalizationBridge.lean`, which is Tier0/Core — Polygraph may not import it, `FiniteNoGap.lean`: "Core
+`StrongNormalizationBridge.lean`, which is Axis/Core — Polygraph may not import it, `FiniteNoGap.lean`: "Core
 instantiates Polygraph, never the reverse").  So r2 gains NO new conditional theorem — re-stating it would
 duplicate r1.  It is recalled here by name only.
 

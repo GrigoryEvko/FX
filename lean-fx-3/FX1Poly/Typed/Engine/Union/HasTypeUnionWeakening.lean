@@ -6,7 +6,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Cell.UnionCellSubstitution
 import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormerWeakening
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
+import FX1Poly.Axis.Term.Subst.RawTermOccurrenceSubst
 
 /-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 6-arm native
     union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)
@@ -78,7 +78,7 @@ Per-declaration audit-gated in `FX1PolyAudit/AuditUnionWeakening.lean`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax FX1Poly.Modal
 
 /-! ## Cell-rename commutations — the rename twins of the `subst_*Cell` lemmas (all `rfl`) -/
 

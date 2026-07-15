@@ -33,7 +33,7 @@ on the `gen_intervalCode`-vs-former head distinctness + the `WfContextDesc(Pi).h
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The interval has no FORMATION typing.**  A host-typed subject's head is a variable or one of the six
 formation formers (`HasTypeDesc.subjectIsVariableOrFormerHead`); the interval's head `gen_intervalCode` is

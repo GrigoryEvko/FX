@@ -28,7 +28,7 @@ codomain re-typing as recursive / contextual hypotheses.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **SR routing arm at a Π-former.**  `Step (piTyCodeCell domainCode codomainCode) reduct` is domain
 congruence (→ `congPiDomain`, with the domain's SR and the codomain re-typing under the stepped domain) or

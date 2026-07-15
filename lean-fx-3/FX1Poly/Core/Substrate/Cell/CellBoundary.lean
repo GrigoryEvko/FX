@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Profile.PolyProfile
-import FX1Poly.Tier0.Term.Cell.CellSort
-import FX1Poly.Tier0.Term.Cell.RawCell
+import FX1Poly.Axis.Term.Cell.CellSort
+import FX1Poly.Axis.Term.Cell.RawCell
 
 /-! # Foundation/PolyCell/Core/CellBoundary — boundary data for cells
 

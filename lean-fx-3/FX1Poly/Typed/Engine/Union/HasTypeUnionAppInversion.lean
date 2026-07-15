@@ -40,7 +40,7 @@ unconditional `Conv.trans` / `Conv.sym` / `Conv.refl` + `childCons` injection dr
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **★ Π-elimination (app) inversion for the union.**  A union typing of an `appCell functionTerm
 argument`-headed subject has the function union-typed at a Π-code, the argument at the domain, and the

@@ -36,7 +36,7 @@ candidate fed variable 0 via `Fin.mk 0 (Nat.succ_pos _)` — the explicit `⟨0,
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Every dependent-reducibility candidate is a Girard reducibility candidate.**  By induction on the
 `ReducibleType` derivation: `whnfExpand` reuses the induction hypothesis, `neutral` is the

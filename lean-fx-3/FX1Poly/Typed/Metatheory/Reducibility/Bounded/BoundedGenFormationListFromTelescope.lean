@@ -42,7 +42,7 @@ One `intro` then a chain of shipped lemma applications plus a `rfl` cell-substit
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The bounded `genFormationPi` recursor arm for the `listCode` data former (one-child data former).**  From

@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.Semistrictification
 
-/-! # FX1PolyAudit/AuditTier0ModeSemistrictification — zero-axiom gate for mode-7
+/-! # FX1PolyAudit/AuditAxisModeSemistrictification — zero-axiom gate for mode-7
 
-Per-declaration zero-axiom gate for `mode-7` (`FX1Poly/Tier0/Mode/Semistrictification.lean`): the Eckmann–Hilton
+Per-declaration zero-axiom gate for `mode-7` (`FX1Poly/Axis/Mode/Semistrictification.lean`): the Eckmann–Hilton
 obstruction data + its full theorem (operations coincide, medial, commutativity, associativity), the trivial and
 `Bool`-`&&` witnesses, the semistrict ω-category interface + the terminal instance, and the honesty markers.
 

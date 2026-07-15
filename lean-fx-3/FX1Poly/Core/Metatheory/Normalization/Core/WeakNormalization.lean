@@ -33,7 +33,7 @@ per declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Weak normalization.**  A strongly-normalizing term `StepStar`-reduces to a structural normal form.
 The reduction chain is produced by descending the accessibility witness: each non-normal node takes a real

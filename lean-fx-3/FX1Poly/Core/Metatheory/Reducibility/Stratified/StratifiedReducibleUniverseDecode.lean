@@ -38,7 +38,7 @@ shipped `piTypeInversion`; `tarskiDecode` destructures the existential and the `
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax FX1Poly.Universe StepStar
+open FX1Poly.Axis.Syntax FX1Poly.Universe StepStar
 
 /-- **Universe-code inversion (parametric).**  A `gen_universeCode`-rooted type reducible at the step-functor
 came through the `universeCode` arm: `whnfExpand` cannot fire (a universe code is weak-head normal, refuted

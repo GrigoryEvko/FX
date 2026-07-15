@@ -28,7 +28,7 @@ position split (`⟨0,_⟩` / `⟨k+1,_⟩`, the propext-free structure match) w
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Axis.Syntax
 
 /-- The denote-keyed level-indexed reducible closing-substitution environment: `substitution` sends each
 context variable to a denote-reducible member (at `level`) of that variable's looked-up type, itself closed by

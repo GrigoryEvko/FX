@@ -71,7 +71,7 @@ formation row + IH list-membership dispatch.  No `axiom`, `sorry`, `propext`, `Q
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- **The union classifier-validity conclusion.**  A classifier is a well-formed union type iff it
 inhabits SOME universe code in the union judgment.  A universe code satisfies this by self-typing

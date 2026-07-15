@@ -1,8 +1,8 @@
 import FX1Poly.Typed.Cell.RawTermHeadGenerator
 import FX1Poly.Typed.Cell.CellConstructors
-import FX1Poly.Tier0.Term.Core.RawTermChildrenUnique
+import FX1Poly.Axis.Term.Core.RawTermChildrenUnique
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/UniverseCodeShape
     — raw-cell inversion for universe-code cells

@@ -2,7 +2,7 @@ import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedCodomainOpenSN
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst0ArgumentStar
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Typed.Cell.UnionCellSubstitution
 
 /-! # FX1Poly/Typed/GenericDependentDataElimBridge
@@ -38,7 +38,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTypedFundamentalBounded.lean`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **Generic dependent-eliminator result-type recovery (shared by EVERY dependent data-eliminator bridge).**

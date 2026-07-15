@@ -10,7 +10,7 @@ FULL walker's local posetality additionally needs the CROSS-modality homs to be 
 
 nLab (*points-to-pieces transform*): the composite `♭X ⟶ X ⟶ ʃX` (the flat counit `ε^♭` followed by the shape
 unit `η^ʃ`), "the transformation from points to their pieces".  It is the modal shadow of punctual local
-connectedness; the Tier0 mode theory already ships it as `CohesionAdjointQuadruple.piecesHavePoints`
+connectedness; the Axis mode theory already ships it as `CohesionAdjointQuadruple.piecesHavePoints`
 (`shapeUnit ∘ flatCounit : ♭X → ʃX`).  In the polygraph walker it is the 2-cell
 `cohesionPointsToPiecesCell = vcomp flatCounit shapeUnit : flat ⇒ shape`.
 
@@ -40,7 +40,7 @@ namespace FX1Poly.Polygraph
 
 /-- ★ The **points-to-pieces transform** `♭ ⟹ ʃ` — the flat counit `ε^♭ : flat ⇒ id` followed by the shape unit
 `η^ʃ : id ⇒ shape`, i.e. `vcomp flatCounit shapeUnit : flat ⇒ shape`.  The modal shadow of "pieces have points"
-(the walker incarnation of the Tier0 `piecesHavePoints : ♭X → ʃX`), the genuine cross-modality comparison. -/
+(the walker incarnation of the Axis `piecesHavePoints : ♭X → ʃX`), the genuine cross-modality comparison. -/
 def cohesionPointsToPiecesCell : RawTwoCellExpr cohesionModeSignature cohesionFlat cohesionShape :=
   RawTwoCellExpr.vcomp cohesionFlatCounitCell cohesionShapeUnitCell
 
@@ -85,7 +85,7 @@ theorem cohesionPtp_shapeUnitLawDetour :
 /-! ## Honesty markers -/
 
 /-- ★ **ESTABLISHED — the points-to-pieces transform is exhibited.**  The cross-modality comparison
-`cohesionPointsToPiecesCell : flat ⇒ shape` (`vcomp flatCounit shapeUnit`, the walker shadow of the Tier0
+`cohesionPointsToPiecesCell : flat ⇒ shape` (`vcomp flatCounit shapeUnit`, the walker shadow of the Axis
 `piecesHavePoints`) is a genuine `size 3` composite between the DISTINCT 1-cells `flat` and `shape`
 (`cohesionPointsToPieces_crossModality`), and the modality-internal laws act on its hom (the flat-comonad and
 shape-monad detours collapse back onto it, `cohesionPtp_flatCounitLawDetour` / `cohesionPtp_shapeUnitLawDetour`).

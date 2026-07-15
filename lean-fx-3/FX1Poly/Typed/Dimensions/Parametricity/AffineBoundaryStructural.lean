@@ -42,7 +42,7 @@ short structural proof over `DecidableEq`.  No `axiom`, `sorry`, `propext`, `Quo
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 open FX1Poly.Core
 
 /-! ## The structural boundary predicate -/

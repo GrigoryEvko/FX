@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
-import FX1Poly.Tier0.Term.Core.RawTermFresh
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Core.RawTermFresh
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 
 /-! # Foundation/PolyCell/Core/HeadStepCommute
     — weak-head reduction commutes with renaming and substitution
@@ -28,7 +28,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Weak-head reduction commutes with renaming.**  The head β-redex `app (lam body) argument` renames
 to a head β-redex of the renamed body (under the lifted renaming) and renamed argument; its contractum

@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Neutral.NeutralTerm
-import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Rename.RawTermRename
 
 /-! # Foundation/PolyCell/Core/NeutralTermRename
     — neutrality is preserved by renaming
@@ -24,7 +24,7 @@ the renamed child directly.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Clas
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Neutrality is preserved by renaming.**  Renaming preserves the stuck-root structure (root generator
 and principal child position), so a neutral term renames to a neutral term — the principal child's

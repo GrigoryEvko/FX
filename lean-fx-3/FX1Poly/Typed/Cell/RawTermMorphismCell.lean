@@ -1,14 +1,14 @@
 import FX1Poly.Typed.Cell.CellConstructors
-import FX1Poly.Tier0.Term.Action.Fold
-import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
-import FX1Poly.Tier0.Term.Rename.RawTermRename
-import FX1Poly.Tier0.Term.Subst.RawTermSubst
+import FX1Poly.Axis.Term.Action.Fold
+import FX1Poly.Axis.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Axis.Term.Rename.RawTermRename
+import FX1Poly.Axis.Term.Subst.RawTermSubst
 
 /-! # FX1Poly/Typed/Cell/RawTermMorphismCell — the ONE raw-term morphism the cells act under
 
 `RawTerm.rename` and `RawTerm.subst` are not two operations: both are literally
 `fold GenAlgebra.canonical` at a different Container (`RawTermRename.lean:71`,
-`RawTermSubst.lean:111`).  Tier0 already carries the abstraction that makes this
+`RawTermSubst.lean:111`).  Axis already carries the abstraction that makes this
 precise — a Container is a raw-term morphism exactly when it supplies
 
   * `LiftsRaw`          — how it crosses one binder (`LiftsRaw.lean:69`), and
@@ -43,7 +43,7 @@ concrete `gen_universeCode` generator regardless of Container.  No `axiom`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- ★ **The raw-term morphism action** — the ONE traversal `RawTerm.rename` and
 `RawTerm.subst` both are.  A `Container` is a raw-term morphism when it knows how

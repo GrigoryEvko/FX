@@ -56,7 +56,7 @@ spine-steps into leaf spines closed by `cases`.  No `axiom`, `sorry`, `admit`, `
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Inversion of a step INTO a concrete cell.**  When the REDUCT of an arbitrary step is a concrete
 cell `.mkGen targetGenerator targetPayload targetChildren`, either the SOURCE already has a weak-head

@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Cost.CostBound
-import FX1Poly.Tier0.Term.Core.RawSize
+import FX1Poly.Axis.Term.Core.RawSize
 
 /-! # FX1Poly/Core/SpaceBound
     — the kernel SPACE bound: every intermediate of the canonical evaluation is size-bounded (COST-3 brick 6)
@@ -37,7 +37,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The canonical evaluation path -/
 

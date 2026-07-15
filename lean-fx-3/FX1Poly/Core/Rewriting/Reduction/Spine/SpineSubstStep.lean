@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Reduction.Spine.SpineConsStep
-import FX1Poly.Tier0.Term.Subst.RawTermSubst
+import FX1Poly.Axis.Term.Subst.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/SpineSubstStep
    — subst-shaped spine step helpers for the SR-beta mutual block
@@ -24,7 +24,7 @@ recursively, then calls the cons helper here.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- Empty spines are stable under substitution.  This is the nil arm of
 the certified-spine substitution recursion. -/

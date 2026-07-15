@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Church.Combinators.CurryFixpointDivergence
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Axis.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Typed/CombinatoryLogic — the SKI combinator basis in the λ-fragment

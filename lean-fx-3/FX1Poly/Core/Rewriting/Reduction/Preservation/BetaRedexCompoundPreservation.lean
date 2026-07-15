@@ -75,7 +75,7 @@ Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## Section 1 — subst0 distributivity probes for compound bodies -/
 

@@ -46,7 +46,7 @@ Self-recursion + `HasTypeDesc.renameRespectingContext` + the
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 
 /-- INTRINSIC renaming for the eliminator-shape term spine: a `DescTermTelescope` is
 preserved along ANY renaming that respects the context (sends each source binding's

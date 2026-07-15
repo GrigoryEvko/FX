@@ -28,7 +28,7 @@ by `Generator.noConfusion`.  `atUniverseCode` then specializes the Core
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Axis.Syntax FX1Poly.Universe
 open StepStar
 
 /-- A universe-code cell admits no weak-head step.  It is a normal leaf (`noStep_universeCode`), and every

@@ -46,7 +46,7 @@ zero-axiom.  The pins are direct applications with `rfl` firing equations.  No `
 `#audit_namespace FX1Poly.Core` plus the dedicated audit twin. -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **★ THE ROW-COMMUTE KEYSTONE: a canonical row firing commutes with an arbitrary step, refire
 exposed.**  Given a row of the canonical table firing at the root (`fires`) and any step out of the

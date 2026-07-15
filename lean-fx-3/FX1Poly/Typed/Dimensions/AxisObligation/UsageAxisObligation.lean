@@ -58,7 +58,7 @@ fields, and arithmetic `rfl` pins.  No `axiom`, `sorry`, `propext`, `Quot.sound`
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Axis FX1Poly.Modal
 
 /-- **The usage-axis capability ledger** — honestly PARTIAL: five capabilities backed by the shipped
 graded metatheory, three genuinely absent (parametricity, decidable conversion, decidable

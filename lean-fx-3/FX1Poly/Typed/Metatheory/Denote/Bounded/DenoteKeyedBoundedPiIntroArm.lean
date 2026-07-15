@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeAbstraction
-import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Axis.Term.Subst.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedPiIntroArm
     — the bounded fundamental theorem's Π-INTRODUCTION (λ) member arm + FT arm — THE BINDER CRUX (#753 → SN-043)
@@ -48,7 +48,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Axis.Syntax
 open StepStar
 
 /-- **The canonical member-predicate is the type's own candidate (bound-carrying, #490 analogue).**  For a

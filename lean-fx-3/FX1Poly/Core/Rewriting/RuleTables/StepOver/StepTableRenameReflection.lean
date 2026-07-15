@@ -1,8 +1,8 @@
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
-import FX1Poly.Tier0.Term.Core.RawTermChildrenUnique
+import FX1Poly.Axis.Term.Core.RawTermChildrenUnique
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRenameReflect
-import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Axis.Term.Core.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/StepTableRenameReflection — the pattern test REFLECTS under renaming
 
@@ -43,7 +43,7 @@ list.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-! ## The renamed slot lookup -/
 

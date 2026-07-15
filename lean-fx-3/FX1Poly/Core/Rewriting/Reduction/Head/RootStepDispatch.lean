@@ -17,7 +17,7 @@ soundness.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Root-redex dispatch.**  If `RawTerm.hasRootStepSource` recognizes
 `source` as a root redex, `source` takes a `Step` — the walk's firing

@@ -1,6 +1,6 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidateArrow
 import FX1Poly.Core.Rewriting.Normalize.WhnfInterpretationDeterminism
-import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Axis.Term.Subst.RawTermSubst0
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStepDeterministic
 
@@ -50,7 +50,7 @@ impossibilities discharged by `HeadStep.subjectRootIsApp` (a weak-head step is `
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- The dependent reducibility relation: a type-code denotes a reducibility candidate, dispatching

@@ -46,7 +46,7 @@ pointwise lemma).
 namespace FX1Poly.Core
 namespace StepStar
 
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 
 /-- **Motive-position chain congruence for `natElim`.**  A reduction chain in the motive (the first,
 binder-shifted `scope + 1` child) lifts to the whole `natElim` cell, the zero/succ branches + scrutinee fixed.

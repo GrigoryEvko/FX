@@ -33,7 +33,7 @@ the liveness ledger is `List.filter`/`isSome` reducing by `rfl`.  No `axiom`, `s
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Tier0
+open FX1Poly.Axis
 open FX1Poly.Core
 
 /-! ## The schema -/

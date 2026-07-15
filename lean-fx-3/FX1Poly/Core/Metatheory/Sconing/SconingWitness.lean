@@ -21,7 +21,7 @@ derivation: canonicity is `extraction ∘ fundamental`.
 The concrete witness `reducibilityScone` closes the loop with Path A: a reducibility candidate IS a
 sconing witness for the strong-normalization canonicity statement (CR1 discharges extraction).  So the
 reducibility logical relation (Path A) and the internal sconing (Path C) construct the SAME object —
-the cross-path agreement that is the certainty thesis.  This complements the `FX1Poly.Tier0`
+the cross-path agreement that is the certainty thesis.  This complements the `FX1Poly.Axis`
 construction-level ledger (which tracks WHICH obligations a profile has discharged) with the actual
 logical-predicate content.
 
@@ -34,7 +34,7 @@ record literal discharging extraction by `IsReducibilityCandidate.stronglyNormal
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Tier0.Syntax
+open FX1Poly.Axis.Syntax
 open StepStar
 
 /-- A proof-relevant internal-sconing witness, relative to a notion of well-typedness and a notion of

@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverBundle
-import FX1Poly.Tier0.Term.Generator.GeneratorTagRoundTrip
+import FX1Poly.Axis.Term.Generator.GeneratorTagRoundTrip
 
 /-! # DimensionGenericRuleTable — DIMN-TAB-1 [SPIKE]: what a RuleTable shares across dimensions
 
