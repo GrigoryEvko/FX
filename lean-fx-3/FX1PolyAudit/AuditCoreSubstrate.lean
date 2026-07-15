@@ -13,6 +13,8 @@ import FX1PolyAudit.Core.NamespaceSweep
 import FX1PolyAudit.Core.Rewriting.Normalize.RawTermNF
 import FX1PolyAudit.Core.Rewriting.Reduction.Step.StepRenameReflect
 import FX1PolyAudit.Core.Rewriting.Reduction.Step.StepRenameReflectAssembly
+import FX1PolyAudit.Core.Rewriting.Reduction.WeakHead.WeakHeadRowCommuteEngine
+import FX1PolyAudit.Core.Rewriting.Reduction.WeakHead.WeakHeadRowCommuteEngineAxiomWitness
 import FX1PolyAudit.Core.Rewriting.Reduction.WeakHead.WeakHeadStepRename
 import FX1PolyAudit.Core.Rewriting.Reduction.WeakHead.WeakHeadStepRenameReflect
 import FX1PolyAudit.Core.Substrate.Certifier.HorizontalCompositeAdmission
