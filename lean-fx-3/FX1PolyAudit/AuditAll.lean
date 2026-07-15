@@ -1663,6 +1663,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidAffineOffsetSemanticsA
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarUnitLawRefutationAudit
 -- WP-PROP r30 UNITAL RESTATEMENT - the four matrix-sound (co)unit rows restored (left/right unit, left/right counit), the star scope widened to the honest Lafont presentation, the completeness target re-stated over it, the exact r30 refutation pair closed by a one-row fire, and the r30 affine separator machine-checked DEAD against the widened scope; unital owner = false (NAMED, not proven)
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarUnitalRestatementAudit
+-- WP-PROP r31 BRACKET-MAGMA SEMANTICS - evaluation into the free commutative unital magma (canonical bracket trees: comparator-ordered pairs, unit-absorbing smart multiplication); the shape invariant; the composability-gated absorber over the FULL UNITAL scope (all 11 strict rows with Clean-equivalences reused from the r30 affine absorber by projection + 15 sound + 3 hexagon + the four (co)unit rows, all pointwise); the invariant that sees association orders where both the plain matrix AND the r30 affine offset are blind; zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidBracketMagmaSemanticsAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
