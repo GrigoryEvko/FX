@@ -1757,6 +1757,36 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.MatrixNormalForm
 import FX1PolyAudit.Polygraph.Omega.LafontProp.ConvertibilitySoundness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.DiagramDecisionFires
 import FX1PolyAudit.Polygraph.Omega.LafontProp.NormalFormDecisionAxiomWitness
+import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
+import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RealEmbedding
+import FX1PolyAudit.ComputerAlgebra.Number.IntOrderedRingCertificate
+import FX1PolyAudit.ComputerAlgebra.Number.NatGreatestCommonDivisor
+import FX1PolyAudit.ComputerAlgebra.Number.RationalDistance
+import FX1PolyAudit.ComputerAlgebra.Number.RationalOrderedFieldCertificate
+import FX1PolyAudit.ComputerAlgebra.Number.RationalPair
+import FX1PolyAudit.ComputerAlgebra.Number.RegularReal
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealApproximation
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealArithmetic
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealCompleteness
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealDistance
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealInverse
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealMultiplication
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealOrder
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealSquareRoot
+import FX1PolyAudit.Core.Eliminators.Core.BoolElimDataTaitMember
+import FX1PolyAudit.Core.Eliminators.Core.ClosedEliminatorDataTaitMembers
+import FX1PolyAudit.Core.Eliminators.Core.NatElimDataTaitMember
+import FX1PolyAudit.Core.Eliminators.Core.RecursorDataTaitMembers
+import FX1PolyAudit.Core.Equality.Eta.EtaContractionNaturality
+import FX1PolyAudit.Core.Equality.Eta.EtaIotaCongRootAssembly
+import FX1PolyAudit.Core.Equality.Eta.EtaIotaCoreReplacement
+import FX1PolyAudit.Core.Equality.Eta.EtaIotaCrossPairCounterexample
+import FX1PolyAudit.Core.Equality.Eta.EtaIotaRootTierUnion
+import FX1PolyAudit.Core.Equality.Eta.EtaIotaScrutineeDichotomy
+import FX1PolyAudit.Core.Equality.Eta.EtaObservationCompleteness
+import FX1PolyAudit.Core.Equality.Eta.EtaSpinePointwise
+import FX1PolyAudit.Core.Equality.Eta.EtaStabilityDefinedness
+import FX1PolyAudit.Core.Equality.Eta.EtaStabilitySubstrate
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
