@@ -1,0 +1,27 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidStarAssociativeRestatement
+
+/-! # FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarAssociativeRestatementAudit — zero-axiom gate for the associative unital re-statement: the two matrix-sound (co)associativity rows, the widened Lafont scope, the monotone embedding, the re-stated target, the closure fires, and the honest owner (named, NOT proven). -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCoassocLeftLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCoassocRightLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.BunchedBimonoidAssocRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAssocRowMatrixSound
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAssociativeStarCongruenceScope
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidUnitalConvEmbedsIntoAssociative
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidStarStatementDimTwoCanonicalGensUnitalAssoc
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAssocPairConvertsAssociative
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidCoassocPairConvertsAssociative
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidWhiskeredAssocPairConvertsAssociative
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAssocRowBreaksBracketInvariant
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_starAssociativeRestatementShipped
+#assert_no_axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_dimTwoCanonicalGensUnitalAssocStarStillOpen
+
+-- Independent (non-fuel) axiom prints on the spine.
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidStarStatementDimTwoCanonicalGensUnitalAssoc
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAssocPairConvertsAssociative
+#print axioms FX1Poly.Polygraph.Omega.fxBunchedBimonoid_dimTwoCanonicalGensUnitalAssocStarStillOpen
+
+end FX1PolyAudit
