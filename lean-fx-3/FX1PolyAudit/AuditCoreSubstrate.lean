@@ -11,6 +11,8 @@ import FX1PolyAudit.Core.Metatheory.Reducibility.Members.ReducibleMemberNeutral
 import FX1PolyAudit.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleTypeRename
 import FX1PolyAudit.Core.NamespaceSweep
 import FX1PolyAudit.Core.Rewriting.Normalize.RawTermNF
+import FX1PolyAudit.Core.Rewriting.Normalize.WeakHeadNormalPreservation
+import FX1PolyAudit.Core.Rewriting.Normalize.WeakHeadNormalPreservationAxiomWitness
 import FX1PolyAudit.Core.Rewriting.Reduction.Step.StepRenameReflect
 import FX1PolyAudit.Core.Rewriting.Reduction.Step.StepRenameReflectAssembly
 import FX1PolyAudit.Core.Rewriting.Reduction.WeakHead.WeakHeadRowCommuteEngine
