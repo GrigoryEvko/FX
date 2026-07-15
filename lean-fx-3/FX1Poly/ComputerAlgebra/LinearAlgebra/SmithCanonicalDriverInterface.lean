@@ -37,10 +37,15 @@ driver at all, so that a future driver swap is a genuine zero-behaviour-change m
     a Smith reduction certificate.  Its type names NO driver and NO sweep.  This is the statement the
     rest of the repo should consume; it is the first such statement in the layer.
 
-The `HopfShadowCokerSmithCertificate` module in the Polygraph/Homology lane hand-writes its reduction
-word precisely because no proven driver was available to it (its own docstring records the reason).
-`smithNormalFormIsReachable` is the interface that makes that hand-writing optional — that migration is
-a Homology-lane call and is NOT performed here.
+**What this interface does NOT unlock (corrected r51 defect).**  The `HopfShadowCokerSmithCertificate`
+module in the Polygraph/Homology lane hand-writes its reduction word to honour an explicit
+ARCHITECTURAL BOUNDARY, not because a proven driver was unavailable: its docstring records a
+LANE LAW — "no `SmithNormalForm` / `SmithCascadeTermination` import".  This interface does NOT lift that
+law.  `smithNormalFormIsReachable` rides the Bezout driver, which sits ABOVE both of those modules: this
+file's import closure is 46 modules and REACHES BOTH of them.  So the Homology hand-writing is NOT made
+optional here, and consuming this interface from that lane would BREACH its lane law.  Making that
+migration available would require either re-homing this interface BELOW the forbidden modules, or the
+Homology lane relaxing its law — both are out of scope and neither is performed here.
 
 Raw Lean 4 + `Init` only; structural throughout; zero axioms. -/
 
