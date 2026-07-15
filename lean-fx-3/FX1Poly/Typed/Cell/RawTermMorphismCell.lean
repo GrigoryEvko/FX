@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Tier0.Term.Action.Fold
+import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
 import FX1Poly.Tier0.Term.Rename.RawTermRename
 import FX1Poly.Tier0.Term.Subst.RawTermSubst
 
@@ -133,5 +134,33 @@ theorem applyMorphism_emptyTypeCell {Container : Nat → Nat → Type}
     RawTerm.applyMorphism morphism (emptyTypeCell (scope := sourceScope))
       = emptyTypeCell :=
   rfl
+
+/-- ★ **A NON-VARIABLE cell's head generator is preserved by EVERY raw-term
+morphism.**  The generic brick behind `RawTerm.rename_mkGen_of_ne_var` and
+`RawTerm.subst_mkGen_of_ne_var` (`RawTermFoldNonVarCommute.lean`): both are this
+lemma's two instantiations, since both are `fold` at the canonical algebra and
+`fold_mkGen_of_ne_var` is already generic in the Container.  The morphism reaches
+its variable action ONLY at `.gen_var`; away from it the canonical fold rebuilds
+the same generator over transported children, whatever the Container does.
+
+This is the exact boundary of the collapse: it says nothing about the variable
+case, where `rename` and `subst` genuinely diverge (`ActsOnRawTermVar.varToRawTerm`
+re-wraps a variable for `RawRenaming`, returns an ARBITRARY term for
+`RawTermSubst`). -/
+theorem RawTerm.applyMorphism_mkGen_of_ne_var {Container : Nat → Nat → Type}
+    [LiftsRaw Container] [ActsOnRawTermVar Container]
+    {sourceScope targetScope : Nat}
+    (morphism : Container sourceScope targetScope)
+    {generator : Generator} (hNotVar : generator ≠ .gen_var)
+    (payload : generator.payload sourceScope)
+    (children : RawTermChildren generator.binderShifts sourceScope) :
+    RawTerm.applyMorphism morphism (.mkGen generator payload children) =
+      .mkGen generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar sourceScope targetScope ▸ payload)
+        (RawTermChildren.applyMorphism morphism children) := by
+  rw [show RawTerm.applyMorphism morphism (RawTerm.mkGen generator payload children)
+        = fold GenAlgebra.canonical morphism (.mkGen generator payload children) from rfl,
+    fold_mkGen_of_ne_var GenAlgebra.canonical morphism hNotVar,
+    GenAlgebra.canonical_algebra_eq_mkGen]
 
 end FX1Poly.Typed

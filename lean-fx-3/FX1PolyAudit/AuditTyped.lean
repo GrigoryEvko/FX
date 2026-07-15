@@ -311,6 +311,8 @@ import FX1PolyAudit.Typed.Engine.Union.HasTypeUnion
 import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1PolyAudit.Typed.Engine.Union.RawTermMorphismFormationObligations
 import FX1PolyAudit.Typed.Engine.Union.RawTermMorphismFormationObligationsAxiomWitness
+import FX1PolyAudit.Typed.Engine.Union.RawTermMorphismSubjectUsability
+import FX1PolyAudit.Typed.Engine.Union.RawTermMorphismSubjectUsabilityAxiomWitness
 import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionGenericElimInversion
 import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionGenericVariableInversion
 import FX1PolyAudit.Typed.Metatheory.Universe.NativeUniverseClassificationUnique

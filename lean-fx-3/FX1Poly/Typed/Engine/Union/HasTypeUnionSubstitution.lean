@@ -145,19 +145,8 @@ theorem subjectUsabilityPreservedUnderSubst {profile : PolyProfile} {sourceScope
         targetContext.isSubjectUsableAtModality (substitution index) modality = true)
     (subject : RawTerm sourceScope)
     (usable : sourceContext.isSubjectUsableAtModality subject modality = true) :
-    targetContext.isSubjectUsableAtModality (RawTerm.subst substitution subject) modality = true := by
-  cases subject with
-  | mkGen generator payload children =>
-      by_cases generatorIsVar : generator = Generator.gen_var
-      · subst generatorIsVar
-        cases children
-        rw [isSubjectUsableAtModality_var] at usable
-        change targetContext.isSubjectUsableAtModality
-          (RawTerm.subst substitution (variableCell payload)) modality = true
-        rw [subst_variableCell]
-        exact substRespectsModality payload usable
-      · rw [RawTerm.subst_mkGen_of_ne_var substitution generatorIsVar]
-        exact isSubjectUsableAtModality_ofNonVarHead targetContext generator _ _ modality generatorIsVar
+    targetContext.isSubjectUsableAtModality (RawTerm.subst substitution subject) modality = true :=
+  subjectUsabilityPreservedUnderMorphism substitution modality substRespectsModality subject usable
 
 /-! ### Subject-usability transport ACROSS A BINDER under substitution — the lifted-substitution glue (A1-SUBST-OPEN)
 
@@ -721,42 +710,8 @@ theorem flatFormationObligations_usable_pushSubst {profile : PolyProfile} {sourc
       ∀ targetObligation ∈ flatFormationObligations profile targetContext flag
           (RawTermChildren.subst substitution children) levels,
         targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-          targetObligation.modality = true := by
-  intro binderShifts
-  induction binderShifts with
-  | nil =>
-      intro children levels _sourceUsable targetObligation targetMember
-      cases children
-      cases targetMember
-  | cons headShift restShifts ih =>
-      intro children levels sourceUsable targetObligation targetMember
-      cases children with
-      | childCons childHead childTail =>
-          cases headShift with
-          | zero =>
-              cases levels with
-              | nil =>
-                  cases targetMember with
-                  | head =>
-                      exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-                        childHead (sourceUsable childHead (universeCodeCell LevelExpr.lzero flag)
-                          (List.Mem.head _))
-                  | tail _ tailMember =>
-                      exact ih childTail []
-                        (fun subject classifier member =>
-                          sourceUsable subject classifier (List.Mem.tail _ member))
-                        targetObligation tailMember
-              | cons headLevel restLevels =>
-                  cases targetMember with
-                  | head =>
-                      exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-                        childHead (sourceUsable childHead (universeCodeCell headLevel flag) (List.Mem.head _))
-                  | tail _ tailMember =>
-                      exact ih childTail restLevels
-                        (fun subject classifier member =>
-                          sourceUsable subject classifier (List.Mem.tail _ member))
-                        targetObligation tailMember
-          | succ _ => cases targetMember
+          targetObligation.modality = true :=
+  flatFormationObligations_usable_pushMorphism targetContext substitution flag substRespectsModality
 
 /-- A term-indexed endpoint obligation list's use-site usability transports along a substitution. -/
 theorem termIndexedEndpointObligations_usable_pushSubst {profile : PolyProfile} {sourceScope targetScope : Nat}
@@ -774,29 +729,9 @@ theorem termIndexedEndpointObligations_usable_pushSubst {profile : PolyProfile} 
       ∀ targetObligation ∈ termIndexedEndpointObligations profile targetContext
           (RawTerm.subst substitution carrier) (RawTermChildren.subst substitution children),
         targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-          targetObligation.modality = true := by
-  intro shifts
-  induction shifts with
-  | nil =>
-      intro children _sourceUsable targetObligation targetMember
-      cases children
-      cases targetMember
-  | cons headShift restShifts ih =>
-      intro children sourceUsable targetObligation targetMember
-      cases children with
-      | childCons childHead childTail =>
-          cases headShift with
-          | zero =>
-              cases targetMember with
-              | head =>
-                  exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-                    childHead (sourceUsable childHead carrier (List.Mem.head _))
-              | tail _ tailMember =>
-                  exact ih childTail
-                    (fun subject classifier member =>
-                      sourceUsable subject classifier (List.Mem.tail _ member))
-                    targetObligation tailMember
-          | succ _ => cases targetMember
+          targetObligation.modality = true :=
+  termIndexedEndpointObligations_usable_pushMorphism targetContext substitution carrier
+    substRespectsModality
 
 /-- A cumulative-family obligation list's use-site usability transports along a substitution. -/
 theorem cumulativeFormationObligations_usable_pushSubst {profile : PolyProfile} {sourceScope targetScope : Nat}
@@ -819,66 +754,12 @@ theorem cumulativeFormationObligations_usable_pushSubst {profile : PolyProfile} 
       ∀ targetObligation ∈ cumulativeFormationObligations profile targetContext flag
           (RawTermChildren.subst substitution children) levels,
         targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-          targetObligation.modality = true := by
-  intro binderShifts children levels baseUsable crossingUsable targetObligation targetMember
-  match binderShifts, children, levels with
-  | _, .childNil, _ => cases targetMember
-  | _, .childCons (shift := 0) headChild .childNil, [] =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-            headChild (baseUsable headChild (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
-      | tail _ tailMember => cases tailMember
-  | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-            headChild (baseUsable headChild (universeCodeCell elementLevel flag) (List.Mem.head _))
-      | tail _ tailMember => cases tailMember
-  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil),
-      domainLevel :: codomainLevel :: _ =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-            domain (baseUsable domain (universeCodeCell domainLevel flag) (List.Mem.head _))
-      | tail _ tailMember =>
-          cases tailMember with
-          | head =>
-              exact subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain)
-                .fibrant substRespectsModality codomain
-                (crossingUsable domain codomain (universeCodeCell codomainLevel flag)
-                  (List.Mem.tail _ (List.Mem.head _)))
-          | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [] =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
-      | tail _ tailMember =>
-          cases tailMember with
-          | head =>
-              exact subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain)
-                .fibrant substRespectsModality codomain
-                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
-                  (List.Mem.tail _ (List.Mem.head _)))
-          | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [_] =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
-      | tail _ tailMember =>
-          cases tailMember with
-          | head =>
-              exact subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain)
-                .fibrant substRespectsModality codomain
-                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
-                  (List.Mem.tail _ (List.Mem.head _)))
-          | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
-  | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
+          targetObligation.modality = true :=
+  cumulativeFormationObligations_usable_pushMorphism targetContext substitution flag
+    substRespectsModality
+    (fun domain subject crossingHolds =>
+      subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain) .fibrant
+        substRespectsModality subject crossingHolds)
 
 /-- **★ The unified FORMATION-rule obligation-USABILITY substitution push (A1-CONJUNCT-WIRE substrate, formation
 arm, subst twin).**  The substitution dual of `FormationRule.obligationsUsable_pushRename`.  Two source-usability
@@ -906,40 +787,13 @@ theorem FormationRule.obligationsUsable_pushSubst {profile : PolyProfile} {sourc
         (RawTermChildren.subst substitution children) levels
         (RawTerm.subst substitution carrier) level flag,
       targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-        targetObligation.modality = true := by
-  cases rule with
-  | baseType baseRule =>
-      intro targetObligation targetMember
-      cases targetMember
-  | flat flatRule =>
-      exact flatFormationObligations_usable_pushSubst targetContext substitution flag substRespectsModality
-        children levels baseUsable
-  | cumulative cumulativeRule =>
-      exact cumulativeFormationObligations_usable_pushSubst targetContext substitution flag
-        substRespectsModality children levels baseUsable crossingUsable
-  | termIndexed termRule =>
-      cases children with
-      | childNil =>
-          intro targetObligation targetMember
-          cases targetMember
-      | childCons carrierHead rest =>
-          rename_i carrierShift _restShifts
-          cases carrierShift with
-          | zero =>
-              intro targetObligation targetMember
-              cases targetMember with
-              | head =>
-                  exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
-                    carrierHead (baseUsable carrierHead (universeCodeCell level flag) (List.Mem.head _))
-              | tail _ tailMember =>
-                  exact termIndexedEndpointObligations_usable_pushSubst targetContext substitution carrier
-                    substRespectsModality rest
-                    (fun subject classifier member =>
-                      baseUsable subject classifier (List.Mem.tail _ member))
-                    targetObligation tailMember
-          | succ _ =>
-              intro targetObligation targetMember
-              cases targetMember
+        targetObligation.modality = true :=
+  FormationRule.obligationsUsable_pushMorphism rule targetContext substitution children levels
+    carrier level flag substRespectsModality
+    (fun domain subject crossingHolds =>
+      subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain) .fibrant
+        substRespectsModality subject crossingHolds)
+    baseUsable crossingUsable
 
 /-- **★ The pointwise substitution lemma over the native union.**  A union derivation at `sourceContext`,
 substituted by any HOST-typed substitution, gives a union derivation of the substituted subject at the

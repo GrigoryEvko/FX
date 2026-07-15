@@ -16,5 +16,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.substChildren_eq_applyMorphism
 #assert_no_axioms FX1Poly.Typed.applyMorphism_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.applyMorphism_emptyTypeCell
+#assert_no_axioms FX1Poly.Typed.RawTerm.applyMorphism_mkGen_of_ne_var
 
 end FX1PolyAudit

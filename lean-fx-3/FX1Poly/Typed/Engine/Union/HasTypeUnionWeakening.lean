@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
+import FX1Poly.Typed.Engine.Union.RawTermMorphismSubjectUsability
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Cell.UnionCellSubstitution
@@ -589,6 +590,36 @@ theorem dimensionalAccessibilityPreservedUnderLockConsLift {profile : PolyProfil
   | succ priorValue =>
       exact accessPreserved ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInExtended
 
+/-- **★ The renaming side's variable-image bridge** — the ONE place the renaming twin pays for the
+generic morphism transport, and the precise measure of the rename/subst asymmetry.
+
+`subjectUsabilityPreservedUnderMorphism` demands its side condition at the SUBJECT level (every
+accessible source variable's IMAGE is a usable subject), because that is the only phrasing a
+substitution can satisfy — a substituent is an arbitrary term.  A renaming's side condition is
+stated at the INDEX level (`isAccessibleAtModality (rawRenaming index)`), which is STRONGER
+information: the image is still a variable, so `isSubjectUsableAtModality_var` reduces its
+subject-usability back to its index's accessibility.  This lemma performs exactly that reduction.
+
+The substitution twin needs NO such bridge: its `varToRawTerm` IS the substituent lookup, so its
+side condition is already the generic's, definitionally.  That inequality of effort is the
+asymmetry itself, priced honestly rather than papered over. -/
+theorem renameVariableImagesUsable {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (rawRenaming : RawRenaming sourceScope targetScope) (modality : ObligationModality)
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true) :
+    ∀ index : Fin sourceScope,
+      sourceContext.isAccessibleAtModality index modality = true →
+      targetContext.isSubjectUsableAtModality
+        (ActsOnRawTermVar.varToRawTerm rawRenaming index) modality = true :=
+  fun index accessible => by
+    change targetContext.isSubjectUsableAtModality
+      (RawTerm.mkGen .gen_var (rawRenaming index) .childNil) modality = true
+    rw [isSubjectUsableAtModality_var]
+    exact accessPreserved index accessible
+
 /-- **★ Subject-usability transports along a modal-accessibility-preserving renaming (the headline #1796).**  The
 use-site conjunct's predicate `isSubjectUsableAtModality` (the SUBJECT-level lift of `isAccessibleAtModality`)
 survives any renaming that preserves accessibility AT THAT MODALITY.  A bare variable subject threads through
@@ -605,22 +636,9 @@ theorem subjectUsabilityPreservedUnderRename {profile : PolyProfile} {sourceScop
         targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
     (subject : RawTerm sourceScope)
     (usable : sourceContext.isSubjectUsableAtModality subject modality = true) :
-    targetContext.isSubjectUsableAtModality (RawTerm.rename rawRenaming subject) modality = true := by
-  cases subject with
-  | mkGen generator payload children =>
-      by_cases generatorIsVar : generator = Generator.gen_var
-      · subst generatorIsVar
-        cases children
-        rw [isSubjectUsableAtModality_var] at usable
-        change targetContext.isSubjectUsableAtModality
-          (RawTerm.rename rawRenaming (variableCell payload)) modality = true
-        rw [rename_variableCell]
-        change targetContext.isSubjectUsableAtModality
-          (RawTerm.mkGen .gen_var (rawRenaming payload) .childNil) modality = true
-        rw [isSubjectUsableAtModality_var]
-        exact accessPreserved payload usable
-      · rw [RawTerm.rename_mkGen_of_ne_var rawRenaming generatorIsVar]
-        exact isSubjectUsableAtModality_ofNonVarHead targetContext generator _ _ modality generatorIsVar
+    targetContext.isSubjectUsableAtModality (RawTerm.rename rawRenaming subject) modality = true :=
+  subjectUsabilityPreservedUnderMorphism rawRenaming modality
+    (renameVariableImagesUsable rawRenaming modality accessPreserved) subject usable
 
 /-! ### Modality-dispatched binder-crossing transport — the conjunct-wire's `cons` / `lockCons` glue (A1-WEAKEN-RENAME)
 
@@ -1311,42 +1329,9 @@ theorem flatFormationObligations_usable_pushRename {profile : PolyProfile} {sour
       ∀ targetObligation ∈ flatFormationObligations profile targetContext flag
           (RawTermChildren.rename rawRenaming children) levels,
         targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-          targetObligation.modality = true := by
-  intro binderShifts
-  induction binderShifts with
-  | nil =>
-      intro children levels _sourceUsable targetObligation targetMember
-      cases children
-      cases targetMember
-  | cons headShift restShifts ih =>
-      intro children levels sourceUsable targetObligation targetMember
-      cases children with
-      | childCons childHead childTail =>
-          cases headShift with
-          | zero =>
-              cases levels with
-              | nil =>
-                  cases targetMember with
-                  | head =>
-                      exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-                        childHead (sourceUsable childHead (universeCodeCell LevelExpr.lzero flag)
-                          (List.Mem.head _))
-                  | tail _ tailMember =>
-                      exact ih childTail []
-                        (fun subject classifier member =>
-                          sourceUsable subject classifier (List.Mem.tail _ member))
-                        targetObligation tailMember
-              | cons headLevel restLevels =>
-                  cases targetMember with
-                  | head =>
-                      exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-                        childHead (sourceUsable childHead (universeCodeCell headLevel flag) (List.Mem.head _))
-                  | tail _ tailMember =>
-                      exact ih childTail restLevels
-                        (fun subject classifier member =>
-                          sourceUsable subject classifier (List.Mem.tail _ member))
-                        targetObligation tailMember
-          | succ _ => cases targetMember
+          targetObligation.modality = true :=
+  flatFormationObligations_usable_pushMorphism targetContext rawRenaming flag
+    (renameVariableImagesUsable rawRenaming .fibrant baseAccessPreserved)
 
 /-- A term-indexed endpoint obligation list's use-site usability transports along a renaming (every endpoint is
 an ambient-context term, fibrant). -/
@@ -1365,29 +1350,9 @@ theorem termIndexedEndpointObligations_usable_pushRename {profile : PolyProfile}
       ∀ targetObligation ∈ termIndexedEndpointObligations profile targetContext
           (RawTerm.rename rawRenaming carrier) (RawTermChildren.rename rawRenaming children),
         targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-          targetObligation.modality = true := by
-  intro shifts
-  induction shifts with
-  | nil =>
-      intro children _sourceUsable targetObligation targetMember
-      cases children
-      cases targetMember
-  | cons headShift restShifts ih =>
-      intro children sourceUsable targetObligation targetMember
-      cases children with
-      | childCons childHead childTail =>
-          cases headShift with
-          | zero =>
-              cases targetMember with
-              | head =>
-                  exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-                    childHead (sourceUsable childHead carrier (List.Mem.head _))
-              | tail _ tailMember =>
-                  exact ih childTail
-                    (fun subject classifier member =>
-                      sourceUsable subject classifier (List.Mem.tail _ member))
-                    targetObligation tailMember
-          | succ _ => cases targetMember
+          targetObligation.modality = true :=
+  termIndexedEndpointObligations_usable_pushMorphism targetContext rawRenaming carrier
+    (renameVariableImagesUsable rawRenaming .fibrant baseAccessPreserved)
 
 /-- A cumulative-family obligation list's use-site usability transports along a renaming.  The element / domain
 obligations are ambient-context (transported by `subjectUsabilityPreservedUnderRename`); the Π / Σ binder-crossing
@@ -1413,66 +1378,12 @@ theorem cumulativeFormationObligations_usable_pushRename {profile : PolyProfile}
       ∀ targetObligation ∈ cumulativeFormationObligations profile targetContext flag
           (RawTermChildren.rename rawRenaming children) levels,
         targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-          targetObligation.modality = true := by
-  intro binderShifts children levels baseUsable crossingUsable targetObligation targetMember
-  match binderShifts, children, levels with
-  | _, .childNil, _ => cases targetMember
-  | _, .childCons (shift := 0) headChild .childNil, [] =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-            headChild (baseUsable headChild (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
-      | tail _ tailMember => cases tailMember
-  | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-            headChild (baseUsable headChild (universeCodeCell elementLevel flag) (List.Mem.head _))
-      | tail _ tailMember => cases tailMember
-  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil),
-      domainLevel :: codomainLevel :: _ =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-            domain (baseUsable domain (universeCodeCell domainLevel flag) (List.Mem.head _))
-      | tail _ tailMember =>
-          cases tailMember with
-          | head =>
-              exact subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain)
-                .fibrant baseAccessPreserved codomain
-                (crossingUsable domain codomain (universeCodeCell codomainLevel flag)
-                  (List.Mem.tail _ (List.Mem.head _)))
-          | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [] =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
-      | tail _ tailMember =>
-          cases tailMember with
-          | head =>
-              exact subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain)
-                .fibrant baseAccessPreserved codomain
-                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
-                  (List.Mem.tail _ (List.Mem.head _)))
-          | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [_] =>
-      cases targetMember with
-      | head =>
-          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
-      | tail _ tailMember =>
-          cases tailMember with
-          | head =>
-              exact subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain)
-                .fibrant baseAccessPreserved codomain
-                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
-                  (List.Mem.tail _ (List.Mem.head _)))
-          | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
-  | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
+          targetObligation.modality = true :=
+  cumulativeFormationObligations_usable_pushMorphism targetContext rawRenaming flag
+    (renameVariableImagesUsable rawRenaming .fibrant baseAccessPreserved)
+    (fun domain subject crossingHolds =>
+      subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain) .fibrant
+        baseAccessPreserved subject crossingHolds)
 
 /-- **★ The unified FORMATION-rule obligation-USABILITY renaming push (A1-CONJUNCT-WIRE substrate, formation
 arm).**  The formation-arm twin of `IntroRule.obligationsUsable_pushRename` / `ElimRule.obligationsUsable_pushRename`:
@@ -1503,40 +1414,13 @@ theorem FormationRule.obligationsUsable_pushRename {profile : PolyProfile} {sour
         (RawTermChildren.rename rawRenaming children) levels
         (RawTerm.rename rawRenaming carrier) level flag,
       targetObligation.context.isSubjectUsableAtModality targetObligation.subject
-        targetObligation.modality = true := by
-  cases rule with
-  | baseType baseRule =>
-      intro targetObligation targetMember
-      cases targetMember
-  | flat flatRule =>
-      exact flatFormationObligations_usable_pushRename targetContext rawRenaming flag baseAccessPreserved
-        children levels baseUsable
-  | cumulative cumulativeRule =>
-      exact cumulativeFormationObligations_usable_pushRename targetContext rawRenaming flag
-        baseAccessPreserved children levels baseUsable crossingUsable
-  | termIndexed termRule =>
-      cases children with
-      | childNil =>
-          intro targetObligation targetMember
-          cases targetMember
-      | childCons carrierHead rest =>
-          rename_i carrierShift _restShifts
-          cases carrierShift with
-          | zero =>
-              intro targetObligation targetMember
-              cases targetMember with
-              | head =>
-                  exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
-                    carrierHead (baseUsable carrierHead (universeCodeCell level flag) (List.Mem.head _))
-              | tail _ tailMember =>
-                  exact termIndexedEndpointObligations_usable_pushRename targetContext rawRenaming carrier
-                    baseAccessPreserved rest
-                    (fun subject classifier member =>
-                      baseUsable subject classifier (List.Mem.tail _ member))
-                    targetObligation tailMember
-          | succ _ =>
-              intro targetObligation targetMember
-              cases targetMember
+        targetObligation.modality = true :=
+  FormationRule.obligationsUsable_pushMorphism rule targetContext rawRenaming children levels
+    carrier level flag (renameVariableImagesUsable rawRenaming .fibrant baseAccessPreserved)
+    (fun domain subject crossingHolds =>
+      subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain) .fibrant
+        baseAccessPreserved subject crossingHolds)
+    baseUsable crossingUsable
 
 /-- **★ The pointwise renaming / weakening lemma over the native union.**  Proved over the native judgment (input reflected through
 `toNativeOnly`).  By `induction` over the 6 native arms: the `var` / `universeFormation` structural
