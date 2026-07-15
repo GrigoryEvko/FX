@@ -13,6 +13,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.StepStar.natSuccCell_inj
 
+#assert_no_axioms FX1Poly.Core.StepStar.natShapedCellSpine_isStronglyNormalizing_of_natValueScrutinee
+
 #assert_no_axioms FX1Poly.Core.StepStar.natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee
 
 #assert_no_axioms FX1Poly.Core.StepStar.natRecCellSpine_isStronglyNormalizing_of_normalScrutinee

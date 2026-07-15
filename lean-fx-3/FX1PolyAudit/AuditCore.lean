@@ -43,9 +43,12 @@ import FX1PolyAudit.Core.Eliminators.Nat.NatElimDependentMember
 import FX1PolyAudit.Core.Eliminators.Nat.NatElimDependentMemberFamily
 import FX1PolyAudit.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1PolyAudit.Core.Eliminators.Nat.NatElimNumeralStrongNormalization
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimReductTrackingStrongNormalization
 import FX1PolyAudit.Core.Eliminators.Nat.NatElimStructuredMemberStrongNormalization
 import FX1PolyAudit.Core.Eliminators.Nat.NatElimValueMember
 import FX1PolyAudit.Core.Eliminators.Nat.NatElimValueReducibility
+import FX1PolyAudit.Core.Eliminators.Nat.NatShapedRecursorCellStrongNormalization
+import FX1PolyAudit.Core.Eliminators.Nat.NatShapedRecursorCellStrongNormalizationAxiomWitness
 import FX1PolyAudit.Core.Eliminators.Recursor.RecursorReducibleScrutineeMember
 import FX1PolyAudit.Core.Equality.Eta.EtaRootClassifier
 import FX1PolyAudit.Core.Metatheory.Normalization.Core.RecursiveEliminatorTermination
