@@ -330,6 +330,8 @@ import FX1PolyAudit.Typed.Metatheory.SubjectReduction.WellFormedSubjectReduction
 import FX1PolyAudit.Typed.Metatheory.SubjectReduction.WellFormedCongruenceClosesGeneric
 import FX1PolyAudit.Typed.Metatheory.SubjectReduction.IntroGateBranches
 import FX1PolyAudit.Typed.Metatheory.SubjectReduction.IntroGateBranchesAxiomWitness
+import FX1PolyAudit.Typed.Metatheory.SubjectReduction.ElimGateBranches
+import FX1PolyAudit.Typed.Metatheory.SubjectReduction.ElimGateBranchesAxiomWitness
 import FX1PolyAudit.Typed.Metatheory.Validity.IntervalNotConvRigidHeads
 import FX1PolyAudit.Typed.Metatheory.Universe.UniverseModeGenerators
 import FX1PolyAudit.Typed.RegionD.Contested.GeneratorCountPin

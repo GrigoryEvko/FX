@@ -1,3 +1,4 @@
+import FX1Poly.Typed.Metatheory.SubjectReduction.ElimGateBranchesBounded
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimGateReassemble
 import FX1Poly.Typed.Metatheory.Validity.IntervalNotConvRigidHeads
 import FX1Poly.Typed.Metatheory.SubjectReduction.CleanElimObligationsDrift
@@ -14,18 +15,36 @@ import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 
 `UnionElimCongruenceCloses` (HasTypeUnionCongruenceClosesGeneric.lean) dispatches on the eliminator generator.
 This file ships the per-generator BRANCH lemmas: each proves the gate conclusion for ONE eliminator, given the
-gate's hypotheses specialized to that rule.  The shape is uniform per row:
+gate's hypotheses specialized to that rule.
 
-  1. destructure the rule's `args` / `params` (a fixed `childCons` shape from the rule's arity);
-  2. reduce `memberCell scope args` to its `mkGen genX payloadX args` form and inject the gate's `memberCell =
-     mkGen reformed…` equation to pin `reformedGenerator = genX`, `reformedPayload = payloadX`,
-     `childrenBefore = args`;
-  3. derive the per-obligation classifier-formedness witnesses the row's `*ObligationsDriftUnderArgStep` needs
-     (`classifierIsType` over `WfContextUnion` for the typed obligations; `universeFormation` for the universe-code
-     ones);
-  4. build the obligation drift + output drift and hand them to the generic `elimGateRowReassemble`;
-  5. bridge `memberCell scope childrenAfter = mkGen genX payloadX childrenAfter` (the reformed cell) by the same
-     `childCons`-shape reduction.
+## ★ Seven rows are DERIVED from their fuel-bounded twins; four are proved here
+
+The eleven rows split by whether `ElimGateBranchesBounded` mirrors them:
+
+  * **DERIVED (seven)** — `fst` / `snd` / `app` / `pathApp` / `boolElim` / `natElim` / `natRec`.  Each differs from
+    its bounded twin in EXACTLY ONE hypothesis: the child-SR flavor.  The unbounded row takes the universal
+    `UnionChildSubjectReduction profile`; the bounded row takes `UnionChildSubjectReductionBelow profile
+    (rule.memberCell scope args).size`.  Every other hypothesis and the entire conclusion agree, in the same
+    argument positions.  The bounded hypothesis is WEAKER, so the bounded row is the STRONGER theorem and the
+    unbounded row is its corollary via `UnionChildSubjectReduction.toBelow` (forget the size gate at any bound).
+    Their proof CONTENT lives ONCE, in the bounded twin, where the fuel-bounded SR tie-off consumes it.
+
+  * **PROVED HERE (four)** — `optionMatch` / `eitherMatch` / `idJ` / `listElim` have NO bounded twin, so they are
+    genuine unbounded-only content and keep their full proofs.  The shape is uniform per row:
+
+    1. destructure the rule's `args` / `params` (a fixed `childCons` shape from the rule's arity);
+    2. reduce `memberCell scope args` to its `mkGen genX payloadX args` form and inject the gate's `memberCell =
+       mkGen reformed…` equation to pin `reformedGenerator = genX`, `reformedPayload = payloadX`,
+       `childrenBefore = args`;
+    3. derive the per-obligation classifier-formedness witnesses the row's `*ObligationsDriftUnderArgStep` needs
+       (`classifierIsType` over `WfContextUnion` for the typed obligations; `universeFormation` for the
+       universe-code ones);
+    4. build the obligation drift + output drift and hand them to the generic `elimGateRowReassemble`;
+    5. bridge `memberCell scope childrenAfter = mkGen genX payloadX childrenAfter` (the reformed cell) by the same
+       `childCons`-shape reduction.
+
+Mirroring the four remaining rows in `ElimGateBranchesBounded` would let them collapse the same way; until then
+they are the honest residual of this axis.
 
 ## The cell-spine vs rule-args alignment requirement (SR-DSL-5 design constraint)
 
@@ -147,207 +166,6 @@ take a "typed-implies-usable" RESIDUAL hypothesis (the bridge ASSUMED for that c
 from the original eliminator's `usabilityHolds`.  The residuals are quantified over the drifting `motiveVariant`
 so they apply whether or not the motive stepped. -/
 
-private theorem fstUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (firstType secondType : RawTerm scope)
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    {argsAfter : RawTermChildren fstElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ fstElimRule.obligations scope context argsAfter
-        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ fstElimRule.obligations scope context argsAfter
-        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons pairAfter restAfter =>
-    cases restAfter
-    intro obligation hmem
-    cases hmem with
-    | head =>
-        exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-          (WfContextUnion.allLocksAreInterval context wellFormed)
-          (intervalNotConvProductCode firstType secondType) (premisesAfter _ (List.Mem.head _))
-    | tail _ hmem => cases hmem with
-      | head =>
-          exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-            (WfContextUnion.allLocksAreInterval context wellFormed)
-            (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-            (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-      | tail _ hmem => cases hmem
-
-private theorem sndUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (firstType secondType : RawTerm scope)
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    {argsAfter : RawTermChildren sndElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ sndElimRule.obligations scope context argsAfter
-        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ sndElimRule.obligations scope context argsAfter
-        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons pairAfter restAfter =>
-    cases restAfter
-    intro obligation hmem
-    cases hmem with
-    | head =>
-        exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-          (WfContextUnion.allLocksAreInterval context wellFormed)
-          (intervalNotConvProductCode firstType secondType) (premisesAfter _ (List.Mem.head _))
-    | tail _ hmem => cases hmem with
-      | head =>
-          exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-            (WfContextUnion.allLocksAreInterval context wellFormed)
-            (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-            (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-      | tail _ hmem => cases hmem
-
-private theorem appUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (argumentReductUsable : ∀ {subject : RawTerm scope},
-      HasTypeUnion profile context subject domainCode →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    {argsAfter : RawTermChildren appElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ appElimRule.obligations scope context argsAfter
-        (.childCons domainCode (.childCons codomainCode .childNil)) level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ appElimRule.obligations scope context argsAfter
-        (.childCons domainCode (.childCons codomainCode .childNil)) level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons functionAfter rest1 => cases rest1 with
-    | childCons argumentAfter rest2 =>
-      cases rest2
-      intro obligation hmem
-      cases hmem with
-      | head =>
-          exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-            (WfContextUnion.allLocksAreInterval context wellFormed)
-            (intervalNotConvPiCode domainCode codomainCode) (premisesAfter _ (List.Mem.head _))
-      | tail _ hmem => cases hmem with
-        | head => exact argumentReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-        | tail _ hmem => cases hmem
-
-private theorem pathAppUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    (carrierCode leftEndpoint rightEndpoint : RawTerm scope)
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (argumentReductUsable : ∀ {subject : RawTerm scope},
-      HasTypeUnion profile context subject intervalTypeCell →
-        context.isSubjectUsableAtModality subject .dimensional = true)
-    {argsAfter : RawTermChildren pathAppElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ pathAppElimRule.obligations scope context argsAfter
-        (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
-        level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ pathAppElimRule.obligations scope context argsAfter
-        (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
-        level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons pathAfter rest1 => cases rest1 with
-    | childCons argumentAfter rest2 =>
-      cases rest2
-      intro obligation hmem
-      cases hmem with
-      | head =>
-          exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-            (WfContextUnion.allLocksAreInterval context wellFormed)
-            (intervalNotConvBridgeCode carrierCode leftEndpoint rightEndpoint)
-            (premisesAfter _ (List.Mem.head _))
-      | tail _ hmem => cases hmem with
-        | head => exact argumentReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-        | tail _ hmem => cases hmem with
-          | head =>
-              exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                (WfContextUnion.allLocksAreInterval context wellFormed)
-                (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-                (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-          | tail _ hmem => cases hmem
-
-private theorem boolElimUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (thenReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm scope},
-      HasTypeUnion profile context subject (RawTerm.subst0 motiveVariant (RawTerm.mkGen .gen_boolTrue () .childNil)) →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    (elseReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm scope},
-      HasTypeUnion profile context subject (RawTerm.subst0 motiveVariant (RawTerm.mkGen .gen_boolFalse () .childNil)) →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    {argsAfter : RawTermChildren boolElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ boolElimRule.obligations scope context argsAfter .childNil level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ boolElimRule.obligations scope context argsAfter .childNil level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons motiveAfter rest1 => cases rest1 with
-    | childCons scrutineeAfter rest2 => cases rest2 with
-      | childCons thenAfter rest3 => cases rest3 with
-        | childCons elseAfter rest4 =>
-          cases rest4
-          intro obligation hmem
-          cases hmem with
-          | head =>
-              exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                (WfContextUnion.allLocksAreInterval context wellFormed) intervalNotConvBoolCode
-                (premisesAfter _ (List.Mem.head _))
-          | tail _ hmem => cases hmem with
-            | head => exact thenReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-            | tail _ hmem => cases hmem with
-              | head =>
-                  exact elseReductUsable
-                    (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              | tail _ hmem => cases hmem with
-                | head =>
-                    exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                      (TypingContext.AllLocksAreInterval.cons
-                        (WfContextUnion.allLocksAreInterval context wellFormed))
-                      (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-                      (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-                | tail _ hmem => cases hmem
-
-private theorem optionMatchUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (typeParamA typeParamB : RawTerm scope)
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (noneReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm scope},
-      HasTypeUnion profile context subject (RawTerm.subst0 motiveVariant optionNoneCell) →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    {argsAfter : RawTermChildren optionMatchElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ optionMatchElimRule.obligations scope context argsAfter
-        (.childCons typeParamA (.childCons typeParamB .childNil)) level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ optionMatchElimRule.obligations scope context argsAfter
-        (.childCons typeParamA (.childCons typeParamB .childNil)) level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons motiveAfter rest1 => cases rest1 with
-    | childCons noneAfter rest2 => cases rest2 with
-      | childCons someAfter rest3 => cases rest3 with
-        | childCons scrutineeAfter rest4 =>
-          cases rest4
-          intro obligation hmem
-          cases hmem with
-          | head =>
-              exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                (WfContextUnion.allLocksAreInterval context wellFormed)
-                (intervalNotConvOptionCode typeParamA) (premisesAfter _ (List.Mem.head _))
-          | tail _ hmem => cases hmem with
-            | head => exact noneReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-            | tail _ hmem => cases hmem with
-              | head =>
-                  exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                    (WfContextUnion.allLocksAreInterval context wellFormed)
-                    (intervalNotConvPiCode typeParamA _)
-                    (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              | tail _ hmem => cases hmem with
-                | head =>
-                    exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                      (TypingContext.AllLocksAreInterval.cons
-                        (WfContextUnion.allLocksAreInterval context wellFormed))
-                      (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-                      (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-                | tail _ hmem => cases hmem
-
 private theorem eitherMatchUsabilityDischarge {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (typeParamA typeParamB : RawTerm scope)
     (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
@@ -391,174 +209,6 @@ private theorem eitherMatchUsabilityDischarge {profile : PolyProfile} {scope : N
                       (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
                 | tail _ hmem => cases hmem
 
-private theorem natElimUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (baseReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm scope},
-      HasTypeUnion profile context subject (RawTerm.subst0 motiveVariant natZeroCell) →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    (stepReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm (scope + 2)},
-      HasTypeUnion profile ((context.cons natTypeCell).cons motiveVariant) subject
-          (natElimDependentSuccBranchType motiveVariant) →
-        ((context.cons natTypeCell).cons motiveVariant).isSubjectUsableAtModality subject .fibrant = true)
-    {argsAfter : RawTermChildren natElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ natElimRule.obligations scope context argsAfter .childNil level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ natElimRule.obligations scope context argsAfter .childNil level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons motiveAfter rest1 => cases rest1 with
-    | childCons baseAfter rest2 => cases rest2 with
-      | childCons stepAfter rest3 => cases rest3 with
-        | childCons scrutineeAfter rest4 =>
-          cases rest4
-          intro obligation hmem
-          cases hmem with
-          | head =>
-              exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                (WfContextUnion.allLocksAreInterval context wellFormed) intervalNotConvNatCode
-                (premisesAfter _ (List.Mem.head _))
-          | tail _ hmem => cases hmem with
-            | head => exact baseReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-            | tail _ hmem => cases hmem with
-              | head =>
-                  exact stepReductUsable
-                    (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              | tail _ hmem => cases hmem with
-                | head =>
-                    exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                      (TypingContext.AllLocksAreInterval.cons
-                        (WfContextUnion.allLocksAreInterval context wellFormed))
-                      (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-                      (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-                | tail _ hmem => cases hmem
-
-private theorem natRecUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (baseReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm scope},
-      HasTypeUnion profile context subject (RawTerm.subst0 motiveVariant natZeroCell) →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    (stepReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm (scope + 2)},
-      HasTypeUnion profile ((context.cons natTypeCell).cons motiveVariant) subject
-          (natElimDependentSuccBranchType motiveVariant) →
-        ((context.cons natTypeCell).cons motiveVariant).isSubjectUsableAtModality subject .fibrant = true)
-    {argsAfter : RawTermChildren natRecElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ natRecElimRule.obligations scope context argsAfter .childNil level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ natRecElimRule.obligations scope context argsAfter .childNil level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons motiveAfter rest1 => cases rest1 with
-    | childCons baseAfter rest2 => cases rest2 with
-      | childCons stepAfter rest3 => cases rest3 with
-        | childCons scrutineeAfter rest4 =>
-          cases rest4
-          intro obligation hmem
-          cases hmem with
-          | head =>
-              exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                (WfContextUnion.allLocksAreInterval context wellFormed) intervalNotConvNatCode
-                (premisesAfter _ (List.Mem.head _))
-          | tail _ hmem => cases hmem with
-            | head => exact baseReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-            | tail _ hmem => cases hmem with
-              | head =>
-                  exact stepReductUsable
-                    (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              | tail _ hmem => cases hmem with
-                | head =>
-                    exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                      (TypingContext.AllLocksAreInterval.cons
-                        (WfContextUnion.allLocksAreInterval context wellFormed))
-                      (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-                      (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-                | tail _ hmem => cases hmem
-
-private theorem idJUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (typeCode leftEndpoint rightEndpoint : RawTerm scope)
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (rightEndpointReductUsable : ∀ {subject : RawTerm scope},
-      HasTypeUnion profile context subject typeCode →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    (baseCaseReductUsable : ∀ {motiveVariant : RawTerm (scope + 2)} {subject : RawTerm scope},
-      HasTypeUnion profile context subject (idJMotiveAt motiveVariant leftEndpoint (reflCell leftEndpoint)) →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    {argsAfter : RawTermChildren idJElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ idJElimRule.obligations scope context argsAfter
-        (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil))) level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ idJElimRule.obligations scope context argsAfter
-        (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil))) level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons motiveAfter rest1 => cases rest1 with
-    | childCons baseCaseAfter rest2 => cases rest2 with
-      | childCons witnessAfter rest3 =>
-        cases rest3
-        intro obligation hmem
-        cases hmem with
-        | head =>
-            exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-              (WfContextUnion.allLocksAreInterval context wellFormed)
-              (intervalNotConvIdCode typeCode leftEndpoint rightEndpoint) (premisesAfter _ (List.Mem.head _))
-        | tail _ hmem => cases hmem with
-          | head => exact rightEndpointReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-          | tail _ hmem => cases hmem with
-            | head =>
-                exact baseCaseReductUsable
-                  (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-            | tail _ hmem => cases hmem with
-              | head =>
-                  exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                    (TypingContext.AllLocksAreInterval.cons (TypingContext.AllLocksAreInterval.cons
-                      (WfContextUnion.allLocksAreInterval context wellFormed)))
-                    (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-                    (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-              | tail _ hmem => cases hmem
-
-private theorem listElimUsabilityDischarge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (elementType resultType : RawTerm scope)
-    (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
-    (nilReductUsable : ∀ {motiveVariant : RawTerm (scope + 1)} {subject : RawTerm scope},
-      HasTypeUnion profile context subject (RawTerm.subst0 motiveVariant listNilCell) →
-        context.isSubjectUsableAtModality subject .fibrant = true)
-    {argsAfter : RawTermChildren listElimRule.argShifts scope}
-    (premisesAfter : ∀ obligation ∈ listElimRule.obligations scope context argsAfter
-        (.childCons elementType (.childCons resultType .childNil)) level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
-    ∀ obligation ∈ listElimRule.obligations scope context argsAfter
-        (.childCons elementType (.childCons resultType .childNil)) level0 level1 flag,
-      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
-  cases argsAfter with
-  | childCons motiveAfter rest1 => cases rest1 with
-    | childCons scrutineeAfter rest2 => cases rest2 with
-      | childCons nilAfter rest3 => cases rest3 with
-        | childCons consAfter rest4 =>
-          cases rest4
-          intro obligation hmem
-          cases hmem with
-          | head =>
-              exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                (WfContextUnion.allLocksAreInterval context wellFormed)
-                (intervalNotConvListCode elementType) (premisesAfter _ (List.Mem.head _))
-          | tail _ hmem => cases hmem with
-            | head => exact nilReductUsable (premisesAfter _ (List.Mem.tail _ (List.Mem.head _)))
-            | tail _ hmem => cases hmem with
-              | head =>
-                  exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                    (WfContextUnion.allLocksAreInterval context wellFormed)
-                    (intervalNotConvPiCode elementType _)
-                    (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              | tail _ hmem => cases hmem with
-                | head =>
-                    exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
-                      (TypingContext.AllLocksAreInterval.cons
-                        (WfContextUnion.allLocksAreInterval context wellFormed))
-                      (intervalTypeCell_not_conv_universeCodeCell level0 flag)
-                      (premisesAfter _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-                | tail _ hmem => cases hmem
-
 /-- **The `fst` branch of the eliminator-congruence gate.**  A stepped `fst` cell re-types at its (param) output
 type, `Conv`-equal to the original.  The pair obligation's classifier (`productTypeCell firstType secondType`) is
 formed via `classifierIsType` over `WfContextUnion`; the self-certifying `firstType : universeCode` obligation gives
@@ -577,33 +227,9 @@ theorem fstElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
     (childStep : StepChildren childrenBefore childrenAfter) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
-      Conv pinned (fstElimRule.outputType scope args params) := by
-  match args, params with
-  | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
-    injection memberEq with _scopeEq genEq payloadEq childrenEq
-    subst genEq
-    cases eq_of_heq payloadEq
-    cases eq_of_heq childrenEq
-    have pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType) :=
-      premisesHold _ (List.Mem.head _)
-    have pairClassifierFormed : UnionClassifierIsType profile context
-        (productTypeCell firstType secondType) :=
-      (HasTypeUnion.classifierIsPretype pairTyped wellFormed).resolveType
-        (productTypeCell_not_conv_intervalTypeCell firstType secondType)
-    have firstTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
-      ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
-    have memberAfterEq : fstElimRule.memberCell scope childrenAfter
-        = RawTerm.mkGen .gen_fst () childrenAfter := by
-      cases childrenAfter with
-      | childCons headAfter restAfter => cases restAfter; rfl
-    have drift := fstObligationsDriftUnderArgStep level0 level1 flag pairClassifierFormed
-      firstTypeClassifierFormed childStep
-    rw [← memberAfterEq]
-    exact elimGateRowReassemble .gen_fst fstElimRule
-      (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag rfl premisesHold
-      childSubjectReduction drift (Conv.refl _)
-      (fstUsabilityDischarge firstType secondType level0 level1 flag wellFormed
-        (premisesHoldUnderObligationsDrift drift childSubjectReduction premisesHold))
+      Conv pinned (fstElimRule.outputType scope args params) :=
+  fstElimGateBranchClosesBounded args params level0 level1 flag premisesHold
+    childSubjectReduction.toBelow wellFormed memberEq childStep
 
 /-- **The `snd` branch** — the `fst` twin at the second projection (output `secondType`, a param). -/
 theorem sndElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
@@ -619,33 +245,9 @@ theorem sndElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
     (childStep : StepChildren childrenBefore childrenAfter) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
-      Conv pinned (sndElimRule.outputType scope args params) := by
-  match args, params with
-  | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
-    injection memberEq with _scopeEq genEq payloadEq childrenEq
-    subst genEq
-    cases eq_of_heq payloadEq
-    cases eq_of_heq childrenEq
-    have pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType) :=
-      premisesHold _ (List.Mem.head _)
-    have pairClassifierFormed : UnionClassifierIsType profile context
-        (productTypeCell firstType secondType) :=
-      (HasTypeUnion.classifierIsPretype pairTyped wellFormed).resolveType
-        (productTypeCell_not_conv_intervalTypeCell firstType secondType)
-    have secondTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
-      ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
-    have memberAfterEq : sndElimRule.memberCell scope childrenAfter
-        = RawTerm.mkGen .gen_snd () childrenAfter := by
-      cases childrenAfter with
-      | childCons headAfter restAfter => cases restAfter; rfl
-    have drift := sndObligationsDriftUnderArgStep level0 level1 flag pairClassifierFormed
-      secondTypeClassifierFormed childStep
-    rw [← memberAfterEq]
-    exact elimGateRowReassemble .gen_snd sndElimRule
-      (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag rfl premisesHold
-      childSubjectReduction drift (Conv.refl _)
-      (sndUsabilityDischarge firstType secondType level0 level1 flag wellFormed
-        (premisesHoldUnderObligationsDrift drift childSubjectReduction premisesHold))
+      Conv pinned (sndElimRule.outputType scope args params) :=
+  sndElimGateBranchClosesBounded args params level0 level1 flag premisesHold
+    childSubjectReduction.toBelow wellFormed memberEq childStep
 
 /-- **The `app` branch** — the mixed-output row: output `subst0 codomainCode argument` drifts when the `argument`
 child steps (`appOutputTypeDriftUnderArgStep`); a function step leaves it fixed.  Both obligation classifiers
@@ -668,49 +270,9 @@ theorem appElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
     (childStep : StepChildren childrenBefore childrenAfter) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
-      Conv pinned (appElimRule.outputType scope args params) := by
-  match args, params with
-  | .childCons function (.childCons argument .childNil), .childCons domainCode (.childCons codomainCode .childNil) =>
-    injection memberEq with _scopeEq genEq payloadEq childrenEq
-    subst genEq
-    cases eq_of_heq payloadEq
-    cases eq_of_heq childrenEq
-    have functionTyped : HasTypeUnion profile context function (piTyCodeCell domainCode codomainCode) :=
-      premisesHold _ (List.Mem.head _)
-    have argumentTyped : HasTypeUnion profile context argument domainCode :=
-      premisesHold _ (List.Mem.tail _ (List.Mem.head _))
-    have functionClassifierFormed : UnionClassifierIsType profile context
-        (piTyCodeCell domainCode codomainCode) :=
-      (HasTypeUnion.classifierIsPretype functionTyped wellFormed).resolveType
-        (piTyCodeCell_not_conv_intervalTypeCell domainCode codomainCode)
-    -- ★ A1-FIBRANCY B4: the application's domain classifier is formed by INVERTING the function's Π-code formedness
-    -- (its domain leg), not by the now-non-universal `classifierIsType` invariant — `argument : domainCode` with
-    -- `domainCode` fibrant because the function's Π type is.
-    have argumentClassifierFormed : UnionClassifierIsType profile context domainCode := by
-      have ⟨_, _, piTyped⟩ := functionClassifierFormed
-      obtain ⟨domainLevel, _codomainLevel, domainFlag, domainTyped, _codomainTyped⟩ :=
-        piTyped.invertAtPiCodeHeadComponents rfl
-      exact ⟨domainLevel, domainFlag, domainTyped⟩
-    have memberAfterEq : appElimRule.memberCell scope childrenAfter
-        = RawTerm.mkGen .gen_app () childrenAfter := by
-      cases childrenAfter with
-      | childCons _ rest1 => cases rest1 with
-        | childCons _ rest2 => cases rest2; rfl
-    have drift := appObligationsDriftUnderArgStep level0 level1 flag functionClassifierFormed
-      argumentClassifierFormed childStep
-    rw [← memberAfterEq]
-    exact elimGateRowReassemble .gen_app appElimRule
-      (.childCons domainCode (.childCons codomainCode .childNil)) level0 level1 flag rfl premisesHold
-      childSubjectReduction drift
-      (appOutputTypeDriftUnderArgStep function domainCode codomainCode childStep)
-      (usabilityHoldsUnderObligationsDrift drift childSubjectReduction
-        (by intro obligation hmem
-            cases hmem with
-            | head => rfl
-            | tail _ hmem => cases hmem with
-              | head => rfl
-              | tail _ hmem => cases hmem)
-        premisesHold usabilityHolds)
+      Conv pinned (appElimRule.outputType scope args params) :=
+  appElimGateBranchClosesBounded args params level0 level1 flag premisesHold
+    childSubjectReduction.toBelow wellFormed usabilityHolds memberEq childStep
 
 /-- **The `pathApp` branch** — output `carrierCode`, a param (`Conv.refl`).  Path / interval-argument obligations
 formed via `classifierIsType`; the self-certifying carrier obligation via `universeFormation`. -/
@@ -737,40 +299,9 @@ theorem pathAppElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {conte
     (childStep : StepChildren childrenBefore childrenAfter) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
-      Conv pinned (pathAppElimRule.outputType scope args params) := by
-  match args, params with
-  | .childCons path (.childCons argument .childNil),
-    .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
-    injection memberEq with _scopeEq genEq payloadEq childrenEq
-    subst genEq
-    cases eq_of_heq payloadEq
-    cases eq_of_heq childrenEq
-    have pathTyped : HasTypeUnion profile context path
-        (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) :=
-      premisesHold _ (List.Mem.head _)
-    have argumentTyped : HasTypeUnion profile context argument intervalTypeCell :=
-      premisesHold _ (List.Mem.tail _ (List.Mem.head _))
-    have pathClassifierFormed : UnionClassifierIsType profile context
-        (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) :=
-      (HasTypeUnion.classifierIsPretype pathTyped wellFormed).resolveType
-        (bridgeTypeCell_not_conv_intervalTypeCell carrierCode leftEndpoint rightEndpoint)
-    have argumentClassifierFormed : UnionClassifierIsType profile context intervalTypeCell :=
-      HasTypeUnion.classifierIsType argumentTyped wellFormed
-    have carrierClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
-      ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
-    have memberAfterEq : pathAppElimRule.memberCell scope childrenAfter
-        = RawTerm.mkGen .gen_pathApp () childrenAfter := by
-      cases childrenAfter with
-      | childCons _ rest1 => cases rest1 with
-        | childCons _ rest2 => cases rest2; rfl
-    have drift := pathAppObligationsDriftUnderArgStep level0 level1 flag pathClassifierFormed
-      argumentClassifierFormed carrierClassifierFormed childStep
-    rw [← memberAfterEq]
-    exact elimGateRowReassemble .gen_pathApp pathAppElimRule
-      (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
-      level0 level1 flag rfl premisesHold childSubjectReduction drift (Conv.refl _)
-      (pathAppUsabilityDischarge carrierCode leftEndpoint rightEndpoint level0 level1 flag wellFormed
-        argumentReductUsable (premisesHoldUnderObligationsDrift drift childSubjectReduction premisesHold))
+      Conv pinned (pathAppElimRule.outputType scope args params) :=
+  pathAppElimGateBranchClosesBounded args params level0 level1 flag premisesHold
+    childSubjectReduction.toBelow wellFormed argumentReductUsable memberEq childStep
 
 /-- **The `boolElim` branch (cell-spine-aligned via per-position reindexing).**  `boolElimCell` emits the spine
 `(motive, thenBranch, elseBranch, scrutinee)`, so the gate's `childrenBefore` is that spine and `childStep` steps
@@ -801,136 +332,9 @@ theorem boolElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context 
     (childStep : StepChildren childrenBefore childrenAfter) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
-      Conv pinned (boolElimRule.outputType scope args params) := by
-  match args, params with
-  | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))),
-    .childNil =>
-    injection memberEq with _scopeEq genEq payloadEq childrenEq
-    subst genEq
-    cases eq_of_heq payloadEq
-    cases eq_of_heq childrenEq
-    have scrutineeClassifierFormed :=
-      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
-        first
-          | exact boolTypeCell_not_conv_intervalTypeCell
-          | exact natTypeCell_not_conv_intervalTypeCell
-          | exact listTypeCell_not_conv_intervalTypeCell _
-          | exact optionTypeCell_not_conv_intervalTypeCell _
-          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
-    -- ★ A1-FIBRANCY B4: the nullary-constructor branch classifiers `subst0 motive boolTrue/boolFalse` are formed
-    -- from the motive obligation (index 3, motive@universe under `boolTypeCell`) and the closed constructor's
-    -- typing via `dependentMotiveOutputFormed_ofMotiveAndArgument` — independent of the (now non-universal)
-    -- `classifierIsType` invariant; `subst0 motive ctor` is fibrant because the motive is universe-valued.
-    have motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell level0 flag) :=
-      premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-    have thenBranchClassifierFormed :=
-      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
-        context boolTypeCell _ (RawTerm.mkGen .gen_boolTrue () .childNil) level0 flag motiveTyped
-        (boolTrueTypedInContext context)
-        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolTrue () .childNil .fibrant (by decide))
-    have elseBranchClassifierFormed :=
-      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
-        context boolTypeCell _ (RawTerm.mkGen .gen_boolFalse () .childNil) level0 flag motiveTyped
-        (boolFalseTypedInContext context)
-        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolFalse () .childNil .fibrant (by decide))
-    cases childStep with
-    | here _ motiveStep =>
-        exact elimGateRowReassemble .gen_boolElim boolElimRule .childNil level0 level1 flag rfl premisesHold
-          childSubjectReduction
-          (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-            thenBranchClassifierFormed elseBranchClassifierFormed (StepChildren.here _ motiveStep))
-          (boolElimOutputTypeDriftUnderArgStep .childNil (StepChildren.here _ motiveStep))
-          (usabilityHoldsUnderObligationsDrift
-            (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-              thenBranchClassifierFormed elseBranchClassifierFormed (StepChildren.here _ motiveStep))
-            childSubjectReduction
-            (by intro obligation memberProof
-                cases memberProof with
-                | head => rfl
-                | tail _ memberProof => cases memberProof with
-                  | head => rfl
-                  | tail _ memberProof => cases memberProof with
-                    | head => rfl
-                    | tail _ memberProof => cases memberProof with
-                      | head => rfl
-                      | tail _ memberProof => cases memberProof)
-            premisesHold usabilityHolds)
-    | there _ tail1 => cases tail1 with
-      | here _ thenStep =>
-          exact elimGateRowReassemble .gen_boolElim boolElimRule .childNil level0 level1 flag rfl premisesHold
-            childSubjectReduction
-            (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-              thenBranchClassifierFormed elseBranchClassifierFormed
-              (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ thenStep))))
-            (boolElimOutputTypeDriftUnderArgStep .childNil
-              (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ thenStep))))
-            (usabilityHoldsUnderObligationsDrift
-              (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-                thenBranchClassifierFormed elseBranchClassifierFormed
-                (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ thenStep))))
-              childSubjectReduction
-            (by intro obligation memberProof
-                cases memberProof with
-                | head => rfl
-                | tail _ memberProof => cases memberProof with
-                  | head => rfl
-                  | tail _ memberProof => cases memberProof with
-                    | head => rfl
-                    | tail _ memberProof => cases memberProof with
-                      | head => rfl
-                      | tail _ memberProof => cases memberProof)
-            premisesHold usabilityHolds)
-      | there _ tail2 => cases tail2 with
-        | here _ elseStep =>
-            exact elimGateRowReassemble .gen_boolElim boolElimRule .childNil level0 level1 flag rfl premisesHold
-              childSubjectReduction
-              (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-                thenBranchClassifierFormed elseBranchClassifierFormed
-                (StepChildren.there _ (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ elseStep)))))
-              (boolElimOutputTypeDriftUnderArgStep .childNil
-                (StepChildren.there _ (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ elseStep)))))
-              (usabilityHoldsUnderObligationsDrift
-                (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-                  thenBranchClassifierFormed elseBranchClassifierFormed
-                  (StepChildren.there _ (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ elseStep)))))
-                childSubjectReduction
-            (by intro obligation memberProof
-                cases memberProof with
-                | head => rfl
-                | tail _ memberProof => cases memberProof with
-                  | head => rfl
-                  | tail _ memberProof => cases memberProof with
-                    | head => rfl
-                    | tail _ memberProof => cases memberProof with
-                      | head => rfl
-                      | tail _ memberProof => cases memberProof)
-            premisesHold usabilityHolds)
-        | there _ tail3 => cases tail3 with
-          | here _ scrutineeStep =>
-              exact elimGateRowReassemble .gen_boolElim boolElimRule .childNil level0 level1 flag rfl premisesHold
-                childSubjectReduction
-                (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-                  thenBranchClassifierFormed elseBranchClassifierFormed
-                  (StepChildren.there _ (StepChildren.here _ scrutineeStep)))
-                (boolElimOutputTypeDriftUnderArgStep .childNil
-                  (StepChildren.there _ (StepChildren.here _ scrutineeStep)))
-                (usabilityHoldsUnderObligationsDrift
-                  (boolElimObligationsDriftUnderArgStep level0 level1 flag scrutineeClassifierFormed
-                    thenBranchClassifierFormed elseBranchClassifierFormed
-                    (StepChildren.there _ (StepChildren.here _ scrutineeStep)))
-                  childSubjectReduction
-            (by intro obligation memberProof
-                cases memberProof with
-                | head => rfl
-                | tail _ memberProof => cases memberProof with
-                  | head => rfl
-                  | tail _ memberProof => cases memberProof with
-                    | head => rfl
-                    | tail _ memberProof => cases memberProof with
-                      | head => rfl
-                      | tail _ memberProof => cases memberProof)
-            premisesHold usabilityHolds)
-          | there _ emptyTailStep => cases emptyTailStep
+      Conv pinned (boolElimRule.outputType scope args params) :=
+  boolElimGateBranchClosesBounded args params level0 level1 flag premisesHold
+    childSubjectReduction.toBelow wellFormed usabilityHolds memberEq childStep
 
 /-- **The `optionMatch` branch** — CELL-SPINE-ALIGNED (`optionMatchCell` emits `(motive, none, some, scrutinee)` =
 the rule `args`), so the gate `mkGen` bridge holds definitionally and the args-ordered drift / output-drift apply
@@ -1103,57 +507,9 @@ theorem natElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
     (childStep : StepChildren childrenBefore childrenAfter) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
-      Conv pinned (natElimRule.outputType scope args params) := by
-  match args, params with
-  | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))), .childNil =>
-    injection memberEq with _scopeEq genEq payloadEq childrenEq
-    subst genEq
-    cases eq_of_heq payloadEq
-    cases eq_of_heq childrenEq
-    have scrutineeClassifierFormed :=
-      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
-        first
-          | exact boolTypeCell_not_conv_intervalTypeCell
-          | exact natTypeCell_not_conv_intervalTypeCell
-          | exact listTypeCell_not_conv_intervalTypeCell _
-          | exact optionTypeCell_not_conv_intervalTypeCell _
-          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
-    have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
-      premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-    -- ★ A1-FIBRANCY B4: nullary `natZero` base branch `subst0 motive natZero` formed via the motive obligation
-    -- (index 3) + `natZeroTypedInContext` through `dependentMotiveOutputFormed_ofMotiveAndArgument`.
-    have baseBranchClassifierFormed :=
-      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
-        context natTypeCell _ natZeroCell level0 flag motiveTyped (natZeroTypedInContext context)
-        (isSubjectUsableAtModality_ofNonVarHead context .gen_natZero () .childNil .fibrant (by decide))
-    have stepBranchClassifierFormed : UnionClassifierIsType profile ((context.cons natTypeCell).cons motive)
-        (natElimDependentSuccBranchType motive) :=
-      ⟨level0, flag, natElimDependentSuccBranchType_formed_ofMotive context motive level0 flag motiveTyped⟩
-    have memberAfterEq : natElimRule.memberCell scope childrenAfter
-        = RawTerm.mkGen .gen_natElim () childrenAfter := by
-      cases childrenAfter with
-      | childCons _ rest1 => cases rest1 with
-        | childCons _ rest2 => cases rest2 with
-          | childCons _ rest3 => cases rest3 with
-            | childCons _ rest4 => cases rest4; rfl
-    have drift := natElimObligationsDriftUnderArgStep level0 level1 flag motiveTyped scrutineeClassifierFormed
-      baseBranchClassifierFormed stepBranchClassifierFormed childSubjectReduction childStep
-    rw [← memberAfterEq]
-    exact elimGateRowReassemble .gen_natElim natElimRule .childNil level0 level1 flag rfl premisesHold
-      childSubjectReduction drift
-      (natElimOutputTypeDriftUnderArgStep .childNil childStep)
-      (usabilityHoldsUnderObligationsDrift drift childSubjectReduction
-        (by intro obligation hmem
-            cases hmem with
-            | head => rfl
-            | tail _ hmem => cases hmem with
-              | head => rfl
-              | tail _ hmem => cases hmem with
-                | head => rfl
-                | tail _ hmem => cases hmem with
-                  | head => rfl
-                  | tail _ hmem => cases hmem)
-        premisesHold usabilityHolds)
+      Conv pinned (natElimRule.outputType scope args params) :=
+  natElimGateBranchClosesBounded args params level0 level1 flag premisesHold
+    childSubjectReduction.toBelow wellFormed usabilityHolds memberEq childStep
 
 /-- **The `natRec` branch** — the `natElim` twin (same substrate; only `natRecRule` / `natRecCell` differ). -/
 theorem natRecGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
@@ -1173,57 +529,9 @@ theorem natRecGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : 
     (childStep : StepChildren childrenBefore childrenAfter) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
-      Conv pinned (natRecElimRule.outputType scope args params) := by
-  match args, params with
-  | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))), .childNil =>
-    injection memberEq with _scopeEq genEq payloadEq childrenEq
-    subst genEq
-    cases eq_of_heq payloadEq
-    cases eq_of_heq childrenEq
-    have scrutineeClassifierFormed :=
-      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
-        first
-          | exact boolTypeCell_not_conv_intervalTypeCell
-          | exact natTypeCell_not_conv_intervalTypeCell
-          | exact listTypeCell_not_conv_intervalTypeCell _
-          | exact optionTypeCell_not_conv_intervalTypeCell _
-          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
-    have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
-      premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-    -- ★ A1-FIBRANCY B4: nullary `natZero` base branch `subst0 motive natZero` formed via the motive obligation
-    -- (index 3) + `natZeroTypedInContext` through `dependentMotiveOutputFormed_ofMotiveAndArgument`.
-    have baseBranchClassifierFormed :=
-      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
-        context natTypeCell _ natZeroCell level0 flag motiveTyped (natZeroTypedInContext context)
-        (isSubjectUsableAtModality_ofNonVarHead context .gen_natZero () .childNil .fibrant (by decide))
-    have stepBranchClassifierFormed : UnionClassifierIsType profile ((context.cons natTypeCell).cons motive)
-        (natElimDependentSuccBranchType motive) :=
-      ⟨level0, flag, natElimDependentSuccBranchType_formed_ofMotive context motive level0 flag motiveTyped⟩
-    have memberAfterEq : natRecElimRule.memberCell scope childrenAfter
-        = RawTerm.mkGen .gen_natRec () childrenAfter := by
-      cases childrenAfter with
-      | childCons _ rest1 => cases rest1 with
-        | childCons _ rest2 => cases rest2 with
-          | childCons _ rest3 => cases rest3 with
-            | childCons _ rest4 => cases rest4; rfl
-    have drift := natRecElimObligationsDriftUnderArgStep level0 level1 flag motiveTyped scrutineeClassifierFormed
-      baseBranchClassifierFormed stepBranchClassifierFormed childSubjectReduction childStep
-    rw [← memberAfterEq]
-    exact elimGateRowReassemble .gen_natRec natRecElimRule .childNil level0 level1 flag rfl premisesHold
-      childSubjectReduction drift
-      (natRecOutputTypeDriftUnderArgStep .childNil childStep)
-      (usabilityHoldsUnderObligationsDrift drift childSubjectReduction
-        (by intro obligation hmem
-            cases hmem with
-            | head => rfl
-            | tail _ hmem => cases hmem with
-              | head => rfl
-              | tail _ hmem => cases hmem with
-                | head => rfl
-                | tail _ hmem => cases hmem with
-                  | head => rfl
-                  | tail _ hmem => cases hmem)
-        premisesHold usabilityHolds)
+      Conv pinned (natRecElimRule.outputType scope args params) :=
+  natRecGateBranchClosesBounded args params level0 level1 flag premisesHold
+    childSubjectReduction.toBelow wellFormed usabilityHolds memberEq childStep
 
 /-- **The `idJ` branch** — CELL-SPINE-ALIGNED (`idJCell` emits `(motive, baseCase, witness)` = `args`).  Output
 `idJMotiveAt motive rightEndpoint witness`; formedness from the witness / rightEndpoint / baseCase obligations. -/
