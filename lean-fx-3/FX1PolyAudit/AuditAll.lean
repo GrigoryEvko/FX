@@ -1787,6 +1787,36 @@ import FX1PolyAudit.Core.Equality.Eta.EtaObservationCompleteness
 import FX1PolyAudit.Core.Equality.Eta.EtaSpinePointwise
 import FX1PolyAudit.Core.Equality.Eta.EtaStabilityDefinedness
 import FX1PolyAudit.Core.Equality.Eta.EtaStabilitySubstrate
+import FX1PolyAudit.Core.Equality.Eta.EtaStrengthenEquivariance
+import FX1PolyAudit.Core.Fib.BiInitiality
+import FX1PolyAudit.Core.Fib.CrossAxisCoherence
+import FX1PolyAudit.Core.Fib.FibrationArchitecture
+import FX1PolyAudit.Core.Fib.ModeAffineAdjunction
+import FX1PolyAudit.Core.Metatheory.Canonicity.DataEliminatorCanonicity
+import FX1PolyAudit.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
+import FX1PolyAudit.Core.Metatheory.Canonicity.StructuredCandidates
+import FX1PolyAudit.Core.Metatheory.Normalization.Core.IotaFragmentOrdinalAnalysis
+import FX1PolyAudit.Core.Metatheory.Normalization.IotaSN.ProductFormerLexMeasureSN
+import FX1PolyAudit.Core.Metatheory.Normalization.IotaSN.SizeCompatClosureSN
+import FX1PolyAudit.Core.Metatheory.Normalization.Orders.EtaRpoEmbedding
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnionRelative
+import FX1PolyAudit.Core.Rewriting.Confluence.DefUnivConfluence
+import FX1PolyAudit.Core.Rewriting.Confluence.EtaIotaCommutationSubstrate
+import FX1PolyAudit.Core.Rewriting.Confluence.EtaIotaQuasiCommutation
+import FX1PolyAudit.Core.Rewriting.Confluence.EtaIotaRootCommutation
+import FX1PolyAudit.Core.Rewriting.Confluence.TableTakahashiTriangle
+import FX1PolyAudit.Core.Rewriting.Conversion.ConvSubstPair
+import FX1PolyAudit.Core.Rewriting.RuleTables.Core.RewriteRowOverlap
+import FX1PolyAudit.Core.Rewriting.RuleTables.Delta.DeltaBetaCommutation
+import FX1PolyAudit.Core.Rewriting.RuleTables.Delta.DeltaMeasureDecrease
+import FX1PolyAudit.Core.Rewriting.RuleTables.Delta.DeltaRuleTable
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.EtaRuleTable
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.EtaTableOrthogonality
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.EtaTableStability
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.EtaTableStar
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StepEtaOverTable
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StepEtaRootTable
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StepEtaTableBackward
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
