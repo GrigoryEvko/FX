@@ -69,9 +69,9 @@ private theorem intervalNotConvProductCodeBounded {scope : Nat} (firstType secon
 
 /-! ## The rigid-classifier clean rows — `fst` / `snd` (UNCONDITIONAL after-usability discharge) -/
 
-/-- (local) **`fst`'s after-args usability, discharged from the re-typed obligations.**  Mirror of the unbounded
-`fstUsabilityDischarge`: the pair obligation (at `productType`) and the self-certifying first-type obligation (at
-`universeCode`) are both rigid `≢ interval`, so fibrant usability follows from the typed-at-non-interval bridge. -/
+/-- (local) **`fst`'s after-args usability, discharged from the re-typed obligations.**  The pair obligation (at
+`productType`) and the self-certifying first-type obligation (at `universeCode`) are both rigid `≢ interval`, so
+fibrant usability follows from the typed-at-non-interval bridge. -/
 private theorem fstAfterUsableBounded {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (firstType secondType : RawTerm scope)
     (level0 level1 : LevelExpr) (flag : UniverseFlag) (wellFormed : WfContextUnion context)
@@ -282,8 +282,8 @@ private theorem intervalNotConvBridgeCodeBounded {scope : Nat}
     (fun _reduct chain => headReaches_bridgeTypeCell chain)
     (fun headsEqual => Generator.noConfusion headsEqual)
 
-/-- (local) **`pathApp`'s after-args usability.**  Mirror of the unbounded `pathAppUsabilityDischarge`: the `path`
-obligation (at the bridge type) and the self-certifying `carrier` obligation (at `universeCode`) are rigid
+/-- (local) **`pathApp`'s after-args usability.**  The `path` obligation (at the bridge type) and the
+self-certifying `carrier` obligation (at `universeCode`) are rigid
 `≢ interval`, so fibrant usability follows from the typed-at-non-interval bridge; the interval-typed `argument`
 obligation, consumed at the `.dimensional` modality, takes the supplied dimensional residual. -/
 private theorem pathAppAfterUsableBounded {profile : PolyProfile} {scope : Nat}

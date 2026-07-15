@@ -31,8 +31,9 @@ satisfies it definitionally (its `varToRawTerm` IS the substituent lookup).  Ren
 it from its accessibility condition, because a renamed variable is still a variable and
 `isSubjectUsableAtModality_var` reduces a variable subject's usability to its index's
 accessibility.  Nothing here claims "a morphism maps a variable to a variable" — that claim is
-TRUE for rename, FALSE for subst, and machine-refuted as `genericRenameShapeClaim`; it is never
-stated, and the generic proofs quantify over `Container` opaquely so it could not be.
+TRUE for rename and FALSE for subst (any substituent sending a variable to a non-variable term
+refutes it), so it is never stated; the generic proofs quantify over `Container` opaquely, so it
+could not be stated even by accident.
 
 `LiftsRaw` is LAW-FREE (`LiftsRaw.lean`: one field, `liftForRaw`, no equations), so NOTHING about
 the LIFTED action's behaviour on variables is derivable generically.  Every binder-crossing step
