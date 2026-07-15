@@ -1722,6 +1722,8 @@ import FX1PolyAudit.Polygraph.Omega.AdmissionChainSeedAudit
 import FX1PolyAudit.Polygraph.Omega.TypedKernelTupleAudit
 -- OMEGA-7 r1 — the grand-rung ledger + Makkai wall + staircase criteria (B4)
 import FX1PolyAudit.Polygraph.Omega.SubstitutionPastingLedgerAudit
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCoreSwapBridgedSeedRefutation
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCoreSwapBridgedSeedRefutationAxiomWitness
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
