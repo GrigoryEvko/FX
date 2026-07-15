@@ -23,15 +23,16 @@ neutral normal form" into "the scrutinee has a weak-head step (keep peeling) or 
 
 `IsNeutral.reflectAlongStep` is by INDUCTION ON the neutral derivation `IsNeutral reductTerm` (mirroring
 `WeakHeadStep.reflectAlongStep`'s induction on the weak-head step).  In each arm the arbitrary
-`Step subjectTerm reductTerm` is inverted by `Step.weakHeadStep_or_cong`:
+`Step subjectTerm reductTerm` is inverted by the packaging inversion
+`Step.weakHeadOrSpineStepIntoCell` (the generator / payload / children pinning discharged once,
+upstream):
 
-  * **root reduction (`Or.inl`)** — `subjectTerm` already has a weak-head step; emit it.  Identical across
+  * **weak-head disjunct** — `subjectTerm` already has a weak-head step; emit it.  Identical across
     all twelve arms.
 
-  * **congruence (`Or.inr`)** — `subjectTerm = mkGen G payload children`, `reductTerm =
-    mkGen G payload childrenAfter`, with `StepChildren children childrenAfter`.  Pin `G` (via
-    `congrArg RawTerm.rootGenerator`), the payload, and the reduct children, then case the `StepChildren`
-    against the now-concrete reduct spine by WHICH child stepped:
+  * **spine-step disjunct** — `subjectTerm = mkGen G payload sourceChildren` with
+    `StepChildren sourceChildren <reduct spine>`; case the `StepChildren` against the concrete reduct
+    spine by WHICH child stepped:
       - a NON-principal child stepped (motive / branch / base case) — the principal child is unchanged, so
         the subject is still neutral at the same head (`IsNeutral.<former>` with the stored premise);
       - the PRINCIPAL child stepped — recurse with the induction hypothesis, which returns a weak-head step
@@ -42,9 +43,9 @@ The childless atomic `var` arm refutes the impossible cong-into-leaf spine by `c
 
 ## Zero-axiom verification
 
-`induction` on `IsNeutral` then `Step.weakHeadStep_or_cong` inversion + `cases` on `StepChildren` against a
-pinned-concrete reduct spine; generator pinning via `congrArg RawTerm.rootGenerator`; impossible
-cong-into-leaf spines closed by `cases`.  No `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`induction` on `IsNeutral` then the `Step.weakHeadOrSpineStepIntoCell` packaging inversion + `cases` on
+`StepChildren` against a pinned-concrete reduct spine; impossible cong-into-leaf spines closed by
+`cases`.  No `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/`.
 -/
 
@@ -56,11 +57,11 @@ open FX1Poly.Tier0.Syntax
 step.  The dual of `WeakHeadStep.reflectAlongStep`: a single reduction cannot turn a non-neutral
 weak-head-normal form into a neutral without exposing a weak-head redex on the source.
 
-Induction on `IsNeutral reductTerm`; each arbitrary `Step subjectTerm reductTerm` is inverted by
-`Step.weakHeadStep_or_cong`.  The root-reduction disjunct yields the source weak-head step; the congruence
-disjunct pins the generator, payload, and reduct children, then cases the `StepChildren` — a stepped
-non-principal child keeps the subject neutral at the same head, a stepped principal child recurses through
-the induction hypothesis (lifting either its weak-head step or its neutrality).
+Induction on `IsNeutral reductTerm`; each arbitrary `Step subjectTerm reductTerm` is inverted by the
+packaging inversion `Step.weakHeadOrSpineStepIntoCell`.  The weak-head disjunct yields the source
+weak-head step; the spine-step disjunct cases the `StepChildren` — a stepped non-principal child keeps
+the subject neutral at the same head, a stepped principal child recurses through the induction
+hypothesis (lifting either its weak-head step or its neutrality).
 
 Zero-axiom: no `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`. -/
 theorem IsNeutral.reflectAlongStep {scope : Nat} :
@@ -72,28 +73,16 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
   induction neutral with
   | var index =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨_sourceChildren, _subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_var = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        cases childStep
+      · cases childStep
   | app headIsNeutral headInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_app = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest functionStep =>
             rcases headInductiveHypothesis functionStep with
@@ -107,17 +96,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
             | there _head2 emptyStep => cases emptyStep
   | pathApp functionIsNeutral functionInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_pathApp = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest functionStep =>
             rcases functionInductiveHypothesis functionStep with
@@ -131,17 +113,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
             | there _head2 emptyStep => cases emptyStep
   | fst argumentIsNeutral argumentInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_fst = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest argumentStep =>
             rcases argumentInductiveHypothesis argumentStep with
@@ -151,17 +126,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
         | there _head tailStep => cases tailStep
   | snd argumentIsNeutral argumentInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_snd = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest argumentStep =>
             rcases argumentInductiveHypothesis argumentStep with
@@ -171,17 +139,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
         | there _head tailStep => cases tailStep
   | boolElim scrutineeIsNeutral scrutineeInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_boolElim = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.boolElim scrutineeIsNeutral)
         | there _head tailStep =>
@@ -200,17 +161,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
                     | there _head4 emptyStep => cases emptyStep
   | natElim scrutineeIsNeutral scrutineeInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_natElim = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.natElim scrutineeIsNeutral)
         | there _head tailStep =>
@@ -229,17 +183,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
                     | there _head4 emptyStep => cases emptyStep
   | natRec scrutineeIsNeutral scrutineeInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_natRec = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.natRec scrutineeIsNeutral)
         | there _head tailStep =>
@@ -258,17 +205,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
                     | there _head4 emptyStep => cases emptyStep
   | listElim scrutineeIsNeutral scrutineeInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_listElim = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.listElim scrutineeIsNeutral)
         | there _head tailStep =>
@@ -287,17 +227,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
                     | there _head4 emptyStep => cases emptyStep
   | optionMatch scrutineeIsNeutral scrutineeInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_optionMatch = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.optionMatch scrutineeIsNeutral)
         | there _head tailStep =>
@@ -316,17 +249,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
                     | there _head4 emptyStep => cases emptyStep
   | eitherMatch scrutineeIsNeutral scrutineeInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_eitherMatch = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.eitherMatch scrutineeIsNeutral)
         | there _head tailStep =>
@@ -345,17 +271,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
                     | there _head4 emptyStep => cases emptyStep
   | idJ witnessIsNeutral witnessInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_idJ = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.idJ witnessIsNeutral)
         | there _head tailStep =>
@@ -371,17 +290,10 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
                 | there _head3 emptyStep => cases emptyStep
   | idStrictRec witnessIsNeutral witnessInductiveHypothesis =>
       intro subjectTerm step
-      rcases Step.weakHeadStep_or_cong step with
-        ⟨subjectReduct, weakHeadOnSubject⟩
-        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      rcases Step.weakHeadOrSpineStepIntoCell step with
+        ⟨subjectReduct, weakHeadOnSubject⟩ | ⟨sourceChildren, subjectEquation, childStep⟩
       · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
-      · have generatorEquation : Generator.gen_idStrictRec = generator :=
-          congrArg RawTerm.rootGenerator reductEquation
-        subst generatorEquation
-        subst subjectEquation
-        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
-        subst payloadEquation
-        subst childrenAfterEquation
+      · subst subjectEquation
         cases childStep with
         | here _rest _motiveStep => exact Or.inr (IsNeutral.idStrictRec witnessIsNeutral)
         | there _head tailStep =>
