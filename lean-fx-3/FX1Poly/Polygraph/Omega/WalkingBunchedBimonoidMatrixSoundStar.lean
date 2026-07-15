@@ -1,3 +1,4 @@
+-- TODO: DELETE THIS GARBAGE -- defective bunchedBimonoid star (refuted r29/r30/r31); superseded by the LafontProp re-founding
 import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidWideCollisionNaturalitySlideWidth
 import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidMatrixReconstruction
 import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidSpiderBlockExchange

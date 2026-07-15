@@ -1,3 +1,4 @@
+-- TODO: DELETE THIS GARBAGE -- defective bunchedBimonoid star (refuted r29/r30/r31); superseded by the LafontProp re-founding
 import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidNormalFormCensus
 
 /-! # Polygraph/Omega/WalkingBunchedBimonoidRoundFourLedger — the WP-PROP r4 grand ledger (#2033, the 110-percent

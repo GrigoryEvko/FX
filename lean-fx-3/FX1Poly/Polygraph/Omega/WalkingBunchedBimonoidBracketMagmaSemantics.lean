@@ -1,3 +1,4 @@
+-- TODO: DELETE THIS GARBAGE -- defective bunchedBimonoid star (refuted r29/r30/r31); superseded by the LafontProp re-founding
 import FX1Poly.Polygraph.Omega.WalkingBunchedBimonoidStarUnitalRestatement
 
 /-! # Polygraph/Omega/WalkingBunchedBimonoidBracketMagmaSemantics — the BRACKET-MAGMA semantics: the free
