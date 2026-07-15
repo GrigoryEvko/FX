@@ -1750,6 +1750,9 @@ import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCrossComponentBlockDisp
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutCrossComponentBlockDispatchAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutRunSlotReading
 import FX1PolyAudit.Polygraph.TwoCategory.Amalgam.PushoutRunSlotReadingAxiomWitness
+import FX1PolyAudit.Polygraph.Omega.LafontProp.MatNatSemantics
+import FX1PolyAudit.Polygraph.Omega.LafontProp.BicommutativeBimonoidPresentation
+import FX1PolyAudit.Polygraph.Omega.LafontProp.BicommutativeBimonoidPresentationAxiomWitness
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
