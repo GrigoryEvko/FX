@@ -26,6 +26,8 @@ import FX1PolyAudit.Core.Substrate.Neutral.NeutralStepClosure
 import FX1PolyAudit.Core.Substrate.Neutral.NeutralTermRename
 import FX1PolyAudit.Tier0.Term.Core.RawTermFoldNonVarCommute
 import FX1PolyAudit.Tier0.Term.Generator.GeneratorCountPinCoreCellsAudit
+import FX1PolyAudit.Core.Substrate.Neutral.NeutralSubstReflection
+import FX1PolyAudit.Core.Substrate.Profile.ProtocolCellInhabitance
 
 /-! # FX1PolyAudit.AuditCoreSubstrate — aggregator over the per-kernel-module audit shards
 

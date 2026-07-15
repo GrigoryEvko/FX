@@ -1817,6 +1817,34 @@ import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.EtaTableStar
 import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StepEtaOverTable
 import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StepEtaRootTable
 import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StepEtaTableBackward
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StepEtaTableSubstitution
+import FX1PolyAudit.Core.Rewriting.RuleTables.Eta.StrongNormalizationEtaTable
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaRuleTable01
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaRuleTable02
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaRuleTable03
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableCertificationSubstrate
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableEquivariance
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableEquivarianceSubstrate
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableHeadExpansion
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableHonesty
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableOperationalExtension
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableOrientedSN01
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableOrientedSN02
+import FX1PolyAudit.Core.Rewriting.RuleTables.Iota.IotaTableStructuralSR
+import FX1PolyAudit.Core.Rewriting.RuleTables.StepOver.StepOverBundle
+import FX1PolyAudit.Core.Rewriting.RuleTables.StepOver.StepOverBundleConfluence
+import FX1PolyAudit.Core.Rewriting.RuleTables.StepOver.StepOverBundleConv
+import FX1PolyAudit.Core.Rewriting.RuleTables.StepOver.StepTable
+import FX1PolyAudit.Core.Rewriting.RuleTables.StepOver.StepTableRenameReflection
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.DimensionGenericRuleTable
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TableFireRoot
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TableNormalize
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TableOneStepReducts
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TableParallelReduction
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TableParallelStability
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TableReduceOnce
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TableRewriteRuleMap
+import FX1PolyAudit.Core.Rewriting.RuleTables.Tables.TypedIdentificationTable
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
