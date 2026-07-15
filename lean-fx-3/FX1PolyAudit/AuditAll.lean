@@ -1896,6 +1896,36 @@ import FX1PolyAudit.Typed.Engine.Classifier.TableCanonicalityFlip
 import FX1PolyAudit.Typed.Engine.Classifier.TableDrivenHonesty
 import FX1PolyAudit.Typed.Engine.ParityAndSurpassMatrix
 import FX1PolyAudit.Typed.Engine.RuleTables.CellTemplate
+import FX1PolyAudit.Typed.Engine.RuleTables.CellTemplateInterpretAdequacy
+import FX1PolyAudit.Typed.Engine.RuleTables.FormationRuleTable
+import FX1PolyAudit.Typed.Engine.RuleTables.IotaElimTypedLink
+import FX1PolyAudit.Typed.Engine.RuleTables.IotaElimUnionSRCertificate
+import FX1PolyAudit.Typed.Engine.RuleTables.TypingRoleOrthogonality
+import FX1PolyAudit.Typed.Engine.RuleTables.TypingRowDispatch
+import FX1PolyAudit.Typed.Engine.RuleTables.TypingTableBundle
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionAppInversion
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionCanonicalForms
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionCanonicalFormsMore
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionMatchInversion
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionNativeOnly
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionPathAppInversion
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionSubstUnionTyped
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionSubstitution
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionWeakening
+import FX1PolyAudit.Typed.Equality.Eta.EtaTableCanonicalityFlip
+import FX1PolyAudit.Typed.Equality.Eta.TableBetaEtaRootConfluence
+import FX1PolyAudit.Typed.Equality.Eta.TableBetaEtaRootConvAlgebra
+import FX1PolyAudit.Typed.Equality.Eta.TableBetaEtaRootConvDecidable
+import FX1PolyAudit.Typed.Equality.Eta.TableBetaEtaRootStrongNormalization
+import FX1PolyAudit.Typed.Fib.ContextComprehension
+import FX1PolyAudit.Typed.Fib.ContextDisplayPi
+import FX1PolyAudit.Typed.Fib.DisplayFibre
+import FX1PolyAudit.Typed.Fib.ModeFibration
+import FX1PolyAudit.Typed.Fib.ModeLockMultiplier
+import FX1PolyAudit.Typed.Fib.UniverseCodeBridge
+import FX1PolyAudit.Typed.Fib.UniverseElDecode
+import FX1PolyAudit.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencyNativeReducibility
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
