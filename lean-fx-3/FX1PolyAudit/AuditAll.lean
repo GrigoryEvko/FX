@@ -1866,6 +1866,36 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupOrbitPinsReduc
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupTailsFreshLength
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingGodementComponent
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingRenameComponent
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ValleyMatchingSpineTraceEquiv
+import FX1PolyAudit.Tier0.Mode.BridgeIntervalAffineMultiplier
+import FX1PolyAudit.Tier0.Mode.BridgeParametricityPayoff
+import FX1PolyAudit.Tier0.Type.Level.LevelExprTower
+import FX1PolyAudit.Typed.Cell.EitherMatchDependentBranchType
+import FX1PolyAudit.Typed.Cell.ListElimDependentConsType
+import FX1PolyAudit.Typed.Cell.NatElimDependentSuccType
+import FX1PolyAudit.Typed.Cell.OptionMatchDependentSomeBranchType
+import FX1PolyAudit.Typed.Cell.UnionCellSubstitution
+import FX1PolyAudit.Typed.Corpus.Smoke.TypedFragmentTableAdequacy
+import FX1PolyAudit.Typed.Dimensions.Cost.OptimizationCellCategory
+import FX1PolyAudit.Typed.Dimensions.Graded.AppScaledPathLamGrade
+import FX1PolyAudit.Typed.Dimensions.Graded.AppScaledSubstMetatheory
+import FX1PolyAudit.Typed.Dimensions.Graded.BetaStablePathLamGrade
+import FX1PolyAudit.Typed.Dimensions.Graded.GradedTableCoherenceGapClosure
+import FX1PolyAudit.Typed.Dimensions.Parametricity.AffineBoundaryStructural
+import FX1PolyAudit.Typed.Dimensions.Parametricity.BridgeRelationalScone
+import FX1PolyAudit.Typed.Dimensions.Parametricity.BridgeRelationalSconeAffineRole
+import FX1PolyAudit.Typed.Dimensions.Parametricity.BridgeRelationalSconeIdentityPath
+import FX1PolyAudit.Typed.Dimensions.Parametricity.GelIsTranspensionAtAffine
+import FX1PolyAudit.Typed.Dimensions.Parametricity.KernelParamInternalVerdict
+import FX1PolyAudit.Typed.Dimensions.Parametricity.TranspensionSchema
+import FX1PolyAudit.Typed.Engine.Classifier.DimensionLockAccessibility
+import FX1PolyAudit.Typed.Engine.Classifier.DimensionLockBreakerRejection
+import FX1PolyAudit.Typed.Engine.Classifier.EqualityTier
+import FX1PolyAudit.Typed.Engine.Classifier.NativityLedger
+import FX1PolyAudit.Typed.Engine.Classifier.TableCanonicalityFlip
+import FX1PolyAudit.Typed.Engine.Classifier.TableDrivenHonesty
+import FX1PolyAudit.Typed.Engine.ParityAndSurpassMatrix
+import FX1PolyAudit.Typed.Engine.RuleTables.CellTemplate
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
 
