@@ -131,4 +131,11 @@ namespace FX1PolyAudit
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAugPointedTensorAssoc
 #print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAugPointedLeftAsTensor
 
+-- The r31 additive append: the Clean-gate docstring's promised junk-instance falseness witness.
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAugJunkFunctorialLeftLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAugJunkFunctorialRightLeg
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAugJunkFunctorialLeftLegNotClean
+#assert_no_axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAugRightFunctorialJunkSeparates
+#print axioms FX1Poly.Polygraph.Omega.bunchedBimonoidAugRightFunctorialJunkSeparates
+
 end FX1PolyAudit

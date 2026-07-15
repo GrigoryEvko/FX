@@ -533,7 +533,7 @@ def bunchedBimonoidAugComposableBool : (d : Nat) →
 /-- ★ **The Clean gate** — the Bool fold demanding every vertical composite's factors agree on their augmented
 interface.  Junk (non-composable) cells are exactly the Clean-false ones; the strict rows are absorbed by the
 augmented semantics GATED on this predicate (they are semantically FALSE on junk instances — machine-checked
-below by `bunchedBimonoidAugRightFunctorialJunkSeparates`). -/
+by `bunchedBimonoidAugRightFunctorialJunkSeparates`, the r31 additive append at the END of this file). -/
 def bunchedBimonoidAugCleanCell : {dim : Nat} → CellExpr bunchedBimonoidOmegaComputad dim → Bool
   | _, .ofMode _ => true
   | _, .gen _ source target => bunchedBimonoidAugCleanCell source && bunchedBimonoidAugCleanCell target
@@ -2978,5 +2978,36 @@ augmented pointed-tensor algebra on Clean instances and by Clean-equivalence on 
 rows and 3 hexagon rows compute; the eleven congruence fields transport.  The invariant the plain `Mat(N)`
 semantics cannot see (`bunchedBimonoidAugUnitIntoMuValue`) now folds through EVERY star-scope derivation. -/
 def fxBunchedBimonoid_affineOffsetAbsorberShipped : Bool := true
+
+/-! ## The junk-instance falseness witness (WP-PROP r31 additive append — the Clean-gate docstring's
+promised machine check, landed) -/
+
+/-- The junk `whiskerRightFunctorial` LEFT leg — the non-composable composite `mu_a ; sigma_a` (interface
+`1 != 2`, Clean-false) whiskered right by `a`. -/
+def bunchedBimonoidAugJunkFunctorialLeftLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.whiskerRight (CellExpr.vcomp bunchedBimonoidAddMuGen bunchedBimonoidAddSigmaGen)
+    bunchedBimonoidAdditiveGen
+
+/-- The junk `whiskerRightFunctorial` RIGHT leg — the whiskers distributed over the junk composite. -/
+def bunchedBimonoidAugJunkFunctorialRightLeg : CellExpr bunchedBimonoidOmegaComputad 2 :=
+  CellExpr.vcomp (CellExpr.whiskerRight bunchedBimonoidAddMuGen bunchedBimonoidAdditiveGen)
+    (CellExpr.whiskerRight bunchedBimonoidAddSigmaGen bunchedBimonoidAdditiveGen)
+
+/-- The junk instance is Clean-FALSE (the gate rejects it). -/
+theorem bunchedBimonoidAugJunkFunctorialLeftLegNotClean :
+    bunchedBimonoidAugCleanCell bunchedBimonoidAugJunkFunctorialLeftLeg = false := rfl
+
+/-- ★★ **THE PROMISED WITNESS — the strict `whiskerRightFunctorial` row is semantically FALSE on a junk
+instance.**  On the Clean-false pair above the two legs have DIFFERENT augmented values (`[[1,0,0,0],
+[0,0,0,0],[0,1,1,0],[0,0,0,1]]` vs `[[1,0,0,0],[0,0,0,1],[0,1,1,0],[0,0,0,0]]`, separating at entry
+`(1,3)`) — exactly why the r30 absorber must be composability-GATED: an UNgated augmented absorber over the
+strict rows is impossible. -/
+theorem bunchedBimonoidAugRightFunctorialJunkSeparates :
+    bunchedBimonoidEvalAugCell bunchedBimonoidAugJunkFunctorialLeftLeg
+      ≠ bunchedBimonoidEvalAugCell bunchedBimonoidAugJunkFunctorialRightLeg := by
+  intro valuesEq
+  exact absurd
+    (congrArg (fun matrix => bunchedBimonoidMatEntryAt matrix 1 3) valuesEq)
+    (by decide)
 
 end FX1Poly.Polygraph.Omega
