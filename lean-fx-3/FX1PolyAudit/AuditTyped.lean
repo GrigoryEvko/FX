@@ -17,6 +17,7 @@ import FX1PolyAudit.Typed.Cell.CellConstructors
 import FX1PolyAudit.Typed.Cell.CellRenaming
 import FX1PolyAudit.Typed.Cell.CellShorthands
 import FX1PolyAudit.Typed.Cell.CellSubstitution
+import FX1PolyAudit.Typed.Cell.RawTermMorphismCell
 import FX1PolyAudit.Typed.Corpus.Church.Combinators.SymbolicSCombinatorRule
 import FX1PolyAudit.Typed.Corpus.Church.Lists.ChurchLists
 import FX1PolyAudit.Typed.Corpus.Church.Numerals.TypedChurchNumeralAddition
@@ -307,6 +308,9 @@ import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTables
 import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTablesMore
 import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTablesMore2
 import FX1PolyAudit.Typed.Engine.Union.HasTypeUnion
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionFormationObligations
+import FX1PolyAudit.Typed.Engine.Union.RawTermMorphismFormationObligations
+import FX1PolyAudit.Typed.Engine.Union.RawTermMorphismFormationObligationsAxiomWitness
 import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionGenericElimInversion
 import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionGenericVariableInversion
 import FX1PolyAudit.Typed.Metatheory.Universe.NativeUniverseClassificationUnique
