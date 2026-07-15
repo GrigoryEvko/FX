@@ -1,0 +1,57 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithCanonicalDriverInterface
+
+/-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithCanonicalDriverInterface — zero-axiom gate
+    (H2-SMITH r51 — the driver-agnostic Smith interface)
+
+Per-declaration zero-axiom gate for the canonical-driver interface: the canonical driver and its
+totality target, the totality theorem, the DRIVER-AGNOSTIC reachability statement and theorem, the seven
+liveness probes with their rectangularity witnesses, the seven mandate-application pins, and the seven
+driver-agnostic existence pins.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`,
+`omega`.  The fuel-based `#assert_no_axioms` runs here; the INDEPENDENT (non-fuel) `#print axioms`
+cross-check lives in the separate `SmithCanonicalDriverInterfaceAxiomWitness` file — a different
+mechanism in a different file, since the project macro is fuel-based and is not trusted alone. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithReduceCanonicalDriverStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithReduceCanonicalDriverHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.SmithNormalFormIsReachableStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachable
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeDensePair
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeDiagonalNine
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeWideRun
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeTallCoprime
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeAntidiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeTripleDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeNegativeMix
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeDensePairIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeDiagonalNineIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeWideRunIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeTallCoprimeIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeAntidiagonalIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeTripleDiagonalIsRectangular
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalProbeNegativeMixIsRectangular
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalDriverLandsSmithFormOnDensePair
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalDriverLandsSmithFormOnDiagonalNine
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalDriverLandsSmithFormOnWideRun
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalDriverLandsSmithFormOnTallCoprime
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalDriverLandsSmithFormOnAntidiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalDriverLandsSmithFormOnTripleDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalDriverLandsSmithFormOnNegativeMix
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachableForDensePair
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachableForDiagonalNine
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachableForWideRun
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachableForTallCoprime
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachableForAntidiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachableForTripleDiagonal
+#assert_no_axioms FX1Poly.ComputerAlgebra.smithNormalFormIsReachableForNegativeMix
+
+end FX1PolyAudit
