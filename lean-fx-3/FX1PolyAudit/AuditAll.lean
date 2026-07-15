@@ -1669,6 +1669,8 @@ import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidBracketMagmaSemanticsA
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarAssocLawRefutationAudit
 -- WP-PROP r31 ASSOCIATIVE RESTATEMENT - the two matrix-sound (co)associativity rows restored, the scope widened to the FULL Lafont row census, the completeness target re-stated over it, the exact r31 refutation pair closed by a one-row fire (bare + whiskered) with the coassoc pair, the r31 bracket separator machine-checked DEAD against the widened scope, and the width-0-whisker residual (sigma |> idOne vs sigma) FLAGGED as the successor's first adjudication duty; associative owner = false (NAMED, not proven)
 import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidStarAssociativeRestatementAudit
+-- WP-PROP r31 WIDTH-0-WHISKER ABSORPTIONS - the flagged residual partially discharged: eta_a |> idOne ~ eta_a DERIVED over the unital scope (bone expansion + functoriality + B3 backwards + rightCounit), mu_a |> idOne ~ mu_a DERIVED over the associative scope (rootUnitAssoc + the NEW muAssoc row + rightUnit inside the whisker -- the first genuine muAssoc consumer beyond the refutation pair); the sigma case honestly OPEN (owner false); zero-axiom
+import FX1PolyAudit.Polygraph.Omega.WalkingBunchedBimonoidWidthZeroWhiskerAbsorptionAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking monad's latent over-quotient: 3 bare-whisker rows separated, sound sub-theory restored
 import FX1PolyAudit.Polygraph.Omega.WalkingMonadOverQuotientAdjudicationAudit
 -- OMEGA HOUSE-STYLE SWEEP r4 — the walking strong monad's latent over-quotient: 3 T-monad rows separated (strength = braiding), sound sub-theory restored
