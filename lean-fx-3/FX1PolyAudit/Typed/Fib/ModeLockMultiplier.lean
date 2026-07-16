@@ -10,13 +10,13 @@ mode-axis unpointedness. Must be free of `propext`, `Quot.sound`, `Classical`, `
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier_isUnpointable
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionLockMultiplier
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionLockMultiplier_isUnpointable
 #assert_no_axioms FX1Poly.Core.Fib.lockFibrantInaccessibility_witnessedByUnpointedMultiplier
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier_isDimensionallySplit
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockSplit_witnessedByMultiplier
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier_notPointed
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier_pointedDecidable
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionLockMultiplier_isDimensionallySplit
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionLockSplit_witnessedByMultiplier
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionLockMultiplier_notPointed
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionLockMultiplier_pointedDecidable
 #assert_no_axioms FX1Poly.Core.Fib.lockFibrantAccess_eq_multiplierNonPointedness
 
 end FX1PolyAudit

@@ -250,7 +250,7 @@ decode injectivity + η for El over the whole type system — stays #1532.) -/
 def fxFib_hasTypeTermUniverseReflection : Bool := true
 
 /-- **ESTABLISHED (fib-3, the fibration STRUCTURE).**  The MTT fibration `everything ⊣ mode` STRUCTURE,
-realized over the kernel's AFFINE mode theory (`affineDimensionModeGraph`: one mode, one generator, no 2-cell
+realized over the kernel's AFFINE mode theory (`dimensionUsePositionModeGraph`: one mode, one generator, no 2-cell
 relations — the mode the kernel's dimension lock is fibred over), assembled in `Typed/Fib/ModeFibration`
 (`affineModeFibrationRealized`):
   * the lock `lockCons` is pinned to the mode-12 UNPOINTABLE `voidMultiplier` (fib-3a, `Typed/Fib/ModeLockMultiplier`);

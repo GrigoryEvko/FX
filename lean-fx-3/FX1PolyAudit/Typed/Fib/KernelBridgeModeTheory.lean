@@ -11,7 +11,7 @@ with its `rfl` verdict, the `admitByRowAware` cross-arc non-match, and the prese
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModeSignature
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModeSignature
 #assert_no_axioms FX1Poly.Core.Fib.affineKernelModeDecEq
 #assert_no_axioms FX1Poly.Core.Fib.affineKernelModalityDecEq
 #assert_no_axioms FX1Poly.Core.Fib.affineKernelTwoCellDecEq

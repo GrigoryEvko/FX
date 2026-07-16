@@ -5,11 +5,11 @@ import FX1Poly.Polygraph.TwoCategory.Amalgam.ModeAdmit
 /-! # FX1Poly/Typed/Fib/KernelBridgeModeTheory — CORE-WP r1 (K2): the kernel mode theory as a 2-polygraph
 
 The A1 dimension lock (`TypingContext.lockCons`, the single affine modality `mu_affine`) is presented in
-`ModeLockPath.lean` as a bare `ModeGraph` (`affineDimensionModeGraph`: ONE mode, ONE generating modality, NO
+`ModeLockPath.lean` as a bare `ModeGraph` (`dimensionUsePositionModeGraph`: ONE mode, ONE generating modality, NO
 generating 2-cells).  This file lifts that quiver to a full `ModeSignature` (a 2-polygraph) — the form the
 generic mode-decision tools consume — and records the two facts the kernel bridge rests on:
 
-  * **the presentation is RELATION-FREE.**  `affineDimensionModeSignature.twoCell` is the EMPTY family
+  * **the presentation is RELATION-FREE.**  `dimensionUsePositionModeSignature.twoCell` is the EMPTY family
     (`fun _ _ => Empty`): there are no generating 2-cells and hence no relations among the modalities.  This is
     the free strict 2-category on a single generating endo-1-cell.
   * **the free dimension-2 word problem therefore decides OUTRIGHT.**  Instantiating the un-gated free decider
@@ -45,51 +45,51 @@ open FX1Poly.Polygraph.Amalgam
 /-! ## K2a — the affine dimension lock as a 2-polygraph (`ModeSignature`) -/
 
 /-- ★ **The kernel's affine dimension mode theory as a 2-POLYGRAPH.**  The `ModeLockPath` quiver
-`affineDimensionModeGraph` (one mode, one generating modality — the affine lock generator) lifted to a
+`dimensionUsePositionModeGraph` (one mode, one generating modality — the affine lock generator) lifted to a
 `ModeSignature` with the EMPTY generating-2-cell family (`fun _ _ => Empty`): there are NO relations among the
 modalities.  This is the free strict 2-category on a single generating endo-1-cell — the presentation the kernel
 bridge's mode-decision tools run over. -/
-def affineDimensionModeSignature : ModeSignature where
-  graph := affineDimensionModeGraph
+def dimensionUsePositionModeSignature : ModeSignature where
+  graph := dimensionUsePositionModeGraph
   twoCell := fun _ _ => Empty
 
 /-- Decidable equality on the affine signature's modes (there is one, `()`), the `Unit` instance. -/
-def affineKernelModeDecEq : DecidableEq affineDimensionModeSignature.graph.Mode :=
+def affineKernelModeDecEq : DecidableEq dimensionUsePositionModeSignature.graph.Mode :=
   inferInstanceAs (DecidableEq Unit)
 
 /-- Decidable equality on the affine signature's modality generators (there is one, `()`), the `Unit`
 instance, uniformly over every endpoint pair. -/
 def affineKernelModalityDecEq :
-    (sourceMode targetMode : affineDimensionModeSignature.graph.Mode) →
-      DecidableEq (affineDimensionModeSignature.graph.Modality sourceMode targetMode) :=
+    (sourceMode targetMode : dimensionUsePositionModeSignature.graph.Mode) →
+      DecidableEq (dimensionUsePositionModeSignature.graph.Modality sourceMode targetMode) :=
   fun _ _ => inferInstanceAs (DecidableEq Unit)
 
 /-- Decidable equality on the affine signature's generating 2-cells — VACUOUSLY, since the family is `Empty`:
 any purported 2-cell is refuted by `Empty.elim`.  The relation-freeness made into decidable data. -/
 def affineKernelTwoCellDecEq :
-    {sourceMode targetMode : affineDimensionModeSignature.graph.Mode} →
-      (sourcePath targetPath : ModalityPath affineDimensionModeSignature.graph sourceMode targetMode) →
-      DecidableEq (affineDimensionModeSignature.twoCell sourcePath targetPath) :=
+    {sourceMode targetMode : dimensionUsePositionModeSignature.graph.Mode} →
+      (sourcePath targetPath : ModalityPath dimensionUsePositionModeSignature.graph sourceMode targetMode) →
+      DecidableEq (dimensionUsePositionModeSignature.twoCell sourcePath targetPath) :=
   fun _ _ => fun emptyCell _ => emptyCell.elim
 
 /-! ## K2b — the kernel's OWN dimension-2 word problem decides (free, no relations) -/
 
 /-- The identity 2-cell on the affine identity 1-cell — a genuine cell over the kernel's own signature. -/
 def kernelAffineIdentityCell :
-    RawTwoCellExpr affineDimensionModeSignature
-      (identityPath (graph := affineDimensionModeSignature.graph) affineDimensionMode)
-      (identityPath (graph := affineDimensionModeSignature.graph) affineDimensionMode) :=
-  RawTwoCellExpr.id (identityPath (graph := affineDimensionModeSignature.graph) affineDimensionMode)
+    RawTwoCellExpr dimensionUsePositionModeSignature
+      (identityPath (graph := dimensionUsePositionModeSignature.graph) dimensionUsePositionMode)
+      (identityPath (graph := dimensionUsePositionModeSignature.graph) dimensionUsePositionMode) :=
+  RawTwoCellExpr.id (identityPath (graph := dimensionUsePositionModeSignature.graph) dimensionUsePositionMode)
 
 /-- A SYNTACTICALLY DISTINCT parallel cell — the vertical composite of two identities on the same 1-cell.
 Parallel to `kernelAffineIdentityCell` (same boundary), a different expression, so the decision is non-vacuous. -/
 def kernelAffineVcompIdentityCell :
-    RawTwoCellExpr affineDimensionModeSignature
-      (identityPath (graph := affineDimensionModeSignature.graph) affineDimensionMode)
-      (identityPath (graph := affineDimensionModeSignature.graph) affineDimensionMode) :=
+    RawTwoCellExpr dimensionUsePositionModeSignature
+      (identityPath (graph := dimensionUsePositionModeSignature.graph) dimensionUsePositionMode)
+      (identityPath (graph := dimensionUsePositionModeSignature.graph) dimensionUsePositionMode) :=
   RawTwoCellExpr.vcomp
-    (RawTwoCellExpr.id (identityPath (graph := affineDimensionModeSignature.graph) affineDimensionMode))
-    (RawTwoCellExpr.id (identityPath (graph := affineDimensionModeSignature.graph) affineDimensionMode))
+    (RawTwoCellExpr.id (identityPath (graph := dimensionUsePositionModeSignature.graph) dimensionUsePositionMode))
+    (RawTwoCellExpr.id (identityPath (graph := dimensionUsePositionModeSignature.graph) dimensionUsePositionMode))
 
 /-- ★ **The kernel's OWN mode theory's dimension-2 word problem decides.**  The un-gated free decider
 `decideTwoCellConvFull` (FREE-7) at the affine signature's decidable-equality data (`Unit`/`Unit`/`Empty`)
@@ -143,7 +143,7 @@ theorem affineKernel_admitByRowAware_isNone :
 /-! ## Marker -/
 
 /-- ★★ **Honesty marker — the kernel's affine dimension mode theory is PRESENTED and FREE-DECIDES (CORE-WP r1
-K2).**  The A1 dimension lock is lifted from a bare `ModeGraph` to a `ModeSignature` (`affineDimensionModeSignature`,
+K2).**  The A1 dimension lock is lifted from a bare `ModeGraph` to a `ModeSignature` (`dimensionUsePositionModeSignature`,
 one mode, one generating modality, the EMPTY 2-cell family — relation-free), its decidable-equality data ship
 (`Unit`/`Unit`/`Empty`), and its OWN dimension-2 word problem decides through the un-gated free decider
 (`kernelAffineFreeDimTwoDecision`, FREE-7 at the affine signature).  The `admitByRowAware` cross-arc is a stated

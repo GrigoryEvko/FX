@@ -142,8 +142,8 @@ SPECIALIZES back to the retired affine A1-lock (Brick 1) on the nose. -/
 /-- The affine one-lock context: an `empty` at the affine mode with a single affine-generator `lockCons` on top.
 The mode-axis realization of the bridge dimension's lock zone. -/
 def affineSingleLockContext :
-    ModedContext affineDimensionModeGraph (fun _ => Unit) affineDimensionMode :=
-  .lockCons (.empty affineDimensionMode) (singletonModalityPath affineLockGenerator)
+    ModedContext dimensionUsePositionModeGraph (fun _ => Unit) dimensionUsePositionMode :=
+  .lockCons (.empty dimensionUsePositionMode) (singletonModalityPath affineLockGenerator)
 
 /-- ★ **Affine seal (dimensional).**  Over the affine graph a single lock's `locks(Δ)` is exactly
 `dimensional`'s staged 1-cell (`obligationModalityToPath .dimensional`) — the generator path.  The general
@@ -154,8 +154,8 @@ theorem affineSingleLockContext_locks :
 
 /-- The affine all-extend context: an `empty` at the affine mode with a single `cons` (CX/EXTEND) on top. -/
 def affineExtendContext :
-    ModedContext affineDimensionModeGraph (fun _ => Unit) affineDimensionMode :=
-  .cons (.empty affineDimensionMode) ()
+    ModedContext dimensionUsePositionModeGraph (fun _ => Unit) dimensionUsePositionMode :=
+  .cons (.empty dimensionUsePositionMode) ()
 
 /-- ★ **Affine seal (fibrant).**  Over the affine graph an all-extend context's `locks(Δ)` collapses to
 `fibrant`'s staged 1-cell (`obligationModalityToPath .fibrant`) — the identity path.  The CX/EXTEND transparency

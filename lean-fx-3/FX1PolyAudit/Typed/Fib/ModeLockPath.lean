@@ -11,8 +11,8 @@ and the injectivity of the translation. Must be free of `propext`, `Quot.sound`,
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModeGraph
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionMode
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModeGraph
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionMode
 #assert_no_axioms FX1Poly.Core.Fib.affineLockGenerator
 #assert_no_axioms FX1Poly.Core.Fib.obligationModalityToPath
 #assert_no_axioms FX1Poly.Core.Fib.obligationModalityToPath_fibrant_length

@@ -1,17 +1,31 @@
 # The Grade↔Mode Spectrum — a runged categorical design
 
-> **TL;DR.** Every "grade," "mode," "stratification," "level," and "dimension"
-> in the FX kernel is a *position on one categorification ladder*. This document
-> defines that ladder, runs it down all four ω-axes (term / type / context /
-> mode), pins where the fibrancy trinity (φ / δ / ℓ) actually sits, and shows the
-> ladder **describes itself** (a grade is the decategorification of a mode). It
-> settles three standing design questions: why fibrancy is *one mode property*
-> (`Axis/Mode/FibrancyMode`), not a standalone axis; why the mode axis is "the
-> grade of grades"; and the φ→ℓ→δ build order.
+> **TL;DR (2nd edition, 2026-07-16).** There are **two dials, not one ladder.**
 >
-> Home: this lives under `Axis/Mode/` because the **mode axis is the classifier
-> of all grading structures** — see §7. It is design prose, not a proof
-> obligation; the Lean realizations it points at are tracked tasks (mapped in §7).
+> * **The seam.** A **grade** has `+` (addition — sharing, "how much"); its home is
+>   a semiring. A **mode** has `∘` only (composition — position, "which place"); its
+>   home is a (2-)category. **A 2-category has no `+`** — so the seam is the
+>   ALGEBRA, and it cuts **across** every rung (§1.2).
+> * **The ladder** (R1–R7) measures one real thing: how rich the mode theory 𝓜 is.
+>   It is the *alongside* dial. It is **not** a grade/mode classifier and **not**
+>   monotone (§2.3).
+> * **Consequences:** beneath ≠ alongside even for static grades, because `B_R`
+>   discards the `+` (§2.1); the lock and the count are **incomparable**, both
+>   load-bearing (§2.2); and FX stands in the empty box that Shulman's MATT open
+>   question **(vi)** names — answering it **NO** (§2.3).
+>
+> ⚠ **The first edition's central theorem — grade = one-object 𝓜, mode =
+> many-object 𝓜, crossover at R3→R4 — is REFUTED** (§1.2), and it was marked
+> ESTABLISHED here for a year while a use-position tag grew the name
+> `affineDimensionModeGraph` around it. Five dependent claims fell with it. If you
+> remember this file's "grade = π₀(mode)" slogan or its name-by-rung rule, both are
+> corrected below (§6, §7.1).
+>
+> Home: this lives under `Axis/Mode/` because the mode axis classifies **mode
+> theories** — not grades, which it cannot see (§7.3). Design prose, not a proof
+> obligation; the Lean realizations are tracked tasks (mapped in §7). **Every
+> ESTABLISHED row below carries a citation, a probe, or a re-runnable census —
+> check a row's tag before you build on it.**
 
 ---
 
@@ -100,7 +114,8 @@ document files cohesion at **R5** (§3, TYPE). Shulman realizes it at **one
 object**.
 
 **Refutation 2 — FX's own kernel is a counterexample to FX's own theorem.**
-`affineDimensionModeGraph` (`Axis/…/ModeLockPath.lean`) has `Mode := Unit` — one
+`dimensionUsePositionModeGraph` (`Typed/Fib/ModeLockPath.lean`; named
+`affineDimensionModeGraph` until 2026-07-16 — see §7.1) has `Mode := Unit` — one
 object — and carries genuine *modal* content: a use-**position** test, which is
 this document's own definition of a mode. Machine-checked, zero-axiom: the same
 variable, in the same context, with the same occurrence count, is **rejected** at
@@ -193,13 +208,20 @@ theorem:
 separator was not a discovery about FX's lock; given §2.1's no-`+` theorem it
 **could not have failed to exist**.
 
-★ **Naming consequence.** FX's `affineDimensionModeGraph` is **not affine**. It
-rejects a *single* fibrant use — it has nothing to do with duplication. It is a
-use-**position** tag, and the kernel already says so where it matters:
-`ElimRuleTable.lean:66` calls it *"The USE-POSITION MODALITY."* The docstrings
-that call it a "count-free replacement" for the grade are refuted by the table
-above, and the honest carrier already exists unwired: `fibrancyModeSignature`
-(two modes, "MATT Example 2.5").
+★ **Naming consequence — ACTED ON 2026-07-16.** The carrier was called
+`affineDimensionModeGraph`, and it is **not affine**: it rejects a *single* fibrant
+use, so it has nothing to do with duplication. It is a use-**position** tag, which
+the kernel already said where it mattered — `ElimRuleTable.lean:66`, *"The
+USE-POSITION MODALITY."* The whole `affineDimension*` family is now
+`dimensionUsePosition*`. The name was not merely an overclaim: it **collided with a
+genuine concept it is not** — `MultiplierStructureClass.affine` is one of Nuyts'
+four real structure classes (affine / cartesian / dedekind / deMorgan) and stays.
+`dimensionUsePositionLockMultiplier` is in fact the mode-12 **void** multiplier, and
+its own docstring said so ("NOT the mode-2 pointed affine class") while the name
+said the opposite. The docstrings calling the lock a "count-free replacement" for
+the grade are refuted by the table above and were repaired in the same pass. The
+richer honest carrier still exists unwired: `fibrancyModeSignature` (two modes,
+"MATT Example 2.5").
 
 ### 2.3 ★★ The second dial — the ladder is not the whole story
 
@@ -450,10 +472,11 @@ The spectrum is itself a structure, so we can ask its own rung.
    - This cuts **across** every rung. A one-object carrier can be either
      (§1.2). The rung tells you how rich the mode theory is; it does not tell you
      whether you are looking at a grade.
-   ★ **Consequence in the tree:** `affineDimensionModeGraph` is misnamed twice —
-   it is not affine (it rejects a single use) and its content is a *mode* (position)
-   living on a carrier the old rule called a grade. Rename to what it is; the
-   honest carrier `fibrancyModeSignature` already exists.
+   ★ **Consequence in the tree — DONE 2026-07-16:** `affineDimensionModeGraph` was
+   misnamed twice — not affine (it rejects a single use), and its content is a *mode*
+   (position) on a carrier the old rung-rule called a grade. The family is now
+   `dimensionUsePosition*` (150 sites, 13 files, build green). The richer honest
+   carrier `fibrancyModeSignature` still exists unwired.
 
 2. **Fibrancy is one mode property.** φ is a *mode* (R4) and lives in the mode axis
    as `Axis/Mode/FibrancyMode.lean` (the 2LTT f/e presentation, the MATT predicate
@@ -523,11 +546,11 @@ ambidexterity sharpenings, §5–§6).
 | claim | status |
 |-------|--------|
 | The per-axis grid cells (Conv/Step/LR; type-7/9; context-11/30/31/34; mode-1..27) | **SHIPPED** — the spectrum is a *reading* of existing structure, not new code. |
-| ~~grade = 1-cell of one-object 𝓜 / mode = 0-cell of many-object 𝓜; crossover at R3→R4~~ | ★★ **REFUTED** (2026-07-16). Was marked ESTABLISHED here for a year and was **load-bearing for the A1 arc's naming**. Killed twice: **(1)** Shulman MATT Ex 6.11 (`:603`) **deletes a mode** and keeps crisp TT; Table 1 (`:568-577`) has four **one-object** rows carrying content this doc files at R5. **(2)** FX's own `affineDimensionModeGraph` is one-object *and* carries modal (position) content, machine-checked. **Object count is a presentation choice.** Replacement in §1.2. |
+| ~~grade = 1-cell of one-object 𝓜 / mode = 0-cell of many-object 𝓜; crossover at R3→R4~~ | ★★ **REFUTED** (2026-07-16). Was marked ESTABLISHED here for a year and was **load-bearing for the A1 arc's naming**. Killed twice: **(1)** Shulman MATT Ex 6.11 (`:603`) **deletes a mode** and keeps crisp TT; Table 1 (`:568-577`) has four **one-object** rows carrying content this doc files at R5. **(2)** FX's own `dimensionUsePositionModeGraph` (then named `affineDimensionModeGraph`) is one-object *and* carries modal (position) content, machine-checked. **Object count is a presentation choice.** Replacement in §1.2. |
 | ★ **the seam is `+`**: grade ⟺ has addition (sharing); mode ⟺ composition only (position) | **DESIGN CLAIM** (2026-07-16, replaces the refuted row above). Its *negative half* — that a 2-category cannot carry `+` — is **ESTABLISHED** (a 2-category has objects/1-cells/2-cells/composition; exhaustive check of MATT Figs 2–6 finds no rule that sums, joins or splits an annotation). That `+` is the *right* invariant is the design call. |
 | ★ **`B_R` ≠ `R`** — delooping keeps `(R,·,1,≤)` and discards the `+`; beneath ≠ alongside **even for static grades** | **ESTABLISHED.** Refutes the first edition's §2.1 coincidence claim. |
 | ★ **lock ⟂ count are INCOMPARABLE** — two separators in opposite directions; `f(context,position)` vs `g(term)`, disjoint inputs | **ESTABLISHED, machine-checked zero-axiom** in the kernel (diagonal: lock accepts / count rejects; single fibrant use: lock rejects / count accepts; `control_countIsContextBlind`). |
-| ★ **`affineDimensionModeGraph` is not affine** — it rejects a *single* fibrant use; it is a use-position tag | **ESTABLISHED, machine-checked.** `ElimRuleTable.lean:66` already names it "The USE-POSITION MODALITY". The docstrings calling it a count-free replacement are **REFUTED**. |
+| ★ **the lock is not affine** — it rejects a *single* fibrant use; it is a use-position tag | **ESTABLISHED, machine-checked — and ACTED ON 2026-07-16.** `ElimRuleTable.lean:66` already named it "The USE-POSITION MODALITY". The `affineDimension*` family is now `dimensionUsePosition*`; the docstrings calling it a count-free replacement were **REFUTED** and repaired (`2d7dadd54`). The old name also collided with `MultiplierStructureClass.affine`, a genuine Nuyts structure class that stays. |
 | ★ **Shulman's MATT open question (vi)** — *"Is there a context-lock approach to substructurality?"* — is the box FX stands in, and FX answers it **NO** | **question ESTABLISHED** (MATT §7, verbatim `:632`); **the negative answer is PROVEN** (the row above) but **NOT YET WRITTEN UP as kernel theorems** — it lives in scratch probes. This is the beyond-MATT result. |
 | ★ **LNL cannot express affine** — its `|σ⁻¹(j)| ≠ 1 ⟹ nonlinear` clause bundles weakening+contraction; no sort admits `≤ 1`; it realizes `{1, ω}` | **ESTABLISHED** (`shulman-lnl-…:847`; zero hits for `affine\|graded` in 1821 lines). |
 | ★ **the ladder is not monotone** — LNL has *many* objects and **zero** 2-cells | **ESTABLISHED** (`shulman-lnl-…:1603`). LNL removed from the R4 cell; the two-dial structure is §2.3. |
@@ -553,7 +576,7 @@ dropped.*
 *The first edition called itself "settled." It was not: its central theorem (§1.2)
 and its §2.1 coincidence claim were **false**, and both were marked ESTABLISHED in
 this ledger. They were load-bearing — they are why a use-position tag got named
-`affineDimensionModeGraph`, why six docstrings promise a "count-free replacement"
+`affineDimensionModeGraph` (renamed 2026-07-16), why six docstrings promised a "count-free replacement"
 that cannot exist, and why #1872 aims at an impossible unification. **The lesson
 is not that the ladder was wrong** — axis-1 richness is a real measure and the
 4×7 reading still holds. **The lesson is that a rung is not a classifier**, and

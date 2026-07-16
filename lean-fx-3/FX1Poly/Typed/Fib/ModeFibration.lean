@@ -5,7 +5,7 @@ import FX1Poly.Typed.Fib.ModeLockPath
 
 This is the assembly that flips `fxFib_hasModeFibration`: the kernel's dimension-lock modal structure IS the
 mode axis's structure, realized over the mode the kernel actually uses — the AFFINE dimension polygraph
-(`affineDimensionModeGraph`: one mode, one generator, NO 2-cell relations, the free category on a single
+(`dimensionUsePositionModeGraph`: one mode, one generator, NO 2-cell relations, the free category on a single
 generator).  The four legs:
 
   * **fib-3a** (`Typed/Fib/ModeLockMultiplier`) — the lock `lockCons`'s modality is pinned to the mode-12
@@ -49,13 +49,13 @@ included — see the file header. -/
 theorem affineModeFibrationRealized {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :
-    affineDimensionLockMultiplier.IsUnpointable
+    dimensionUsePositionLockMultiplier.IsUnpointable
     ∧ ((restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant
-        = decide affineDimensionLockMultiplier.IsPointed)
+        = decide dimensionUsePositionLockMultiplier.IsPointed)
     ∧ (∀ firstModality secondModality : ObligationModality,
         obligationModalityToPath firstModality = obligationModalityToPath secondModality →
         firstModality = secondModality) :=
-  ⟨affineDimensionLockMultiplier_isUnpointable,
+  ⟨dimensionUsePositionLockMultiplier_isUnpointable,
    lockFibrantAccess_eq_multiplierNonPointedness restContext dimensionType isLtZeroSucc,
    fun _ _ => obligationModalityToPath_injective⟩
 
@@ -65,7 +65,7 @@ of `affineModalityPathDecidableEq`.  HONESTY: this is dimension-1, NOT Gratzer's
 (decidable 2-cell equality), which stays deferred. -/
 def affineModeFibration_modalityEqualityDecidable
     (firstPath secondPath :
-        ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode) :
+        ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode) :
     Decidable (firstPath = secondPath) :=
   affineModalityPathDecidableEq firstPath secondPath
 

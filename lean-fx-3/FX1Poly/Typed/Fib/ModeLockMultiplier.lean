@@ -42,16 +42,16 @@ open FX1Poly.Core FX1Poly.Axis FX1Poly.Typed FX1Poly.Universe
 /-- The affine dimension LOCK's mode-axis multiplier: the mode-12 VOID multiplier, whose dimension is empty —
 UNPOINTABLE (no global point).  The mode-theoretic carrier of the kernel's affine dimension lock; the correct
 horn of the affine-vs-unpointable wrinkle (mode-12 unpointability, NOT the mode-2 pointed affine class). -/
-def affineDimensionLockMultiplier : Multiplier := voidMultiplier
+def dimensionUsePositionLockMultiplier : Multiplier := voidMultiplier
 
 /-- ★ The affine dimension lock is fibred over a mode-12 UNPOINTABLE multiplier — its dimension admits no
 global point.  This unpointedness is the mode-theoretic reason the locked dimension is not fibrantly accessible. -/
-theorem affineDimensionLockMultiplier_isUnpointable : affineDimensionLockMultiplier.IsUnpointable :=
+theorem dimensionUsePositionLockMultiplier_isUnpointable : dimensionUsePositionLockMultiplier.IsUnpointable :=
   voidMultiplier_isUnpointable
 
 /-- ★ **The fib-3a wiring (A1-FIB3-SEED).**  The kernel's affine dimension lock rejects fibrant access to its
 dimension (`dimensionIsNotAccessibleFibrantly`, the structural `rfl`-false `Bool`), AND its mode-axis multiplier
-is mode-12 UNPOINTABLE (`affineDimensionLockMultiplier_isUnpointable`) — the syntactic lock and the semantic
+is mode-12 UNPOINTABLE (`dimensionUsePositionLockMultiplier_isUnpointable`) — the syntactic lock and the semantic
 no-global-point are the two faces of the SAME discipline.  Core now depends on the (previously orphaned) mode
 axis; the lock is fibred over a real mode-12 unpointable multiplier (the seed the full fib-3 derivation and the
 `ObligationModality` retirement build on). -/
@@ -59,16 +59,16 @@ theorem lockFibrantInaccessibility_witnessedByUnpointedMultiplier {profile : Pol
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :
     (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant = false
-    ∧ affineDimensionLockMultiplier.IsUnpointable :=
+    ∧ dimensionUsePositionLockMultiplier.IsUnpointable :=
   ⟨dimensionIsNotAccessibleFibrantly restContext dimensionType isLtZeroSucc,
-    affineDimensionLockMultiplier_isUnpointable⟩
+    dimensionUsePositionLockMultiplier_isUnpointable⟩
 
 /-- The affine dimension lock's multiplier is also dimensionally SPLIT — the dimension factors out as a product
 (`voidMultiplier_splitData`), the mode-12 criterion INDEPENDENT of pointedness.  This is the mode-theoretic
 carrier of the DIMENSIONAL half of the lock's split (the locked dimension IS accessible dimensionally even with
 no global point). -/
-theorem affineDimensionLockMultiplier_isDimensionallySplit :
-    affineDimensionLockMultiplier.IsDimensionallySplit :=
+theorem dimensionUsePositionLockMultiplier_isDimensionallySplit :
+    dimensionUsePositionLockMultiplier.IsDimensionallySplit :=
   ⟨voidMultiplier_splitData⟩
 
 /-- ★ **The full fibrant/dimensional lock split, justified by the mode-12 multiplier.**  The kernel's affine
@@ -78,17 +78,17 @@ multiplier's two INDEPENDENT criteria: UNPOINTABLE (no global point ⟹ no fibra
 SPLIT (the dimension factors out ⟹ dimensional access).  So the kernel's bespoke fibrant/dimensional split IS
 the mode-axis unpointable-but-split structure — the lock is the mode-12 multiplier in BOTH halves, the genuine
 mode-theoretic justification the bespoke `ObligationModality` previously asserted on its own. -/
-theorem affineDimensionLockSplit_witnessedByMultiplier {profile : PolyProfile} {scope : Nat}
+theorem dimensionUsePositionLockSplit_witnessedByMultiplier {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :
     (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant = false
     ∧ (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .dimensional = true
-    ∧ affineDimensionLockMultiplier.IsUnpointable
-    ∧ affineDimensionLockMultiplier.IsDimensionallySplit :=
+    ∧ dimensionUsePositionLockMultiplier.IsUnpointable
+    ∧ dimensionUsePositionLockMultiplier.IsDimensionallySplit :=
   ⟨dimensionIsNotAccessibleFibrantly restContext dimensionType isLtZeroSucc,
     dimensionIsAccessibleDimensionally restContext dimensionType isLtZeroSucc,
-    affineDimensionLockMultiplier_isUnpointable,
-    affineDimensionLockMultiplier_isDimensionallySplit⟩
+    dimensionUsePositionLockMultiplier_isUnpointable,
+    dimensionUsePositionLockMultiplier_isDimensionallySplit⟩
 
 /-! ## fib-3c — DERIVE the fibrant-inaccessibility from unpointedness -/
 
@@ -96,15 +96,15 @@ theorem affineDimensionLockSplit_witnessedByMultiplier {profile : PolyProfile} {
 unpointedness via the mode-axis exclusivity `Multiplier.not_pointed_and_unpointable`.  A fibrant projection of
 the locked dimension would BE a global point of the multiplier — so the kernel's structural fibrant-
 inaccessibility (`dimensionIsNotAccessibleFibrantly`) is grounded in this no-global-point, no longer free. -/
-theorem affineDimensionLockMultiplier_notPointed : ¬ affineDimensionLockMultiplier.IsPointed :=
+theorem dimensionUsePositionLockMultiplier_notPointed : ¬ dimensionUsePositionLockMultiplier.IsPointed :=
   fun pointed =>
-    affineDimensionLockMultiplier.not_pointed_and_unpointable pointed
-      affineDimensionLockMultiplier_isUnpointable
+    dimensionUsePositionLockMultiplier.not_pointed_and_unpointable pointed
+      dimensionUsePositionLockMultiplier_isUnpointable
 
 /-- The affine-lock multiplier's pointedness is DECIDABLY FALSE — no global point. -/
-instance affineDimensionLockMultiplier_pointedDecidable :
-    Decidable affineDimensionLockMultiplier.IsPointed :=
-  isFalse affineDimensionLockMultiplier_notPointed
+instance dimensionUsePositionLockMultiplier_pointedDecidable :
+    Decidable dimensionUsePositionLockMultiplier.IsPointed :=
+  isFalse dimensionUsePositionLockMultiplier_notPointed
 
 /-- ★ **fib-3c (computational).**  The kernel's structural fibrant-inaccessibility of the locked dimension
 EQUALS the decidable reflection of the multiplier's pointedness — `false`, because the multiplier is
@@ -115,7 +115,7 @@ theorem lockFibrantAccess_eq_multiplierNonPointedness {profile : PolyProfile} {s
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :
     (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant
-      = decide affineDimensionLockMultiplier.IsPointed :=
+      = decide dimensionUsePositionLockMultiplier.IsPointed :=
   rfl
 
 end FX1Poly.Core.Fib

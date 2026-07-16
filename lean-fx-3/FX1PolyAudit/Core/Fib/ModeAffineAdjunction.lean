@@ -9,12 +9,12 @@ marker. Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_d
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModality
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModalityDagger
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModalityAdjunction
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModality_overFxModeAxis
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModalityAdjunction_unit_isSeedUnit
-#assert_no_axioms FX1Poly.Core.Fib.affineDimensionModalityAdjunction_counit_isSeedCounit
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModality
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModalityDagger
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModalityAdjunction
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModality_overFxModeAxis
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModalityAdjunction_unit_isSeedUnit
+#assert_no_axioms FX1Poly.Core.Fib.dimensionUsePositionModalityAdjunction_counit_isSeedCounit
 #assert_no_axioms FX1Poly.Core.Fib.affineModalityAdjunction_triangleLawsNeedSaturation
 
 end FX1PolyAudit

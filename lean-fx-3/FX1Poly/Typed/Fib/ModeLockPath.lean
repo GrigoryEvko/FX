@@ -34,25 +34,25 @@ open FX1Poly.Polygraph
 
 /-- The minimal POLYGRAPH presentation of the affine dimension modality: ONE mode (the dimension mode) with ONE
 generating modality (the affine lock generator, semantically the mode-12 void multiplier of fib-3a). -/
-def affineDimensionModeGraph : ModeGraph where
+def dimensionUsePositionModeGraph : ModeGraph where
   Mode := Unit
   Modality := fun _ _ => Unit
 
 /-- The single dimension mode of the affine graph. -/
-def affineDimensionMode : affineDimensionModeGraph.Mode := ()
+def dimensionUsePositionMode : dimensionUsePositionModeGraph.Mode := ()
 
 /-- The affine lock generator — the single 1-cell generator of the dimension mode graph (the polygraph face of
 the mode-12 void multiplier). -/
-def affineLockGenerator : affineDimensionModeGraph.Modality affineDimensionMode affineDimensionMode := ()
+def affineLockGenerator : dimensionUsePositionModeGraph.Modality dimensionUsePositionMode dimensionUsePositionMode := ()
 
 /-- ★ **fib-3b: the bespoke `ObligationModality` as a mode-axis `ModalityPath`.**  `fibrant` is the IDENTITY
 1-cell (no modality — unlocked / fibrant access); `dimensional` is the affine generator path (one lock
 application — dimensional access).  Embeds the kernel's bespoke 2-element enum into the mode axis's
 free-modality 1-cells over the affine dimension graph. -/
 def obligationModalityToPath :
-    ObligationModality → ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode
-  | .fibrant => identityPath affineDimensionMode
-  | .dimensional => ModalityPath.cons affineLockGenerator (identityPath affineDimensionMode)
+    ObligationModality → ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode
+  | .fibrant => identityPath dimensionUsePositionMode
+  | .dimensional => ModalityPath.cons affineLockGenerator (identityPath dimensionUsePositionMode)
 
 /-- The fibrant access mode maps to the IDENTITY path (length `0`). -/
 theorem obligationModalityToPath_fibrant_length :
@@ -84,7 +84,7 @@ for, but NOT SUFFICIENT for, the keystone — and it is moreover ALREADY availab
 `decidableOneCellEq` (`TwoCategoryCore`); what is below is the affine-graph instance of that dimension-1 fact,
 used by the fib-3 fibration capstone, NOT the dimension-2 mode-dec.
 
-The affine dimension polygraph (`affineDimensionModeGraph`): ONE mode, ONE generator, NO 2-cell relations — the
+The affine dimension polygraph (`dimensionUsePositionModeGraph`): ONE mode, ONE generator, NO 2-cell relations — the
 FREE category on a single generator; its 1-cells (`ModalityPath`s) are determined by length, so the
 DIMENSION-1 word problem is `DecidableEq Nat` in disguise.  The dimension-2 word problem (deciding the affine
 mode's 2-cells) is the genuine remaining keystone work. -/
@@ -96,8 +96,8 @@ cross `nil`/`cons` cases are refuted by their `0`-vs-`n+1` lengths (`Nat`-level,
 `cons`/`cons` case strips one generator (both `()` by `Unit` eta, so generators and middle modes coincide
 definitionally) and recurses on the tails. -/
 theorem affineModalityPath_length_injective_overEndpoints :
-    ∀ {sourceMode targetMode : affineDimensionModeGraph.Mode}
-      (firstPath secondPath : ModalityPath affineDimensionModeGraph sourceMode targetMode),
+    ∀ {sourceMode targetMode : dimensionUsePositionModeGraph.Mode}
+      (firstPath secondPath : ModalityPath dimensionUsePositionModeGraph sourceMode targetMode),
       firstPath.length = secondPath.length → firstPath = secondPath := by
   intro sourceMode targetMode firstPath
   induction firstPath with
@@ -123,7 +123,7 @@ over the affine dimension graph are equal iff they have the same length — the 
 word problem.  Specializes `affineModalityPath_length_injective_overEndpoints` to the kernel's single mode. -/
 theorem affineModalityPath_length_injective
     (firstPath secondPath :
-        ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode)
+        ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode)
     (lengthsEqual : firstPath.length = secondPath.length) : firstPath = secondPath :=
   affineModalityPath_length_injective_overEndpoints firstPath secondPath lengthsEqual
 
@@ -134,7 +134,7 @@ HONESTY: this is DIMENSION 1, NOT Gratzer's dimension-2 "mode-dec" (`fxMode_hasD
 decidable 2-CELL equality), which stays deferred; dimension-1 is also generally available as the mode axis's
 `decidableOneCellEq`, and this is the affine-graph instance. -/
 instance affineModalityPathDecidableEq :
-    DecidableEq (ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode) :=
+    DecidableEq (ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode) :=
   fun firstPath secondPath =>
     match Nat.decEq firstPath.length secondPath.length with
     | isTrue lengthsEqual =>
@@ -159,10 +159,10 @@ ordinary fibrant value), a `lockCons` binds at the affine generator (the locked 
 telescope with EXACTLY the recursion shape of `isFibrantlyAccessibleAt` / `isDimensionallyAccessibleAt`. -/
 def bindingModalityPath {profile : PolyProfile} :
     {scope : Nat} → TypingContext profile scope → Fin scope →
-      ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode
+      ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode
   | _, .empty, emptyIndex => absurd emptyIndex.isLt (Nat.not_lt_zero emptyIndex.val)
-  | _, .cons _ _, ⟨0, _⟩ => identityPath affineDimensionMode
-  | _, .lockCons _ _, ⟨0, _⟩ => ModalityPath.cons affineLockGenerator (identityPath affineDimensionMode)
+  | _, .cons _ _, ⟨0, _⟩ => identityPath dimensionUsePositionMode
+  | _, .lockCons _ _, ⟨0, _⟩ => ModalityPath.cons affineLockGenerator (identityPath dimensionUsePositionMode)
   | _, .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
       bindingModalityPath restContext ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
   | _, .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
@@ -227,7 +227,7 @@ so length ≥ 1 is exactly `dimensional`). -/
 affine dimension graph: the IDENTITY path (`nil`, no lock) is `fibrant`; any generator-headed path (`cons`, a
 lock application) is `dimensional`.  Total structural match on `ModalityPath` — propext-free. -/
 def pathToObligationModality :
-    ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode → ObligationModality
+    ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode → ObligationModality
   | .nil _ => .fibrant
   | .cons _ _ => .dimensional
 

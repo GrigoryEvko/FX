@@ -16,11 +16,11 @@ generators between non-trivial parallel paths.  So the affine dimension modality
 new data — they are the seed's `left` / `right`, and mode-4's `adjunctionSeedAdjunctionData` is their adjunction
 DATA (the unit `η : id ⇒ μ_affine ∘ μ_affine†` and counit `ε : μ_affine† ∘ μ_affine ⇒ id`).
 
-  * `affineDimensionModality` (`μ_affine`)        := the left modality `base ⟶ tip`;
-  * `affineDimensionModalityDagger` (`μ_affine†`)  := the right modality `tip ⟶ base`;
-  * `affineDimensionModalityAdjunction`            := mode-4's `adjunctionSeedAdjunctionData` (unit + counit).
+  * `dimensionUsePositionModality` (`μ_affine`)        := the left modality `base ⟶ tip`;
+  * `dimensionUsePositionModalityDagger` (`μ_affine†`)  := the right modality `tip ⟶ base`;
+  * `dimensionUsePositionModalityAdjunction`            := mode-4's `adjunctionSeedAdjunctionData` (unit + counit).
 
-(This also retro-sharpens fib-3: `Typed/Fib/ModeLockPath`'s `affineDimensionModeGraph` — one mode, one
+(This also retro-sharpens fib-3: `Typed/Fib/ModeLockPath`'s `dimensionUsePositionModeGraph` — one mode, one
 generator, NO 2-cells — was a SIMPLIFIED dimension-1 stand-in; the genuine affine mode is THIS adjunction-bearing
 seed, whose 2-cell layer is exactly what fib-3's dimension-2 keystone is about.)
 
@@ -48,36 +48,36 @@ open FX1Poly.Polygraph
 
 /-- **★ The sinister (left) affine dimension modality `μ_affine`** — the left modality `base ⟶ tip` of the
 kernel's mode axis (the adjunction seed).  The modality the A1 negative bridge `μ_affine◇→A` is fibred over. -/
-def affineDimensionModality : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip :=
+def dimensionUsePositionModality : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip :=
   singletonModalityPath AdjunctionModality.left
 
 /-- **★ The right adjoint `μ_affine†`** — the right modality `tip ⟶ base` of the kernel's mode axis, the
 RIGHT-adjoint partner the FitchTT lock `Γ/μ_affine†` (A1-NEG-LOCK) is taken with respect to. -/
-def affineDimensionModalityDagger : ModalityPath adjunctionGraph AdjunctionMode.tip AdjunctionMode.base :=
+def dimensionUsePositionModalityDagger : ModalityPath adjunctionGraph AdjunctionMode.tip AdjunctionMode.base :=
   singletonModalityPath AdjunctionModality.right
 
 /-- **★ A1-MODE-AFFINE: the adjunction `μ_affine ⊣ μ_affine†`** — the unit/counit DATA, reusing mode-4's
 canonical non-degenerate `adjunctionSeedAdjunctionData`.  This IS the affine dimension modality's adjunction
 (the data; the triangle LAWS are the deferred saturation — see the header / the marker below). -/
-def affineDimensionModalityAdjunction :
-    FreeAdjunctionData adjunctionModeSignature affineDimensionModality affineDimensionModalityDagger :=
+def dimensionUsePositionModalityAdjunction :
+    FreeAdjunctionData adjunctionModeSignature dimensionUsePositionModality dimensionUsePositionModalityDagger :=
   adjunctionSeedAdjunctionData
 
 /-- The affine dimension modality lives over the kernel's ACTUAL mode axis: `fxModeAxis`'s signature IS the
 adjunction seed signature the modality is a 1-cell of.  (So `μ_affine` is the kernel's mode, not a fresh
 presentation.) -/
-theorem affineDimensionModality_overFxModeAxis :
+theorem dimensionUsePositionModality_overFxModeAxis :
     fxModeAxis.signature = adjunctionModeSignature := fxModeAxis_signature_isAdjunction
 
 /-- The adjunction's unit IS the seed's unit 2-cell generator `η : id_base ⇒ μ_affine ∘ μ_affine†` — a 2-cell
 between genuinely distinct parallel paths (identity vs the length-2 composite), so `μ_affine`'s 2-cell layer is
 non-trivial. -/
-theorem affineDimensionModalityAdjunction_unit_isSeedUnit :
-    affineDimensionModalityAdjunction.unit = adjunctionUnitTwoCell := rfl
+theorem dimensionUsePositionModalityAdjunction_unit_isSeedUnit :
+    dimensionUsePositionModalityAdjunction.unit = adjunctionUnitTwoCell := rfl
 
 /-- The adjunction's counit IS the seed's counit 2-cell generator `ε : μ_affine† ∘ μ_affine ⇒ id_tip`. -/
-theorem affineDimensionModalityAdjunction_counit_isSeedCounit :
-    affineDimensionModalityAdjunction.counit = adjunctionCounitTwoCell := rfl
+theorem dimensionUsePositionModalityAdjunction_counit_isSeedCounit :
+    dimensionUsePositionModalityAdjunction.counit = adjunctionCounitTwoCell := rfl
 
 /-- **★ HONESTY marker (A1-MODE-AFFINE ↔ fib-3 dim-2).**  The adjunction DATA is realized; the triangle-identity
 LAWS are the deferred saturation — `fxMode_hasAdjunctionTriangleSaturation = false`.  That saturation (mode-9's

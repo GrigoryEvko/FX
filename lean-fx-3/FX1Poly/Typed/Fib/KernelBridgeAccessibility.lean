@@ -48,14 +48,14 @@ open FX1Poly.Core
 /-! ## K3a — the decidable-equality data of the affine mode graph -/
 
 /-- Decidable equality on the affine graph's modes (one, `()`) — the `Unit` instance. -/
-def affineGraphModeDecEq : DecidableEq affineDimensionModeGraph.Mode :=
+def affineGraphModeDecEq : DecidableEq dimensionUsePositionModeGraph.Mode :=
   inferInstanceAs (DecidableEq Unit)
 
 /-- Decidable equality on the affine graph's modality generators (one, `()`) — the `Unit` instance, uniformly
 over every endpoint pair. -/
 def affineGraphModalityDecEq :
-    (sourceMode targetMode : affineDimensionModeGraph.Mode) →
-      DecidableEq (affineDimensionModeGraph.Modality sourceMode targetMode) :=
+    (sourceMode targetMode : dimensionUsePositionModeGraph.Mode) →
+      DecidableEq (dimensionUsePositionModeGraph.Modality sourceMode targetMode) :=
   fun _ _ => inferInstanceAs (DecidableEq Unit)
 
 /-! ## K3b — the accessibility relation + its TOTAL decider -/
@@ -65,7 +65,7 @@ is accessible from a binding-modality 1-cell `bindingPath` iff an accessibility 
 FREE thin affine theory (one generator, NO 2-cell relations) the only 2-cells are identities, so this holds iff
 the two 1-cells are EQUAL — the `locks(Delta) = id` specialization of MTT's use-modality variable rule. -/
 def IsModeAccessible
-    (usePath bindingPath : ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode) :
+    (usePath bindingPath : ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode) :
     Prop :=
   usePath = bindingPath
 
@@ -75,14 +75,14 @@ affine graph's decidable-equality data.  Because `modalityPathDecEq` is total ov
 kernel's reusable accessibility service, not a toy: 2-cell existence in the thin free theory = path equality,
 decided propext-free. -/
 def modeAccessibilityDecider
-    (usePath bindingPath : ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode) :
+    (usePath bindingPath : ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode) :
     Decidable (IsModeAccessible usePath bindingPath) :=
   modalityPathDecEq affineGraphModeDecEq affineGraphModalityDecEq usePath bindingPath
 
 /-- The decider read off as a `Bool` — `true` when the use and binding 1-cells are accessibility-related
 (equal over the affine thin theory), `false` otherwise.  The surface the verdict theorems compute over. -/
 def modeAccessibleBool
-    (usePath bindingPath : ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode) :
+    (usePath bindingPath : ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode) :
     Bool :=
   match modeAccessibilityDecider usePath bindingPath with
   | isTrue _ => true
@@ -91,17 +91,17 @@ def modeAccessibleBool
 /-! ## K3c — BOTH verdicts on REAL paths (lengths 0, 1, 2 — not a toy alphabet) -/
 
 /-- The fibrant use-modality 1-cell (the identity path, length 0) — `obligationModalityToPath .fibrant`. -/
-def fibrantUsePath : ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode :=
+def fibrantUsePath : ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode :=
   obligationModalityToPath .fibrant
 
 /-- The dimensional use-modality 1-cell (the affine generator path, length 1) —
 `obligationModalityToPath .dimensional`. -/
-def dimensionalUsePath : ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode :=
+def dimensionalUsePath : ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode :=
   obligationModalityToPath .dimensional
 
 /-- A double-lock 1-cell (length 2) — a genuine longer path over the real carrier, past the two enum images. -/
-def doubleLockPath : ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode :=
-  ModalityPath.cons affineLockGenerator (ModalityPath.cons affineLockGenerator (identityPath affineDimensionMode))
+def doubleLockPath : ModalityPath dimensionUsePositionModeGraph dimensionUsePositionMode dimensionUsePositionMode :=
+  ModalityPath.cons affineLockGenerator (ModalityPath.cons affineLockGenerator (identityPath dimensionUsePositionMode))
 
 /-- ★ Verdict `isTrue` (length 0): the fibrant 1-cell is accessible from itself. -/
 theorem modeAccessible_fibrant_self : modeAccessibleBool fibrantUsePath fibrantUsePath = true := rfl

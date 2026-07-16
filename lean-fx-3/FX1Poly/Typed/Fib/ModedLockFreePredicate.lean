@@ -111,8 +111,8 @@ telescope index is a variable and structural recursion is inferred).  A lock-fre
 is the IDENTITY 1-cell at its ambient mode.  The affine graph has a single (`Unit`) mode, so `baseModeOf` is
 definitionally the ambient mode (`Unit` eta) and the equation typechecks with no transport. -/
 theorem affineLockFreeImpliesLocksIdentityOverMode :
-    ∀ {ambientMode : affineDimensionModeGraph.Mode}
-      (context : ModedContext affineDimensionModeGraph (fun _ => Unit) ambientMode),
+    ∀ {ambientMode : dimensionUsePositionModeGraph.Mode}
+      (context : ModedContext dimensionUsePositionModeGraph (fun _ => Unit) ambientMode),
       context.isLockFree = true → context.locksOf = identityPath ambientMode
   | _, .empty _, _ => rfl
   | _, .cons restContext _binding, isLockFree =>
@@ -121,10 +121,10 @@ theorem affineLockFreeImpliesLocksIdentityOverMode :
 
 /-- ★ **The affine-seal bridge.**  Over the affine dimension graph a lock-free context's `locks(Δ)` is
 exactly `obligationModalityToPath .fibrant` (the shipped `fibrant` identity 1-cell) — since
-`obligationModalityToPath .fibrant` is definitionally `identityPath affineDimensionMode`.  The affine identity
+`obligationModalityToPath .fibrant` is definitionally `identityPath dimensionUsePositionMode`.  The affine identity
 half of the mode-theoretic meaning of lock-freeness. -/
 theorem affineLockFreeImpliesLocksIdentity
-    (context : ModedContext affineDimensionModeGraph (fun _ => Unit) affineDimensionMode)
+    (context : ModedContext dimensionUsePositionModeGraph (fun _ => Unit) dimensionUsePositionMode)
     (isLockFree : context.isLockFree = true) :
     context.locksOf = obligationModalityToPath .fibrant :=
   affineLockFreeImpliesLocksIdentityOverMode context isLockFree
@@ -157,8 +157,8 @@ forget the bindings and the dimension types, keep only the `empty` / `cons` / `l
 exactly.  The shape functor whose lock-free predicate the kernel `Bool` reflects onto. -/
 def TypingContext.toModedShape {profile : PolyProfile} :
     {scope : Nat} → TypingContext profile scope →
-      ModedContext affineDimensionModeGraph (fun _ => Unit) affineDimensionMode
-  | _, .empty => ModedContext.empty affineDimensionMode
+      ModedContext dimensionUsePositionModeGraph (fun _ => Unit) dimensionUsePositionMode
+  | _, .empty => ModedContext.empty dimensionUsePositionMode
   | _, .cons restContext _bindingType => (restContext.toModedShape).cons ()
   | _, .lockCons restContext _dimensionType =>
       (restContext.toModedShape).lockCons (singletonModalityPath affineLockGenerator)
