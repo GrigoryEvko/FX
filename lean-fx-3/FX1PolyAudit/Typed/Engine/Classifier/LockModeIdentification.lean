@@ -26,4 +26,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.TypingContext.consBindingIsAtFibrantMode
 #assert_no_axioms FX1Poly.Typed.lockSeparatesTwoDistinctModes
 
+/-! ## Brick 2 — the mode question as the primary predicate + the shape theorem -/
+
+#assert_no_axioms FX1Poly.Typed.TypingContext.isAccessibleAtMode
+#assert_no_axioms FX1Poly.Typed.TypingContext.isFibrantlyAccessibleAt_eq_isAccessibleAtMode
+#assert_no_axioms FX1Poly.Typed.TypingContext.isDimensionallyAccessibleAt_eq_isAccessibleAtMode
+#assert_no_axioms FX1Poly.Typed.TypingContext.isAccessibleAtModality_eq_isAccessibleAtMode
+#assert_no_axioms FX1Poly.Typed.TypingContext.bindingFibrancyMode_cons_succ
+#assert_no_axioms FX1Poly.Typed.TypingContext.bindingFibrancyMode_lockCons_succ
+#assert_no_axioms FX1Poly.Typed.TypingContext.consAndLockConsAgreeBehindBinder
+#assert_no_axioms FX1Poly.Typed.TypingContext.consAndLockConsDifferAtOwnBinding
+
 end FX1PolyAudit

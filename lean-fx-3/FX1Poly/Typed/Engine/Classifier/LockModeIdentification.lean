@@ -185,4 +185,100 @@ theorem lockSeparatesTwoDistinctModes :
     obligationModalityToFibrancyKind .fibrant ≠ obligationModalityToFibrancyKind .dimensional :=
   fun modesEqual => FibrancyKind.noConfusion modesEqual
 
+/-! ## ★★ BRICK 2 — the MODE QUESTION as the primary predicate
+
+Brick 1 showed the kernel's dispatcher AGREES with the mode match.  Brick 2 turns the agreement around: the
+mode question becomes the DEFINITION and the three shipped predicates become `rfl`-pinned corollaries of it.
+Nothing downstream moves — every existing consumer keeps the predicate it already calls, now derived rather
+than primitive.  That is what makes brick 1 load-bearing instead of a standalone theorem. -/
+
+/-- **The accessibility question, asked in mode vocabulary**: a binding is usable at `mode` exactly when it
+SITS at `mode`.  This is the free-category variable rule the shipped header already names —
+`useModality = bindingModality(k)` — with `bindingModality(k)` spelled `bindingFibrancyMode`. -/
+def TypingContext.isAccessibleAtMode {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (mode : FibrancyKind) : Bool :=
+  decide (context.bindingFibrancyMode index = mode)
+
+/-- The shipped fibrant check is the mode question at `.fibrant`. -/
+theorem TypingContext.isFibrantlyAccessibleAt_eq_isAccessibleAtMode {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    context.isFibrantlyAccessibleAt index = context.isAccessibleAtMode index FibrancyKind.fibrant :=
+  context.isFibrantlyAccessibleAt_isModeMatch index
+
+/-- The shipped dimensional check is the mode question at `.exotype`. -/
+theorem TypingContext.isDimensionallyAccessibleAt_eq_isAccessibleAtMode {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    context.isDimensionallyAccessibleAt index = context.isAccessibleAtMode index FibrancyKind.exotype :=
+  context.isDimensionallyAccessibleAt_isModeMatch index
+
+/-- The shipped dispatcher is the mode question at the obligation's mode — the whole bespoke two-branch
+`match` collapses to one mode comparison. -/
+theorem TypingContext.isAccessibleAtModality_eq_isAccessibleAtMode {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality) :
+    context.isAccessibleAtModality index modality
+      = context.isAccessibleAtMode index (obligationModalityToFibrancyKind modality) :=
+  context.isAccessibleAtModality_isModeMatch index modality
+
+/-! ## ★★★ The shape finding: `lockCons` is NOT a lock — it is a mode-ANNOTATED binding
+
+The shipped header states the ambient fact (`DimensionLockAccessibility`, the `isDimensionallyAccessibleAt`
+docstring, verbatim):
+
+> "with FX's **CX/EXTEND-only contexts (`locks(Delta) = id`)**, the genuine free-category variable rule
+>  **`useModality = bindingModality(k)`** reads `.dimensional`-accessible iff `bindingModality(k)` is the
+>  affine generator iff the binding is a `lockCons`"
+
+So FX's `lockCons` is MTT's CX/EXTEND (a modal VARIABLE annotation), not CX/LOCK (a mode SHIFT): a suffix of
+binders contributes NOTHING to `locks`, which stays the identity.  The theorems below make that structural
+rather than prose — and they say what the telescope actually is. -/
+
+/-- Both binders are TRANSPARENT to bindings behind them: `cons` contributes nothing to the mode of an outer
+binding.  (MTT `locks(Gamma, x :^mu A) = locks(Gamma)`.) -/
+theorem TypingContext.bindingFibrancyMode_cons_succ {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (bindingType : RawTerm scope)
+    (position : Nat) (isLtSuccSucc : position + 1 < scope + 1) :
+    (restContext.cons bindingType).bindingFibrancyMode ⟨position + 1, isLtSuccSucc⟩
+      = restContext.bindingFibrancyMode ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩ :=
+  rfl
+
+/-- `lockCons` is transparent too — the "lock" does NOT shift the mode of anything behind it.  This is the
+CX/EXTEND-vs-CX/LOCK fact, machine-checked: `locks(Delta) = id`. -/
+theorem TypingContext.bindingFibrancyMode_lockCons_succ {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (position : Nat) (isLtSuccSucc : position + 1 < scope + 1) :
+    (restContext.lockCons dimensionType).bindingFibrancyMode ⟨position + 1, isLtSuccSucc⟩
+      = restContext.bindingFibrancyMode ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩ :=
+  rfl
+
+/-- **★★★ THE SHAPE THEOREM.**  `cons` and `lockCons` are INDISTINGUISHABLE behind the binder — at every
+index but their own, and for ANY binding types, they give the same mode.  Combined with
+`consBindingIsAtFibrantMode` / `lockedDimensionIsAtExotypeMode` (which differ only AT index 0), the two
+constructors differ in exactly one bit: **the mode their own binding sits at.**
+
+That is the definition of a single constructor carrying a `bindingMode : FibrancyKind` field.  The kernel's
+two-constructor telescope is one annotated constructor wearing a costume — the artifact of a layer built
+before the mode axis existed.  This theorem is the brick-4 design, derived rather than guessed:
+
+    cons restContext bindingType .fibrant   -- the old `cons`
+    cons restContext bindingType .exotype   -- the old `lockCons`
+
+Note the direction of the win: the re-founding makes the telescope SMALLER (one constructor, one field), not
+larger.  It is not "add a modality index to TypingContext" — that was the wrong plan, and with a one-object
+mode graph the added field would have been trivial anyway. -/
+theorem TypingContext.consAndLockConsAgreeBehindBinder {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (consBindingType dimensionType : RawTerm scope)
+    (position : Nat) (isLtSuccSucc : position + 1 < scope + 1) :
+    (restContext.cons consBindingType).bindingFibrancyMode ⟨position + 1, isLtSuccSucc⟩
+      = (restContext.lockCons dimensionType).bindingFibrancyMode ⟨position + 1, isLtSuccSucc⟩ :=
+  rfl
+
+/-- The two constructors DO differ at their own binding — so the shape theorem is not collapsing them to the
+same thing.  The single bit of difference, exhibited. -/
+theorem TypingContext.consAndLockConsDifferAtOwnBinding {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (consBindingType dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.cons consBindingType).bindingFibrancyMode ⟨0, isLtZeroSucc⟩
+      ≠ (restContext.lockCons dimensionType).bindingFibrancyMode ⟨0, isLtZeroSucc⟩ :=
+  fun modesEqual => FibrancyKind.noConfusion modesEqual
+
 end FX1Poly.Typed
