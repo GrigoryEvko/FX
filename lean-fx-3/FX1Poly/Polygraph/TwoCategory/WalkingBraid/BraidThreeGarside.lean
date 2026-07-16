@@ -27,18 +27,17 @@ simple stratum:
     the simple stratum"), giving a TOTAL `Decidable (BraidThreeOneCellConv (simpleWord _) (simpleWord _))`
     (`decideBraidThreeSimpleConv`).
 
-## The honesty boundary — the FULL word problem stays WALLED (WP-BRAID-3)
+## The honesty boundary — the FULL word problem, WALLED here, CAME DOWN in `BraidThreeGarsideDecision`
 
-The full left-greedy Garside normal form for ARBITRARY words is NOT shipped here.  Its hard half — a rightward
-carrying transducer `prependGen : Generator → Canon → Canon` whose conv-reconstruction discharges each carry
-move as a braid-relation convertibility (a move-by-move "bubble/domino" assembly, the analogue of the Omega
-line's honestly-parked `coxeterWordUniqueBubbleSort`) — exceeds one brick.  The braid relation `σ1σ2σ1 =
-σ2σ1σ2` is LENGTH-PRESERVING, so the length-induction reconstruction of the `WalkingCyclicThree` /
-`WalkingInvolution` siblings does NOT transfer (there is no monotone word-length measure), and `B_3^+` is
-INFINITE (`σ1^k` all distinct), so the complete model is a canonical form on words, not a finite-group
-residue.  This is a BOUNDED (axiom-free-in-principle) ENGINEERING wall, not an undecidability / foundational
-one: `fxBraid_hasFullWordProblemDecided := false` names it, and the seed marker
-`fxBraidThree_hasWordProblemDecided` (owner `false`) is untouched.
+The full left-greedy Garside normal form for ARBITRARY words is NOT shipped in THIS file — its hard half (a
+rightward carrying transducer whose conv-reconstruction discharges each carry move as a braid-relation
+convertibility, the move-by-move "bubble/domino" assembly) exceeded this brick, for the reasons this section
+originally recorded: the braid relation `σ1σ2σ1 = σ2σ1σ2` is LENGTH-PRESERVING (no monotone word-length
+measure), and `B_3^+` is INFINITE (`σ1^k` all distinct), so the complete model is a canonical form on words,
+not a finite-group residue.  That BOUNDED ENGINEERING wall was closed by WP-BRAID-3
+(`BraidThreeGarsideDecision.lean`): `braidPrependAtom` / `braidNormalizeWord` / `decideBraidThreeConv`, sound
++ complete + total, zero-axiom.  Both `fxBraid_hasFullWordProblemDecided` (below) and the seed marker
+`fxBraidThree_hasWordProblemDecided` are now `true`.
 
 ## Propext-cleanliness
 
@@ -415,16 +414,18 @@ is complete on the simples, via the retraction `simpleOfPerm`), giving the total
 (`braidThreeSimpleDecide_false_on_twoLetters`).  `= true`. -/
 def fxBraid_hasSimpleStratumConvDecided : Bool := true
 
-/-- **NOT ESTABLISHED — the WP-BRAID-3 WALL (bounded engineering, NOT undecidable).**  The FULL word problem of
-`B_3^+` on ARBITRARY words is NOT decided here.  The reachable obstruction: a left-greedy Garside normal form
-needs a rightward-carrying transducer `prependGen : Generator → Canon → Canon` over `Canon := (Nat × List
-ProperSimple)`, whose SOUNDNESS is finite but whose COMPLETENESS reconstruction must discharge EACH carry move
-as a braid-relation convertibility — a move-by-move "bubble/domino" assembly, the analogue of the Omega line's
-honestly-parked `coxeterWordUniqueBubbleSort`.  The braid relation `σ1σ2σ1 = σ2σ1σ2` is LENGTH-PRESERVING, so
-the length-induction reconstruction of the `WalkingCyclicThree` / `WalkingInvolution` siblings does NOT carry
-over (no monotone measure), and `B_3^+` is INFINITE (`σ1^k` all distinct), so the complete model is a canonical
-form on words, not a finite-group residue.  This is axiom-free IN PRINCIPLE but exceeds one brick.  The seed's
-`fxBraidThree_hasWordProblemDecided` (owner, `false`) is untouched.  `= false`. -/
-def fxBraid_hasFullWordProblemDecided : Bool := false
+/-- **ESTABLISHED — the WP-BRAID-3 WALL CAME DOWN (`BraidThreeGarsideDecision.lean`).**  The FULL word
+problem of `B_3^+` on ARBITRARY words IS decided, exactly along the route this wall named: the
+rightward-carrying transducer is `braidPrependAtom : BraidAtom → BraidGarsideCanon → BraidGarsideCanon`
+over `BraidGarsideCanon := ⟨deltaPower : Nat, properFactors : List BraidProperSimple⟩`; SOUNDNESS
+(`braidConv_toReadback`) discharges each carry move as a braid-relation convertibility (nine of the ten
+table arms definitional, one fires `braidRel`, each Δ-level of the power carry fires `braidRel` once —
+the move-by-move bubble/domino assembly); COMPLETENESS (`braidNormalizeWord_congr_of_conv`) rides the
+LEFT-GREEDY invariant (`braidNormalizeWord_greedy`) through the agreement crux
+`braidPrependAtom_braidAgreement` — the two obstructions this docstring recorded were met exactly as
+predicted: no monotone length measure (the reconstruction inducts on word structure via a `Nat` length
+bound), infinite `B_3^+` (the model is the canonical form, not a residue).  Total decider
+`decideBraidThreeConv` via the manual canon `DecidableEq`.  `= true`. -/
+def fxBraid_hasFullWordProblemDecided : Bool := true
 
 end FX1Poly.Polygraph

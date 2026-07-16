@@ -245,10 +245,15 @@ minimal `n = 3`, the two `σ` generators + the braid relation as a conv generato
 map, and the soundness theorem.  `= true`. -/
 def fxBraid_hasSignatureAndPermutationSoundness : Bool := true
 
-/-- **NOT ESTABLISHED (brick boundary).**  The braid WORD PROBLEM is NOT decided here: the permutation map is
-sound but NOT injective (`braidThreePermutationOf_sigma1Sigma1_eq_nil`), so it is an invariant only.  A total
-decider needs Garside normal form and is WP-BRAID-2/3.  This rung therefore does NOT enter the
-`WordProblemDecisionLedger` "decided" enumeration — it belongs to the Garside-walled bucket.  `= false`. -/
-def fxBraidThree_hasWordProblemDecided : Bool := false
+/-- **ESTABLISHED (by WP-BRAID-3, `BraidThreeGarsideDecision`).**  The `B_3^+` WORD PROBLEM on arbitrary
+words IS decided: NOT here (this brick's permutation map is sound but NOT injective —
+`braidThreePermutationOf_sigma1Sigma1_eq_nil`, an invariant only), but by the left-greedy Garside
+normal form of `BraidThreeGarsideDecision.lean`: the carrying transducer `braidPrependAtom` folded by
+`braidNormalizeWord`, sound (`braidConv_toReadback`) and complete (`braidNormalizeWord_congr_of_conv`
+via the greedy-agreement crux), with the total decider `decideBraidThreeConv`.  The decide pin
+`braidThreeGarsideDecide_false_on_sigmaSquaredNil` kills exactly this brick's permutation-blind pair.
+Enrollment in the `WordProblemDecisionLedger` "decided" enumeration is a separate ledger restructure
+(the census extension beyond decided-10).  `= true`. -/
+def fxBraidThree_hasWordProblemDecided : Bool := true
 
 end FX1Poly.Polygraph
