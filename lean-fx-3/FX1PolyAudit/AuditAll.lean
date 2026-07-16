@@ -1522,6 +1522,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreePermutation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreeGarside
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeArity
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramBoxCount
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingDouble.DoubleTileSeed

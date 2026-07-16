@@ -144,11 +144,13 @@ signature (fixed `{m, e}` generators + the three monoid-law tree-pasting conv ge
 and the soundness theorem.  `= true`. -/
 def fxOperad_hasSignatureAndAritySoundness : Bool := true
 
-/-- **NOT ESTABLISHED (brick boundary).**  The operad WORD PROBLEM is NOT decided here.  For this tiny
-unital-associative operad total arity is in fact a COMPLETE invariant, but the DECISION (a right-comb normal
-form / decider) is not BUILT — that is WP-OPERAD BRICK 2.  For the arity-GENERIC free operad (arbitrary
-signature) targeted by later bricks, arity is genuinely incomplete.  Either way this rung does NOT enter the
-"decided" enumeration.  `= false`. -/
-def fxOperad_hasWordProblemDecided : Bool := false
+/-- **ESTABLISHED (brick 2 shipped).**  The word problem of THIS walking monoid operad is DECIDED:
+`OperadTreeDecision.lean` ships the right-comb normal form (`reify`/`operadNF`), soundness
+(`operadNF_congr_of_conv`), completeness (`conv_toReify` via the `reify_mulOp_append` grafting crux), the
+iff characterization (`operadConv_iff_nf_eq`), and the total decider `decideOperadTreeConv`
+(marker `fxOperad_hasRightCombDecision`).  HONEST CAVEAT preserved: this is the tiny unital-associative
+operad where total arity is a COMPLETE invariant; for the arity-GENERIC free operad (arbitrary signature)
+targeted by later bricks, arity is genuinely incomplete and that word problem remains OPEN.  `= true`. -/
+def fxOperad_hasWordProblemDecided : Bool := true
 
 end FX1Poly.Polygraph
