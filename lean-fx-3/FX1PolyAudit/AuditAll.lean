@@ -74,6 +74,7 @@ import FX1PolyAudit.ComputerAlgebra.Bits.BitVecRing
 import FX1PolyAudit.ComputerAlgebra.Register.FieldLayout
 import FX1PolyAudit.ComputerAlgebra.Register.VirtualField
 import FX1PolyAudit.ComputerAlgebra.Register.VirtualFieldReassembly
+import FX1PolyAudit.ComputerAlgebra.Register.VirtualFieldPositional
 import FX1PolyAudit.ComputerAlgebra.Register.AccessMode
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.Views
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.ViewsRing
