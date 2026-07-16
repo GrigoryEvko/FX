@@ -4,7 +4,7 @@ import FX1Poly.Polygraph.TwoCategory.Table.WordProblemCostLedger
 /-! # FX1PolyAudit/.../WordProblemCostLedger — zero-axiom gate
 
 Per-declaration zero-axiom gate for the per-rung decision COST ledger (WP-CEIL-COST #2046): the cost-class /
-cost-evidence taxonomies, the two total maps over the live decided-9 enum, the kernel-checked class/evidence
+cost-evidence taxonomies, the two total maps over the live decided-10 enum, the kernel-checked class/evidence
 rows, the per-evidence and per-class counts (including the honest proved-count ZERO), the class-union
 exhaustiveness, and the honest markers.
 
@@ -19,7 +19,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemDecidedWalkersCostEvidenceRow
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemDecidedWalkersCostEvidenceCited
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemCostCitedWalkers
-#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemCostCitedWalkerCountIsNine
+#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemCostCitedWalkerCountIsTen
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemCostProvedWalkers
 #assert_no_axioms FX1Poly.Polygraph.Table.wordProblemCostProvedWalkerCountIsZero
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemCostMeasuredWalkers
@@ -27,7 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemConstantTimeCostWalkers
 #assert_no_axioms FX1Poly.Polygraph.Table.wordProblemConstantTimeCostWalkerCountIsOne
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemLinearCostWalkers
-#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemLinearCostWalkerCountIsThree
+#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemLinearCostWalkerCountIsFour
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemQuadraticCostWalkers
 #assert_no_axioms FX1Poly.Polygraph.Table.wordProblemQuadraticCostWalkerCountIsZero
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemPolynomialCostWalkers
@@ -35,7 +35,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemExponentialBoundedCostWalkers
 #assert_no_axioms FX1Poly.Polygraph.Table.wordProblemExponentialBoundedCostWalkerCountIsZero
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemCostClassifiedWalkers
-#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemCostClassifiedWalkerCountIsNine
+#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemCostClassifiedWalkerCountIsTen
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemCostClassifiedWalkersIsClassUnion
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemCostClassifiedWalkersClassRow
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemCostClassifiedWalkersExhaustive

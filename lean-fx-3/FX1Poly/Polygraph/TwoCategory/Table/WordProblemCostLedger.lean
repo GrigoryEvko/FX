@@ -5,12 +5,12 @@ import FX1Poly.Polygraph.TwoCategory.Table.WordProblemDecisionLedger
 ★ **Complexity tags on every decided rung (WP-CEIL-COST #2046)** — the cost-lane companion to
 `WordProblemDecisionLedger` (WP-LEDGER #2048 owed item (2)).
 
-Every rung of the decided-9 gets a COST CLASS (what the decider costs, read off its algorithmic structure) and
+Every rung of the decided-10 gets a COST CLASS (what the decider costs, read off its algorithmic structure) and
 a COST EVIDENCE tag (HOW that class is known).  The evidence discipline is the honest part: a class is
 `proved` only when an in-repo machine-checked cost theorem bounds the decider; it is `cited` when the class is
 read off the decider's structure and recorded here by decl-name citation.  Today the repo holds ZERO cost
 theorems about any decider (the `PolyBound` cost-declaration language itself is still `.openProblem` in
-`Typed/Dimensions/Cost/CostArcLedger`, COST-7), so all nine tags are `cited` and
+`Typed/Dimensions/Cost/CostArcLedger`, COST-7), so all ten tags are `cited` and
 `fxWpCost_allTagsProved = false`.
 
 ## The per-rung cost table (decl NAMES cited, per the anchor-rot discipline — never file:line)
@@ -26,14 +26,15 @@ theorems about any decider (the `PolyBound` cost-declaration language itself is 
   | walking KZ           | `decideKZEq` + `decideKZLETotal`               | polynomial   | both compute the monad monotone-map fold per cell, then compare by `DecidableEq (List Nat)` / pointwise `decMapLE` |
   | walking co-KZ        | `decideCoKZLETotal`                            | polynomial   | pure argument swap `decideKZLETotal b a` — identical cost to the KZ order decider |
   | walking adjunction   | `decideSaturatedTwoCellConv_ofSeed`            | polynomial   | `matchingOf = extractDiagram ∘ processSpine` — foldl of O(width) list surgery per atom + `partnerIndexOf` link scans over all boundary indices (O(boundary²·links)); then `DiagramType` `DecidableEq` |
+  | walking monoid operad | `decideOperadTreeConv`                        | linear       | `arityOf` structural tree fold per tree + `Nat.decEq` on the two arities — one fold each, O(1) compare |
 
-Class census: constantTime 1, linear 3, quadratic 0, polynomial 5, exponentialBounded 0.
-Evidence census: proved 0, measured 0, cited 9, unassessed 0.
+Class census: constantTime 1, linear 4, quadratic 0, polynomial 5, exponentialBounded 0.
+Evidence census: proved 0, measured 0, cited 10, unassessed 0.
 
 ## The KZ/co-KZ row subtlety
 
-A row tags the RUNG's decider(s), not one decl: the witness bundle's TEN grounding aliases map onto these NINE
-rows with KZ carrying two (`wpLedgerKZEqDecider` and `wpLedgerKZOrderDecider` — both are the same
+A row tags the RUNG's decider(s), not one decl: the witness bundle's ELEVEN grounding aliases map onto these
+TEN rows with KZ carrying two (`wpLedgerKZEqDecider` and `wpLedgerKZOrderDecider` — both are the same
 monotone-map fold, so one class covers both; `fxWpCost_kzRowCoversBothDeciders`).
 
 ## One honest correction (vs the folk expectation "normalizer ⟹ cost")
@@ -80,7 +81,7 @@ inductive WordProblemCostClass
   today. -/
   | exponentialBounded
 
-/-! ## The per-rung cost maps (total over the LIVE decided-9 enum, full enumeration, no wildcard arm) -/
+/-! ## The per-rung cost maps (total over the LIVE decided-10 enum, full enumeration, no wildcard arm) -/
 
 /-- The **cost class of each rung's decider** — the module-docstring table's class column, machine-held.
 Full enumeration (no wildcard arm) so the match stays propext-free.  Per-rung citations: involution
@@ -92,7 +93,8 @@ Full enumeration (no wildcard arm) so the match stays propext-free.  Per-rung ci
 `decideSaturatedConvOverIdempotentComonadNative` (`opCell` over the constant base — linear); KZ `decideKZEq` /
 `decideKZLETotal` (the monad monotone-map fold + compare — polynomial); co-KZ `decideCoKZLETotal` (argument
 swap of the KZ order decider — polynomial); adjunction `decideSaturatedTwoCellConv_ofSeed` (link-scan
-matching extraction — polynomial). -/
+matching extraction — polynomial); operad `decideOperadTreeConv` (`arityOf` tree fold per input + `Nat.decEq`
+— linear). -/
 def wordProblemCostClass : WordProblemDecidedWalker → WordProblemCostClass
   | .walkingInvolution => .linear
   | .walkingMonad => .polynomial
@@ -103,8 +105,9 @@ def wordProblemCostClass : WordProblemDecidedWalker → WordProblemCostClass
   | .walkingKZ => .polynomial
   | .walkingCoKZ => .polynomial
   | .walkingAdjunction => .polynomial
+  | .walkingOperad => .linear
 
-/-- The **cost evidence of each rung's tag** — `.cited` at ALL NINE (honest): every class above is read off
+/-- The **cost evidence of each rung's tag** — `.cited` at ALL TEN (honest): every class above is read off
 the decider's structure; NO in-repo cost theorem or measurement exists for any decider today.  Full
 enumeration (no wildcard arm). -/
 def wordProblemCostEvidence : WordProblemDecidedWalker → WordProblemCostEvidence
@@ -117,22 +120,23 @@ def wordProblemCostEvidence : WordProblemDecidedWalker → WordProblemCostEviden
   | .walkingKZ => .cited
   | .walkingCoKZ => .cited
   | .walkingAdjunction => .cited
+  | .walkingOperad => .cited
 
 /-! ## The kernel-checked rows (keyed off the LIVE decision-ledger enumeration) -/
 
-/-- ★ **The class row over the LIVE decided-9 enumeration** — mapping `wordProblemCostClass` over
+/-- ★ **The class row over the LIVE decided-10 enumeration** — mapping `wordProblemCostClass` over
 `allWordProblemDecidedWalkers` (the decision ledger's list, ledger order) yields exactly the module table's
 class column.  Kernel-checked (`rfl`). -/
 theorem allWordProblemDecidedWalkersCostClassRow :
     allWordProblemDecidedWalkers.map wordProblemCostClass =
       [.linear, .polynomial, .linear, .constantTime, .polynomial, .linear,
-        .polynomial, .polynomial, .polynomial] := rfl
+        .polynomial, .polynomial, .polynomial, .linear] := rfl
 
-/-- ★ **The evidence row over the LIVE decided-9 enumeration** — every entry `.cited`.
+/-- ★ **The evidence row over the LIVE decided-10 enumeration** — every entry `.cited`.
 Kernel-checked (`rfl`). -/
 theorem allWordProblemDecidedWalkersCostEvidenceRow :
     allWordProblemDecidedWalkers.map wordProblemCostEvidence =
-      [.cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited] := rfl
+      [.cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited] := rfl
 
 /-- ★ **Every decided walker's cost tag is CITED** — full case split, `rfl` per arm.  The machine-checked
 "nothing is proved" statement: the dual of `wordProblemCostProvedWalkerCountIsZero`. -/
@@ -147,16 +151,18 @@ theorem allWordProblemDecidedWalkersCostEvidenceCited :
   | .walkingKZ => rfl
   | .walkingCoKZ => rfl
   | .walkingAdjunction => rfl
+  | .walkingOperad => rfl
 
 /-! ## The per-evidence enumerations and counts -/
 
-/-- The walkers whose cost tag is `.cited` — ALL NINE (ledger order). -/
+/-- The walkers whose cost tag is `.cited` — ALL TEN (ledger order). -/
 def allWordProblemCostCitedWalkers : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
-    .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction]
+    .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
+    .walkingOperad]
 
-/-- ★ **The cited-tag count is exactly NINE** — kernel-checked (`rfl`). -/
-theorem wordProblemCostCitedWalkerCountIsNine : allWordProblemCostCitedWalkers.length = 9 := rfl
+/-- ★ **The cited-tag count is exactly TEN** — kernel-checked (`rfl`). -/
+theorem wordProblemCostCitedWalkerCountIsTen : allWordProblemCostCitedWalkers.length = 10 := rfl
 
 /-- The walkers whose cost tag is `.proved` — NONE (the honest zero: no in-repo cost theorem exists about any
 decider; the `PolyBound` cost language is itself `.openProblem` per `CostArcLedger`). -/
@@ -181,14 +187,14 @@ def allWordProblemConstantTimeCostWalkers : List WordProblemDecidedWalker :=
 theorem wordProblemConstantTimeCostWalkerCountIsOne :
     allWordProblemConstantTimeCostWalkers.length = 1 := rfl
 
-/-- The `.linear` walkers — THREE (the two length-fold residue deciders + the op-transported constant
-base). -/
+/-- The `.linear` walkers — FOUR (the two length-fold residue deciders, the op-transported constant base,
+and the operad's arity-fold tree decider). -/
 def allWordProblemLinearCostWalkers : List WordProblemDecidedWalker :=
-  [.walkingInvolution, .walkingCyclicThree, .idempotentComonad]
+  [.walkingInvolution, .walkingCyclicThree, .idempotentComonad, .walkingOperad]
 
-/-- ★ **The linear count is exactly THREE** — kernel-checked (`rfl`). -/
-theorem wordProblemLinearCostWalkerCountIsThree :
-    allWordProblemLinearCostWalkers.length = 3 := rfl
+/-- ★ **The linear count is exactly FOUR** — kernel-checked (`rfl`). -/
+theorem wordProblemLinearCostWalkerCountIsFour :
+    allWordProblemLinearCostWalkers.length = 4 := rfl
 
 /-- The `.quadratic` walkers — NONE today (the class is reserved for future rungs). -/
 def allWordProblemQuadraticCostWalkers : List WordProblemDecidedWalker := []
@@ -214,17 +220,17 @@ def allWordProblemExponentialBoundedCostWalkers : List WordProblemDecidedWalker 
 theorem wordProblemExponentialBoundedCostWalkerCountIsZero :
     allWordProblemExponentialBoundedCostWalkers.length = 0 := rfl
 
-/-! ## Exhaustiveness glue: the class union covers the decided-9 -/
+/-! ## Exhaustiveness glue: the class union covers the decided-10 -/
 
-/-- The decided-9 grouped by cost class (constantTime, then linear, then polynomial) — the union list the
+/-- The decided-10 grouped by cost class (constantTime, then linear, then polynomial) — the union list the
 per-class enumerations concatenate to. -/
 def allWordProblemCostClassifiedWalkers : List WordProblemDecidedWalker :=
   [.idempotentSemigroup, .walkingInvolution, .walkingCyclicThree, .idempotentComonad,
-    .walkingMonad, .walkingComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction]
+    .walkingOperad, .walkingMonad, .walkingComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction]
 
-/-- ★ **The class-grouped count is exactly NINE** — kernel-checked (`rfl`). -/
-theorem wordProblemCostClassifiedWalkerCountIsNine :
-    allWordProblemCostClassifiedWalkers.length = 9 := rfl
+/-- ★ **The class-grouped count is exactly TEN** — kernel-checked (`rfl`). -/
+theorem wordProblemCostClassifiedWalkerCountIsTen :
+    allWordProblemCostClassifiedWalkers.length = 10 := rfl
 
 /-- ★ **The class-grouped list IS the union of the per-class enumerations** — the five per-class lists
 (two empty) concatenate to it, kernel-checked (`rfl`). -/
@@ -238,7 +244,7 @@ theorem allWordProblemCostClassifiedWalkersIsClassUnion :
 grouped list yields the constant/linear/polynomial blocks in order, kernel-checked (`rfl`). -/
 theorem allWordProblemCostClassifiedWalkersClassRow :
     allWordProblemCostClassifiedWalkers.map wordProblemCostClass =
-      [.constantTime, .linear, .linear, .linear,
+      [.constantTime, .linear, .linear, .linear, .linear,
         .polynomial, .polynomial, .polynomial, .polynomial, .polynomial] := rfl
 
 /-- ★ **The class union is EXHAUSTIVE** — every decided walker appears in the class-grouped list (full case
@@ -247,33 +253,37 @@ theorem allWordProblemCostClassifiedWalkersExhaustive :
     ∀ walker : WordProblemDecidedWalker, walker ∈ allWordProblemCostClassifiedWalkers
   | .walkingInvolution => List.Mem.tail _ (List.Mem.head _)
   | .walkingMonad =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _)))))
   | .walkingCyclicThree => List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
   | .idempotentSemigroup => List.Mem.head _
   | .walkingComonad =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.head _)))))
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
   | .idempotentComonad => List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
   | .walkingKZ =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
   | .walkingCoKZ =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
   | .walkingAdjunction =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))))
+  | .walkingOperad =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
 
 /-! ## The cost markers -/
 
-/-- ★ **ALL NINE decided rungs carry a cost tag (recorded).**  `= true` records that `wordProblemCostClass`
-and `wordProblemCostEvidence` are TOTAL over the live decided-9 enum (full-enumeration matches, no wildcard),
-the cited census is nine-of-nine (`wordProblemCostCitedWalkerCountIsNine`,
-`allWordProblemDecidedWalkersCostEvidenceCited`), and the class union covers all nine
+/-- ★ **ALL TEN decided rungs carry a cost tag (recorded).**  `= true` records that `wordProblemCostClass`
+and `wordProblemCostEvidence` are TOTAL over the live decided-10 enum (full-enumeration matches, no wildcard),
+the cited census is ten-of-ten (`wordProblemCostCitedWalkerCountIsTen`,
+`allWordProblemDecidedWalkersCostEvidenceCited`), and the class union covers all ten
 (`allWordProblemCostClassifiedWalkersExhaustive`, `allWordProblemCostClassifiedWalkersIsClassUnion`). -/
 def fxWpCost_allRungsTagged : Bool := true
 
-/-- ★ **NO COST TAG IS PROVED (honest).**  `= false` records that every one of the nine class tags is
+/-- ★ **NO COST TAG IS PROVED (honest).**  `= false` records that every one of the ten class tags is
 `.cited` — read off the decider's structure, documented by decl-name citation — and ZERO are backed by an
 in-repo machine-checked cost theorem or measurement (`wordProblemCostProvedWalkerCountIsZero`,
 `wordProblemCostMeasuredWalkerCountIsZero`).  The `PolyBound` cost-declaration language that proved tags would
@@ -284,8 +294,8 @@ def fxWpCost_allTagsProved : Bool := false
 /-- ★ **The single KZ row covers BOTH KZ deciders (recorded).**  `= true` records that the walkingKZ row's
 `.polynomial` tag covers both `decideKZEq` and `decideKZLETotal` (the witness bundle's `wpLedgerKZEqDecider`
 and `wpLedgerKZOrderDecider`) — both compute the SAME monad monotone-map fold per cell and differ only in the
-final comparison (`DecidableEq (List Nat)` vs pointwise `decMapLE`), so one class tags both.  The ten
-grounding aliases map onto these nine rows with KZ carrying two. -/
+final comparison (`DecidableEq (List Nat)` vs pointwise `decMapLE`), so one class tags both.  The eleven
+grounding aliases map onto these ten rows with KZ carrying two. -/
 def fxWpCost_kzRowCoversBothDeciders : Bool := true
 
 end FX1Poly.Polygraph.Table
