@@ -12,6 +12,7 @@ are zero-axiom, not merely that this wrapper is.  Must be free of `propext`, `Qu
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerInvolutionDecider
+#assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerCyclicThreeDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerMonadDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerIdempotentDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerComonadDecider
@@ -20,6 +21,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerKZOrderDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerCoKZOrderDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerAdjunctionDecider
-#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_eightDecidersHeldAndGrounded
+#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_nineDecidersHeldAndGrounded
 
 end FX1PolyAudit

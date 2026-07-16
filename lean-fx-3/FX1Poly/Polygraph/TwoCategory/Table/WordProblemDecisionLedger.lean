@@ -131,7 +131,7 @@ additionally ships a directed-order decider `decideKZLETotal`. -/
 def wordProblemDecisionStatus : WordProblemDecidedWalker → WordProblemDecisionStatus
   | .walkingInvolution => .oneCellDecided
   | .walkingMonad => .fullTwoCellDecided
-  | .walkingCyclicThree => .decisionNotShipped
+  | .walkingCyclicThree => .oneCellDecided
   | .idempotentSemigroup => .fullTwoCellDecided
   | .walkingComonad => .fullTwoCellDecided
   | .idempotentComonad => .fullTwoCellDecided
@@ -139,12 +139,12 @@ def wordProblemDecisionStatus : WordProblemDecidedWalker → WordProblemDecision
   | .walkingCoKZ => .orderDecidedOnly
   | .walkingAdjunction => .fullTwoCellDecided
 
-/-- Whether a walker has a SHIPPED word-problem decider (any strength) — false only for cyclic-3.  Full
-enumeration (no wildcard arm) so the match stays propext-free. -/
+/-- Whether a walker has a SHIPPED word-problem decider (any strength) — true at all nine now (cyclic-3's
+former gap closed).  Full enumeration (no wildcard arm) so the match stays propext-free. -/
 def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
   | .walkingInvolution => true
   | .walkingMonad => true
-  | .walkingCyclicThree => false
+  | .walkingCyclicThree => true
   | .idempotentSemigroup => true
   | .walkingComonad => true
   | .idempotentComonad => true
@@ -152,14 +152,15 @@ def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
   | .walkingCoKZ => true
   | .walkingAdjunction => true
 
-/-- The eight walkers with a SHIPPED word-problem decider (all but cyclic-3), enumerated. -/
+/-- All NINE decided walkers now carry a SHIPPED word-problem decider — cyclic-3's ℤ/3 decider landed. -/
 def allWordProblemDecidedWalkersWithShippedDecider : List WordProblemDecidedWalker :=
-  [.walkingInvolution, .walkingMonad, .idempotentSemigroup,
+  [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction]
 
-/-- ★ **The shipped-decider count is exactly EIGHT** — kernel-checked (`rfl`).  Cyclic-3 is the lone gap. -/
-theorem wordProblemShippedDeciderCountIsEight :
-    allWordProblemDecidedWalkersWithShippedDecider.length = 8 := rfl
+/-- ★ **The shipped-decider count is exactly NINE** — kernel-checked (`rfl`).  Cyclic-3's former gap is closed
+by `decideCyclicThreeOneCellConv`, so the decision axis now covers all nine (decided-8 → decided-9). -/
+theorem wordProblemShippedDeciderCountIsNine :
+    allWordProblemDecidedWalkersWithShippedDecider.length = 9 := rfl
 
 /-- The six walkers with a FULL saturated-2-cell decider, enumerated. -/
 def allWordProblemFullTwoCellDecidedWalkers : List WordProblemDecidedWalker :=
@@ -170,35 +171,35 @@ def allWordProblemFullTwoCellDecidedWalkers : List WordProblemDecidedWalker :=
 theorem wordProblemFullTwoCellDeciderCountIsSix :
     allWordProblemFullTwoCellDecidedWalkers.length = 6 := rfl
 
-/-- ★ **Cyclic-3 is the UNIQUE unshipped rung** — `hasShippedWordProblemDecider` is false at cyclic-3 and
-true everywhere else (full case split, `rfl` per arm). -/
-theorem cyclicThreeIsUniqueUnshippedDecision :
-    ∀ walker : WordProblemDecidedWalker,
-      hasShippedWordProblemDecider walker = false ↔ walker = .walkingCyclicThree
-  | .walkingInvolution => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
-  | .walkingMonad => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
-  | .walkingCyclicThree => ⟨fun _ => rfl, fun _ => rfl⟩
-  | .idempotentSemigroup => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
-  | .walkingComonad => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
-  | .idempotentComonad => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
-  | .walkingKZ => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
-  | .walkingCoKZ => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
-  | .walkingAdjunction => ⟨fun h => Bool.noConfusion h, fun h => WordProblemDecidedWalker.noConfusion h⟩
+/-- ★ **ALL NINE decided walkers carry a shipped decider** — `hasShippedWordProblemDecider` is true at every
+walker (full case split, `rfl` per arm).  The former cyclic-3 gap is closed. -/
+theorem allWordProblemDecidedWalkersHaveShippedDecider :
+    ∀ walker : WordProblemDecidedWalker, hasShippedWordProblemDecider walker = true
+  | .walkingInvolution => rfl
+  | .walkingMonad => rfl
+  | .walkingCyclicThree => rfl
+  | .idempotentSemigroup => rfl
+  | .walkingComonad => rfl
+  | .idempotentComonad => rfl
+  | .walkingKZ => rfl
+  | .walkingCoKZ => rfl
+  | .walkingAdjunction => rfl
 
 /-! ## The census markers -/
 
-/-- ★ **EIGHT OF NINE decided rungs carry a shipped decider (recorded).**  `= true` records the DECISION-axis
-coverage: eight of the decided-9 walkers have a shipped total word-problem decider
-(`wordProblemShippedDeciderCountIsEight`), six of them full saturated-2-cell deciders
-(`wordProblemFullTwoCellDeciderCountIsSix`).  The census's "decided-9" is decided-8 on the decision axis. -/
-def fxWpLedger_decisionCoverageEightOfNine : Bool := true
+/-- ★ **NINE OF NINE decided rungs carry a shipped decider (recorded).**  `= true` records that the DECISION
+axis now covers ALL nine walkers (`wordProblemShippedDeciderCountIsNine`), six of them full saturated-2-cell
+deciders (`wordProblemFullTwoCellDeciderCountIsSix`), after cyclic-3's ℤ/3 decider landed.  The census's
+"decided-9" is now decided-9 on the decision axis too (`allWordProblemDecidedWalkersHaveShippedDecider`). -/
+def fxWpLedger_decisionCoverageNineOfNine : Bool := true
 
-/-- ★ **GAP — the walking cyclic-3 word problem has NO shipped decider.**  `= true` records the honest gap the
-census hides: cyclic-3 has only the Omega coherent presentation (`cyclicThreeWalkerCoherentPresentation`) and
-the homology (`CyclicThreeChainComplex`, `H1 = ZZ/3`) — NO `Decidable`, no normalizer, no `_iff_` decider.
-Its 1-cell word problem is decidable in principle (`Z/3`, the mod-3 analogue of the shipped involution parity
-decider) but unshipped.  `cyclicThreeIsUniqueUnshippedDecision` proves it is the sole gap. -/
-def fxWpLedger_cyclicThreeDecisionUnshipped : Bool := true
+/-- ★ **CLOSED — the walking cyclic-3 word problem now HAS a shipped decider.**  `= true` records that the
+former honest gap is closed: `decideCyclicThreeOneCellConv` (in `WalkingCyclicThree/CyclicThreeDecision.lean`)
+totally decides the cyclic-3 one-cell word problem via a genuine ℤ/3 residue (`cyclicThreeResidueOf =
+natMod3 ∘ length`; soundness `cyclicThreeResidueOf_congr_of_conv`; completeness
+`cyclicThreeOneCellConv_of_residue_eq`; the cyclic content `shiftResidueTripleIsIdentity`), zero-axiom.  The
+prior "decided-8" is upgraded to decided-9. -/
+def fxWpLedger_cyclicThreeDecisionShipped : Bool := true
 
 /-- ★★ **The walking adjunction is presentation-WALLED yet decision-DECIDED.**  `= true` records the axis
 distinction the census blurs: the adjunction has no convergent Squier presentation
@@ -214,12 +215,11 @@ op-transport combinator `decideSaturatedConvUnderOp` (no new normalizer).  The a
 (directed order) use their own interfaces — no single decider reaches all nine. -/
 def fxWpLedger_uniformInterfaceCoversFourOfSix : Bool := true
 
-/-- ★ **THE GRAND WORD-PROBLEM LEDGER IS NOT CLOSED (honest, core round).**  `= false` records that this is the
-DECISION-ledger CORE, not the capstone (#2048) close.  Still owed: (1) the held witness bundle grounding the
-eight deciders (`WordProblemDecisionWitnessBundle`, the non-rotting upgrade); (2) the cyclic-3 decider; (3) the
-beyond-decided-9 rungs (equivalence / Frobenius monad / strong monad / bunched bimonoid / Brauer ...) with
-their walls; (4) the WP-CEIL-COST #2046 cost tags.  Set `true` only when every rung is decided-or-walled with a
-held witness and a cost tag. -/
+/-- ★ **THE GRAND WORD-PROBLEM LEDGER IS NOT CLOSED (honest).**  `= false` records that the decided-9 core is
+now complete (all nine deciders shipped + held in `WordProblemDecisionWitnessBundle` + cyclic-3's gap closed),
+but the capstone (#2048) still owes: (1) the beyond-decided-9 rungs (equivalence / Frobenius monad / strong
+monad / bunched bimonoid / Brauer ...) with their walls; (2) the WP-CEIL-COST #2046 cost tags.  Set `true` only
+when every rung is decided-or-walled with a held witness and a cost tag. -/
 def fxWpLedger_grandLedgerClosed : Bool := false
 
 end FX1Poly.Polygraph.Table

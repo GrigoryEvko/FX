@@ -1511,6 +1511,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.PresentationOpDuality
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerDualityInstances
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WordProblemDecisionLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WordProblemDecisionWitnessBundle
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingCyclicThree.CyclicThreeDecision
 import FX1PolyAudit.Polygraph.Omega.CarrierAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceAudit
 import FX1PolyAudit.Polygraph.Omega.CarrierArchitectureLedgerAudit

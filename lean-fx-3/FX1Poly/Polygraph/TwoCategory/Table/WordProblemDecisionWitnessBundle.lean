@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.Table.WordProblemDecisionLedger
 import FX1Poly.Polygraph.TwoCategory.WalkingInvolution.InvolutionDecision
+import FX1Poly.Polygraph.TwoCategory.WalkingCyclicThree.CyclicThreeDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingMonad.MonadWordProblem
 import FX1Poly.Polygraph.TwoCategory.WalkingIdempotent.IdempotentSaturatedNormalizer
 import FX1Poly.Polygraph.TwoCategory.Table.WalkerDualityInstances
@@ -44,6 +45,9 @@ namespace FX1Poly.Polygraph.Table
 the alias does not eagerly synthesize the decl's implicit mode/path arguments. -/
 def wpLedgerInvolutionDecider := @FX1Poly.Polygraph.decideInvolutionOneCellConv
 
+/-- Cyclic-3 — the total 1-cell (dimension-1 `Z/3`) word-problem decider (the former decided-8 gap, now closed). -/
+def wpLedgerCyclicThreeDecider := @FX1Poly.Polygraph.decideCyclicThreeOneCellConv
+
 /-- Walking monad — the total saturated-2-cell decider (Delta-plus monotone map). -/
 def wpLedgerMonadDecider := @FX1Poly.Polygraph.monadSaturatedTwoCellDecision
 
@@ -71,12 +75,13 @@ def wpLedgerAdjunctionDecider := @FX1Poly.Polygraph.decideSaturatedTwoCellConv_o
 
 /-! ## The grounding marker -/
 
-/-- ★ **THE EIGHT DECIDERS ARE HELD AND GROUNDED (recorded).**  `= true` records that the eight shipped
-word-problem deciders are held as the nine definitional aliases above (KZ contributes two), all typechecking in
-ONE module — machine proof that the decided-8's deciders exist and coexist in one import context, upgrading the
-core ledger's decl-name citations to machine-checked terms.  The DECISION-axis counterpart to the census's
-grounded presentation conjunction `squierFamilyFourWalkersCoherentlyPresented`.  The audit twin's
-`#assert_no_axioms` on the aliases transitively certifies the deciders themselves are zero-axiom. -/
-def fxWpLedger_eightDecidersHeldAndGrounded : Bool := true
+/-- ★ **THE NINE DECIDERS ARE HELD AND GROUNDED (recorded).**  `= true` records that all NINE shipped
+word-problem deciders are held as the ten definitional aliases above (KZ contributes two; cyclic-3's ℤ/3
+decider closed the former decided-8 gap), all typechecking in ONE module — machine proof that the decided-9's
+deciders exist and coexist in one import context, upgrading the core ledger's decl-name citations to
+machine-checked terms.  The DECISION-axis counterpart to the census's grounded presentation conjunction
+`squierFamilyFourWalkersCoherentlyPresented`.  The audit twin's `#assert_no_axioms` on the aliases transitively
+certifies the deciders themselves are zero-axiom. -/
+def fxWpLedger_nineDecidersHeldAndGrounded : Bool := true
 
 end FX1Poly.Polygraph.Table
