@@ -1515,6 +1515,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Table.TableRetirementLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.PresentationOpDuality
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WalkerDualityInstances
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WordProblemDecisionLedger
+import FX1PolyAudit.Polygraph.TwoCategory.Table.WordProblemCostLedger
 import FX1PolyAudit.Polygraph.TwoCategory.Table.WordProblemDecisionWitnessBundle
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCyclicThree.CyclicThreeDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreeSeed
