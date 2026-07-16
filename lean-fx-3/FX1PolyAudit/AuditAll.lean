@@ -1526,6 +1526,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeArity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramBoxCount
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingDouble.DoubleTileSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingDouble.DoubleTileDimension
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingDouble.DoubleTileGridNF
