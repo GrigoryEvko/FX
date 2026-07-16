@@ -209,8 +209,10 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
   accessibility check (MTT/FitchTT TM/VAR, the canonical place the lock-discipline lives — and ONLY here, as
   in every Fitch calculus): a fibrant variable use is admitted iff its binding is fibrantly accessible
   (`isFibrantlyAccessibleAt`), so the `lockCons`-bound dimension is NOT typeable as an ordinary fibrant value
-  (the count-free, beta-stable replacement for the affine occurrence count — the SR-breaker `pair (var 0)
-  (var 0)` has its leaf `var 0` obligations rejected here).  Vacuous on the whole lock-free kernel
+  (`pair (var 0) (var 0)` has its leaf `var 0` obligations rejected here — for the POSITION of each use, note,
+  not their number: a single fibrant use is rejected identically.  This is NOT a replacement for
+  `pathLamIntroRule`'s occurrence count, which is live and separately beta-stable; the two are incomparable,
+  see `Axis/Mode/grade-mode-spectrum.md` §2.2).  Vacuous on the whole lock-free kernel
   (`lockFreeImpliesFibrantlyAccessible`); pathApp's genuine DIMENSIONAL interval use is admitted not by a
   separate judgment but by the `.dimensional` ObligationModality (`isAccessibleAtModality`) carried on
   pathApp's interval-argument obligation row, so it never appeals to this fibrant variable rule. -/
@@ -285,8 +287,10 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
   HasTypeUnionOver.conv (bundle := fxTypingBundle) levelExpr flag typed converts reclassifierTyped
 
 /-- `var` at the canonical bundle — the native variable leaf, carrying the Fitch fibrant-accessibility
-premise (A1-RESTRICT): the binding `index` resolves to must be a plain `cons` (an ordinary fibrant value),
-not the `lockCons`-bound dimension.  Vacuous on the lock-free kernel via `lockFreeImpliesFibrantlyAccessible`. -/
+premise (A1-RESTRICT): a FIBRANT use requires the binding `index` resolves to be a plain `cons` (an ordinary
+fibrant value), not the `lockCons`-bound dimension.  The dimension remains usable at `.dimensional` — this is
+a use-position premise, not a usage count.  Vacuous on the lock-free kernel via
+`lockFreeImpliesFibrantlyAccessible`. -/
 @[reducible] def HasTypeUnion.var {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope)
     {useModality : ObligationModality}

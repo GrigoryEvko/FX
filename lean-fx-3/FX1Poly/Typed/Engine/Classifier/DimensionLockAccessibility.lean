@@ -30,15 +30,32 @@ is needed yet (that generalization is the later fib-3 wiring):
 `isFibrantlyAccessibleAt context index` decides exactly this: `true` iff the binding `index` resolves to is a
 plain `cons` (an ordinary variable), `false` iff it resolves to a `lockCons` (the locked dimension itself).
 
-## Why this is the subject-reduction fix (count-free, beta-stable)
+## What this predicate is FOR — and what it is NOT
 
-The previous affine side condition was the syntactic occurrence count `gradedBinderChecks .one body`
-(`occurrenceCountAt body 0 <= 1`), which is NOT beta-stable: `pathLam ((fn x : Interval => pair x x) i)` has
-count 1 yet beta-reduces to `pathLam (pair i i)` with count 2, breaking subject reduction.  The Fitch discipline
-replaces the count with a STRUCTURAL accessibility test on the CONTEXT: under `Gamma.lockCons Interval`, the
-dimension `var 0` is not fibrantly accessible (`dimensionIsNotFibrantlyAccessible`), so `pair (var 0) (var 0)`
-— a fibrant constructor applied to the locked dimension — does not type at all.  There is no count to break, so
-`pathLam` subject reduction is structural.
+This is the POSITION leg of the pathLam side condition, and it is one of two independent legs.  Read the
+history precisely, because an earlier version of this docstring got it wrong.
+
+A NAIVE occurrence count — `gradedBinderChecks .one body`, i.e. `occurrenceCountAt body 0 <= 1` — is indeed
+NOT beta-stable: `pathLam ((fn x : Interval => pair x x) i)` has count 1 yet beta-reduces to
+`pathLam (pair i i)` with count 2.  That was a real defect and it is the reason the naive count is gone.
+
+It was NOT, however, fixed by deleting the count.  It was fixed by UPGRADING the count to the compositional
+graded-typing rule `p1 + r * p2` (`RawTerm.appScaledDimensionGrade`, `Typed/Dimensions/Graded/`): the App arm
+scales the argument's grade by the function's grade in its OWN binder, so the counterexample above gets
+`omega * 1 = omega` and is rejected BEFORE beta — consistently with `pair i i` being rejected after it.
+That the fix works is a theorem, not a hope: `appScaledRootBeta_le_unconditional` states
+`grade (subst0 body arg) <= grade (app (lam _ body) arg)` unconditionally, zero-axiom.  The live side
+condition on `pathLamIntroRule` IS that graded count, and it IS beta-stable.
+
+So the lock does not subsume the count and never did.  They read DISJOINT inputs and are incomparable:
+
+  * the lock reads `(context, position)` — WHERE a dimension sits relative to the binder;
+  * the graded count reads `(term)` — HOW MANY times the dimension is used.
+
+Both separators are machine-checked.  `pathLam (fn i => p i i)` (the diagonal) is accepted by the lock and
+rejected by the count; a single fibrant use is rejected by the lock and accepted by the count.  Dropping
+either leg opens a hole in the other's direction.  The seam is algebraic, not incidental: a grade has `+`
+(sharing), a mode has only composition — see `Axis/Mode/grade-mode-spectrum.md` §2.2.
 
 This file ships the PREDICATE (the data of the discipline).  Wiring it into the variable typing rule (so every
 bare fibrant variable use discharges it, a no-op `true` in any lock-free context) is the next increment.
@@ -107,11 +124,12 @@ theorem isFibrantlyAccessibleAt_lockCons_succ {profile : PolyProfile} {scope : N
       restContext.isFibrantlyAccessibleAt ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩ :=
   rfl
 
-/-- **★ The subject-reduction mechanism.**  The dimension bound by `lockCons` — `var 0` in the bridge body's
-context — is NOT fibrantly accessible.  So a fibrant constructor applied to the dimension (the canonical
-SR-breaker `pair (var 0) (var 0)`) cannot type once the variable rule discharges `isFibrantlyAccessibleAt`, and
-the affine restriction is enforced STRUCTURALLY (by the context) rather than by a beta-fragile occurrence count.
-This is the count-free, beta-stable replacement for `gradedBinderChecks .one`. -/
+/-- **★ The position leg.**  The dimension bound by `lockCons` — `var 0` in the bridge body's context — is NOT
+fibrantly accessible.  So a fibrant constructor applied to the dimension (`pair (var 0) (var 0)`) cannot type
+once the variable rule discharges `isFibrantlyAccessibleAt`: the restriction is enforced STRUCTURALLY, by the
+context, with no reference to the term's shape.  This is the WHERE leg, not a replacement for the HOW-MANY leg
+— `pathLamIntroRule` also carries the graded count `appScaledDimensionGrade <= 1`, which is separately
+beta-stable (`appScaledRootBeta_le_unconditional`) and separately load-bearing.  See the module docstring. -/
 theorem dimensionIsNotFibrantlyAccessible {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :
@@ -333,9 +351,9 @@ theorem consVarNotAccessibleDimensionally {profile : PolyProfile} {scope : Nat}
   rfl
 
 /-- **★ The locked dimension is NOT usable FIBRANTLY.**  `var 0` bound by `lockCons` is rejected at the
-fibrant modality — so `pair (var 0) (var 0)` (the canonical SR-breaker) does not type.  The fibrant half of
-the split; together with `dimensionIsAccessibleDimensionally` this is the count-free, beta-stable mechanism
-that makes `pathApp` work while the duplicating body is untypeable. -/
+fibrant modality — so `pair (var 0) (var 0)` does not type.  The fibrant half of the split; together with
+`dimensionIsAccessibleDimensionally` this is the structural mechanism that makes `pathApp` work while a
+fibrant use of the dimension is untypeable.  Orthogonal to the graded count on `pathLamIntroRule`. -/
 theorem dimensionIsNotAccessibleFibrantly {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :
@@ -448,10 +466,10 @@ theorem isSubjectUsableAtModality_var_someModality {profile : PolyProfile} {scop
 
 /-- **★ The locked dimension SUBJECT is NOT usable FIBRANTLY.**  The subject-level lift of
 `dimensionIsNotAccessibleFibrantly`: the bridge dimension `var 0` bound by `lockCons`, used as a FIBRANT
-subject, fails `isSubjectUsableAtModality`.  So once the conjunct-wire lands, the canonical SR-breaker
-`pair (var 0) (var 0)` — whose `gen_pair` intro obligations demand `var 0` at the FIBRANT modality — is
-untypeable STRUCTURALLY (by the context), no beta-fragile occurrence count.  The concrete subject-level
-rejection certificate of the count-free, beta-stable SR mechanism (the half `pair (var 0) (var 0)` fails). -/
+subject, fails `isSubjectUsableAtModality`.  So once the conjunct-wire lands, `pair (var 0) (var 0)` — whose
+`gen_pair` intro obligations demand `var 0` at the FIBRANT modality — is untypeable STRUCTURALLY, by the
+context.  The concrete subject-level rejection certificate of the POSITION leg.  Note this rejects the pair
+for the position of its uses, not their number: a SINGLE fibrant use fails identically. -/
 theorem lockedDimensionSubjectNotUsableFibrantly {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :

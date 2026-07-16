@@ -12,8 +12,9 @@ FIBRANT use-position, and that obligation fails the use-site usability conjunct.
 
 So once the conjunct-wire (`A1-CONJUNCT-WIRE`) makes the three table arms require
 `obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true` on every
-obligation, this `false` obligation makes `pair (var 0) (var 0)` UNTYPEABLE under the lock — the pathLam
-subject-reduction is then STRUCTURAL (by the context's `lockCons`), with no beta-fragile occurrence count.
+obligation, this `false` obligation makes `pair (var 0) (var 0)` UNTYPEABLE under the lock — by the context's
+`lockCons`, for the use-POSITION (a single fibrant use fails identically), independently of `pathLam`'s
+live usage count, which is a separate and separately beta-stable premise.
 This is the concrete rule-table witness underpinning `A1-SR-STRUCTURAL`: the mechanism is checked against the
 shipped `pairIntroRule`, not merely the abstract `isSubjectUsableAtModality` predicate.
 
@@ -33,8 +34,8 @@ dimension lock `restContext.lockCons dimensionType`, the SR-breaker `pair (var 0
 constructor applied twice to the locked dimension `var 0` — has, among the obligations `pairIntroRule` demands,
 one whose `subject` is the locked `var 0` at the `.fibrant` use-position and whose use-site usability conjunct
 is `false`.  Once `A1-CONJUNCT-WIRE` makes the intro arm require that conjunct on every obligation, this `false`
-entry makes the breaker untypeable structurally — the count-free, beta-stable pathLam subject reduction.  The
-concrete rule-table instantiation of `lockedDimensionSubjectNotUsableFibrantly`. -/
+entry makes the pair untypeable structurally — by use-position, not by occurrence count.  The concrete
+rule-table instantiation of `lockedDimensionSubjectNotUsableFibrantly`. -/
 theorem pairDuplicatingDimensionBodyRejectedByLock {profile : PolyProfile} {predScope : Nat}
     (restContext : TypingContext profile predScope) (dimensionType : RawTerm predScope)
     (typeParam0 typeParam1 : RawTerm (predScope + 1)) (level0 level1 : LevelExpr) (flag : UniverseFlag) :

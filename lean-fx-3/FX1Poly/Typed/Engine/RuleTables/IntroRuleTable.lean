@@ -20,9 +20,10 @@ generic `.intro` arm, and a NEW constructor of any arity is a table row, never a
     binder body, a formedness obligation) is a union obligation, grown premises homogenized via the
     union's `ofGrown` embedding exactly as `listElim` homogenized its branches.
   * **`IntroRule`** = `argShifts`/`paramShifts` + an `obligations` function (now also reading the
-    `levels`/`flag` existentials for the universe-formation premises) + a **`sideCondition`** (the
-    load-bearing `gradedBinderChecks binderUsage body` for the graded rows; `True` elsewhere) +
-    `memberCell` + dependent `outputType`.
+    `levels`/`flag` existentials for the universe-formation premises) + a **`sideCondition`** + `memberCell`
+    + dependent `outputType`.  Two rows carry a real `sideCondition`: `pathLam`'s App-scaled affine grade
+    (`appScaledDimensionGrade body 0 <= one` — the only load-bearing one) and `gen_lam`'s
+    `gradedBinderChecks .omega body`, which `gradedBinderChecks_omega` proves VACUOUS.  `True` elsewhere.
   * **`introRuleOf`** — the merged 17-row table.
 
 The companion `.intro` arm carries the children + params + levels + flag + a `sideHolds :
@@ -56,8 +57,8 @@ structure IntroRule where
   obligations : {profile : PolyProfile} → (scope : Nat) → TypingContext profile scope →
     RawTermChildren argShifts scope → RawTermChildren paramShifts scope →
     LevelExpr → LevelExpr → UniverseFlag → List (ElimObligation profile)
-  /-- The introducer's structural side condition (the load-bearing `gradedBinderChecks` usage discipline
-  for graded binders; `True` for the data constructors). -/
+  /-- The introducer's structural side condition: `pathLam`'s App-scaled affine grade (load-bearing),
+  `gen_lam`'s `gradedBinderChecks .omega` (vacuous — `gradedBinderChecks_omega`), `True` elsewhere. -/
   sideCondition : (scope : Nat) → RawTermChildren argShifts scope → Prop
   /-- The introduced member cell, built from its children. -/
   memberCell : (scope : Nat) → RawTermChildren argShifts scope → RawTerm scope

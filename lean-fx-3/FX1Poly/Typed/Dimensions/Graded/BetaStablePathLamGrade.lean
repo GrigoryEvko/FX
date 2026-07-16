@@ -51,8 +51,10 @@ homomorphism `natToUsageGrade` (additive `natToUsageGrade_addHom` AND multiplica
   * **`RawTerm.bodyBinderUsageGrade`** — the structural reading of the App rule's scalar `r`: a
     lambda body's usage of its OWN freshest binder (`natToUsageGrade (occurrenceCountAt body 0)`).
   * **`RawTerm.affineBinderGradePremise`** (+ `_iff_gradedBinderChecks`) — the grade reading of the
-    CURRENT (beta-fragile) `pathLamIntroRule.sideCondition`; pins the swap target in grade vocabulary
-    (it is NOT itself beta-stable — see Honest scope).
+    SUPERSEDED `pathLamIntroRule.sideCondition`; it is NOT beta-stable, which is why it was replaced.
+    The swap has LANDED — the live premise is the App-scaled grade (`AppScaledPathLamGrade`) with
+    unconditional zero-axiom beta-stability (`AppScaledSubstMetatheory`).  Retained as the historical
+    record of what the swap moved away from.
   * **`RawTerm.occurrenceCountAt_subst0`** — ★ THE COUNT MASTER EQUATION, now PROVEN (was the
     "remaining" prerequisite flagged in `RawTermOccurrenceSubst.lean`): `occ (subst0 body arg) p =
     occ body p.succ + occ body 0 * occ arg p`, via a WEIGHTED generalization
@@ -432,14 +434,18 @@ that needs no typing information (it coincides with a literal lambda's binder gr
 def RawTerm.bodyBinderUsageGrade {scope : Nat} (body : RawTerm (scope + 1)) : UsageGrade :=
   natToUsageGrade (RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩)
 
-/-- **The affine binder-grade premise (the grade reading of the CURRENT premise)** for `pathLam`: the
-dimension's usage grade at the freshest binder is below the affine grade `one`.  NOTE this is NOT the
-beta-stable premise — it equals the current beta-fragile bound `occurrenceCountAt body 0 ≤ 1` (it reads
-only the binder's RAW count, missing the App-scaling that a duplicating redex inside the body would
-cause).  The genuinely beta-stable premise is the App-SCALED dimension grade (the recursive accounting
-that scales each application's argument by the function's binder grade — the remaining work).  This
-definition makes the grade reading of the current premise explicit, so the swap target is stated in
-the same vocabulary. -/
+/-- **The affine binder-grade premise (the grade reading of the SUPERSEDED premise)** for `pathLam`: the
+dimension's usage grade at the freshest binder is below the affine grade `one`.  This is NOT beta-stable
+— it equals the raw bound `occurrenceCountAt body 0 ≤ 1`, reading only the binder's RAW count and missing
+the App-scaling that a duplicating redex inside the body would cause.
+
+★ **HISTORICAL.**  The swap this vocabulary was written to describe has LANDED: `pathLamIntroRule` now
+carries `RawTerm.appScaledDimensionGrade body 0 <= one` (the App-SCALED grade, which scales each
+application's argument by `RawTerm.functionBinderGrade` of its head — §6.2's `p1 + r * p2`), and its
+beta-stability is proven unconditionally and zero-axiom
+(`appScaledRootBeta_le_unconditional`, `appScaledRootPathBeta_le_ofAffine_unconditional`).  This
+definition is retained as the grade reading of the OLD premise — it documents what was replaced and why,
+and is what the swap-equivalence lemmas below are stated against.  It is not a live side condition. -/
 def RawTerm.affineBinderGradePremise {scope : Nat} (body : RawTerm (scope + 1)) : Prop :=
   UsageGrade.le (RawTerm.dimensionUsageGrade body ⟨0, Nat.succ_pos scope⟩) UsageGrade.one = true
 

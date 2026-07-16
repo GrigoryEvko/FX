@@ -127,13 +127,15 @@ fibrantly INACCESSIBLE (`dimensionIsNotFibrantlyAccessible`), so as the subject 
 fails the use-site usability check — `isSubjectUsableAtModality (lockCons) (var 0) .fibrant = false`.
 
 This is exactly the soundness content the #1829 fibrant-guarded use-site conjunct consumes: every `gen_pair`
-component obligation is `.fibrant`, so the canonical subject-reduction breaker `pair (var 0) (var 0)` — which
-would demand `var 0` fibrantly — is rejected structurally, with no beta-fragile occurrence count.  The theorem
+component obligation is `.fibrant`, so `pair (var 0) (var 0)` — which would demand `var 0` fibrantly — is
+rejected structurally, by the context.  Note the rejection is for the POSITION of the uses, not their number:
+a single fibrant use fails identically.  The theorem
 is honestly WEAKER than the pre-#1795 "`var 0` is untypeable under the lock": `var 0` IS now typeable (only
 dimensionally); it is the FIBRANT use that the lock forbids, which is precisely what the conjunct enforces.
 
-It still does NOT subsume `pathLam`'s `gradedBinderChecks UsageGrade.one`, which additionally bounds the
-DIMENSIONAL occurrences the lock leaves free (the dimensional diagonal `f (b1@i) (b2@i)`); the two are
+It still does NOT subsume `pathLam`'s usage premise (today `appScaledDimensionGrade body 0 <= one`, the
+App-scaled grade; the file predates that swap and said `gradedBinderChecks UsageGrade.one`), which additionally
+bounds the DIMENSIONAL occurrences the lock leaves free (the dimensional diagonal `f (b1@i) (b2@i)`); the two are
 complementary legs of the affine discipline. -/
 theorem lockedDimensionVar_isNotFibrantlyUsable {profile : PolyProfile} {scope : Nat}
     {restContext : TypingContext profile scope} {dimensionType : RawTerm scope}

@@ -75,15 +75,28 @@ inductive TypingContext (profile : PolyProfile) : Nat → Type
   | empty : TypingContext profile 0
   | cons {scope : Nat} (restContext : TypingContext profile scope)
       (bindingType : RawTerm scope) : TypingContext profile (scope + 1)
-  /-- The affine transpension dimension LOCK — the MTT/MATT context-lock `◐`
-  (mode-11/12 multiplier, structure-class affine) realized in the typed telescope.
-  Stores a dimension binding and lifts scope by one exactly as `cons` does (so the
-  structural consumers — `length`, `lookup`, well-formedness — treat it identically for
-  now), but MARKS the binding as the lock zone.  The affine-multiplier discipline reads
-  this mark so the bound dimension cannot be fibrantly duplicated; that is what makes
-  `pathLam` subject reduction structural (no occurrence-count side condition).  The
-  dimension type is the affine interval; the lock is the left adjoint co-freely available
-  by co-dextrification (MATT). -/
+  /-- The transpension dimension LOCK — the MTT/MATT context-lock `◐` (mode-11/12
+  multiplier) realized in the typed telescope.  Stores a dimension binding and lifts scope
+  by one exactly as `cons` does (so the structural consumers — `length`, `lookup`,
+  well-formedness — treat it identically), but MARKS the binding as the lock zone.  The
+  dimension type is the interval; the lock is the left adjoint co-freely available by
+  co-dextrification (MATT).
+
+  ★ **What this mark does — and what it does NOT.**  It is a USE-POSITION discipline: the
+  bound dimension is usable at the `.dimensional` modality and not at `.fibrant`
+  (`DimensionLockAccessibility`).  It says nothing about HOW MANY times the dimension is
+  used — a SINGLE fibrant use is rejected exactly as two are, machine-checked.  So this is
+  **not** an affine mark and it does **not** replace `pathLamIntroRule`'s occurrence-count
+  side condition, which is live, separately beta-stable
+  (`appScaledRootBeta_le_unconditional`) and separately load-bearing.  The two read
+  disjoint inputs — `f(context, position)` here, `g(term)` there — and are provably
+  incomparable; see `Axis/Mode/grade-mode-spectrum.md` §2.2.  A position tag cannot count:
+  a lock word never sees a binding (`locks(Gamma, x :^mu A) = locks(Gamma)`) and a
+  2-category has no `+` (ibid. §1.2).
+
+  ⚠ **Honest carrier note.**  `lockCons` currently stores NO modality — it is byte-identical
+  to `cons` plus the constructor tag.  Giving it a real modality field is the open decision
+  (`ModedLockContext`), and it cascades through `WfContext`/`SubjectReduction`. -/
   | lockCons {scope : Nat} (restContext : TypingContext profile scope)
       (dimensionType : RawTerm scope) : TypingContext profile (scope + 1)
 
