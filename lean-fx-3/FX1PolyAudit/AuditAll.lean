@@ -75,6 +75,7 @@ import FX1PolyAudit.ComputerAlgebra.Register.FieldLayout
 import FX1PolyAudit.ComputerAlgebra.Register.VirtualField
 import FX1PolyAudit.ComputerAlgebra.Register.AccessMode
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.Views
+import FX1PolyAudit.ComputerAlgebra.FixedWidth.ViewsRing
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.Widening
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.OverflowMode
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.OverflowArithmetic
