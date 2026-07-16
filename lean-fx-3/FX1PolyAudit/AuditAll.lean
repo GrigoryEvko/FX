@@ -1889,6 +1889,7 @@ import FX1PolyAudit.Typed.Dimensions.Parametricity.GelIsTranspensionAtAffine
 import FX1PolyAudit.Typed.Dimensions.Parametricity.KernelParamInternalVerdict
 import FX1PolyAudit.Typed.Dimensions.Parametricity.TranspensionSchema
 import FX1PolyAudit.Typed.Engine.Classifier.DimensionLockAccessibility
+import FX1PolyAudit.Typed.Engine.Classifier.LockModeIdentification
 import FX1PolyAudit.Typed.Engine.Classifier.DimensionLockBreakerRejection
 import FX1PolyAudit.Typed.Engine.Classifier.EqualityTier
 import FX1PolyAudit.Typed.Engine.Classifier.NativityLedger
