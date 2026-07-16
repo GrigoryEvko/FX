@@ -81,6 +81,7 @@ import FX1PolyAudit.ComputerAlgebra.FixedWidth.ViewsRing
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.Widening
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.OverflowMode
 import FX1PolyAudit.ComputerAlgebra.FixedWidth.OverflowArithmetic
+import FX1PolyAudit.ComputerAlgebra.FixedWidth.SaturateMulSemantics
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealLimit
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealContinuity
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeLimit
