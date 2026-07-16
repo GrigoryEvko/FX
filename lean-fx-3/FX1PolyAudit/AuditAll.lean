@@ -1523,6 +1523,8 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeArity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramBoxCount
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingDouble.DoubleTileSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingDouble.DoubleTileDimension
 import FX1PolyAudit.Polygraph.Omega.CarrierAudit
 import FX1PolyAudit.Polygraph.Omega.WalkingEquivalencePromotionResidualAudit
 import FX1PolyAudit.Polygraph.Omega.CongruenceAudit
