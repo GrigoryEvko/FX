@@ -207,9 +207,40 @@ theorem identityAdjointTriple_central_selfAdjoint (signature : ModeSignature) (m
 
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The triangle identities for a GENERAL adjunction (e.g. the seed's `left ⊣ right`) are
-ADDITIONAL relations beyond `mode-3`'s 3-polygraph — the free adjunction does not satisfy the snake equations.
-Saturating the system with the adjunction 3-cells and re-proving convergence is `mode-9`.  `= false`. -/
+/-- **Honesty marker — STAYS `false`, but READ WHY (rewritten 2026-07-16; the old reason was wrong).**
+
+The triangle identities for a GENERAL adjunction (the seed's `left ⊣ right`) are ADDITIONAL relations beyond
+`mode-3`'s 3-polygraph — the free adjunction does not satisfy the snake equations.  That much is now a THEOREM,
+not a marker: `AdjunctionTriangleObstruction.adjunctionSeedLeftSnake_not_conv_id` (the snake fires `η` and `ε`
+so `generatorCount = 2`; `id_L` counts `0`; the count is a `TwoCellConv` invariant).
+
+★ **The old text said "saturating the system with the adjunction 3-cells and re-proving convergence is
+`mode-9`", as if BOTH halves were pending.  They are not, and they did not resolve the same way:**
+
+  * **SATURATION: LANDED.**  `fxMode_hasSaturatedTwoCellConvRelation := true` (`SaturatedDecision`), the snakes
+    genuinely collapse (`leftSnakeSaturatedButNotFree`), the triangle critical pairs ALL JOIN
+    (`SaturatedConvergence`, `fxMode_hasCombinedSaturatedTriangleRewrite := true`), and saturated SN is
+    UNCONDITIONAL (`AdjunctionSaturatedNormalization`).  Nothing about the triangle layer is open.
+  * **CONVERGENCE: REFUTED, NOT DEFERRED — and not our fault.**  The non-joining critical pair is
+    `interchange × whiskerRightVcomp` in the STRUCTURAL laws (`FreeTwoCell/Confluence.lean:24-36`): the two
+    normal forms differ in their whiskering 1-cells and no rule rewrites those.  Classic
+    Godement/Eckmann–Hilton.  It is PRE-EXISTING, INHERITED through `ofFree`, and NOT adjunction-specific; the
+    snake rules cannot repair it (they never touch a whiskering 1-cell).  `Confluence.lean:32` states it:
+    "`fxMode_hasConvergentThreeCellSystem := false` is CORRECT, and the base-rule rewriting route cannot flip
+    it."  So the object this marker's old text demanded PROVABLY DOES NOT EXIST.
+
+★★ **Do NOT flip this flag.**  Flipping asserts convergence — the one thing that is actually false — and breaks
+the `rfl` pin `affineModalityAdjunction_triangleLawsNeedSaturation` (`Core/Fib/ModeAffineAdjunction`).  It stays
+`false` on the REFUTED reading, honestly.
+
+★★★ **And nothing waits on it.**  The saturated word problem is DECIDED anyway, by a different carrier — the
+Joyal–Street boundary-arc matching, not rewriting: `decideSaturatedTwoCellConv_ofSeed`
+(`SaturatedMatchingDecisionAssembly`, `fxMode_hasSaturatedMatchingDecisionAssembled := true`) decides every
+parallel pair, unconditionally, zero-axiom, no fuel; hence
+`fxMode_hasSaturatedModeRelativeConvDecisionAtAdjunction := true` — the adjunction mode theory WITH its triangle
+identities has decidable 2-cell equality.  `BareConvDecisionReconciliation` draws the conclusion: **fib-3 is NOT
+blocked on this flag.**  If you want the rewriting route regardless, it is confluence MODULO the interchange
+equation (`term-16` Church–Rosser-modulo-E), which is research, not a chore.  `= false`. -/
 def fxMode_hasAdjunctionTriangleSaturation : Bool := false
 
 /-- **Honesty marker.**  The cohesive modalities `ʃ / ♭ / ♯` ARE now realized (as `Type`-endofunctors with the
