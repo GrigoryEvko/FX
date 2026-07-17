@@ -5,7 +5,7 @@ import FX1Poly.Polygraph.TwoCategory.Table.WordProblemDecisionWitnessBundle
 
 Per-declaration zero-axiom gate for the grounded decider bundle (WP-LEDGER #2048).  Each `wpLedger*Decider`
 is a definitional alias of a real word-problem decider, so `#assert_no_axioms` on the alias TRANSITIVELY
-certifies the decider itself is axiom-free — machine-checking the ledger's claim that the decided-15's deciders
+certifies the decider itself is axiom-free — machine-checking the ledger's claim that the decided-16's deciders
 are zero-axiom, not merely that this wrapper is.  Must be free of `propext`, `Quot.sound`, `Classical`,
 `sorry`, `native_decide`. -/
 
@@ -27,6 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerBraidDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerCommutativeMonoidDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerBoundedSemilatticeDecider
-#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_fifteenDecidersHeldAndGrounded
+#assert_no_axioms FX1Poly.Polygraph.Table.wpLedgerAbelianGroupDecider
+#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_sixteenDecidersHeldAndGrounded
 
 end FX1PolyAudit

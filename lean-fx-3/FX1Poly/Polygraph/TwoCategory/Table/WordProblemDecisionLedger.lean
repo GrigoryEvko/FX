@@ -1,6 +1,6 @@
 /-! # Polygraph/TwoCategory/Table/WordProblemDecisionLedger — the grand word-problem DECISION ledger
 
-★ **The decided-15 walkers' WORD-PROBLEM DECISION status, machine-checked (WP-LEDGER #2048, core round).**
+★ **The decided-16 walkers' WORD-PROBLEM DECISION status, machine-checked (WP-LEDGER #2048, core round).**
 
 This is the DECISION-lane counterpart to `Polygraph/Omega/SquierFamilyCensus`.  The census grounds which
 walkers have a coherent PRESENTATION (shipped / op-dual / walled); it names the nine "decided" walkers but
@@ -43,25 +43,28 @@ Presentation-walled and decision-decided are ORTHOGONAL; this ledger reads the d
   | positive braid monoid `B_3^+`   | oneCellDecided (dim-1, inf.) | `decideBraidThreeConv` |
   | walking commutative monoid      | treePastingDecided (= ℕ)     | `decideCommMonoidTreeConv` |
   | walking bounded semilattice     | treePastingDecided (= {⊥,⊤}) | `decideSemilatticeTreeConv` |
+  | walking abelian group           | treePastingDecided (= ℤ)     | `decideAbelianGroupTreeConv` |
 
-→ **15 of 15** carry a shipped total decider; SIX are full saturated-2-cell deciders, THREE are dimension-1
+→ **16 of 16** carry a shipped total decider; SIX are full saturated-2-cell deciders, THREE are dimension-1
 deciders (involution Z/2, cyclic-3 Z/3, and `B_3^+` — the first INFINITE dim-1 rung, left-greedy Garside NF),
-one a directed-order decider only (co-KZ), THREE are tree-pasting deciders (the operad's right-comb NF, plus
-the two single-generator algebra seeds — the commutative monoid whose word problem collapses to `(ℕ, +, 0)`
-by leaf count, and the bounded semilattice whose idempotency collapses it to the two-element lattice `{⊥, ⊤}`
-by slot presence), one a FRAGMENT decider (the traced 3-axiom relation as shipped, smart-constructor NF — the
+one a directed-order decider only (co-KZ), FOUR are tree-pasting deciders (the operad's right-comb NF, plus
+the three single-generator algebra seeds — the commutative monoid whose word problem collapses to `(ℕ, +, 0)`
+by leaf count, the bounded semilattice whose idempotency collapses it to the two-element lattice `{⊥, ⊤}`
+by slot presence, and the walking abelian group whose formal inverse completes that count to the integers `ℤ`
+by winding number), one a FRAGMENT decider (the traced 3-axiom relation as shipped, smart-constructor NF — the
 full JSV set walled in the walker's own `fxTraced_hasFullJsvTraceAxiomsDecided`), and one a GUARDED-fragment
 decider (the double-cat unit-free grid, `(width, height)` invariant under well-formedness hypotheses — the
 unit-bearing extension walled in `fxDouble_hasUnitBearingGridDecided`).  The former lone gap (cyclic-3) closed,
 the operad joined via WP-OPERAD brick 2, the wave-5 trio (traced / double / braid) joined via WP-TRACED brick
-2, WP-DOUBLE brick 2, and WP-BRAID-3, and the two single-generator seeds joined as decided-15.
+2, WP-DOUBLE brick 2, and WP-BRAID-3, the two single-generator monoid seeds joined as decided-15, and the
+walking abelian group (= walking ℤ, winding-number NF) joined as decided-16.
 
 ## NOT the capstone close (honest)
 
 This is the DECISION-ledger CORE: the rung taxonomy, the kernel-checked per-rung status map, the coverage
-counts, and the honest markers.  The witness bundle (`WordProblemDecisionWitnessBundle`) HOLDS all fifteen
+counts, and the honest markers.  The witness bundle (`WordProblemDecisionWitnessBundle`) HOLDS all sixteen
 deciders as grounded aliases, and the cost tags landed (`WordProblemCostLedger`, WP-CEIL-COST #2046).  Still
-owed for the capstone (#2048): the beyond-decided-15 rungs (equivalence — resolved refute-and-relocate,
+owed for the capstone (#2048): the beyond-decided-16 rungs (equivalence — resolved refute-and-relocate,
 Frobenius monad, strong monad, bunched bimonoid, Brauer, cohesion-quadruple, ...) tabulated with their walls
 in ONE machine-checked enumeration.  `fxWpLedger_grandLedgerClosed = false`.
 
@@ -116,18 +119,24 @@ inductive WordProblemDecidedWalker
   (`SemilatticeTree`); ONE generating slot ⟹ idempotency collapses the count to the two-element lattice
   `{⊥, ⊤}`, decided completely by `decideSemilatticeTreeConv` (`WalkingSemilattice/SemilatticeSeed.lean`). -/
   | walkingBoundedSemilattice
+  /-- The walking abelian group `<m:2, e:0, i:1 | assoc, unitL, unitR, comm, invL, invR>` — tree carrier
+  (`AbelianGroupTree`); ONE generating slot ⟹ adjoining a formal inverse completes the commutative monoid's
+  count to the integers `ℤ`, so the word problem is winding-number equality (a difference pair `ℕ²/~`, no
+  signed type), decided completely by `decideAbelianGroupTreeConv`
+  (`WalkingAbelianGroup/AbelianGroupSeed.lean`). -/
+  | walkingAbelianGroup
 
-/-- The complete enumeration of the decided-15 walkers — FIFTEEN, listed. -/
+/-- The complete enumeration of the decided-16 walkers — SIXTEEN, listed. -/
 def allWordProblemDecidedWalkers : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
     .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive,
-    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice, .walkingAbelianGroup]
 
-/-- ★ **The decided-walker count is exactly FIFTEEN** — kernel-checked (`rfl`). -/
-theorem wordProblemDecidedWalkerCountIsFifteen : allWordProblemDecidedWalkers.length = 15 := rfl
+/-- ★ **The decided-walker count is exactly SIXTEEN** — kernel-checked (`rfl`). -/
+theorem wordProblemDecidedWalkerCountIsSixteen : allWordProblemDecidedWalkers.length = 16 := rfl
 
-/-- ★ **The decided-15 enumeration is EXHAUSTIVE** — every walker appears (full case split, `List.Mem` ctors,
+/-- ★ **The decided-16 enumeration is EXHAUSTIVE** — every walker appears (full case split, `List.Mem` ctors,
 propext-free). -/
 theorem allWordProblemDecidedWalkersExhaustive :
     ∀ walker : WordProblemDecidedWalker, walker ∈ allWordProblemDecidedWalkers
@@ -177,6 +186,11 @@ theorem allWordProblemDecidedWalkersExhaustive :
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
             (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
+  | .walkingAbelianGroup =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
 
 /-! ## The word-problem decision status of each walker -/
 
@@ -203,7 +217,8 @@ inductive WordProblemDecisionStatus
   | decisionNotShipped
 
 /-- The decision-status map: six full-2-cell deciders, THREE 1-cell deciders (involution Z/2, cyclic-3 Z/3,
-the infinite `B_3^+` by Garside NF), one order-only (co-KZ), one tree-pasting (operad), one fragment (traced
+the infinite `B_3^+` by Garside NF), one order-only (co-KZ), FOUR tree-pasting (operad + the three
+single-generator seeds: commutative monoid, bounded semilattice, abelian group), one fragment (traced
 3-axiom), one guarded-fragment (double unit-free grid).  KZ is `fullTwoCellDecided` (its 2-cell equality
 decides via `decideKZEq`) and additionally ships a directed-order decider `decideKZLETotal`. -/
 def wordProblemDecisionStatus : WordProblemDecidedWalker → WordProblemDecisionStatus
@@ -222,10 +237,12 @@ def wordProblemDecisionStatus : WordProblemDecidedWalker → WordProblemDecision
   | .walkingBraidPositive => .oneCellDecided
   | .walkingCommutativeMonoid => .treePastingDecided
   | .walkingBoundedSemilattice => .treePastingDecided
+  | .walkingAbelianGroup => .treePastingDecided
 
-/-- Whether a walker has a SHIPPED word-problem decider (any strength) — true at all fifteen (cyclic-3's
-former gap closed; the operad, traced fragment, unit-free double grid, and `B_3^+` Garside all joined).  Full
-enumeration (no wildcard arm) so the match stays propext-free. -/
+/-- Whether a walker has a SHIPPED word-problem decider (any strength) — true at all sixteen (cyclic-3's
+former gap closed; the operad, traced fragment, unit-free double grid, `B_3^+` Garside, and the three
+single-generator algebra seeds all joined).  Full enumeration (no wildcard arm) so the match stays
+propext-free. -/
 def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
   | .walkingInvolution => true
   | .walkingMonad => true
@@ -242,22 +259,24 @@ def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
   | .walkingBraidPositive => true
   | .walkingCommutativeMonoid => true
   | .walkingBoundedSemilattice => true
+  | .walkingAbelianGroup => true
 
-/-- All FIFTEEN decided walkers carry a SHIPPED word-problem decider. -/
+/-- All SIXTEEN decided walkers carry a SHIPPED word-problem decider. -/
 def allWordProblemDecidedWalkersWithShippedDecider : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
     .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive,
-    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice, .walkingAbelianGroup]
 
-/-- ★ **The shipped-decider count is exactly FIFTEEN** — kernel-checked (`rfl`).  Cyclic-3's former gap
+/-- ★ **The shipped-decider count is exactly SIXTEEN** — kernel-checked (`rfl`).  Cyclic-3's former gap
 closed by `decideCyclicThreeOneCellConv` (decided-8 → 9); the operad's right-comb decision joined (9 → 10);
 the wave-5 trio joined — traced 3-axiom fragment (`decideTracedDiagramConv`), unit-free double grid
 (`decideDoubleTileConv`), `B_3^+` Garside (`decideBraidThreeConv`) — decided-10 → decided-13; the two
-single-generator algebra-operad rungs joined — commutative monoid (`decideCommMonoidTreeConv`, = ℕ) and
-bounded semilattice (`decideSemilatticeTreeConv`, = `{⊥,⊤}`) — decided-13 → decided-15. -/
-theorem wordProblemShippedDeciderCountIsFifteen :
-    allWordProblemDecidedWalkersWithShippedDecider.length = 15 := rfl
+single-generator monoid rungs joined — commutative monoid (`decideCommMonoidTreeConv`, = ℕ) and
+bounded semilattice (`decideSemilatticeTreeConv`, = `{⊥,⊤}`) — decided-13 → decided-15; the walking abelian
+group joined — (`decideAbelianGroupTreeConv`, = ℤ winding number) — decided-15 → decided-16. -/
+theorem wordProblemShippedDeciderCountIsSixteen :
+    allWordProblemDecidedWalkersWithShippedDecider.length = 16 := rfl
 
 /-- The six walkers with a FULL saturated-2-cell decider, enumerated. -/
 def allWordProblemFullTwoCellDecidedWalkers : List WordProblemDecidedWalker :=
@@ -268,7 +287,7 @@ def allWordProblemFullTwoCellDecidedWalkers : List WordProblemDecidedWalker :=
 theorem wordProblemFullTwoCellDeciderCountIsSix :
     allWordProblemFullTwoCellDecidedWalkers.length = 6 := rfl
 
-/-- ★ **ALL FIFTEEN decided walkers carry a shipped decider** — `hasShippedWordProblemDecider` is true at
+/-- ★ **ALL SIXTEEN decided walkers carry a shipped decider** — `hasShippedWordProblemDecider` is true at
 every walker (full case split, `rfl` per arm). -/
 theorem allWordProblemDecidedWalkersHaveShippedDecider :
     ∀ walker : WordProblemDecidedWalker, hasShippedWordProblemDecider walker = true
@@ -287,17 +306,19 @@ theorem allWordProblemDecidedWalkersHaveShippedDecider :
   | .walkingBraidPositive => rfl
   | .walkingCommutativeMonoid => rfl
   | .walkingBoundedSemilattice => rfl
+  | .walkingAbelianGroup => rfl
 
 /-! ## The census markers -/
 
-/-- ★ **FIFTEEN OF FIFTEEN decided rungs carry a shipped decider (recorded).**  `= true` records that the
-DECISION axis covers ALL fifteen walkers (`wordProblemShippedDeciderCountIsFifteen`), six of them full
+/-- ★ **SIXTEEN OF SIXTEEN decided rungs carry a shipped decider (recorded).**  `= true` records that the
+DECISION axis covers ALL sixteen walkers (`wordProblemShippedDeciderCountIsSixteen`), six of them full
 saturated-2-cell deciders (`wordProblemFullTwoCellDeciderCountIsSix`), after cyclic-3's ℤ/3 decider landed
 (decided-8 → 9), the operad's right-comb decision joined (9 → 10), the wave-5 trio — traced fragment,
-unit-free double grid, `B_3^+` Garside — joined (10 → 13), and the two single-generator algebra-operad
-rungs — commutative monoid (= ℕ) and bounded semilattice (= `{⊥,⊤}`) — joined (13 → 15,
+unit-free double grid, `B_3^+` Garside — joined (10 → 13), the two single-generator monoid
+rungs — commutative monoid (= ℕ) and bounded semilattice (= `{⊥,⊤}`) — joined (13 → 15), and the walking
+abelian group (= ℤ winding number) joined (15 → 16,
 `allWordProblemDecidedWalkersHaveShippedDecider`). -/
-def fxWpLedger_decisionCoverageFifteenOfFifteen : Bool := true
+def fxWpLedger_decisionCoverageSixteenOfSixteen : Bool := true
 
 /-- ★ **The traced 3-axiom fragment joined the decided census (recorded).**  `= true` records that
 `decideTracedDiagramConv` (WP-TRACED brick 2, `WalkingTraced/TracedDiagramDecision.lean`) totally decides
@@ -354,11 +375,11 @@ op-transport combinator `decideSaturatedConvUnderOp` (no new normalizer).  The a
 (directed order) use their own interfaces — no single decider reaches all nine. -/
 def fxWpLedger_uniformInterfaceCoversFourOfSix : Bool := true
 
-/-- ★ **THE GRAND WORD-PROBLEM LEDGER IS NOT CLOSED (honest).**  `= false` records that the decided-15 core
-is complete (all fifteen deciders shipped + held in `WordProblemDecisionWitnessBundle`) and the WP-CEIL-COST
+/-- ★ **THE GRAND WORD-PROBLEM LEDGER IS NOT CLOSED (honest).**  `= false` records that the decided-16 core
+is complete (all sixteen deciders shipped + held in `WordProblemDecisionWitnessBundle`) and the WP-CEIL-COST
 #2046 cost tags landed (`WordProblemCostLedger`, all `.cited`, `fxWpCost_allTagsProved = false`).
 
-THE ENUMERATION CLAUSE IS NOW DELIVERED: the beyond-decided-15 rungs (equivalence, Frobenius monad, strong
+THE ENUMERATION CLAUSE IS NOW DELIVERED: the beyond-decided-16 rungs (equivalence, Frobenius monad, strong
 monad, bunched bimonoid, distributive law, Brauer, cohesion-quadruple, adjoint-triple string, 2-group,
 endomorphism) AND the fragment-extension walls (traced full-JSV, double unit-bearing, braid group) are
 tabulated with their walls in ONE machine-checked enumeration — `WordProblemBeyondCensusWalls.lean`

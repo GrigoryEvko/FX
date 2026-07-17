@@ -5,12 +5,12 @@ import FX1Poly.Polygraph.TwoCategory.Table.WordProblemDecisionLedger
 ★ **Complexity tags on every decided rung (WP-CEIL-COST #2046)** — the cost-lane companion to
 `WordProblemDecisionLedger` (WP-LEDGER #2048 owed item (2)).
 
-Every rung of the decided-15 gets a COST CLASS (what the decider costs, read off its algorithmic structure) and
+Every rung of the decided-16 gets a COST CLASS (what the decider costs, read off its algorithmic structure) and
 a COST EVIDENCE tag (HOW that class is known).  The evidence discipline is the honest part: a class is
 `proved` only when an in-repo machine-checked cost theorem bounds the decider; it is `cited` when the class is
 read off the decider's structure and recorded here by decl-name citation.  Today the repo holds ZERO cost
 theorems about any decider (the `PolyBound` cost-declaration language itself is still `.openProblem` in
-`Typed/Dimensions/Cost/CostArcLedger`, COST-7), so all fifteen tags are `cited` and
+`Typed/Dimensions/Cost/CostArcLedger`, COST-7), so all sixteen tags are `cited` and
 `fxWpCost_allTagsProved = false`.
 
 ## The per-rung cost table (decl NAMES cited, per the anchor-rot discipline — never file:line)
@@ -32,14 +32,15 @@ theorems about any decider (the `PolyBound` cost-declaration language itself is 
   | `B_3^+` (Garside)     | `decideBraidThreeConv`                        | quadratic    | `braidNormalizeWord` folds `braidPrependAtom`; each prepend's Δ-power carry (`braidPrependAtomWithPower`) walks up to the accumulated `deltaPower` ≤ word length — O(n²) worst case, the classical fixed-strand Garside bound; then `braidGarsideCanonDecEq` |
   | walking comm. monoid  | `decideCommMonoidTreeConv`                    | linear       | `leafCount` structural tree fold per tree + `Nat.decEq` on the two counts — one fold each, O(1) compare |
   | walking bdd. semilatt. | `decideSemilatticeTreeConv`                  | linear       | `slotPresenceOf` structural tree fold per tree + `slotPresenceDecEq` on the two `SlotPresence` values — one fold each, O(1) compare |
+  | walking abelian group  | `decideAbelianGroupTreeConv`                 | linear       | `windingOf` structural tree fold per tree (a difference pair `ℕ²`) + `Nat.decEq` on the two winding-difference sums — one fold each, O(1) compare |
 
-Class census: constantTime 1, linear 7, quadratic 2, polynomial 5, exponentialBounded 0.
-Evidence census: proved 0, measured 0, cited 15, unassessed 0.
+Class census: constantTime 1, linear 8, quadratic 2, polynomial 5, exponentialBounded 0.
+Evidence census: proved 0, measured 0, cited 16, unassessed 0.
 
 ## The KZ/co-KZ row subtlety
 
-A row tags the RUNG's decider(s), not one decl: the witness bundle's SIXTEEN grounding aliases map onto these
-FIFTEEN rows with KZ carrying two (`wpLedgerKZEqDecider` and `wpLedgerKZOrderDecider` — both are the same
+A row tags the RUNG's decider(s), not one decl: the witness bundle's SEVENTEEN grounding aliases map onto these
+SIXTEEN rows with KZ carrying two (`wpLedgerKZEqDecider` and `wpLedgerKZOrderDecider` — both are the same
 monotone-map fold, so one class covers both; `fxWpCost_kzRowCoversBothDeciders`).
 
 ## One honest correction (vs the folk expectation "normalizer ⟹ cost")
@@ -102,7 +103,9 @@ swap of the KZ order decider — polynomial); adjunction `decideSaturatedTwoCell
 matching extraction — polynomial); operad `decideOperadTreeConv` (`arityOf` tree fold per input + `Nat.decEq`
 — linear); traced `decideTracedDiagramConv` (`tracedNF` fold with per-trace-node `contractTraceOne` spine
 walks — quadratic); double `decideDoubleTileConv` (two `(width, height)` folds + `Nat.decEq` — linear);
-`B_3^+` `decideBraidThreeConv` (`braidNormalizeWord` fold with per-letter Δ-power carry — quadratic). -/
+`B_3^+` `decideBraidThreeConv` (`braidNormalizeWord` fold with per-letter Δ-power carry — quadratic); abelian
+group `decideAbelianGroupTreeConv` (`windingOf` difference-pair tree fold per input + `Nat.decEq` on the two
+winding sums — linear). -/
 def wordProblemCostClass : WordProblemDecidedWalker → WordProblemCostClass
   | .walkingInvolution => .linear
   | .walkingMonad => .polynomial
@@ -119,8 +122,9 @@ def wordProblemCostClass : WordProblemDecidedWalker → WordProblemCostClass
   | .walkingBraidPositive => .quadratic
   | .walkingCommutativeMonoid => .linear
   | .walkingBoundedSemilattice => .linear
+  | .walkingAbelianGroup => .linear
 
-/-- The **cost evidence of each rung's tag** — `.cited` at ALL FIFTEEN (honest): every class above is read
+/-- The **cost evidence of each rung's tag** — `.cited` at ALL SIXTEEN (honest): every class above is read
 off the decider's structure; NO in-repo cost theorem or measurement exists for any decider today.  Full
 enumeration (no wildcard arm). -/
 def wordProblemCostEvidence : WordProblemDecidedWalker → WordProblemCostEvidence
@@ -139,6 +143,7 @@ def wordProblemCostEvidence : WordProblemDecidedWalker → WordProblemCostEviden
   | .walkingBraidPositive => .cited
   | .walkingCommutativeMonoid => .cited
   | .walkingBoundedSemilattice => .cited
+  | .walkingAbelianGroup => .cited
 
 /-! ## The kernel-checked rows (keyed off the LIVE decision-ledger enumeration) -/
 
@@ -149,14 +154,14 @@ theorem allWordProblemDecidedWalkersCostClassRow :
     allWordProblemDecidedWalkers.map wordProblemCostClass =
       [.linear, .polynomial, .linear, .constantTime, .polynomial, .linear,
         .polynomial, .polynomial, .polynomial, .linear, .quadratic, .linear, .quadratic,
-        .linear, .linear] := rfl
+        .linear, .linear, .linear] := rfl
 
 /-- ★ **The evidence row over the LIVE decided-15 enumeration** — every entry `.cited`.
 Kernel-checked (`rfl`). -/
 theorem allWordProblemDecidedWalkersCostEvidenceRow :
     allWordProblemDecidedWalkers.map wordProblemCostEvidence =
       [.cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited,
-        .cited, .cited, .cited, .cited, .cited] := rfl
+        .cited, .cited, .cited, .cited, .cited, .cited] := rfl
 
 /-- ★ **Every decided walker's cost tag is CITED** — full case split, `rfl` per arm.  The machine-checked
 "nothing is proved" statement: the dual of `wordProblemCostProvedWalkerCountIsZero`. -/
@@ -177,19 +182,20 @@ theorem allWordProblemDecidedWalkersCostEvidenceCited :
   | .walkingBraidPositive => rfl
   | .walkingCommutativeMonoid => rfl
   | .walkingBoundedSemilattice => rfl
+  | .walkingAbelianGroup => rfl
 
 /-! ## The per-evidence enumerations and counts -/
 
-/-- The walkers whose cost tag is `.cited` — ALL FIFTEEN (ledger order). -/
+/-- The walkers whose cost tag is `.cited` — ALL SIXTEEN (ledger order). -/
 def allWordProblemCostCitedWalkers : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
     .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive,
-    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice, .walkingAbelianGroup]
 
-/-- ★ **The cited-tag count is exactly FIFTEEN** — kernel-checked (`rfl`). -/
-theorem wordProblemCostCitedWalkerCountIsFifteen :
-    allWordProblemCostCitedWalkers.length = 15 := rfl
+/-- ★ **The cited-tag count is exactly SIXTEEN** — kernel-checked (`rfl`). -/
+theorem wordProblemCostCitedWalkerCountIsSixteen :
+    allWordProblemCostCitedWalkers.length = 16 := rfl
 
 /-- The walkers whose cost tag is `.proved` — NONE (the honest zero: no in-repo cost theorem exists about any
 decider; the `PolyBound` cost language is itself `.openProblem` per `CostArcLedger`). -/
@@ -214,16 +220,17 @@ def allWordProblemConstantTimeCostWalkers : List WordProblemDecidedWalker :=
 theorem wordProblemConstantTimeCostWalkerCountIsOne :
     allWordProblemConstantTimeCostWalkers.length = 1 := rfl
 
-/-- The `.linear` walkers — SEVEN (the two length-fold residue deciders, the op-transported constant base,
-the operad's arity-fold tree decider, the double-cat `(width, height)` grid decider, and the two
-single-generator algebra-operad folds — commutative-monoid leaf count and semilattice slot-presence). -/
+/-- The `.linear` walkers — EIGHT (the two length-fold residue deciders, the op-transported constant base,
+the operad's arity-fold tree decider, the double-cat `(width, height)` grid decider, and the three
+single-generator algebra-operad folds — commutative-monoid leaf count, semilattice slot-presence, and
+abelian-group winding count). -/
 def allWordProblemLinearCostWalkers : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingCyclicThree, .idempotentComonad, .walkingOperad, .walkingDouble,
-    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice, .walkingAbelianGroup]
 
-/-- ★ **The linear count is exactly SEVEN** — kernel-checked (`rfl`). -/
-theorem wordProblemLinearCostWalkerCountIsSeven :
-    allWordProblemLinearCostWalkers.length = 7 := rfl
+/-- ★ **The linear count is exactly EIGHT** — kernel-checked (`rfl`). -/
+theorem wordProblemLinearCostWalkerCountIsEight :
+    allWordProblemLinearCostWalkers.length = 8 := rfl
 
 /-- The `.quadratic` walkers — TWO (the traced smart-constructor fold with per-trace-node spine walks; the
 `B_3^+` Garside normalizer with per-letter Δ-power carries).  The class is no longer reserved. -/
@@ -251,19 +258,20 @@ def allWordProblemExponentialBoundedCostWalkers : List WordProblemDecidedWalker 
 theorem wordProblemExponentialBoundedCostWalkerCountIsZero :
     allWordProblemExponentialBoundedCostWalkers.length = 0 := rfl
 
-/-! ## Exhaustiveness glue: the class union covers the decided-15 -/
+/-! ## Exhaustiveness glue: the class union covers the decided-16 -/
 
-/-- The decided-15 grouped by cost class (constantTime, then linear, then quadratic, then polynomial) — the
+/-- The decided-16 grouped by cost class (constantTime, then linear, then quadratic, then polynomial) — the
 union list the per-class enumerations concatenate to. -/
 def allWordProblemCostClassifiedWalkers : List WordProblemDecidedWalker :=
   [.idempotentSemigroup, .walkingInvolution, .walkingCyclicThree, .idempotentComonad,
     .walkingOperad, .walkingDouble, .walkingCommutativeMonoid, .walkingBoundedSemilattice,
+    .walkingAbelianGroup,
     .walkingTraced, .walkingBraidPositive,
     .walkingMonad, .walkingComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction]
 
-/-- ★ **The class-grouped count is exactly FIFTEEN** — kernel-checked (`rfl`). -/
-theorem wordProblemCostClassifiedWalkerCountIsFifteen :
-    allWordProblemCostClassifiedWalkers.length = 15 := rfl
+/-- ★ **The class-grouped count is exactly SIXTEEN** — kernel-checked (`rfl`). -/
+theorem wordProblemCostClassifiedWalkerCountIsSixteen :
+    allWordProblemCostClassifiedWalkers.length = 16 := rfl
 
 /-- ★ **The class-grouped list IS the union of the per-class enumerations** — the five per-class lists
 (one empty) concatenate to it, kernel-checked (`rfl`). -/
@@ -277,7 +285,7 @@ theorem allWordProblemCostClassifiedWalkersIsClassUnion :
 grouped list yields the constant/linear/quadratic/polynomial blocks in order, kernel-checked (`rfl`). -/
 theorem allWordProblemCostClassifiedWalkersClassRow :
     allWordProblemCostClassifiedWalkers.map wordProblemCostClass =
-      [.constantTime, .linear, .linear, .linear, .linear, .linear, .linear, .linear,
+      [.constantTime, .linear, .linear, .linear, .linear, .linear, .linear, .linear, .linear,
         .quadratic, .quadratic,
         .polynomial, .polynomial, .polynomial, .polynomial, .polynomial] := rfl
 
@@ -300,44 +308,48 @@ theorem allWordProblemCostClassifiedWalkersExhaustive :
   | .walkingBoundedSemilattice =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
-  | .walkingTraced =>
+  | .walkingAbelianGroup =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
-  | .walkingBraidPositive =>
+  | .walkingTraced =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
-  | .walkingMonad =>
+  | .walkingBraidPositive =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.head _))))))))))
-  | .walkingComonad =>
+  | .walkingMonad =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.head _)))))))))))
-  | .walkingKZ =>
+  | .walkingComonad =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
-  | .walkingCoKZ =>
+  | .walkingKZ =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
-  | .walkingAdjunction =>
+  | .walkingCoKZ =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
+  | .walkingAdjunction =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
 
 /-! ## The cost markers -/
 
-/-- ★ **ALL FIFTEEN decided rungs carry a cost tag (recorded).**  `= true` records that
-`wordProblemCostClass` and `wordProblemCostEvidence` are TOTAL over the live decided-15 enum
-(full-enumeration matches, no wildcard), the cited census is fifteen-of-fifteen
-(`wordProblemCostCitedWalkerCountIsFifteen`, `allWordProblemDecidedWalkersCostEvidenceCited`), and the class
-union covers all fifteen (`allWordProblemCostClassifiedWalkersExhaustive`,
+/-- ★ **ALL SIXTEEN decided rungs carry a cost tag (recorded).**  `= true` records that
+`wordProblemCostClass` and `wordProblemCostEvidence` are TOTAL over the live decided-16 enum
+(full-enumeration matches, no wildcard), the cited census is sixteen-of-sixteen
+(`wordProblemCostCitedWalkerCountIsSixteen`, `allWordProblemDecidedWalkersCostEvidenceCited`), and the class
+union covers all sixteen (`allWordProblemCostClassifiedWalkersExhaustive`,
 `allWordProblemCostClassifiedWalkersIsClassUnion`). -/
 def fxWpCost_allRungsTagged : Bool := true
 
-/-- ★ **NO COST TAG IS PROVED (honest).**  `= false` records that every one of the fifteen class tags is
+/-- ★ **NO COST TAG IS PROVED (honest).**  `= false` records that every one of the sixteen class tags is
 `.cited` — read off the decider's structure, documented by decl-name citation — and ZERO are backed by an
 in-repo machine-checked cost theorem or measurement (`wordProblemCostProvedWalkerCountIsZero`,
 `wordProblemCostMeasuredWalkerCountIsZero`).  The `PolyBound` cost-declaration language that proved tags would
@@ -348,8 +360,8 @@ def fxWpCost_allTagsProved : Bool := false
 /-- ★ **The single KZ row covers BOTH KZ deciders (recorded).**  `= true` records that the walkingKZ row's
 `.polynomial` tag covers both `decideKZEq` and `decideKZLETotal` (the witness bundle's `wpLedgerKZEqDecider`
 and `wpLedgerKZOrderDecider`) — both compute the SAME monad monotone-map fold per cell and differ only in the
-final comparison (`DecidableEq (List Nat)` vs pointwise `decMapLE`), so one class tags both.  The sixteen
-grounding aliases map onto these fifteen rows with KZ carrying two. -/
+final comparison (`DecidableEq (List Nat)` vs pointwise `decMapLE`), so one class tags both.  The seventeen
+grounding aliases map onto these sixteen rows with KZ carrying two. -/
 def fxWpCost_kzRowCoversBothDeciders : Bool := true
 
 end FX1Poly.Polygraph.Table
