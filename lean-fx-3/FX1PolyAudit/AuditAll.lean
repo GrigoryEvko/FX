@@ -1843,6 +1843,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.RegularRealOrder
 import FX1PolyAudit.ComputerAlgebra.Number.RegularRealSquareRoot
 import FX1PolyAudit.ComputerAlgebra.Number.RegularRealSquareRootMultiplicative
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusLaws
+import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusUnitLaws
 import FX1PolyAudit.Core.Eliminators.Core.BoolElimDataTaitMember
 import FX1PolyAudit.Core.Eliminators.Core.ClosedEliminatorDataTaitMembers
 import FX1PolyAudit.Core.Eliminators.Core.NatElimDataTaitMember
