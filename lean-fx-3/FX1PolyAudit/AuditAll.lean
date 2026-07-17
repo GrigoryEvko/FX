@@ -1841,6 +1841,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.RegularRealDistance
 import FX1PolyAudit.ComputerAlgebra.Number.RegularRealInverse
 import FX1PolyAudit.ComputerAlgebra.Number.RegularRealMultiplication
 import FX1PolyAudit.ComputerAlgebra.Number.RegularRealOrder
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealOrderTightness
 import FX1PolyAudit.ComputerAlgebra.Number.RegularRealSquareRoot
 import FX1PolyAudit.ComputerAlgebra.Number.RegularRealSquareRootMultiplicative
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusLaws
