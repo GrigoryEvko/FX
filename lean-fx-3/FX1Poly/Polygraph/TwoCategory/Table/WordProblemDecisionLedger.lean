@@ -1,6 +1,6 @@
 /-! # Polygraph/TwoCategory/Table/WordProblemDecisionLedger — the grand word-problem DECISION ledger
 
-★ **The decided-10 walkers' WORD-PROBLEM DECISION status, machine-checked (WP-LEDGER #2048, core round).**
+★ **The decided-13 walkers' WORD-PROBLEM DECISION status, machine-checked (WP-LEDGER #2048, core round).**
 
 This is the DECISION-lane counterpart to `Polygraph/Omega/SquierFamilyCensus`.  The census grounds which
 walkers have a coherent PRESENTATION (shipped / op-dual / walled); it names the nine "decided" walkers but
@@ -38,20 +38,28 @@ Presentation-walled and decision-decided are ORTHOGONAL; this ledger reads the d
   | walking co-KZ                   | orderDecidedOnly (directed)  | `decideCoKZLETotal` |
   | walking adjunction              | fullTwoCellDecided (matching)| `decideSaturatedTwoCellConv_ofSeed` |
   | walking monoid operad           | treePastingDecided           | `decideOperadTreeConv` |
+  | walking traced (3-axiom frag)   | fragmentDecided              | `decideTracedDiagramConv` |
+  | walking double (unit-free grid) | guardedFragmentDecided       | `decideDoubleTileConv` |
+  | positive braid monoid `B_3^+`   | oneCellDecided (dim-1, inf.) | `decideBraidThreeConv` |
 
-→ **10 of 10** carry a shipped total decider; SIX are full saturated-2-cell deciders, two are dimension-1
-residue deciders (involution Z/2, cyclic-3 Z/3), one a directed-order decider only (co-KZ), one a
-tree-pasting decider (the operad, right-comb NF — the first non-path-carrier rung).  The former lone gap
-(cyclic-3) is closed, and the operad joined via WP-OPERAD brick 2.
+→ **13 of 13** carry a shipped total decider; SIX are full saturated-2-cell deciders, THREE are dimension-1
+deciders (involution Z/2, cyclic-3 Z/3, and `B_3^+` — the first INFINITE dim-1 rung, left-greedy Garside NF),
+one a directed-order decider only (co-KZ), one a tree-pasting decider (the operad, right-comb NF), one a
+FRAGMENT decider (the traced 3-axiom relation as shipped, smart-constructor NF — the full JSV set walled in
+the walker's own `fxTraced_hasFullJsvTraceAxiomsDecided`), and one a GUARDED-fragment decider (the double-cat
+unit-free grid, `(width, height)` invariant under well-formedness hypotheses — the unit-bearing extension
+walled in `fxDouble_hasUnitBearingGridDecided`).  The former lone gap (cyclic-3) closed, the operad joined via
+WP-OPERAD brick 2, and the wave-5 trio (traced / double / braid) joined via WP-TRACED brick 2, WP-DOUBLE
+brick 2, and WP-BRAID-3.
 
 ## NOT the capstone close (honest)
 
 This is the DECISION-ledger CORE: the rung taxonomy, the kernel-checked per-rung status map, the coverage
-counts, and the honest markers.  It does NOT yet (1) GROUND the eight deciders in a held witness bundle — that
-is the immediate follow-on (`WordProblemDecisionWitnessBundle`), the non-rotting upgrade that replaces these
-decl-name citations with actual typechecked terms; (2) ship the cyclic-3 decider; (3) tabulate the
-beyond-decided-9 rungs (equivalence, Frobenius monad, strong monad, bunched bimonoid, Brauer, ...) with their
-walls; (4) attach the cost tags (WP-CEIL-COST #2046).  `fxWpLedger_grandLedgerClosed = false`.
+counts, and the honest markers.  The witness bundle (`WordProblemDecisionWitnessBundle`) HOLDS all thirteen
+deciders as grounded aliases, and the cost tags landed (`WordProblemCostLedger`, WP-CEIL-COST #2046).  Still
+owed for the capstone (#2048): the beyond-decided-13 rungs (equivalence — resolved refute-and-relocate,
+Frobenius monad, strong monad, bunched bimonoid, Brauer, cohesion-quadruple, ...) tabulated with their walls
+in ONE machine-checked enumeration.  `fxWpLedger_grandLedgerClosed = false`.
 
 Raw Lean 4 + Init; a machine-checked census (an enum, a total status map, `rfl` counts, `List.Mem`
 exhaustiveness, `Bool` markers), every declaration axiom-free.  Per-declaration `#assert_no_axioms` gated in
@@ -85,17 +93,28 @@ inductive WordProblemDecidedWalker
   /-- The walking monoid operad `<m:2, e:0 | assoc, unitL, unitR>` — tree-pasting carrier (`OperadTree`, not
   `ModalityPath`), decided by the right-comb normal form (`decideOperadTreeConv`, WP-OPERAD brick 2). -/
   | walkingOperad
+  /-- The walking traced structure, 3-AXIOM FRAGMENT (vanishing-I + yanking + left tightening) — wire-diagram
+  carrier (`TracedDiagram`), decided by the smart-constructor normal form (`decideTracedDiagramConv`,
+  WP-TRACED brick 2); the full JSV axiom set is the walker's own named wall. -/
+  | walkingTraced
+  /-- The walking-square double category, UNIT-FREE well-formed fragment — tile carrier (`DoubleTile`),
+  decided by the `(width, height)` grid invariant under well-formedness hypotheses (`decideDoubleTileConv`,
+  WP-DOUBLE brick 2); the unit-bearing extension is the walker's own named wall. -/
+  | walkingDouble
+  /-- The positive braid monoid `B_3^+ = <s1, s2 | s1.s2.s1 = s2.s1.s2>` — the first INFINITE dim-1 rung,
+  decided by the left-greedy Garside normal form (`decideBraidThreeConv`, WP-BRAID-3). -/
+  | walkingBraidPositive
 
-/-- The complete enumeration of the decided-10 walkers — TEN, listed. -/
+/-- The complete enumeration of the decided-13 walkers — THIRTEEN, listed. -/
 def allWordProblemDecidedWalkers : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
-    .walkingOperad]
+    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive]
 
-/-- ★ **The decided-walker count is exactly TEN** — kernel-checked (`rfl`). -/
-theorem wordProblemDecidedWalkerCountIsTen : allWordProblemDecidedWalkers.length = 10 := rfl
+/-- ★ **The decided-walker count is exactly THIRTEEN** — kernel-checked (`rfl`). -/
+theorem wordProblemDecidedWalkerCountIsThirteen : allWordProblemDecidedWalkers.length = 13 := rfl
 
-/-- ★ **The decided-10 enumeration is EXHAUSTIVE** — every walker appears (full case split, `List.Mem` ctors,
+/-- ★ **The decided-13 enumeration is EXHAUSTIVE** — every walker appears (full case split, `List.Mem` ctors,
 propext-free). -/
 theorem allWordProblemDecidedWalkersExhaustive :
     ∀ walker : WordProblemDecidedWalker, walker ∈ allWordProblemDecidedWalkers
@@ -122,6 +141,19 @@ theorem allWordProblemDecidedWalkersExhaustive :
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.head _)))))))))
+  | .walkingTraced =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | .walkingDouble =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | .walkingBraidPositive =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.head _))))))))))))
 
 /-! ## The word-problem decision status of each walker -/
 
@@ -136,12 +168,21 @@ inductive WordProblemDecisionStatus
   /-- A total TREE-PASTING decider is shipped — the walker's carrier is operadic trees (grafting
   composition), not `ModalityPath` words; the decision is a tree normal form (right-comb). -/
   | treePastingDecided
+  /-- A total decider is shipped for the walker's SHIPPED axiom FRAGMENT — the relation as-is is fully
+  decided, but it is a named strict subset of the classical axiom set (the extension is the walker's own
+  wall flag, e.g. the traced full-JSV rows). -/
+  | fragmentDecided
+  /-- A total decider is shipped on a WELL-FORMEDNESS-GUARDED fragment — the decider carries wf hypotheses
+  (e.g. the double-cat unit-free grid: `decideDoubleTileConv` takes `IsUnitFreeGrid` witnesses); the
+  unguarded extension is the walker's own wall flag. -/
+  | guardedFragmentDecided
   /-- No word-problem decider is shipped — a coherent presentation exists but no decision witness. -/
   | decisionNotShipped
 
-/-- The decision-status map: six full-2-cell deciders, two 1-cell residue deciders (involution Z/2,
-cyclic-3 Z/3), one order-only (co-KZ), one tree-pasting (operad).  KZ is `fullTwoCellDecided` (its 2-cell
-equality decides via `decideKZEq`) and additionally ships a directed-order decider `decideKZLETotal`. -/
+/-- The decision-status map: six full-2-cell deciders, THREE 1-cell deciders (involution Z/2, cyclic-3 Z/3,
+the infinite `B_3^+` by Garside NF), one order-only (co-KZ), one tree-pasting (operad), one fragment (traced
+3-axiom), one guarded-fragment (double unit-free grid).  KZ is `fullTwoCellDecided` (its 2-cell equality
+decides via `decideKZEq`) and additionally ships a directed-order decider `decideKZLETotal`. -/
 def wordProblemDecisionStatus : WordProblemDecidedWalker → WordProblemDecisionStatus
   | .walkingInvolution => .oneCellDecided
   | .walkingMonad => .fullTwoCellDecided
@@ -153,10 +194,13 @@ def wordProblemDecisionStatus : WordProblemDecidedWalker → WordProblemDecision
   | .walkingCoKZ => .orderDecidedOnly
   | .walkingAdjunction => .fullTwoCellDecided
   | .walkingOperad => .treePastingDecided
+  | .walkingTraced => .fragmentDecided
+  | .walkingDouble => .guardedFragmentDecided
+  | .walkingBraidPositive => .oneCellDecided
 
-/-- Whether a walker has a SHIPPED word-problem decider (any strength) — true at all ten (cyclic-3's former
-gap closed; the operad joined via its right-comb decision).  Full enumeration (no wildcard arm) so the match
-stays propext-free. -/
+/-- Whether a walker has a SHIPPED word-problem decider (any strength) — true at all thirteen (cyclic-3's
+former gap closed; the operad, traced fragment, unit-free double grid, and `B_3^+` Garside all joined).  Full
+enumeration (no wildcard arm) so the match stays propext-free. -/
 def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
   | .walkingInvolution => true
   | .walkingMonad => true
@@ -168,18 +212,22 @@ def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
   | .walkingCoKZ => true
   | .walkingAdjunction => true
   | .walkingOperad => true
+  | .walkingTraced => true
+  | .walkingDouble => true
+  | .walkingBraidPositive => true
 
-/-- All TEN decided walkers carry a SHIPPED word-problem decider. -/
+/-- All THIRTEEN decided walkers carry a SHIPPED word-problem decider. -/
 def allWordProblemDecidedWalkersWithShippedDecider : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
-    .walkingOperad]
+    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive]
 
-/-- ★ **The shipped-decider count is exactly TEN** — kernel-checked (`rfl`).  Cyclic-3's former gap closed by
-`decideCyclicThreeOneCellConv` (decided-8 → decided-9); the operad's right-comb decision
-`decideOperadTreeConv` joined (decided-9 → decided-10). -/
-theorem wordProblemShippedDeciderCountIsTen :
-    allWordProblemDecidedWalkersWithShippedDecider.length = 10 := rfl
+/-- ★ **The shipped-decider count is exactly THIRTEEN** — kernel-checked (`rfl`).  Cyclic-3's former gap
+closed by `decideCyclicThreeOneCellConv` (decided-8 → 9); the operad's right-comb decision joined (9 → 10);
+the wave-5 trio joined — traced 3-axiom fragment (`decideTracedDiagramConv`), unit-free double grid
+(`decideDoubleTileConv`), `B_3^+` Garside (`decideBraidThreeConv`) — decided-10 → decided-13. -/
+theorem wordProblemShippedDeciderCountIsThirteen :
+    allWordProblemDecidedWalkersWithShippedDecider.length = 13 := rfl
 
 /-- The six walkers with a FULL saturated-2-cell decider, enumerated. -/
 def allWordProblemFullTwoCellDecidedWalkers : List WordProblemDecidedWalker :=
@@ -190,8 +238,8 @@ def allWordProblemFullTwoCellDecidedWalkers : List WordProblemDecidedWalker :=
 theorem wordProblemFullTwoCellDeciderCountIsSix :
     allWordProblemFullTwoCellDecidedWalkers.length = 6 := rfl
 
-/-- ★ **ALL TEN decided walkers carry a shipped decider** — `hasShippedWordProblemDecider` is true at every
-walker (full case split, `rfl` per arm). -/
+/-- ★ **ALL THIRTEEN decided walkers carry a shipped decider** — `hasShippedWordProblemDecider` is true at
+every walker (full case split, `rfl` per arm). -/
 theorem allWordProblemDecidedWalkersHaveShippedDecider :
     ∀ walker : WordProblemDecidedWalker, hasShippedWordProblemDecider walker = true
   | .walkingInvolution => rfl
@@ -204,15 +252,44 @@ theorem allWordProblemDecidedWalkersHaveShippedDecider :
   | .walkingCoKZ => rfl
   | .walkingAdjunction => rfl
   | .walkingOperad => rfl
+  | .walkingTraced => rfl
+  | .walkingDouble => rfl
+  | .walkingBraidPositive => rfl
 
 /-! ## The census markers -/
 
-/-- ★ **TEN OF TEN decided rungs carry a shipped decider (recorded).**  `= true` records that the DECISION
-axis covers ALL ten walkers (`wordProblemShippedDeciderCountIsTen`), six of them full saturated-2-cell
-deciders (`wordProblemFullTwoCellDeciderCountIsSix`), after cyclic-3's ℤ/3 decider landed (decided-8 → 9)
-and the operad's right-comb decision joined (decided-9 → 10,
+/-- ★ **THIRTEEN OF THIRTEEN decided rungs carry a shipped decider (recorded).**  `= true` records that the
+DECISION axis covers ALL thirteen walkers (`wordProblemShippedDeciderCountIsThirteen`), six of them full
+saturated-2-cell deciders (`wordProblemFullTwoCellDeciderCountIsSix`), after cyclic-3's ℤ/3 decider landed
+(decided-8 → 9), the operad's right-comb decision joined (9 → 10), and the wave-5 trio — traced fragment,
+unit-free double grid, `B_3^+` Garside — joined (10 → 13,
 `allWordProblemDecidedWalkersHaveShippedDecider`). -/
-def fxWpLedger_decisionCoverageTenOfTen : Bool := true
+def fxWpLedger_decisionCoverageThirteenOfThirteen : Bool := true
+
+/-- ★ **The traced 3-axiom fragment joined the decided census (recorded).**  `= true` records that
+`decideTracedDiagramConv` (WP-TRACED brick 2, `WalkingTraced/TracedDiagramDecision.lean`) totally decides
+the SHIPPED traced fragment (vanishing-I + yanking + left tightening + congruence) via the smart-constructor
+normal form `tracedNF` — the fragment is an orthogonal strictly-size-reducing system, so the seed's
+"needs the Int-construction" prose was stale FOR IT.  The full JSV axiom set (sliding etc.) stays walled in
+the walker's own `fxTraced_hasFullJsvTraceAxiomsDecided = false`; this rung enters as `fragmentDecided`,
+honestly scoped. -/
+def fxWpLedger_tracedFragmentDecisionShipped : Bool := true
+
+/-- ★ **The unit-free double-cat grid joined the decided census (recorded).**  `= true` records that
+`decideDoubleTileConv` (WP-DOUBLE brick 2, `WalkingDouble/DoubleTileGridNF.lean`) decides the walking-square
+tile word problem on the UNIT-FREE well-formed fragment via the `(tileWidth, tileHeight)` invariant — the
+decider carries `IsUnitFreeGrid` hypotheses (hence `guardedFragmentDecided`), completeness rides the
+interchange-star grid merge `hMerge`.  The unit-bearing extension stays walled in the walker's own
+`fxDouble_hasUnitBearingGridDecided = false`. -/
+def fxWpLedger_unitFreeDoubleGridDecisionShipped : Bool := true
+
+/-- ★ **The positive braid monoid `B_3^+` joined the decided census (recorded).**  `= true` records that
+`decideBraidThreeConv` (WP-BRAID-3, `WalkingBraid/BraidThreeGarsideDecision.lean`) totally decides the FULL
+`B_3^+` word problem on arbitrary words via the left-greedy Garside normal form (`braidNormalizeWord` over
+`BraidGarsideCanon`; completeness through the greedy-agreement crux `braidPrependAtom_braidAgreement`) — the
+FIRST decided rung whose carrier monoid is INFINITE (`s1^k` all distinct), entering as `oneCellDecided`
+alongside the finite `Z/2` / `Z/3` residue rungs.  The braid GROUP (negative Δ-powers) is a future rung. -/
+def fxWpLedger_braidPositiveGarsideDecisionShipped : Bool := true
 
 /-- ★ **The walking monoid operad joined the decided census (recorded).**  `= true` records that
 `decideOperadTreeConv` (WP-OPERAD brick 2, `WalkingOperad/OperadTreeDecision.lean`) totally decides the
@@ -244,13 +321,14 @@ op-transport combinator `decideSaturatedConvUnderOp` (no new normalizer).  The a
 (directed order) use their own interfaces — no single decider reaches all nine. -/
 def fxWpLedger_uniformInterfaceCoversFourOfSix : Bool := true
 
-/-- ★ **THE GRAND WORD-PROBLEM LEDGER IS NOT CLOSED (honest).**  `= false` records that the decided-10 core
-is complete (all ten deciders shipped + held in `WordProblemDecisionWitnessBundle`) and the WP-CEIL-COST
+/-- ★ **THE GRAND WORD-PROBLEM LEDGER IS NOT CLOSED (honest).**  `= false` records that the decided-13 core
+is complete (all thirteen deciders shipped + held in `WordProblemDecisionWitnessBundle`) and the WP-CEIL-COST
 #2046 cost tags landed (`WordProblemCostLedger`, all `.cited`, `fxWpCost_allTagsProved = false`), but the
-capstone (#2048) still owes the beyond-decided-10 rungs (equivalence — resolved refute-and-relocate, Frobenius
-monad, strong monad, bunched bimonoid, Brauer, braid, traced, double, cohesion-quadruple ...) tabulated with
-their walls in ONE machine-checked enumeration.  Set `true` only when every rung is decided-or-walled with a
-held witness and a cost tag. -/
+capstone (#2048) still owes the beyond-decided-13 rungs (equivalence — resolved refute-and-relocate, Frobenius
+monad, strong monad, bunched bimonoid, Brauer, cohesion-quadruple, distributive law, 2-group, endomorphism ...)
+tabulated with their walls in ONE machine-checked enumeration, plus the fragment-extension walls the census
+scopes honestly (traced full-JSV, double unit-bearing, braid group).  Set `true` only when every rung is
+decided-or-walled with a held witness and a cost tag. -/
 def fxWpLedger_grandLedgerClosed : Bool := false
 
 end FX1Poly.Polygraph.Table

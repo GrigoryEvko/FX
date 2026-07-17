@@ -4,7 +4,7 @@ import FX1Poly.Polygraph.TwoCategory.Table.WordProblemDecisionLedger
 /-! # FX1PolyAudit/.../WordProblemDecisionLedger — zero-axiom gate
 
 Per-declaration zero-axiom gate for the grand word-problem DECISION ledger core (WP-LEDGER #2048): the
-decided-10 walker enumeration, the per-rung decision-status map, the coverage counts, the full-coverage
+decided-13 walker enumeration, the per-rung decision-status map, the coverage counts, the full-coverage
 theorem (every rung has a shipped decider), and the honest markers.
 
 Structural recursion over the walker enum with `List.Mem` constructors + `noConfusion` clashes; must be free of
@@ -13,16 +13,19 @@ Structural recursion over the walker enum with `List.Mem` constructors + `noConf
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemDecidedWalkers
-#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemDecidedWalkerCountIsTen
+#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemDecidedWalkerCountIsThirteen
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemDecidedWalkersExhaustive
 #assert_no_axioms FX1Poly.Polygraph.Table.wordProblemDecisionStatus
 #assert_no_axioms FX1Poly.Polygraph.Table.hasShippedWordProblemDecider
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemDecidedWalkersWithShippedDecider
-#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemShippedDeciderCountIsTen
+#assert_no_axioms FX1Poly.Polygraph.Table.wordProblemShippedDeciderCountIsThirteen
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemFullTwoCellDecidedWalkers
 #assert_no_axioms FX1Poly.Polygraph.Table.wordProblemFullTwoCellDeciderCountIsSix
 #assert_no_axioms FX1Poly.Polygraph.Table.allWordProblemDecidedWalkersHaveShippedDecider
-#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_decisionCoverageTenOfTen
+#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_decisionCoverageThirteenOfThirteen
+#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_tracedFragmentDecisionShipped
+#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_unitFreeDoubleGridDecisionShipped
+#assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_braidPositiveGarsideDecisionShipped
 #assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_operadDecisionShipped
 #assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_cyclicThreeDecisionShipped
 #assert_no_axioms FX1Poly.Polygraph.Table.fxWpLedger_adjunctionPresentationWalledDecisionDecided
