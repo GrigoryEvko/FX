@@ -100,6 +100,24 @@ the Euclidean terminating case (`polyTrim [] = []`), definitional. -/
 theorem polyGcdRightZero (fuel : Nat) (primary : List Int) :
     polyGcd (fuel + 1) primary [] = primary := rfl
 
+/-! ## Shared linear factors (the eigenvalue-sharing bridge) -/
+
+/-- **A shared linear factor is seen by the GCD.**  If `x − root` divides both inputs (each is a multiple
+of `polyLinearFactor root`), then the GCD vanishes at `root` — the polynomial shadow of "two matrices
+share the eigenvalue `root`", composing the factor theorem (`polyLinearFactorRootAnnihilatesMultiple`) with
+`polyGcdVanishesAtCommonRoot`. -/
+theorem polyGcdSeesSharedLinearFactor (root : Int) (fuel : Nat)
+    (cofactorPrimary cofactorSecondary : List Int) :
+    polyEval root
+        (polyGcd fuel (polyMul (polyLinearFactor root) cofactorPrimary)
+          (polyMul (polyLinearFactor root) cofactorSecondary))
+      = 0 :=
+  polyGcdVanishesAtCommonRoot root fuel
+    (polyMul (polyLinearFactor root) cofactorPrimary)
+    (polyMul (polyLinearFactor root) cofactorSecondary)
+    (polyLinearFactorRootAnnihilatesMultiple root cofactorPrimary)
+    (polyLinearFactorRootAnnihilatesMultiple root cofactorSecondary)
+
 /-! ## Groundings -/
 
 /-- The Euclidean GCD of `x² − 1 = (x−1)(x+1)` and `x² + 2x + 1 = (x+1)²` shares the root `−1` (their common
@@ -117,6 +135,13 @@ theorem polyGcdExtractsCommonFactorDegree :
 (polyPseudoRem 5 [1, 2, 1] [-1, 0, 1]) = 0`. -/
 theorem polyPseudoRemSharesCommonRootAtMinusOne :
     polyEval (-1) (polyPseudoRem 5 [1, 2, 1] [-1, 0, 1]) = 0 := by decide
+
+/-- The shared eigenvalue `2` (shared factor `x − 2`) of `(x−2)(x+1)` and `(x−2)(x+3)` is seen by the GCD:
+`polyEval 2 (polyGcd 5 (polyMul (polyLinearFactor 2) [1, 1]) (polyMul (polyLinearFactor 2) [3, 1])) = 0`. -/
+theorem polyGcdSeesSharedEigenvalueAtTwo :
+    polyEval 2
+        (polyGcd 5 (polyMul (polyLinearFactor 2) [1, 1]) (polyMul (polyLinearFactor 2) [3, 1]))
+      = 0 := by decide
 
 /-- Marker: the ℤ[x] Euclidean GCD ships over pseudo-division (no rationals), with the proof that it
 captures every common root of its inputs (`polyGcdVanishesAtCommonRoot`).  The converse root-containment
