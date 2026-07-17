@@ -71,6 +71,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialNilCascade
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialConstDivisorNil
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialGcdFuelAdequate
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialRingWitness
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialCharMinors
 import FX1PolyAudit.ComputerAlgebra.Number.IntNoZeroDivisors
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
