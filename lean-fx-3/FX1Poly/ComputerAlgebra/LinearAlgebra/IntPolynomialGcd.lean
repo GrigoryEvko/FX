@@ -93,6 +93,13 @@ theorem polyGcdVanishesAtCommonRoot (point : Int) :
             (polyPseudoRemVanishesAtCommonRoot point fuel secondary primary
               primaryVanishes secondaryVanishes)
 
+/-! ## The right-zero identity -/
+
+/-- **`gcd(f, 0) = f`.**  When the second argument is the zero polynomial, the GCD is the first argument —
+the Euclidean terminating case (`polyTrim [] = []`), definitional. -/
+theorem polyGcdRightZero (fuel : Nat) (primary : List Int) :
+    polyGcd (fuel + 1) primary [] = primary := rfl
+
 /-! ## Groundings -/
 
 /-- The Euclidean GCD of `x² − 1 = (x−1)(x+1)` and `x² + 2x + 1 = (x+1)²` shares the root `−1` (their common
@@ -100,6 +107,11 @@ factor `x + 1`): `polyEval (-1) (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 0`, an instan
 `polyGcdVanishesAtCommonRoot` since both vanish at `−1`. -/
 theorem polyGcdSharesCommonRootAtMinusOne :
     polyEval (-1) (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 0 := by decide
+
+/-- The GCD extracts the degree-1 common factor `x + 1` (up to content scaling): the computed GCD has
+degree `1`, matching `deg(x + 1)` — `polyDegree (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 1`. -/
+theorem polyGcdExtractsCommonFactorDegree :
+    polyDegree (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 1 := by decide
 
 /-- The pseudo-remainder step vanishes at the common root `−1` too: `polyEval (-1)
 (polyPseudoRem 5 [1, 2, 1] [-1, 0, 1]) = 0`. -/

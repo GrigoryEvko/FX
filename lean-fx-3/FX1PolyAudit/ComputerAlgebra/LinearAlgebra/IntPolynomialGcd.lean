@@ -17,8 +17,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyGcd
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyPseudoRemVanishesAtCommonRoot
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyGcdVanishesAtCommonRoot
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyGcdRightZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyGcdSharesCommonRootAtMinusOne
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyPseudoRemSharesCommonRootAtMinusOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyGcdExtractsCommonFactorDegree
 #assert_no_axioms FX1Poly.ComputerAlgebra.fxIntPoly_hasEuclideanGcdCommonRoots
 
 end FX1PolyAudit
