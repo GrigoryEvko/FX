@@ -140,6 +140,20 @@ theorem endomorphismScalarVersusJordanShareRank :
     endomorphismRank2 (setoidMatrixOfRows [[1, 0], [0, 1]])
       = endomorphismRank2 (setoidMatrixOfRows [[1, 1], [0, 1]]) := by decide
 
+/-! ## The canonical rank-blind 4×4 nilpotent separation (cross-check vs the rank sequence) -/
+
+/-- **The `4×4` pair that even `rank(M)` cannot see.**  `J₂⊕J₂` (`[[0,1,0,0],[0,0,0,0],[0,0,0,1],
+[0,0,0,0]]`, minimal polynomial `x²`) vs `J₃⊕J₁` (`[[0,1,0,0],[0,0,1,0],[0,0,0,0],[0,0,0,0]]`, minimal
+polynomial `x³`): both are nilpotent with characteristic polynomial `x⁴` AND first rank `rank(M) = 2`, so
+the char-poly separator and any single-power rank are blind.  The annihilator `p = x²` (`[0,0,1]`) sends
+`J₂⊕J₂` to `M² = 0` but `J₃⊕J₁` to `M² ≠ 0` (entry `(0,2) = 1`), separating them by the minimal
+polynomial.  This is exactly the pair `EndomorphismPowerZeroSeparator` handles by `rank(M²) = 0` vs `> 0`;
+the annihilator route decides it INDEPENDENTLY, through a different engine. -/
+theorem endomorphismJordanNilpotentDissimilarByMinPoly :
+    EndomorphismDissimilarByAnnihilator 4 [0, 0, 1]
+      (setoidMatrixOfRows [[0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
+      (setoidMatrixOfRows [[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]]) := by decide
+
 /-! ## The census feed extension -/
 
 /-- The annihilator separator's grounding: the char poly annihilates its matrix at `n = 2` and `n = 3`
