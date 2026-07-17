@@ -184,6 +184,15 @@ theorem commMonoidTreeConv_iff_leafCount (source target : CommMonoidTree) :
     CommMonoidTreeConv source target ↔ leafCount source = leafCount target :=
   ⟨commMonoidTreeConv_sound, commMonoidTreeConv_complete⟩
 
+/-- ★ **The decider** — a shipped `Decidable` for the walking commutative monoid's convertibility, built
+from the leaf-count decision: match on `Nat.decEq` of the leaf counts, discharging `isTrue` by completeness
+and `isFalse` by soundness.  A genuine decider (not `decidable_of_iff`), propext-free. -/
+def decideCommMonoidTreeConv (source target : CommMonoidTree) :
+    Decidable (CommMonoidTreeConv source target) :=
+  match Nat.decEq (leafCount source) (leafCount target) with
+  | isTrue countEq => isTrue (commMonoidTreeConv_complete countEq)
+  | isFalse countNe => isFalse (fun conv => countNe (commMonoidTreeConv_sound conv))
+
 /-! ## Groundings -/
 
 /-- ★ **Associativity holds** at the three input slots. -/

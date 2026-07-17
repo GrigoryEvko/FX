@@ -194,6 +194,23 @@ theorem semilatticeTreeConv_iff_slotPresence (source target : SemilatticeTree) :
     SemilatticeTreeConv source target ↔ slotPresenceOf source = slotPresenceOf target :=
   ⟨semilatticeTreeConv_sound, semilatticeTreeConv_complete⟩
 
+/-- Decidable equality of the two-valued slot-presence. -/
+def slotPresenceDecEq (a b : SlotPresence) : Decidable (a = b) :=
+  match a, b with
+  | .absent, .absent => isTrue rfl
+  | .present, .present => isTrue rfl
+  | .absent, .present => isFalse (fun presenceEq => SlotPresence.noConfusion presenceEq)
+  | .present, .absent => isFalse (fun presenceEq => SlotPresence.noConfusion presenceEq)
+
+/-- ★ **The decider** — a shipped `Decidable` for the walking bounded semilattice's convertibility, built
+from the slot-presence decision: match on `slotPresenceDecEq`, discharging `isTrue` by completeness and
+`isFalse` by soundness.  A genuine decider, propext-free. -/
+def decideSemilatticeTreeConv (source target : SemilatticeTree) :
+    Decidable (SemilatticeTreeConv source target) :=
+  match slotPresenceDecEq (slotPresenceOf source) (slotPresenceOf target) with
+  | isTrue presenceEq => isTrue (semilatticeTreeConv_complete presenceEq)
+  | isFalse presenceNe => isFalse (fun conv => presenceNe (semilatticeTreeConv_sound conv))
+
 /-! ## Groundings -/
 
 /-- ★ **Idempotency does real work** — `m(leaf, leaf) ≈ leaf`, the move UNAVAILABLE in the commutative

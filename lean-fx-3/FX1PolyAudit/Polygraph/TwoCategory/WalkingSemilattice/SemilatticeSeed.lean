@@ -30,6 +30,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.semilatticeTreeReducesToNormal
 #assert_no_axioms FX1Poly.Polygraph.semilatticeTreeConv_complete
 #assert_no_axioms FX1Poly.Polygraph.semilatticeTreeConv_iff_slotPresence
+#assert_no_axioms FX1Poly.Polygraph.slotPresenceDecEq
+#assert_no_axioms FX1Poly.Polygraph.decideSemilatticeTreeConv
 #assert_no_axioms FX1Poly.Polygraph.semilatticeIdemHolds
 #assert_no_axioms FX1Poly.Polygraph.semilatticeDecidesEqualPresence
 #assert_no_axioms FX1Poly.Polygraph.semilatticeRejectsUnequalPresence
