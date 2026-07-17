@@ -160,6 +160,23 @@ theorem polyDivModMonicReconstructs (point : Int) :
                   (polyMul (polyMonomial (polyLeadingCoeff dividend)
                     (polyDegree dividend - polyDegree divisor)) divisor))).1).symm
 
+/-! ## Exact divisibility (division with zero remainder) -/
+
+/-- **Zero remainder means exact division.**  When the remainder trims to the zero polynomial,
+`eval_point(dividend) = eval_point(quotient) · eval_point(divisor)` at every point — the monic divisor
+divides the dividend.  This is the atomic operation the GCD and factorization steps rest on: it drops the
+remainder term of the reconstruction identity once that term is proved to vanish everywhere. -/
+theorem polyDividesMonicEvalMultiple (point : Int) (fuel : Nat) (divisor dividend : List Int)
+    (remainderTrimsToZero : polyTrim (polyDivModMonic fuel divisor dividend).2 = []) :
+    polyEval point dividend
+      = polyEval point (polyDivModMonic fuel divisor dividend).1 * polyEval point divisor :=
+  (polyDivModMonicReconstructs point fuel divisor dividend).trans
+    ((congrArg
+        (polyEval point (polyDivModMonic fuel divisor dividend).1 * polyEval point divisor + ·)
+        ((polyTrimPreservesEval point (polyDivModMonic fuel divisor dividend).2).symm.trans
+          (congrArg (polyEval point) remainderTrimsToZero))).trans
+      (intAddZero (polyEval point (polyDivModMonic fuel divisor dividend).1 * polyEval point divisor)))
+
 /-! ## Groundings -/
 
 /-- `x² − 1` divided by the monic `x + 1` is `x − 1` remainder `0`:
@@ -180,9 +197,21 @@ theorem polyDivModMonicReconstructsGroundingAtFour :
       = polyEval 4 (polyDivModMonic 3 [1, 1] [-1, 0, 1]).1 * polyEval 4 [1, 1]
         + polyEval 4 (polyDivModMonic 3 [1, 1] [-1, 0, 1]).2 := by decide
 
+/-- `x + 1` divides `x² − 1` exactly: the remainder trims to the zero polynomial. -/
+theorem polyLinearFactorDividesDifferenceOfSquares :
+    polyTrim (polyDivModMonic 3 [1, 1] [-1, 0, 1]).2 = [] := by decide
+
+/-- The exact-division consequence exhibited at `x = 7` (`48 = 6 · 8`): with `x + 1` dividing `x² − 1`,
+`eval(x²−1) = eval(quotient) · eval(x+1)`, a `decide` cross-check of `polyDividesMonicEvalMultiple`. -/
+theorem polyDividesMonicEvalMultipleGroundingAtSeven :
+    polyEval 7 [-1, 0, 1] = polyEval 7 (polyDivModMonic 3 [1, 1] [-1, 0, 1]).1 * polyEval 7 [1, 1] := by
+  decide
+
 /-- Marker: the ℤ[x] monic division-with-remainder algorithm ships with the reconstruction identity
-`dividend = quotient · divisor + remainder` proved at the evaluation level, fuel-independently.  The
-degree bound `deg remainder < deg divisor` (the Euclidean-GCD termination lever) is the next brick. -/
+`dividend = quotient · divisor + remainder` proved at the evaluation level fuel-independently, and its
+exact-division corollary (`polyDividesMonicEvalMultiple`, the atomic GCD/factorization operation).  The
+degree bound `deg remainder < deg divisor` (the Euclidean-GCD termination lever, needing either the ℚ
+tower or ℤ subresultants) is the next brick. -/
 def fxIntPoly_hasMonicDivisionReconstruction : Bool := true
 
 end FX1Poly.ComputerAlgebra
