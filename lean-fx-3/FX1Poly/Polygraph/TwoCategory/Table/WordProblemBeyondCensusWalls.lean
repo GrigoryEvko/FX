@@ -16,6 +16,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingString.StringMatchingCompleteness
 import FX1Poly.Polygraph.TwoCategory.WalkingString.StringIdentificationCapstone
 import FX1Poly.Polygraph.TwoCategory.WalkingTraced.TracedDiagramDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingDouble.DoubleTileGridNF
+import FX1Poly.Polygraph.TwoCategory.WalkingBraid.BraidThreeSignedGroupDecision
 import FX1Poly.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 
 /-! # WP-LEDGER — the BEYOND-CENSUS walls tabulation (the owed capstone piece)
@@ -47,14 +48,14 @@ flag flip that forgets this table breaks the build, by design (the same-commit p
   | walking endomorphism (linear)  | instance census only | Smith-over-`Q[x]` invariant-factor separator |
   | traced full-JSV extension      | extension walled | sliding/dinaturality need Int(C) |
   | double unit-bearing extension  | extension walled | degenerate-strip bookkeeping |
-  | braid group extension          | extension walled | signed Delta-power canon (grind in flight) |
+  | braid group `B_3`              | DECIDED beyond census | (none — signed Garside NF, WP-BRAID-4) |
 
 ## What this file does NOT claim
 
 It does NOT flip `fxWpLedger_grandLedgerClosed`: that marker's verbatim demand additionally requires "a
 held witness and a cost tag" per rung, and the beyond-census DECIDED rungs (adjoint triple, Brauer indexed
-scope) hold no `WordProblemCostLedger` tags yet.  The tabulation closes the enumeration clause only; the
-grand marker's docstring records the exact remaining bill.
+scope, braid group) hold no `WordProblemCostLedger` tags yet.  The tabulation closes the enumeration clause
+only; the grand marker's docstring records the exact remaining bill.
 
 Raw Lean 4 + Init; every declaration axiom-free; per-declaration `#assert_no_axioms` gated in the audit
 twin. -/
@@ -105,16 +106,19 @@ inductive WordProblemBeyondCensusRung
   /-- The double-category walker's extension wall: the unit-free grid is decided (census rung
   `walkingDouble`); the unit-bearing extension needs the degenerate-strip bookkeeping. -/
   | doubleUnitBearingExtension
-  /-- The braid walker's extension wall: `B_3^+` is decided (census rung `walkingBraidPositive`); the full
-  braid GROUP needs the signed Delta-power canon (inverse generators + four cancellations). -/
-  | braidGroupExtension
+  /-- The full braid GROUP `B_3 = <s1, s2 | s1 s2 s1 = s2 s1 s2>`: DECIDED beyond the census by the signed
+  Garside normal form `Delta^m . F` (`m : Z` represented Int-free; inverse generators + four cancellations;
+  total `decideBraidThreeGroupConv`, agreeing with the census's positive decider on embedded positive words;
+  WP-BRAID-4).  The group counterpart of the census rung `walkingBraidPositive` (`B_3^+`); the first
+  walking-zoo infinite non-abelian GROUP rung whose inverses are not positive powers. -/
+  | braidGroupDecided
 
 /-- The complete enumeration of the beyond-census rungs — THIRTEEN, listed. -/
 def allWordProblemBeyondCensusRungs : List WordProblemBeyondCensusRung :=
   [.walkingEquivalence, .walkingFrobeniusMonad, .walkingStrongMonad, .walkingBunchedBimonoid,
     .walkingDistributiveLaw, .brauerCategory, .walkingCohesionQuadruple, .adjointTripleString,
     .freeCrossedModuleTwoGroup, .walkingEndomorphismLinear, .tracedFullJsvExtension,
-    .doubleUnitBearingExtension, .braidGroupExtension]
+    .doubleUnitBearingExtension, .braidGroupDecided]
 
 /-- ★ **The beyond-census rung count is exactly THIRTEEN** — kernel-checked (`rfl`). -/
 theorem wordProblemBeyondCensusRungCountIsThirteen :
@@ -155,7 +159,7 @@ theorem allWordProblemBeyondCensusRungsExhaustive :
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
-  | .braidGroupExtension =>
+  | .braidGroupDecided =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
@@ -200,7 +204,7 @@ def beyondCensusDisposition : WordProblemBeyondCensusRung → BeyondCensusDispos
   | .walkingEndomorphismLinear => .instancesDecidedNoDriver
   | .tracedFullJsvExtension => .extensionWalled
   | .doubleUnitBearingExtension => .extensionWalled
-  | .braidGroupExtension => .extensionWalled
+  | .braidGroupDecided => .decidedBeyondCensus
 
 /-- Whether the rung's disposition is fully recorded in live committed declarations (a decision, a wall
 flag, or a structural census at the owning walker) — true at ALL thirteen; the per-rung pin theorems below
@@ -218,7 +222,7 @@ def hasRecordedDisposition : WordProblemBeyondCensusRung → Bool
   | .walkingEndomorphismLinear => true
   | .tracedFullJsvExtension => true
   | .doubleUnitBearingExtension => true
-  | .braidGroupExtension => true
+  | .braidGroupDecided => true
 
 /-- ★ **Every beyond-census rung has a recorded disposition** — full case split, `rfl` per arm. -/
 theorem allBeyondCensusRungsHaveRecordedDisposition :
@@ -235,7 +239,7 @@ theorem allBeyondCensusRungsHaveRecordedDisposition :
   | .walkingEndomorphismLinear => rfl
   | .tracedFullJsvExtension => rfl
   | .doubleUnitBearingExtension => rfl
-  | .braidGroupExtension => rfl
+  | .braidGroupDecided => rfl
 
 /-! ## The per-rung kernel pins (live flag values, `rfl` conjunctions)
 
@@ -339,13 +343,19 @@ theorem fxWpBeyond_walkingEndomorphismLinearRungPinned :
   ⟨rfl, rfl⟩
 
 /-- ★ The fragment-extension walls the census scopes honestly: the traced walker's full JSV axiom set and
-the double walker's unit-bearing grid both stay walled at their owners.  (The braid GROUP extension has no
-committed flag yet — its grind is in flight; enrollment of any resulting flag is a same-commit update to
-this table.) -/
+the double walker's unit-bearing grid both stay walled at their owners.  (The braid GROUP extension GRADUATED
+— it is now DECIDED beyond the census, pinned by `fxWpBeyond_braidGroupRungPinned`, no longer a wall.) -/
 theorem fxWpBeyond_extensionWallsPinned :
     fxTraced_hasFullJsvTraceAxiomsDecided = false
       ∧ fxDouble_hasUnitBearingGridDecided = false :=
   ⟨rfl, rfl⟩
+
+/-- ★ Braid group: the full `B_3` group word problem is DECIDED beyond the census — the signed Garside
+normal form gives a total decider (`decideBraidThreeGroupConv`), zero-axiom, agreeing with the shipped
+positive decider on embedded positive words.  The group counterpart of the census rung `walkingBraidPositive`
+(`B_3^+`); the first walking-zoo infinite non-abelian GROUP rung. -/
+theorem fxWpBeyond_braidGroupRungPinned :
+    fxBraid_hasBraidGroupDecided = true := rfl
 
 /-! ## The summary markers -/
 

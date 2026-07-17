@@ -33,6 +33,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Table.fxWpBeyond_freeCrossedModuleTwoGroupRungPinned
 #assert_no_axioms FX1Poly.Polygraph.Table.fxWpBeyond_walkingEndomorphismLinearRungPinned
 #assert_no_axioms FX1Poly.Polygraph.Table.fxWpBeyond_extensionWallsPinned
+#assert_no_axioms FX1Poly.Polygraph.Table.fxWpBeyond_braidGroupRungPinned
 
 -- The summary markers.
 #assert_no_axioms FX1Poly.Polygraph.Table.fxWpBeyond_beyondCensusWallsTabulated

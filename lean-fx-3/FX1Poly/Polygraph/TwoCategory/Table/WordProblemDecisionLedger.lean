@@ -333,8 +333,9 @@ tabulated with their walls in ONE machine-checked enumeration — `WordProblemBe
 `fxWpBeyond_beyondCensusWallsTabulated = true`).
 
 THE REMAINING FLIP BILL (verbatim: "a held witness and a cost tag" per rung): (1) witness aliases + cost
-tags for the beyond-census DECIDED rungs (the adjoint-triple string decision; the Brauer indexed-scope
-normal form) in the witness bundle + cost ledger; (2) a per-wall adjudication of what "held witness" means
+tags for the THREE beyond-census DECIDED rungs (the adjoint-triple string decision; the Brauer indexed-scope
+normal form; the braid GROUP `decideBraidThreeGroupConv`, WP-BRAID-4) in the witness bundle + cost ledger;
+(2) a per-wall adjudication of what "held witness" means
 for a walled rung (the pin theorems hold the wall FLAGS — whether that satisfies the demand is an
 orchestrator decision to record, not to assume); (3) `fxWpCost_allTagsProved` remains false (COST-7).
 Set `true` only when every rung is decided-or-walled with a held witness and a cost tag; any flip must
