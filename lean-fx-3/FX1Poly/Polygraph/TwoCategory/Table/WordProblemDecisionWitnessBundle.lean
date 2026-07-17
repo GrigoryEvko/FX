@@ -11,6 +11,8 @@ import FX1Poly.Polygraph.TwoCategory.WalkingOperad.OperadTreeDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingTraced.TracedDiagramDecision
 import FX1Poly.Polygraph.TwoCategory.WalkingDouble.DoubleTileGridNF
 import FX1Poly.Polygraph.TwoCategory.WalkingBraid.BraidThreeGarsideDecision
+import FX1Poly.Polygraph.TwoCategory.WalkingCommutativeMonoid.CommutativeMonoidSeed
+import FX1Poly.Polygraph.TwoCategory.WalkingSemilattice.SemilatticeSeed
 
 /-! # Polygraph/TwoCategory/Table/WordProblemDecisionWitnessBundle — the grounded decider bundle
 
@@ -19,10 +21,10 @@ import FX1Poly.Polygraph.TwoCategory.WalkingBraid.BraidThreeGarsideDecision
 The core ledger cites each rung's decision witness by decl NAME in a docstring.  This file HOLDS them: each
 `wpLedger*Decider` is a definitional alias of the real decider, so if any decider is renamed or removed the
 alias breaks the build — the citation cannot silently rot (the countermeasure from [[feedback_three_strata_drift]]:
-prefer a machine-checked term over a prose claim).  All fourteen aliases elaborate in this ONE module, so the
-module itself is the coexistence witness: the decided-13's deciders exist and typecheck together.
+prefer a machine-checked term over a prose claim).  All sixteen aliases elaborate in this ONE module, so the
+module itself is the coexistence witness: the decided-15's deciders exist and typecheck together.
 
-The thirteen shipped deciders:
+The fifteen shipped deciders:
 
   * involution 1-cell — `decideInvolutionOneCellConv`
   * cyclic-3 1-cell — `decideCyclicThreeOneCellConv` (the ℤ/3 residue decider)
@@ -38,8 +40,10 @@ The thirteen shipped deciders:
   * traced 3-axiom fragment — `decideTracedDiagramConv` (smart-constructor normal form)
   * double-cat unit-free grid — `decideDoubleTileConv` (the `(width, height)` invariant, wf-guarded)
   * `B_3^+` full word problem — `decideBraidThreeConv` (left-greedy Garside normal form)
+  * walking commutative monoid — `decideCommMonoidTreeConv` (leaf-count normal form, the free `Nat`-monoid)
+  * walking bounded semilattice — `decideSemilatticeTreeConv` (slot-presence normal form over `SlotPresence`)
 
-(Fourteen aliases, thirteen rungs: KZ contributes both its equality and its order decider.)
+(Sixteen aliases, fifteen rungs: KZ contributes both its equality and its order decider.)
 
 The audit twin runs `#assert_no_axioms` on every alias, which — transitively — MACHINE-CHECKS the ledger's
 claim that the decision witnesses themselves are zero-axiom, not merely that this wrapper is.
@@ -97,16 +101,25 @@ def wpLedgerDoubleDecider := @FX1Poly.Polygraph.decideDoubleTileConv
 form, WP-BRAID-3; the first INFINITE decided carrier). -/
 def wpLedgerBraidDecider := @FX1Poly.Polygraph.decideBraidThreeConv
 
+/-- Walking commutative monoid (= the free commutative monoid on one generator, `Nat` under `+`) — the total
+single-generator decider (leaf-count normal form). -/
+def wpLedgerCommutativeMonoidDecider := @FX1Poly.Polygraph.decideCommMonoidTreeConv
+
+/-- Walking bounded semilattice (= the two-element lattice `{bottom, generator}`) — the total single-generator
+decider (slot-presence normal form over the purpose-built `SlotPresence` join algebra). -/
+def wpLedgerBoundedSemilatticeDecider := @FX1Poly.Polygraph.decideSemilatticeTreeConv
+
 /-! ## The grounding marker -/
 
-/-- ★ **THE THIRTEEN DECIDERS ARE HELD AND GROUNDED (recorded).**  `= true` records that all THIRTEEN shipped
-word-problem deciders are held as the fourteen definitional aliases above (KZ contributes two; cyclic-3's ℤ/3
+/-- ★ **THE FIFTEEN DECIDERS ARE HELD AND GROUNDED (recorded).**  `= true` records that all FIFTEEN shipped
+word-problem deciders are held as the sixteen definitional aliases above (KZ contributes two; cyclic-3's ℤ/3
 decider closed the former decided-8 gap; the operad joined as decided-10; the wave-5 trio — traced fragment,
-unit-free double grid, `B_3^+` Garside — joined as decided-13), all typechecking in ONE module — machine
-proof that the decided-13's deciders exist and coexist in one import context, upgrading the core ledger's
-decl-name citations to machine-checked terms.  The DECISION-axis counterpart to the census's grounded
-presentation conjunction `squierFamilyFourWalkersCoherentlyPresented`.  The audit twin's `#assert_no_axioms`
-on the aliases transitively certifies the deciders themselves are zero-axiom. -/
-def fxWpLedger_thirteenDecidersHeldAndGrounded : Bool := true
+unit-free double grid, `B_3^+` Garside — joined as decided-13; the two single-generator seeds — the free
+commutative monoid on `Nat` and the two-element bounded semilattice — joined as decided-15), all typechecking
+in ONE module — machine proof that the decided-15's deciders exist and coexist in one import context, upgrading
+the core ledger's decl-name citations to machine-checked terms.  The DECISION-axis counterpart to the census's
+grounded presentation conjunction `squierFamilyFourWalkersCoherentlyPresented`.  The audit twin's
+`#assert_no_axioms` on the aliases transitively certifies the deciders themselves are zero-axiom. -/
+def fxWpLedger_fifteenDecidersHeldAndGrounded : Bool := true
 
 end FX1Poly.Polygraph.Table

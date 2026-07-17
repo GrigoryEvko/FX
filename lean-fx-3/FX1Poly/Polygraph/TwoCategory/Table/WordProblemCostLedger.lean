@@ -115,8 +115,10 @@ def wordProblemCostClass : WordProblemDecidedWalker → WordProblemCostClass
   | .walkingTraced => .quadratic
   | .walkingDouble => .linear
   | .walkingBraidPositive => .quadratic
+  | .walkingCommutativeMonoid => .linear
+  | .walkingBoundedSemilattice => .linear
 
-/-- The **cost evidence of each rung's tag** — `.cited` at ALL THIRTEEN (honest): every class above is read
+/-- The **cost evidence of each rung's tag** — `.cited` at ALL FIFTEEN (honest): every class above is read
 off the decider's structure; NO in-repo cost theorem or measurement exists for any decider today.  Full
 enumeration (no wildcard arm). -/
 def wordProblemCostEvidence : WordProblemDecidedWalker → WordProblemCostEvidence
@@ -133,6 +135,8 @@ def wordProblemCostEvidence : WordProblemDecidedWalker → WordProblemCostEviden
   | .walkingTraced => .cited
   | .walkingDouble => .cited
   | .walkingBraidPositive => .cited
+  | .walkingCommutativeMonoid => .cited
+  | .walkingBoundedSemilattice => .cited
 
 /-! ## The kernel-checked rows (keyed off the LIVE decision-ledger enumeration) -/
 
@@ -142,14 +146,15 @@ class column.  Kernel-checked (`rfl`). -/
 theorem allWordProblemDecidedWalkersCostClassRow :
     allWordProblemDecidedWalkers.map wordProblemCostClass =
       [.linear, .polynomial, .linear, .constantTime, .polynomial, .linear,
-        .polynomial, .polynomial, .polynomial, .linear, .quadratic, .linear, .quadratic] := rfl
+        .polynomial, .polynomial, .polynomial, .linear, .quadratic, .linear, .quadratic,
+        .linear, .linear] := rfl
 
-/-- ★ **The evidence row over the LIVE decided-13 enumeration** — every entry `.cited`.
+/-- ★ **The evidence row over the LIVE decided-15 enumeration** — every entry `.cited`.
 Kernel-checked (`rfl`). -/
 theorem allWordProblemDecidedWalkersCostEvidenceRow :
     allWordProblemDecidedWalkers.map wordProblemCostEvidence =
       [.cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited, .cited,
-        .cited, .cited, .cited] := rfl
+        .cited, .cited, .cited, .cited, .cited] := rfl
 
 /-- ★ **Every decided walker's cost tag is CITED** — full case split, `rfl` per arm.  The machine-checked
 "nothing is proved" statement: the dual of `wordProblemCostProvedWalkerCountIsZero`. -/
@@ -168,18 +173,21 @@ theorem allWordProblemDecidedWalkersCostEvidenceCited :
   | .walkingTraced => rfl
   | .walkingDouble => rfl
   | .walkingBraidPositive => rfl
+  | .walkingCommutativeMonoid => rfl
+  | .walkingBoundedSemilattice => rfl
 
 /-! ## The per-evidence enumerations and counts -/
 
-/-- The walkers whose cost tag is `.cited` — ALL THIRTEEN (ledger order). -/
+/-- The walkers whose cost tag is `.cited` — ALL FIFTEEN (ledger order). -/
 def allWordProblemCostCitedWalkers : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
-    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive]
+    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive,
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
 
-/-- ★ **The cited-tag count is exactly THIRTEEN** — kernel-checked (`rfl`). -/
-theorem wordProblemCostCitedWalkerCountIsThirteen :
-    allWordProblemCostCitedWalkers.length = 13 := rfl
+/-- ★ **The cited-tag count is exactly FIFTEEN** — kernel-checked (`rfl`). -/
+theorem wordProblemCostCitedWalkerCountIsFifteen :
+    allWordProblemCostCitedWalkers.length = 15 := rfl
 
 /-- The walkers whose cost tag is `.proved` — NONE (the honest zero: no in-repo cost theorem exists about any
 decider; the `PolyBound` cost language is itself `.openProblem` per `CostArcLedger`). -/
@@ -204,14 +212,16 @@ def allWordProblemConstantTimeCostWalkers : List WordProblemDecidedWalker :=
 theorem wordProblemConstantTimeCostWalkerCountIsOne :
     allWordProblemConstantTimeCostWalkers.length = 1 := rfl
 
-/-- The `.linear` walkers — FIVE (the two length-fold residue deciders, the op-transported constant base,
-the operad's arity-fold tree decider, and the double-cat `(width, height)` grid decider). -/
+/-- The `.linear` walkers — SEVEN (the two length-fold residue deciders, the op-transported constant base,
+the operad's arity-fold tree decider, the double-cat `(width, height)` grid decider, and the two
+single-generator algebra-operad folds — commutative-monoid leaf count and semilattice slot-presence). -/
 def allWordProblemLinearCostWalkers : List WordProblemDecidedWalker :=
-  [.walkingInvolution, .walkingCyclicThree, .idempotentComonad, .walkingOperad, .walkingDouble]
+  [.walkingInvolution, .walkingCyclicThree, .idempotentComonad, .walkingOperad, .walkingDouble,
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
 
-/-- ★ **The linear count is exactly FIVE** — kernel-checked (`rfl`). -/
-theorem wordProblemLinearCostWalkerCountIsFive :
-    allWordProblemLinearCostWalkers.length = 5 := rfl
+/-- ★ **The linear count is exactly SEVEN** — kernel-checked (`rfl`). -/
+theorem wordProblemLinearCostWalkerCountIsSeven :
+    allWordProblemLinearCostWalkers.length = 7 := rfl
 
 /-- The `.quadratic` walkers — TWO (the traced smart-constructor fold with per-trace-node spine walks; the
 `B_3^+` Garside normalizer with per-letter Δ-power carries).  The class is no longer reserved. -/
@@ -245,12 +255,13 @@ theorem wordProblemExponentialBoundedCostWalkerCountIsZero :
 union list the per-class enumerations concatenate to. -/
 def allWordProblemCostClassifiedWalkers : List WordProblemDecidedWalker :=
   [.idempotentSemigroup, .walkingInvolution, .walkingCyclicThree, .idempotentComonad,
-    .walkingOperad, .walkingDouble, .walkingTraced, .walkingBraidPositive,
+    .walkingOperad, .walkingDouble, .walkingCommutativeMonoid, .walkingBoundedSemilattice,
+    .walkingTraced, .walkingBraidPositive,
     .walkingMonad, .walkingComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction]
 
-/-- ★ **The class-grouped count is exactly THIRTEEN** — kernel-checked (`rfl`). -/
-theorem wordProblemCostClassifiedWalkerCountIsThirteen :
-    allWordProblemCostClassifiedWalkers.length = 13 := rfl
+/-- ★ **The class-grouped count is exactly FIFTEEN** — kernel-checked (`rfl`). -/
+theorem wordProblemCostClassifiedWalkerCountIsFifteen :
+    allWordProblemCostClassifiedWalkers.length = 15 := rfl
 
 /-- ★ **The class-grouped list IS the union of the per-class enumerations** — the five per-class lists
 (one empty) concatenate to it, kernel-checked (`rfl`). -/
@@ -264,7 +275,7 @@ theorem allWordProblemCostClassifiedWalkersIsClassUnion :
 grouped list yields the constant/linear/quadratic/polynomial blocks in order, kernel-checked (`rfl`). -/
 theorem allWordProblemCostClassifiedWalkersClassRow :
     allWordProblemCostClassifiedWalkers.map wordProblemCostClass =
-      [.constantTime, .linear, .linear, .linear, .linear, .linear,
+      [.constantTime, .linear, .linear, .linear, .linear, .linear, .linear, .linear,
         .quadratic, .quadratic,
         .polynomial, .polynomial, .polynomial, .polynomial, .polynomial] := rfl
 
@@ -272,41 +283,47 @@ theorem allWordProblemCostClassifiedWalkersClassRow :
 split, `List.Mem` ctors, propext-free). -/
 theorem allWordProblemCostClassifiedWalkersExhaustive :
     ∀ walker : WordProblemDecidedWalker, walker ∈ allWordProblemCostClassifiedWalkers
-  | .walkingInvolution => List.Mem.tail _ (List.Mem.head _)
-  | .walkingMonad =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
-  | .walkingCyclicThree => List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
   | .idempotentSemigroup => List.Mem.head _
-  | .walkingComonad =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-          (List.Mem.tail _ (List.Mem.head _)))))))))
+  | .walkingInvolution => List.Mem.tail _ (List.Mem.head _)
+  | .walkingCyclicThree => List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
   | .idempotentComonad => List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
-  | .walkingKZ =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
-  | .walkingCoKZ =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
-  | .walkingAdjunction =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-            (List.Mem.head _))))))))))))
   | .walkingOperad =>
       List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
   | .walkingDouble =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.head _)))))
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.head _)))))
+  | .walkingCommutativeMonoid =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))))
+  | .walkingBoundedSemilattice =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
   | .walkingTraced =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
   | .walkingBraidPositive =>
-      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | .walkingMonad =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.head _))))))))))
+  | .walkingComonad =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | .walkingKZ =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  | .walkingCoKZ =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  | .walkingAdjunction =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
 
 /-! ## The cost markers -/
 

@@ -104,15 +104,24 @@ inductive WordProblemDecidedWalker
   /-- The positive braid monoid `B_3^+ = <s1, s2 | s1.s2.s1 = s2.s1.s2>` — the first INFINITE dim-1 rung,
   decided by the left-greedy Garside normal form (`decideBraidThreeConv`, WP-BRAID-3). -/
   | walkingBraidPositive
+  /-- The walking commutative monoid `<m:2, e:0 | assoc, unitL, unitR, comm>` — tree carrier
+  (`CommMonoidTree`); ONE generating slot ⟹ word problem = `(ℕ, +, 0)` (leaf count), decided completely by
+  `decideCommMonoidTreeConv` (`WalkingCommutativeMonoid/CommutativeMonoidSeed.lean`). -/
+  | walkingCommutativeMonoid
+  /-- The walking bounded semilattice `<m:2, e:0 | assoc, unitL, unitR, comm, idem>` — tree carrier
+  (`SemilatticeTree`); ONE generating slot ⟹ idempotency collapses the count to the two-element lattice
+  `{⊥, ⊤}`, decided completely by `decideSemilatticeTreeConv` (`WalkingSemilattice/SemilatticeSeed.lean`). -/
+  | walkingBoundedSemilattice
 
-/-- The complete enumeration of the decided-13 walkers — THIRTEEN, listed. -/
+/-- The complete enumeration of the decided-15 walkers — FIFTEEN, listed. -/
 def allWordProblemDecidedWalkers : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
-    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive]
+    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive,
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
 
-/-- ★ **The decided-walker count is exactly THIRTEEN** — kernel-checked (`rfl`). -/
-theorem wordProblemDecidedWalkerCountIsThirteen : allWordProblemDecidedWalkers.length = 13 := rfl
+/-- ★ **The decided-walker count is exactly FIFTEEN** — kernel-checked (`rfl`). -/
+theorem wordProblemDecidedWalkerCountIsFifteen : allWordProblemDecidedWalkers.length = 15 := rfl
 
 /-- ★ **The decided-13 enumeration is EXHAUSTIVE** — every walker appears (full case split, `List.Mem` ctors,
 propext-free). -/
@@ -154,6 +163,16 @@ theorem allWordProblemDecidedWalkersExhaustive :
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
           (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
             (List.Mem.head _))))))))))))
+  | .walkingCommutativeMonoid =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  | .walkingBoundedSemilattice =>
+      List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
 
 /-! ## The word-problem decision status of each walker -/
 
@@ -197,8 +216,10 @@ def wordProblemDecisionStatus : WordProblemDecidedWalker → WordProblemDecision
   | .walkingTraced => .fragmentDecided
   | .walkingDouble => .guardedFragmentDecided
   | .walkingBraidPositive => .oneCellDecided
+  | .walkingCommutativeMonoid => .treePastingDecided
+  | .walkingBoundedSemilattice => .treePastingDecided
 
-/-- Whether a walker has a SHIPPED word-problem decider (any strength) — true at all thirteen (cyclic-3's
+/-- Whether a walker has a SHIPPED word-problem decider (any strength) — true at all fifteen (cyclic-3's
 former gap closed; the operad, traced fragment, unit-free double grid, and `B_3^+` Garside all joined).  Full
 enumeration (no wildcard arm) so the match stays propext-free. -/
 def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
@@ -215,19 +236,24 @@ def hasShippedWordProblemDecider : WordProblemDecidedWalker → Bool
   | .walkingTraced => true
   | .walkingDouble => true
   | .walkingBraidPositive => true
+  | .walkingCommutativeMonoid => true
+  | .walkingBoundedSemilattice => true
 
-/-- All THIRTEEN decided walkers carry a SHIPPED word-problem decider. -/
+/-- All FIFTEEN decided walkers carry a SHIPPED word-problem decider. -/
 def allWordProblemDecidedWalkersWithShippedDecider : List WordProblemDecidedWalker :=
   [.walkingInvolution, .walkingMonad, .walkingCyclicThree, .idempotentSemigroup,
     .walkingComonad, .idempotentComonad, .walkingKZ, .walkingCoKZ, .walkingAdjunction,
-    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive]
+    .walkingOperad, .walkingTraced, .walkingDouble, .walkingBraidPositive,
+    .walkingCommutativeMonoid, .walkingBoundedSemilattice]
 
-/-- ★ **The shipped-decider count is exactly THIRTEEN** — kernel-checked (`rfl`).  Cyclic-3's former gap
+/-- ★ **The shipped-decider count is exactly FIFTEEN** — kernel-checked (`rfl`).  Cyclic-3's former gap
 closed by `decideCyclicThreeOneCellConv` (decided-8 → 9); the operad's right-comb decision joined (9 → 10);
 the wave-5 trio joined — traced 3-axiom fragment (`decideTracedDiagramConv`), unit-free double grid
-(`decideDoubleTileConv`), `B_3^+` Garside (`decideBraidThreeConv`) — decided-10 → decided-13. -/
-theorem wordProblemShippedDeciderCountIsThirteen :
-    allWordProblemDecidedWalkersWithShippedDecider.length = 13 := rfl
+(`decideDoubleTileConv`), `B_3^+` Garside (`decideBraidThreeConv`) — decided-10 → decided-13; the two
+single-generator algebra-operad rungs joined — commutative monoid (`decideCommMonoidTreeConv`, = ℕ) and
+bounded semilattice (`decideSemilatticeTreeConv`, = `{⊥,⊤}`) — decided-13 → decided-15. -/
+theorem wordProblemShippedDeciderCountIsFifteen :
+    allWordProblemDecidedWalkersWithShippedDecider.length = 15 := rfl
 
 /-- The six walkers with a FULL saturated-2-cell decider, enumerated. -/
 def allWordProblemFullTwoCellDecidedWalkers : List WordProblemDecidedWalker :=
@@ -255,16 +281,19 @@ theorem allWordProblemDecidedWalkersHaveShippedDecider :
   | .walkingTraced => rfl
   | .walkingDouble => rfl
   | .walkingBraidPositive => rfl
+  | .walkingCommutativeMonoid => rfl
+  | .walkingBoundedSemilattice => rfl
 
 /-! ## The census markers -/
 
-/-- ★ **THIRTEEN OF THIRTEEN decided rungs carry a shipped decider (recorded).**  `= true` records that the
-DECISION axis covers ALL thirteen walkers (`wordProblemShippedDeciderCountIsThirteen`), six of them full
+/-- ★ **FIFTEEN OF FIFTEEN decided rungs carry a shipped decider (recorded).**  `= true` records that the
+DECISION axis covers ALL fifteen walkers (`wordProblemShippedDeciderCountIsFifteen`), six of them full
 saturated-2-cell deciders (`wordProblemFullTwoCellDeciderCountIsSix`), after cyclic-3's ℤ/3 decider landed
-(decided-8 → 9), the operad's right-comb decision joined (9 → 10), and the wave-5 trio — traced fragment,
-unit-free double grid, `B_3^+` Garside — joined (10 → 13,
+(decided-8 → 9), the operad's right-comb decision joined (9 → 10), the wave-5 trio — traced fragment,
+unit-free double grid, `B_3^+` Garside — joined (10 → 13), and the two single-generator algebra-operad
+rungs — commutative monoid (= ℕ) and bounded semilattice (= `{⊥,⊤}`) — joined (13 → 15,
 `allWordProblemDecidedWalkersHaveShippedDecider`). -/
-def fxWpLedger_decisionCoverageThirteenOfThirteen : Bool := true
+def fxWpLedger_decisionCoverageFifteenOfFifteen : Bool := true
 
 /-- ★ **The traced 3-axiom fragment joined the decided census (recorded).**  `= true` records that
 `decideTracedDiagramConv` (WP-TRACED brick 2, `WalkingTraced/TracedDiagramDecision.lean`) totally decides
