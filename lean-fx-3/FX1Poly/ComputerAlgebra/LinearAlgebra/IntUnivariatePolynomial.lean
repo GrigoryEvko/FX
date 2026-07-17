@@ -189,6 +189,33 @@ theorem polyLinearFactorRootAnnihilatesMultiple (root : Int) (cofactor : List In
     ((congrArg (· * polyEval root cofactor) (polyLinearFactorVanishesAtRoot root)).trans
       (intZeroMul (polyEval root cofactor)))
 
+/-! ## Composition (the substitution homomorphism) -/
+
+/-- The constant polynomial `[c]` evaluates to `c` at every point (`polyEvalOne`'s generalization). -/
+theorem polyEvalConstant (point constant : Int) : polyEval point [constant] = constant :=
+  (congrArg (constant + ·) (intMulZero point)).trans (intAddZero constant)
+
+/-- Polynomial composition `outer ∘ inner`: substitute `inner` for the variable of `outer`.  By Horner,
+`(c₀ + x·outer') ∘ inner = c₀ + inner · (outer' ∘ inner)`. -/
+def polyCompose : List Int → List Int → List Int
+  | [], _ => []
+  | outerHead :: outerTail, inner =>
+      polyAdd [outerHead] (polyMul inner (polyCompose outerTail inner))
+
+/-- **Composition is substitution under evaluation.**  `eval_point(outer ∘ inner) = eval_{eval_point(inner)}(outer)`
+— the substitution ring homomorphism, by induction on `outer` riding `polyEvalAdd`/`polyEvalMul`. -/
+theorem polyEvalCompose (point : Int) :
+    ∀ outer inner : List Int,
+      polyEval point (polyCompose outer inner) = polyEval (polyEval point inner) outer
+  | [], _ => rfl
+  | outerHead :: outerTail, inner =>
+      (polyEvalAdd point [outerHead] (polyMul inner (polyCompose outerTail inner))).trans
+        ((congrArg (· + polyEval point (polyMul inner (polyCompose outerTail inner)))
+            (polyEvalConstant point outerHead)).trans
+          (congrArg (outerHead + ·)
+            ((polyEvalMul point inner (polyCompose outerTail inner)).trans
+              (congrArg (polyEval point inner * ·) (polyEvalCompose point outerTail inner)))))
+
 /-! ## Groundings -/
 
 /-- `(x − 1)(x + 1) = x² − 1`: `polyMul [-1, 1] [1, 1] = [-1, 0, 1]`. -/
@@ -226,12 +253,22 @@ factor's root — the factor-theorem bridge exhibited on a concrete degree-2 pro
 theorem polyLinearFactorProductVanishesAtFive :
     polyEval 5 (polyMul (polyLinearFactor 2) (polyLinearFactor 5)) = 0 := by decide
 
+/-- Composing the constant `5` with any polynomial evaluates to `5` everywhere (trailing-zero-robust
+form of "a constant composes to itself"): `polyEval 9 (polyCompose [5] [7, 2]) = 5`. -/
+theorem polyComposeConstantExample : polyEval 9 (polyCompose [5] [7, 2]) = 5 := by decide
+
+/-- The substitution homomorphism exhibited: `(x² + 1) ∘ (x + 3)` evaluated at `2` equals `x² + 1`
+evaluated at `(2 + 3) = 5`, i.e. `26 = 26`, a `decide` cross-check of `polyEvalCompose`. -/
+theorem polyEvalComposeGroundingAtTwo :
+    polyEval 2 (polyCompose [1, 0, 1] [3, 1]) = polyEval (polyEval 2 [3, 1]) [1, 0, 1] := by decide
+
 /-- Marker: the ℤ[x] substrate ships with evaluation proved to be a ring homomorphism — additive,
 homogeneous, multiplicative, AND subtractive (`polyEvalNeg`/`polyEvalSub`), the full ring's worth of
 structure, plus the linear factor `x − root` and the factor-theorem bridge (factor ⟹ root,
-`polyLinearFactorRootAnnihilatesMultiple`).  The foundation for the invariant-factor GCD; the
-Euclidean/pseudo-division layer (whose remainder is exactly the `polySub` difference shipped here) and
-its Bézout certificates are the next brick. -/
+`polyLinearFactorRootAnnihilatesMultiple`), and composition as the substitution homomorphism
+(`polyEvalCompose`).  The foundation for the invariant-factor GCD; the Euclidean/pseudo-division layer
+(whose remainder is exactly the `polySub` difference shipped here) and its Bézout certificates are the
+next brick. -/
 def fxIntPoly_hasEvaluationRingHomomorphism : Bool := true
 
 end FX1Poly.ComputerAlgebra
