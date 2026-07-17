@@ -307,9 +307,16 @@ general-driver target was REFUTED upstream and stays closed).
   * `minorRankGeneral` — CLOSED (r2, `EndomorphismMinorSelector`).  The function-valued `selectSubmatrix`
     plus `intMinorDet` lift rank certification to any selected `k×k` sub-block (the shipped determinant
     only deletes row 0), so `endomorphismRank3` computes rank at `n = 3` from the nine `2×2` minors.
-  * `invariantFactorSeparator` — the ONE genuine open wall.  The COMPLETE similarity separator is the
-    invariant factors of `x·I − M` via Smith-over-`ℚ[x]`; the honest obstruction is irrational
-    eigenvalues (factoring the char poly over ℚ). → r3+. -/
+  * `invariantFactorSeparator` — TOP FACTOR DELIVERED (r3, `EndomorphismMinimalPolynomial`), full list
+    still open.  The COMPLETE similarity separator is the invariant factors of `x·I − M` (the ℚ[x]-Smith
+    diagonal).  The r1 note's "irrational eigenvalues, factoring the char poly over ℚ" framing was a
+    MISDIAGNOSIS: invariant factors are the Euclidean GCD of the char-matrix minors and NEVER factor the
+    characteristic polynomial into irreducibles — no eigenvalue appears.  The TOP invariant factor is the
+    minimal polynomial, and `EndomorphismMinimalPolynomial` ships it as a decidable, eigenvalue-free
+    annihilator separator (`p(M) = 0 ∧ p(N) ≠ 0 ⟹ M ≁ N`), strictly stronger than the char-poly and rank
+    separators (it splits `diag(1,1)` vs `[[1,1],[0,1]]`, blind to both).  The remaining gap is the FULL
+    invariant-factor LIST via univariate ℚ[x] Euclidean GCD — a real polynomial-arithmetic arc, but the
+    obstruction is GCD, not eigenvalue factoring. → r3+. -/
 
 /-- The classification axis of the walking-endomorphism linear model: representations up to iso ⇔
 matrices up to similarity ⇔ rational canonical form. -/
