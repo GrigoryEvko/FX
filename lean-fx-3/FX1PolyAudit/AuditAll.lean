@@ -1851,6 +1851,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusUnitLaws
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealTriangleInequality
 import FX1PolyAudit.ComputerAlgebra.Number.RealOrderMonotoneMultiply
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusComponentBounds
+import FX1PolyAudit.ComputerAlgebra.Number.ComplexPolynomialGrowthBound
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexPower
 import FX1PolyAudit.Core.Eliminators.Core.BoolElimDataTaitMember
 import FX1PolyAudit.Core.Eliminators.Core.ClosedEliminatorDataTaitMembers
