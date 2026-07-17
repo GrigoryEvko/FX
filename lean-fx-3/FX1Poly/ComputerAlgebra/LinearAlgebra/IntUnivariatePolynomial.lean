@@ -2,6 +2,7 @@ import FX1Poly.ComputerAlgebra.Number.IntArithmeticCore
 import FX1Poly.ComputerAlgebra.Number.IntDistributivity
 import FX1Poly.ComputerAlgebra.Number.IntAddAssociativity
 import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
+import FX1Poly.ComputerAlgebra.Number.IntNegation
 
 /-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntUnivariatePolynomial — the ℤ[x] substrate
 (the first brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
@@ -123,6 +124,37 @@ theorem polyEvalMul (point : Int) :
               (congrArg (leftHead * polyEval point rightPoly + ·)
                 (intMulAssoc point (polyEval point leftTail) (polyEval point rightPoly)))).symm))
 
+/-! ## Negation and subtraction (the remainder `f − q·g` needs a difference) -/
+
+/-- Coefficientwise negation: `-c₀ + -c₁·x + ⋯`. -/
+def polyNeg : List Int → List Int
+  | [] => []
+  | coeff :: restCoeffs => -coeff :: polyNeg restCoeffs
+
+/-- Polynomial difference: `leftPoly + (-rightPoly)`, the shape a Euclidean/pseudo-division remainder
+takes. -/
+def polySub (leftPoly rightPoly : List Int) : List Int :=
+  polyAdd leftPoly (polyNeg rightPoly)
+
+/-- **Evaluation negates.**  `eval(-p) = -eval(p)`, by structural induction — `intMulNeg` pushes the
+negation past the Horner multiplier, `intNegAdd` past the sum. -/
+theorem polyEvalNeg (point : Int) :
+    ∀ coeffs : List Int, polyEval point (polyNeg coeffs) = -(polyEval point coeffs)
+  | [] => intNegZero.symm
+  | coeff :: restCoeffs =>
+      (congrArg (fun tailValue => -coeff + point * tailValue) (polyEvalNeg point restCoeffs)).trans
+        ((congrArg (-coeff + ·) (intMulNeg point (polyEval point restCoeffs))).trans
+          (intNegAdd coeff (point * polyEval point restCoeffs)).symm)
+
+/-- **Evaluation is subtractive.**  `eval(p − q) = eval(p) − eval(q)` — additivity composed with
+negation. -/
+theorem polyEvalSub (point : Int) (leftPoly rightPoly : List Int) :
+    polyEval point (polySub leftPoly rightPoly)
+      = polyEval point leftPoly - polyEval point rightPoly :=
+  (polyEvalAdd point leftPoly (polyNeg rightPoly)).trans
+    ((congrArg (polyEval point leftPoly + ·) (polyEvalNeg point rightPoly)).trans
+      (intSubEqAddNeg (polyEval point leftPoly) (polyEval point rightPoly)).symm)
+
 /-! ## Groundings -/
 
 /-- `(x − 1)(x + 1) = x² − 1`: `polyMul [-1, 1] [1, 1] = [-1, 0, 1]`. -/
@@ -138,9 +170,20 @@ theorem polyEvalDifferenceOfSquaresAtThree :
 theorem polyEvalMulGroundingAtFive :
     polyEval 5 (polyMul [-1, 1] [1, 1]) = polyEval 5 [-1, 1] * polyEval 5 [1, 1] := by decide
 
-/-- Marker: the ℤ[x] substrate ships with evaluation proved to be a ring homomorphism (additive,
-homogeneous, multiplicative), the foundation for the invariant-factor GCD.  The Euclidean division / GCD
-layer (and its Bézout certificates) is the next brick. -/
+/-- `(3 + 2x) − (1 + 2x) = 2`: `polySub [3, 2] [1, 2] = [2, 0]` (the `x` coefficients cancel). -/
+theorem polySubCancelsLinearTermExample :
+    polySub [3, 2] [1, 2] = [2, 0] := by decide
+
+/-- The subtractive homomorphism exhibited: `eval((3+2x) − (1+2x)) = eval(3+2x) − eval(1+2x)` at `x = 5`
+(`2 = 13 − 11`), a `decide` cross-check of `polyEvalSub`. -/
+theorem polyEvalSubGroundingAtFive :
+    polyEval 5 (polySub [3, 2] [1, 2]) = polyEval 5 [3, 2] - polyEval 5 [1, 2] := by decide
+
+/-- Marker: the ℤ[x] substrate ships with evaluation proved to be a ring homomorphism — additive,
+homogeneous, multiplicative, AND subtractive (`polyEvalNeg`/`polyEvalSub`), the full ring's worth of
+structure.  The foundation for the invariant-factor GCD; the Euclidean/pseudo-division layer (whose
+remainder is exactly the `polySub` difference shipped here) and its Bézout certificates are the next
+brick. -/
 def fxIntPoly_hasEvaluationRingHomomorphism : Bool := true
 
 end FX1Poly.ComputerAlgebra

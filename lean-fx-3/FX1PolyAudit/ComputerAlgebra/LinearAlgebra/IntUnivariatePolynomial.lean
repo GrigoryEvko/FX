@@ -22,9 +22,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalAdd
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalScale
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalMul
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.polySub
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalSub
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyMulDifferenceOfSquaresExample
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalDifferenceOfSquaresAtThree
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalMulGroundingAtFive
+#assert_no_axioms FX1Poly.ComputerAlgebra.polySubCancelsLinearTermExample
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalSubGroundingAtFive
 #assert_no_axioms FX1Poly.ComputerAlgebra.fxIntPoly_hasEvaluationRingHomomorphism
 
 end FX1PolyAudit
