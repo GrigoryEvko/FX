@@ -257,6 +257,24 @@ theorem polyEvalMulAssoc (point : Int) (leftPoly midPoly rightPoly : List Int) :
         (((congrArg (polyEval point leftPoly * ·) (polyEvalMul point midPoly rightPoly)).symm).trans
           (polyEvalMul point leftPoly (polyMul midPoly rightPoly)).symm)))
 
+/-! ## Monomials (`coeff · xⁿ`, the shape a division quotient's terms take) -/
+
+/-- The monomial `coeff · x^degree`: `degree` leading zeros followed by the coefficient. -/
+def polyMonomial (coeff : Int) : Nat → List Int
+  | 0 => [coeff]
+  | degree + 1 => 0 :: polyMonomial coeff degree
+
+/-- **Monomial evaluation.**  `eval_point(coeff · x^degree) = coeff · point^degree`, by induction on the
+degree — each leading zero contributes a `point·(…)` Horner factor, matching `intPower`. -/
+theorem polyEvalMonomial (point coeff : Int) :
+    ∀ degree : Nat, polyEval point (polyMonomial coeff degree) = coeff * intPower point degree
+  | 0 => (polyEvalConstant point coeff).trans (intMulOne coeff).symm
+  | degree + 1 =>
+      (intZeroAdd (point * polyEval point (polyMonomial coeff degree))).trans
+        ((congrArg (point * ·) (polyEvalMonomial point coeff degree)).trans
+          ((intMulComm point (coeff * intPower point degree)).trans
+            (intMulAssoc coeff (intPower point degree) point)))
+
 /-! ## Groundings -/
 
 /-- `(x − 1)(x + 1) = x² − 1`: `polyMul [-1, 1] [1, 1] = [-1, 0, 1]`. -/
@@ -311,14 +329,23 @@ theorem polyEvalPowGroundingCube :
 theorem polyEvalPowGroundingBinomial :
     polyEval 2 (polyPow [1, 1] 2) = intPower (polyEval 2 [1, 1]) 2 := by decide
 
+/-- `3x²` is `[0, 0, 3]`: `polyMonomial 3 2 = [0, 0, 3]`. -/
+theorem polyMonomialExample : polyMonomial 3 2 = [0, 0, 3] := by decide
+
+/-- `3x²` at `2` is `3 · 4 = 12`: `polyEval 2 (polyMonomial 3 2) = 3 * intPower 2 2`, a `decide` cross-check
+of `polyEvalMonomial`. -/
+theorem polyEvalMonomialGrounding :
+    polyEval 2 (polyMonomial 3 2) = 3 * intPower 2 2 := by decide
+
 /-- Marker: the ℤ[x] substrate ships with evaluation proved to be a ring homomorphism — additive,
 homogeneous, multiplicative, AND subtractive (`polyEvalNeg`/`polyEvalSub`), the full ring's worth of
 structure, plus the linear factor `x − root` and the factor-theorem bridge (factor ⟹ root,
 `polyLinearFactorRootAnnihilatesMultiple`), composition as the substitution homomorphism
-(`polyEvalCompose`), and powers (`polyEvalPow`, the `xᵏ ↦ Mᵏ` shape) with the semantic ring laws
-(`polyEvalMulComm`/`polyEvalMulAssoc`).  The foundation for the invariant-factor GCD; the
-Euclidean/pseudo-division layer (whose remainder is exactly the `polySub` difference shipped here) and its
-Bézout certificates are the next brick. -/
+(`polyEvalCompose`), powers (`polyEvalPow`, the `xᵏ ↦ Mᵏ` shape) with the semantic ring laws
+(`polyEvalMulComm`/`polyEvalMulAssoc`), and monomials (`polyEvalMonomial`, the `coeff · xⁿ` division
+quotient term).  The foundation for the invariant-factor GCD; the Euclidean/pseudo-division layer (whose
+remainder is exactly the `polySub` difference shipped here) and its Bézout certificates are the next
+brick. -/
 def fxIntPoly_hasEvaluationRingHomomorphism : Bool := true
 
 end FX1Poly.ComputerAlgebra
