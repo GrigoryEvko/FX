@@ -23,8 +23,11 @@ adequate — it rests only on the ring homomorphism (`polyEvalSub`/`polyEvalMul`
 correctness from termination.  The step arithmetic (`D − qt·G = sq·G + Rem ⟹ D = (qt+sq)·G + Rem`) is the
 corpus `Int` distributivity/cancellation.
 
-The degree bound `deg remainder < deg divisor` (needed for uniqueness and for the Euclidean GCD's
-termination) is the honest remaining step, tracked as the next brick.
+For an ARBITRARY (non-monic) divisor, `polyPseudoDivModReconstructs` gives the subresultant identity
+`leadDivisor^scalePower · dividend = quotient · divisor + remainder` — pseudo-division scales the running
+dividend by the divisor's leading coefficient each step to stay integral, so the Euclidean GCD runs over ℤ
+with no rationals.  The degree bound `deg remainder < deg divisor` (needed for uniqueness and for the
+Euclidean GCD's termination) is the honest remaining step, tracked as the next brick.
 
 ## Zero-axiom design
 
@@ -177,6 +180,209 @@ theorem polyDividesMonicEvalMultiple (point : Int) (fuel : Nat) (divisor dividen
           (congrArg (polyEval point) remainderTrimsToZero))).trans
       (intAddZero (polyEval point (polyDivModMonic fuel divisor dividend).1 * polyEval point divisor)))
 
+/-! ## Pseudo-division (arbitrary divisor, ℤ-native)
+
+Monic division needs a leading coefficient of `1`.  For an ARBITRARY divisor with leading coefficient `b`,
+pseudo-division stays integral by scaling the running dividend by `b` before each leading-term subtraction.
+The reconstruction becomes `b^k · dividend = quotient · divisor + remainder`, where `k` is the number of
+reduction steps — the subresultant identity that drives the ℤ-native Euclidean GCD (no rationals needed).
+Like the monic case, the identity holds fuel-independently, resting only on the ring homomorphism. -/
+
+/-- `P · (X − Y) = P · X − P · Y` over ℤ — left distributivity over a difference. -/
+theorem intMulSubDistrib (scale leftValue rightValue : Int) :
+    scale * (leftValue - rightValue) = scale * leftValue - scale * rightValue :=
+  (congrArg (scale * ·) (intSubEqAddNeg leftValue rightValue)).trans
+    ((intLeftDistrib scale leftValue (-rightValue)).trans
+      ((congrArg (scale * leftValue + ·) (intMulNeg scale rightValue)).trans
+        (intSubEqAddNeg (scale * leftValue) (scale * rightValue)).symm))
+
+/-- **The pseudo-division-step reconstruction, at the ℤ level.**  From
+`P · (b·D − qt·G) = sq·G + Rem` conclude `(P·b)·D = (P·qt + sq)·G + Rem` — distribute the scale, add the
+subtracted product back, and factor by right distributivity. -/
+theorem polyPseudoDivStepArith
+    (scalePower dividendEval quotientTermEval subQuotientEval divisorEval subRemainderEval leadDivisor : Int)
+    (reducedIdentity :
+      scalePower * (leadDivisor * dividendEval - quotientTermEval * divisorEval)
+        = subQuotientEval * divisorEval + subRemainderEval) :
+    (scalePower * leadDivisor) * dividendEval
+      = (scalePower * quotientTermEval + subQuotientEval) * divisorEval + subRemainderEval :=
+  calc (scalePower * leadDivisor) * dividendEval
+      = scalePower * (leadDivisor * dividendEval) :=
+        intMulAssoc scalePower leadDivisor dividendEval
+    _ = (scalePower * (leadDivisor * dividendEval)
+            - scalePower * (quotientTermEval * divisorEval))
+          + scalePower * (quotientTermEval * divisorEval) :=
+        (intAddSubCancel (scalePower * (leadDivisor * dividendEval))
+          (scalePower * (quotientTermEval * divisorEval))).symm
+    _ = (subQuotientEval * divisorEval + subRemainderEval)
+          + scalePower * (quotientTermEval * divisorEval) :=
+        congrArg (· + scalePower * (quotientTermEval * divisorEval))
+          ((intMulSubDistrib scalePower (leadDivisor * dividendEval)
+            (quotientTermEval * divisorEval)).symm.trans reducedIdentity)
+    _ = scalePower * (quotientTermEval * divisorEval)
+          + (subQuotientEval * divisorEval + subRemainderEval) :=
+        intAddComm (subQuotientEval * divisorEval + subRemainderEval)
+          (scalePower * (quotientTermEval * divisorEval))
+    _ = (scalePower * (quotientTermEval * divisorEval) + subQuotientEval * divisorEval)
+          + subRemainderEval :=
+        (intAddAssoc (scalePower * (quotientTermEval * divisorEval))
+          (subQuotientEval * divisorEval) subRemainderEval).symm
+    _ = ((scalePower * quotientTermEval) * divisorEval + subQuotientEval * divisorEval)
+          + subRemainderEval :=
+        congrArg (fun leadingProduct => (leadingProduct + subQuotientEval * divisorEval) + subRemainderEval)
+          (intMulAssoc scalePower quotientTermEval divisorEval).symm
+    _ = (scalePower * quotientTermEval + subQuotientEval) * divisorEval + subRemainderEval :=
+        congrArg (· + subRemainderEval)
+          (intRightDistrib (scalePower * quotientTermEval) subQuotientEval divisorEval).symm
+
+/-- Pseudo-division with remainder by an arbitrary divisor.  Returns `(scalePower, quotient, remainder)`
+with the invariant `leadDivisor^scalePower · dividend = quotient · divisor + remainder`.  Each step scales
+the running dividend by the divisor's leading coefficient before the leading-term subtraction, keeping
+everything integral, and re-scales the accumulated quotient by the divisor's leading coefficient. -/
+def polyPseudoDivMod : Nat → List Int → List Int → (Nat × List Int × List Int)
+  | 0, _, dividend => (0, [], dividend)
+  | fuel + 1, divisor, dividend =>
+      match Nat.decLt (polyDegree dividend) (polyDegree divisor) with
+      | isTrue _ => (0, [], dividend)
+      | isFalse _ =>
+          let leadDivisor := polyLeadingCoeff divisor
+          let quotientTerm :=
+            polyMonomial (polyLeadingCoeff dividend) (polyDegree dividend - polyDegree divisor)
+          let subResult :=
+            polyPseudoDivMod fuel divisor
+              (polySub (polyScale leadDivisor dividend) (polyMul quotientTerm divisor))
+          (subResult.1 + 1,
+           polyAdd (polyScale (intPower leadDivisor subResult.1) quotientTerm) subResult.2.1,
+           subResult.2.2)
+
+/-- **Pseudo-division reconstructs the scaled dividend.**  `leadDivisor^scalePower · eval_point(dividend) =
+eval_point(quotient) · eval_point(divisor) + eval_point(remainder)` for every fuel — the subresultant
+identity, again fuel-independent (rests only on the ring homomorphism and `intPower`). -/
+theorem polyPseudoDivModReconstructs (point : Int) :
+    ∀ (fuel : Nat) (divisor dividend : List Int),
+      intPower (polyLeadingCoeff divisor) (polyPseudoDivMod fuel divisor dividend).1
+          * polyEval point dividend
+        = polyEval point (polyPseudoDivMod fuel divisor dividend).2.1 * polyEval point divisor
+          + polyEval point (polyPseudoDivMod fuel divisor dividend).2.2
+  | 0, divisor, dividend => by
+      show intPower (polyLeadingCoeff divisor) 0 * polyEval point dividend
+        = polyEval point ([] : List Int) * polyEval point divisor + polyEval point dividend
+      exact (intOneMul (polyEval point dividend)).trans
+        ((intZeroAdd (polyEval point dividend)).symm.trans
+          (congrArg (· + polyEval point dividend) (intZeroMul (polyEval point divisor)).symm))
+  | fuel + 1, divisor, dividend => by
+      dsimp only [polyPseudoDivMod]
+      cases Nat.decLt (polyDegree dividend) (polyDegree divisor) with
+      | isTrue _ =>
+          show intPower (polyLeadingCoeff divisor) 0 * polyEval point dividend
+            = polyEval point ([] : List Int) * polyEval point divisor + polyEval point dividend
+          exact (intOneMul (polyEval point dividend)).trans
+            ((intZeroAdd (polyEval point dividend)).symm.trans
+              (congrArg (· + polyEval point dividend) (intZeroMul (polyEval point divisor)).symm))
+      | isFalse _ =>
+          have scaledDividendEval :
+              polyEval point
+                  (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                    (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                      (polyDegree dividend - polyDegree divisor)) divisor))
+                = polyLeadingCoeff divisor * polyEval point dividend
+                  - polyEval point (polyMonomial (polyLeadingCoeff dividend)
+                      (polyDegree dividend - polyDegree divisor)) * polyEval point divisor :=
+            (polyEvalSub point (polyScale (polyLeadingCoeff divisor) dividend)
+                (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                  (polyDegree dividend - polyDegree divisor)) divisor)).trans
+              ((congrArg (· - polyEval point (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                  (polyDegree dividend - polyDegree divisor)) divisor))
+                  (polyEvalScale point (polyLeadingCoeff divisor) dividend)).trans
+                (congrArg (polyLeadingCoeff divisor * polyEval point dividend - ·)
+                  (polyEvalMul point (polyMonomial (polyLeadingCoeff dividend)
+                    (polyDegree dividend - polyDegree divisor)) divisor)))
+          have ihStep := polyPseudoDivModReconstructs point fuel divisor
+            (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+              (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                (polyDegree dividend - polyDegree divisor)) divisor))
+          have reducedIdentity :
+              intPower (polyLeadingCoeff divisor)
+                    (polyPseudoDivMod fuel divisor
+                      (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                        (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                          (polyDegree dividend - polyDegree divisor)) divisor))).1
+                  * (polyLeadingCoeff divisor * polyEval point dividend
+                      - polyEval point (polyMonomial (polyLeadingCoeff dividend)
+                          (polyDegree dividend - polyDegree divisor)) * polyEval point divisor)
+                = polyEval point
+                    (polyPseudoDivMod fuel divisor
+                      (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                        (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                          (polyDegree dividend - polyDegree divisor)) divisor))).2.1
+                  * polyEval point divisor
+                  + polyEval point
+                    (polyPseudoDivMod fuel divisor
+                      (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                        (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                          (polyDegree dividend - polyDegree divisor)) divisor))).2.2 :=
+            (congrArg
+              (intPower (polyLeadingCoeff divisor)
+                  (polyPseudoDivMod fuel divisor
+                    (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                      (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                        (polyDegree dividend - polyDegree divisor)) divisor))).1 * ·)
+              scaledDividendEval).symm.trans ihStep
+          refine Eq.trans (polyPseudoDivStepArith
+            (intPower (polyLeadingCoeff divisor)
+              (polyPseudoDivMod fuel divisor
+                (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                  (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                    (polyDegree dividend - polyDegree divisor)) divisor))).1)
+            (polyEval point dividend)
+            (polyEval point (polyMonomial (polyLeadingCoeff dividend)
+              (polyDegree dividend - polyDegree divisor)))
+            (polyEval point
+              (polyPseudoDivMod fuel divisor
+                (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                  (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                    (polyDegree dividend - polyDegree divisor)) divisor))).2.1)
+            (polyEval point divisor)
+            (polyEval point
+              (polyPseudoDivMod fuel divisor
+                (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                  (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                    (polyDegree dividend - polyDegree divisor)) divisor))).2.2)
+            (polyLeadingCoeff divisor)
+            reducedIdentity) ?_
+          exact congrArg
+            (· * polyEval point divisor
+              + polyEval point
+                (polyPseudoDivMod fuel divisor
+                  (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                    (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                      (polyDegree dividend - polyDegree divisor)) divisor))).2.2)
+            ((polyEvalAdd point
+                (polyScale (intPower (polyLeadingCoeff divisor)
+                  (polyPseudoDivMod fuel divisor
+                    (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                      (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                        (polyDegree dividend - polyDegree divisor)) divisor))).1)
+                  (polyMonomial (polyLeadingCoeff dividend)
+                    (polyDegree dividend - polyDegree divisor)))
+                (polyPseudoDivMod fuel divisor
+                  (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                    (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                      (polyDegree dividend - polyDegree divisor)) divisor))).2.1).trans
+              (congrArg (· + polyEval point
+                  (polyPseudoDivMod fuel divisor
+                    (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                      (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                        (polyDegree dividend - polyDegree divisor)) divisor))).2.1)
+                (polyEvalScale point
+                  (intPower (polyLeadingCoeff divisor)
+                    (polyPseudoDivMod fuel divisor
+                      (polySub (polyScale (polyLeadingCoeff divisor) dividend)
+                        (polyMul (polyMonomial (polyLeadingCoeff dividend)
+                          (polyDegree dividend - polyDegree divisor)) divisor))).1)
+                  (polyMonomial (polyLeadingCoeff dividend)
+                    (polyDegree dividend - polyDegree divisor))))).symm
+
 /-! ## Groundings -/
 
 /-- `x² − 1` divided by the monic `x + 1` is `x − 1` remainder `0`:
@@ -207,11 +413,25 @@ theorem polyDividesMonicEvalMultipleGroundingAtSeven :
     polyEval 7 [-1, 0, 1] = polyEval 7 (polyDivModMonic 3 [1, 1] [-1, 0, 1]).1 * polyEval 7 [1, 1] := by
   decide
 
-/-- Marker: the ℤ[x] monic division-with-remainder algorithm ships with the reconstruction identity
-`dividend = quotient · divisor + remainder` proved at the evaluation level fuel-independently, and its
-exact-division corollary (`polyDividesMonicEvalMultiple`, the atomic GCD/factorization operation).  The
-degree bound `deg remainder < deg divisor` (the Euclidean-GCD termination lever, needing either the ℚ
-tower or ℤ subresultants) is the next brick. -/
+/-- The non-monic `2x + 1` pseudo-divides `2x² + 3x + 1 = (2x+1)(x+1)` exactly (remainder trims to zero) —
+`polyDivModMonic` could not do this (leading coefficient `2 ≠ 1`), but pseudo-division stays integral. -/
+theorem polyPseudoDivModDividesExactly :
+    polyTrim (polyPseudoDivMod 3 [1, 2] [1, 3, 2]).2.2 = [] := by decide
+
+/-- The subresultant reconstruction exhibited at `x = 5` on `2x²+3x+1` by `2x+1` (leading coefficient `2`):
+`2^scalePower · eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder)`, a `decide` cross-check of
+`polyPseudoDivModReconstructs`. -/
+theorem polyPseudoDivModReconstructsGroundingAtFive :
+    intPower (polyLeadingCoeff [1, 2]) (polyPseudoDivMod 3 [1, 2] [1, 3, 2]).1 * polyEval 5 [1, 3, 2]
+      = polyEval 5 (polyPseudoDivMod 3 [1, 2] [1, 3, 2]).2.1 * polyEval 5 [1, 2]
+        + polyEval 5 (polyPseudoDivMod 3 [1, 2] [1, 3, 2]).2.2 := by decide
+
+/-- Marker: the ℤ[x] division layer ships with monic division (`dividend = quotient · divisor + remainder`)
+and its exact-division corollary, AND ℤ-native pseudo-division for an ARBITRARY divisor
+(`leadDivisor^scalePower · dividend = quotient · divisor + remainder`, `polyPseudoDivModReconstructs`) —
+the subresultant identity the Euclidean GCD runs on, with no rationals.  Both reconstructions are proved at
+the evaluation level fuel-independently.  The degree bound `deg remainder < deg divisor` (the GCD's
+termination lever) is the next brick. -/
 def fxIntPoly_hasMonicDivisionReconstruction : Bool := true
 
 end FX1Poly.ComputerAlgebra
