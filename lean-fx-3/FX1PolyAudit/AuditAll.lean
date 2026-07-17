@@ -62,6 +62,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialCoeffBounds
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialDegreeBound
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialPseudoDegreeDecrease
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialPseudoRemBound
+import FX1PolyAudit.ComputerAlgebra.Number.IntNoZeroDivisors
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
 import FX1PolyAudit.ComputerAlgebra.Number.IntAddAssociativity
