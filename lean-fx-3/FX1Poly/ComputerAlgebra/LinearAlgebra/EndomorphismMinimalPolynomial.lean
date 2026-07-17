@@ -43,12 +43,15 @@ the evaluation engine computing `Σ cₖ Mᵏ` correctly.
 ## Honest scope (what this delivers vs the remaining gap)
 
 Delivered: the top invariant factor (minimal polynomial) as a decidable, kernel-checked, eigenvalue-free
-dissimilarity separator, strictly stronger than every prior r1/r2 separator in this arc; plus the PROVEN
-conjugation core `endomorphismWitnessUniformConjugation` (`Q·Aᵏ⁺¹·P = d·Bᵏ⁺¹` on the window, every `k`),
-which removes the named ∀-refutation blocker — the missing sign-agnostic power cancellation is supplied as
-`intMulPowerLeftCancelOfMagnitude`.  Upgrading the annihilator SEPARATOR itself from certificate-level to a
-full proven ∀-refutation additionally needs the co-inverse window `Q·P = d·I` (for the polynomial's constant
-term) and per-power linearity of `matrixPolyEval` — a smaller, honest remaining step.
+dissimilarity separator, strictly stronger than every prior r1/r2 separator in this arc; AND its full PROVEN
+∀-refutation `endomorphismWitnessTransportsAnnihilation` — over any coherent-dimension scaled-pair witness of
+nonzero-magnitude scale satisfying the co-inverse window `Q·P = d·I`, a polynomial annihilating `source` also
+annihilates `target`.  The proof supplies both pieces the certificate-level soundness was missing: the
+sign-agnostic power cancellation `intMulPowerLeftCancelOfMagnitude`, the proven per-power conjugation core
+`endomorphismWitnessUniformConjugation`, and the whole-polynomial sandwich `endomorphismSandwichPolyEqScaled-
+Target` (the window linearity of `matrixPolyEval`).  Fired end-to-end on the `d = 2` rational-conjugacy
+witness (`endomorphismRationalConjugacyTransportsMinimalPolynomial`).  So the separator's soundness is no
+longer prose: no witness of this shape can relate two matrices separated by an annihilator.
 
 Remaining (`invariantFactorSeparator` proper): the FULL invariant-factor LIST — equivalently the rational
 canonical form — which is a COMPLETE similarity invariant (min poly alone is not: `min ∧ char` is incomplete
@@ -177,6 +180,310 @@ theorem endomorphismWitnessUniformConjugation
         (intMulAssoc (intPower scale powerPredecessor) scale
           ((endomorphismMatrixPower dimension target (powerPredecessor + 1)).entry
             rowIndex colIndex))))
+
+/-! ## The full annihilator transport (matrixPolyEval linearity + the co-inverse: the proven separator)
+
+The proven conjugation core above transports each POWER.  To transport an arbitrary annihilator `p(A) = 0`
+to `p(B) = 0` we push the sandwich `Q · (·) · P` through `matrixPolyEval`'s sum-of-scaled-powers — its window
+linearity — and additionally handle the CONSTANT term `Q·A⁰·P = Q·P`, which the co-inverse window
+`Q·P = d·I` (satisfied by every adjugate witness) sends to `d·I = d·B⁰`.  The scale then factors out and
+cancels.  These are the two pieces named as remaining; they are supplied here. -/
+
+/-- `addMatrix` is a window congruence in both operands (entrywise, via `ring.add` congruence). -/
+theorem addMatrixCongrOnWindow {leftMatrix newLeftMatrix rightMatrix newRightMatrix : SetoidMatrix Int}
+    {height width : Nat}
+    (leftAgrees : agreeOnWindow leftMatrix newLeftMatrix height width)
+    (rightAgrees : agreeOnWindow rightMatrix newRightMatrix height width) :
+    agreeOnWindow (addMatrix intCommutativeRingWitness leftMatrix rightMatrix)
+      (addMatrix intCommutativeRingWitness newLeftMatrix newRightMatrix) height width :=
+  fun rowIndex rowBelow colIndex colBelow =>
+    (congrArg (intCommutativeRingWitness.add · (rightMatrix.entry rowIndex colIndex))
+        (leftAgrees rowIndex rowBelow colIndex colBelow)).trans
+      (congrArg (intCommutativeRingWitness.add (newLeftMatrix.entry rowIndex colIndex) ·)
+        (rightAgrees rowIndex rowBelow colIndex colBelow))
+
+/-- A scalar distributes over a matrix sum on the window: `c·(M + N) ≈ c·M + c·N` (entrywise
+`intLeftDistrib`). -/
+theorem intMatrixScaleOverAddOnWindow (scaleValue : Int) (leftMatrix rightMatrix : SetoidMatrix Int)
+    (height width : Nat) :
+    agreeOnWindow (intMatrixScale scaleValue (addMatrix intCommutativeRingWitness leftMatrix rightMatrix))
+      (addMatrix intCommutativeRingWitness (intMatrixScale scaleValue leftMatrix)
+        (intMatrixScale scaleValue rightMatrix)) height width :=
+  fun rowIndex _ colIndex _ =>
+    intLeftDistrib scaleValue (leftMatrix.entry rowIndex colIndex)
+      (rightMatrix.entry rowIndex colIndex)
+
+/-- Left matrix distributivity on the window: `A·(B + C) ≈ A·B + A·C` (from `mulMatrixLeftDistrib`). -/
+theorem intMatrixMulLeftDistribOnWindow (firstMatrix secondMatrix thirdMatrix : SetoidMatrix Int)
+    (height width : Nat) :
+    agreeOnWindow
+      (intMatrixMul firstMatrix (addMatrix intCommutativeRingWitness secondMatrix thirdMatrix))
+      (addMatrix intCommutativeRingWitness (intMatrixMul firstMatrix secondMatrix)
+        (intMatrixMul firstMatrix thirdMatrix)) height width :=
+  fun rowIndex _ colIndex _ =>
+    intDenotesSameIsEq
+      ((mulMatrixLeftDistrib intCommutativeRingWitness firstMatrix secondMatrix thirdMatrix).entriesAgree
+        rowIndex colIndex)
+
+/-- Right matrix distributivity on the window: `(A + B)·C ≈ A·C + B·C` (needs `A`, `B` to share a column
+count so the inner sums align); from `mulMatrixRightDistrib`. -/
+theorem intMatrixMulRightDistribOnWindow {firstMatrix secondMatrix : SetoidMatrix Int}
+    (thirdMatrix : SetoidMatrix Int) (colMatch : firstMatrix.colCount = secondMatrix.colCount)
+    (height width : Nat) :
+    agreeOnWindow
+      (intMatrixMul (addMatrix intCommutativeRingWitness firstMatrix secondMatrix) thirdMatrix)
+      (addMatrix intCommutativeRingWitness (intMatrixMul firstMatrix thirdMatrix)
+        (intMatrixMul secondMatrix thirdMatrix)) height width :=
+  fun rowIndex _ colIndex _ =>
+    intDenotesSameIsEq
+      ((mulMatrixRightDistrib intCommutativeRingWitness firstMatrix secondMatrix thirdMatrix colMatch).entriesAgree
+        rowIndex colIndex)
+
+/-- Every power of a square matrix has column count `dimension` (identity seed; `mulMatrix` keeps the base
+column count). -/
+theorem endomorphismMatrixPowerColCount (dimension : Nat) (matrix : SetoidMatrix Int)
+    (matrixColFits : matrix.colCount = dimension) :
+    ∀ exponentValue : Nat, (endomorphismMatrixPower dimension matrix exponentValue).colCount = dimension
+  | 0 => rfl
+  | exponentValue + 1 =>
+      (endomorphismMatrixPowerSuccColCount dimension matrix exponentValue).trans matrixColFits
+
+/-- Every `matrixPolyEval` partial sum over a square matrix has column count `dimension`. -/
+theorem matrixPolyEvalFromColCount (dimension : Nat) (matrix : SetoidMatrix Int)
+    (matrixColFits : matrix.colCount = dimension) :
+    ∀ (startExponent : Nat) (coefficients : List Int),
+      (matrixPolyEvalFrom dimension matrix startExponent coefficients).colCount = dimension
+  | _, [] => rfl
+  | startExponent, _ :: _ =>
+      endomorphismMatrixPowerColCount dimension matrix matrixColFits startExponent
+
+/-! ## The sandwich correspondence (per power, then over the whole polynomial) -/
+
+/-- **Per-power sandwich.**  `Q · Aᵉˣᵖ · P ≈ d · Bᵉˣᵖ` on the window for EVERY exponent: the `exp = k+1`
+case is the proven uniform conjugation; the `exp = 0` case is `Q·(I·P) ≈ Q·P ≈ d·I = d·B⁰`, using the
+co-inverse window `Q·P = d·I`. -/
+theorem endomorphismSandwichPowerEqScaledTarget
+    (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
+    (scale : Int)
+    (scaleHasMagnitude : 1 ≤ scale.natAbs)
+    (sourceRowFits : source.rowCount = dimension) (sourceColFits : source.colCount = dimension)
+    (targetRowFits : target.rowCount = dimension) (targetColFits : target.colCount = dimension)
+    (basisRowFits : changeOfBasis.rowCount = dimension)
+    (basisColFits : changeOfBasis.colCount = dimension)
+    (inverseColFits : scaledInverse.colCount = dimension)
+    (inverseWindowHolds : agreeOnWindow (intMatrixMul changeOfBasis scaledInverse)
+      (intMatrixScale scale (intMatrixIdentity dimension)) dimension dimension)
+    (conjugacyWindowHolds : agreeOnWindow
+      (intMatrixMul scaledInverse (intMatrixMul source changeOfBasis))
+      (intMatrixScale scale target) dimension dimension)
+    (coInverseWindowHolds : agreeOnWindow (intMatrixMul scaledInverse changeOfBasis)
+      (intMatrixScale scale (intMatrixIdentity dimension)) dimension dimension) :
+    ∀ exponentValue : Nat,
+      agreeOnWindow
+        (intMatrixMul scaledInverse
+          (intMatrixMul (endomorphismMatrixPower dimension source exponentValue) changeOfBasis))
+        (intMatrixScale scale (endomorphismMatrixPower dimension target exponentValue))
+        dimension dimension
+  | 0 =>
+      agreeOnWindowTrans
+        (intMatrixMulCongrOnWindow dimension inverseColFits inverseColFits
+          (agreeOnWindowRefl scaledInverse dimension dimension)
+          (intMatrixMulIdentityLeftOnWindow dimension basisRowFits))
+        coInverseWindowHolds
+  | exponentValue + 1 =>
+      endomorphismWitnessUniformConjugation dimension source target changeOfBasis scaledInverse
+        scale scaleHasMagnitude sourceRowFits sourceColFits targetRowFits targetColFits basisColFits
+        inverseColFits inverseWindowHolds conjugacyWindowHolds exponentValue
+
+/-- **Whole-polynomial sandwich.**  `Q · p(A) · P ≈ d · p(B)` on the window, by structural induction over
+the coefficient list, pushing the sandwich through `matrixPolyEval`'s sum-of-scaled-powers (window
+linearity) and applying the per-power sandwich at each exponent. -/
+theorem endomorphismSandwichPolyEqScaledTarget
+    (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
+    (scale : Int)
+    (scaleHasMagnitude : 1 ≤ scale.natAbs)
+    (sourceRowFits : source.rowCount = dimension) (sourceColFits : source.colCount = dimension)
+    (targetRowFits : target.rowCount = dimension) (targetColFits : target.colCount = dimension)
+    (basisRowFits : changeOfBasis.rowCount = dimension)
+    (basisColFits : changeOfBasis.colCount = dimension)
+    (inverseColFits : scaledInverse.colCount = dimension)
+    (inverseWindowHolds : agreeOnWindow (intMatrixMul changeOfBasis scaledInverse)
+      (intMatrixScale scale (intMatrixIdentity dimension)) dimension dimension)
+    (conjugacyWindowHolds : agreeOnWindow
+      (intMatrixMul scaledInverse (intMatrixMul source changeOfBasis))
+      (intMatrixScale scale target) dimension dimension)
+    (coInverseWindowHolds : agreeOnWindow (intMatrixMul scaledInverse changeOfBasis)
+      (intMatrixScale scale (intMatrixIdentity dimension)) dimension dimension) :
+    ∀ (startExponent : Nat) (coefficients : List Int),
+      agreeOnWindow
+        (intMatrixMul scaledInverse
+          (intMatrixMul (matrixPolyEvalFrom dimension source startExponent coefficients) changeOfBasis))
+        (intMatrixScale scale (matrixPolyEvalFrom dimension target startExponent coefficients))
+        dimension dimension
+  | _, [] =>
+      -- Q·(0·P) ≈ 0 ≈ scale·0
+      agreeOnWindowTrans
+        (intMatrixMulVanishingRightFactorOnWindow dimension scaledInverse inverseColFits
+          (intMatrixMulVanishingLeftFactorOnWindow dimension changeOfBasis rfl
+            (agreeOnWindowRefl (intMatrixZeroSquare dimension) dimension dimension)))
+        (agreeOnWindowSymm (fun _ _ _ _ => intMulZero scale))
+  | startExponent, headCoefficient :: restCoefficients =>
+      let sourcePower := endomorphismMatrixPower dimension source startExponent
+      let sourceTail := matrixPolyEvalFrom dimension source (startExponent + 1) restCoefficients
+      let targetPower := endomorphismMatrixPower dimension target startExponent
+      let targetTail := matrixPolyEvalFrom dimension target (startExponent + 1) restCoefficients
+      have sourcePowerColFits : sourcePower.colCount = dimension :=
+        endomorphismMatrixPowerColCount dimension source sourceColFits startExponent
+      have sourceTailColFits : sourceTail.colCount = dimension :=
+        matrixPolyEvalFromColCount dimension source sourceColFits (startExponent + 1) restCoefficients
+      -- Push the sandwich through the head sum: Q·((c·A^s + tail)·P) ≈ Q·((c·A^s)·P) + Q·(tail·P).
+      have rightDistributed :
+          agreeOnWindow
+            (intMatrixMul scaledInverse
+              (intMatrixMul (addMatrix intCommutativeRingWitness
+                (intMatrixScale headCoefficient sourcePower) sourceTail) changeOfBasis))
+            (intMatrixMul scaledInverse
+              (addMatrix intCommutativeRingWitness
+                (intMatrixMul (intMatrixScale headCoefficient sourcePower) changeOfBasis)
+                (intMatrixMul sourceTail changeOfBasis))) dimension dimension :=
+        intMatrixMulCongrOnWindow dimension inverseColFits inverseColFits
+          (agreeOnWindowRefl scaledInverse dimension dimension)
+          (intMatrixMulRightDistribOnWindow changeOfBasis
+            (show (intMatrixScale headCoefficient sourcePower).colCount = sourceTail.colCount from
+              sourcePowerColFits.trans sourceTailColFits.symm) dimension dimension)
+      have leftDistributed :
+          agreeOnWindow
+            (intMatrixMul scaledInverse
+              (addMatrix intCommutativeRingWitness
+                (intMatrixMul (intMatrixScale headCoefficient sourcePower) changeOfBasis)
+                (intMatrixMul sourceTail changeOfBasis)))
+            (addMatrix intCommutativeRingWitness
+              (intMatrixMul scaledInverse
+                (intMatrixMul (intMatrixScale headCoefficient sourcePower) changeOfBasis))
+              (intMatrixMul scaledInverse (intMatrixMul sourceTail changeOfBasis)))
+            dimension dimension :=
+        intMatrixMulLeftDistribOnWindow scaledInverse
+          (intMatrixMul (intMatrixScale headCoefficient sourcePower) changeOfBasis)
+          (intMatrixMul sourceTail changeOfBasis) dimension dimension
+      -- Head term: Q·((c·A^s)·P) ≈ c·(Q·(A^s·P)) ≈ c·(scale·B^s).
+      have headTerm :
+          agreeOnWindow
+            (intMatrixMul scaledInverse
+              (intMatrixMul (intMatrixScale headCoefficient sourcePower) changeOfBasis))
+            (intMatrixScale headCoefficient (intMatrixScale scale targetPower)) dimension dimension :=
+        agreeOnWindowTrans
+          (intMatrixMulCongrOnWindow dimension inverseColFits inverseColFits
+            (agreeOnWindowRefl scaledInverse dimension dimension)
+            (intMatrixScaleMulLeftOnWindow headCoefficient sourcePower changeOfBasis
+              dimension dimension))
+          (agreeOnWindowTrans
+            (intMatrixScaleMulRightOnWindow headCoefficient scaledInverse
+              (intMatrixMul sourcePower changeOfBasis) dimension dimension)
+            (intMatrixScaleCongrOnWindow headCoefficient
+              (endomorphismSandwichPowerEqScaledTarget dimension source target changeOfBasis
+                scaledInverse scale scaleHasMagnitude sourceRowFits sourceColFits targetRowFits
+                targetColFits basisRowFits basisColFits inverseColFits inverseWindowHolds
+                conjugacyWindowHolds coInverseWindowHolds startExponent)))
+      -- Tail term by IH: Q·(tail·P) ≈ scale·(targetTail).
+      have tailTerm :
+          agreeOnWindow
+            (intMatrixMul scaledInverse (intMatrixMul sourceTail changeOfBasis))
+            (intMatrixScale scale targetTail) dimension dimension :=
+        endomorphismSandwichPolyEqScaledTarget dimension source target changeOfBasis scaledInverse
+          scale scaleHasMagnitude sourceRowFits sourceColFits targetRowFits targetColFits basisRowFits
+          basisColFits inverseColFits inverseWindowHolds conjugacyWindowHolds coInverseWindowHolds
+          (startExponent + 1) restCoefficients
+      -- Reassemble the right side: scale·(c·B^s + targetTail) ≈ c·(scale·B^s) + scale·targetTail.
+      have rightReassembled :
+          agreeOnWindow
+            (intMatrixScale scale
+              (addMatrix intCommutativeRingWitness (intMatrixScale headCoefficient targetPower)
+                targetTail))
+            (addMatrix intCommutativeRingWitness
+              (intMatrixScale headCoefficient (intMatrixScale scale targetPower))
+              (intMatrixScale scale targetTail)) dimension dimension :=
+        agreeOnWindowTrans
+          (intMatrixScaleOverAddOnWindow scale (intMatrixScale headCoefficient targetPower)
+            targetTail dimension dimension)
+          (addMatrixCongrOnWindow
+            (agreeOnWindowTrans
+              (intMatrixScaleCollapseOnWindow scale headCoefficient targetPower dimension dimension)
+              (agreeOnWindowTrans
+                (agreeOnWindowOfEq
+                  (congrArg (fun scalar => intMatrixScale scalar targetPower)
+                    (intMulComm scale headCoefficient)) dimension dimension)
+                (agreeOnWindowSymm
+                  (intMatrixScaleCollapseOnWindow headCoefficient scale targetPower
+                    dimension dimension))))
+            (agreeOnWindowRefl (intMatrixScale scale targetTail) dimension dimension))
+      agreeOnWindowTrans
+        (agreeOnWindowTrans rightDistributed leftDistributed)
+        (agreeOnWindowTrans (addMatrixCongrOnWindow headTerm tailTerm)
+          (agreeOnWindowSymm rightReassembled))
+
+/-- **The proven annihilator transport (∀-refutation).**  Over any coherent-dimension scaled-pair witness
+of nonzero-magnitude scale that additionally satisfies the co-inverse window `Q·P = d·I`, a polynomial
+annihilating `source` also annihilates `target`.  `p(A) = 0 ⟹ Q·p(A)·P = 0`, and the whole-polynomial
+sandwich equates that to `d·p(B)`, whose scale cancels by magnitude — so `p(B) = 0`.  This upgrades
+`EndomorphismDissimilarByAnnihilator` from certificate-level soundness to a genuine ∀-witness refutation:
+no witness (of this shape) can relate two matrices separated by an annihilator. -/
+theorem endomorphismWitnessTransportsAnnihilation
+    (dimension : Nat) (coefficients : List Int)
+    (source target changeOfBasis scaledInverse : SetoidMatrix Int)
+    (scale : Int)
+    (scaleHasMagnitude : 1 ≤ scale.natAbs)
+    (sourceRowFits : source.rowCount = dimension) (sourceColFits : source.colCount = dimension)
+    (targetRowFits : target.rowCount = dimension) (targetColFits : target.colCount = dimension)
+    (basisRowFits : changeOfBasis.rowCount = dimension)
+    (basisColFits : changeOfBasis.colCount = dimension)
+    (inverseColFits : scaledInverse.colCount = dimension)
+    (inverseWindowHolds : agreeOnWindow (intMatrixMul changeOfBasis scaledInverse)
+      (intMatrixScale scale (intMatrixIdentity dimension)) dimension dimension)
+    (conjugacyWindowHolds : agreeOnWindow
+      (intMatrixMul scaledInverse (intMatrixMul source changeOfBasis))
+      (intMatrixScale scale target) dimension dimension)
+    (coInverseWindowHolds : agreeOnWindow (intMatrixMul scaledInverse changeOfBasis)
+      (intMatrixScale scale (intMatrixIdentity dimension)) dimension dimension)
+    (sourceAnnihilated : EndomorphismAnnihilates dimension coefficients source) :
+    EndomorphismAnnihilates dimension coefficients target := by
+  have sandwichEqScaled :
+      agreeOnWindow
+        (intMatrixMul scaledInverse
+          (intMatrixMul (matrixPolyEval dimension coefficients source) changeOfBasis))
+        (intMatrixScale scale (matrixPolyEval dimension coefficients target)) dimension dimension :=
+    endomorphismSandwichPolyEqScaledTarget dimension source target changeOfBasis scaledInverse scale
+      scaleHasMagnitude sourceRowFits sourceColFits targetRowFits targetColFits basisRowFits
+      basisColFits inverseColFits inverseWindowHolds conjugacyWindowHolds coInverseWindowHolds
+      0 coefficients
+  have sandwichVanishes :
+      agreeOnWindow
+        (intMatrixMul scaledInverse
+          (intMatrixMul (matrixPolyEval dimension coefficients source) changeOfBasis))
+        (intMatrixZeroSquare dimension) dimension dimension :=
+    intMatrixMulVanishingRightFactorOnWindow dimension scaledInverse inverseColFits
+      (intMatrixMulVanishingLeftFactorOnWindow dimension changeOfBasis
+        (matrixPolyEvalFromColCount dimension source sourceColFits 0 coefficients)
+        sourceAnnihilated)
+  have scaledTargetVanishes :
+      agreeOnWindow (intMatrixScale scale (matrixPolyEval dimension coefficients target))
+        (intMatrixZeroSquare dimension) dimension dimension :=
+    agreeOnWindowTrans (agreeOnWindowSymm sandwichEqScaled) sandwichVanishes
+  intro rowIndex rowBelow colIndex colBelow
+  exact intFactorIsZeroOfScaledZero
+    ((matrixPolyEval dimension coefficients target).entry rowIndex colIndex) scaleHasMagnitude
+    (scaledTargetVanishes rowIndex rowBelow colIndex colBelow)
+
+/-- **The transport fires end-to-end (grounding).**  The `d = 2` rational-conjugacy witness
+(`A = [[1,1],[0,3]]`, `B = [[1,0],[0,3]]`, `P = [[1,1],[0,2]]`, `Q = adj(P) = [[2,-1],[0,1]]`) satisfies the
+co-inverse `Q·P = 2·I` (adjugate identity), so the proven transport carries `A`'s minimal polynomial
+`(x−1)(x−3) = x² − 4x + 3` to an annihilator of `B` — with every hypothesis (the two conjugacy windows, the
+co-inverse, and `p(A) = 0`) discharged by `decide`.  This exhibits the ∀-refutation as non-vacuous. -/
+theorem endomorphismRationalConjugacyTransportsMinimalPolynomial :
+    EndomorphismAnnihilates 2 [3, -4, 1] (setoidMatrixOfRows [[1, 0], [0, 3]]) :=
+  endomorphismWitnessTransportsAnnihilation 2 [3, -4, 1]
+    (setoidMatrixOfRows [[1, 1], [0, 3]]) (setoidMatrixOfRows [[1, 0], [0, 3]])
+    (setoidMatrixOfRows [[1, 1], [0, 2]]) (setoidMatrixOfRows [[2, -1], [0, 1]]) 2
+    (by decide) rfl rfl rfl rfl rfl rfl rfl (by decide) (by decide) (by decide) (by decide)
 
 /-! ## Cayley–Hamilton groundings (the char poly annihilates; the evaluation engine is exercised) -/
 
