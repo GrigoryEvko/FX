@@ -323,12 +323,22 @@ def fxWpLedger_uniformInterfaceCoversFourOfSix : Bool := true
 
 /-- ★ **THE GRAND WORD-PROBLEM LEDGER IS NOT CLOSED (honest).**  `= false` records that the decided-13 core
 is complete (all thirteen deciders shipped + held in `WordProblemDecisionWitnessBundle`) and the WP-CEIL-COST
-#2046 cost tags landed (`WordProblemCostLedger`, all `.cited`, `fxWpCost_allTagsProved = false`), but the
-capstone (#2048) still owes the beyond-decided-13 rungs (equivalence — resolved refute-and-relocate, Frobenius
-monad, strong monad, bunched bimonoid, Brauer, cohesion-quadruple, distributive law, 2-group, endomorphism ...)
-tabulated with their walls in ONE machine-checked enumeration, plus the fragment-extension walls the census
-scopes honestly (traced full-JSV, double unit-bearing, braid group).  Set `true` only when every rung is
-decided-or-walled with a held witness and a cost tag. -/
+#2046 cost tags landed (`WordProblemCostLedger`, all `.cited`, `fxWpCost_allTagsProved = false`).
+
+THE ENUMERATION CLAUSE IS NOW DELIVERED: the beyond-decided-13 rungs (equivalence, Frobenius monad, strong
+monad, bunched bimonoid, distributive law, Brauer, cohesion-quadruple, adjoint-triple string, 2-group,
+endomorphism) AND the fragment-extension walls (traced full-JSV, double unit-bearing, braid group) are
+tabulated with their walls in ONE machine-checked enumeration — `WordProblemBeyondCensusWalls.lean`
+(thirteen rungs, total disposition map, live-flag `rfl` pins per rung,
+`fxWpBeyond_beyondCensusWallsTabulated = true`).
+
+THE REMAINING FLIP BILL (verbatim: "a held witness and a cost tag" per rung): (1) witness aliases + cost
+tags for the beyond-census DECIDED rungs (the adjoint-triple string decision; the Brauer indexed-scope
+normal form) in the witness bundle + cost ledger; (2) a per-wall adjudication of what "held witness" means
+for a walled rung (the pin theorems hold the wall FLAGS — whether that satisfies the demand is an
+orchestrator decision to record, not to assume); (3) `fxWpCost_allTagsProved` remains false (COST-7).
+Set `true` only when every rung is decided-or-walled with a held witness and a cost tag; any flip must
+update `fxWpBeyond_tabulationLandedGrandStillOpen` in the SAME commit (it rfl-pins this marker). -/
 def fxWpLedger_grandLedgerClosed : Bool := false
 
 end FX1Poly.Polygraph.Table
