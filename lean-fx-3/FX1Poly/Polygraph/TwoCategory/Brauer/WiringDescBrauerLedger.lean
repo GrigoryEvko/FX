@@ -65,7 +65,7 @@ def fxBrauer_hasCrossingOnlyReadback : Bool := false
 
 /-! ## T3 — the TERMINAL LEDGER
 
-### The complete `fxBrauer_*` marker table (harvested live from `Brauer/*.lean`: 72 true / 12 false / 84 total)
+### The complete `fxBrauer_*` marker table (harvested live from `Brauer/*.lean`: 75 true / 9 false / 84 total)
 
 | Marker | Val | File · meaning |
 |---|---|---|
@@ -87,7 +87,7 @@ def fxBrauer_hasCrossingOnlyReadback : Bool := false
 | **hasCrossingOnlyReadback** | **F** | BrauerLedger · T2 — readback SMOKES-only, state-invariant gap |
 | hasUntwistAbsorption | T | Straightening |
 | hasCrossingWordFreeCoxeterMoves | T | Straightening |
-| **hasCrossingStraighteningInsertionResidual** | **F** | Straightening · MASTER leg — WALLED |
+| hasCrossingStraighteningInsertionResidual | T | Straightening · DISCHARGED in the r7 in-range reformulation (comb door) |
 | hasBrauerStraighteningGap | T | StraighteningGap · r2 wall (5 rels under-generate) |
 | hasCrossingParityInvariant | T | StraighteningGap · Z/2 character (dissolved for 7) |
 | hasCanonicalCrossingWordLayer | T | Insertion |
@@ -99,11 +99,11 @@ def fxBrauer_hasCrossingOnlyReadback : Bool := false
 | hasInsertionBraidLocalMove | T | Insertion |
 | hasDistantSwapKit | T | Insertion |
 | hasInsertionCommuteFullMode | T | Insertion |
-| **hasCrossingInsertionStepGeneralResidual** | **F** | Insertion · general step residual |
+| hasCrossingInsertionStepGeneralResidual | T | Insertion · InRangeInsertionStep INHABITED (comb door) |
 | hasInsertionReflexAndDescentModes | T | Insertion · r9 |
 | hasInsertionOuterInductionAssembly | T | Insertion · r9 outer strong induction closed |
 | hasBraidAscentCarryAlgebra | T | Insertion · r10 |
-| **hasBraidAscentResidual** | **F** | Insertion · r10 sole leaf = braid-ascent residual |
+| hasBraidAscentResidual | T | Insertion · r9 leaf BraidAscentInsertionStep INHABITED (comb door) |
 | hasBraidAscentRegimeBReduction | T | Insertion · r11 Regime-B → two decidable facts |
 | **hasBraidAscentLeafWalled** | **T** | Insertion · r12 — THE WALL (Regime A definitive) |
 | hasBraidAscentCarryCollapse | T | Insertion · r12 `p2_eq_swapSuccSwap` |
@@ -168,9 +168,11 @@ def fxBrauer_hasCrossingOnlyReadback : Bool := false
   5. **S_n crossing block STRAIGHTENED via the comb fold (BREACH r2)** — `hasCrossingOnlyStraightening = true`
      (`crossingWords_equalPerm_conv` in `Brauer/WiringDescStaircaseCanonical.lean`: equal-permutation crossing words
      are `BrauerConvFree7`-convertible, via the recursive-comb staircase + zero-axiom `combCanonicity`).  The
-     *insertion* route stays walled — `hasCrossingStraighteningInsertionResidual = false`,
-     `hasBraidAscentLeafWalled = true` (Regime A of the braid-ascent leaf) — the comb fold is the alternate route
-     that BYPASSES it.
+     The insertion-route Props are now INHABITED through the comb door
+     (`hasCrossingStraighteningInsertionResidual = true` in the r7 in-range reformulation,
+     `WiringDescInsertionDischarge.lean`); the insertion-INTERNAL induction stays un-mechanized —
+     `hasBraidAscentLeafWalled = true` (Regime A of the braid-ascent leaf), the comb fold being the alternate
+     route that BYPASSES it.
   6. **Full assembly still blocked** ⇒ `hasBrauerCompleteness = false`: the cup/cap connectivity congruence (bare
      `BrauerConv` suffix congruence via `MatchingConnectivityViewSim` through `processBrauer`) is a distinct leg,
      independent of the `S_n` block.
@@ -205,10 +207,12 @@ set — a wall, not an obstruction to truth.
 `fxBrauer_hasBrauerCompleteness = false` read off directly as marker values (each `rfl`): soundness TOTAL
 (`hasBrauerSoundness`, `hasSevenRelationConvSoundness`) · untwist-NF T1 SHIPPED (`hasUntwistNormalization`) · the S_n
 crossing block STRAIGHTENED via the comb fold (BREACH r2: `hasCrossingOnlyStraightening` now true, backed by
-`crossingWords_equalPerm_conv`; the *insertion* route stays walled — `hasBraidAscentLeafWalled` true,
-`hasCrossingStraighteningInsertionResidual` false) · the crossing readback SCOPED (`hasCrossingOnlyReadback` false,
-T2) · and the master `hasBrauerCompleteness` STILL false (the cup/cap connectivity congruence is a distinct leg).
-This is the honest terminal state of the Brauer lane, recorded as a conjunction the kernel checks. -/
+`crossingWords_equalPerm_conv`; the insertion Props DISCHARGED through the comb door —
+`hasCrossingStraighteningInsertionResidual` true in the r7 in-range reformulation — while the insertion-INTERNAL
+induction stays walled, `hasBraidAscentLeafWalled` true) · the crossing readback SCOPED
+(`hasCrossingOnlyReadback` false, T2) · and the master `hasBrauerCompleteness` STILL false (the cup/cap
+connectivity congruence is a distinct leg).  This is the honest terminal state of the Brauer lane, recorded as
+a conjunction the kernel checks. -/
 theorem fxBrauer_terminalDecomposition :
     fxBrauer_hasBrauerSoundness = true
       ∧ fxBrauer_hasSevenRelationConvSoundness = true
@@ -216,12 +220,12 @@ theorem fxBrauer_terminalDecomposition :
       ∧ fxBrauer_hasBraidAscentLeafWalled = true
       ∧ fxBrauer_hasCrossingOnlyReadback = false
       ∧ fxBrauer_hasCrossingOnlyStraightening = true
-      ∧ fxBrauer_hasCrossingStraighteningInsertionResidual = false
+      ∧ fxBrauer_hasCrossingStraighteningInsertionResidual = true
       ∧ fxBrauer_hasBrauerCompleteness = false :=
   ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 /-- **Honesty marker — the WP-BRAUER terminal ledger is RECORDED.**  This file documents the terminal state of the
-Brauer lane: the complete 84-marker table (72 true / 12 false), the machine-checked completeness decomposition
+Brauer lane: the complete 84-marker table (75 true / 9 false), the machine-checked completeness decomposition
 (`fxBrauer_terminalDecomposition`), the wall citation (`fxBrauer_hasBraidAscentLeafWalled`), and the
 literature-grounded bequest (Matsumoto–Tits / Delpeuch–Vicary interchanger normalization / Lehrer–Zhang seven
 relations / Graham–Lehrer cellular standard form).  The lane closes at: soundness total, untwist NF shipped (T1),

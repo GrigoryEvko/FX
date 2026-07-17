@@ -204,7 +204,10 @@ def bubbleWord (perm : List Nat) : List Nat := bubbleWordFueled (inversionCount 
 
 /-- ★ **The canonical reduced word of a permutation** — the REVERSE of the bubble-sort word.  Reversing turns
 "sort `perm` to the identity" into "build `perm` from the identity", so this is a genuine reduced word FOR `perm`
-(`permuteOfCrossingWord n (canonicalCrossingWord perm) = perm`, witnessed by `canonical_reducedWord_smoke_*`). -/
+ON RANGE PERMUTATIONS: the realization holds in the LEHMER-STANDARDIZED form
+(`permuteOfCrossingWord n (canonicalCrossingWord perm) = lehmerStandardize perm`, which is `= perm` exactly when
+`perm` permutes `0..n-1` — the `canonical_reducedWord_smoke_*` cases; the naive unqualified `= perm` is
+machine-refuted on the off-range distinct list `[5, 7]` in `Brauer/WiringDescInsertionDischarge.lean`). -/
 def canonicalCrossingWord (perm : List Nat) : List Nat := (bubbleWord perm).reverse
 
 /-! ## The identity base — the canonical word of the identity permutation is empty -/
@@ -1554,13 +1557,18 @@ re-inserts leftward through the shorter prefix.  The recon's hand-verified dicho
 (`d2 = d - 1`) the moved letter is stuck at the tail and must FIRST commute into the canonical prefix (hand-example:
 `[2, 0, 1, 2]`, the only legal move is `commute(2, 0)` at the FRONT) before it can braid — so the carry is NOT
 tail-local, the recursion is NOT on `inversionCount` (braiding preserves it), and the measure is the secondary
-lexicographic `(inversionCount perm, carried-index / prefix-length)`.  This is the standing jam — the
-`locateAux` / `pureCupSpine_sort`-magnitude induction (the 1300-line zero-axiom sibling).  The master markers
-`fxBrauer_hasCrossingOnlyStraightening` (`Brauer/WiringDescStandardForm.lean`) and
-`fxBrauer_hasCrossingStraighteningInsertionResidual` (`Brauer/WiringDescStraightening.lean`) stay `false` because of it
-— a route/measure gap, not an obstruction (Lehrer–Zhang Thm 2.6(2): the seven relations DO present the category).
-`= false`. -/
-def fxBrauer_hasCrossingInsertionStepGeneralResidual : Bool := false
+lexicographic `(inversionCount perm, carried-index / prefix-length)`.  That was the standing jam — the
+`locateAux` / `pureCupSpine_sort`-magnitude induction (the 1300-line zero-axiom sibling) — for the
+INSERTION-INTERNAL route.
+
+**DISCHARGED (through the comb door, `Brauer/WiringDescInsertionDischarge.lean`).**  The sole remaining leg —
+`InRangeInsertionStep` — is now INHABITED: `inRangeInsertionStep_holds` instantiates the committed comb-staircase
+completeness `crossingWords_equalPerm_conv` at the two firing words (the range certificate binds the letters via
+the `leftmostDescent` bound; the Lehmer realization by structural `inversionCount` fuel supplies the equal
+underlying permutations).  The insertion-internal braid carry fold itself was NEVER mechanized (the r10 wall
+analysis stands, `fxBrauer_hasBraidAscentLeafWalled = true`, scoped to the insertion route); the Prop is true by
+the ALTERNATE route.  `= true`. -/
+def fxBrauer_hasCrossingInsertionStepGeneralResidual : Bool := true
 
 /-! ## WP-BRAUER r9 — the CARRY FOLD outer strong induction: `InRangeInsertionStep` reduced to ONE braid-ascent leaf
 
@@ -2554,8 +2562,14 @@ Beyond this leaf, the MASTER `fxBrauer_hasBrauerCompleteness` (`Brauer/WiringDes
 the general crossing readback `brauerDiagramOf n (crossingWord w) = permutationDiagram n (permuteOfCrossingWord n w)`
 (SMOKES-only, `Brauer/WiringDescStandardForm.lean`) and the Lehrer–Zhang regular-form factorization (every Brauer diagram
 = caps ∘ permutation ∘ cups, Lemma 2.13, the cup/cap normal-form legs — the sibling `pureCupSpine_sort` /
-`ArcCupSortComplete` territory).  `= false`. -/
-def fxBrauer_hasBraidAscentResidual : Bool := false
+`ArcCupSortComplete` territory) — those stay open, correctly NOT claimed here.
+
+**DISCHARGED (through the comb door, `Brauer/WiringDescInsertionDischarge.lean`).**  The r9 leaf Prop
+`BraidAscentInsertionStep` is now INHABITED by `braidAscentInsertionStep_holds` — via the comb-staircase
+completeness, NOT via the 3-level lexicographic insertion-internal induction (which stays un-mechanized; the
+wall marker `fxBrauer_hasBraidAscentLeafWalled` stays `true`, honestly scoped to the INSERTION route, and the
+in-file marker `fxBrauer_hasInRangeInsertionStepDischarged` records the comb-door inhabitation).  `= true`. -/
+def fxBrauer_hasBraidAscentResidual : Bool := true
 
 /-- ★ **Honesty marker — WP-BRAUER r11: the REGIME-B braid-ascent leaf is REDUCED to TWO decidable leftmost-descent
 facts (the measure residual is DISSOLVED for Regime B).**  `crossingInsertionStep_braidAscent_regimeB_ofLeftmostDescents`

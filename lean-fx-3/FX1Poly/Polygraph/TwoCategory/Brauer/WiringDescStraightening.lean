@@ -331,7 +331,19 @@ Matsumoto/Tits word problem for `S_n`; its faithful zero-axiom structural-fuel f
 additionally connect to the diagram invariant via the general readback
 `brauerDiagramOf n (crossingWord w) = permutationDiagram n (permuteOfCrossingWord n w)` (SMOKES-only) and the whole
 diagram factor into the Lehrer–Zhang regular form (caps ∘ permutation ∘ cups, Lemma 2.13, no shipped pattern).
-Lehrer–Zhang Thm 2.6 guarantees NO relation 8 — this is a route/measure gap, not an obstruction.  `= false`. -/
-def fxBrauer_hasCrossingStraighteningInsertionResidual : Bool := false
+Lehrer–Zhang Thm 2.6 guarantees NO relation 8 — this is a route/measure gap, not an obstruction.
+
+**DISCHARGED — IN THE COMMITTED r7 IN-RANGE REFORMULATION ONLY (honest scope).**  What is now proven
+(`inRangeInsertionStep_holds`, `Brauer/WiringDescInsertionDischarge.lean`) is exactly the object the r7 marker
+`fxBrauer_hasInRangeInsertionReformulation` names as the genuinely provable residual: `InRangeInsertionStep`,
+quantified over `isDistinctList` permutations at IN-RANGE positions.  Three caveats this flip must carry:
+(1) the UNQUALIFIED reading of the prose above (arbitrary `(perm, position)`) was MACHINE-REFUTED at r6
+(`perm = [0,1]`, `position = 5`) and stays false permanently; (2) the `canonicalReducedWord` this docstring
+names exists in NO declaration (prose-only); (3) the discharge routes through the COMB STAIRCASE
+(`crossingWords_equalPerm_conv` instantiated via the range certificate + the Lehmer realization by
+`inversionCount` fuel), not the insertion-internal free-Coxeter induction sketched above — those moves live
+inside the staircase as `crossingCancelFree`/`crossingBraidFree`/`crossingCommuteFree`, but the induction is a
+different one.  `= true`. -/
+def fxBrauer_hasCrossingStraighteningInsertionResidual : Bool := true
 
 end FX1Poly.Polygraph
