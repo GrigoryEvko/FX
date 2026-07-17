@@ -78,6 +78,34 @@ theorem polyCoeffMonomialAt (coeff : Int) :
   | 0 => rfl
   | degree + 1 => polyCoeffMonomialAt coeff degree
 
+/-! ## The monomial-times-polynomial coefficient shift (the leading-term-cancellation lever) -/
+
+/-- The one-element zero polynomial reads `0` at every position (the `polyMul` convolution's tail padding). -/
+theorem polyCoeffSingletonZero : ∀ position : Nat, polyCoeff [(0 : Int)] position = 0
+  | 0 => rfl
+  | _ + 1 => rfl
+
+/-- **Multiplying by a monomial shifts and scales coefficients.**  `polyCoeff (coeff · x^degree · poly)
+(position + degree) = coeff · polyCoeff poly position`: the degree-`degree` monomial slides `poly` up by
+`degree` places and scales it by `coeff`.  By induction on `degree` — the base case is the `polyMul`
+convolution `polyAdd (polyScale coeff poly) [0]`, and each successive degree prepends a `0` (a
+`polyScale 0 poly` summand that annihilates) and consumes one position.  This is the exact statement the
+pseudo-division step needs: the quotient-term product's coefficient at the top position of the dividend. -/
+theorem polyCoeffMonomialMul (coeff : Int) (poly : List Int) (position : Nat) :
+    ∀ degree : Nat,
+      polyCoeff (polyMul (polyMonomial coeff degree) poly) (position + degree)
+        = coeff * polyCoeff poly position
+  | 0 => by
+      show polyCoeff (polyAdd (polyScale coeff poly) [0]) position = coeff * polyCoeff poly position
+      rw [polyCoeffAdd, polyCoeffScale, polyCoeffSingletonZero, intAddZero]
+  | degree + 1 => by
+      show polyCoeff (polyAdd (polyScale 0 poly) (0 :: polyMul (polyMonomial coeff degree) poly))
+             (position + degree + 1) = coeff * polyCoeff poly position
+      rw [polyCoeffAdd, polyCoeffScale, intZeroMul, intZeroAdd]
+      show polyCoeff (polyMul (polyMonomial coeff degree) poly) (position + degree)
+             = coeff * polyCoeff poly position
+      exact polyCoeffMonomialMul coeff poly position degree
+
 /-! ## Groundings -/
 
 /-- `1 + 2x²` has coefficient `2` at position `2`: `polyCoeff [1, 0, 2] 2 = 2`. -/
@@ -89,6 +117,12 @@ theorem polyCoeffPastEnd : polyCoeff [1, 0, 2] 5 = 0 := by decide
 /-- Scaling exhibited: `polyCoeff (polyScale 3 [1, 0, 2]) 2 = 3 * polyCoeff [1, 0, 2] 2` (`6 = 3·2`). -/
 theorem polyCoeffScaleGrounding :
     polyCoeff (polyScale 3 [1, 0, 2]) 2 = 3 * polyCoeff [1, 0, 2] 2 := by decide
+
+/-- The monomial shift exhibited: `5·x² · (7 + 2x)` has, at position `2 + 1 = 3`, the coefficient
+`5 · (coefficient of x¹ in 7 + 2x) = 5 · 2 = 10` — `polyCoeff (polyMul (polyMonomial 5 2) [7, 2]) 3 =
+5 * polyCoeff [7, 2] 1`. -/
+theorem polyCoeffMonomialMulGrounding :
+    polyCoeff (polyMul (polyMonomial 5 2) [7, 2]) 3 = 5 * polyCoeff [7, 2] 1 := by decide
 
 /-- Marker: the ℤ[x] positional coefficient accessor ships with each coefficient proved a ring
 homomorphism (scale/add/neg/sub) plus the monomial-at-its-degree fact — the leading-term-cancellation

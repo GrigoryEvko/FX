@@ -20,9 +20,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffNeg
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffSub
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffMonomialAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffSingletonZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffMonomialMul
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffExample
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffPastEnd
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffScaleGrounding
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffMonomialMulGrounding
 #assert_no_axioms FX1Poly.ComputerAlgebra.fxIntPoly_hasCoefficientHomomorphisms
 
 end FX1PolyAudit
