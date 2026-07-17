@@ -58,6 +58,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialGcd
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialCoeff
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialLeadingCoeff
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialLeadingTermCancel
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialCoeffBounds
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
 import FX1PolyAudit.ComputerAlgebra.Number.IntAddAssociativity
