@@ -43,7 +43,12 @@ the evaluation engine computing `Σ cₖ Mᵏ` correctly.
 ## Honest scope (what this delivers vs the remaining gap)
 
 Delivered: the top invariant factor (minimal polynomial) as a decidable, kernel-checked, eigenvalue-free
-dissimilarity separator, strictly stronger than every prior r1/r2 separator in this arc.
+dissimilarity separator, strictly stronger than every prior r1/r2 separator in this arc; plus the PROVEN
+conjugation core `endomorphismWitnessUniformConjugation` (`Q·Aᵏ⁺¹·P = d·Bᵏ⁺¹` on the window, every `k`),
+which removes the named ∀-refutation blocker — the missing sign-agnostic power cancellation is supplied as
+`intMulPowerLeftCancelOfMagnitude`.  Upgrading the annihilator SEPARATOR itself from certificate-level to a
+full proven ∀-refutation additionally needs the co-inverse window `Q·P = d·I` (for the polynomial's constant
+term) and per-power linearity of `matrixPolyEval` — a smaller, honest remaining step.
 
 Remaining (`invariantFactorSeparator` proper): the FULL invariant-factor LIST — equivalently the rational
 canonical form — which is a COMPLETE similarity invariant (min poly alone is not: `min ∧ char` is incomplete
@@ -90,6 +95,88 @@ window.  Reducible so `Decidable` synthesis unfolds it to the bounded `agreeOnWi
     (matrix : SetoidMatrix Int) : Prop :=
   agreeOnWindow (matrixPolyEval dimension coefficients matrix)
     (intMatrixZeroSquare dimension) dimension dimension
+
+/-! ## The proven conjugation core (removing the named ∀-refutation blocker)
+
+The r1/r2 separators' soundness ("similar ⟹ same invariant") is stated at certificate level.  Here is the
+PROVEN core for the annihilator route, mirroring `EndomorphismPowerZeroSeparator`'s "proven, not prose"
+discipline: over any coherent-dimension scaled-pair witness the conjugation is EXACT up to the single scale
+`d`, uniformly in the power —
+
+  `Q · Aᵏ⁺¹ · P  =  d · Bᵏ⁺¹`   (on the window, every `k`).
+
+This is the ladder `dᵏ · (Q·Aᵏ⁺¹·P) = dᵏ⁺¹ · Bᵏ⁺¹` with the common `dᵏ` cancelled.  Cancelling an EQUALITY
+(not a vanishing) needs a SIGN-AGNOSTIC power cancellation, which the shipped `intMulPowerRightCancel`
+(positive scale only) does not give — the exact lemma named as the blocker.  It is supplied first, from the
+corpus zero-cancellation. -/
+
+/-- **Magnitude power cancellation** — cancel a common `baseᵏ` from an EQUALITY for any nonzero-magnitude
+base (the sign-agnostic sibling of `intMulPowerRightCancel`, which needs `0 < base`).  Routes the difference
+`l − r` through the corpus `intFactorIsZeroOfPowerScaledZero`, so a negative determinant is fine. -/
+theorem intMulPowerLeftCancelOfMagnitude {base : Int} (baseHasMagnitude : 1 ≤ base.natAbs)
+    (exponentValue : Nat) {leftValue rightValue : Int}
+    (productsAreEqual :
+      intPower base exponentValue * leftValue = intPower base exponentValue * rightValue) :
+    leftValue = rightValue :=
+  let scaledDifferenceIsZero :
+      intPower base exponentValue * (leftValue + -rightValue) = 0 :=
+    (intMulComm (intPower base exponentValue) (leftValue + -rightValue)).trans
+      ((intRightDistrib leftValue (-rightValue) (intPower base exponentValue)).trans
+        ((congrArg (· + (-rightValue) * intPower base exponentValue)
+            (intMulComm leftValue (intPower base exponentValue))).trans
+          ((congrArg (intPower base exponentValue * leftValue + ·)
+              (intMulComm (-rightValue) (intPower base exponentValue))).trans
+            ((congrArg (intPower base exponentValue * leftValue + ·)
+                (intMulNeg (intPower base exponentValue) rightValue)).trans
+              ((congrArg (fun term => intPower base exponentValue * leftValue + -term)
+                  productsAreEqual.symm).trans
+                (intAddRightNeg (intPower base exponentValue * leftValue)))))))
+  let differenceIsZero : leftValue + -rightValue = 0 :=
+    intFactorIsZeroOfPowerScaledZero baseHasMagnitude exponentValue (leftValue + -rightValue)
+      scaledDifferenceIsZero
+  (intAddZero leftValue).symm.trans
+    ((congrArg (leftValue + ·) (intAddLeftNeg rightValue).symm).trans
+      ((intAddAssoc leftValue (-rightValue) rightValue).symm.trans
+        ((congrArg (· + rightValue) differenceIsZero).trans
+          (intZeroAdd rightValue))))
+
+/-- **The uniform conjugation identity (PROVEN, not prose).**  Over any coherent-dimension scaled-pair
+witness of nonzero-magnitude scale, `Q · Aᵏ⁺¹ · P = d · Bᵏ⁺¹` on the window for every `k` — the witnessed
+conjugation is exact up to the single scale `d`, uniformly in the power.  This is the power ladder with the
+common `dᵏ` cancelled entrywise via `intMulPowerLeftCancelOfMagnitude`; a genuine ∀-witness result, not a
+certificate whose soundness lives in a docstring. -/
+theorem endomorphismWitnessUniformConjugation
+    (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
+    (scale : Int)
+    (scaleHasMagnitude : 1 ≤ scale.natAbs)
+    (sourceRowFits : source.rowCount = dimension) (sourceColFits : source.colCount = dimension)
+    (targetRowFits : target.rowCount = dimension) (targetColFits : target.colCount = dimension)
+    (basisColFits : changeOfBasis.colCount = dimension)
+    (inverseColFits : scaledInverse.colCount = dimension)
+    (inverseWindowHolds : agreeOnWindow (intMatrixMul changeOfBasis scaledInverse)
+      (intMatrixScale scale (intMatrixIdentity dimension)) dimension dimension)
+    (conjugacyWindowHolds : agreeOnWindow
+      (intMatrixMul scaledInverse (intMatrixMul source changeOfBasis))
+      (intMatrixScale scale target) dimension dimension)
+    (powerPredecessor : Nat) :
+    agreeOnWindow
+      (intMatrixMul scaledInverse
+        (intMatrixMul (endomorphismMatrixPower dimension source (powerPredecessor + 1)) changeOfBasis))
+      (intMatrixScale scale (endomorphismMatrixPower dimension target (powerPredecessor + 1)))
+      dimension dimension := by
+  intro rowIndex rowBelow colIndex colBelow
+  have ladderEntry := endomorphismWitnessPowerLadder dimension source target changeOfBasis
+    scaledInverse scale sourceRowFits sourceColFits targetRowFits targetColFits basisColFits
+    inverseColFits inverseWindowHolds conjugacyWindowHolds powerPredecessor
+    rowIndex rowBelow colIndex colBelow
+  exact intMulPowerLeftCancelOfMagnitude scaleHasMagnitude powerPredecessor
+    (ladderEntry.trans
+      ((congrArg (· * (endomorphismMatrixPower dimension target (powerPredecessor + 1)).entry
+            rowIndex colIndex)
+          (intPowerSucc scale powerPredecessor)).trans
+        (intMulAssoc (intPower scale powerPredecessor) scale
+          ((endomorphismMatrixPower dimension target (powerPredecessor + 1)).entry
+            rowIndex colIndex))))
 
 /-! ## Cayley–Hamilton groundings (the char poly annihilates; the evaluation engine is exercised) -/
 
