@@ -293,16 +293,23 @@ per-input contract (no general driver, nothing to discharge into):
 No general similarity DECISION procedure is claimed, and NO driver-totality is reopened (the #2137
 general-driver target was REFUTED upstream and stays closed).
 
-**The r2+ walls (named nodes for the successor).**
+**The r2 walls — THREE CLOSED, one genuinely open.**
 
-  * `charMatrixCarrier` — the general `det(x·I − M)` (all `n`) needs a univariate polynomial matrix
-    carrier (`IntPolynomial`, `x·I − M`) that does NOT ship. → r2.
-  * `invariantFactorSeparator` — the COMPLETE similarity separator is the invariant factors of
-    `x·I − M` via Smith-over-`ℚ[x]`; the genuine wall is irrational eigenvalues. → r2+.
-  * `rankSequenceNilpotent` — the complete NILPOTENT separator is the rank sequence `rank(Mᵏ)`, which
-    needs a matrix power (`iterate mulMatrix`). → r1-stretch.
-  * `minorRankGeneral` — rank at `n ≥ 3` needs a general `k×k` minor selector (the shipped
-    determinant only deletes row 0). → r1-stretch. -/
+  * `charMatrixCarrier` — CLOSED (r2, `EndomorphismCharPolyThree`).  The characteristic polynomial's
+    coefficients ARE sums of principal minors (`e_k = Σ k×k principal minors`), so `det(x·I − M)` needs
+    NO univariate polynomial-matrix carrier: `endomorphismCharPolyThree` reads the coefficient triple
+    `(trace, Σ principal 2×2 minors, det)` off the general minor selector.  The `IntPolynomial` route
+    this note originally predicted was not needed — the principal-minor route is sharper and stays over
+    ℤ.  The middle coefficient separates equal-trace/equal-det/equal-rank matrices.
+  * `rankSequenceNilpotent` — CLOSED (r2, `EndomorphismPowerZeroSeparator`).  The matrix-power ladder
+    `endomorphismMatrixPower` plus witness-transported power-vanishing separate equal-char-poly
+    nilpotents by the rank sequence `rank(Mᵏ)`.
+  * `minorRankGeneral` — CLOSED (r2, `EndomorphismMinorSelector`).  The function-valued `selectSubmatrix`
+    plus `intMinorDet` lift rank certification to any selected `k×k` sub-block (the shipped determinant
+    only deletes row 0), so `endomorphismRank3` computes rank at `n = 3` from the nine `2×2` minors.
+  * `invariantFactorSeparator` — the ONE genuine open wall.  The COMPLETE similarity separator is the
+    invariant factors of `x·I − M` via Smith-over-`ℚ[x]`; the honest obstruction is irrational
+    eigenvalues (factoring the char poly over ℚ). → r3+. -/
 
 /-- The classification axis of the walking-endomorphism linear model: representations up to iso ⇔
 matrices up to similarity ⇔ rational canonical form. -/
