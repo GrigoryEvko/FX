@@ -3,6 +3,7 @@ import FX1Poly.ComputerAlgebra.Number.IntDistributivity
 import FX1Poly.ComputerAlgebra.Number.IntAddAssociativity
 import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
 import FX1Poly.ComputerAlgebra.Number.IntNegation
+import FX1Poly.ComputerAlgebra.Number.IntPower
 
 /-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntUnivariatePolynomial — the ℤ[x] substrate
 (the first brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
@@ -216,6 +217,46 @@ theorem polyEvalCompose (point : Int) :
             ((polyEvalMul point inner (polyCompose outerTail inner)).trans
               (congrArg (polyEval point inner * ·) (polyEvalCompose point outerTail inner)))))
 
+/-! ## Powers and the semantic ring laws
+
+A minimal/annihilating polynomial `Σ cₖ·xᵏ` is a combination of powers, and evaluating it at a matrix `M`
+sends `xᵏ` to `Mᵏ` — so polynomial powers are the exact shape `matrixPolyEval` consumes.  Multiplication
+is commutative and associative UNDER evaluation even though the coefficient-list representation is not
+canonical (trailing zeros), because ℤ is. -/
+
+/-- Polynomial power `base^exponent` (the constant `1` at exponent `0`, one more factor per successor). -/
+def polyPow (base : List Int) : Nat → List Int
+  | 0 => [1]
+  | exponentValue + 1 => polyMul (polyPow base exponentValue) base
+
+/-- **Evaluation is power-multiplicative.**  `eval_point(base^n) = eval_point(base)^n`, by induction on the
+exponent riding `polyEvalMul`; matches the corpus `intPower` (both base/successor cases definitional). -/
+theorem polyEvalPow (point : Int) (base : List Int) :
+    ∀ exponentValue : Nat,
+      polyEval point (polyPow base exponentValue) = intPower (polyEval point base) exponentValue
+  | 0 => polyEvalOne point
+  | exponentValue + 1 =>
+      (polyEvalMul point (polyPow base exponentValue) base).trans
+        (congrArg (· * polyEval point base) (polyEvalPow point base exponentValue))
+
+/-- **Multiplication commutes under evaluation.**  `eval_point(p · q) = eval_point(q · p)` — ℤ's
+commutativity lifted through `polyEvalMul`, holding despite the non-canonical list representation. -/
+theorem polyEvalMulComm (point : Int) (leftPoly rightPoly : List Int) :
+    polyEval point (polyMul leftPoly rightPoly) = polyEval point (polyMul rightPoly leftPoly) :=
+  (polyEvalMul point leftPoly rightPoly).trans
+    ((intMulComm (polyEval point leftPoly) (polyEval point rightPoly)).trans
+      (polyEvalMul point rightPoly leftPoly).symm)
+
+/-- **Multiplication associates under evaluation.**  `eval_point((p · q) · r) = eval_point(p · (q · r))`. -/
+theorem polyEvalMulAssoc (point : Int) (leftPoly midPoly rightPoly : List Int) :
+    polyEval point (polyMul (polyMul leftPoly midPoly) rightPoly)
+      = polyEval point (polyMul leftPoly (polyMul midPoly rightPoly)) :=
+  (polyEvalMul point (polyMul leftPoly midPoly) rightPoly).trans
+    ((congrArg (· * polyEval point rightPoly) (polyEvalMul point leftPoly midPoly)).trans
+      ((intMulAssoc (polyEval point leftPoly) (polyEval point midPoly) (polyEval point rightPoly)).trans
+        (((congrArg (polyEval point leftPoly * ·) (polyEvalMul point midPoly rightPoly)).symm).trans
+          (polyEvalMul point leftPoly (polyMul midPoly rightPoly)).symm)))
+
 /-! ## Groundings -/
 
 /-- `(x − 1)(x + 1) = x² − 1`: `polyMul [-1, 1] [1, 1] = [-1, 0, 1]`. -/
@@ -262,13 +303,22 @@ evaluated at `(2 + 3) = 5`, i.e. `26 = 26`, a `decide` cross-check of `polyEvalC
 theorem polyEvalComposeGroundingAtTwo :
     polyEval 2 (polyCompose [1, 0, 1] [3, 1]) = polyEval (polyEval 2 [3, 1]) [1, 0, 1] := by decide
 
+/-- The power homomorphism exhibited: `x³` at `2` is `2³ = 8`: `polyEval 2 (polyPow [0, 1] 3) = intPower (polyEval 2 [0, 1]) 3`. -/
+theorem polyEvalPowGroundingCube :
+    polyEval 2 (polyPow [0, 1] 3) = intPower (polyEval 2 [0, 1]) 3 := by decide
+
+/-- `(x + 1)²` at `2` is `3² = 9`, a second `decide` cross-check of `polyEvalPow`. -/
+theorem polyEvalPowGroundingBinomial :
+    polyEval 2 (polyPow [1, 1] 2) = intPower (polyEval 2 [1, 1]) 2 := by decide
+
 /-- Marker: the ℤ[x] substrate ships with evaluation proved to be a ring homomorphism — additive,
 homogeneous, multiplicative, AND subtractive (`polyEvalNeg`/`polyEvalSub`), the full ring's worth of
 structure, plus the linear factor `x − root` and the factor-theorem bridge (factor ⟹ root,
-`polyLinearFactorRootAnnihilatesMultiple`), and composition as the substitution homomorphism
-(`polyEvalCompose`).  The foundation for the invariant-factor GCD; the Euclidean/pseudo-division layer
-(whose remainder is exactly the `polySub` difference shipped here) and its Bézout certificates are the
-next brick. -/
+`polyLinearFactorRootAnnihilatesMultiple`), composition as the substitution homomorphism
+(`polyEvalCompose`), and powers (`polyEvalPow`, the `xᵏ ↦ Mᵏ` shape) with the semantic ring laws
+(`polyEvalMulComm`/`polyEvalMulAssoc`).  The foundation for the invariant-factor GCD; the
+Euclidean/pseudo-division layer (whose remainder is exactly the `polySub` difference shipped here) and its
+Bézout certificates are the next brick. -/
 def fxIntPoly_hasEvaluationRingHomomorphism : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -34,6 +34,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalConstant
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCompose
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalCompose
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyPow
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalPow
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalMulComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalMulAssoc
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyMulDifferenceOfSquaresExample
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalDifferenceOfSquaresAtThree
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalMulGroundingAtFive
@@ -44,6 +48,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyLinearFactorProductVanishesAtFive
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyComposeConstantExample
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalComposeGroundingAtTwo
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalPowGroundingCube
+#assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalPowGroundingBinomial
 #assert_no_axioms FX1Poly.ComputerAlgebra.fxIntPoly_hasEvaluationRingHomomorphism
 
 end FX1PolyAudit
