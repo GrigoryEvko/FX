@@ -5,12 +5,12 @@ import FX1Poly.Polygraph.TwoCategory.Table.WordProblemDecisionLedger
 ★ **Complexity tags on every decided rung (WP-CEIL-COST #2046)** — the cost-lane companion to
 `WordProblemDecisionLedger` (WP-LEDGER #2048 owed item (2)).
 
-Every rung of the decided-13 gets a COST CLASS (what the decider costs, read off its algorithmic structure) and
+Every rung of the decided-15 gets a COST CLASS (what the decider costs, read off its algorithmic structure) and
 a COST EVIDENCE tag (HOW that class is known).  The evidence discipline is the honest part: a class is
 `proved` only when an in-repo machine-checked cost theorem bounds the decider; it is `cited` when the class is
 read off the decider's structure and recorded here by decl-name citation.  Today the repo holds ZERO cost
 theorems about any decider (the `PolyBound` cost-declaration language itself is still `.openProblem` in
-`Typed/Dimensions/Cost/CostArcLedger`, COST-7), so all thirteen tags are `cited` and
+`Typed/Dimensions/Cost/CostArcLedger`, COST-7), so all fifteen tags are `cited` and
 `fxWpCost_allTagsProved = false`.
 
 ## The per-rung cost table (decl NAMES cited, per the anchor-rot discipline — never file:line)
@@ -30,14 +30,16 @@ theorems about any decider (the `PolyBound` cost-declaration language itself is 
   | walking traced (frag) | `decideTracedDiagramConv`                     | quadratic    | `tracedNF` bottom-up fold, but each `traceN 1` node's `contractTraceOne` walks the seq-spine of its normalized child — nested traces stack the walks, O(n²) worst case; then the structural `tracedDiagramDecEq` |
   | walking double (grid) | `decideDoubleTileConv`                        | linear       | two `(tileWidth, tileHeight)` structural folds + `Nat.decEq` on the pair — one fold each, O(1) compare |
   | `B_3^+` (Garside)     | `decideBraidThreeConv`                        | quadratic    | `braidNormalizeWord` folds `braidPrependAtom`; each prepend's Δ-power carry (`braidPrependAtomWithPower`) walks up to the accumulated `deltaPower` ≤ word length — O(n²) worst case, the classical fixed-strand Garside bound; then `braidGarsideCanonDecEq` |
+  | walking comm. monoid  | `decideCommMonoidTreeConv`                    | linear       | `leafCount` structural tree fold per tree + `Nat.decEq` on the two counts — one fold each, O(1) compare |
+  | walking bdd. semilatt. | `decideSemilatticeTreeConv`                  | linear       | `slotPresenceOf` structural tree fold per tree + `slotPresenceDecEq` on the two `SlotPresence` values — one fold each, O(1) compare |
 
-Class census: constantTime 1, linear 5, quadratic 2, polynomial 5, exponentialBounded 0.
-Evidence census: proved 0, measured 0, cited 13, unassessed 0.
+Class census: constantTime 1, linear 7, quadratic 2, polynomial 5, exponentialBounded 0.
+Evidence census: proved 0, measured 0, cited 15, unassessed 0.
 
 ## The KZ/co-KZ row subtlety
 
-A row tags the RUNG's decider(s), not one decl: the witness bundle's FOURTEEN grounding aliases map onto these
-THIRTEEN rows with KZ carrying two (`wpLedgerKZEqDecider` and `wpLedgerKZOrderDecider` — both are the same
+A row tags the RUNG's decider(s), not one decl: the witness bundle's SIXTEEN grounding aliases map onto these
+FIFTEEN rows with KZ carrying two (`wpLedgerKZEqDecider` and `wpLedgerKZOrderDecider` — both are the same
 monotone-map fold, so one class covers both; `fxWpCost_kzRowCoversBothDeciders`).
 
 ## One honest correction (vs the folk expectation "normalizer ⟹ cost")
@@ -85,7 +87,7 @@ inductive WordProblemCostClass
   today. -/
   | exponentialBounded
 
-/-! ## The per-rung cost maps (total over the LIVE decided-13 enum, full enumeration, no wildcard arm) -/
+/-! ## The per-rung cost maps (total over the LIVE decided-15 enum, full enumeration, no wildcard arm) -/
 
 /-- The **cost class of each rung's decider** — the module-docstring table's class column, machine-held.
 Full enumeration (no wildcard arm) so the match stays propext-free.  Per-rung citations: involution
@@ -140,7 +142,7 @@ def wordProblemCostEvidence : WordProblemDecidedWalker → WordProblemCostEviden
 
 /-! ## The kernel-checked rows (keyed off the LIVE decision-ledger enumeration) -/
 
-/-- ★ **The class row over the LIVE decided-13 enumeration** — mapping `wordProblemCostClass` over
+/-- ★ **The class row over the LIVE decided-15 enumeration** — mapping `wordProblemCostClass` over
 `allWordProblemDecidedWalkers` (the decision ledger's list, ledger order) yields exactly the module table's
 class column.  Kernel-checked (`rfl`). -/
 theorem allWordProblemDecidedWalkersCostClassRow :
@@ -249,9 +251,9 @@ def allWordProblemExponentialBoundedCostWalkers : List WordProblemDecidedWalker 
 theorem wordProblemExponentialBoundedCostWalkerCountIsZero :
     allWordProblemExponentialBoundedCostWalkers.length = 0 := rfl
 
-/-! ## Exhaustiveness glue: the class union covers the decided-13 -/
+/-! ## Exhaustiveness glue: the class union covers the decided-15 -/
 
-/-- The decided-13 grouped by cost class (constantTime, then linear, then quadratic, then polynomial) — the
+/-- The decided-15 grouped by cost class (constantTime, then linear, then quadratic, then polynomial) — the
 union list the per-class enumerations concatenate to. -/
 def allWordProblemCostClassifiedWalkers : List WordProblemDecidedWalker :=
   [.idempotentSemigroup, .walkingInvolution, .walkingCyclicThree, .idempotentComonad,
@@ -327,15 +329,15 @@ theorem allWordProblemCostClassifiedWalkersExhaustive :
 
 /-! ## The cost markers -/
 
-/-- ★ **ALL THIRTEEN decided rungs carry a cost tag (recorded).**  `= true` records that
-`wordProblemCostClass` and `wordProblemCostEvidence` are TOTAL over the live decided-13 enum
-(full-enumeration matches, no wildcard), the cited census is thirteen-of-thirteen
-(`wordProblemCostCitedWalkerCountIsThirteen`, `allWordProblemDecidedWalkersCostEvidenceCited`), and the class
-union covers all thirteen (`allWordProblemCostClassifiedWalkersExhaustive`,
+/-- ★ **ALL FIFTEEN decided rungs carry a cost tag (recorded).**  `= true` records that
+`wordProblemCostClass` and `wordProblemCostEvidence` are TOTAL over the live decided-15 enum
+(full-enumeration matches, no wildcard), the cited census is fifteen-of-fifteen
+(`wordProblemCostCitedWalkerCountIsFifteen`, `allWordProblemDecidedWalkersCostEvidenceCited`), and the class
+union covers all fifteen (`allWordProblemCostClassifiedWalkersExhaustive`,
 `allWordProblemCostClassifiedWalkersIsClassUnion`). -/
 def fxWpCost_allRungsTagged : Bool := true
 
-/-- ★ **NO COST TAG IS PROVED (honest).**  `= false` records that every one of the thirteen class tags is
+/-- ★ **NO COST TAG IS PROVED (honest).**  `= false` records that every one of the fifteen class tags is
 `.cited` — read off the decider's structure, documented by decl-name citation — and ZERO are backed by an
 in-repo machine-checked cost theorem or measurement (`wordProblemCostProvedWalkerCountIsZero`,
 `wordProblemCostMeasuredWalkerCountIsZero`).  The `PolyBound` cost-declaration language that proved tags would
@@ -346,8 +348,8 @@ def fxWpCost_allTagsProved : Bool := false
 /-- ★ **The single KZ row covers BOTH KZ deciders (recorded).**  `= true` records that the walkingKZ row's
 `.polynomial` tag covers both `decideKZEq` and `decideKZLETotal` (the witness bundle's `wpLedgerKZEqDecider`
 and `wpLedgerKZOrderDecider`) — both compute the SAME monad monotone-map fold per cell and differ only in the
-final comparison (`DecidableEq (List Nat)` vs pointwise `decMapLE`), so one class tags both.  The fourteen
-grounding aliases map onto these thirteen rows with KZ carrying two. -/
+final comparison (`DecidableEq (List Nat)` vs pointwise `decMapLE`), so one class tags both.  The sixteen
+grounding aliases map onto these fifteen rows with KZ carrying two. -/
 def fxWpCost_kzRowCoversBothDeciders : Bool := true
 
 end FX1Poly.Polygraph.Table
