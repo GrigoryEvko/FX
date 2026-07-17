@@ -53,6 +53,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismMinimalPolynomialT
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.EndomorphismMinimalPolynomial
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntUnivariatePolynomial
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialDegree
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.IntPolynomialDivision
 import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
 import FX1PolyAudit.ComputerAlgebra.Number.IntAddAssociativity
