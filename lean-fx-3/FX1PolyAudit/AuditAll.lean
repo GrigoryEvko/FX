@@ -1537,6 +1537,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeArity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCommutativeMonoid.CommutativeMonoidSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingSemilattice.SemilatticeSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramBoxCount
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramDecision
