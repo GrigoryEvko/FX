@@ -155,6 +155,40 @@ theorem polyEvalSub (point : Int) (leftPoly rightPoly : List Int) :
     ((congrArg (polyEval point leftPoly + ·) (polyEvalNeg point rightPoly)).trans
       (intSubEqAddNeg (polyEval point leftPoly) (polyEval point rightPoly)).symm)
 
+/-! ## The linear factor and the root theorem (factor ⟹ root, the constructive direction)
+
+An eigenvalue `λ` of a matrix `M` is exactly a root of any annihilating polynomial — equivalently, the
+linear factor `x − λ` divides it.  These lemmas are that bridge in the polynomial ring: they say
+`polyEval root ((x − root) · cofactor) = 0`, riding `polyEvalMul` with no degree machinery. -/
+
+/-- The linear factor `x − root`, i.e. the ascending list `[-root, 1]`. -/
+def polyLinearFactor (root : Int) : List Int := [-root, 1]
+
+/-- The constant polynomial `1` evaluates to `1` at every point. -/
+theorem polyEvalOne (point : Int) : polyEval point [1] = 1 :=
+  (congrArg (1 + ·) (intMulZero point)).trans (intAddZero 1)
+
+/-- **Linear factor evaluates to the shift.**  `eval_point(x − root) = point − root`. -/
+theorem polyEvalLinearFactor (point root : Int) :
+    polyEval point (polyLinearFactor root) = point - root :=
+  (congrArg (fun tailValue => -root + point * tailValue) (polyEvalOne point)).trans
+    ((congrArg (-root + ·) (intMulOne point)).trans
+      ((intAddComm (-root) point).trans (intSubEqAddNeg point root).symm))
+
+/-- **The linear factor vanishes at its root.**  `eval_root(x − root) = 0`. -/
+theorem polyLinearFactorVanishesAtRoot (root : Int) :
+    polyEval root (polyLinearFactor root) = 0 :=
+  (polyEvalLinearFactor root root).trans
+    ((intSubEqAddNeg root root).trans (intAddRightNeg root))
+
+/-- **Root theorem, factor ⟹ root.**  Any multiple of `x − root` vanishes at `root` — the constructive
+direction of "`x − root` divides `p` iff `root` is a root of `p`". -/
+theorem polyLinearFactorRootAnnihilatesMultiple (root : Int) (cofactor : List Int) :
+    polyEval root (polyMul (polyLinearFactor root) cofactor) = 0 :=
+  (polyEvalMul root (polyLinearFactor root) cofactor).trans
+    ((congrArg (· * polyEval root cofactor) (polyLinearFactorVanishesAtRoot root)).trans
+      (intZeroMul (polyEval root cofactor)))
+
 /-! ## Groundings -/
 
 /-- `(x − 1)(x + 1) = x² − 1`: `polyMul [-1, 1] [1, 1] = [-1, 0, 1]`. -/
@@ -179,11 +213,25 @@ theorem polySubCancelsLinearTermExample :
 theorem polyEvalSubGroundingAtFive :
     polyEval 5 (polySub [3, 2] [1, 2]) = polyEval 5 [3, 2] - polyEval 5 [1, 2] := by decide
 
+/-- `(x − 2)(x − 5) = x² − 7x + 10`: `polyMul (polyLinearFactor 2) (polyLinearFactor 5) = [10, -7, 1]`. -/
+theorem polyLinearFactorProductExample :
+    polyMul (polyLinearFactor 2) (polyLinearFactor 5) = [10, -7, 1] := by decide
+
+/-- `2` is a root of `(x − 2)(x − 5)`: `polyEval 2 [10, -7, 1] = 0` (`= 4 − 14 + 10`). -/
+theorem polyLinearFactorProductVanishesAtTwo :
+    polyEval 2 (polyMul (polyLinearFactor 2) (polyLinearFactor 5)) = 0 := by decide
+
+/-- `5` is likewise a root of `(x − 2)(x − 5)`: `polyEval 5 [10, -7, 1] = 0` (`= 25 − 35 + 10`), the second
+factor's root — the factor-theorem bridge exhibited on a concrete degree-2 product. -/
+theorem polyLinearFactorProductVanishesAtFive :
+    polyEval 5 (polyMul (polyLinearFactor 2) (polyLinearFactor 5)) = 0 := by decide
+
 /-- Marker: the ℤ[x] substrate ships with evaluation proved to be a ring homomorphism — additive,
 homogeneous, multiplicative, AND subtractive (`polyEvalNeg`/`polyEvalSub`), the full ring's worth of
-structure.  The foundation for the invariant-factor GCD; the Euclidean/pseudo-division layer (whose
-remainder is exactly the `polySub` difference shipped here) and its Bézout certificates are the next
-brick. -/
+structure, plus the linear factor `x − root` and the factor-theorem bridge (factor ⟹ root,
+`polyLinearFactorRootAnnihilatesMultiple`).  The foundation for the invariant-factor GCD; the
+Euclidean/pseudo-division layer (whose remainder is exactly the `polySub` difference shipped here) and
+its Bézout certificates are the next brick. -/
 def fxIntPoly_hasEvaluationRingHomomorphism : Bool := true
 
 end FX1Poly.ComputerAlgebra
