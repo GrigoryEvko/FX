@@ -1847,6 +1847,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.RegularRealSquareRootMultiplicative
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusLaws
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusUnitLaws
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealTriangleInequality
+import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusComponentBounds
 import FX1PolyAudit.Core.Eliminators.Core.BoolElimDataTaitMember
 import FX1PolyAudit.Core.Eliminators.Core.ClosedEliminatorDataTaitMembers
 import FX1PolyAudit.Core.Eliminators.Core.NatElimDataTaitMember
