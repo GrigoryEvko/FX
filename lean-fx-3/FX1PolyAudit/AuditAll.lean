@@ -1527,6 +1527,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreePermutation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreeGarside
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreeGarsideDecision
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreeSignedWord
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingBraid.BraidThreeSignedCanon
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeArity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingOperad.OperadTreeDecision
