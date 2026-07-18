@@ -66,5 +66,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCScalarMul
 #assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumRespectsDenotesSame
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCRespectsDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumNegReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCNegReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCSubReal
 
 end FX1PolyAudit

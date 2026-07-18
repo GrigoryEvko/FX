@@ -772,6 +772,33 @@ theorem riemannSumRespectsDenotesSame
             (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))
       (cellCountPredecessor + 1))
 
+/-- **Linearity — negation**: the Riemann sum of a negated integrand is the
+negation of the Riemann sum.  `sumRealNegReal` pulls the negation out of the
+sampled sum, then `mulRealNegRightDenotesSame` pulls it past the mesh factor. -/
+theorem riemannSumNegReal (function : RegularReal → RegularReal)
+    (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat) :
+    DenotesSameReal
+      (riemannSum (fun value => negReal (function value))
+        lowerBound upperBound cellCountPredecessor)
+      (negReal (riemannSum function lowerBound upperBound cellCountPredecessor)) :=
+  denotesSameRealTrans
+    (mulRealRespectsDenotesSame
+      (denotesSameRealRefl
+        (constantReal (meshWidth lowerBound upperBound cellCountPredecessor)))
+      (sumRealNegReal
+        (fun cellIndex =>
+          function
+            (constantReal
+              (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))
+        (cellCountPredecessor + 1)))
+    (mulRealNegRightDenotesSame
+      (constantReal (meshWidth lowerBound upperBound cellCountPredecessor))
+      (sumReal (cellCountPredecessor + 1)
+        (fun cellIndex =>
+          function
+            (constantReal
+              (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))))
+
 /-! ## The common-refinement Cauchy estimate -/
 
 /-- **The refinement estimate** — the analytic core.  For a uniformly continuous
@@ -1382,5 +1409,63 @@ theorem integralOfUCRespectsDenotesSame
       (convergesToLimitReal
         (riemannSumScheduleSequence isRightUC lowerBound upperBound
           isIntervalNonNegative)))
+
+/-- **Integral negation** — at a SHARED modulus, `integralOfUC (-f) ~
+-integralOfUC f`.  The shared modulus forces the SAME schedule for both, so
+`riemannSumNegReal` aligns the negated Riemann sums pointwise with the negated
+originals; `convergesToNegReal` sends the original sequence's limit to its
+negation, and diagonal-limit uniqueness closes it. -/
+theorem integralOfUCNegReal
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isFunctionUC : IsUniformlyContinuous function modulus)
+    (isNegUC : IsUniformlyContinuous
+      (fun value => negReal (function value)) modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    DenotesSameReal
+      (integralOfUC isNegUC lowerBound upperBound isIntervalNonNegative)
+      (negReal
+        (integralOfUC isFunctionUC lowerBound upperBound isIntervalNonNegative)) :=
+  denotesSameRealOfConvergesToBoth
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isNegUC lowerBound upperBound
+        isIntervalNonNegative))
+    (convergesToOfPointwiseDenotesSameReal
+      (fun index =>
+        riemannSumNegReal function lowerBound upperBound
+          (integralSchedulePredecessor lowerBound upperBound modulus index))
+      (convergesToNegReal
+        (convergesToLimitReal
+          (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
+            isIntervalNonNegative))))
+
+/-- **Integral subtraction** — at a SHARED modulus, `integralOfUC (f - g) ~
+integralOfUC f - integralOfUC g`.  Since `subReal a b` is `addReal a (negReal
+b)` definitionally, this is additivity applied to `f` and `-g`, with negation
+pulled through the second integral by `integralOfUCNegReal`.  The subtracted
+certificate `isSubUC` is demanded at the shared modulus, as with additivity. -/
+theorem integralOfUCSubReal
+    {leftFunction rightFunction : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isLeftUC : IsUniformlyContinuous leftFunction modulus)
+    (isRightUC : IsUniformlyContinuous rightFunction modulus)
+    (isNegRightUC : IsUniformlyContinuous
+      (fun value => negReal (rightFunction value)) modulus)
+    (isSubUC : IsUniformlyContinuous
+      (fun value => subReal (leftFunction value) (rightFunction value)) modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    DenotesSameReal
+      (integralOfUC isSubUC lowerBound upperBound isIntervalNonNegative)
+      (subReal
+        (integralOfUC isLeftUC lowerBound upperBound isIntervalNonNegative)
+        (integralOfUC isRightUC lowerBound upperBound isIntervalNonNegative)) :=
+  denotesSameRealTrans
+    (integralOfUCAddReal isLeftUC isNegRightUC isSubUC lowerBound upperBound
+      isIntervalNonNegative)
+    (addRealRespectsDenotesSame
+      (denotesSameRealRefl
+        (integralOfUC isLeftUC lowerBound upperBound isIntervalNonNegative))
+      (integralOfUCNegReal isRightUC isNegRightUC lowerBound upperBound
+        isIntervalNonNegative))
 
 end FX1Poly.ComputerAlgebra

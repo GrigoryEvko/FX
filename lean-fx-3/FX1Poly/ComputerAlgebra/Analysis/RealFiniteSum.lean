@@ -100,6 +100,26 @@ theorem sumRealScalarMulReal (factor : RegularReal) (term : Nat → RegularReal)
         (denotesSameRealSymm
           (mulRealLeftDistrib factor (sumReal count term) (term count)))
 
+/-- **Negation pulls out of the sum** — the finite sum of negated terms is the
+negation of the sum.  Structural induction: the empty sum is `-0 ~ 0`; the
+successor step distributes `negReal` over the appended `addReal`. -/
+theorem sumRealNegReal (term : Nat → RegularReal) (count : Nat) :
+    DenotesSameReal
+      (sumReal count (fun position => negReal (term position)))
+      (negReal (sumReal count term)) :=
+  match count with
+  | 0 =>
+      denotesSameRealTrans
+        (denotesSameRealSymm (addRealNegRight (constantReal zeroRational)))
+        (addRealZeroLeft (negReal (constantReal zeroRational)))
+  | count + 1 =>
+      denotesSameRealTrans
+        (addRealRespectsDenotesSame
+          (sumRealNegReal term count)
+          (denotesSameRealRefl (negReal (term count))))
+        (denotesSameRealSymm
+          (negRealAddRealDenotesSame (sumReal count term) (term count)))
+
 /-! ## The count-scaled rational bound -/
 
 /-- **The count-scaled rational** — `count` copies of `bound` added,

@@ -19,6 +19,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealRespectsDenotesSame
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealAddReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealScalarMulReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.sumRealNegReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.natScaleRational
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealRespectsIsWithinRealBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealSplit
