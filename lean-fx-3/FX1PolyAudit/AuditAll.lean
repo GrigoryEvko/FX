@@ -1858,6 +1858,7 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.NormalFormDecisionAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.CanonicalReduction
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerDiagram
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding
+import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseInvariantGate
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RealEmbedding
 import FX1PolyAudit.ComputerAlgebra.Number.IntOrderedRingCertificate
