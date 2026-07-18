@@ -1582,6 +1582,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingDistributiveLattice.Distributiv
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingFreeGroup.FreeGroupSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingBooleanAlgebra.BooleanAlgebraSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCommutativeSemiring.CommutativeSemiringSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingSemiring.SemiringSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramBoxCount
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramDecision
