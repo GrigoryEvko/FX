@@ -1852,6 +1852,7 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.MatrixNormalForm
 import FX1PolyAudit.Polygraph.Omega.LafontProp.ConvertibilitySoundness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.DiagramDecisionFires
 import FX1PolyAudit.Polygraph.Omega.LafontProp.NormalFormDecisionAxiomWitness
+import FX1PolyAudit.Polygraph.Omega.LafontProp.CanonicalReduction
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RealEmbedding
 import FX1PolyAudit.ComputerAlgebra.Number.IntOrderedRingCertificate
