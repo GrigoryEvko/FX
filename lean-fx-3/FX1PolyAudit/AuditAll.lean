@@ -12,6 +12,7 @@ import FX1PolyAudit.ComputerAlgebra.Decision.BitVectorArithmetic
 import FX1PolyAudit.ComputerAlgebra.Decision.GroebnerMembership
 import FX1PolyAudit.ComputerAlgebra.Decision.LinearFarkasCertificate
 import FX1PolyAudit.ComputerAlgebra.Decision.FourierMotzkinCompleteness
+import FX1PolyAudit.ComputerAlgebra.Decision.FourierMotzkinExtension
 import FX1PolyAudit.ComputerAlgebra.Decision.ClauseProofChecker
 import FX1PolyAudit.ComputerAlgebra.Decision.CombinationDispatch
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
