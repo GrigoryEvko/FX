@@ -1573,4 +1573,59 @@ theorem integralOfUCDegenerate
           isDegenerateInterval)
       (convergesToConstant (constantReal zeroRational)))
 
+/-! ## Integral sign — non-negativity -/
+
+/-- The Riemann sum of the zero function denotes real zero — the constant sum
+`(U-L)*0` collapses. -/
+theorem riemannSumZeroFunction (lowerBound upperBound : RationalPair)
+    (cellCountPredecessor : Nat) :
+    DenotesSameReal
+      (riemannSum (fun _ => constantReal zeroRational) lowerBound upperBound
+        cellCountPredecessor)
+      (constantReal zeroRational) :=
+  denotesSameRealTrans
+    (riemannSumConstant (constantReal zeroRational) lowerBound upperBound
+      cellCountPredecessor)
+    (mulRealZeroRight (constantReal (subExact upperBound lowerBound)))
+
+/-- **The Riemann sum of a non-negative integrand is non-negative** —
+`riemannSumMonotone` against the zero function, transported through
+`riemannSumZeroFunction`. -/
+theorem riemannSumNonNegative (function : RegularReal → RegularReal)
+    (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat)
+    (pointwiseNonNegative :
+      ∀ value, LessEqualReal (constantReal zeroRational) (function value))
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    LessEqualReal (constantReal zeroRational)
+      (riemannSum function lowerBound upperBound cellCountPredecessor) :=
+  lessEqualRealRespectsDenotesSame
+    (riemannSumZeroFunction lowerBound upperBound cellCountPredecessor)
+    (denotesSameRealRefl
+      (riemannSum function lowerBound upperBound cellCountPredecessor))
+    (riemannSumMonotone (leftFunction := fun _ => constantReal zeroRational)
+      (rightFunction := function) pointwiseNonNegative isIntervalNonNegative)
+
+/-- **The integral of a non-negative integrand is non-negative** — every
+schedule member is non-negative by `riemannSumNonNegative`, so the limit is too
+by `lessEqualRealOfConvergesTo` against the constant-zero sequence.  The order
+half of the concentration-inequality substrate (MEAS). -/
+theorem integralOfUCNonNegative
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isFunctionUC : IsUniformlyContinuous function modulus)
+    (pointwiseNonNegative :
+      ∀ value, LessEqualReal (constantReal zeroRational) (function value))
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    LessEqualReal (constantReal zeroRational)
+      (integralOfUC isFunctionUC lowerBound upperBound isIntervalNonNegative) :=
+  lessEqualRealOfConvergesTo
+    (convergesToConstant (constantReal zeroRational))
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
+        isIntervalNonNegative))
+    (fun position =>
+      riemannSumNonNegative function lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus position)
+        pointwiseNonNegative isIntervalNonNegative)
+
 end FX1Poly.ComputerAlgebra
