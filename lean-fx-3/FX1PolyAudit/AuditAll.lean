@@ -7,6 +7,7 @@ import FX1PolyAudit.ComputerAlgebra.Decision.GroundCongruenceClosure
 import FX1PolyAudit.ComputerAlgebra.Decision.XorSatDecision
 import FX1PolyAudit.ComputerAlgebra.Decision.HornSatDecision
 import FX1PolyAudit.ComputerAlgebra.Decision.TwoSatDecision
+import FX1PolyAudit.ComputerAlgebra.Decision.ReducedOrderedDecisionTree
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
