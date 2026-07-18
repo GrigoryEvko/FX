@@ -1578,6 +1578,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingSemilattice.FiniteSetSemilattic
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAbelianGroup.AbelianGroupSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAbelianGroup.TwoColourAbelianGroupSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAbelianGroup.ColourAbelianGroupSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingFreeGroup.FreeGroupSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramBoxCount
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramDecision
