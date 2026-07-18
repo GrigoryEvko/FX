@@ -1628,4 +1628,47 @@ theorem integralOfUCNonNegative
         (integralSchedulePredecessor lowerBound upperBound modulus position)
         pointwiseNonNegative isIntervalNonNegative)
 
+/-- **The Riemann sum of a bounded integrand is bounded** — `riemannSumMonotone`
+against the constant bound, transported through `riemannSumConstant`. -/
+theorem riemannSumUpperBoundConstant (function : RegularReal → RegularReal)
+    (boundValue : RegularReal)
+    (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat)
+    (pointwiseAbove : ∀ value, LessEqualReal (function value) boundValue)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    LessEqualReal
+      (riemannSum function lowerBound upperBound cellCountPredecessor)
+      (mulReal (constantReal (subExact upperBound lowerBound)) boundValue) :=
+  lessEqualRealRespectsDenotesSame
+    (denotesSameRealRefl
+      (riemannSum function lowerBound upperBound cellCountPredecessor))
+    (riemannSumConstant boundValue lowerBound upperBound cellCountPredecessor)
+    (riemannSumMonotone (leftFunction := function)
+      (rightFunction := fun _ => boundValue) pointwiseAbove isIntervalNonNegative)
+
+/-- **The integral of a bounded integrand is bounded by `(U-L)*c`** — every
+schedule member is bounded by `riemannSumUpperBoundConstant`, so the limit is too
+by `lessEqualRealOfConvergesTo` against the constant bound sequence.  With
+`integralOfUCNonNegative` this is the sandwich the concentration inequalities
+(MEAS) rest on. -/
+theorem integralOfUCUpperBound
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isFunctionUC : IsUniformlyContinuous function modulus)
+    (boundValue : RegularReal)
+    (pointwiseAbove : ∀ value, LessEqualReal (function value) boundValue)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    LessEqualReal
+      (integralOfUC isFunctionUC lowerBound upperBound isIntervalNonNegative)
+      (mulReal (constantReal (subExact upperBound lowerBound)) boundValue) :=
+  lessEqualRealOfConvergesTo
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
+        isIntervalNonNegative))
+    (convergesToConstant
+      (mulReal (constantReal (subExact upperBound lowerBound)) boundValue))
+    (fun position =>
+      riemannSumUpperBoundConstant function boundValue lowerBound upperBound
+        (integralSchedulePredecessor lowerBound upperBound modulus position)
+        pointwiseAbove isIntervalNonNegative)
+
 end FX1Poly.ComputerAlgebra
