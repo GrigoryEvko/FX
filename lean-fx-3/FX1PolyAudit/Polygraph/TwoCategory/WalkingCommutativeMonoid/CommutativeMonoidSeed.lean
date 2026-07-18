@@ -27,6 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.commMonoidTreeConv_complete
 #assert_no_axioms FX1Poly.Polygraph.commMonoidTreeConv_iff_leafCount
 #assert_no_axioms FX1Poly.Polygraph.decideCommMonoidTreeConv
+#assert_no_axioms FX1Poly.Polygraph.instDecidableCommMonoidTreeConv
 #assert_no_axioms FX1Poly.Polygraph.commMonoidAssocHolds
 #assert_no_axioms FX1Poly.Polygraph.commMonoidCommHolds
 #assert_no_axioms FX1Poly.Polygraph.commMonoidDecidesEqualCount

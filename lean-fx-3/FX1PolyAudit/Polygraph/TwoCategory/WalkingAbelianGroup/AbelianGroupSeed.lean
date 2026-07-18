@@ -54,6 +54,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.abelianGroupTreeConv_complete
 #assert_no_axioms FX1Poly.Polygraph.abelianGroupTreeConv_iff_windingEquiv
 #assert_no_axioms FX1Poly.Polygraph.decideAbelianGroupTreeConv
+#assert_no_axioms FX1Poly.Polygraph.instDecidableAbelianGroupTreeConv
 #assert_no_axioms FX1Poly.Polygraph.abelianGroupCancellationHolds
 #assert_no_axioms FX1Poly.Polygraph.abelianGroupRejectsLeafUnit
 #assert_no_axioms FX1Poly.Polygraph.abelianGroupInverseDistributes

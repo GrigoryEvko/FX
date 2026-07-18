@@ -503,6 +503,13 @@ def decideAbelianGroupTreeConv (source target : AbelianGroupTree) :
   | isTrue windingEq => isTrue (abelianGroupTreeConv_complete windingEq)
   | isFalse windingNe => isFalse (fun conv => windingNe (abelianGroupTreeConv_sound conv))
 
+/-- The tree-pasting convertibility as a `Decidable` INSTANCE, so the `decide` tactic and instance
+resolution fire on it — mirroring `instDecidableOperadTreeConv`.  A definitional alias of the shipped
+`decideAbelianGroupTreeConv`, hence propext-free. -/
+instance instDecidableAbelianGroupTreeConv (source target : AbelianGroupTree) :
+    Decidable (AbelianGroupTreeConv source target) :=
+  decideAbelianGroupTreeConv source target
+
 /-! ## Groundings -/
 
 /-- ★ **The decision in action (positive)** — a cancelling insertion `m(m(leaf, i leaf), leaf)` is convertible

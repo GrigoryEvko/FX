@@ -211,6 +211,13 @@ def decideSemilatticeTreeConv (source target : SemilatticeTree) :
   | isTrue presenceEq => isTrue (semilatticeTreeConv_complete presenceEq)
   | isFalse presenceNe => isFalse (fun conv => presenceNe (semilatticeTreeConv_sound conv))
 
+/-- The tree-pasting convertibility as a `Decidable` INSTANCE, so the `decide` tactic and instance
+resolution fire on it — mirroring `instDecidableOperadTreeConv`.  A definitional alias of the shipped
+`decideSemilatticeTreeConv`, hence propext-free. -/
+instance instDecidableSemilatticeTreeConv (source target : SemilatticeTree) :
+    Decidable (SemilatticeTreeConv source target) :=
+  decideSemilatticeTreeConv source target
+
 /-! ## Groundings -/
 
 /-- ★ **Idempotency does real work** — `m(leaf, leaf) ≈ leaf`, the move UNAVAILABLE in the commutative

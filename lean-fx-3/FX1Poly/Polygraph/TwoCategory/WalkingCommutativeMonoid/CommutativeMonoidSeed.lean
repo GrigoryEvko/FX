@@ -193,6 +193,13 @@ def decideCommMonoidTreeConv (source target : CommMonoidTree) :
   | isTrue countEq => isTrue (commMonoidTreeConv_complete countEq)
   | isFalse countNe => isFalse (fun conv => countNe (commMonoidTreeConv_sound conv))
 
+/-- The tree-pasting convertibility as a `Decidable` INSTANCE, so the `decide` tactic and instance
+resolution fire on it — mirroring `instDecidableOperadTreeConv`.  A definitional alias of the shipped
+`decideCommMonoidTreeConv`, hence propext-free. -/
+instance instDecidableCommMonoidTreeConv (source target : CommMonoidTree) :
+    Decidable (CommMonoidTreeConv source target) :=
+  decideCommMonoidTreeConv source target
+
 /-! ## Groundings -/
 
 /-- ★ **Associativity holds** at the three input slots. -/
