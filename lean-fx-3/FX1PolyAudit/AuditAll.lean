@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.AuditCore
 import FX1PolyAudit.AuditCoreSubstrate
 import FX1PolyAudit.ComputerAlgebra.IntMatrix
+import FX1PolyAudit.ComputerAlgebra.Order.AlmostFull
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
