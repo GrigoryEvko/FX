@@ -1,0 +1,211 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Decision.TwoSatDecision
+
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/TwoSatDecision — zero-axiom gate
+    (2-SAT decided via implication-path duality, the SCC-free Aspvall–Plass–Tarjan route)
+
+Per-declaration zero-axiom gate for the certificate-first 2-SAT decision procedure: the
+Boolean/Nat structural kits (hand-rolled `beq`/`le`, the pigeonhole substrate), literals,
+clauses and their skew-symmetric implication edges, checked path certificates with append
+and skew duality, the semantic force lemmas, the certificate-bearing reachability closure
+with PROVEN fuel adequacy (`twoSatIterateStabilizes`) and the closed-set refutation
+linchpin (`twoSatClosedRefutesPath`), the Even–Itai–Shamir decision augmentation with the
+no-mutual-reach preservation invariant, and the decision procedure `twoSatDecide` with
+BOTH commissioned theorems: `twoSatDecideUnsatSound` (two path certificates refute every
+assignment) and `twoSatDecideSatSound` (the selected assignment satisfies every clause).
+
+Marker: `fxDissatIsland_hasTwoSatDecision := true` (DECIDED).
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAndLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAndRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAndIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatOrCases
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatOrIntroLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatOrIntroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatOrFalseSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNotEqTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNotEqFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatBeqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatLeZeroLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatLeTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatLeSuccSelfFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatLeSuccAbsurd
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSuccAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatLeAddRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatLeAddLeftMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNatMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatInsertVariable
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatInsertMemberSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatInsertMemberMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatInsertMemberCases
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatLiteral.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatLiteral.variableIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatLiteral.isPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNegate
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatPositiveLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNegativeLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatBoolBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatBoolBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatBoolBeqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatLiteralBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatLiteralBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatLiteralBeqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatLiteralBeqFalseSymm
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNegateInvolution
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatLiteralBeqNegateSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatLiteralMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAppendLiterals
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAppendLiteralsNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatMemberAppendEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAppendLiteralsLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatRemoveFirstLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatRemoveFirstLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatMemberRemoveFirst
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatLiteralsNodup
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAllMembersOf
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAllMembersWeakenCons
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAllMembersSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAllMembersAppendCompose
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAllMembersRemove
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNodupSubsetLengthLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatNodupInsertMiddle
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatClause
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatClause.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatClause.firstLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatClause.secondLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseBeqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseHasEdge
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatHasEdge
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseHasEdgeCases
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseHasEdgeDual
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatHasEdgeDual
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatHasEdgeOfClauseMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatHasEdgeExistsClause
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatUniverse
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEdgeTargetInUniverse
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectVariables
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectVarsConsMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseVarsCollected
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEdgeSourceVarCollected
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSignPairMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatVarInUniverse
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatIsPathFrom
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatPathAppend
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatReaches
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatReachesRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatReachesOfEdge
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatReachesTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatDualPathAux
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatDualPathAuxSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatPathDual
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatReachesDual
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseMemberConsMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEvalLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEvalNegate
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEvalClause
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSatisfies
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSatisfiesClauseMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEdgeForces
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatPathForces
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatContradictionPathsSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatReachEntry
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatReachEntry.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatReachEntry.reachedLiteral
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatReachEntry.pathWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEntryLiterals
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAppendEntries
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAppendEntriesNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEntryLiteralsAppend
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindEntry
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindEdgeParent
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAllEntriesValid
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatConsiderCandidate
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectNewcomers
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatExpandStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatIterateExpansion
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputeReach
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputedReaches
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatConsiderExtends
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectExtends
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectEmptyClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindEdgeParentNoneAbsurd
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindEdgeParentSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClosedRefutesPath
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindEntryOfMemberAbsurd
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindEntrySound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectNodup
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectSubset
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectAllValid
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAllEntriesValidAppend
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatStepNodup
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatStepSubset
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatStepAllValid
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatStepMemberMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatIterateAllValid
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatIterateMemberMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatStableIterateIdentity
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatIterateStabilizes
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputeReachStable
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputeReachClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputeReachContainsSource
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputeReachAllValid
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputedReachesSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatComputedReachesComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatReachesSelfNegVarCollected
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatContradictionWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatContradictionWitness.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatContradictionWitness.contradictionVariable
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatContradictionWitness.forwardPath
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatContradictionWitness.backwardPath
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindContradictionPaths
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatScanForTwoWay
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatUnitClauseFor
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAugmentLoop
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAugmentedSystem
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSelectTrueVariables
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatEnvOfTrueList
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatVerdict
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatVerdict.isUnsatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatVerdict.isSatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatDecide
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindContradictionPathsVariable
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindContradictionPathsSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatScanForTwoWaySound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatDecideUnsatSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatScanForTwoWayNoneAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatFindContradictionPathsNoneRefutes
+#assert_no_axioms FX1Poly.ComputerAlgebra.TwoSatHasNoMutualPair
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatScanNoneNoMutual
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatUnitAugmentDecompose
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatDecisionPreservesNoMutual
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAugmentLoopPreservesNoMutual
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseMemberAugmentMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatCollectVarsAugmentMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatAugmentLoopDecides
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSelectMemberSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSelectMemberComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatUnitClauseEdge
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatValLemma
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatClauseSatisfiedPointwise
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSatisfiesOfPointwise
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatDecideSatSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatVerdictIsSatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatVerdictTrueVariables
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatVerdictWitnessChecks
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSmokeChainSystem
+#assert_no_axioms FX1Poly.ComputerAlgebra.twoSatSmokeContradictionSystem
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatIsland_hasTwoSatDecision
+
+end FX1PolyAudit

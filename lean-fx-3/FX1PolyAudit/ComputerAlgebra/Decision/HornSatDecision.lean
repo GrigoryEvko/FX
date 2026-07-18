@@ -1,0 +1,158 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Decision.HornSatDecision
+
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/HornSatDecision — zero-axiom gate
+    (SAT-island brick: HORN-SAT decided via the least-model fixpoint)
+
+Per-declaration zero-axiom gate for the HORN-SAT decision kit: the clause shape
+(`HornSatClause` with constructor and projections, `HornSatClauseIn` with both
+constructors), the structural `Nat` comparison and additive-order kits, truth-set
+membership / sorted placement / guarded insertion with the full membership-lemma suite,
+duplicate-freedom and strict ascent preservation, the pigeonhole bound
+(`hornSatRemoveFirst` + `hornSatDistinctWithinLength`), the one-pass operator with
+growth/fixity/within/delivery lemmas, the hand-rolled truth-set comparator, fuel-adequate
+saturation (`hornSatSaturateReachesFixpoint`), the least model with fixpoint / distinct /
+ascending / closure certificates, environment semantics with minimality
+(`hornSatLeastModelIsMinimal`), the executable checker with induced-environment agreement,
+the goal scan with none/some characterizations, the decider `hornSatDecide` with SAT
+soundness, checker-eval agreement, and UNSAT soundness, and the island marker
+`fxDissatIsland_hasHornSatDecision = true`.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatClause
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatClause.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatClause.body
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatClause.head
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatClauseIn
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatClauseIn.here
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatClauseIn.there
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatBeqSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatCompareNat
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatCompareSelfIsEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatCompareEqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatCompareGtImpliesLtFlip
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatSuccAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatSuccInj
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatNeverSuccPlus
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatLeZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatLeSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatLeTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatLeAddLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatLeSuccSelfFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatAndSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatOrFalseSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatMemberHead
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatMemberTail
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatMemberInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatMemberConsFalseIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlace
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceConsOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceConsOfEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceConsOfGt
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsert
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertOfMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertOfFresh
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatFreshCompareNeverEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceMakesMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlacePreservesMembers
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceMemberInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceLengthOfFresh
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertMakesMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertPreservesMembers
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertMemberInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertGrowsOrFixes
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatIsDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDistinctConsSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDistinctConsIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceKeepsDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertKeepsDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatOrderingIsLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatNatIsBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatIsBelowOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatIsAscendingFrom
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatIsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceKeepsAscendingFrom
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatPlaceKeepsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatInsertKeepsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatRemoveFirst
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatRemoveFirstShortens
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatRemoveFirstKeepsOthers
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDistinctWithinLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatBodyHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatBodyHoldsMonotone
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatApplyClauseStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatApplyClause
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatApplyPreservesMembers
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatApplyGrowsOrFixes
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatApplyKeepsDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatApplyKeepsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStepPreservesMembers
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStepGrowsOrFixes
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStepKeepsDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStepKeepsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatHeadsListStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatHeadsList
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatHeadsListCovers
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStepStaysWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStepDeliversHead
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatTrueSetBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatTrueSetBeqSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatTrueSetBeqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSaturate
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSaturateSuccOfStable
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSaturateSuccOfChanged
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSaturateKeepsDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSaturateKeepsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSaturateReachesFixpoint
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatLeastModel
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatLeastModelIsFixpoint
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatLeastModelIsDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatLeastModelIsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatLeastModelIsClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvBodyHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvHeadHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvClauseHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvSatisfiesAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvSatisfiesAllExtract
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatBodyHoldsLift
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvClauseHeadTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvClauseGoalRefutes
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatApplyKeepsEnvBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatStepKeepsEnvBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSaturateKeepsEnvBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatLeastModelIsMinimal
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatSetHeadHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatClauseHoldsIn
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatCheckModel
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvBodyHoldsInduced
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatEnvHeadHoldsInduced
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatClauseHoldsInduced
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatCheckModelInduced
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatCheckModelOfAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatScanStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatFindViolatedGoal
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatFindNoneMeansGoalsIdle
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatFindSomeMeansGoalFired
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatVerdict
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatVerdict.isSatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.HornSatVerdict.isUnsatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatVerdictOfScan
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDecide
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatVerdictIsSatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatVerdictWitnessSet
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatVerdictGoalIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDecideSatisfiableGivesLeastModel
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDecideSatisfiableGivesModel
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDecideSatisfiableInducedEnv
+#assert_no_axioms FX1Poly.ComputerAlgebra.hornSatDecideUnsatisfiableSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatIsland_hasHornSatDecision
+
+end FX1PolyAudit

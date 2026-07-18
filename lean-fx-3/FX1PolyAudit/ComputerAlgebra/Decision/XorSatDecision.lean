@@ -1,0 +1,189 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Decision.XorSatDecision
+
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/XorSatDecision — zero-axiom gate
+    (SAT-island brick: XOR-SAT decided with two-sided certificates)
+
+Per-declaration zero-axiom gate for the XOR-SAT decision kit: the structural three-way
+`Nat` comparator with its flip/transitivity lemmas and the derived `xorSatNatEqb`, the
+`Bool` xor / eq / and kits, strictly-ascending variable lists (`xorSatIsBelowHead` /
+`xorSatIsStrictlyAscending` / `xorSatHasMember` with the not-below refutation), the
+single-element toggle `xorSatToggleOne` (branch equations, front placement, ascent
+preservation, commutation, self-cancellation), the toggle-merge symmetric difference with
+its full F2 algebra (nil laws, ascent preservation, slide lemmas, associativity, swap,
+commutativity, self-annihilation, self-cancellation), the membership xor homomorphisms,
+witness surgery (`xorSatRemoveVar` / `xorSatExtendWitness` with exact pivot readback),
+equations and evaluation (the equation shape with constructor and projections, xor-folds
+with THE EVAL LEMMA `xorSatXorFoldToggleMerge`, combination with `xorSatEvalCombine`,
+off-pivot fold agreement), systems (indexed lookup, evaluation, well-formedness, the F2
+selection fold with THE SELECTION LEMMA `xorSatSelectXorSatisfied`), the combine algebra
+(zero laws, commutativity, associativity, self-cancellation, left swap), the fold
+homomorphism (`xorSatSelectXorToggleOne` / `xorSatSelectXorToggleMerge`), working items and
+verdicts (shapes with constructors and projections), the pivot transform with count /
+well-formedness / provenance preservation, the fuel decider `xorSatDecideAux` with its
+five reduction equations, FUEL ADEQUACY (`xorSatDecideAuxIsSome`), back-substitution
+(`xorSatBackSubstituteTail`), SAT and UNSAT soundness at the aux level, the initial working
+set (well-formedness, check bridge, provenance), the top-level decider `xorSatDecide` with
+the totality certificate and the four headline theorems (`xorSatDecideSatSound`,
+`xorSatCheckSystemHoldsEachEquation`, `xorSatDecideUnsatSound`, `xorSatDecideUnsatRefutes`),
+the verdict extractors, the executable unsat-certificate checker, and the island marker
+`fxDissatIsland_hasXorSatDecision = true`.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCompareNat
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCompareNatRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCompareNatEqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCompareNatLtFlips
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCompareNatGtFlips
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCompareNatLtTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatEqb
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatEqbRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatEqbImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatEqbOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatEqbOfGt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatEqbFlipsFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatSuccAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXor
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXorComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXorAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXorFalseLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXorFalseRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXorSelfFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXorLeftSwap
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolXorCancelLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolEqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBoolEqImpliesEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatAndElimLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatAndElimRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatAndIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatIsBelowHead
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatIsStrictlyAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatIsBelowHeadConsIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatIsBelowHeadConsInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatIsBelowHeadOfLess
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMemberConsOfEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMemberConsOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMemberConsOfGt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMemberNotBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneGt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneFront
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatIsBelowHeadToggleOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOnePreservesAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneSelfCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMerge
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeNilLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeCons
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergePreservesAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeNilRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleOneMergeRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeToggleOneLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeSwap
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeSelfNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatToggleMergeSelfCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatEqbOfEqCompare
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMemberConsAscending
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMemberToggleOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatHasMemberToggleMerge
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatRemoveVar
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatRemoveVarConsOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatRemoveVarConsOfEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatRemoveVarConsOfGt
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatRemoveVarSelfAbsent
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatRemoveVarKeepsOthers
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEnvOfWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatExtendWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEnvExtendAtPivot
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEnvExtendAtOther
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatEquation
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatEquation.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatEquation.variables
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatEquation.parity
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEquationIsWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatXorFold
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatXorFoldToggleOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatXorFoldToggleMerge
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEvalEquation
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombine
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombineIsWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEvalCombine
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatXorFoldAgreeOffPivot
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatZeroEquation
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatContradictionEquation
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEvalSystem
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatSystemIsWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatGetEquation
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatGetEquationIsWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEvalSystemGet
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatSelectXor
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatSelectXorIsWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatSelectXorSatisfied
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombineZeroLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombineZeroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombineComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombineAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombineSelfCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCombineLeftSwap
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatSelectXorToggleOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatSelectXorToggleMerge
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatWorkItem
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatWorkItem.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatWorkItem.equation
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatWorkItem.comboIndices
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatVerdict
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatVerdict.isSatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.XorSatVerdict.isUnsatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatWorkCount
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatPivotTransform
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatPivotTransformConsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatPivotTransformConsSkip
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatPivotTransformCount
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatWorkIsWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatPivotTransformPreservesWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatWorkHasProvenance
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatPivotTransformPreservesProvenance
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCheckWork
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAux
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxFuelOut
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxDrop
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxContradiction
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxPivot
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatIsSomeVerdict
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNoneNeSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxIsSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatBackSubstituteTail
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxSatSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideAuxUnsatSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatInitialWorkFrom
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatInitialWorkIsWellFormed
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCheckWorkInitial
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatInitialWorkHasProvenance
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecide
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCheckSystem
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideTotalFuelAdequate
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideSatSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCheckSystemHoldsEachEquation
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideUnsatSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatDecideUnsatRefutes
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatVerdictIsSatisfiable
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatVerdictWitnessSet
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatVerdictComboIndices
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatNatListBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatEquationBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.xorSatCheckUnsatCombo
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatIsland_hasXorSatDecision
+
+end FX1PolyAudit
