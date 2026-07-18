@@ -1584,6 +1584,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingBooleanAlgebra.BooleanAlgebraSe
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCommutativeSemiring.CommutativeSemiringSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingSemiring.SemiringSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingCommutativeRing.CommutativeRingSeed
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingRing.RingSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramSeed
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramBoxCount
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingTraced.TracedDiagramDecision
