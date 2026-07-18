@@ -21,7 +21,7 @@ it stays genuine `Eq`.
   bound is DEFINITIONAL (`BitVec.isLt`), zero proof obligation.
 * Signed readout: `SIntN.signedValue = bitVecToInt bits`, range
   `[-2^(n-1), 2^(n-1))` — one genuine case-split lemma (`signedValue`
-  bounds, `width + 1` indexed so `n ≥ 1`).
+  bounds, `width + 1` indexed so `n ≥ 1`): `sIntNValueIsBounded`, shipped in `FixedWidth/SignedSemantics`.
 
 Arithmetic delegates to the shipped `Bits/BitVec` ops (wrap-by-default =
 FX `overflow(wrap)`); the u/i split shows only in the sign-sensitive ops

@@ -1,0 +1,96 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.FixedWidth.SignedSemantics
+
+/-! # FX1PolyAudit/ComputerAlgebra/FixedWidth/SignedSemantics — zero-axiom gate
+
+Per-declaration zero-axiom gate for the SIGNED half of the dim-16 overflow
+corpus: the sign-bit/decide bridges, the doubling order kit, the biased
+(`signedValue + 2^width`) interpretation, the signed range lemma promised by
+`Views`, signed trap add/mul with fits/overflows/exactness, signed saturate
+add/mul with in-range/clamp/bounded, sign extension with value and sign
+preservation, and the NUM-Z-FIXED signed-half marker.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
+`sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsFlagEqTrueOfNotEqFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsFlagEqFalseOfNotEqTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsFlagIsTrueOrFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecIsNegativeEqFalseOfDoubleLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecIsNegativeEqTrueOfDoubleGe
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsDoubleLtOfBitVecNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsDoubleGeOfBitVecNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsDoubleLeDoubleOfLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsDoubleLtDoubleOfLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsLeOfDoubleLeDouble
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsLtOfDoubleLtDouble
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsLeOfAddLeAddLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsDoublePow
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsHalfAddHalf
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsHalfLtModulus
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsPowLeWiderPow
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNNonNegativeValueIsBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNNegativeValueIsBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNValueIsBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignedValueOfNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignedValueOfNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNBiasedValue
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNBiasedValueOfNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNBiasedValueOfNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNBiasedValueIsBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNEncodeBiasedWindow
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostNegativeToNat
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostNegativeIsNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostNegativeBiasedValue
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostPositiveToNatSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostPositiveIsNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMostPositiveBiasedValueSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNAddBiasedEncode
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapAddFits
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapAddOverflowsBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapAddOverflowsAbove
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapAddSomeIsExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMulBiasedShiftedProduct
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMulBiasCross
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNMulBiasedEncode
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapMul
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapMulFits
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapMulOverflowsBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapMulOverflowsAbove
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNTrapMulSomeIsExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateAddInRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateAddInRangeIsExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateAddClampsLow
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateAddClampsHigh
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateAddIsBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateMul
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateMulInRange
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateMulInRangeIsExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateMulClampsLow
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateMulClampsHigh
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSaturateMulIsBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.SIntN.signExtend
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecSignExtendOfNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecSignExtendOfNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignExtendNonNegativeMatchesZeroExtend
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignExtendPreservesNonNegativeValue
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignExtendPreservesNegativeValue
+#assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignExtendPreservesSign
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxNumZFixed_hasSignedSemantics
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBoolToNatOfBeqOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsNatBitsLittleEndian
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsNatBitsLittleEndianLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsNatBitsLittleEndianToNat
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecToBvaBits
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecToBvaBitsLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecToBvaBitsToNat
+#assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecToBvaBitsRoundTrip
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxNumZFixed_hasBvaValueBridge
+
+end FX1PolyAudit
