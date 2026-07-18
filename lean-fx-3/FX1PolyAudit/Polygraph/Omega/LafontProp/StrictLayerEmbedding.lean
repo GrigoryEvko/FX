@@ -1,0 +1,140 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.Omega.LafontProp.StrictLayerEmbedding
+
+/-! # FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding — zero-axiom gate
+(LAFONT-REPAIR stage 1, bricks C+D+E: congruence, soundness, fires, embedding, transport)
+
+Per-declaration zero-axiom gate for the stage-2 file: the pad-window sandwich semantics and
+pad congruence, the split-recombination lemmas, the 18 relation-row windows with the kernel
+coherence gate, the boundary-indexed congruence `SldAreConvertibleLayers` (all 24 constructors
+asserted individually), the derived exchange, target-arity preservation, the denotational
+soundness theorem with Bool form and negative decision direction, the defensive fires (the
+r30 unit/associativity pairs as one-row firings, the closed-loop death, the EX-SEPARATOR
+DISSOLUTION `sldEmbeddingDissolvesTheSeparator`), the embedding `sldOfWireDiagram` with
+arity/composability preservation and the denotation bridge, the derived congruence plumbing
+(prefix-list, suffix-append, pad distribution laws, the two one-sided pad congruences), the
+slide family (single-layer and block slides), the zip-to-stacked conversion, THE
+CONVERTIBILITY TRANSPORT (`sldOfWireDiagramTransportsConvertibility`, all 28 old
+constructors), its diagram-level corollary and transported fires, and the two stage markers.
+
+Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`,
+`WellFounded.fix`.  Built by the FX1PolyAudit lib glob; AuditAll registration is a later
+round's bookkeeping (AuditAll untouched per this round's commission). -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadLayerEntriesAsSandwich
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadWindowDenoteAsSandwichEntry
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPaddedWindowsDenoteAgreeEntry
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPaddedRowRewritePreservesDenoteEntry
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSplitTopFirstStagesRecombine
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSplitBottomFirstStagesRecombine
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddAssociativityLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddAssociativityRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddLeftUnitLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddLeftUnitRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddRightUnitLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddRightUnitRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddCommutativityLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAddCommutativityRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyCoassociativityLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyCoassociativityRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyLeftCounitLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyLeftCounitRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyRightCounitLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyRightCounitRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyCocommutativityLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyCocommutativityRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldBimonoidSquareLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldBimonoidSquareRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyAfterZeroLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyAfterZeroRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDiscardAfterAddLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDiscardAfterAddRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDiscardAfterZeroLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDiscardAfterZeroRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapInvolutionLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapInvolutionRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapYangBaxterLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapYangBaxterRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapPastAddLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapPastAddRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapPastZeroLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldSwapPastZeroRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyPastSwapLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldCopyPastSwapRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDiscardPastSwapLeftWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDiscardPastSwapRightWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDoRowWindowsCohere
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAllEighteenRowWindowsCohere
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldDisjointLayersExchange
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldConvertibleLayersKeepTargetArity
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldConvertibleLayersDenoteEqualEntries
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldConvertibleLayersDenoteAgreeUpTo
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldNotConvertibleOfDistinctDenotes
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldAreConvertibleDiagrams
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldRefutedUnitPairIsConvertible
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldMirrorUnitPairIsConvertible
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldRefutedAssociativityPairIsConvertible
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldClosedLoopDiesIntoEmptySyntax
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldUnitFireDenotesIdentity
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagram
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramSourceArity
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramTargetArity
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramIsComposable
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramDenoteEntry
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramDenoteAgrees
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldEmbeddingDissolvesTheSeparator
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldEmbeddingCollapsesAnomalyParity
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldEmbeddingDissolvesBottomPadding
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldConvUnderPrefixList
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldConvAppendsSuffix
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadLayerBelowExtension
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadLayerAboveExtension
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadLayersBelowOfAppend
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadLayersAboveOfAppend
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadLayersBelowOfPadWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadLayersAboveOfPadWindow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadIndexShuffleBelow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldPadIndexShuffleAbove
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldConvPadsBelow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldConvPadsAbove
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldUpperLayerSlidesDownPastBlock
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldLowerLayerSlidesDownPastBlock
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldBlockSlidesDownPastBlock
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldZipConvertsToStackedForm
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramLayersComposable
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramLayersReach
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramTransportsConvertibility
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldOfWireDiagramTransportsToDiagrams
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldTransportedUnitPairFires
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.sldTransportedDerivedChainFires
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.fxLafontStrictLayer_hasEmbeddingTransport
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.fxLafontStrictLayer_hasCanonicalCompleteness
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromReflexivity
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromSymmetry
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromTransitivity
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.underLayerPrefix
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.layerSplitTopActsFirst
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.layerSplitBottomActsFirst
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromAddAssociativityRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromAddLeftUnitRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromAddRightUnitRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromAddCommutativityRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromCopyCoassociativityRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromCopyLeftCounitRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromCopyRightCounitRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromCopyCocommutativityRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromBimonoidSquareRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromCopyAfterZeroRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromDiscardAfterAddRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromDiscardAfterZeroRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromSwapInvolutionRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromSwapYangBaxterRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromSwapPastAddRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromSwapPastZeroRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromCopyPastSwapRow
+#assert_no_axioms FX1Poly.Polygraph.Omega.LafontProp.SldAreConvertibleLayers.fromDiscardPastSwapRow
+
+end FX1PolyAudit
