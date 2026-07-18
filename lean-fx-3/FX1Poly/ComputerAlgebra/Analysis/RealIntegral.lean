@@ -799,6 +799,37 @@ theorem riemannSumNegReal (function : RegularReal → RegularReal)
             (constantReal
               (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))))
 
+/-- **The degenerate Riemann sum** — over a collapsed interval (`U - L ~ 0`) the
+Riemann sum denotes real zero at every partition.  The zero interval width makes
+the mesh factor denote zero, and a zero factor annihilates the sampled sum. -/
+theorem riemannSumDegenerate (function : RegularReal → RegularReal)
+    (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat)
+    (isDegenerateInterval :
+      DenotesSameAs (subExact upperBound lowerBound) zeroRational) :
+    DenotesSameReal
+      (riemannSum function lowerBound upperBound cellCountPredecessor)
+      (constantReal zeroRational) :=
+  denotesSameRealTrans
+    (mulRealRespectsDenotesSame
+      (constantRealRespectsDenotesSame
+        (denotesSameAsTrans
+          (mulExactRespectsDenotesSameAs isDegenerateInterval
+            (denotesSameAsRefl (reciprocalOfSucc cellCountPredecessor)))
+          (mulExactZeroLeftDenotesSame (reciprocalOfSucc cellCountPredecessor))))
+      (denotesSameRealRefl
+        (sumReal (cellCountPredecessor + 1)
+          (fun cellIndex =>
+            function
+              (constantReal
+                (samplePoint lowerBound upperBound cellCountPredecessor
+                  cellIndex))))))
+    (mulRealZeroLeft
+      (sumReal (cellCountPredecessor + 1)
+        (fun cellIndex =>
+          function
+            (constantReal
+              (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))))
+
 /-! ## The common-refinement Cauchy estimate -/
 
 /-- **The refinement estimate** — the analytic core.  For a uniformly continuous
@@ -1467,5 +1498,30 @@ theorem integralOfUCSubReal
         (integralOfUC isLeftUC lowerBound upperBound isIntervalNonNegative))
       (integralOfUCNegReal isRightUC isNegRightUC lowerBound upperBound
         isIntervalNonNegative))
+
+/-- **The degenerate integral** — over a collapsed interval (`U - L ~ 0`) the
+integral denotes real zero.  `riemannSumDegenerate` makes every schedule member
+setoid-equal to zero, so the sequence converges to zero, and the diagonal limit
+is unique. -/
+theorem integralOfUCDegenerate
+    {function : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isFunctionUC : IsUniformlyContinuous function modulus)
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound))
+    (isDegenerateInterval :
+      DenotesSameAs (subExact upperBound lowerBound) zeroRational) :
+    DenotesSameReal
+      (integralOfUC isFunctionUC lowerBound upperBound isIntervalNonNegative)
+      (constantReal zeroRational) :=
+  denotesSameRealOfConvergesToBoth
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
+        isIntervalNonNegative))
+    (convergesToOfPointwiseDenotesSameReal
+      (fun index =>
+        riemannSumDegenerate function lowerBound upperBound
+          (integralSchedulePredecessor lowerBound upperBound modulus index)
+          isDegenerateInterval)
+      (convergesToConstant (constantReal zeroRational)))
 
 end FX1Poly.ComputerAlgebra
