@@ -24,5 +24,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealRespectsIsWithinRealBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealSplit
 #assert_no_axioms FX1Poly.ComputerAlgebra.sumRealRegroupProduct
+#assert_no_axioms FX1Poly.ComputerAlgebra.sumRealMonotone
 
 end FX1PolyAudit

@@ -27,5 +27,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.convergesToAddReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.negRealRespectsIsWithinRealBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.convergesToNegReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.nonNegLimitTailCollapses
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.nonNegLimitTailCollapsesShaped
+#assert_no_axioms FX1Poly.ComputerAlgebra.realNonNegativeOfConvergesTo
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualRealOfConvergesTo
 
 end FX1PolyAudit

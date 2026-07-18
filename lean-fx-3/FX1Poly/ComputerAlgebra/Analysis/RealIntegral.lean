@@ -1,6 +1,7 @@
 import FX1Poly.ComputerAlgebra.Analysis.RealFiniteSum
 import FX1Poly.ComputerAlgebra.Analysis.RealContinuity
 import FX1Poly.ComputerAlgebra.Analysis.RealDerivative
+import FX1Poly.ComputerAlgebra.Number.RealOrderMonotoneMultiply
 
 /-! # The constructive integral — Riemann sums of a uniformly continuous map
     (ANALYSIS-INTEGRAL-1)
@@ -707,6 +708,29 @@ theorem riemannSumScalarMulReal (factor : RegularReal)
           (denotesSameRealRefl sampledSum))
         (mulRealAssoc factor meshFactor sampledSum)))
 
+/-- **Monotonicity**: a pointwise `LessEqualReal` between two integrands lifts
+to their Riemann sums, provided the interval is nondegenerate (`upperBound -
+lowerBound ≥ 0`, making the mesh width a nonnegative scalar).  `sumRealMonotone`
+orders the sampled finite sums, and `realMulLeftMonotone` scales by the
+nonnegative mesh factor — both preserve the order. -/
+theorem riemannSumMonotone {leftFunction rightFunction : RegularReal → RegularReal}
+    (pointwiseBelow : ∀ value,
+      LessEqualReal (leftFunction value) (rightFunction value))
+    {lowerBound upperBound : RationalPair} {cellCountPredecessor : Nat}
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    LessEqualReal
+      (riemannSum leftFunction lowerBound upperBound cellCountPredecessor)
+      (riemannSum rightFunction lowerBound upperBound cellCountPredecessor) :=
+  realMulLeftMonotone
+    (fun _ =>
+      mulExactIsNonNegative isIntervalNonNegative
+        (ratioOfNatSuccIsNonNegative 1 cellCountPredecessor))
+    (sumRealMonotone (cellCountPredecessor + 1)
+      (fun position _ =>
+        pointwiseBelow
+          (constantReal
+            (samplePoint lowerBound upperBound cellCountPredecessor position))))
+
 /-- **The exact constant Riemann sum** — the Riemann sum of a constant function
 denotes `(upperBound - lowerBound) * constantValue`, independent of the
 partition.  The mesh times the cell count telescopes to the interval width. -/
@@ -1375,6 +1399,31 @@ theorem integralOfUCAddReal
         (convergesToLimitReal
           (riemannSumScheduleSequence isRightUC lowerBound upperBound
             isIntervalNonNegative))))
+
+/-- **Integral monotonicity** — at a SHARED modulus, a pointwise `LessEqualReal`
+between two integrands lifts to their integrals.  Both integrals are diagonal
+limits of the SAME Archimedean schedule of Riemann sums, `riemannSumMonotone`
+orders those sums member-by-member, and the limit-order law
+`lessEqualRealOfConvergesTo` carries the order to the limits. -/
+theorem integralOfUCMonotone
+    {leftFunction rightFunction : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isLeftUC : IsUniformlyContinuous leftFunction modulus)
+    (isRightUC : IsUniformlyContinuous rightFunction modulus)
+    (pointwiseBelow : ∀ value,
+      LessEqualReal (leftFunction value) (rightFunction value))
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    LessEqualReal
+      (integralOfUC isLeftUC lowerBound upperBound isIntervalNonNegative)
+      (integralOfUC isRightUC lowerBound upperBound isIntervalNonNegative) :=
+  lessEqualRealOfConvergesTo
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isLeftUC lowerBound upperBound
+        isIntervalNonNegative))
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isRightUC lowerBound upperBound
+        isIntervalNonNegative))
+    (fun _ => riemannSumMonotone pointwiseBelow isIntervalNonNegative)
 
 /-- **Integral homogeneity** — at a SHARED modulus, `integralOfUC (c * f) ~
 c * integralOfUC f`.  The shared modulus forces the SAME schedule for both, so

@@ -1,5 +1,6 @@
 import FX1Poly.ComputerAlgebra.Analysis.RealLimit
 import FX1Poly.ComputerAlgebra.Number.RegularRealRing
+import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
 
 /-! # Real finite sums — the prefix fold over ℝ (ANALYSIS-FINSUM-1)
 
@@ -119,6 +120,29 @@ theorem sumRealNegReal (term : Nat → RegularReal) (count : Nat) :
           (denotesSameRealRefl (negReal (term count))))
         (denotesSameRealSymm
           (negRealAddRealDenotesSame (sumReal count term) (term count)))
+
+/-! ## Order monotonicity -/
+
+/-- **The sum is monotone** — a per-term `LessEqualReal` on the summed range
+lifts to the prefix sums.  Structural induction on the count: the empty sum is
+reflexive; the successor step chains the inductive-hypothesis bound (shared
+summand `leftTerm count` on the right) with the new-term bound (shared summand
+`sumReal count rightTerm` on the left) through `lessEqualRealTrans`. -/
+theorem sumRealMonotone {leftTerm rightTerm : Nat → RegularReal} (count : Nat)
+    (pointwiseBelow : ∀ position, position < count →
+      LessEqualReal (leftTerm position) (rightTerm position)) :
+    LessEqualReal (sumReal count leftTerm) (sumReal count rightTerm) :=
+  match count with
+  | 0 => lessEqualRealRefl (constantReal zeroRational)
+  | count + 1 =>
+      lessEqualRealTrans
+        (lessEqualRealAddCompat
+          (sumRealMonotone count
+            (fun position isBelow =>
+              pointwiseBelow position (Nat.lt_succ_of_lt isBelow)))
+          (leftTerm count))
+        (lessEqualRealAddCompatLeft (sumReal count rightTerm)
+          (pointwiseBelow count (Nat.lt_succ_self count)))
 
 /-! ## The count-scaled rational bound -/
 

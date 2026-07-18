@@ -42,6 +42,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.riemannSum
 #assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumAddReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumScalarMulReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumMonotone
 #assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumConstant
 #assert_no_axioms FX1Poly.ComputerAlgebra.meshLessEqualReciprocalOfCellBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.refinedCellCountPredecessorAssoc
@@ -63,6 +64,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.isUniformlyContinuousConstantReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCConstant
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCAddReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCMonotone
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCScalarMul
 #assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumRespectsDenotesSame
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCRespectsDenotesSame
