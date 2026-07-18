@@ -1,6 +1,7 @@
 import FX1Poly.ComputerAlgebra.Analysis.RealLimit
 import FX1Poly.ComputerAlgebra.Number.RegularRealRing
 import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
+import FX1Poly.ComputerAlgebra.Number.RegularRealAbsoluteValue
 
 /-! # Real finite sums — the prefix fold over ℝ (ANALYSIS-FINSUM-1)
 
@@ -221,5 +222,31 @@ theorem sumRealRegroupProduct (blockSize blockCount : Nat)
           (denotesSameRealRefl
             (sumReal blockSize
               (fun innerIndex => term (blockSize * blockCount + innerIndex)))))
+
+/-! ## The finite triangle inequality -/
+
+/-- **The finite triangle inequality** `|Σ term| ≤ Σ |term|` — the absolute value
+of a prefix sum is bounded by the prefix sum of the absolute values.  Structural
+induction on the count: the empty sum collapses `|0| ~ 0`
+(`absRealOfNonNegDenotesSame`); the successor step chains the two-term
+subadditivity `|Σ_count + term_count| ≤ |Σ_count| + |term_count|`
+(`absRealSubAdditive`) with the inductive bound lifted by the shared summand
+`|term_count|` (`lessEqualRealAddCompat`).  The order half of the integral
+triangle inequality toward Bishop-L1. -/
+theorem sumRealTriangle (term : Nat → RegularReal) (count : Nat) :
+    LessEqualReal (absReal (sumReal count term))
+      (sumReal count (fun position => absReal (term position))) :=
+  match count with
+  | 0 =>
+      lessEqualRealRespectsDenotesSame
+        (denotesSameRealSymm
+          (absRealOfNonNegDenotesSame
+            (constantRealIsNonNegativeRealOfNonNegative zeroRationalIsNonNegative)))
+        (denotesSameRealRefl (constantReal zeroRational))
+        (lessEqualRealRefl (constantReal zeroRational))
+  | count + 1 =>
+      lessEqualRealTrans
+        (absRealSubAdditive (sumReal count term) (term count))
+        (lessEqualRealAddCompat (sumRealTriangle term count) (absReal (term count)))
 
 end FX1Poly.ComputerAlgebra

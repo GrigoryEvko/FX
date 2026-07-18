@@ -1671,4 +1671,45 @@ theorem integralOfUCUpperBound
         (integralSchedulePredecessor lowerBound upperBound modulus position)
         pointwiseAbove isIntervalNonNegative)
 
+/-! ## The Riemann-sum triangle inequality -/
+
+/-- **The Riemann-sum triangle inequality** `|R f| ≤ R |f|` — the absolute value
+of a Riemann sum is bounded by the Riemann sum of the absolute values, provided
+the interval is nondegenerate (so the mesh is a nonnegative scalar).  The
+nonnegative mesh pulls out of the absolute value (`absRealMulConstantNonNeg`),
+turning `|mesh · Σ| ~ mesh · |Σ|`; the finite triangle inequality
+(`sumRealTriangle`) orders the sampled sums; and `realMulLeftMonotone` scales by
+the nonnegative mesh factor.  The pointwise bound the integral triangle
+inequality integrates. -/
+theorem riemannSumTriangle {function : RegularReal → RegularReal}
+    (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    LessEqualReal
+      (absReal (riemannSum function lowerBound upperBound cellCountPredecessor))
+      (riemannSum (fun value => absReal (function value)) lowerBound upperBound
+        cellCountPredecessor) :=
+  have isMeshNonNegative :
+      IsNonNegative (meshWidth lowerBound upperBound cellCountPredecessor) :=
+    mulExactIsNonNegative isIntervalNonNegative
+      (ratioOfNatSuccIsNonNegative 1 cellCountPredecessor)
+  lessEqualRealRespectsDenotesSame
+    (denotesSameRealSymm
+      (absRealMulConstantNonNeg isMeshNonNegative
+        (sumReal (cellCountPredecessor + 1)
+          (fun cellIndex =>
+            function
+              (constantReal
+                (samplePoint lowerBound upperBound cellCountPredecessor cellIndex))))))
+    (denotesSameRealRefl
+      (riemannSum (fun value => absReal (function value)) lowerBound upperBound
+        cellCountPredecessor))
+    (realMulLeftMonotone
+      (constantRealIsNonNegativeRealOfNonNegative isMeshNonNegative)
+      (sumRealTriangle
+        (fun cellIndex =>
+          function
+            (constantReal
+              (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))
+        (cellCountPredecessor + 1)))
+
 end FX1Poly.ComputerAlgebra

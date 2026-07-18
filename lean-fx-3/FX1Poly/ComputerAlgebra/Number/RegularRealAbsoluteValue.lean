@@ -38,6 +38,8 @@ twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
+open RationalPair
+
 /-- **The real absolute value** `|x| = √(x²)` — the constructive square root of
 the real square, whose nonnegative-radicand witness is the shipped
 `mulRealSelfIsNonNegativeReal`. -/
@@ -167,6 +169,83 @@ theorem absRealSubAdditive (leftValue rightValue : RegularReal) :
     (addRealPreservesIsNonNegativeReal (absRealNonNegative leftValue)
       (absRealNonNegative rightValue))
     squaresOrdered
+
+/-- **The absolute value is sign-blind** — `|−x| ~ |x|`, transporting the
+sign-blind square `(−x)² ~ x²` through the square root's setoid congruence. -/
+theorem absRealNegReal (value : RegularReal) :
+    DenotesSameReal (absReal (negReal value)) (absReal value) :=
+  sqrtRealRespectsDenotesSame
+    (mulRealSelfIsNonNegativeReal (negReal value))
+    (mulRealSelfIsNonNegativeReal value)
+    (mulRealNegNegDenotesSame value)
+
+/-- **The reverse triangle inequality** `|x − y| ≤ |x| + |y|` — the subadditivity
+of `|x + (−y)|` (definitionally `|x − y|`) with the sign-blind `|−y| ~ |y|` folded
+into the right endpoint.  The warm-up toward the integral triangle inequality. -/
+theorem absRealReverseTriangle (leftValue rightValue : RegularReal) :
+    LessEqualReal (absReal (subReal leftValue rightValue))
+      (addReal (absReal leftValue) (absReal rightValue)) :=
+  lessEqualRealRespectsDenotesSame
+    (denotesSameRealRefl (absReal (subReal leftValue rightValue)))
+    (addRealRespectsDenotesSame (denotesSameRealRefl (absReal leftValue))
+      (absRealNegReal rightValue))
+    (absRealSubAdditive leftValue (negReal rightValue))
+
+/-- The rational zero is nonnegative — its numerator is `0`. -/
+theorem zeroRationalIsNonNegative : IsNonNegative zeroRational :=
+  isNonNegativeOfNumeratorNonNegative (intZeroLeOfNat 0)
+
+/-- **A nonnegative rational embeds to a pointwise-nonnegative real** — every
+constant approximant IS the nonnegative rational. -/
+theorem constantRealIsNonNegativeRealOfNonNegative {value : RationalPair}
+    (isNonNegative : IsNonNegative value) :
+    IsNonNegativeReal (constantReal value) :=
+  fun _ => isNonNegative
+
+/-- **`|x| ~ x` on nonnegatives** — both sides are nonnegative, `x ≤ |x|` holds
+always, and `|x| ≤ x` reflects the square order `|x|² ~ x² ≤ x²`; antisymmetry
+lands the setoid equality. -/
+theorem absRealOfNonNegDenotesSame {value : RegularReal}
+    (isNonNegativeReal : IsNonNegativeReal value) :
+    DenotesSameReal (absReal value) value :=
+  denotesSameRealOfLessEqualBoth
+    (nonNegSquareOrderReflect (absRealNonNegative value) isNonNegativeReal
+      (lessEqualRealRespectsDenotesSame
+        (denotesSameRealSymm
+          (sqrtRealSquareDenotesSame (mulRealSelfIsNonNegativeReal value)))
+        (denotesSameRealRefl (mulReal value value))
+        (lessEqualRealRefl (mulReal value value))))
+    (selfLeAbsReal value)
+
+/-- **A nonnegative constant scalar pulls through the absolute value** —
+`|c · S| ~ c · |S|` when `c ≥ 0`.  Medially regroup `(cS)² ~ c²S²`, split the root
+multiplicatively (`√(c²S²) ~ √(c²)·√(S²) = |c|·|S|`), and collapse `|c| ~ c` by
+`absRealOfNonNegDenotesSame`.  The mesh-scaling helper the Riemann-sum triangle
+inequality consumes. -/
+theorem absRealMulConstantNonNeg {meshValue : RationalPair}
+    (isMeshNonNegative : IsNonNegative meshValue) (summand : RegularReal) :
+    DenotesSameReal
+      (absReal (mulReal (constantReal meshValue) summand))
+      (mulReal (constantReal meshValue) (absReal summand)) :=
+  let constantFactor := constantReal meshValue
+  denotesSameRealTrans
+    (denotesSameRealTrans
+      (sqrtRealRespectsDenotesSame
+        (mulRealSelfIsNonNegativeReal (mulReal constantFactor summand))
+        (mulRealPreservesIsNonNegativeReal
+          (mulRealSelfIsNonNegativeReal constantFactor)
+          (mulRealSelfIsNonNegativeReal summand))
+        (mulRealMedial constantFactor summand constantFactor summand))
+      (sqrtRealMulDenotesSame
+        (mulRealSelfIsNonNegativeReal constantFactor)
+        (mulRealSelfIsNonNegativeReal summand)
+        (mulRealPreservesIsNonNegativeReal
+          (mulRealSelfIsNonNegativeReal constantFactor)
+          (mulRealSelfIsNonNegativeReal summand))))
+    (mulRealRespectsDenotesSame
+      (absRealOfNonNegDenotesSame
+        (constantRealIsNonNegativeRealOfNonNegative isMeshNonNegative))
+      (denotesSameRealRefl (absReal summand)))
 
 /-- Marker: the number tower carries the real absolute value with its
 nonnegativity, self/neg-self bounds, setoid congruence, and subadditivity

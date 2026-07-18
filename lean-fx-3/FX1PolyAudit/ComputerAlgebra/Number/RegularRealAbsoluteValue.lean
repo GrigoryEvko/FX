@@ -19,6 +19,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.negSelfLeAbsReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.absRealRespectsDenotesSame
 #assert_no_axioms FX1Poly.ComputerAlgebra.absRealSubAdditive
+#assert_no_axioms FX1Poly.ComputerAlgebra.absRealNegReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.absRealReverseTriangle
+#assert_no_axioms FX1Poly.ComputerAlgebra.zeroRationalIsNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.constantRealIsNonNegativeRealOfNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.absRealOfNonNegDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.absRealMulConstantNonNeg
 #assert_no_axioms FX1Poly.ComputerAlgebra.fxRegularReal_hasRealAbsoluteValue
 
 end FX1PolyAudit

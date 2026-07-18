@@ -78,5 +78,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCNonNegative
 #assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumUpperBoundConstant
 #assert_no_axioms FX1Poly.ComputerAlgebra.integralOfUCUpperBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.riemannSumTriangle
 
 end FX1PolyAudit
