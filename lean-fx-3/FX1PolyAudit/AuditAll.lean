@@ -1853,6 +1853,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.RealOrderMonotoneMultiply
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulusComponentBounds
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexPolynomialGrowthBound
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexPower
+import FX1PolyAudit.ComputerAlgebra.Number.RegularRealAbsoluteValue
 import FX1PolyAudit.Core.Eliminators.Core.BoolElimDataTaitMember
 import FX1PolyAudit.Core.Eliminators.Core.ClosedEliminatorDataTaitMembers
 import FX1PolyAudit.Core.Eliminators.Core.NatElimDataTaitMember

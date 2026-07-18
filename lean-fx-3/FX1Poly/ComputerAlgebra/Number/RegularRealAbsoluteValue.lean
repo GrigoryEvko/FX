@@ -1,0 +1,176 @@
+import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
+
+/-! # RegularRealAbsoluteValue — the real absolute value `|x| = √(x²)` (NUM-R-ABS)
+
+The number tower's real absolute value on the zero-axiom Bishop-real setoid,
+built as the constructive square root of the square: `absReal x = √(x²)`.  The
+nonnegative-radicand witness is the shipped `mulRealSelfIsNonNegativeReal` (a
+real square is pointwise a rational square), so `absReal` reuses the entire
+square-root/order/triangle-inequality stack with no new analytic content.
+
+Everything is corollary of the shipped square-root order layer:
+
+* `absRealNonNegative`   — `√` is pointwise nonnegative;
+* `selfLeAbsReal`        — `x ≤ √(x²)` is exactly `selfLeSqrtRealSquare`;
+* `negSelfLeAbsReal`     — `-x ≤ |x|`, transporting `-x ≤ √((-x)²)` across the
+                           sign-blind square `(-x)² ~ x²`;
+* `absRealRespectsDenotesSame` — setoid congruence, from `mulReal` and `sqrtReal`
+                           each respecting the setoid;
+* `absRealSubAdditive`   — the REAL triangle inequality `|x + y| ≤ |x| + |y|`,
+                           the 1-D specialisation of `modulusTriangleInequality`:
+                           both sides nonnegative, compare squares
+                           (`nonNegSquareOrderReflect`), binomial-expand each
+                           (`squareSumExpand`), and the single product bound
+                           `x·y ≤ |x|·|y|` (`selfLeAbsReal` on `x·y` composed with
+                           the multiplicative root) lifts the shared `x² + y²`
+                           prefix through `lessEqualRealAddCompatLeft`.
+
+The product bound `x·y ≤ |x|·|y|` is the real Cauchy–Schwarz: `x·y ≤ √((x·y)²) ~
+√(x²·y²) ~ √(x²)·√(y²) = |x|·|y|`, the middle step by the multiplicative medial
+and `sqrtRealMulDenotesSame`.
+
+## Zero-axiom
+
+No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`omega`, `WellFounded.fix`.  Every declaration is a term-mode composition of the
+shipped square-root and real-order lemmas; per-declaration gated in the audit
+twin. -/
+
+namespace FX1Poly.ComputerAlgebra
+
+/-- **The real absolute value** `|x| = √(x²)` — the constructive square root of
+the real square, whose nonnegative-radicand witness is the shipped
+`mulRealSelfIsNonNegativeReal`. -/
+def absReal (value : RegularReal) : RegularReal :=
+  sqrtReal (mulReal value value) (mulRealSelfIsNonNegativeReal value)
+
+/-- **The absolute value is pointwise nonnegative** — `√` of any nonnegative
+radicand is pointwise nonnegative (the STRONG `IsNonNegativeReal`, free from the
+square-root construction). -/
+theorem absRealNonNegative (value : RegularReal) :
+    IsNonNegativeReal (absReal value) :=
+  sqrtRealIsNonNegativeReal (mulReal value value)
+    (mulRealSelfIsNonNegativeReal value)
+
+/-- **`x ≤ |x|`** — definitionally the shipped `x ≤ √(x²)`. -/
+theorem selfLeAbsReal (value : RegularReal) :
+    LessEqualReal value (absReal value) :=
+  selfLeSqrtRealSquare value
+
+/-- **`-x ≤ |x|`** — apply `x ≤ √(x²)` to `-x`, giving `-x ≤ √((-x)²)`, then
+transport the right endpoint across the sign-blind square `(-x)² ~ x²`, so
+`√((-x)²) ~ √(x²) = |x|`. -/
+theorem negSelfLeAbsReal (value : RegularReal) :
+    LessEqualReal (negReal value) (absReal value) :=
+  lessEqualRealCongr (denotesSameRealRefl (negReal value))
+    (sqrtRealRespectsDenotesSame
+      (mulRealSelfIsNonNegativeReal (negReal value))
+      (mulRealSelfIsNonNegativeReal value)
+      (mulRealNegNegDenotesSame value))
+    (selfLeSqrtRealSquare (negReal value))
+
+/-- **Setoid congruence** — same-real arguments give same-real absolute values.
+The square respects the setoid (`mulReal`), and so does its square root
+(`sqrtReal`). -/
+theorem absRealRespectsDenotesSame {leftValue rightValue : RegularReal}
+    (areSame : DenotesSameReal leftValue rightValue) :
+    DenotesSameReal (absReal leftValue) (absReal rightValue) :=
+  sqrtRealRespectsDenotesSame
+    (mulRealSelfIsNonNegativeReal leftValue)
+    (mulRealSelfIsNonNegativeReal rightValue)
+    (mulRealRespectsDenotesSame areSame areSame)
+
+/-- **The real triangle inequality** `|x + y| ≤ |x| + |y|` on the Bishop-real
+setoid — the 1-D specialisation of `modulusTriangleInequality`.  Both sides are
+nonnegative, so it suffices to compare squares (`nonNegSquareOrderReflect`).
+Binomial expansion gives `|x + y|² ~ (x² + y²) + (xy + xy)` and `(|x| + |y|)² ~
+(x² + y²) + (|x||y| + |x||y|)` (the shipped `sqrtRealSquareDenotesSame` collapses
+`|x|² ~ x²`), and the product bound `x·y ≤ |x|·|y|` lifts the shared `x² + y²`
+prefix through `lessEqualRealAddCompatLeft` to `|x + y|² ≤ (|x| + |y|)²`.  This
+unlocks the integral triangle inequality toward Bishop-L1. -/
+theorem absRealSubAdditive (leftValue rightValue : RegularReal) :
+    LessEqualReal (absReal (addReal leftValue rightValue))
+      (addReal (absReal leftValue) (absReal rightValue)) :=
+  let sumValue := addReal leftValue rightValue
+  let absSum := absReal sumValue
+  let absLeft := absReal leftValue
+  let absRight := absReal rightValue
+  let squareSumBase :=
+    addReal (mulReal leftValue leftValue) (mulReal rightValue rightValue)
+  have productBelowAbsProduct :
+      LessEqualReal (mulReal leftValue rightValue) (mulReal absLeft absRight) :=
+    let radicandSeparated :=
+      mulReal (mulReal leftValue leftValue) (mulReal rightValue rightValue)
+    have isSeparatedNonNegative : IsNonNegativeReal radicandSeparated :=
+      mulRealPreservesIsNonNegativeReal
+        (mulRealSelfIsNonNegativeReal leftValue)
+        (mulRealSelfIsNonNegativeReal rightValue)
+    have absProductDenotesSeparatedRoot :
+        DenotesSameReal (absReal (mulReal leftValue rightValue))
+          (mulReal absLeft absRight) :=
+      denotesSameRealTrans
+        (sqrtRealRespectsDenotesSame
+          (mulRealSelfIsNonNegativeReal (mulReal leftValue rightValue))
+          isSeparatedNonNegative
+          (mulRealMedial leftValue rightValue leftValue rightValue))
+        (sqrtRealMulDenotesSame
+          (mulRealSelfIsNonNegativeReal leftValue)
+          (mulRealSelfIsNonNegativeReal rightValue)
+          isSeparatedNonNegative)
+    lessEqualRealCongr (denotesSameRealRefl (mulReal leftValue rightValue))
+      absProductDenotesSeparatedRoot
+      (selfLeAbsReal (mulReal leftValue rightValue))
+  have doubledProductBelow :
+      LessEqualReal
+        (addReal (mulReal leftValue rightValue) (mulReal leftValue rightValue))
+        (addReal (mulReal absLeft absRight) (mulReal absLeft absRight)) :=
+    lessEqualRealTrans
+      (lessEqualRealAddCompat productBelowAbsProduct
+        (mulReal leftValue rightValue))
+      (lessEqualRealAddCompatLeft (mulReal absLeft absRight)
+        productBelowAbsProduct)
+  have expandedBelow :
+      LessEqualReal
+        (addReal squareSumBase
+          (addReal (mulReal leftValue rightValue) (mulReal leftValue rightValue)))
+        (addReal squareSumBase
+          (addReal (mulReal absLeft absRight) (mulReal absLeft absRight))) :=
+    lessEqualRealAddCompatLeft squareSumBase doubledProductBelow
+  have leftSquareExpand :
+      DenotesSameReal (mulReal absSum absSum)
+        (addReal squareSumBase
+          (addReal (mulReal leftValue rightValue)
+            (mulReal leftValue rightValue))) :=
+    denotesSameRealTrans
+      (sqrtRealSquareDenotesSame (mulRealSelfIsNonNegativeReal sumValue))
+      (squareSumExpand leftValue rightValue)
+  have rightSquareExpand :
+      DenotesSameReal
+        (mulReal (addReal absLeft absRight) (addReal absLeft absRight))
+        (addReal squareSumBase
+          (addReal (mulReal absLeft absRight) (mulReal absLeft absRight))) :=
+    denotesSameRealTrans
+      (squareSumExpand absLeft absRight)
+      (addRealRespectsDenotesSame
+        (addRealRespectsDenotesSame
+          (sqrtRealSquareDenotesSame (mulRealSelfIsNonNegativeReal leftValue))
+          (sqrtRealSquareDenotesSame (mulRealSelfIsNonNegativeReal rightValue)))
+        (denotesSameRealRefl
+          (addReal (mulReal absLeft absRight) (mulReal absLeft absRight))))
+  have squaresOrdered :
+      LessEqualReal (mulReal absSum absSum)
+        (mulReal (addReal absLeft absRight) (addReal absLeft absRight)) :=
+    lessEqualRealCongr (denotesSameRealSymm leftSquareExpand)
+      (denotesSameRealSymm rightSquareExpand) expandedBelow
+  nonNegSquareOrderReflect
+    (absRealNonNegative sumValue)
+    (addRealPreservesIsNonNegativeReal (absRealNonNegative leftValue)
+      (absRealNonNegative rightValue))
+    squaresOrdered
+
+/-- Marker: the number tower carries the real absolute value with its
+nonnegativity, self/neg-self bounds, setoid congruence, and subadditivity
+(the real triangle inequality). -/
+def fxRegularReal_hasRealAbsoluteValue : Bool := true
+
+end FX1Poly.ComputerAlgebra
