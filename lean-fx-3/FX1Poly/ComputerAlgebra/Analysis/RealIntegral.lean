@@ -749,6 +749,29 @@ theorem riemannSumConstant (constantValue : RegularReal)
                   cellCountPredecessor)))))
         (denotesSameRealRefl constantValue)))
 
+/-- **Well-definedness of the Riemann sum** — a pointwise `DenotesSameReal`
+between two integrands lifts to their Riemann sums at any partition.  The shared
+mesh factor is reflexive; the summed factor transports through
+`sumRealRespectsDenotesSame` on the per-cell witnesses.  This is the setoid
+congruence the integral-level well-definedness law rests on. -/
+theorem riemannSumRespectsDenotesSame
+    (leftFunction rightFunction : RegularReal → RegularReal)
+    (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat)
+    (functionsAgree :
+      ∀ value, DenotesSameReal (leftFunction value) (rightFunction value)) :
+    DenotesSameReal
+      (riemannSum leftFunction lowerBound upperBound cellCountPredecessor)
+      (riemannSum rightFunction lowerBound upperBound cellCountPredecessor) :=
+  mulRealRespectsDenotesSame
+    (denotesSameRealRefl
+      (constantReal (meshWidth lowerBound upperBound cellCountPredecessor)))
+    (sumRealRespectsDenotesSame
+      (fun cellIndex =>
+        functionsAgree
+          (constantReal
+            (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))
+      (cellCountPredecessor + 1))
+
 /-! ## The common-refinement Cauchy estimate -/
 
 /-- **The refinement estimate** — the analytic core.  For a uniformly continuous
@@ -1327,5 +1350,37 @@ theorem integralOfUCScalarMul
         (convergesToLimitReal
           (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
             isIntervalNonNegative))))
+
+/-- **Well-definedness of the integral** — at a SHARED modulus, pointwise
+`DenotesSameReal` integrands have setoid-equal integrals.  The shared modulus
+forces the SAME Archimedean schedule for both, so `riemannSumRespectsDenotesSame`
+aligns the two schedule sequences pointwise; the left sequence therefore
+converges to the right integral as well, and diagonal-limit uniqueness closes it.
+This is the setoid congruence that makes `integralOfUC` a well-defined operation
+on the real-function setoid — the last elementary integral law. -/
+theorem integralOfUCRespectsDenotesSame
+    {leftFunction rightFunction : RegularReal → RegularReal} {modulus : Nat → Nat}
+    (isLeftUC : IsUniformlyContinuous leftFunction modulus)
+    (isRightUC : IsUniformlyContinuous rightFunction modulus)
+    (functionsAgree :
+      ∀ value, DenotesSameReal (leftFunction value) (rightFunction value))
+    (lowerBound upperBound : RationalPair)
+    (isIntervalNonNegative : IsNonNegative (subExact upperBound lowerBound)) :
+    DenotesSameReal
+      (integralOfUC isLeftUC lowerBound upperBound isIntervalNonNegative)
+      (integralOfUC isRightUC lowerBound upperBound isIntervalNonNegative) :=
+  denotesSameRealOfConvergesToBoth
+    (convergesToLimitReal
+      (riemannSumScheduleSequence isLeftUC lowerBound upperBound
+        isIntervalNonNegative))
+    (convergesToOfPointwiseDenotesSameReal
+      (fun index =>
+        riemannSumRespectsDenotesSame leftFunction rightFunction lowerBound
+          upperBound
+          (integralSchedulePredecessor lowerBound upperBound modulus index)
+          functionsAgree)
+      (convergesToLimitReal
+        (riemannSumScheduleSequence isRightUC lowerBound upperBound
+          isIntervalNonNegative)))
 
 end FX1Poly.ComputerAlgebra
