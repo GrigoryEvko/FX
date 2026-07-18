@@ -1,0 +1,191 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Decision.FourierMotzkinCompleteness
+
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/FourierMotzkinCompleteness — zero-axiom gate
+    (DISSAT-ARITH brick, half 2: Fourier–Motzkin elimination with certificate
+    composition)
+
+Per-declaration zero-axiom gate for the verified-finder route: the Nat kit
+extensions (right distributivity, the witnessed structural difference
+`lfmNatDelta` with its recovery spec, ble flips, the `cond`-based two-branch
+maximum `lfmNatGreater`), the `LfkInt`/vector/relation/constraint algebra
+extensions (scale composition, multiplier distribution, cross-zero closure, the
+trivial-row identities guarded by `lfmRelationIsInequality`), the provenance
+Nat-vector algebra with THE BILINEARITY THEOREMS
+(`lfmWeightedSumOfScaledCertificate`, `lfmWeightedSumOfAddedCertificates` —
+structural constraint equalities), coefficient extraction with the
+beyond-length-is-zero semantics, the scaled-opposite-entries cancellation core,
+certified rows (`LfmCertifiedRow`) with the exactness invariant
+(`lfmRowMatchesProvenance`), the elimination round (zero bucket + positive×
+negative cross combination with provenance composition) and its preservation
+lemmas (exactness, forward satisfaction, target elimination, zero/length
+stability), the fuel driver with zero-coverage, THE GROUNDING THEOREM
+(`lfmFinalRowsAreGround`), the ground scan and THE COMPOSITION THEOREM
+(`lfmFoundContradictionCertifies`: finder output is accepted verbatim by the
+sibling's `lfkCheckRefutation`) plus its soundness corollary
+(`lfmFoundCertificateRefutes`), the one-pair extension core
+(`lfmOnePairExtensionCore` — the backward-direction step algebra), the honest
+wall (`lfmRoundExtensionStatement`, owner
+`fxDissatArith_hasFourierMotzkinCompleteness = false` — the round-extension
+lemma; the sibling's `fxDissatArith_hasFarkasCompleteness = false` stays
+authoritative), the DECIDED marker `fxDissatArith_hasFmCertificateComposition
+= true`, and the kernel-checked end-to-end smoke pins (finder→checker fires on
+the sibling fixtures and the two-variable chain, clean scans on satisfiable
+systems, the fired one-pair core instance).
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
+`sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatAddMulDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatOneMul
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatDeltaFromSmall
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatDelta
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatDeltaRecovers
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatBleWeakenFromSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatBleFalseFlipStrict
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatEqOfBleBle
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatLeOfAddLeAddRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmBoolCases
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCondSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatGreater
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatGreaterSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatLeGreaterLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatLeGreaterRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNatGreaterLeOfBoth
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmIntScaleCompose
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmIntScaleAddMultipliers
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmIntScalePreservesZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmIntAddNegateSelfZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmIntLeRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmIntLeSelfPlusZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmIntLePlusZeroDrop
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmConsCongr
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmVectorAddNilLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmVectorAddNilRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmVectorAddComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmVectorAddAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleVectorAddDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleVectorCompose
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleVectorAddMultipliers
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmLengthOfScaledVector
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmLengthOfAddedVectors
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRelationIsInequality
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmJoinRelationsComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmJoinRelationsAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmJoinPreservesInequality
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleRelationOfJoin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleRelationCompose
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleRelationOfAddMultipliers
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmConstraintMkCongr
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAddConstraintsCongr
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleConstraintAddDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleConstraintCompose
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaleConstraintAddMultipliers
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAddConstraintsComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAddConstraintsAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAddConstraintsSwapMiddle
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAddConstraintsTrivialLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAddConstraintsTrivialRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmProvenanceAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmProvenanceScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmUnitProvenance
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmWeightedSumRelationIsInequality
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmWeightedSumOfScaledCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmWeightedSumOfAddedCertificates
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmMaxCoefficientLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmWeightedSumLengthBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCoefficientAtIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCoefficientAtOfAddedVectors
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCoefficientAtOfScaledVector
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCoefficientBeyondLengthIsZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAllCoefficientsZeroOfEntriesZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScaledOppositeEntriesCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.LfmCertifiedRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.LfmCertifiedRow.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.LfmCertifiedRow.constraint
+#assert_no_axioms FX1Poly.ComputerAlgebra.LfmCertifiedRow.provenance
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowMatchesProvenance
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowCoefficientAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowHasPositiveCoefficientAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowHasNegativeCoefficientAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowCoefficientIsZeroAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowCoefficientLengthIsWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAllRowsPass
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmAllRowsHold
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmJoinRowLists
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmJoinPreservesAllPass
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmJoinPreservesAllHold
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFilterRowsByTest
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCondRowListAllPass
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCondRowListAllHold
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFilterPreservesAllPass
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFilterPreservesAllHold
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFilterOutputsPassTest
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmPositiveMagnitudeAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmNegativeMagnitudeAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineRowPair
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineRowPairExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineRowPairSatisfied
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineRowPairZeroAtTarget
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineRowPairPreservesZeroAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineRowPairLengthWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineOneAgainstAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCrossCombineAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineOneAllPass
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCrossCombineAllPass
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCombineOneAllHold
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCrossCombineAllHold
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmEliminationRound
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundPreservesAllPass
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundPreservesAllHold
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundPreservesExactness
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundPreservesSatisfaction
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundEliminatesTargetVariable
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundPreservesZeroCoefficientAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundPreservesLengthWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSeedRowsFromIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSeedRows
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSeedRowsFromIndexExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSeedRowsFromIndexSatisfied
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSeedRowsFromIndexLengthBounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmEliminateFromIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmEliminateFromIndexPreservesExactness
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmEliminateFromIndexPreservesSatisfaction
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmEliminateFromIndexPreservesLengthWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmEliminateFromIndexZeroCoverage
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowGroundOfBoundedZeros
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRowsGroundOfBoundedAndCovered
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScanForContradiction
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCondSomeSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScanHitCertifies
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFindRefutationCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFoundContradictionCertifies
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFoundCertificateRefutes
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmFinalRowsAreGround
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmExtensionWitnessValue
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmOnePairExtensionCore
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmConstraintsOfRows
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmRoundExtensionStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatArith_hasFmCertificateComposition
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatArith_hasFourierMotzkinCompleteness
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmCheckFoundCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmScanFoundNothing
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeTwoVariableChainSystem
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeRelaxedChainSystem
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeRelaxedChainEnv
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeSiblingContradictoryFiredPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeSiblingContradictoryCertificatePin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeSiblingStrictFiredPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeSiblingEqualityCertificatePin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeSiblingEqualityFiredPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeTwoVariableChainCertificatePin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeTwoVariableChainFiredPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeSatisfiableTripleCleanPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeSatisfiablePairCleanPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeRelaxedChainCleanPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeRelaxedChainEnvPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.lfmSmokeOnePairCoreFired
+
+end FX1PolyAudit
