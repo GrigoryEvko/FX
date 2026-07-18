@@ -21,7 +21,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.bitWeightOfFalse
 #assert_no_axioms FX1Poly.ComputerAlgebra.bitwiseFoldXorSelf
 #assert_no_axioms FX1Poly.ComputerAlgebra.bitVecXorSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.natShiftRightZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.bitAtNatZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.bitwiseFoldAndZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.bitVecAndZeroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.bitVecAndZeroLeft
 #assert_no_axioms FX1Poly.ComputerAlgebra.bitVecBitwiseCommGrounding
 #assert_no_axioms FX1Poly.ComputerAlgebra.bitVecXorSelfGrounding
+#assert_no_axioms FX1Poly.ComputerAlgebra.bitVecAndZeroGrounding
 
 end FX1PolyAudit

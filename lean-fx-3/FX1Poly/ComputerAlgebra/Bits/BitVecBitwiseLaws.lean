@@ -12,12 +12,19 @@ per-bit truth-table is symmetric or self-annihilating:
   so swapping the operands leaves every per-bit contribution fixed
   (`bitwiseFoldSymm`);
 * **xor self-annihilation** `x ⊕ x = 0` — the per-bit combiner `b != b` is
-  constantly `false`, so every bit contributes `0`.
+  constantly `false`, so every bit contributes `0`;
+* **and-annihilator** `x AND 0 = 0` (both orders) — the combiner `and b false` is
+  constantly `false`, the same constant-`0`-fold shape (`bitwiseFoldAndZero`), so
+  the zero word is the multiplicative absorbing element.
 
 Together these are the additive-group half of the §18.6 Boolean-ring reading of a
-machine word (xor = addition, self-inverse; and = idempotent multiplication) — the
-associativity / idempotence / distributivity half needs the bit-decomposition
-`value mod 2^w = Σ bitWeight (bitAtNat value p) p` and is deferred.
+machine word (xor = addition, self-inverse; and = idempotent multiplication) plus
+the multiplicative annihilator.  The remaining multiplicative laws — associativity /
+idempotence / distributivity, and the `or`/`xor` identity `x ⊕ 0 = x` (which unlike
+the annihilator PRESERVES the operand's bits) — all need the per-bit READBACK
+`bitAtNat (bitwiseFold combine a b w) q = combine (bitAtNat a q) (bitAtNat b q)` and
+thence the bit-decomposition `value mod 2^w = Σ bitWeight (bitAtNat value p) p`; that
+is a separate multi-lemma arc and is deferred.
 
 `Init`-only, structural, GENUINE `Eq` (core `BitVec`, no setoid), zero axioms:
 `natBle`-free (Bool truth tables only), no `List.append`, no `Nat.le` lemma. -/
@@ -94,6 +101,52 @@ theorem bitVecXorSelf {width : Nat} (value : BitVec width) :
   unfold bitVecXor
   rw [bitVecOfNatModToNat, bitwiseFoldXorSelf, natRemainderOfLt (Nat.two_pow_pos width)]
 
+/-! ## AND with the zero word — the multiplicative annihilator -/
+
+/-- Shifting `0` right by any amount stays `0`.  Structural induction on the shift `position` through
+`Nat.shiftRight_succ` (`n >>> (k+1) = (n >>> k) / 2`), the recursive `0 / 2 = 0` closing each step. -/
+theorem natShiftRightZero (position : Nat) : (0 : Nat) >>> position = 0 := by
+  induction position with
+  | zero => rfl
+  | succ predecessor ih => rw [Nat.shiftRight_succ, ih]
+
+/-- Every bit of the natural `0` is `false`: `bitAtNat 0 position = false` — the access
+`natRemainder (0 >>> position) 2` reduces to `natRemainder 0 2 = 0` via `natShiftRightZero`. -/
+theorem bitAtNatZero (position : Nat) : bitAtNat 0 position = false := by
+  show (! (natRemainder ((0 : Nat) >>> position) 2 == 0)) = false
+  rw [natShiftRightZero position]
+  rfl
+
+/-- The `and`-fold against the all-zero operand is constantly `0`: every per-bit contribution is
+`and (bitAtNat value position) false = false`, weighing `0`.  Structural induction on the bit `count`. -/
+theorem bitwiseFoldAndZero (value count : Nat) :
+    bitwiseFold and value 0 count = 0 := by
+  induction count with
+  | zero => rfl
+  | succ position ih =>
+      show bitwiseFold and value 0 position
+            + bitWeight (and (bitAtNat value position) (bitAtNat 0 position)) position = 0
+      rw [ih, bitAtNatZero position]
+      have hAndFalse : and (bitAtNat value position) false = false := by
+        cases bitAtNat value position <;> rfl
+      rw [hAndFalse, bitWeightOfFalse]
+
+/-- ★ **AND annihilator (right)** `value AND 0 = 0` — the `0` is the multiplicative absorbing element of
+the Boolean-ring reading (`and` is the multiplication).  Reduces through `toNat` to `bitwiseFoldAndZero`. -/
+theorem bitVecAndZeroRight {width : Nat} (value : BitVec width) :
+    bitVecAnd value bitVecZero = bitVecZero := by
+  apply BitVec.eq_of_toNat_eq
+  rw [bitVecZeroToNat]
+  unfold bitVecAnd
+  rw [bitVecOfNatModToNat, bitVecZeroToNat, bitwiseFoldAndZero,
+      natRemainderOfLt (Nat.two_pow_pos width)]
+
+/-- ★ **AND annihilator (left)** `0 AND value = 0` — the mirror of `bitVecAndZeroRight` through the shipped
+commutativity `bitVecAndComm`. -/
+theorem bitVecAndZeroLeft {width : Nat} (value : BitVec width) :
+    bitVecAnd bitVecZero value = bitVecZero :=
+  (bitVecAndComm bitVecZero value).trans (bitVecAndZeroRight value)
+
 /-! ## Groundings -/
 
 /-- ★ **Commutativity in action** — `and`/`or`/`xor` of two concrete 4-bit words
@@ -109,5 +162,11 @@ theorem bitVecBitwiseCommGrounding (left right : BitVec 4) :
 zero, the additive-inverse witness at a concrete width. -/
 theorem bitVecXorSelfGrounding (value : BitVec 8) : bitVecXor value value = bitVecZero :=
   bitVecXorSelf value
+
+/-- ★ **Annihilator in action** — any 8-bit word AND'd with the zero word is zero, in either order:
+the multiplicative-absorbing witness at a concrete width. -/
+theorem bitVecAndZeroGrounding (value : BitVec 8) :
+    bitVecAnd value bitVecZero = bitVecZero ∧ bitVecAnd bitVecZero value = bitVecZero :=
+  ⟨bitVecAndZeroRight value, bitVecAndZeroLeft value⟩
 
 end FX1Poly.ComputerAlgebra
