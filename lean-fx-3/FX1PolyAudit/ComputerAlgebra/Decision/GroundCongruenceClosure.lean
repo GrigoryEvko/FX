@@ -1,0 +1,180 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Decision.GroundCongruenceClosure
+
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/GroundCongruenceClosure — zero-axiom gate
+    (DISSAT-UF brick: ground congruence closure decided with zero search)
+
+Per-declaration zero-axiom gate for the ground-congruence-closure decision engine: the
+hand-rolled Nat/Bool kit, the `GccTerm` curried-term type with its structural beq
+(reflexivity + soundness), the monomorphic cons-only list kit (indexed access, beq
+membership, deduplicating insertion, append, no-dup, erase), the constructive pigeonhole
+(`gccNoDupBoundedByLength`), the subterm universe with subterm-closedness, the
+`GccDeriv` ground equational judgment (all five constructors), the saturation candidates
+(swap / transitivity joins / universe congruence pairs) with their intro and inversion
+lemmas, the fueled saturation loop with its adequacy theorem
+(`gccSaturateReachesFixpoint` — the returned state is a genuine fixpoint), the
+fixpoint-closure extraction, the invariant bundle `GccTableInvariants` proved for the
+saturated table, scan-order representatives (related / respects / idempotent / sound),
+the representative-keyed signature table (inversion / hit / functionality), total
+normalization with the keystone (`gccNormalizeAgreesOnUniverse`), completeness,
+soundness, the decision procedure `gccDecide`, the biconditional `gccDeriv_iff_decide`,
+the `Decidable` instance `gccDerivDecidable`, and the DECIDED marker
+`fxDissatUf_hasGroundCongruenceDecision = true`.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNatBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNatBeqEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNatAddSelfImpliesZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNatAddSplitZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccBoolAndElim
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTerm
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermBeqEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairBeqEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccListGetPair
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermListHasMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairListHasMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermListInsert
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairListInsert
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairListInsertAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairListAppend
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairListHasNoDup
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairListErase
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermMemberHeadOfBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermMemberTail
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairMemberHeadOfBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairMemberTail
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairMemberConsSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertContainsSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertKeepsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertAllKeepsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertAllAddsAll
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertAllInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertAllGrows
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertAllStable
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertKeepsNoDup
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairInsertAllKeepsNoDup
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairEraseShortens
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairEraseKeepsOthers
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNoDupBoundedByLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairAppendMemberLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairAppendMemberRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairAppendInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccListGetImpliesMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccMemberImpliesGet
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectSubterms
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccUniverseIsSubtermClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermInsertContainsSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermInsertKeepsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermInsertInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectSubtermsContainsSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectSubtermsKeepsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermInsertSymbolKeepsClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccTermInsertApplyKeepsClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectSubtermsKeepsClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectEquationSubterms
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectEquationKeepsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectEquationKeepsClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectEquationHasSides
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccBuildQueryUniverse
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNilIsSubtermClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccBuildQueryUniverseIsClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccBuildQueryUniverseHasSides
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccDeriv
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSwapPairs
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccMakeReflPairs
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccJoinThroughLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectTransCandidates
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCongRightScan
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectCongCandidates
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSwapPairsContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSwapPairsInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccMakeReflPairsContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccMakeReflPairsInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccJoinThroughLeftContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccJoinThroughLeftInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectTransContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectTransInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCongRightScanContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCongRightScanInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectCongContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccCollectCongInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairsWithLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccAllPairsScan
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccAllUniversePairs
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairsWithLeftContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccPairsWithLeftInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccAllPairsScanContains
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccAllPairsScanInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturateStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSeedTable
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturate
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturationBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturatedTable
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccStepKeepsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccStepKeepsSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccStepKeepsInside
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccStepKeepsNoDup
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccStepLengthGrows
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccStepStableAllPresent
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturateKeepsMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturateKeepsSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturateKeepsInside
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturateReachesFixpoint
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSeedTableHasNoDup
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSeedTableHasEquations
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSeedTableHasRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSeedTableIsSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSeedTableInside
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSaturatedTableIsInvariant
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccFirstRelated
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccRepresentative
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccFirstRelatedFinds
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccFirstRelatedMisses
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccRepresentativeIsRelated
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccRepresentativeStaysInUniverse
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccFirstRelatedAgrees
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccRepresentativeRespects
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccRepresentativeIdempotent
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccRepresentativeSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSigLookup
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccBuildSignature
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSigLookupInversion
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSigLookupFinds
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccSigLookupFunctional
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccApplyNormalStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNormalize
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNormalizeAgreesOnUniverse
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNormalizeComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccNormalizeSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccDecide
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccDecideImpliesDeriv
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccDerivImpliesDecide
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccDeriv_iff_decide
+#assert_no_axioms FX1Poly.ComputerAlgebra.gccDerivDecidable
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatUf_hasGroundCongruenceDecision
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTerm.symbol
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTerm.apply
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccDeriv.byEquation
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccDeriv.byRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccDeriv.bySymm
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccDeriv.byTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccDeriv.byCongruence
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.isSymmClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.isTransClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.isCongClosed
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.isReflPopulated
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.isEquationPopulated
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.isInsideUniverse
+#assert_no_axioms FX1Poly.ComputerAlgebra.GccTableInvariants.isSoundlyDerivable
+
+end FX1PolyAudit
