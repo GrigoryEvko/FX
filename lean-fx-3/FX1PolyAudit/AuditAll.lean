@@ -10,6 +10,7 @@ import FX1PolyAudit.ComputerAlgebra.Decision.TwoSatDecision
 import FX1PolyAudit.ComputerAlgebra.Decision.ReducedOrderedDecisionTree
 import FX1PolyAudit.ComputerAlgebra.Decision.BitVectorArithmetic
 import FX1PolyAudit.ComputerAlgebra.Decision.GroebnerMembership
+import FX1PolyAudit.ComputerAlgebra.Decision.LinearFarkasCertificate
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
