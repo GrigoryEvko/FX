@@ -21,18 +21,23 @@ superset of another.  A clause is a sorted-distinct list built with the imported
 The encodings are `⊤ ↦ [[]]` (one empty clause = meet of no generators = top, and `[]` ⊆ every clause so top
 absorbs everything in a join) and `⊥ ↦ []` (no clauses = the empty join = bottom).
 
-## What this file ships (REDUCTION + COMPLETENESS + the absorption lever) — and the honest residual wall
+## What this file ships — THE COMPLETE DECISION (round 2: soundness landed, wall SUPERSEDED)
 
-The biconditional `Conv s t ↔ dnfOf s = dnfOf t` now has its `⟸` (COMPLETENESS) half fully closed: every tree
-reduces to the join-of-meets comb of its own minimal-DNF antichain (`dlTreeReducesToDnfComb`), so equal
-canonical DNFs are convertible (`distributiveLatticeTreeConv_complete`).  This is exactly what the DL's own
-absorption law `absorbJoinMeet` unblocks — a ⊆-superset clause is absorbed in a join by its subset
-(`dlSupersetAbsorbedInJoin`), which makes the antichain minimization (`removeSupersets` / `insertClause`)
-convertibility-invariant.  The residual wall has shrunk to the single `⟹` (SOUNDNESS) lemma
-`DistributiveLatticeTreeConv s t → dnfOf s = dnfOf t` — the free-distributive-lattice faithfulness (the
-minimal-antichain form is a faithful canonical representative of the monotone Boolean function).  That is the
-named blocking node (see `fxWalkingDistributiveLattice_minimizationWall`); it is NOT faked, sorried, or
-asserted, and once it lands the `Decidable` decision follows immediately.
+The biconditional `Conv s t ↔ dnfOf s = dnfOf t` is now FULLY CLOSED
+(`distributiveLatticeTreeConv_iff_normalForm`), with the Boolean decider `dlDecideConv` and a `Decidable`
+instance.  The `⟸` (COMPLETENESS) half is round 1: every tree reduces to the join-of-meets comb of its own
+minimal-DNF antichain (`dlTreeReducesToDnfComb`), so equal canonical DNFs are convertible
+(`distributiveLatticeTreeConv_complete`) — unblocked by the DL's own absorption law `absorbJoinMeet`
+(`dlSupersetAbsorbedInJoin`).  The `⟹` (SOUNDNESS) half `distributiveLatticeTreeConv_sound` is round 2, by
+SEMANTIC UNIQUENESS of the minimal-DNF antichain (Quine's unique irredundant DNF of a positive Boolean
+function) rather than Conv-invariance of the minimizer: convertible trees agree under every Boolean
+environment; each tree evaluates through its canonical DNF (`dlEvalViaDnf`); `dnfOf` output carries three
+canonicity invariants (strictly sorted DNF, sorted-distinct clauses, ⊆-antichain); and two canonical DNFs
+computing the same monotone function are equal lists (`dlCanonicalDnfUnique`) — membership is read back off
+the function at characteristic environments (`dlEvalDnfChar` probes `chi(member)` and
+`chi(member \ {missing})`, the antichain forcing prime-implicant minimality).  The former wall marker
+`fxWalkingDistributiveLattice_minimizationWall := false` is SUPERSEDED by
+`fxWalkingDistributiveLattice_hasNormalFormDecision := true`.
 
 What IS landed, all zero-axiom:
 
@@ -61,7 +66,13 @@ What IS landed, all zero-axiom:
   tree up to `Conv`;
 * **the normalization and COMPLETENESS** — `dlTreeReducesToDnfComb` (`tree ≈ combOfDnf (dnfOf tree)`) and
   `distributiveLatticeTreeConv_complete` (`dnfOf s = dnfOf t → Conv s t`), the `⟸` half of the decision, with
-  the completeness groundings `distributiveLatticeCommViaCompleteness` and `distributiveLatticeReductionRoundtrips`.
+  the completeness groundings `distributiveLatticeCommViaCompleteness` and `distributiveLatticeReductionRoundtrips`;
+* **the round-2 SOUNDNESS and the DECISION** — the Boolean DNF evaluation and characteristic-environment
+  bridges, the three canonicity invariants of `dnfOf`, the strict clause-order kit (transitivity /
+  irreflexivity / asymmetry), prime-implicant membership recovery, canonical-DNF uniqueness,
+  `distributiveLatticeTreeConv_sound`, the biconditional `distributiveLatticeTreeConv_iff_normalForm`, the
+  decider `dlDecideConv` + `distributiveLatticeTreeConv_iff_decide`, and the `Decidable` instance
+  `dlDecidableConv` (see the decision marker at the end of the file for the full round-2 map).
 
 Raw Lean 4 + Init; the convertibility is an inductive `Prop`; per-declaration `#assert_no_axioms` gated in the
 audit twin.  Free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`, `decide`-on-`Prop`
@@ -518,7 +529,8 @@ theorem dnfOf_joinTwoGenerators :
 
 /-- Smoke: the canonical DNF REFLECTS absorption — `meet(g0, join(g0, g1))` normalizes to `{ {0} }`, the
 minimization dropping the absorbed `{0, 1}` clause, matching `dnfOf g0`.  (The general law that this ALWAYS
-holds is the walled node below; here it is confirmed on the grounding by kernel computation.) -/
+holds is the round-2 soundness `distributiveLatticeTreeConv_sound` below; here it is confirmed on the
+grounding by kernel computation.) -/
 theorem dnfOf_absorbMeetJoin :
     dnfOf (LatticeTree.meetOp (LatticeTree.gen 0)
       (LatticeTree.joinOp (LatticeTree.gen 0) (LatticeTree.gen 1))) = [[0]] := rfl
@@ -1200,8 +1212,9 @@ theorem dlTreeReducesToDnfComb (tree : LatticeTree) :
 
 /-- ★ **Completeness** — equal minimal-DNF antichains imply convertibility.  Both trees reduce to the comb of
 their (equal) canonical DNF (`dlTreeReducesToDnfComb`), so they are convertible through that common normal
-form.  This is the `⟸` half of the intended `Conv s t ↔ dnfOf s = dnfOf t` decision; the `⟹` half (soundness)
-is the residual wall.  Zero-axiom (only a plain `LatticeTree` equality transported into `Conv`). -/
+form.  This is the `⟸` half of the `Conv s t ↔ dnfOf s = dnfOf t` decision; the `⟹` half is the round-2
+`distributiveLatticeTreeConv_sound` below.  Zero-axiom (only a plain `LatticeTree` equality transported into
+`Conv`). -/
 theorem distributiveLatticeTreeConv_complete {source target : LatticeTree}
     (dnfEq : dnfOf source = dnfOf target) :
     DistributiveLatticeTreeConv source target := by
@@ -1237,43 +1250,1881 @@ theorem distributiveLatticeReductionRoundtrips :
         (LatticeTree.meetOp (LatticeTree.gen 2) (LatticeTree.gen 0))) :=
   distributiveLatticeTreeConv_complete rfl
 
-/-! ## The wall marker -/
+/-! ## ROUND 2 (SOUNDNESS) — STEP 1: the Boolean DNF evaluation and the comb bridge -/
 
-/-- ★ **The walking bounded distributive lattice on an ARBITRARY alphabet — the absorption lever, the full
-minimal-DNF REDUCTION, and COMPLETENESS are now LANDED; the residual wall has shrunk to exactly the SOUNDNESS
-(`⟹`) half of the biconditional.**  `= false` records the honest state — one direction of
-`Conv s t ↔ dnfOf s = dnfOf t` is still open, so no total decider ships yet:
+/-- **Evaluate one clause under a Boolean environment** — the Boolean meet (`&&`) of the environment over the
+clause's generators (`[] ↦ true`, the empty meet).  The list-level mirror of
+`evalLatticeTree env ∘ meetOfClause`. -/
+def dlEvalClause (env : Nat → Bool) : List Nat → Bool
+  | [] => true
+  | generator :: rest => env generator && dlEvalClause env rest
 
-* LANDED (zero-axiom): the `LatticeTree` carrier, the `Bool`-lattice evaluation `evalLatticeTree`, the
-  `DistributiveLatticeTreeConv` fourteen-law convertibility, `distributiveLatticeTreeConv_eval_sound` (a genuine
-  sound separator deciding NON-convertibility), the distributivity / meet-absorb-join / join-absorb-meet
-  positive groundings, the distinct-generator and MEET-≠-JOIN negative groundings, and the complete minimal-DNF
-  antichain machinery `genMember` / `clauseSubset` / the clause order / `insertClause` / `dnfUnion` / `dnfMeet` /
-  `dnfJoin` / `canonicalizeDnf` / `dnfOf` / `combOfDnf`.
+/-- **Evaluate a DNF under a Boolean environment** — the Boolean join (`||`) over the clauses of the Boolean
+meet of each clause (`[] ↦ false`, the empty join).  The list-level mirror of
+`evalLatticeTree env ∘ combOfDnf`. -/
+def dlEvalDnf (env : Nat → Bool) : List (List Nat) → Bool
+  | [] => false
+  | clause :: rest => dlEvalClause env clause || dlEvalDnf env rest
 
-* LANDED THIS ROUND (zero-axiom, the absorption lever `absorbJoinMeet` finally exploited): the crux
-  `dlSupersetAbsorbedInJoin` (a ⊆-superset clause is absorbed in a join by its subset — via `dlClauseUnionMeet`
-  + `dlGenMemberMeet` re-meet idempotency), making the antichain minimization convertibility-invariant; the meet
-  fragment normalization `dlMeetInsertSortedSet` / `dlMeetMergeClause`; the comb reduction lemmas
-  `dlCombInsertClauseSorted` / `dlHasSubsetAbsorbed` / `dlCombJoinRemoveSupersets` / `dlCombInsertClause` /
-  `dlCombDnfUnion` / `dlCombDnfMeetClause` / `dlCombDnfMeet` / `dlCombDnfJoin` (each DNF operation computes the
-  tree up to `Conv`); the **normalization** `dlTreeReducesToDnfComb` (`tree ≈ combOfDnf (dnfOf tree)`); and the
-  **completeness** `distributiveLatticeTreeConv_complete` (`dnfOf s = dnfOf t → Conv s t`) — the `⟸` half of the
-  decision — with the completeness groundings `distributiveLatticeCommViaCompleteness` /
-  `distributiveLatticeReductionRoundtrips` proving nontrivial convertibilities from `rfl` on `dnfOf` alone.
+/-- The clause comb evaluates to the clause's Boolean meet:
+`evalLatticeTree env (meetOfClause clause) = dlEvalClause env clause`.  Structural induction. -/
+theorem dlEvalMeetOfClause (env : Nat → Bool) : (clause : List Nat) →
+    evalLatticeTree env (meetOfClause clause) = dlEvalClause env clause
+  | [] => rfl
+  | generator :: rest => by
+      show (env generator && evalLatticeTree env (meetOfClause rest))
+        = (env generator && dlEvalClause env rest)
+      rw [dlEvalMeetOfClause env rest]
 
-* STILL WALLED — the exact residual is the SINGLE remaining lemma **`distributiveLatticeTreeConv_sound :
-  DistributiveLatticeTreeConv s t → dnfOf s = dnfOf t`** (the `⟹` / soundness half).  It is the
-  free-distributive-lattice FAITHFULNESS: that the minimal-DNF antichain is a faithful canonical representative
-  of the monotone Boolean function (equivalently, that `dnfMeet` / `dnfJoin` satisfy the fourteen laws as
-  STRUCTURAL `List (List Nat)` equalities on minimized antichains, OR that `∀ env, eval s = eval t` forces
-  `dnfOf s = dnfOf t`).  This is the uniqueness of the prime-implicant / minimal-antichain representative — the
-  analogue of the free-group / abelian-group confluence — and is left UNDECLARED (not sorried, not asserted).
-  Once it lands, `decideDistributiveLatticeTreeConv` + `_iff_dnf` + the `Decidable` instance follow immediately
-  and this marker flips to `fxWalkingDistributiveLattice_hasDnfDecision := true`.
+/-- The DNF comb evaluates to the DNF's Boolean join:
+`evalLatticeTree env (combOfDnf dnf) = dlEvalDnf env dnf`.  Structural induction over
+`dlEvalMeetOfClause`. -/
+theorem dlEvalCombOfDnf (env : Nat → Bool) : (dnf : List (List Nat)) →
+    evalLatticeTree env (combOfDnf dnf) = dlEvalDnf env dnf
+  | [] => rfl
+  | clause :: rest => by
+      show (evalLatticeTree env (meetOfClause clause) || evalLatticeTree env (combOfDnf rest))
+        = (dlEvalClause env clause || dlEvalDnf env rest)
+      rw [dlEvalMeetOfClause env clause, dlEvalCombOfDnf env rest]
 
-All landed declarations are zero-axiom: the ordering is the imported structural `natBle` (no `Nat.le`/`Nat.ble`
-lemma), the clause inserts are cons-only, and no `List.append` (`++`) or `Int` appears anywhere. -/
-def fxWalkingDistributiveLattice_minimizationWall : Bool := false
+/-- ★ **Every tree evaluates through its canonical DNF** — `evalLatticeTree env tree = dlEvalDnf env
+(dnfOf tree)`: compose the reduction `dlTreeReducesToDnfComb` with the evaluation soundness
+`distributiveLatticeTreeConv_eval_sound` and the comb bridge `dlEvalCombOfDnf`.  Environments are only ever
+APPLIED — no function extensionality anywhere. -/
+theorem dlEvalViaDnf (env : Nat → Bool) (tree : LatticeTree) :
+    evalLatticeTree env tree = dlEvalDnf env (dnfOf tree) :=
+  (distributiveLatticeTreeConv_eval_sound (dlTreeReducesToDnfComb tree) env).trans
+    (dlEvalCombOfDnf env (dnfOf tree))
+
+/-- The **characteristic environment** of a clause — `true` exactly on the clause's generators.  These are
+the finitely many evaluation points at which the uniqueness argument reads a canonical DNF's membership back
+off its monotone Boolean function. -/
+def dlCharacteristicEnv (clause : List Nat) : Nat → Bool :=
+  fun generator => genMember generator clause
+
+/-- **The clause-level characteristic bridge** — under `chi(larger)` a clause's Boolean meet computes exactly
+the containment test: `dlEvalClause (chi larger) clause = clauseSubset clause larger`.  Unconditional (no
+sortedness hypothesis): both sides scan the clause left to right. -/
+theorem dlEvalClauseChar (larger : List Nat) : (clause : List Nat) →
+    dlEvalClause (dlCharacteristicEnv larger) clause = clauseSubset clause larger
+  | [] => rfl
+  | head :: tail => by
+      show (genMember head larger && dlEvalClause (dlCharacteristicEnv larger) tail)
+        = clauseSubset (head :: tail) larger
+      cases hMem : genMember head larger with
+      | true =>
+        rw [dlClauseSubsetConsMem head tail larger hMem]
+        exact dlEvalClauseChar larger tail
+      | false =>
+        rw [dlClauseSubsetConsFalse head tail larger hMem]
+        rfl
+
+/-- ★ **The DNF-level characteristic bridge** — under `chi(candidate)` a DNF's Boolean join computes exactly
+the absorption test: `dlEvalDnf (chi candidate) dnf = dnfHasSubsetOf candidate dnf`.  Unconditional. -/
+theorem dlEvalDnfChar (candidate : List Nat) : (dnf : List (List Nat)) →
+    dlEvalDnf (dlCharacteristicEnv candidate) dnf = dnfHasSubsetOf candidate dnf
+  | [] => rfl
+  | clause :: rest => by
+      show (dlEvalClause (dlCharacteristicEnv candidate) clause
+            || dlEvalDnf (dlCharacteristicEnv candidate) rest)
+        = dnfHasSubsetOf candidate (clause :: rest)
+      rw [dlEvalClauseChar candidate clause]
+      cases hSub : clauseSubset clause candidate with
+      | true =>
+        rw [dlHasSubsetConsTrue candidate clause rest hSub]
+        rfl
+      | false =>
+        rw [dlHasSubsetConsFalse candidate clause rest hSub]
+        exact dlEvalDnfChar candidate rest
+
+/-! ## ROUND 2 — STEP 2: structural clause / DNF equality scans (the membership kit) -/
+
+/-- Reflexivity of the core `Nat.beq` — a self-contained structural proof (no library lemma). -/
+theorem dlNatBeqRefl : (value : Nat) → Nat.beq value value = true
+  | 0 => rfl
+  | Nat.succ predecessor => dlNatBeqRefl predecessor
+
+/-- **Structural clause equality** — `List Nat` Boolean equality via `Nat.beq`, the antichain-membership
+comparator. -/
+def dlClauseBeq : List Nat → List Nat → Bool
+  | [], [] => true
+  | [], _ :: _ => false
+  | _ :: _, [] => false
+  | headFirst :: tailFirst, headSecond :: tailSecond =>
+      match Nat.beq headFirst headSecond with
+      | true => dlClauseBeq tailFirst tailSecond
+      | false => false
+
+/-- `dlClauseBeq` cons equation (EQUAL heads): defer to the tails. -/
+theorem dlClauseBeqConsTrue (headFirst headSecond : Nat) (tailFirst tailSecond : List Nat)
+    (h : Nat.beq headFirst headSecond = true) :
+    dlClauseBeq (headFirst :: tailFirst) (headSecond :: tailSecond)
+      = dlClauseBeq tailFirst tailSecond := by
+  show (match Nat.beq headFirst headSecond with
+        | true => dlClauseBeq tailFirst tailSecond
+        | false => false) = dlClauseBeq tailFirst tailSecond
+  rw [h]
+
+/-- `dlClauseBeq` cons equation (DISTINCT heads): refuted. -/
+theorem dlClauseBeqConsFalse (headFirst headSecond : Nat) (tailFirst tailSecond : List Nat)
+    (h : Nat.beq headFirst headSecond = false) :
+    dlClauseBeq (headFirst :: tailFirst) (headSecond :: tailSecond) = false := by
+  show (match Nat.beq headFirst headSecond with
+        | true => dlClauseBeq tailFirst tailSecond
+        | false => false) = false
+  rw [h]
+
+/-- `dlClauseBeq` is reflexive. -/
+theorem dlClauseBeqRefl : (clause : List Nat) → dlClauseBeq clause clause = true
+  | [] => rfl
+  | head :: tail => by
+      rw [dlClauseBeqConsTrue head head tail tail (dlNatBeqRefl head)]
+      exact dlClauseBeqRefl tail
+
+/-- `dlClauseBeq` decides equality: `true` forces the clauses equal.  Structural double recursion via
+`dlNatBeqEq`. -/
+theorem dlClauseBeqEq : (first second : List Nat) → dlClauseBeq first second = true → first = second := by
+  intro first
+  induction first with
+  | nil =>
+    intro second h
+    cases second with
+    | nil => rfl
+    | cons headSecond tailSecond => exact Bool.noConfusion h
+  | cons headFirst tailFirst ih =>
+    intro second h
+    cases second with
+    | nil => exact Bool.noConfusion h
+    | cons headSecond tailSecond =>
+      cases hHead : Nat.beq headFirst headSecond with
+      | false =>
+        rw [dlClauseBeqConsFalse headFirst headSecond tailFirst tailSecond hHead] at h
+        exact Bool.noConfusion h
+      | true =>
+        rw [dlClauseBeqConsTrue headFirst headSecond tailFirst tailSecond hHead] at h
+        rw [dlNatBeqEq headFirst headSecond hHead, ih tailSecond h]
+
+/-- **DNF clause membership** — does the DNF contain `needle` as one of its clauses (structural
+`dlClauseBeq` scan)? -/
+def dlDnfHasClause (needle : List Nat) : List (List Nat) → Bool
+  | [] => false
+  | clause :: rest =>
+      match dlClauseBeq clause needle with
+      | true => true
+      | false => dlDnfHasClause needle rest
+
+/-- `dlDnfHasClause` cons equation (HIT): a beq-equal head witnesses membership. -/
+theorem dlDnfHasClauseConsTrue (needle clause : List Nat) (rest : List (List Nat))
+    (h : dlClauseBeq clause needle = true) : dlDnfHasClause needle (clause :: rest) = true := by
+  show (match dlClauseBeq clause needle with
+        | true => true
+        | false => dlDnfHasClause needle rest) = true
+  rw [h]
+
+/-- `dlDnfHasClause` cons equation (MISS): a beq-distinct head defers to the rest. -/
+theorem dlDnfHasClauseConsFalse (needle clause : List Nat) (rest : List (List Nat))
+    (h : dlClauseBeq clause needle = false) :
+    dlDnfHasClause needle (clause :: rest) = dlDnfHasClause needle rest := by
+  show (match dlClauseBeq clause needle with
+        | true => true
+        | false => dlDnfHasClause needle rest) = dlDnfHasClause needle rest
+  rw [h]
+
+/-- The head clause is a member. -/
+theorem dlDnfHasClauseHead (clause : List Nat) (rest : List (List Nat)) :
+    dlDnfHasClause clause (clause :: rest) = true :=
+  dlDnfHasClauseConsTrue clause clause rest (dlClauseBeqRefl clause)
+
+/-- Membership in the tail weakens to membership in the cons. -/
+theorem dlDnfHasClauseConsWeaken (needle clause : List Nat) (rest : List (List Nat))
+    (h : dlDnfHasClause needle rest = true) : dlDnfHasClause needle (clause :: rest) = true := by
+  cases hBeq : dlClauseBeq clause needle with
+  | true => exact dlDnfHasClauseConsTrue needle clause rest hBeq
+  | false => rw [dlDnfHasClauseConsFalse needle clause rest hBeq]; exact h
+
+/-- The head generator is a member of its own cons. -/
+theorem dlGenMemberHead (head : Nat) (tail : List Nat) : genMember head (head :: tail) = true := by
+  show (match Nat.beq head head with
+        | true => true
+        | false => genMember head tail) = true
+  rw [dlNatBeqRefl head]
+
+/-- Generator membership in the tail weakens to membership in the cons. -/
+theorem dlGenMemberConsWeaken (target head : Nat) (tail : List Nat)
+    (h : genMember target tail = true) : genMember target (head :: tail) = true := by
+  cases hBeq : Nat.beq head target with
+  | true =>
+    show (match Nat.beq head target with
+          | true => true
+          | false => genMember target tail) = true
+    rw [hBeq]
+  | false => rw [dlGenMemberConsFalse target head tail hBeq]; exact h
+
+/-! ## ROUND 2 — STEP 3: the clause-containment kit (intro / elim / erase) -/
+
+/-- **Pointwise introduction of `clauseSubset`** — if every generator of `smaller` is a member of `larger`
+then `clauseSubset smaller larger = true`. -/
+theorem dlClauseSubsetIntro : (smaller : List Nat) → (larger : List Nat) →
+    (∀ generator : Nat, genMember generator smaller = true → genMember generator larger = true) →
+    clauseSubset smaller larger = true := by
+  intro smaller
+  induction smaller with
+  | nil => intro larger hPoint; rfl
+  | cons head tail ih =>
+    intro larger hPoint
+    have hHead : genMember head larger = true := hPoint head (dlGenMemberHead head tail)
+    rw [dlClauseSubsetConsMem head tail larger hHead]
+    exact ih larger (fun generator hMem => hPoint generator (dlGenMemberConsWeaken generator head tail hMem))
+
+/-- **Pointwise elimination of `clauseSubset`** — a containment transports each generator membership. -/
+theorem dlClauseSubsetElim : (smaller : List Nat) → (larger : List Nat) →
+    clauseSubset smaller larger = true → (generator : Nat) → genMember generator smaller = true →
+    genMember generator larger = true := by
+  intro smaller
+  induction smaller with
+  | nil => intro larger hSub generator hMem; exact Bool.noConfusion hMem
+  | cons head tail ih =>
+    intro larger hSub generator hMem
+    cases hHeadMem : genMember head larger with
+    | false =>
+      rw [dlClauseSubsetConsFalse head tail larger hHeadMem] at hSub
+      exact Bool.noConfusion hSub
+    | true =>
+      rw [dlClauseSubsetConsMem head tail larger hHeadMem] at hSub
+      cases hBeq : Nat.beq head generator with
+      | true => rw [← dlNatBeqEq head generator hBeq]; exact hHeadMem
+      | false =>
+        rw [dlGenMemberConsFalse generator head tail hBeq] at hMem
+        exact ih larger hSub generator hMem
+
+/-- `clauseSubset` is reflexive. -/
+theorem dlClauseSubsetRefl (clause : List Nat) : clauseSubset clause clause = true :=
+  dlClauseSubsetIntro clause clause (fun _ hMem => hMem)
+
+/-- `clauseSubset` is transitive. -/
+theorem dlClauseSubsetTrans (lower middle upper : List Nat)
+    (hLM : clauseSubset lower middle = true) (hMU : clauseSubset middle upper = true) :
+    clauseSubset lower upper = true :=
+  dlClauseSubsetIntro lower upper (fun generator hMem =>
+    dlClauseSubsetElim middle upper hMU generator (dlClauseSubsetElim lower middle hLM generator hMem))
+
+/-- **A failed containment yields a missing generator** — `clauseSubset smaller larger = false` produces a
+generator of `smaller` absent from `larger`. -/
+theorem dlClauseSubsetFalseWitness : (smaller : List Nat) → (larger : List Nat) →
+    clauseSubset smaller larger = false →
+    ∃ generator : Nat, genMember generator smaller = true ∧ genMember generator larger = false := by
+  intro smaller
+  induction smaller with
+  | nil => intro larger hFalse; exact Bool.noConfusion hFalse
+  | cons head tail ih =>
+    intro larger hFalse
+    cases hHeadMem : genMember head larger with
+    | false => exact ⟨head, dlGenMemberHead head tail, hHeadMem⟩
+    | true =>
+      rw [dlClauseSubsetConsMem head tail larger hHeadMem] at hFalse
+      have ⟨generator, hMem, hMiss⟩ := ih larger hFalse
+      exact ⟨generator, dlGenMemberConsWeaken generator head tail hMem, hMiss⟩
+
+/-- **Erase one generator from a clause** — the `Nat.beq` filter dropping every copy of `target`.  Its
+characteristic environment is the minimality probe of the prime-implicant test. -/
+def dlEraseGenerator (target : Nat) : List Nat → List Nat
+  | [] => []
+  | head :: rest =>
+      match Nat.beq head target with
+      | true => dlEraseGenerator target rest
+      | false => head :: dlEraseGenerator target rest
+
+/-- `dlEraseGenerator` cons equation (DROP): the target head is removed. -/
+theorem dlEraseGeneratorConsDrop (target head : Nat) (rest : List Nat)
+    (h : Nat.beq head target = true) :
+    dlEraseGenerator target (head :: rest) = dlEraseGenerator target rest := by
+  show (match Nat.beq head target with
+        | true => dlEraseGenerator target rest
+        | false => head :: dlEraseGenerator target rest) = dlEraseGenerator target rest
+  rw [h]
+
+/-- `dlEraseGenerator` cons equation (KEEP): a non-target head survives. -/
+theorem dlEraseGeneratorConsKeep (target head : Nat) (rest : List Nat)
+    (h : Nat.beq head target = false) :
+    dlEraseGenerator target (head :: rest) = head :: dlEraseGenerator target rest := by
+  show (match Nat.beq head target with
+        | true => dlEraseGenerator target rest
+        | false => head :: dlEraseGenerator target rest) = head :: dlEraseGenerator target rest
+  rw [h]
+
+/-- Erasing a generator removes it: `genMember target (dlEraseGenerator target clause) = false`. -/
+theorem dlGenMemberEraseSelf (target : Nat) : (clause : List Nat) →
+    genMember target (dlEraseGenerator target clause) = false := by
+  intro clause
+  induction clause with
+  | nil => rfl
+  | cons head rest ih =>
+    cases hBeq : Nat.beq head target with
+    | true => rw [dlEraseGeneratorConsDrop target head rest hBeq]; exact ih
+    | false =>
+      rw [dlEraseGeneratorConsKeep target head rest hBeq,
+          dlGenMemberConsFalse target head (dlEraseGenerator target rest) hBeq]
+      exact ih
+
+/-- Erasing a DIFFERENT generator preserves membership. -/
+theorem dlGenMemberEraseOther (generator target : Nat) (hNe : Nat.beq generator target = false) :
+    (clause : List Nat) → genMember generator clause = true →
+    genMember generator (dlEraseGenerator target clause) = true := by
+  intro clause
+  induction clause with
+  | nil => intro hMem; exact Bool.noConfusion hMem
+  | cons head rest ih =>
+    intro hMem
+    cases hHeadGen : Nat.beq head generator with
+    | true =>
+      have hHeadTarget : Nat.beq head target = false := by
+        rw [dlNatBeqEq head generator hHeadGen]; exact hNe
+      rw [dlEraseGeneratorConsKeep target head rest hHeadTarget]
+      show (match Nat.beq head generator with
+            | true => true
+            | false => genMember generator (dlEraseGenerator target rest)) = true
+      rw [hHeadGen]
+    | false =>
+      rw [dlGenMemberConsFalse generator head rest hHeadGen] at hMem
+      cases hHeadTarget : Nat.beq head target with
+      | true => rw [dlEraseGeneratorConsDrop target head rest hHeadTarget]; exact ih hMem
+      | false =>
+        rw [dlEraseGeneratorConsKeep target head rest hHeadTarget,
+            dlGenMemberConsFalse generator head (dlEraseGenerator target rest) hHeadGen]
+        exact ih hMem
+
+/-- Membership in the erased clause reflects back to the original clause. -/
+theorem dlGenMemberEraseElim (generator target : Nat) : (clause : List Nat) →
+    genMember generator (dlEraseGenerator target clause) = true →
+    genMember generator clause = true := by
+  intro clause
+  induction clause with
+  | nil => intro hMem; exact Bool.noConfusion hMem
+  | cons head rest ih =>
+    intro hMem
+    cases hHeadTarget : Nat.beq head target with
+    | true =>
+      rw [dlEraseGeneratorConsDrop target head rest hHeadTarget] at hMem
+      exact dlGenMemberConsWeaken generator head rest (ih hMem)
+    | false =>
+      rw [dlEraseGeneratorConsKeep target head rest hHeadTarget] at hMem
+      cases hHeadGen : Nat.beq head generator with
+      | true =>
+        show (match Nat.beq head generator with
+              | true => true
+              | false => genMember generator rest) = true
+        rw [hHeadGen]
+      | false =>
+        rw [dlGenMemberConsFalse generator head (dlEraseGenerator target rest) hHeadGen] at hMem
+        rw [dlGenMemberConsFalse generator head rest hHeadGen]
+        exact ih hMem
+
+/-- The erased clause is contained in the original clause. -/
+theorem dlEraseSubset (target : Nat) (clause : List Nat) :
+    clauseSubset (dlEraseGenerator target clause) clause = true :=
+  dlClauseSubsetIntro (dlEraseGenerator target clause) clause
+    (fun generator hMem => dlGenMemberEraseElim generator target clause hMem)
+
+/-- **Containment survives erasing a generator the smaller clause misses** — if `smaller ⊆ larger` and
+`target ∉ smaller` then `smaller ⊆ larger \ {target}`. -/
+theorem dlClauseSubsetEraseIntro (smaller larger : List Nat) (target : Nat)
+    (hSub : clauseSubset smaller larger = true) (hMiss : genMember target smaller = false) :
+    clauseSubset smaller (dlEraseGenerator target larger) = true :=
+  dlClauseSubsetIntro smaller (dlEraseGenerator target larger) (fun generator hMem => by
+    have hInLarger : genMember generator larger = true :=
+      dlClauseSubsetElim smaller larger hSub generator hMem
+    cases hBeq : Nat.beq generator target with
+    | true =>
+      rw [dlNatBeqEq generator target hBeq] at hMem
+      rw [hMem] at hMiss
+      exact Bool.noConfusion hMiss
+    | false => exact dlGenMemberEraseOther generator target hBeq larger hInLarger)
+
+/-! ## ROUND 2 — STEP 4: the strict clause order kit (transitivity / irreflexivity / asymmetry) -/
+
+/-- `clauseLess` equation (STRICTLY LONGER first): a first clause of strictly larger length is not below. -/
+theorem dlClauseLessGtFalse (first second : List Nat)
+    (h : natBle (clauseLength first) (clauseLength second) = false) :
+    clauseLess first second = false := by
+  show (match natBle (clauseLength first) (clauseLength second) with
+        | false => false
+        | true =>
+            match natBle (clauseLength second) (clauseLength first) with
+            | false => true
+            | true => clauseLexLess first second) = false
+  rw [h]
+
+/-- **Strict-less transitivity in the `natBle`-false encoding** — `lower < middle` and `middle < upper`
+give `lower < upper` (where `x < y` is `natBle y x = false`). -/
+theorem dlNatLtTrans (lower middle upper : Nat)
+    (hLM : natBle middle lower = false) (hMU : natBle upper middle = false) :
+    natBle upper lower = false := by
+  cases hUL : natBle upper lower with
+  | false => rfl
+  | true =>
+    have hLMTrue : natBle lower middle = true := natBleTotal middle lower hLM
+    have hUM : natBle upper middle = true := natBleTrans upper lower middle hUL hLMTrue
+    rw [hUM] at hMU
+    exact Bool.noConfusion hMU
+
+/-- `clauseLexLess` is irreflexive. -/
+theorem dlClauseLexIrrefl : (clause : List Nat) → clauseLexLess clause clause = false
+  | [] => rfl
+  | head :: tail => by
+      rw [dlClauseLexEqStep head head tail tail (natBleRefl head) (natBleRefl head)]
+      exact dlClauseLexIrrefl tail
+
+/-- `clauseLess` is irreflexive. -/
+theorem dlClauseLessIrrefl (clause : List Nat) : clauseLess clause clause = false := by
+  rw [dlClauseLessEqStep clause clause (natBleRefl (clauseLength clause)) (natBleRefl (clauseLength clause))]
+  exact dlClauseLexIrrefl clause
+
+/-- `clauseLexLess` is asymmetric. -/
+theorem dlClauseLexAsymm : (first : List Nat) → (second : List Nat) →
+    clauseLexLess first second = true → clauseLexLess second first = false := by
+  intro first
+  induction first with
+  | nil =>
+    intro second h
+    cases second with
+    | nil => exact Bool.noConfusion h
+    | cons headSecond tailSecond => rfl
+  | cons headFirst tailFirst ih =>
+    intro second h
+    cases second with
+    | nil => exact Bool.noConfusion h
+    | cons headSecond tailSecond =>
+      cases hFS : natBle headFirst headSecond with
+      | false =>
+        rw [dlClauseLexGt headFirst headSecond tailFirst tailSecond hFS] at h
+        exact Bool.noConfusion h
+      | true =>
+        cases hSF : natBle headSecond headFirst with
+        | false => exact dlClauseLexGt headSecond headFirst tailSecond tailFirst hSF
+        | true =>
+          rw [dlClauseLexEqStep headFirst headSecond tailFirst tailSecond hFS hSF] at h
+          rw [dlClauseLexEqStep headSecond headFirst tailSecond tailFirst hSF hFS]
+          exact ih tailSecond h
+
+/-- `clauseLess` is asymmetric — used to refute a head clash in the sorted-extensionality argument. -/
+theorem dlClauseLessAsymm (first second : List Nat)
+    (h : clauseLess first second = true) : clauseLess second first = false := by
+  cases hFS : natBle (clauseLength first) (clauseLength second) with
+  | false =>
+    rw [dlClauseLessGtFalse first second hFS] at h
+    exact Bool.noConfusion h
+  | true =>
+    cases hSF : natBle (clauseLength second) (clauseLength first) with
+    | false => exact dlClauseLessGtFalse second first hSF
+    | true =>
+      rw [dlClauseLessEqStep first second hFS hSF] at h
+      rw [dlClauseLessEqStep second first hSF hFS]
+      exact dlClauseLexAsymm first second h
+
+/-- `clauseLexLess` is transitive.  Simultaneous descent on the three clauses; the head comparisons split
+LESS / EQUAL / GREATER through `natBleTrans` / `natBleAntisymm` / `natBleTotal`. -/
+theorem dlClauseLexTrans : (first : List Nat) → (second third : List Nat) →
+    clauseLexLess first second = true → clauseLexLess second third = true →
+    clauseLexLess first third = true := by
+  intro first
+  induction first with
+  | nil =>
+    intro second third h1 h2
+    cases second with
+    | nil => exact Bool.noConfusion h1
+    | cons headSecond tailSecond =>
+      cases third with
+      | nil => exact Bool.noConfusion h2
+      | cons headThird tailThird => rfl
+  | cons headFirst tailFirst ih =>
+    intro second third h1 h2
+    cases second with
+    | nil => exact Bool.noConfusion h1
+    | cons headSecond tailSecond =>
+      cases third with
+      | nil => exact Bool.noConfusion h2
+      | cons headThird tailThird =>
+        cases hFS : natBle headFirst headSecond with
+        | false =>
+          rw [dlClauseLexGt headFirst headSecond tailFirst tailSecond hFS] at h1
+          exact Bool.noConfusion h1
+        | true =>
+          cases hST : natBle headSecond headThird with
+          | false =>
+            rw [dlClauseLexGt headSecond headThird tailSecond tailThird hST] at h2
+            exact Bool.noConfusion h2
+          | true =>
+            have hFT : natBle headFirst headThird = true :=
+              natBleTrans headFirst headSecond headThird hFS hST
+            cases hSF : natBle headSecond headFirst with
+            | false =>
+              have hTF : natBle headThird headFirst = false := by
+                cases hTFprobe : natBle headThird headFirst with
+                | false => rfl
+                | true =>
+                  have hSFcontra : natBle headSecond headFirst = true :=
+                    natBleTrans headSecond headThird headFirst hST hTFprobe
+                  rw [hSFcontra] at hSF
+                  exact Bool.noConfusion hSF
+              exact dlClauseLexLt headFirst headThird tailFirst tailThird hFT hTF
+            | true =>
+              have hHeadFS : headFirst = headSecond := natBleAntisymm headFirst headSecond hFS hSF
+              rw [dlClauseLexEqStep headFirst headSecond tailFirst tailSecond hFS hSF] at h1
+              cases hTS : natBle headThird headSecond with
+              | false =>
+                have hTF : natBle headThird headFirst = false := by
+                  rw [hHeadFS]; exact hTS
+                exact dlClauseLexLt headFirst headThird tailFirst tailThird hFT hTF
+              | true =>
+                have hHeadST : headSecond = headThird := natBleAntisymm headSecond headThird hST hTS
+                rw [dlClauseLexEqStep headSecond headThird tailSecond tailThird hST hTS] at h2
+                have hTF : natBle headThird headFirst = true := by
+                  rw [hHeadFS, hHeadST]; exact natBleRefl headThird
+                rw [dlClauseLexEqStep headFirst headThird tailFirst tailThird hFT hTF]
+                exact ih tailSecond tailThird h1 h2
+
+/-- ★ `clauseLess` is transitive — length comparison first (through `natBleTrans`), the equal-length tie
+resolved by `dlClauseLexTrans`.  The engine of the sorted-DNF invariant. -/
+theorem dlClauseLessTrans (first second third : List Nat)
+    (h1 : clauseLess first second = true) (h2 : clauseLess second third = true) :
+    clauseLess first third = true := by
+  cases hFS : natBle (clauseLength first) (clauseLength second) with
+  | false =>
+    rw [dlClauseLessGtFalse first second hFS] at h1
+    exact Bool.noConfusion h1
+  | true =>
+    cases hST : natBle (clauseLength second) (clauseLength third) with
+    | false =>
+      rw [dlClauseLessGtFalse second third hST] at h2
+      exact Bool.noConfusion h2
+    | true =>
+      have hFT : natBle (clauseLength first) (clauseLength third) = true :=
+        natBleTrans (clauseLength first) (clauseLength second) (clauseLength third) hFS hST
+      cases hSF : natBle (clauseLength second) (clauseLength first) with
+      | false =>
+        have hTF : natBle (clauseLength third) (clauseLength first) = false := by
+          cases hTFprobe : natBle (clauseLength third) (clauseLength first) with
+          | false => rfl
+          | true =>
+            have hSFcontra : natBle (clauseLength second) (clauseLength first) = true :=
+              natBleTrans (clauseLength second) (clauseLength third) (clauseLength first) hST hTFprobe
+            rw [hSFcontra] at hSF
+            exact Bool.noConfusion hSF
+        exact dlClauseLessLt first third hFT hTF
+      | true =>
+        have hLenFS : clauseLength first = clauseLength second :=
+          natBleAntisymm (clauseLength first) (clauseLength second) hFS hSF
+        rw [dlClauseLessEqStep first second hFS hSF] at h1
+        cases hTS : natBle (clauseLength third) (clauseLength second) with
+        | false =>
+          have hTF : natBle (clauseLength third) (clauseLength first) = false := by
+            rw [hLenFS]; exact hTS
+          exact dlClauseLessLt first third hFT hTF
+        | true =>
+          rw [dlClauseLessEqStep second third hST hTS] at h2
+          have hTF : natBle (clauseLength third) (clauseLength first) = true := by
+            rw [hLenFS]; exact hTS
+          rw [dlClauseLessEqStep first third hFT hTF]
+          exact dlClauseLexTrans first second third h1 h2
+
+/-! ## ROUND 2 — STEP 5a: clause-level strict sortedness (sorted-distinct generator lists) -/
+
+/-- Is `bound` STRICTLY below every generator of the clause?  (`bound < head` is `natBle head bound =
+false`.)  The hereditary head condition of a sorted-distinct clause. -/
+def dlIsGenBelowClause (bound : Nat) : List Nat → Bool
+  | [] => true
+  | head :: rest =>
+      match natBle head bound with
+      | true => false
+      | false => dlIsGenBelowClause bound rest
+
+/-- `dlIsGenBelowClause` cons equation (NOT BELOW): a head at or under the bound refutes. -/
+theorem dlGenBelowClauseConsLe (bound head : Nat) (rest : List Nat)
+    (h : natBle head bound = true) : dlIsGenBelowClause bound (head :: rest) = false := by
+  show (match natBle head bound with
+        | true => false
+        | false => dlIsGenBelowClause bound rest) = false
+  rw [h]
+
+/-- `dlIsGenBelowClause` cons equation (BELOW): a head strictly above the bound defers to the rest. -/
+theorem dlGenBelowClauseConsGt (bound head : Nat) (rest : List Nat)
+    (h : natBle head bound = false) :
+    dlIsGenBelowClause bound (head :: rest) = dlIsGenBelowClause bound rest := by
+  show (match natBle head bound with
+        | true => false
+        | false => dlIsGenBelowClause bound rest) = dlIsGenBelowClause bound rest
+  rw [h]
+
+/-- `dlIsGenBelowClause` cons introduction. -/
+theorem dlGenBelowClauseConsIntro (bound head : Nat) (rest : List Nat)
+    (hHead : natBle head bound = false) (hRest : dlIsGenBelowClause bound rest = true) :
+    dlIsGenBelowClause bound (head :: rest) = true := by
+  rw [dlGenBelowClauseConsGt bound head rest hHead]
+  exact hRest
+
+/-- A lower bound transports below-clause status downward: `lower < upper` and `upper` below the clause
+give `lower` below the clause. -/
+theorem dlGenBelowClauseTrans (lower upper : Nat) (hLU : natBle upper lower = false) :
+    (clause : List Nat) → dlIsGenBelowClause upper clause = true →
+    dlIsGenBelowClause lower clause = true := by
+  intro clause
+  induction clause with
+  | nil => intro hAbove; rfl
+  | cons head rest ih =>
+    intro hAbove
+    cases hHU : natBle head upper with
+    | true =>
+      rw [dlGenBelowClauseConsLe upper head rest hHU] at hAbove
+      exact Bool.noConfusion hAbove
+    | false =>
+      rw [dlGenBelowClauseConsGt upper head rest hHU] at hAbove
+      exact dlGenBelowClauseConsIntro lower head rest (dlNatLtTrans lower upper head hLU hHU) (ih hAbove)
+
+/-- A strict lower bound survives a sorted-set insert of a strictly larger value. -/
+theorem dlGenBelowClauseInsert (bound value : Nat) (hBV : natBle value bound = false) :
+    (clause : List Nat) → dlIsGenBelowClause bound clause = true →
+    dlIsGenBelowClause bound (insertSortedSet value clause) = true := by
+  intro clause
+  induction clause with
+  | nil =>
+    intro hBelow
+    show dlIsGenBelowClause bound [value] = true
+    exact dlGenBelowClauseConsIntro bound value [] hBV rfl
+  | cons head rest ih =>
+    intro hBelow
+    cases hHead : natBle head bound with
+    | true =>
+      rw [dlGenBelowClauseConsLe bound head rest hHead] at hBelow
+      exact Bool.noConfusion hBelow
+    | false =>
+      rw [dlGenBelowClauseConsGt bound head rest hHead] at hBelow
+      cases hVH : natBle value head with
+      | true =>
+        cases hHV : natBle head value with
+        | true =>
+          rw [insertSortedSetEq value head rest hVH hHV]
+          exact dlGenBelowClauseConsIntro bound head rest hHead hBelow
+        | false =>
+          rw [insertSortedSetLt value head rest hVH hHV]
+          exact dlGenBelowClauseConsIntro bound value (head :: rest) hBV
+            (dlGenBelowClauseConsIntro bound head rest hHead hBelow)
+      | false =>
+        rw [insertSortedSetGt value head rest hVH]
+        exact dlGenBelowClauseConsIntro bound head (insertSortedSet value rest) hHead (ih hBelow)
+
+/-- Is the clause a STRICTLY sorted generator list (sorted and duplicate-free)?  The canonical clause
+invariant maintained by `insertSortedSet`. -/
+def dlIsSortedClause : List Nat → Bool
+  | [] => true
+  | head :: rest =>
+      match dlIsGenBelowClause head rest with
+      | true => dlIsSortedClause rest
+      | false => false
+
+/-- `dlIsSortedClause` cons equation (HEAD BELOW): defer to the rest. -/
+theorem dlSortedClauseConsTrue (head : Nat) (rest : List Nat)
+    (h : dlIsGenBelowClause head rest = true) :
+    dlIsSortedClause (head :: rest) = dlIsSortedClause rest := by
+  show (match dlIsGenBelowClause head rest with
+        | true => dlIsSortedClause rest
+        | false => false) = dlIsSortedClause rest
+  rw [h]
+
+/-- `dlIsSortedClause` cons equation (HEAD NOT BELOW): refuted. -/
+theorem dlSortedClauseConsFalse (head : Nat) (rest : List Nat)
+    (h : dlIsGenBelowClause head rest = false) : dlIsSortedClause (head :: rest) = false := by
+  show (match dlIsGenBelowClause head rest with
+        | true => dlIsSortedClause rest
+        | false => false) = false
+  rw [h]
+
+/-- `dlIsSortedClause` cons introduction. -/
+theorem dlSortedClauseConsIntro (head : Nat) (rest : List Nat)
+    (hBelow : dlIsGenBelowClause head rest = true) (hRest : dlIsSortedClause rest = true) :
+    dlIsSortedClause (head :: rest) = true := by
+  rw [dlSortedClauseConsTrue head rest hBelow]
+  exact hRest
+
+/-- `dlIsSortedClause` cons elimination — both components of the invariant. -/
+theorem dlSortedClauseConsElim (head : Nat) (rest : List Nat)
+    (hSorted : dlIsSortedClause (head :: rest) = true) :
+    dlIsGenBelowClause head rest = true ∧ dlIsSortedClause rest = true := by
+  cases hBelow : dlIsGenBelowClause head rest with
+  | false =>
+    rw [dlSortedClauseConsFalse head rest hBelow] at hSorted
+    exact Bool.noConfusion hSorted
+  | true =>
+    rw [dlSortedClauseConsTrue head rest hBelow] at hSorted
+    exact ⟨rfl, hSorted⟩
+
+/-- ★ `insertSortedSet` preserves clause sortedness. -/
+theorem dlSortedClauseInsert (value : Nat) : (clause : List Nat) →
+    dlIsSortedClause clause = true → dlIsSortedClause (insertSortedSet value clause) = true := by
+  intro clause
+  induction clause with
+  | nil =>
+    intro hSorted
+    show dlIsSortedClause [value] = true
+    exact dlSortedClauseConsIntro value [] rfl rfl
+  | cons head rest ih =>
+    intro hSorted
+    have hParts := dlSortedClauseConsElim head rest hSorted
+    cases hVH : natBle value head with
+    | true =>
+      cases hHV : natBle head value with
+      | true =>
+        rw [insertSortedSetEq value head rest hVH hHV]
+        exact hSorted
+      | false =>
+        rw [insertSortedSetLt value head rest hVH hHV]
+        exact dlSortedClauseConsIntro value (head :: rest)
+          (dlGenBelowClauseConsIntro value head rest hHV
+            (dlGenBelowClauseTrans value head hHV rest hParts.left))
+          hSorted
+    | false =>
+      rw [insertSortedSetGt value head rest hVH]
+      exact dlSortedClauseConsIntro head (insertSortedSet value rest)
+        (dlGenBelowClauseInsert head value hVH rest hParts.left)
+        (ih hParts.right)
+
+/-- ★ `insertManySet` preserves clause sortedness of the accumulator (the inserted generators may arrive in
+any order). -/
+theorem dlSortedClauseInsertMany : (values : List Nat) → (acc : List Nat) →
+    dlIsSortedClause acc = true → dlIsSortedClause (insertManySet values acc) = true := by
+  intro values
+  induction values with
+  | nil => intro acc hSorted; exact hSorted
+  | cons head tail ih =>
+    intro acc hSorted
+    show dlIsSortedClause (insertSortedSet head (insertManySet tail acc)) = true
+    exact dlSortedClauseInsert head (insertManySet tail acc) (ih acc hSorted)
+
+/-- In a clause with a strict head bound, every member is strictly above the bound. -/
+theorem dlSortedHeadBelow (bound : Nat) : (tail : List Nat) →
+    dlIsGenBelowClause bound tail = true → (generator : Nat) → genMember generator tail = true →
+    natBle generator bound = false := by
+  intro tail
+  induction tail with
+  | nil => intro hBelow generator hMem; exact Bool.noConfusion hMem
+  | cons head rest ih =>
+    intro hBelow generator hMem
+    cases hHB : natBle head bound with
+    | true =>
+      rw [dlGenBelowClauseConsLe bound head rest hHB] at hBelow
+      exact Bool.noConfusion hBelow
+    | false =>
+      rw [dlGenBelowClauseConsGt bound head rest hHB] at hBelow
+      cases hBeq : Nat.beq head generator with
+      | true => rw [← dlNatBeqEq head generator hBeq]; exact hHB
+      | false =>
+        rw [dlGenMemberConsFalse generator head rest hBeq] at hMem
+        exact ih hBelow generator hMem
+
+/-- ★ **Antisymmetry of clause containment on sorted-distinct clauses** — two strictly sorted clauses each
+contained in the other are EQUAL as lists.  Double descent; the heads are forced equal (each is a member of
+the other clause, and a sorted head is the strict minimum), then the tails are mutually contained because
+the shared head cannot recur in either tail. -/
+theorem dlClauseSubsetAntisymm : (first : List Nat) → (second : List Nat) →
+    dlIsSortedClause first = true → dlIsSortedClause second = true →
+    clauseSubset first second = true → clauseSubset second first = true → first = second := by
+  intro first
+  induction first with
+  | nil =>
+    intro second hSortedFirst hSortedSecond hFS hSF
+    cases second with
+    | nil => rfl
+    | cons headSecond tailSecond =>
+      rw [dlClauseSubsetConsFalse headSecond tailSecond [] rfl] at hSF
+      exact Bool.noConfusion hSF
+  | cons headFirst tailFirst ih =>
+    intro second hSortedFirst hSortedSecond hFS hSF
+    cases second with
+    | nil =>
+      rw [dlClauseSubsetConsFalse headFirst tailFirst [] rfl] at hFS
+      exact Bool.noConfusion hFS
+    | cons headSecond tailSecond =>
+      have hPartsFirst := dlSortedClauseConsElim headFirst tailFirst hSortedFirst
+      have hPartsSecond := dlSortedClauseConsElim headSecond tailSecond hSortedSecond
+      cases hMemFirst : genMember headFirst (headSecond :: tailSecond) with
+      | false =>
+        rw [dlClauseSubsetConsFalse headFirst tailFirst (headSecond :: tailSecond) hMemFirst] at hFS
+        exact Bool.noConfusion hFS
+      | true =>
+        rw [dlClauseSubsetConsMem headFirst tailFirst (headSecond :: tailSecond) hMemFirst] at hFS
+        cases hMemSecond : genMember headSecond (headFirst :: tailFirst) with
+        | false =>
+          rw [dlClauseSubsetConsFalse headSecond tailSecond (headFirst :: tailFirst) hMemSecond] at hSF
+          exact Bool.noConfusion hSF
+        | true =>
+          rw [dlClauseSubsetConsMem headSecond tailSecond (headFirst :: tailFirst) hMemSecond] at hSF
+          have hHeadEq : headFirst = headSecond := by
+            cases hBeqSF : Nat.beq headSecond headFirst with
+            | true => exact (dlNatBeqEq headSecond headFirst hBeqSF).symm
+            | false =>
+              rw [dlGenMemberConsFalse headFirst headSecond tailSecond hBeqSF] at hMemFirst
+              have hFbelowS : natBle headFirst headSecond = false :=
+                dlSortedHeadBelow headSecond tailSecond hPartsSecond.left headFirst hMemFirst
+              cases hBeqFS : Nat.beq headFirst headSecond with
+              | true => exact dlNatBeqEq headFirst headSecond hBeqFS
+              | false =>
+                rw [dlGenMemberConsFalse headSecond headFirst tailFirst hBeqFS] at hMemSecond
+                have hSbelowF : natBle headSecond headFirst = false :=
+                  dlSortedHeadBelow headFirst tailFirst hPartsFirst.left headSecond hMemSecond
+                have hTotal : natBle headSecond headFirst = true :=
+                  natBleTotal headFirst headSecond hFbelowS
+                rw [hTotal] at hSbelowF
+                exact Bool.noConfusion hSbelowF
+          subst hHeadEq
+          have hTailFS : clauseSubset tailFirst tailSecond = true := by
+            refine dlClauseSubsetIntro tailFirst tailSecond (fun generator hMem => ?_)
+            have hInSecond : genMember generator (headFirst :: tailSecond) = true :=
+              dlClauseSubsetElim tailFirst (headFirst :: tailSecond) hFS generator hMem
+            cases hBeqHG : Nat.beq headFirst generator with
+            | true =>
+              have hGenBelow : natBle generator headFirst = false :=
+                dlSortedHeadBelow headFirst tailFirst hPartsFirst.left generator hMem
+              rw [← dlNatBeqEq headFirst generator hBeqHG] at hGenBelow
+              rw [natBleRefl headFirst] at hGenBelow
+              exact Bool.noConfusion hGenBelow
+            | false =>
+              rw [dlGenMemberConsFalse generator headFirst tailSecond hBeqHG] at hInSecond
+              exact hInSecond
+          have hTailSF : clauseSubset tailSecond tailFirst = true := by
+            refine dlClauseSubsetIntro tailSecond tailFirst (fun generator hMem => ?_)
+            have hInFirst : genMember generator (headFirst :: tailFirst) = true :=
+              dlClauseSubsetElim tailSecond (headFirst :: tailFirst) hSF generator hMem
+            cases hBeqHG : Nat.beq headFirst generator with
+            | true =>
+              have hGenBelow : natBle generator headFirst = false :=
+                dlSortedHeadBelow headFirst tailSecond hPartsSecond.left generator hMem
+              rw [← dlNatBeqEq headFirst generator hBeqHG] at hGenBelow
+              rw [natBleRefl headFirst] at hGenBelow
+              exact Bool.noConfusion hGenBelow
+            | false =>
+              rw [dlGenMemberConsFalse generator headFirst tailFirst hBeqHG] at hInFirst
+              exact hInFirst
+          rw [ih tailSecond hPartsFirst.right hPartsSecond.right hTailFS hTailSF]
+
+/-! ## ROUND 2 — STEP 5b: DNF-level strict sortedness (the `clauseLess`-sorted clause list) -/
+
+/-- Is the clause STRICTLY `clauseLess`-below every clause of the DNF?  The hereditary head condition of a
+sorted DNF. -/
+def dlIsBelowAllClauses (clause : List Nat) : List (List Nat) → Bool
+  | [] => true
+  | head :: rest =>
+      match clauseLess clause head with
+      | true => dlIsBelowAllClauses clause rest
+      | false => false
+
+/-- `dlIsBelowAllClauses` cons equation (BELOW): defer to the rest. -/
+theorem dlBelowAllConsTrue (clause head : List Nat) (rest : List (List Nat))
+    (h : clauseLess clause head = true) :
+    dlIsBelowAllClauses clause (head :: rest) = dlIsBelowAllClauses clause rest := by
+  show (match clauseLess clause head with
+        | true => dlIsBelowAllClauses clause rest
+        | false => false) = dlIsBelowAllClauses clause rest
+  rw [h]
+
+/-- `dlIsBelowAllClauses` cons equation (NOT BELOW): refuted. -/
+theorem dlBelowAllConsFalse (clause head : List Nat) (rest : List (List Nat))
+    (h : clauseLess clause head = false) :
+    dlIsBelowAllClauses clause (head :: rest) = false := by
+  show (match clauseLess clause head with
+        | true => dlIsBelowAllClauses clause rest
+        | false => false) = false
+  rw [h]
+
+/-- `dlIsBelowAllClauses` cons introduction. -/
+theorem dlBelowAllConsIntro (clause head : List Nat) (rest : List (List Nat))
+    (hHead : clauseLess clause head = true) (hRest : dlIsBelowAllClauses clause rest = true) :
+    dlIsBelowAllClauses clause (head :: rest) = true := by
+  rw [dlBelowAllConsTrue clause head rest hHead]
+  exact hRest
+
+/-- Is the DNF a STRICTLY `clauseLess`-sorted clause list (hereditary head bounds)?  The canonical DNF-level
+invariant maintained by `insertClauseSorted`. -/
+def dlIsSortedDnf : List (List Nat) → Bool
+  | [] => true
+  | clause :: rest =>
+      match dlIsBelowAllClauses clause rest with
+      | true => dlIsSortedDnf rest
+      | false => false
+
+/-- `dlIsSortedDnf` cons equation (HEAD BELOW ALL): defer to the rest. -/
+theorem dlSortedDnfConsTrue (clause : List Nat) (rest : List (List Nat))
+    (h : dlIsBelowAllClauses clause rest = true) :
+    dlIsSortedDnf (clause :: rest) = dlIsSortedDnf rest := by
+  show (match dlIsBelowAllClauses clause rest with
+        | true => dlIsSortedDnf rest
+        | false => false) = dlIsSortedDnf rest
+  rw [h]
+
+/-- `dlIsSortedDnf` cons equation (HEAD NOT BELOW ALL): refuted. -/
+theorem dlSortedDnfConsFalse (clause : List Nat) (rest : List (List Nat))
+    (h : dlIsBelowAllClauses clause rest = false) : dlIsSortedDnf (clause :: rest) = false := by
+  show (match dlIsBelowAllClauses clause rest with
+        | true => dlIsSortedDnf rest
+        | false => false) = false
+  rw [h]
+
+/-- `dlIsSortedDnf` cons introduction. -/
+theorem dlSortedDnfConsIntro (clause : List Nat) (rest : List (List Nat))
+    (hBelow : dlIsBelowAllClauses clause rest = true) (hRest : dlIsSortedDnf rest = true) :
+    dlIsSortedDnf (clause :: rest) = true := by
+  rw [dlSortedDnfConsTrue clause rest hBelow]
+  exact hRest
+
+/-- `dlIsSortedDnf` cons elimination — both components of the invariant. -/
+theorem dlSortedDnfConsElim (clause : List Nat) (rest : List (List Nat))
+    (hSorted : dlIsSortedDnf (clause :: rest) = true) :
+    dlIsBelowAllClauses clause rest = true ∧ dlIsSortedDnf rest = true := by
+  cases hBelow : dlIsBelowAllClauses clause rest with
+  | false =>
+    rw [dlSortedDnfConsFalse clause rest hBelow] at hSorted
+    exact Bool.noConfusion hSorted
+  | true =>
+    rw [dlSortedDnfConsTrue clause rest hBelow] at hSorted
+    exact ⟨rfl, hSorted⟩
+
+/-- A hereditary head bound reaches every member: `clause` below all of `dnf` and `member ∈ dnf` give
+`clauseLess clause member = true`. -/
+theorem dlBelowAllMember (clause : List Nat) : (dnf : List (List Nat)) →
+    dlIsBelowAllClauses clause dnf = true → (member : List Nat) →
+    dlDnfHasClause member dnf = true → clauseLess clause member = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro hBelow member hMem; exact Bool.noConfusion hMem
+  | cons head rest ih =>
+    intro hBelow member hMem
+    cases hLess : clauseLess clause head with
+    | false =>
+      rw [dlBelowAllConsFalse clause head rest hLess] at hBelow
+      exact Bool.noConfusion hBelow
+    | true =>
+      rw [dlBelowAllConsTrue clause head rest hLess] at hBelow
+      cases hBeq : dlClauseBeq head member with
+      | true => rw [← dlClauseBeqEq head member hBeq]; exact hLess
+      | false =>
+        rw [dlDnfHasClauseConsFalse member head rest hBeq] at hMem
+        exact ih hBelow member hMem
+
+/-- A strictly lower clause inherits a below-all bound: `lower < upper` (in `clauseLess`) and `upper` below
+all of `dnf` give `lower` below all of `dnf` — by `dlClauseLessTrans`. -/
+theorem dlBelowAllTrans (lower upper : List Nat) (hLU : clauseLess lower upper = true) :
+    (dnf : List (List Nat)) → dlIsBelowAllClauses upper dnf = true →
+    dlIsBelowAllClauses lower dnf = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro hBelow; rfl
+  | cons head rest ih =>
+    intro hBelow
+    cases hLess : clauseLess upper head with
+    | false =>
+      rw [dlBelowAllConsFalse upper head rest hLess] at hBelow
+      exact Bool.noConfusion hBelow
+    | true =>
+      rw [dlBelowAllConsTrue upper head rest hLess] at hBelow
+      exact dlBelowAllConsIntro lower head rest (dlClauseLessTrans lower upper head hLU hLess) (ih hBelow)
+
+/-- A below-all bound survives `removeSupersets` (a filter only drops clauses). -/
+theorem dlBelowAllRemoveSupersets (clause candidate : List Nat) : (dnf : List (List Nat)) →
+    dlIsBelowAllClauses clause dnf = true →
+    dlIsBelowAllClauses clause (removeSupersets candidate dnf) = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro hBelow; rfl
+  | cons head rest ih =>
+    intro hBelow
+    cases hLess : clauseLess clause head with
+    | false =>
+      rw [dlBelowAllConsFalse clause head rest hLess] at hBelow
+      exact Bool.noConfusion hBelow
+    | true =>
+      rw [dlBelowAllConsTrue clause head rest hLess] at hBelow
+      cases hSub : clauseSubset candidate head with
+      | true =>
+        rw [dlRemoveSupersetsConsDrop candidate head rest hSub]
+        exact ih hBelow
+      | false =>
+        rw [dlRemoveSupersetsConsKeep candidate head rest hSub]
+        exact dlBelowAllConsIntro clause head (removeSupersets candidate rest) hLess (ih hBelow)
+
+/-- `removeSupersets` preserves DNF sortedness. -/
+theorem dlSortedRemoveSupersets (candidate : List Nat) : (dnf : List (List Nat)) →
+    dlIsSortedDnf dnf = true → dlIsSortedDnf (removeSupersets candidate dnf) = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro hSorted; rfl
+  | cons head rest ih =>
+    intro hSorted
+    have hParts := dlSortedDnfConsElim head rest hSorted
+    cases hSub : clauseSubset candidate head with
+    | true =>
+      rw [dlRemoveSupersetsConsDrop candidate head rest hSub]
+      exact ih hParts.right
+    | false =>
+      rw [dlRemoveSupersetsConsKeep candidate head rest hSub]
+      exact dlSortedDnfConsIntro head (removeSupersets candidate rest)
+        (dlBelowAllRemoveSupersets head candidate rest hParts.left) (ih hParts.right)
+
+/-- A below-all bound strictly under the candidate survives `insertClauseSorted`. -/
+theorem dlBelowAllInsertSorted (bound candidate : List Nat) (hBC : clauseLess bound candidate = true) :
+    (dnf : List (List Nat)) → dlIsBelowAllClauses bound dnf = true →
+    dlIsBelowAllClauses bound (insertClauseSorted candidate dnf) = true := by
+  intro dnf
+  induction dnf with
+  | nil =>
+    intro hBelow
+    show dlIsBelowAllClauses bound [candidate] = true
+    exact dlBelowAllConsIntro bound candidate [] hBC rfl
+  | cons head rest ih =>
+    intro hBelow
+    cases hLess : clauseLess bound head with
+    | false =>
+      rw [dlBelowAllConsFalse bound head rest hLess] at hBelow
+      exact Bool.noConfusion hBelow
+    | true =>
+      rw [dlBelowAllConsTrue bound head rest hLess] at hBelow
+      cases hCH : clauseLess candidate head with
+      | true =>
+        rw [dlInsertClauseSortedLt candidate head rest hCH]
+        exact dlBelowAllConsIntro bound candidate (head :: rest) hBC
+          (dlBelowAllConsIntro bound head rest hLess hBelow)
+      | false =>
+        cases hHC : clauseLess head candidate with
+        | true =>
+          rw [dlInsertClauseSortedGt candidate head rest hCH hHC]
+          exact dlBelowAllConsIntro bound head (insertClauseSorted candidate rest) hLess (ih hBelow)
+        | false =>
+          rw [dlInsertClauseSortedEq candidate head rest hCH hHC]
+          exact dlBelowAllConsIntro bound head rest hLess hBelow
+
+/-- ★ `insertClauseSorted` preserves DNF sortedness — the front insert extends the head bound via
+`dlBelowAllTrans` (this is where `clauseLess` transitivity earns its keep). -/
+theorem dlSortedInsertClauseSorted (candidate : List Nat) : (dnf : List (List Nat)) →
+    dlIsSortedDnf dnf = true → dlIsSortedDnf (insertClauseSorted candidate dnf) = true := by
+  intro dnf
+  induction dnf with
+  | nil =>
+    intro hSorted
+    exact dlSortedDnfConsIntro candidate [] rfl rfl
+  | cons head rest ih =>
+    intro hSorted
+    have hParts := dlSortedDnfConsElim head rest hSorted
+    cases hCH : clauseLess candidate head with
+    | true =>
+      rw [dlInsertClauseSortedLt candidate head rest hCH]
+      exact dlSortedDnfConsIntro candidate (head :: rest)
+        (dlBelowAllConsIntro candidate head rest hCH (dlBelowAllTrans candidate head hCH rest hParts.left))
+        hSorted
+    | false =>
+      cases hHC : clauseLess head candidate with
+      | true =>
+        rw [dlInsertClauseSortedGt candidate head rest hCH hHC]
+        exact dlSortedDnfConsIntro head (insertClauseSorted candidate rest)
+          (dlBelowAllInsertSorted head candidate hHC rest hParts.left) (ih hParts.right)
+      | false =>
+        rw [dlInsertClauseSortedEq candidate head rest hCH hHC]
+        exact hSorted
+
+/-- ★ `insertClause` preserves DNF sortedness. -/
+theorem dlSortedInsertClause (candidate : List Nat) (dnf : List (List Nat))
+    (hSorted : dlIsSortedDnf dnf = true) : dlIsSortedDnf (insertClause candidate dnf) = true := by
+  cases hHas : dnfHasSubsetOf candidate dnf with
+  | true =>
+    rw [dlInsertClauseAbsorbed candidate dnf hHas]
+    exact hSorted
+  | false =>
+    rw [dlInsertClauseFresh candidate dnf hHas]
+    exact dlSortedInsertClauseSorted candidate (removeSupersets candidate dnf)
+      (dlSortedRemoveSupersets candidate dnf hSorted)
+
+/-- `dnfUnion` preserves DNF sortedness of the accumulator. -/
+theorem dlSortedDnfUnion : (first : List (List Nat)) → (second : List (List Nat)) →
+    dlIsSortedDnf second = true → dlIsSortedDnf (dnfUnion first second) = true := by
+  intro first
+  induction first with
+  | nil => intro second hSorted; exact hSorted
+  | cons clause rest ih =>
+    intro second hSorted
+    show dlIsSortedDnf (insertClause clause (dnfUnion rest second)) = true
+    exact dlSortedInsertClause clause (dnfUnion rest second) (ih second hSorted)
+
+/-- `dnfMeetClause` output is sorted (built by `insertClause` from the empty antichain). -/
+theorem dlSortedDnfMeetClause (factor : List Nat) : (other : List (List Nat)) →
+    dlIsSortedDnf (dnfMeetClause factor other) = true
+  | [] => rfl
+  | clause :: rest => by
+      show dlIsSortedDnf (insertClause (insertManySet factor clause) (dnfMeetClause factor rest)) = true
+      exact dlSortedInsertClause (insertManySet factor clause) (dnfMeetClause factor rest)
+        (dlSortedDnfMeetClause factor rest)
+
+/-- `dnfMeet` output is sorted. -/
+theorem dlSortedDnfMeet : (first second : List (List Nat)) → dlIsSortedDnf (dnfMeet first second) = true
+  | [], _ => rfl
+  | clause :: rest, second => by
+      show dlIsSortedDnf (dnfUnion (dnfMeetClause clause second) (dnfMeet rest second)) = true
+      exact dlSortedDnfUnion (dnfMeetClause clause second) (dnfMeet rest second)
+        (dlSortedDnfMeet rest second)
+
+/-- ★ **The canonical DNF is sorted** — `dnfOf` output satisfies the strict DNF-level sortedness. -/
+theorem dlSortedDnfOf : (tree : LatticeTree) → dlIsSortedDnf (dnfOf tree) = true
+  | .gen _ => rfl
+  | .topOp => rfl
+  | .botOp => rfl
+  | .meetOp left right => dlSortedDnfMeet (dnfOf left) (dnfOf right)
+  | .joinOp left right => dlSortedDnfUnion (dnfOf left) (dnfOf right) (dlSortedDnfOf right)
+
+/-! ## ROUND 2 — STEP 5c: every clause of the canonical DNF is itself sorted-distinct -/
+
+/-- Are ALL clauses of the DNF strictly sorted generator lists? -/
+def dlAreClausesSorted : List (List Nat) → Bool
+  | [] => true
+  | clause :: rest =>
+      match dlIsSortedClause clause with
+      | true => dlAreClausesSorted rest
+      | false => false
+
+/-- `dlAreClausesSorted` cons equation (HEAD SORTED): defer to the rest. -/
+theorem dlClausesSortedConsTrue (clause : List Nat) (rest : List (List Nat))
+    (h : dlIsSortedClause clause = true) :
+    dlAreClausesSorted (clause :: rest) = dlAreClausesSorted rest := by
+  show (match dlIsSortedClause clause with
+        | true => dlAreClausesSorted rest
+        | false => false) = dlAreClausesSorted rest
+  rw [h]
+
+/-- `dlAreClausesSorted` cons equation (HEAD UNSORTED): refuted. -/
+theorem dlClausesSortedConsFalse (clause : List Nat) (rest : List (List Nat))
+    (h : dlIsSortedClause clause = false) : dlAreClausesSorted (clause :: rest) = false := by
+  show (match dlIsSortedClause clause with
+        | true => dlAreClausesSorted rest
+        | false => false) = false
+  rw [h]
+
+/-- `dlAreClausesSorted` cons introduction. -/
+theorem dlClausesSortedConsIntro (clause : List Nat) (rest : List (List Nat))
+    (hClause : dlIsSortedClause clause = true) (hRest : dlAreClausesSorted rest = true) :
+    dlAreClausesSorted (clause :: rest) = true := by
+  rw [dlClausesSortedConsTrue clause rest hClause]
+  exact hRest
+
+/-- `dlAreClausesSorted` cons elimination. -/
+theorem dlClausesSortedConsElim (clause : List Nat) (rest : List (List Nat))
+    (hAll : dlAreClausesSorted (clause :: rest) = true) :
+    dlIsSortedClause clause = true ∧ dlAreClausesSorted rest = true := by
+  cases hClause : dlIsSortedClause clause with
+  | false =>
+    rw [dlClausesSortedConsFalse clause rest hClause] at hAll
+    exact Bool.noConfusion hAll
+  | true =>
+    rw [dlClausesSortedConsTrue clause rest hClause] at hAll
+    exact ⟨rfl, hAll⟩
+
+/-- Every member of a clauses-sorted DNF is a sorted clause. -/
+theorem dlAreClausesSortedMember : (dnf : List (List Nat)) → dlAreClausesSorted dnf = true →
+    (member : List Nat) → dlDnfHasClause member dnf = true → dlIsSortedClause member = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro hAll member hMem; exact Bool.noConfusion hMem
+  | cons clause rest ih =>
+    intro hAll member hMem
+    have hParts := dlClausesSortedConsElim clause rest hAll
+    cases hBeq : dlClauseBeq clause member with
+    | true => rw [← dlClauseBeqEq clause member hBeq]; exact hParts.left
+    | false =>
+      rw [dlDnfHasClauseConsFalse member clause rest hBeq] at hMem
+      exact ih hParts.right member hMem
+
+/-- `removeSupersets` preserves the clauses-sorted invariant (a filter). -/
+theorem dlClausesSortedRemoveSupersets (candidate : List Nat) : (dnf : List (List Nat)) →
+    dlAreClausesSorted dnf = true → dlAreClausesSorted (removeSupersets candidate dnf) = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro hAll; rfl
+  | cons head rest ih =>
+    intro hAll
+    have hParts := dlClausesSortedConsElim head rest hAll
+    cases hSub : clauseSubset candidate head with
+    | true =>
+      rw [dlRemoveSupersetsConsDrop candidate head rest hSub]
+      exact ih hParts.right
+    | false =>
+      rw [dlRemoveSupersetsConsKeep candidate head rest hSub]
+      exact dlClausesSortedConsIntro head (removeSupersets candidate rest) hParts.left (ih hParts.right)
+
+/-- `insertClauseSorted` preserves the clauses-sorted invariant when the candidate clause is sorted. -/
+theorem dlClausesSortedInsertClauseSorted (candidate : List Nat)
+    (hCand : dlIsSortedClause candidate = true) : (dnf : List (List Nat)) →
+    dlAreClausesSorted dnf = true → dlAreClausesSorted (insertClauseSorted candidate dnf) = true := by
+  intro dnf
+  induction dnf with
+  | nil =>
+    intro hAll
+    exact dlClausesSortedConsIntro candidate [] hCand rfl
+  | cons head rest ih =>
+    intro hAll
+    have hParts := dlClausesSortedConsElim head rest hAll
+    cases hCH : clauseLess candidate head with
+    | true =>
+      rw [dlInsertClauseSortedLt candidate head rest hCH]
+      exact dlClausesSortedConsIntro candidate (head :: rest) hCand hAll
+    | false =>
+      cases hHC : clauseLess head candidate with
+      | true =>
+        rw [dlInsertClauseSortedGt candidate head rest hCH hHC]
+        exact dlClausesSortedConsIntro head (insertClauseSorted candidate rest) hParts.left
+          (ih hParts.right)
+      | false =>
+        rw [dlInsertClauseSortedEq candidate head rest hCH hHC]
+        exact hAll
+
+/-- `insertClause` preserves the clauses-sorted invariant when the candidate clause is sorted. -/
+theorem dlClausesSortedInsertClause (candidate : List Nat)
+    (hCand : dlIsSortedClause candidate = true) (dnf : List (List Nat))
+    (hAll : dlAreClausesSorted dnf = true) :
+    dlAreClausesSorted (insertClause candidate dnf) = true := by
+  cases hHas : dnfHasSubsetOf candidate dnf with
+  | true =>
+    rw [dlInsertClauseAbsorbed candidate dnf hHas]
+    exact hAll
+  | false =>
+    rw [dlInsertClauseFresh candidate dnf hHas]
+    exact dlClausesSortedInsertClauseSorted candidate hCand (removeSupersets candidate dnf)
+      (dlClausesSortedRemoveSupersets candidate dnf hAll)
+
+/-- `dnfUnion` preserves the clauses-sorted invariant of both inputs. -/
+theorem dlClausesSortedDnfUnion : (first : List (List Nat)) → (second : List (List Nat)) →
+    dlAreClausesSorted first = true → dlAreClausesSorted second = true →
+    dlAreClausesSorted (dnfUnion first second) = true := by
+  intro first
+  induction first with
+  | nil => intro second hFirst hSecond; exact hSecond
+  | cons clause rest ih =>
+    intro second hFirst hSecond
+    have hParts := dlClausesSortedConsElim clause rest hFirst
+    show dlAreClausesSorted (insertClause clause (dnfUnion rest second)) = true
+    exact dlClausesSortedInsertClause clause hParts.left (dnfUnion rest second)
+      (ih second hParts.right hSecond)
+
+/-- `dnfMeetClause` output has sorted clauses — each inserted clause is `insertManySet factor clause` with
+`clause` a sorted clause of the second input (`dlSortedClauseInsertMany`). -/
+theorem dlClausesSortedDnfMeetClause (factor : List Nat) : (other : List (List Nat)) →
+    dlAreClausesSorted other = true → dlAreClausesSorted (dnfMeetClause factor other) = true := by
+  intro other
+  induction other with
+  | nil => intro hOther; rfl
+  | cons clause rest ih =>
+    intro hOther
+    have hParts := dlClausesSortedConsElim clause rest hOther
+    show dlAreClausesSorted (insertClause (insertManySet factor clause) (dnfMeetClause factor rest)) = true
+    exact dlClausesSortedInsertClause (insertManySet factor clause)
+      (dlSortedClauseInsertMany factor clause hParts.left) (dnfMeetClause factor rest) (ih hParts.right)
+
+/-- `dnfMeet` output has sorted clauses (only the second input's clause sortedness is consumed). -/
+theorem dlClausesSortedDnfMeet : (first second : List (List Nat)) →
+    dlAreClausesSorted second = true → dlAreClausesSorted (dnfMeet first second) = true
+  | [], _, _ => rfl
+  | clause :: rest, second, hSecond => by
+      show dlAreClausesSorted (dnfUnion (dnfMeetClause clause second) (dnfMeet rest second)) = true
+      exact dlClausesSortedDnfUnion (dnfMeetClause clause second) (dnfMeet rest second)
+        (dlClausesSortedDnfMeetClause clause second hSecond)
+        (dlClausesSortedDnfMeet rest second hSecond)
+
+/-- ★ **Every clause of the canonical DNF is sorted-distinct** — `dnfOf` output satisfies the clause-level
+sortedness. -/
+theorem dlClausesSortedDnfOf : (tree : LatticeTree) → dlAreClausesSorted (dnfOf tree) = true
+  | .gen _ => rfl
+  | .topOp => rfl
+  | .botOp => rfl
+  | .meetOp left right => dlClausesSortedDnfMeet (dnfOf left) (dnfOf right) (dlClausesSortedDnfOf right)
+  | .joinOp left right => dlClausesSortedDnfUnion (dnfOf left) (dnfOf right)
+      (dlClausesSortedDnfOf left) (dlClausesSortedDnfOf right)
+
+/-! ## ROUND 2 — STEP 5d: the antichain invariant (no clause contains a different clause) -/
+
+/-- ★ The **antichain property** of a DNF — any member clause contained in another member clause EQUALS it.
+The ⊆-minimality that makes the canonical DNF the unique irredundant representative (Quine: the prime
+implicants of a positive Boolean function). -/
+def dlDnfIsAntichain (dnf : List (List Nat)) : Prop :=
+  ∀ first second : List Nat, dlDnfHasClause first dnf = true → dlDnfHasClause second dnf = true →
+    clauseSubset first second = true → first = second
+
+/-- A member with a containment witnesses the absorption scan: `witness ∈ dnf` and `witness ⊆ candidate`
+give `dnfHasSubsetOf candidate dnf = true`. -/
+theorem dlHasSubsetOfIntro (candidate : List Nat) : (dnf : List (List Nat)) → (witness : List Nat) →
+    dlDnfHasClause witness dnf = true → clauseSubset witness candidate = true →
+    dnfHasSubsetOf candidate dnf = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro witness hMem hSub; exact Bool.noConfusion hMem
+  | cons clause rest ih =>
+    intro witness hMem hSub
+    cases hCS : clauseSubset clause candidate with
+    | true => exact dlHasSubsetConsTrue candidate clause rest hCS
+    | false =>
+      rw [dlHasSubsetConsFalse candidate clause rest hCS]
+      cases hBeq : dlClauseBeq clause witness with
+      | true =>
+        rw [← dlClauseBeqEq clause witness hBeq] at hSub
+        rw [hSub] at hCS
+        exact Bool.noConfusion hCS
+      | false =>
+        rw [dlDnfHasClauseConsFalse witness clause rest hBeq] at hMem
+        exact ih witness hMem hSub
+
+/-- The absorption scan yields a member with a containment: `dnfHasSubsetOf candidate dnf = true` produces
+a clause of `dnf` contained in `candidate`. -/
+theorem dlHasSubsetOfExists (candidate : List Nat) : (dnf : List (List Nat)) →
+    dnfHasSubsetOf candidate dnf = true →
+    ∃ witness : List Nat, dlDnfHasClause witness dnf = true ∧ clauseSubset witness candidate = true := by
+  intro dnf
+  induction dnf with
+  | nil => intro hHas; exact Bool.noConfusion hHas
+  | cons clause rest ih =>
+    intro hHas
+    cases hCS : clauseSubset clause candidate with
+    | true => exact ⟨clause, dlDnfHasClauseHead clause rest, hCS⟩
+    | false =>
+      rw [dlHasSubsetConsFalse candidate clause rest hCS] at hHas
+      have ⟨witness, hMem, hSub⟩ := ih hHas
+      exact ⟨witness, dlDnfHasClauseConsWeaken witness clause rest hMem, hSub⟩
+
+/-- A failed absorption scan refutes containment for every member. -/
+theorem dlHasSubsetOfFalseMember (candidate : List Nat) : (dnf : List (List Nat)) →
+    dnfHasSubsetOf candidate dnf = false → (member : List Nat) → dlDnfHasClause member dnf = true →
+    clauseSubset member candidate = false := by
+  intro dnf
+  induction dnf with
+  | nil => intro hHas member hMem; exact Bool.noConfusion hMem
+  | cons clause rest ih =>
+    intro hHas member hMem
+    cases hCS : clauseSubset clause candidate with
+    | true =>
+      rw [dlHasSubsetConsTrue candidate clause rest hCS] at hHas
+      exact Bool.noConfusion hHas
+    | false =>
+      rw [dlHasSubsetConsFalse candidate clause rest hCS] at hHas
+      cases hBeq : dlClauseBeq clause member with
+      | true => rw [← dlClauseBeqEq clause member hBeq]; exact hCS
+      | false =>
+        rw [dlDnfHasClauseConsFalse member clause rest hBeq] at hMem
+        exact ih hHas member hMem
+
+/-- Membership in `removeSupersets` reflects to the original DNF and certifies the kept clause is NOT a
+superset of the candidate. -/
+theorem dlMemRemoveSupersets (candidate member : List Nat) : (dnf : List (List Nat)) →
+    dlDnfHasClause member (removeSupersets candidate dnf) = true →
+    dlDnfHasClause member dnf = true ∧ clauseSubset candidate member = false := by
+  intro dnf
+  induction dnf with
+  | nil => intro hMem; exact Bool.noConfusion hMem
+  | cons clause rest ih =>
+    intro hMem
+    cases hCS : clauseSubset candidate clause with
+    | true =>
+      rw [dlRemoveSupersetsConsDrop candidate clause rest hCS] at hMem
+      have hRec := ih hMem
+      exact ⟨dlDnfHasClauseConsWeaken member clause rest hRec.left, hRec.right⟩
+    | false =>
+      rw [dlRemoveSupersetsConsKeep candidate clause rest hCS] at hMem
+      cases hBeq : dlClauseBeq clause member with
+      | true =>
+        refine ⟨dlDnfHasClauseConsTrue member clause rest hBeq, ?_⟩
+        rw [← dlClauseBeqEq clause member hBeq]
+        exact hCS
+      | false =>
+        rw [dlDnfHasClauseConsFalse member clause (removeSupersets candidate rest) hBeq] at hMem
+        have hRec := ih hMem
+        exact ⟨dlDnfHasClauseConsWeaken member clause rest hRec.left, hRec.right⟩
+
+/-- Membership in `insertClauseSorted` is the candidate or an original member. -/
+theorem dlMemInsertClauseSorted (candidate member : List Nat) : (dnf : List (List Nat)) →
+    dlDnfHasClause member (insertClauseSorted candidate dnf) = true →
+    candidate = member ∨ dlDnfHasClause member dnf = true := by
+  intro dnf
+  induction dnf with
+  | nil =>
+    intro hMem
+    have hSingle : dlDnfHasClause member [candidate] = true := hMem
+    cases hBeq : dlClauseBeq candidate member with
+    | true => exact Or.inl (dlClauseBeqEq candidate member hBeq)
+    | false =>
+      rw [dlDnfHasClauseConsFalse member candidate [] hBeq] at hSingle
+      exact Bool.noConfusion hSingle
+  | cons clause rest ih =>
+    intro hMem
+    cases hCH : clauseLess candidate clause with
+    | true =>
+      rw [dlInsertClauseSortedLt candidate clause rest hCH] at hMem
+      cases hBeq : dlClauseBeq candidate member with
+      | true => exact Or.inl (dlClauseBeqEq candidate member hBeq)
+      | false =>
+        rw [dlDnfHasClauseConsFalse member candidate (clause :: rest) hBeq] at hMem
+        exact Or.inr hMem
+    | false =>
+      cases hHC : clauseLess clause candidate with
+      | true =>
+        rw [dlInsertClauseSortedGt candidate clause rest hCH hHC] at hMem
+        cases hBeq : dlClauseBeq clause member with
+        | true => exact Or.inr (dlDnfHasClauseConsTrue member clause rest hBeq)
+        | false =>
+          rw [dlDnfHasClauseConsFalse member clause (insertClauseSorted candidate rest) hBeq] at hMem
+          cases ih hMem with
+          | inl hEq => exact Or.inl hEq
+          | inr hRest => exact Or.inr (dlDnfHasClauseConsWeaken member clause rest hRest)
+      | false =>
+        rw [dlInsertClauseSortedEq candidate clause rest hCH hHC] at hMem
+        exact Or.inr hMem
+
+/-- Membership in `insertClause` is the candidate or an original member. -/
+theorem dlMemInsertClause (candidate member : List Nat) (dnf : List (List Nat))
+    (hMem : dlDnfHasClause member (insertClause candidate dnf) = true) :
+    candidate = member ∨ dlDnfHasClause member dnf = true := by
+  cases hHas : dnfHasSubsetOf candidate dnf with
+  | true =>
+    rw [dlInsertClauseAbsorbed candidate dnf hHas] at hMem
+    exact Or.inr hMem
+  | false =>
+    rw [dlInsertClauseFresh candidate dnf hHas] at hMem
+    cases dlMemInsertClauseSorted candidate member (removeSupersets candidate dnf) hMem with
+    | inl hEq => exact Or.inl hEq
+    | inr hKept => exact Or.inr (dlMemRemoveSupersets candidate member dnf hKept).left
+
+/-- The empty DNF is an antichain. -/
+theorem dlNilDnfIsAntichain : dlDnfIsAntichain [] := by
+  intro first second hFirst hSecond hSub
+  exact Bool.noConfusion hFirst
+
+/-- A one-clause DNF is an antichain. -/
+theorem dlSingletonDnfIsAntichain (clause : List Nat) : dlDnfIsAntichain [clause] := by
+  intro first second hFirst hSecond hSub
+  cases hBeqF : dlClauseBeq clause first with
+  | false =>
+    rw [dlDnfHasClauseConsFalse first clause [] hBeqF] at hFirst
+    exact Bool.noConfusion hFirst
+  | true =>
+    cases hBeqS : dlClauseBeq clause second with
+    | false =>
+      rw [dlDnfHasClauseConsFalse second clause [] hBeqS] at hSecond
+      exact Bool.noConfusion hSecond
+    | true =>
+      rw [← dlClauseBeqEq clause first hBeqF, ← dlClauseBeqEq clause second hBeqS]
+
+/-- ★ **`insertClause` preserves the antichain property.**  Absorbed candidates change nothing.  A fresh
+candidate is incomparable with every kept clause: the kept clause is not a superset of the candidate
+(`dlMemRemoveSupersets`), and no original clause — hence no kept clause — is a subset of the candidate
+(`dlHasSubsetOfFalseMember` on the failed absorption scan). -/
+theorem dlInsertClauseAntichain (candidate : List Nat) (dnf : List (List Nat))
+    (hAnti : dlDnfIsAntichain dnf) : dlDnfIsAntichain (insertClause candidate dnf) := by
+  intro first second hFirst hSecond hSub
+  cases hHas : dnfHasSubsetOf candidate dnf with
+  | true =>
+    rw [dlInsertClauseAbsorbed candidate dnf hHas] at hFirst hSecond
+    exact hAnti first second hFirst hSecond hSub
+  | false =>
+    rw [dlInsertClauseFresh candidate dnf hHas] at hFirst hSecond
+    cases dlMemInsertClauseSorted candidate first (removeSupersets candidate dnf) hFirst with
+    | inl hEqFirst =>
+      cases dlMemInsertClauseSorted candidate second (removeSupersets candidate dnf) hSecond with
+      | inl hEqSecond => rw [← hEqFirst, ← hEqSecond]
+      | inr hKeptSecond =>
+        have hFacts := dlMemRemoveSupersets candidate second dnf hKeptSecond
+        rw [← hEqFirst] at hSub
+        rw [hFacts.right] at hSub
+        exact Bool.noConfusion hSub
+    | inr hKeptFirst =>
+      have hFactsFirst := dlMemRemoveSupersets candidate first dnf hKeptFirst
+      cases dlMemInsertClauseSorted candidate second (removeSupersets candidate dnf) hSecond with
+      | inl hEqSecond =>
+        rw [← hEqSecond] at hSub
+        have hNoSub : clauseSubset first candidate = false :=
+          dlHasSubsetOfFalseMember candidate dnf hHas first hFactsFirst.left
+        rw [hNoSub] at hSub
+        exact Bool.noConfusion hSub
+      | inr hKeptSecond =>
+        have hFactsSecond := dlMemRemoveSupersets candidate second dnf hKeptSecond
+        exact hAnti first second hFactsFirst.left hFactsSecond.left hSub
+
+/-- `dnfUnion` preserves the antichain property of the accumulator. -/
+theorem dlDnfUnionAntichain : (first : List (List Nat)) → (second : List (List Nat)) →
+    dlDnfIsAntichain second → dlDnfIsAntichain (dnfUnion first second)
+  | [], _, hAnti => hAnti
+  | clause :: rest, second, hAnti =>
+      dlInsertClauseAntichain clause (dnfUnion rest second) (dlDnfUnionAntichain rest second hAnti)
+
+/-- `dnfMeetClause` output is an antichain. -/
+theorem dlDnfMeetClauseAntichain (factor : List Nat) : (other : List (List Nat)) →
+    dlDnfIsAntichain (dnfMeetClause factor other)
+  | [] => dlNilDnfIsAntichain
+  | clause :: rest =>
+      dlInsertClauseAntichain (insertManySet factor clause) (dnfMeetClause factor rest)
+        (dlDnfMeetClauseAntichain factor rest)
+
+/-- `dnfMeet` output is an antichain. -/
+theorem dlDnfMeetAntichain : (first second : List (List Nat)) → dlDnfIsAntichain (dnfMeet first second)
+  | [], _ => dlNilDnfIsAntichain
+  | clause :: rest, second =>
+      dlDnfUnionAntichain (dnfMeetClause clause second) (dnfMeet rest second)
+        (dlDnfMeetAntichain rest second)
+
+/-- ★ **The canonical DNF is an antichain** — `dnfOf` output satisfies ⊆-minimality. -/
+theorem dlDnfOfAntichain : (tree : LatticeTree) → dlDnfIsAntichain (dnfOf tree)
+  | .gen colour => dlSingletonDnfIsAntichain [colour]
+  | .topOp => dlSingletonDnfIsAntichain []
+  | .botOp => dlNilDnfIsAntichain
+  | .meetOp left right => dlDnfMeetAntichain (dnfOf left) (dnfOf right)
+  | .joinOp left right => dlDnfUnionAntichain (dnfOf left) (dnfOf right) (dlDnfOfAntichain right)
+
+/-! ## ROUND 2 — STEPS 6–7: membership transfer and canonical-DNF uniqueness -/
+
+/-- ★ **Membership transfers along evaluation agreement** — the prime-implicant recovery.  If `first` is an
+antichain with sorted clauses, `second` has sorted clauses, and the two DNFs evaluate equally under EVERY
+environment, then every clause of `first` is a clause of `second`.  The clause `member` is recovered from the
+Boolean function at two kinds of characteristic points: `chi member` produces a covering clause `witness ⊆
+member` of `second`; if `witness ⊊ member` misses a generator, `chi (member \ {missing})` transports back to
+a `first`-clause `cover ⊆ member \ {missing} ⊆ member`, which the ANTICHAIN forces to equal `member` — a
+contradiction with the erased generator.  Hence `witness = member` by mutual containment on sorted clauses
+(`dlClauseSubsetAntisymm`). -/
+theorem dlCanonicalMemberTransfers (first second : List (List Nat))
+    (hAntiFirst : dlDnfIsAntichain first)
+    (hClausesFirst : dlAreClausesSorted first = true)
+    (hClausesSecond : dlAreClausesSorted second = true)
+    (hAgree : ∀ env : Nat → Bool, dlEvalDnf env first = dlEvalDnf env second)
+    (member : List Nat) (hMem : dlDnfHasClause member first = true) :
+    dlDnfHasClause member second = true := by
+  have hMemSorted : dlIsSortedClause member = true :=
+    dlAreClausesSortedMember first hClausesFirst member hMem
+  have hHasFirst : dnfHasSubsetOf member first = true :=
+    dlHasSubsetOfIntro member first member hMem (dlClauseSubsetRefl member)
+  have hHasSecond : dnfHasSubsetOf member second = true := by
+    rw [← dlEvalDnfChar member second, ← hAgree (dlCharacteristicEnv member),
+        dlEvalDnfChar member first]
+    exact hHasFirst
+  have ⟨witness, hWitMem, hWitSub⟩ := dlHasSubsetOfExists member second hHasSecond
+  have hWitSorted : dlIsSortedClause witness = true :=
+    dlAreClausesSortedMember second hClausesSecond witness hWitMem
+  cases hMW : clauseSubset member witness with
+  | true =>
+    rw [dlClauseSubsetAntisymm witness member hWitSorted hMemSorted hWitSub hMW] at hWitMem
+    exact hWitMem
+  | false =>
+    have ⟨missing, hMissMem, hMissAbsent⟩ := dlClauseSubsetFalseWitness member witness hMW
+    have hWitErase : clauseSubset witness (dlEraseGenerator missing member) = true :=
+      dlClauseSubsetEraseIntro witness member missing hWitSub hMissAbsent
+    have hHasEraseSecond : dnfHasSubsetOf (dlEraseGenerator missing member) second = true :=
+      dlHasSubsetOfIntro (dlEraseGenerator missing member) second witness hWitMem hWitErase
+    have hHasEraseFirst : dnfHasSubsetOf (dlEraseGenerator missing member) first = true := by
+      rw [← dlEvalDnfChar (dlEraseGenerator missing member) first,
+          hAgree (dlCharacteristicEnv (dlEraseGenerator missing member)),
+          dlEvalDnfChar (dlEraseGenerator missing member) second]
+      exact hHasEraseSecond
+    have ⟨cover, hCoverMem, hCoverSub⟩ :=
+      dlHasSubsetOfExists (dlEraseGenerator missing member) first hHasEraseFirst
+    have hCoverMemberSub : clauseSubset cover member = true :=
+      dlClauseSubsetTrans cover (dlEraseGenerator missing member) member hCoverSub
+        (dlEraseSubset missing member)
+    have hCoverEq : cover = member := hAntiFirst cover member hCoverMem hMem hCoverMemberSub
+    rw [hCoverEq] at hCoverSub
+    have hMissErase : genMember missing (dlEraseGenerator missing member) = true :=
+      dlClauseSubsetElim member (dlEraseGenerator missing member) hCoverSub missing hMissMem
+    rw [dlGenMemberEraseSelf missing member] at hMissErase
+    exact Bool.noConfusion hMissErase
+
+/-- ★ **Sorted-DNF extensionality** — two strictly sorted DNFs with the same Boolean clause membership are
+EQUAL lists.  Double descent: the heads coincide (each is a member of the other list, and a sorted head is
+the strict `clauseLess` minimum — a clash falls to `dlClauseLessAsymm`), and the shared head cannot recur in
+either tail (`dlClauseLessIrrefl`), so the tail memberships agree and the induction closes. -/
+theorem dlSortedDnfMembersEq : (first : List (List Nat)) → (second : List (List Nat)) →
+    dlIsSortedDnf first = true → dlIsSortedDnf second = true →
+    (∀ member : List Nat, dlDnfHasClause member first = dlDnfHasClause member second) →
+    first = second := by
+  intro first
+  induction first with
+  | nil =>
+    intro second hSortedFirst hSortedSecond hSame
+    cases second with
+    | nil => rfl
+    | cons headSecond tailSecond =>
+      have hAbsurd : dlDnfHasClause headSecond ([] : List (List Nat)) = true := by
+        rw [hSame headSecond]
+        exact dlDnfHasClauseHead headSecond tailSecond
+      exact Bool.noConfusion hAbsurd
+  | cons headFirst tailFirst ih =>
+    intro second hSortedFirst hSortedSecond hSame
+    cases second with
+    | nil =>
+      have hAbsurd : dlDnfHasClause headFirst ([] : List (List Nat)) = true := by
+        rw [← hSame headFirst]
+        exact dlDnfHasClauseHead headFirst tailFirst
+      exact Bool.noConfusion hAbsurd
+    | cons headSecond tailSecond =>
+      have hPartsFirst := dlSortedDnfConsElim headFirst tailFirst hSortedFirst
+      have hPartsSecond := dlSortedDnfConsElim headSecond tailSecond hSortedSecond
+      have hHeadEq : headFirst = headSecond := by
+        have hMemFS : dlDnfHasClause headFirst (headSecond :: tailSecond) = true := by
+          rw [← hSame headFirst]
+          exact dlDnfHasClauseHead headFirst tailFirst
+        have hMemSF : dlDnfHasClause headSecond (headFirst :: tailFirst) = true := by
+          rw [hSame headSecond]
+          exact dlDnfHasClauseHead headSecond tailSecond
+        cases hBeqSF : dlClauseBeq headSecond headFirst with
+        | true => exact (dlClauseBeqEq headSecond headFirst hBeqSF).symm
+        | false =>
+          rw [dlDnfHasClauseConsFalse headFirst headSecond tailSecond hBeqSF] at hMemFS
+          have hLessSF : clauseLess headSecond headFirst = true :=
+            dlBelowAllMember headSecond tailSecond hPartsSecond.left headFirst hMemFS
+          cases hBeqFS : dlClauseBeq headFirst headSecond with
+          | true => exact dlClauseBeqEq headFirst headSecond hBeqFS
+          | false =>
+            rw [dlDnfHasClauseConsFalse headSecond headFirst tailFirst hBeqFS] at hMemSF
+            have hLessFS : clauseLess headFirst headSecond = true :=
+              dlBelowAllMember headFirst tailFirst hPartsFirst.left headSecond hMemSF
+            have hAsym : clauseLess headSecond headFirst = false :=
+              dlClauseLessAsymm headFirst headSecond hLessFS
+            rw [hAsym] at hLessSF
+            exact Bool.noConfusion hLessSF
+      subst hHeadEq
+      have hTailSame : ∀ member : List Nat,
+          dlDnfHasClause member tailFirst = dlDnfHasClause member tailSecond := by
+        intro member
+        cases hBeq : dlClauseBeq headFirst member with
+        | false =>
+          have hStep := hSame member
+          rw [dlDnfHasClauseConsFalse member headFirst tailFirst hBeq,
+              dlDnfHasClauseConsFalse member headFirst tailSecond hBeq] at hStep
+          exact hStep
+        | true =>
+          have hMemEq : headFirst = member := dlClauseBeqEq headFirst member hBeq
+          cases hMemTailFirst : dlDnfHasClause member tailFirst with
+          | true =>
+            have hLess : clauseLess headFirst member = true :=
+              dlBelowAllMember headFirst tailFirst hPartsFirst.left member hMemTailFirst
+            rw [← hMemEq] at hLess
+            rw [dlClauseLessIrrefl headFirst] at hLess
+            exact Bool.noConfusion hLess
+          | false =>
+            cases hMemTailSecond : dlDnfHasClause member tailSecond with
+            | true =>
+              have hLess : clauseLess headFirst member = true :=
+                dlBelowAllMember headFirst tailSecond hPartsSecond.left member hMemTailSecond
+              rw [← hMemEq] at hLess
+              rw [dlClauseLessIrrefl headFirst] at hLess
+              exact Bool.noConfusion hLess
+            | false => rfl
+      rw [ih tailSecond hPartsFirst.right hPartsSecond.right hTailSame]
+
+/-- ★★ **CANONICAL-DNF UNIQUENESS** — two canonical DNFs (strictly sorted antichains of sorted clauses)
+computing the same monotone Boolean function are EQUAL lists.  Membership agrees in both directions by
+`dlCanonicalMemberTransfers`; sorted extensionality finishes.  This is the classical uniqueness of the
+irredundant DNF of a positive Boolean function (Quine 1954; Balbes–Dwinger's free distributive lattice as
+irredundant antichains), machine-checked with only finitely many characteristic-environment probes. -/
+theorem dlCanonicalDnfUnique (first second : List (List Nat))
+    (hSortedFirst : dlIsSortedDnf first = true) (hSortedSecond : dlIsSortedDnf second = true)
+    (hClausesFirst : dlAreClausesSorted first = true) (hClausesSecond : dlAreClausesSorted second = true)
+    (hAntiFirst : dlDnfIsAntichain first) (hAntiSecond : dlDnfIsAntichain second)
+    (hAgree : ∀ env : Nat → Bool, dlEvalDnf env first = dlEvalDnf env second) :
+    first = second := by
+  refine dlSortedDnfMembersEq first second hSortedFirst hSortedSecond (fun member => ?_)
+  cases hMemFirst : dlDnfHasClause member first with
+  | true =>
+    rw [dlCanonicalMemberTransfers first second hAntiFirst hClausesFirst hClausesSecond hAgree
+        member hMemFirst]
+  | false =>
+    cases hMemSecond : dlDnfHasClause member second with
+    | true =>
+      have hBack : dlDnfHasClause member first = true :=
+        dlCanonicalMemberTransfers second first hAntiSecond hClausesSecond hClausesFirst
+          (fun env => (hAgree env).symm) member hMemSecond
+      rw [hMemFirst] at hBack
+      exact Bool.noConfusion hBack
+    | false => rfl
+
+/-! ## ROUND 2 — STEP 8: SOUNDNESS, the biconditional, and the decision -/
+
+/-- ★★ **SOUNDNESS** — convertible trees have EQUAL canonical minimal-DNF antichains.  The previously walled
+`⟹` half, now closed by semantic uniqueness: convertibility gives evaluation agreement
+(`distributiveLatticeTreeConv_eval_sound`), every tree evaluates through its canonical DNF (`dlEvalViaDnf`),
+both canonical DNFs carry the three canonicity invariants (`dlSortedDnfOf` / `dlClausesSortedDnfOf` /
+`dlDnfOfAntichain`), and canonical DNFs computing the same monotone Boolean function are unique
+(`dlCanonicalDnfUnique`). -/
+theorem distributiveLatticeTreeConv_sound {source target : LatticeTree}
+    (conv : DistributiveLatticeTreeConv source target) : dnfOf source = dnfOf target :=
+  dlCanonicalDnfUnique (dnfOf source) (dnfOf target)
+    (dlSortedDnfOf source) (dlSortedDnfOf target)
+    (dlClausesSortedDnfOf source) (dlClausesSortedDnfOf target)
+    (dlDnfOfAntichain source) (dlDnfOfAntichain target)
+    (fun env => (dlEvalViaDnf env source).symm.trans
+      ((distributiveLatticeTreeConv_eval_sound conv env).trans (dlEvalViaDnf env target)))
+
+/-- ★★ **THE NORMAL-FORM BICONDITIONAL** — two trees are convertible in the free bounded distributive
+lattice on `ℕ` EXACTLY when their canonical minimal-DNF antichains are structurally equal.  Soundness is
+`distributiveLatticeTreeConv_sound`; completeness is `distributiveLatticeTreeConv_complete`. -/
+theorem distributiveLatticeTreeConv_iff_normalForm (source target : LatticeTree) :
+    DistributiveLatticeTreeConv source target ↔ dnfOf source = dnfOf target :=
+  Iff.intro (fun conv => distributiveLatticeTreeConv_sound conv)
+    (fun dnfEq => distributiveLatticeTreeConv_complete dnfEq)
+
+/-- **Structural DNF equality** — `List (List Nat)` Boolean equality via `dlClauseBeq`. -/
+def dlDnfBeq : List (List Nat) → List (List Nat) → Bool
+  | [], [] => true
+  | [], _ :: _ => false
+  | _ :: _, [] => false
+  | headFirst :: tailFirst, headSecond :: tailSecond =>
+      match dlClauseBeq headFirst headSecond with
+      | true => dlDnfBeq tailFirst tailSecond
+      | false => false
+
+/-- `dlDnfBeq` cons equation (EQUAL heads): defer to the tails. -/
+theorem dlDnfBeqConsTrue (headFirst headSecond : List Nat) (tailFirst tailSecond : List (List Nat))
+    (h : dlClauseBeq headFirst headSecond = true) :
+    dlDnfBeq (headFirst :: tailFirst) (headSecond :: tailSecond) = dlDnfBeq tailFirst tailSecond := by
+  show (match dlClauseBeq headFirst headSecond with
+        | true => dlDnfBeq tailFirst tailSecond
+        | false => false) = dlDnfBeq tailFirst tailSecond
+  rw [h]
+
+/-- `dlDnfBeq` cons equation (DISTINCT heads): refuted. -/
+theorem dlDnfBeqConsFalse (headFirst headSecond : List Nat) (tailFirst tailSecond : List (List Nat))
+    (h : dlClauseBeq headFirst headSecond = false) :
+    dlDnfBeq (headFirst :: tailFirst) (headSecond :: tailSecond) = false := by
+  show (match dlClauseBeq headFirst headSecond with
+        | true => dlDnfBeq tailFirst tailSecond
+        | false => false) = false
+  rw [h]
+
+/-- `dlDnfBeq` is reflexive. -/
+theorem dlDnfBeqRefl : (dnf : List (List Nat)) → dlDnfBeq dnf dnf = true
+  | [] => rfl
+  | clause :: rest => by
+      rw [dlDnfBeqConsTrue clause clause rest rest (dlClauseBeqRefl clause)]
+      exact dlDnfBeqRefl rest
+
+/-- `dlDnfBeq` decides equality: `true` forces the DNFs equal. -/
+theorem dlDnfBeqEq : (first second : List (List Nat)) → dlDnfBeq first second = true → first = second := by
+  intro first
+  induction first with
+  | nil =>
+    intro second h
+    cases second with
+    | nil => rfl
+    | cons headSecond tailSecond => exact Bool.noConfusion h
+  | cons headFirst tailFirst ih =>
+    intro second h
+    cases second with
+    | nil => exact Bool.noConfusion h
+    | cons headSecond tailSecond =>
+      cases hHead : dlClauseBeq headFirst headSecond with
+      | false =>
+        rw [dlDnfBeqConsFalse headFirst headSecond tailFirst tailSecond hHead] at h
+        exact Bool.noConfusion h
+      | true =>
+        rw [dlDnfBeqConsTrue headFirst headSecond tailFirst tailSecond hHead] at h
+        rw [dlClauseBeqEq headFirst headSecond hHead, ih tailSecond h]
+
+/-- ★ **The Boolean decider** — compare the canonical minimal-DNF antichains structurally. -/
+def dlDecideConv (source target : LatticeTree) : Bool :=
+  dlDnfBeq (dnfOf source) (dnfOf target)
+
+/-- ★★ **THE DECISION** — `DistributiveLatticeTreeConv source target` holds iff the canonical-DNF decider
+returns `true`.  Forward: soundness rewrites the decider to a `dlDnfBeq` reflexivity.  Backward: `dlDnfBeqEq`
+feeds completeness. -/
+theorem distributiveLatticeTreeConv_iff_decide (source target : LatticeTree) :
+    DistributiveLatticeTreeConv source target ↔ dlDecideConv source target = true := by
+  constructor
+  · intro conv
+    show dlDnfBeq (dnfOf source) (dnfOf target) = true
+    rw [distributiveLatticeTreeConv_sound conv]
+    exact dlDnfBeqRefl (dnfOf target)
+  · intro hDecide
+    exact distributiveLatticeTreeConv_complete (dlDnfBeqEq (dnfOf source) (dnfOf target) hDecide)
+
+/-- ★ **Decidability of `DistributiveLatticeTreeConv`** — from the canonical-DNF decision, with no `propext`
+(the bridge is `Iff.mp` / `Iff.mpr`, never a Prop rewrite). -/
+instance dlDecidableConv (source target : LatticeTree) :
+    Decidable (DistributiveLatticeTreeConv source target) :=
+  if hDecide : dlDecideConv source target = true then
+    isTrue ((distributiveLatticeTreeConv_iff_decide source target).mpr hDecide)
+  else
+    isFalse (fun conv => hDecide ((distributiveLatticeTreeConv_iff_decide source target).mp conv))
+
+/-- Kernel pin (POSITIVE): join-absorbs-meet `join(g0, meet(g0, g1)) ≈ g0` decided `true` by `rfl`. -/
+theorem dlDecideConv_absorbsPin :
+    dlDecideConv
+      (LatticeTree.joinOp (LatticeTree.gen 0)
+        (LatticeTree.meetOp (LatticeTree.gen 0) (LatticeTree.gen 1)))
+      (LatticeTree.gen 0) = true := rfl
+
+/-- Kernel pin (NEGATIVE): `meet(g0, g1)` vs `join(g0, g1)` decided `false` by `rfl` — the headline
+two-operation separation. -/
+theorem dlDecideConv_separatesMeetJoinPin :
+    dlDecideConv
+      (LatticeTree.meetOp (LatticeTree.gen 0) (LatticeTree.gen 1))
+      (LatticeTree.joinOp (LatticeTree.gen 0) (LatticeTree.gen 1)) = false := rfl
+
+/-! ## The decision marker -/
+
+/-- ★★ **The walking bounded distributive lattice on an ARBITRARY alphabet — CONVERTIBILITY IS A GENUINE,
+COMPLETE DECISION.**  `= true` records that the soundness this file previously walled at
+(`fxWalkingDistributiveLattice_minimizationWall := false`, now SUPERSEDED and deleted) is closed:
+`DistributiveLatticeTreeConv source target ↔ dnfOf source = dnfOf target`
+(`distributiveLatticeTreeConv_iff_normalForm`), with the Boolean decider `dlDecideConv`, the decision
+biconditional `distributiveLatticeTreeConv_iff_decide`, and the `Decidable` instance `dlDecidableConv`.
+
+The soundness (`⟹`) half did NOT go through Conv-invariance of the minimizer (the route walled after two
+honest rounds — the 12-law congruence does not obviously commute with `removeSupersets`).  It is the
+SEMANTIC UNIQUENESS of the minimal-DNF antichain (Quine's uniqueness of the irredundant DNF of a positive
+Boolean function; Balbes–Dwinger's free bounded distributive lattice as ⊆-minimal antichains):
+
+* **evaluation through the canonical form** — `dlEvalClause` / `dlEvalDnf` with the comb bridges
+  `dlEvalMeetOfClause` / `dlEvalCombOfDnf` and `dlEvalViaDnf` (`evalLatticeTree env tree = dlEvalDnf env
+  (dnfOf tree)`), riding the round-1 reduction `dlTreeReducesToDnfComb`;
+* **characteristic environments** — `dlCharacteristicEnv` with the unconditional bridges `dlEvalClauseChar`
+  (`= clauseSubset`) and `dlEvalDnfChar` (`= dnfHasSubsetOf`): the Boolean function of a DNF, probed at
+  `chi(clause)` points, computes the absorption scan;
+* **the three canonicity invariants of `dnfOf`** — DNF-level strict sortedness (`dlIsSortedDnf` +
+  `dlSortedDnfOf`, threaded through `removeSupersets` / `insertClauseSorted` / `insertClause` / `dnfUnion` /
+  `dnfMeetClause` / `dnfMeet` on the back of `dlClauseLessTrans`), clause-level sorted-distinctness
+  (`dlAreClausesSorted` + `dlClausesSortedDnfOf` via `dlSortedClauseInsert` / `dlSortedClauseInsertMany`),
+  and the ⊆-ANTICHAIN property (`dlDnfIsAntichain` + `dlDnfOfAntichain` via the membership decompositions
+  `dlMemRemoveSupersets` / `dlMemInsertClauseSorted` / `dlMemInsertClause` and `dlInsertClauseAntichain`);
+* **prime-implicant recovery and uniqueness** — `dlCanonicalMemberTransfers` (a member clause of one
+  canonical DNF is recovered inside any evaluation-equal canonical DNF through the `chi(member)` and
+  `chi(member \ {missing})` probes, the antichain forcing minimality), sorted-DNF extensionality
+  `dlSortedDnfMembersEq` (equal membership on strictly sorted lists is list equality, via the new order kit
+  `dlClauseLessIrrefl` / `dlClauseLessAsymm` / `dlClauseLessTrans`), and `dlCanonicalDnfUnique`;
+* **the decision** — `distributiveLatticeTreeConv_sound`, the biconditional
+  `distributiveLatticeTreeConv_iff_normalForm`, the decider `dlDecideConv` (structural `dlDnfBeq`), the
+  decision biconditional, the `Decidable` instance, and the positive / negative kernel pins.
+
+All declarations are zero-axiom: the ordering is the imported structural `natBle` (no `Nat.le` / `Nat.ble`
+library lemma), every scan is cons-only, environments are only ever applied (no `funext`), the existentials
+are plain inductive `Exists` eliminations, and no `List.append` (`++`), `Int`, `omega`, `decide`-on-`Prop`,
+or wildcard match arm appears anywhere. -/
+def fxWalkingDistributiveLattice_hasNormalFormDecision : Bool := true
+
+/-! ## Genuineness smokes — the decider fires on TRUE and FALSE instances -/
+
+-- absorption: `join(g0, meet(g0, g1)) ≈ g0` — expected `true`
+#eval dlDecideConv
+  (LatticeTree.joinOp (LatticeTree.gen 0) (LatticeTree.meetOp (LatticeTree.gen 0) (LatticeTree.gen 1)))
+  (LatticeTree.gen 0)
+-- distributivity: `meet(g0, join(g1, g2)) ≈ join(meet(g0, g1), meet(g0, g2))` — expected `true`
+#eval dlDecideConv
+  (LatticeTree.meetOp (LatticeTree.gen 0) (LatticeTree.joinOp (LatticeTree.gen 1) (LatticeTree.gen 2)))
+  (LatticeTree.joinOp (LatticeTree.meetOp (LatticeTree.gen 0) (LatticeTree.gen 1))
+    (LatticeTree.meetOp (LatticeTree.gen 0) (LatticeTree.gen 2)))
+-- distinct generators — expected `false` (REJECTION)
+#eval dlDecideConv (LatticeTree.gen 0) (LatticeTree.gen 1)
+-- MEET vs JOIN of the same generators — expected `false` (REJECTION, the two-operation headline)
+#eval dlDecideConv
+  (LatticeTree.meetOp (LatticeTree.gen 0) (LatticeTree.gen 1))
+  (LatticeTree.joinOp (LatticeTree.gen 0) (LatticeTree.gen 1))
+-- top identity: `meet(g0, ⊤) ≈ g0` — expected `true`
+#eval dlDecideConv (LatticeTree.meetOp (LatticeTree.gen 0) LatticeTree.topOp) (LatticeTree.gen 0)
+-- bottom identity: `join(g0, ⊥) ≈ g0` — expected `true`
+#eval dlDecideConv (LatticeTree.joinOp (LatticeTree.gen 0) LatticeTree.botOp) (LatticeTree.gen 0)
+-- top vs bottom — expected `false` (REJECTION)
+#eval dlDecideConv LatticeTree.topOp LatticeTree.botOp
 
 end FX1Poly.Polygraph
