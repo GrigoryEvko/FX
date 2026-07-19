@@ -1883,6 +1883,7 @@ import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RealEmbedding
 import FX1PolyAudit.ComputerAlgebra.Number.IntOrderedRingCertificate
 import FX1PolyAudit.ComputerAlgebra.Number.NatGreatestCommonDivisor
+import FX1PolyAudit.ComputerAlgebra.Number.NormalizedRational
 import FX1PolyAudit.ComputerAlgebra.Number.RationalDistance
 import FX1PolyAudit.ComputerAlgebra.Number.RationalOrderedFieldCertificate
 import FX1PolyAudit.ComputerAlgebra.Number.RationalPair
