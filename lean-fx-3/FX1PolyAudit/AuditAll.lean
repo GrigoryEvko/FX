@@ -1874,6 +1874,7 @@ import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.FusionRepair
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.NormalFormCensus
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.NormalFormLadder
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.ExchangeCompleteness
+import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.AbsorptionFlip
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
