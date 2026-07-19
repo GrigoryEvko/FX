@@ -1,0 +1,166 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Decision.GroebnerRationalMembership
+
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/GroebnerRationalMembership — zero-axiom gate
+    (DISSAT-GROB-Q brick: ideal membership by checkable cofactor certificates over
+    canonical-normal-form rational coefficients)
+
+Per-declaration zero-axiom gate for the ℚ Gröbner certificate route: the derived
+QnfRat group/ring telescopes (`grqQnf*` — swap-left, exchange, inverse uniqueness,
+neg-distribution, zero annihilation, neg-mul), coefficient-carrying terms
+(`GrqTerm`) with structural beq, sorted rational polynomial lists with the four-way
+canonical insert (`grqTermInsert`: zero-coefficient guard, collision addition with
+vanishing-sum drop, order placement), insert-fold arithmetic
+(`grqAdd`/`grqNeg`/`grqScaleTerm`/`grqMul`), the canonical-form invariant
+(`GrqPolyCanonical`: strict descent + nonzero coefficients) closed under every
+operation, the QnfRat coefficient scan with the canonical-list extensionality
+keystone (`grqPolyExtensionality`) and the one-fire AC family it powers, the
+semantic ideal-membership inductive `GrqInIdeal`, THE CHECKER
+(`grqCheckCertificate`) with the headline soundness `grqCertificateSound`, the
+fuel-bounded finder with rational division by leading coefficients (`qnfInv` in
+`grqFindReducer`), THE REDUCE INVARIANT (`grqReduceInvariant`), finder
+self-certification (`grqFoundCertificateCertifies`), the kernel-`rfl` fires
+including the ℚ-vs-ℤ separator (`2x ∈ ⟨3x⟩` via cofactor `2/3`), and the DECIDED
+markers `grqHasRationalCertificateChecker` / `grqHasSelfCertifyingFinder`.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
+`sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCondQnfZeroBothArms
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfAddSwapLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfAddExchange
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfEqNegOfAddEqZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfNegEqOfAddEqZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfNegZeroIsZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfNegAddDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfNegCondZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfMulZeroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfMulZeroLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqQnfMulNegLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqTerm
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqTerm.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqTerm.coefficient
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqTerm.exponentVector
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermBeqEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqPoly
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqPolyBeq
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqPolyBeqRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqPolyBeqEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqZeroPoly
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqOnePoly
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqVariablePoly
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsert
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertNilOnZeroCoefficient
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertNilOnNonzeroCoefficient
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertOnZeroCoefficient
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertOnCollisionCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertOnCollisionMerge
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertOnGreater
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertOnSmaller
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqScaleTerm
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqMul
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqMulNilLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqSumOfProducts
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqPolyCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqPolyCanonical.nilIsCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqPolyCanonical.singleIsCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqPolyCanonical.consIsCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCanonicalHeadNonzero
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCanonicalTail
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCanonicalSkip
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCanonicalReplaceHeadCoefficient
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertUnderHead
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermInsertKeepsCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddKeepsCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqMulIsCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqSumOfProductsIsCanonical
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqTermCoeffAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeff
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffTermInsert
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffScaleTermZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffScaleTermAddCoeff
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqScaleTermNegCoeff
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffZeroUnderHead
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffHeadIsCoefficient
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCoeffNonzeroImpliesLessThanHead
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqPolyExtensionality
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddNilRightIsIdentity
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddSwapLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddNegSelfCancelLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddNegCrossCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddScaleTermZeroCoeffIsIdentity
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqAddScaleTermSplitCoeff
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqMulTermInsert
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqMember
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqMember.atHead
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqMember.inTail
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqInIdeal
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqInIdeal.byZeroPolynomial
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqInIdeal.byGenerator
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqInIdeal.byAddition
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqInIdeal.byPolynomialScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCheckCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqSumOfProductsInIdeal
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqCertificateSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReducerChoice
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReducerChoice.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReducerChoice.cofactorIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReducerChoice.scaleCoefficient
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReducerChoice.quotientExponent
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReducerChoice.reducerBody
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqBumpReducerIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFindReducer
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqGeneratorAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFindReducerPointsAtGenerator
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqHasSameLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqUpdateCofactors
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqUpdateCofactorsKeepLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqSumUpdateCofactors
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReduceResult
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReduceResult.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReduceResult.remainderPoly
+#assert_no_axioms FX1Poly.ComputerAlgebra.GrqReduceResult.cofactorPolys
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqApplyReducerChoice
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqReduceStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqReduce
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqReduceStepPreservesSum
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqReduceOnStuckStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqReduceOnFiringStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqReduceInvariant
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqZeroCofactorsFor
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqZeroCofactorsMatchLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqSumOfZeroCofactorsIsNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFoundCertificateCertifies
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireXSquaredMinusOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireXMinusOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireXPlusOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireCheckerAcceptsSquareCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireFinderReducesSquare
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireFinderCertificateChecksSquare
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireTwoThirds
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireTwoTimesX
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireThreeTimesX
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireTwoThirdsConstant
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireCheckerAcceptsRationalCofactor
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireFinderReducesRationalTarget
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireFinderEmitsRationalCofactor
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireXTimesYMinusOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireYMinusOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireCheckerAcceptsTwoVariableCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireFinderReducesTwoVariableTarget
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireFinderCertificateChecksTwoVariable
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireFinderStuckOnConstantOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqFireCheckerRejectsBogusConstantCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqHasRationalCertificateChecker
+#assert_no_axioms FX1Poly.ComputerAlgebra.grqHasSelfCertifyingFinder
+
+end FX1PolyAudit
