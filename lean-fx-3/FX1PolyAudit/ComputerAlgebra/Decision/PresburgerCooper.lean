@@ -1,0 +1,271 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Decision.PresburgerCooper
+
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/PresburgerCooper — zero-axiom gate
+    (DISSAT-ARITH lane: Cooper quantifier elimination over the pair integers)
+
+Per-declaration zero-axiom gate for the Cooper decision brick: the counting
+divider kit (structural mod/div with the recovery and unique-remainder
+certificates), the divisibility Prop over pair integers with its two-sided
+decider, dense linear terms with the cons-split evaluation, the reflected
+formula layers (surface with `fexists`, quantifier-free, NNF, unitary
+matrix), the two-sided ground evaluators, the minus-infinity form with
+periodicity, the descent/window machinery, THE COOPER ELIMINATION THEOREM
+(`pcqCooperElimination`, both directions), NNF equivalence, the sign-analysis
+magnitude kit, the product-scale unitarization with its divisibility
+certificate and the two-sided unit-matrix/separation equivalences, the
+quantifier-free Cooper-step emission with its equivalence, the inside-out
+eliminator (`pcqEliminate` / `pcqEliminateEquiv`), the closed-formula
+decision (`pcqDecide`, two-sided), the lane-system translation
+(rows/system/truncation-padding/existential closure), and THE INHABITED LANE
+WALL `pcqPresburgerDecisionHolds : lfkPresburgerDecisionStatement` with the
+DECIDED marker `pcqHasPresburgerDecision`.
+
+Every declaration must be free of `propext`, `Quot.sound`,
+`Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatPred
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatPredSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatSumZeroLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatAddRightCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatLeCancelAddLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatSuccLeOfLeNe
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatLeOfLeSuccNe
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatLeMulPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatNonZeroShape
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatModCounting
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatDivCounting
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatModCountingBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatDivModRecovers
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatUniqueRemainderZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatDividesProp
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatDividesMulRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatDividesMulLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatDividesSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatCountingQuotientExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqBoolOrDestructTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqBoolOrDestructFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqBoolOrIntroLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqBoolOrIntroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqBoolAndDestructFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqBoolNotFalseImpliesTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqBoolNotTrueOfFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtLeAbsurd
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtFalseGivesLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtSuccOfLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLeOfLtSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtOfLtLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtOfLeLt
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqNegateCongr
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntMulCrossEqRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntAddRightSwap
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqDropZeroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLesser
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLesserLeLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLesserLeRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesProp
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesCrossEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntRemainder
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntQuotientPart
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntRemainderDecomposition
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDvdDecide
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDvdDecideSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDvdDecideComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesDoubleNegElim
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntAddCancelRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesAddScaled
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesDropScaled
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqTerm
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqTerm.mk
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqTerm.coefficients
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqTerm.constantPart
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermEval
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermNegate
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermScaleByNat
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqConstTerm
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermPlusOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermEvalAdd
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermEvalNegate
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermEvalScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqConstTermEval
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermPlusOneEval
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermHeadCoeff
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermTail
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermEvalConsSplit
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula.flt
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula.fdvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula.fndvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula.fconj
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula.fdisj
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula.fneg
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqFormula.fexists
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqInterp
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqQfFormula
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqQfFormula.qlt
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqQfFormula.qdvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqQfFormula.qndvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqQfFormula.qconj
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqQfFormula.qdisj
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqQfFormula.qneg
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfEval
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfEvalTrueSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfEvalFalseComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfHoldsOrNot
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqOfEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mtrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mfalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mupper
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mlower
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mdvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mndvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mfreelt
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mfreedvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mfreendvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mconj
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqMatrix.mdisj
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixEval
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixEvalTrueSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixEvalFalseComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixEvalOfHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixHoldsCrossEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMinusInf
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDelta
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDeltaPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqTermListConcat
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqLowerBounds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAllModuliDivide
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAllModuliDivideMulRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAllModuliDivideMulLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqModuliDivideDelta
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyUpTo
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyUpToOfWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyUpToElim
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyUpToMap
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyTerm
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyTermMap
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyTermConcatLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyTermConcatRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMinusInfShift
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqLowThreshold
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMinusInfAgreesBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDescentWindow
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyUpToBool
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyTermBool
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyUpToBoolOfProp
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyUpToBoolTrueElim
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyTermBoolOfProp
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqAnyTermBoolTrueElim
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqWindowTest
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDescentStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDescentMany
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatLeMulOfPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqReachBelowThreshold
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqWindowReduce
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqCooperForward
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqCooperBackwardMinusInf
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqCooperBackwardWindow
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqCooperElimination
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqNnfFormula
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqNnfFormula.nlt
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqNnfFormula.ndvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqNnfFormula.nndvd
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqNnfFormula.nconj
+#assert_no_axioms FX1Poly.ComputerAlgebra.PcqNnfFormula.ndisj
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfOfQf
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfOfQfSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatMulLtCancelLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtCancelScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqCancelScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtNegFlip
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtAddLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtCancelAddLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLtDiffGivesSum
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqOfAddNegZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesScaleUp
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesScaleDown
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDividesNegate
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIffCongrLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIffCongrRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIffOfEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntMagnitude
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntZeroOfMagnitudeZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqOfNatMagnitude
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqNegOfNatMagnitude
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMagnitudeOrOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMagnitudeOrOnePositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMagnitudeOrOneEqMagnitude
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNatCofactorShape
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntMulOfNatRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqZeroOfIsZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfLtPivot
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfScalePositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfCoeffsDivide
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfCoeffsDivideMulRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfCoeffsDivideMulLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqNnfCoeffsDivideScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixHoldsCondEqTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqMatrixHoldsCondEqFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitLtAtom
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitDvdAtom
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitNdvdAtom
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitLtAtomEquiv
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitDvdAtomEquiv
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitNdvdMirror
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitNdvdAtomEquiv
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitMatrix
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqUnitMatrixEquiv
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqSeparate
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqSeparateEquiv
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfTrueFormula
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfFalseFormula
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfTrueFormulaHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfFalseFormulaAbsurd
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfOfMatrixAt
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfOfMatrixAtHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfOrUpTo
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfOrUpToHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfOrOverTerms
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqQfOrOverTermsHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqCooperStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqCooperStepEquiv
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqEliminate
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqEliminateEquiv
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDecide
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDecideTrueSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDecideFalseComplete
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntLeLeOfEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntEqOfLeLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqConstraintFormula
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqConstraintFormulaSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqSystemFormula
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqSystemFormulaSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqEnvLen
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqEnvConcat
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqEnvConcatNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqEnvTruncPad
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqEnvTruncPadLen
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqIntZeroMulLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDotNilLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqDotTruncPad
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqRowsFitWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqSystemVarCount
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqRowsFitMono
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqRowsFitVarCount
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqSatisfiesConstraintTruncPad
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqSatisfiesSystemTruncPad
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqFexN
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqFexNIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqFexNElim
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqPresburgerDecisionHolds
+#assert_no_axioms FX1Poly.ComputerAlgebra.pcqHasPresburgerDecision
+
+end FX1PolyAudit

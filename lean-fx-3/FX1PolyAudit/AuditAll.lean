@@ -1871,6 +1871,8 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseAssembly
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.SpiderRelationSeed
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CompletenessGate
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.FusionRepair
+import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
+import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RealEmbedding
 import FX1PolyAudit.ComputerAlgebra.Number.IntOrderedRingCertificate
