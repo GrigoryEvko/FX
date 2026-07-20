@@ -17,6 +17,7 @@ import FX1PolyAudit.ComputerAlgebra.Decision.FourierMotzkinCompleteness
 import FX1PolyAudit.ComputerAlgebra.Decision.FourierMotzkinExtension
 import FX1PolyAudit.ComputerAlgebra.Decision.ClauseProofChecker
 import FX1PolyAudit.ComputerAlgebra.Decision.CombinationDispatch
+import FX1PolyAudit.ComputerAlgebra.Decision.CombinationCompleteness
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfSeed
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.BialgebraBoundaryLedger
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfCompiler
