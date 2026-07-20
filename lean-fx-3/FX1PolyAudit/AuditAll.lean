@@ -16,6 +16,7 @@ import FX1PolyAudit.ComputerAlgebra.Decision.FourierMotzkinCompleteness
 import FX1PolyAudit.ComputerAlgebra.Decision.FourierMotzkinExtension
 import FX1PolyAudit.ComputerAlgebra.Decision.ClauseProofChecker
 import FX1PolyAudit.ComputerAlgebra.Decision.CombinationDispatch
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfSeed
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalLinearRelations
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
