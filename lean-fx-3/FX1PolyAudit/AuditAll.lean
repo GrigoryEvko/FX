@@ -1918,6 +1918,7 @@ import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CombTraversal
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CombTraversalMultiBit
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CombRowFold
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CombTrueArmFold
+import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CombMovingFeed
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
