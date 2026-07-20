@@ -1957,6 +1957,7 @@ import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CombMovingFeed
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.Decision.PostCloneLattice
+import FX1PolyAudit.ComputerAlgebra.Decision.PolInvGaloisConnection
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RealEmbedding
 import FX1PolyAudit.ComputerAlgebra.Number.IntOrderedRingCertificate
