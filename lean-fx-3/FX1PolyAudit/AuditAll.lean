@@ -1897,6 +1897,7 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.CanonicalReduction
 import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationProp
 import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationPropAxiomWitness
 import FX1PolyAudit.Polygraph.LinearLogic.MultiplicativeProofNet
+import FX1PolyAudit.Polygraph.LinearLogic.ExponentialProofNet
 import FX1PolyAudit.Polygraph.Net.LafontInteractionNet
 import FX1PolyAudit.Polygraph.Omega.Quantale.WeightedQuantaleProp
 import FX1PolyAudit.Polygraph.Omega.Quantale.WeightedQuantalePropAxiomWitness
