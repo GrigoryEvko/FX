@@ -1,0 +1,172 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfSchema
+
+/-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfSchema — zero-axiom
+    gate (WP-PROP-3 brick 4: the IH_Q scalar schemas + NF census seed)
+
+Per-declaration zero-axiom gate for the scalar-schema layer: the span
+inversion/introduction helpers, the right-cancellation workhorse, the
+pair-membership specs of every generator matrix and the two-cell scalar
+layers, the two/three-stage pipeline characterizations, the layer-denotation
+kernel pins, the named width witnesses, the singleton/pair extraction
+helpers, the fourteen THEOREM-level scalar-schema soundness bundles
+(quantified over the scalars), the schema row moves (`IhzRowMove` incl. every
+constructor), the generic pad-bundle engine, the padded step (`IhzStep`), the
+schema whisker congruence (`IhzConv`) with soundness and the refutation
+bridge, the `IhwConv`/`IhsConv` embeddings, the fresh-scalar fires (product
+at 4 and 1/2, cancel at 4, the 4-vs-7 FALSE control) with kernel span pins,
+the instance sanity pins against the committed seed rows, the canonical NF
+chooser (`ihzCanonicalRows`: leading-one RREF with span preservation and the
+unit-pivot invariant), the zero-relation NF diagram with its base-case
+denotation theorem, and the owner-false statements and markers.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
+`sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLengthOneShape
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLengthTwoShape
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzMemSpanSingleInv
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzMemSpanSingleIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzMemSpanPairInv
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzMemSpanPairIntro
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzMulRightCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzNilRelationSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroStateSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCozeroStateSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarGraphSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarMirrorSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzWireSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCopySpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCocopySpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzAddSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCoaddSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzDiscardSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzBlackUnitSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarPairLayerSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarMirrorPairLayerSpec
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzPairTwoStageIff
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzPairThreeStageIff
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarMirrorLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarPairLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarMirrorPairLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCopyLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCocopyLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzAddLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCoaddLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzDiscardLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzBlackUnitLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzWhiteUnitLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCozeroLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzWireLayerDenote
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarMirrorRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzWireRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzUnitLineRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCopyRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzAddRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCoaddRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarPairRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarMirrorPairRowsAllWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzHeadOfSingletonEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzPairHeadEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzPairTailEq
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzBundleOfParts
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzProductSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzProductMirrorSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzThroughAddSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzThroughCoaddSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroAbsorbSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCozeroAbsorbSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzThroughCopySchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzThroughCocopySchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzDiscardAbsorbSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzUnitAbsorbSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzSumSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzSumMirrorSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzForwardCancelSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzBackwardCancelSchemaBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.whiskerMove
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.productSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.productMirrorSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.throughAddSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.throughCoaddSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.zeroAbsorbSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.cozeroAbsorbSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.throughCopySchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.throughCocopySchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.discardAbsorbSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.unitAbsorbSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.sumSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.sumMirrorSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.forwardCancelSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzRowMove.backwardCancelSchema
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzRowMoveOfSeedRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzRowMoveBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzPadBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzStep
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzStep.pad
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzStepBundle
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzConv
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzConv.step
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzConv.refl
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzConv.symm
+#assert_no_axioms FX1Poly.ComputerAlgebra.IhzConv.trans
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzConvSound
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzConvSpanEqB
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzMoveConv
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzConvOfWhiskerConv
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzConvOfSeedConv
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarFour
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarSeven
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarHalf
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFreshProductComputes
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarFourIsNonzero
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireFreshScalarProduct
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireFreshScalarProductSpanPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireFreshForwardCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireFreshForwardCancelSpanPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarFourDiagram
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzScalarSevenDiagram
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireFreshScalarsSpanDistinct
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireFreshScalarsNotConv
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzProductSchemaInstanceIsSeedRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzSumSchemaInstanceIsSeedRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzProductMirrorSchemaInstanceIsSeedRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLeadingOneRow
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLeadingOneRowNone
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLeadingOneRowSome
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLeadingOneRowLength
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLeadingOneRowUnitPivot
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCanonicalRows
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCanonicalRowsWidth
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzLeadingOneRowInSpan
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzRowInLeadingOneSpan
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCanonicalRowsSpanIff
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCanonicalRowsSpanEqB
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireCanonicalRowsExample
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCozeroFanCells
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroFanCells
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCozeroFanDomArity
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCozeroFanCodArityZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroFanDomArityZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroFanCodArity
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzCozeroFanDenoteNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroFanDenoteNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroRelationDiagram
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroRelationDiagramWF
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroRelationDiagramCodArity
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroRelationDiagramDenoteShape
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzZeroRelationDiagramDenotesNil
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzFireZeroRelationDiagramSpanPin
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzNormalFormStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzReachabilityStatement
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzHasScalarSchemas
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzHasCanonicalChooser
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzHasNormalFormCarrier
+#assert_no_axioms FX1Poly.ComputerAlgebra.ihzReachabilityIsProven
+
+end FX1PolyAudit
