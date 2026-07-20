@@ -1883,6 +1883,7 @@ import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.WiringFlip
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.FinalFlip
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.TransportRides
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.TransvectionRide
+import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.AbsorptionInduction
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
