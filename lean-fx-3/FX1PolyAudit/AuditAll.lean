@@ -1916,6 +1916,8 @@ import FX1PolyAudit.Polygraph.Directed.SimplexWordProblem
 import FX1PolyAudit.Polygraph.TwoCategory.TwoGroup.SemidirectWordProblem
 import FX1PolyAudit.Polygraph.Omega.WalkingDistLawCandidateDecisionAudit
 import FX1PolyAudit.Polygraph.TwoCategory.Equipment.ProarrowWordProblem
+import FX1PolyAudit.Polygraph.Dpo.DpoRewriting
+import FX1PolyAudit.ComputerAlgebra.Probability.FiniteSupportDistribution
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerDiagram
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseInvariantGate
