@@ -1894,6 +1894,7 @@ import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.AbsorptionInduction
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CrossingResidual
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.SpiderResidual
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CrossingKillDeath
+import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.IdentityResidual
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
