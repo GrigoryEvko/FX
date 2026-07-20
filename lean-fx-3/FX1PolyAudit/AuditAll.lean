@@ -1879,6 +1879,7 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseAbsorptionFires
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseCores
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseCrossingCore
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseAssembly
+import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseFanLemmas
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.SpiderRelationSeed
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CompletenessGate
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.FusionRepair
