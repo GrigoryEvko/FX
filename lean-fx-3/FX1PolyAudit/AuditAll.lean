@@ -26,6 +26,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalLinearRelations
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomial
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomialDegree
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomialRing
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomialBezout
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfRowGadget
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfCompilerRiffle
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
@@ -686,6 +687,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescClosedDiagramRoundtri
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescClassRepresentativeNormalForm
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescClassRepresentativeNormalFormAxiomWitness
 import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescInsertionDischarge
+import FX1PolyAudit.Polygraph.TwoCategory.Brauer.WiringDescRoundSixteen
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.PartitionModel
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderPresentation
 import FX1PolyAudit.Polygraph.TwoCategory.Frobenius.SpiderConv
