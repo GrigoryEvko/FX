@@ -5,6 +5,7 @@ import FX1PolyAudit.ComputerAlgebra.IntMatrix
 import FX1PolyAudit.ComputerAlgebra.Order.AlmostFull
 import FX1PolyAudit.ComputerAlgebra.Semigroup.CommWordProblem
 import FX1PolyAudit.ComputerAlgebra.Semigroup.TraceWordProblem
+import FX1PolyAudit.ComputerAlgebra.Differential.CartesianDifferential
 import FX1PolyAudit.ComputerAlgebra.Decision.GroundCongruenceClosure
 import FX1PolyAudit.ComputerAlgebra.Decision.XorSatDecision
 import FX1PolyAudit.ComputerAlgebra.Decision.HornSatDecision
@@ -1897,6 +1898,8 @@ import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationProp
 import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationPropAxiomWitness
 import FX1PolyAudit.Polygraph.LinearLogic.MultiplicativeProofNet
 import FX1PolyAudit.Polygraph.Net.LafontInteractionNet
+import FX1PolyAudit.Polygraph.Omega.Quantale.WeightedQuantaleProp
+import FX1PolyAudit.Polygraph.Omega.Quantale.WeightedQuantalePropAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerDiagram
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseInvariantGate
