@@ -27,6 +27,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomial
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomialDegree
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomialRing
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfRowGadget
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfCompilerRiffle
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
@@ -1897,6 +1898,7 @@ import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CrossingResidual
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.SpiderResidual
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CrossingKillDeath
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.IdentityResidual
+import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.SpiderTailDeath
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
