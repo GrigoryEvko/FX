@@ -1901,6 +1901,8 @@ import FX1PolyAudit.Polygraph.LinearLogic.ExponentialProofNet
 import FX1PolyAudit.Polygraph.Net.LafontInteractionNet
 import FX1PolyAudit.Polygraph.Omega.Quantale.WeightedQuantaleProp
 import FX1PolyAudit.Polygraph.Omega.Quantale.WeightedQuantalePropAxiomWitness
+import FX1PolyAudit.Polygraph.Omega.Markov.FreeCopyDiscard
+import FX1PolyAudit.Polygraph.Omega.Markov.FreeCopyDiscardAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerDiagram
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseInvariantGate
