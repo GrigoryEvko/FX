@@ -21,6 +21,7 @@ import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.BialgebraBoundaryLedger
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfSchema
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.InteractingHopfWhisker
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalLinearRelations
+import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.RationalPolynomial
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrix
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
 import FX1PolyAudit.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
