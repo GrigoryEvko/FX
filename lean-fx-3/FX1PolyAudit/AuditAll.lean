@@ -1908,6 +1908,7 @@ import FX1PolyAudit.Polygraph.Omega.Markov.FreeCopyDiscard
 import FX1PolyAudit.Polygraph.Omega.Markov.FreeCopyDiscardAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.Optic.FiniteLensWordProblem
 import FX1PolyAudit.Polygraph.Net.OpenPetriCospan
+import FX1PolyAudit.Polygraph.Net.VasCoverability
 import FX1PolyAudit.Polygraph.Karoubi.KaroubiGlue
 import FX1PolyAudit.Polygraph.Directed.SimplexWordProblem
 import FX1PolyAudit.Polygraph.TwoCategory.TwoGroup.SemidirectWordProblem
