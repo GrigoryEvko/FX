@@ -1892,6 +1892,8 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.ConvertibilitySoundness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.DiagramDecisionFires
 import FX1PolyAudit.Polygraph.Omega.LafontProp.NormalFormDecisionAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.CanonicalReduction
+import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationProp
+import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationPropAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerDiagram
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseInvariantGate
