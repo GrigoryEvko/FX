@@ -1905,6 +1905,7 @@ import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.IdentityResidual
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.SpiderTailDeath
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.FoldSoundness
 import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.IdentityRouter
+import FX1PolyAudit.Polygraph.Omega.ZXPhaseFree.CombTraversal
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooper
 import FX1PolyAudit.ComputerAlgebra.Decision.PresburgerCooperFires
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RationalEmbedding
