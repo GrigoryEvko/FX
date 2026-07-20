@@ -1907,6 +1907,9 @@ import FX1PolyAudit.Polygraph.Omega.Quantale.WeightedQuantalePropAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.Markov.FreeCopyDiscard
 import FX1PolyAudit.Polygraph.Omega.Markov.FreeCopyDiscardAxiomWitness
 import FX1PolyAudit.Polygraph.Omega.Optic.FiniteLensWordProblem
+import FX1PolyAudit.Polygraph.Net.OpenPetriCospan
+import FX1PolyAudit.Polygraph.Karoubi.KaroubiGlue
+import FX1PolyAudit.Polygraph.Directed.SimplexWordProblem
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerDiagram
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseInvariantGate
