@@ -1895,6 +1895,7 @@ import FX1PolyAudit.Polygraph.Omega.LafontProp.CanonicalReduction
 import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationProp
 import FX1PolyAudit.Polygraph.Omega.RelProp.BooleanRelationPropAxiomWitness
 import FX1PolyAudit.Polygraph.LinearLogic.MultiplicativeProofNet
+import FX1PolyAudit.Polygraph.Net.LafontInteractionNet
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerDiagram
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StrictLayerEmbedding
 import FX1PolyAudit.Polygraph.Omega.LafontProp.StaircaseInvariantGate
