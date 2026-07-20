@@ -6,6 +6,7 @@ import FX1PolyAudit.ComputerAlgebra.Order.AlmostFull
 import FX1PolyAudit.ComputerAlgebra.Semigroup.CommWordProblem
 import FX1PolyAudit.ComputerAlgebra.Semigroup.TraceWordProblem
 import FX1PolyAudit.ComputerAlgebra.Differential.CartesianDifferential
+import FX1PolyAudit.ComputerAlgebra.Category.RestrictionWordProblem
 import FX1PolyAudit.ComputerAlgebra.Decision.GroundCongruenceClosure
 import FX1PolyAudit.ComputerAlgebra.Decision.XorSatDecision
 import FX1PolyAudit.ComputerAlgebra.Decision.HornSatDecision
