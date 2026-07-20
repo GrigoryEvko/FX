@@ -1913,6 +1913,7 @@ import FX1PolyAudit.Polygraph.Net.PrimeEventStructure
 import FX1PolyAudit.Polygraph.Net.PrimeEventStructureAxiomWitness
 import FX1PolyAudit.Polygraph.Net.ExtendedPetriInhibitor
 import FX1PolyAudit.Polygraph.Net.LafontCombinators
+import FX1PolyAudit.Polygraph.Net.StochasticRateNet
 import FX1PolyAudit.Polygraph.Karoubi.KaroubiGlue
 import FX1PolyAudit.Polygraph.Directed.SimplexWordProblem
 import FX1PolyAudit.Polygraph.TwoCategory.TwoGroup.SemidirectWordProblem
