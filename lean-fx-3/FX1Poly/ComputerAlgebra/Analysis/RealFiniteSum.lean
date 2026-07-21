@@ -3,29 +3,28 @@ import FX1Poly.ComputerAlgebra.Number.RegularRealRing
 import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
 import FX1Poly.ComputerAlgebra.Number.RegularRealAbsoluteValue
 
-/-! # Real finite sums — the prefix fold over ℝ (ANALYSIS-FINSUM-1)
+/-! # Real finite sums — the prefix fold over ℝ
 
-The finite-summation substrate the integral rung rests on.  `sumReal count term`
-folds the first `count` reals of a sequence with `addReal`, base
-`constantReal zeroRational`.  Every law is a structural `Nat` induction over the
-count, dispatched to the shipped ring / bound corpus:
+`sumReal count term` folds the first `count` reals of a sequence with
+`addReal`, base `constantReal zeroRational`.  Every law is a structural `Nat`
+induction over the count, dispatched to the ring / bound corpus:
 
-  * **respects the setoid** — pointwise `DenotesSameReal` lifts to the sum;
-  * **additivity** `Sigma (f + g) ~ Sigma f + Sigma g` — the medial regroup;
-  * **scalar pull** `Sigma (c * f) ~ c * Sigma f` — left-distribution;
-  * **respects the real-level bound** — a uniform per-term bound `q` lifts to
+  * respects the setoid — pointwise `DenotesSameReal` lifts to the sum;
+  * additivity `Sigma (f + g) ~ Sigma f + Sigma g` — the medial regroup;
+  * scalar pull `Sigma (c * f) ~ c * Sigma f` — left-distribution;
+  * respects the real-level bound — a uniform per-term bound `q` lifts to
     the `count`-scaled bound `natScaleRational count q`, built predecessor-shaped
     so the inductive step is a single `addRealRespectsIsWithinRealBound`;
-  * **the cut split** `Sigma_{m+n} f ~ Sigma_m f + Sigma_n (f shifted by m)` —
+  * the cut split `Sigma_{m+n} f ~ Sigma_m f + Sigma_n (f shifted by m)` —
     associativity over the appended tail;
-  * **the block regroup** `Sigma_{k*c} f ~ Sigma_c (Sigma_k (f at k*i+j))` — the
+  * the block regroup `Sigma_{k*c} f ~ Sigma_c (Sigma_k (f at k*i+j))` — the
     product reindex, with the count written `k * c` so `k*(c+1)` reduces
-    DEFINITIONALLY to `k*c + k` and the step is one cut split.
+    definitionally to `k*c + k` and the step is one cut split.
 
-The block regroup is the genuine combinatorial content the Riemann refinement
-estimate consumes; keeping the outer factor on the LEFT (`k * c`) makes the
-`Nat.mul` recursion land on the count, so no `Nat.succ_mul` rewrite (and its
-propext risk) is ever needed.  Zero axioms throughout. -/
+The block regroup is the product reindex underlying the Riemann refinement
+estimate.  Keeping the outer factor on the left (`k * c`) makes the `Nat.mul`
+recursion land on the count, so no `Nat.succ_mul` rewrite (and its propext
+risk) is needed.  Zero axioms throughout. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -33,7 +32,7 @@ open RationalPair
 
 /-! ## The prefix fold -/
 
-/-- **The finite prefix sum** — fold the first `count` reals with `addReal`,
+/-- The finite prefix sum: fold the first `count` reals with `addReal`,
 starting from the real zero. -/
 def sumReal (count : Nat) (term : Nat → RegularReal) : RegularReal :=
   match count with
@@ -50,7 +49,7 @@ theorem sumRealSucc (count : Nat) (term : Nat → RegularReal) :
 
 /-! ## Setoid congruence -/
 
-/-- **The sum respects the real setoid** — a pointwise `DenotesSameReal` between
+/-- The sum respects the real setoid: a pointwise `DenotesSameReal` between
 the two term sequences lifts to the sums. -/
 theorem sumRealRespectsDenotesSame {leftTerm rightTerm : Nat → RegularReal}
     (termsAgree : ∀ position, DenotesSameReal (leftTerm position) (rightTerm position))
@@ -65,7 +64,7 @@ theorem sumRealRespectsDenotesSame {leftTerm rightTerm : Nat → RegularReal}
 
 /-! ## Additivity -/
 
-/-- **The sum is additive** — the sum of a pointwise-added sequence denotes the
+/-- The sum is additive: the sum of a pointwise-added sequence denotes the
 sum of the two sums, by the medial regroup of the appended pairs. -/
 theorem sumRealAddReal (leftTerm rightTerm : Nat → RegularReal) (count : Nat) :
     DenotesSameReal
@@ -84,7 +83,7 @@ theorem sumRealAddReal (leftTerm rightTerm : Nat → RegularReal) (count : Nat) 
 
 /-! ## Scalar pull -/
 
-/-- **The scalar factor pulls out of the sum** — left-distribution of a fixed
+/-- The scalar factor pulls out of the sum: left-distribution of a fixed
 real factor over the appended tail. -/
 theorem sumRealScalarMulReal (factor : RegularReal) (term : Nat → RegularReal)
     (count : Nat) :
@@ -102,7 +101,7 @@ theorem sumRealScalarMulReal (factor : RegularReal) (term : Nat → RegularReal)
         (denotesSameRealSymm
           (mulRealLeftDistrib factor (sumReal count term) (term count)))
 
-/-- **Negation pulls out of the sum** — the finite sum of negated terms is the
+/-- Negation pulls out of the sum: the finite sum of negated terms is the
 negation of the sum.  Structural induction: the empty sum is `-0 ~ 0`; the
 successor step distributes `negReal` over the appended `addReal`. -/
 theorem sumRealNegReal (term : Nat → RegularReal) (count : Nat) :
@@ -124,7 +123,7 @@ theorem sumRealNegReal (term : Nat → RegularReal) (count : Nat) :
 
 /-! ## Order monotonicity -/
 
-/-- **The sum is monotone** — a per-term `LessEqualReal` on the summed range
+/-- The sum is monotone: a per-term `LessEqualReal` on the summed range
 lifts to the prefix sums.  Structural induction on the count: the empty sum is
 reflexive; the successor step chains the inductive-hypothesis bound (shared
 summand `leftTerm count` on the right) with the new-term bound (shared summand
@@ -147,14 +146,14 @@ theorem sumRealMonotone {leftTerm rightTerm : Nat → RegularReal} (count : Nat)
 
 /-! ## The count-scaled rational bound -/
 
-/-- **The count-scaled rational** — `count` copies of `bound` added,
+/-- The count-scaled rational: `count` copies of `bound` added,
 predecessor-shaped so the inductive bound step is definitional. -/
 def natScaleRational (count : Nat) (bound : RationalPair) : RationalPair :=
   match count with
   | 0 => zeroRational
   | count + 1 => addExact (natScaleRational count bound) bound
 
-/-- **The sum respects the real-level bound** — a uniform per-term bound `q`
+/-- The sum respects the real-level bound: a uniform per-term bound `q`
 lifts to the `count`-scaled bound.  Each appended pair rides
 `addRealRespectsIsWithinRealBound`, and the scaled bound grows by exactly `q`. -/
 theorem sumRealRespectsIsWithinRealBound {leftTerm rightTerm : Nat → RegularReal}
@@ -176,7 +175,7 @@ theorem sumRealRespectsIsWithinRealBound {leftTerm rightTerm : Nat → RegularRe
 
 /-! ## The cut split -/
 
-/-- **The sum splits at a cut point** — summing `m + n` terms denotes summing the
+/-- The sum splits at a cut point: summing `m + n` terms denotes summing the
 first `m` plus summing the next `n` (shifted by `m`).  Induction on the tail
 length `n`, closing each step by associativity. -/
 theorem sumRealSplit (prefixCount tailCount : Nat) (term : Nat → RegularReal) :
@@ -198,11 +197,11 @@ theorem sumRealSplit (prefixCount tailCount : Nat) (term : Nat → RegularReal) 
 
 /-! ## The block regroup -/
 
-/-- **The product reindex** — summing `blockSize * blockCount` terms denotes the
+/-- The product reindex: summing `blockSize * blockCount` terms denotes the
 outer sum over `blockCount` blocks, each an inner sum of `blockSize` terms at
 `blockSize * blockIndex + innerIndex`.  The count `blockSize * blockCount` puts
 the `Nat.mul` recursion on the block count, so `blockSize * (blockCount + 1)`
-reduces DEFINITIONALLY to `blockSize * blockCount + blockSize` and the step is a
+reduces definitionally to `blockSize * blockCount + blockSize` and the step is a
 single cut split. -/
 theorem sumRealRegroupProduct (blockSize blockCount : Nat)
     (term : Nat → RegularReal) :
@@ -225,14 +224,14 @@ theorem sumRealRegroupProduct (blockSize blockCount : Nat)
 
 /-! ## The finite triangle inequality -/
 
-/-- **The finite triangle inequality** `|Σ term| ≤ Σ |term|` — the absolute value
+/-- The finite triangle inequality `|Σ term| ≤ Σ |term|`: the absolute value
 of a prefix sum is bounded by the prefix sum of the absolute values.  Structural
 induction on the count: the empty sum collapses `|0| ~ 0`
 (`absRealOfNonNegDenotesSame`); the successor step chains the two-term
 subadditivity `|Σ_count + term_count| ≤ |Σ_count| + |term_count|`
 (`absRealSubAdditive`) with the inductive bound lifted by the shared summand
 `|term_count|` (`lessEqualRealAddCompat`).  The order half of the integral
-triangle inequality toward Bishop-L1. -/
+triangle inequality (Bishop L1). -/
 theorem sumRealTriangle (term : Nat → RegularReal) (count : Nat) :
     LessEqualReal (absReal (sumReal count term))
       (sumReal count (fun position => absReal (term position))) :=

@@ -1,117 +1,106 @@
 import FX1Poly.ComputerAlgebra.Decision.LinearFarkasCertificate
 
-/-! # FX1Poly/ComputerAlgebra/Decision/FourierMotzkinCompleteness — the DISSAT-ARITH
-    finder route (Fourier–Motzkin elimination with certificate composition)
+/-! # Fourier–Motzkin elimination with certificate composition
 
-Half 2 of the DISSAT-ARITH lane, building directly on
-`LinearFarkasCertificate.lean` (the verified CHECKER): a VERIFIED FINDER skeleton —
-Fourier–Motzkin elimination over the row-split system, every derived row carrying its
-Nat-multiplier provenance over the ORIGINAL expanded rows, so that a ground
-contradiction discovered by elimination hands the checker an already-composed
-certificate.  Nobody in the literature has this exact shape (Nipkow's AFP
-`LinearQuantifierElim` verifies the FM finder but produces no certificates; Besson's
-micromega verifies the checker but leaves the FM finder as unverified OCaml; HOL
-Light's `REAL_LINEAR_PROVER` composes certificates as LCF inference, completeness
-meta-level only).
+A verified FINDER built on the verified CHECKER of `LinearFarkasCertificate`:
+Fourier–Motzkin elimination over the row-split system in which every derived row
+carries its Nat-multiplier provenance over the original expanded rows, so that a
+ground contradiction discovered by elimination hands the checker an
+already-composed refutation certificate.  The literature offers verified FM finders
+that produce no certificates (Nipkow's AFP `LinearQuantifierElim`) and verified
+linear-arithmetic checkers whose finder is left unverified (Besson's micromega) or
+whose completeness is only meta-level (HOL Light's `REAL_LINEAR_PROVER`); a verified
+finder that emits a checker-accepted certificate is the combination pursued here.
 
-## The certificate-threading engine (DECIDED)
+## The certificate-threading engine
 
-A certified row is a constraint TOGETHER with a provenance vector
-(`LfmCertifiedRow`); the invariant `lfmRowMatchesProvenance` says the constraint IS
-the provenance-weighted sum of the expanded system.  Seeds take unit provenances
+A certified row (`LfmCertifiedRow`) is a constraint together with a provenance
+vector; the invariant `lfmRowMatchesProvenance` states that the constraint IS the
+provenance-weighted sum of the expanded system.  Seeds take unit provenances
 (`lfmUnitProvenance`), so their invariant is definitional.  One elimination round
 (`lfmEliminationRound`) buckets rows by the sign of the target coefficient
 (cross-sum tests; rows too short fall in the zero bucket, where the coefficient
 reads as the genuine zero), passes zero rows through untouched, and cross-combines
-each positive row with each negative row, scaling by the OPPOSITE coefficient
-magnitudes.  Magnitudes are extracted with `lfmNatDelta` — a hand-rolled structural
-difference with the recovery spec `small + delta = big` — never `Nat.sub`.
+each positive row with each negative row, scaling by the opposite coefficient
+magnitudes.  Magnitudes are extracted with `lfmNatDelta`, a hand-rolled structural
+difference with the recovery spec `small + delta = big`, never `Nat.sub`.
 
-The invariant threads through combination by THE BILINEARITY THEOREMS, proved as
-STRUCTURAL equalities of `LfkConstraint` (coefficients, bound, AND relation):
+The invariant threads through combination by the bilinearity theorems, proved as
+structural equalities of `LfkConstraint` (coefficients, bound, and relation):
 
-  * `lfmWeightedSumOfScaledCertificate` — `WS (m ⊗ c) E = scale m (WS c E)`;
-  * `lfmWeightedSumOfAddedCertificates` — `WS (c1 ⊕ c2) E = add (WS c1 E) (WS c2 E)`
+  * `lfmWeightedSumOfScaledCertificate` — weighting by a certificate scaled by a
+    multiplier equals scaling the weighted sum by that multiplier;
+  * `lfmWeightedSumOfAddedCertificates` — weighting by a sum of certificates equals
+    adding the two weighted sums
 
-(⊕/⊗ the padding Nat-vector algebra `lfmProvenanceAdd`/`lfmProvenanceScale`).  The
+over the padding Nat-vector algebra `lfmProvenanceAdd` and `lfmProvenanceScale`.  The
 relation components hold because `lfkScaleRelation` distributes over the join and
-over multiplier addition/multiplication — finite case bashes, all `rfl` except one
-`Nat.zero_mul` transport.  The one non-obvious corner: `add trivial X = X` needs
-`X.relation ≠ isEqualTo`, supplied by `lfmWeightedSumRelationIsInequality` (the
-weighted-sum fold's relation is always an inequality — its base is `>=`).
+over multiplier addition and multiplication (finite case analysis, `rfl` except one
+`Nat.zero_mul` transport).  Trivial-row absorption `add trivial X = X` needs
+`X.relation` to be an inequality, supplied by `lfmWeightedSumRelationIsInequality`:
+the weighted-sum fold's relation is always an inequality, its base being `>=`.
 
-## What is PROVEN here (zero-axiom, per-declaration gate)
+## What is proven
 
-  * `lfmFoundContradictionCertifies` — THE COMPOSITION THEOREM: whenever the driver
-    (`lfmFindRefutationCertificate` = seed → eliminate every variable → scan for a
-    ground-contradictory row) returns a certificate, `lfkCheckRefutation` ACCEPTS it
-    against the ORIGINAL system.  Finder output never needs post-hoc reconstruction.
-  * `lfmFoundCertificateRefutes` — composed with the sibling's soundness: a found
+  * `lfmFoundContradictionCertifies` — the composition theorem: whenever the driver
+    (`lfmFindRefutationCertificate`: seed, eliminate every variable, scan for a
+    ground-contradictory row) returns a certificate, `lfkCheckRefutation` accepts it
+    against the original system.  Finder output needs no post-hoc reconstruction.
+  * `lfmFoundCertificateRefutes` — composed with the checker's soundness: a found
     certificate refutes every integer environment.
-  * `lfmRoundPreservesSatisfaction` / `lfmFinalRowsSatisfied` — FORWARD preservation:
-    any environment satisfying the input rows satisfies every derived row (the
-    elimination never invents constraints).
-  * `lfmRoundEliminatesTargetVariable` — every output row of round `k` has
-    cross-zero coefficient at `k` (scaled-opposite-entries cancellation through the
-    witnessed deltas).
-  * `lfmFinalRowsAreGround` — THE GROUNDING THEOREM: after `maxLen` rounds every
-    surviving row is variable-free (all coefficients cross-zero): rounds establish
-    zero at the target index, preserve zero at previously eliminated indices,
-    preserve the length bound, and entries beyond the length bound read as zero.
-    So the final scan is a genuine ground-row scan, not vacuous.
-  * `lfmOnePairExtensionCore` — the STEP MACHINERY of the backward direction: the
-    pure-arithmetic interval-nonemptiness core for one positive/negative pair with
-    weak relations — the scaled witness `v = cN·(boundP − restP)` satisfies BOTH
-    parents' `(aP·cN)`-scaled rows whenever the combined row is satisfied.  This is
-    the exact algebra the walled extension lemma iterates.  Fired on a concrete
-    feasible pair in the smokes (`lfmSmokeOnePairCoreFired`).
-  * End-to-end smokes: the sibling's own unsat fixtures (plain, strict, equality)
-    and a fresh two-variable chain run finder → checker with the COMPOSED
-    certificates accepted (kernel `rfl` pins + `#eval`s); satisfiable systems and
-    a relaxed chain scan CLEAN (FALSE cases — the eliminator returns nothing).
+  * `lfmRoundPreservesSatisfaction` and `lfmEliminateFromIndexPreservesSatisfaction`
+    — forward preservation: any environment satisfying the input rows satisfies every
+    derived row, so elimination never invents constraints.
+  * `lfmRoundEliminatesTargetVariable` — every output row of a round has cross-zero
+    coefficient at the eliminated position (scaled-opposite-entries cancellation
+    through the witnessed deltas).
+  * `lfmFinalRowsAreGround` — the grounding theorem: after `lfmMaxCoefficientLength`
+    rounds every surviving row is variable-free, so the final scan is a genuine
+    ground-row scan.  Rounds establish zero at the target index, preserve zero at
+    previously eliminated indices, preserve the length bound, and entries beyond the
+    length bound read as zero.
+  * `lfmOnePairExtensionCore` — the backward-direction step: the pure-arithmetic
+    interval-nonemptiness core for one positive/negative pair with weak relations,
+    where the scaled witness `v = cN·(boundP − restP)` satisfies both parents'
+    `(aP·cN)`-scaled rows whenever the combined row is satisfied.  This is the
+    algebra the inequality-guarded extension iterates.
+  * End-of-file smokes: the checker module's unsat fixtures (plain, strict,
+    equality) and a two-variable chain run finder → checker with the composed
+    certificates accepted (kernel `rfl` pins and `#eval`s); satisfiable systems and a
+    relaxed chain scan clean.
 
-## The honest wall (owner-false, NOT proven)
+## The uninhabited round-extension Prop
 
-`lfmRoundExtensionStatement` — the BACKWARD/extension lemma: satisfying the round's
-output (at some positive denominator, in the sibling's `lfkScaleBoundsForDenominator`
-encoding) extends to satisfying the round's input at a rescaled denominator.  This
-is the single missing ingredient of `lfkFarkasCompletenessStatement` (sibling wall,
-NOT flipped here): completeness = grounding (proven) + base scan-clean satisfaction
-(routine) + THIS extension per round + seed/expanded/original satisfaction
-transports (routine but unproven here).  Three genuinely different attack shapes
-were driven into the plumbing before walling:
+`lfmRoundExtensionStatement` is the backward/extension claim: if some integer
+environment satisfies a round's OUTPUT at a positive denominator (in the checker's
+`lfkScaleBoundsForDenominator` encoding of a rational point), then some integer
+environment satisfies the round's INPUT at a positive denominator, over arbitrary
+certified rows.  This file states the Prop but leaves it uninhabited, so
+completeness (`lfkFarkasCompletenessStatement`) is not proven here
+(`fxDissatArith_hasFourierMotzkinCompleteness = false`).
 
-  1. Direct structural back-substitution (rational witness as scaled integer):
-     dies in the endpoint-selection mass — max/min over the bound lists needs
-     lexicographic tie-strictness bookkeeping (a strict row tying the weak maximum
-     poisons the closed-endpoint witness), plus a dot-product/update decomposition
-     kit aligning environment length with the variable index.  Pure mass, no
-     undecidability: estimated well over a thousand lines of new kit.
-  2. Denominator-free rescaling (push scales into rows instead of the environment):
-     each cross pair carries its own `dP·dN` scale, so the uniform
-     `lfkScaleBoundsForDenominator` encoding no longer covers the heterogeneous
-     per-row rescaling — reconciling demands exactly the lcm/product recombination
-     lemmas attack 1 needed, relocated.
-  3. Dimension restriction (full completeness for one-variable systems as a
-     stepping stone): removes the update kit but keeps the endpoint-selection mass
-     untouched, and lands a strictly weaker statement than the sibling wall.
-
-The weak-relation single-pair core survives (proved below); the LIST-level
-selection + environment plumbing is the wall.  Owner:
-`fxDissatArith_hasFourierMotzkinCompleteness := false`;
-`fxDissatArith_hasFmCertificateComposition := true` records stages 1–3.
+As stated (unguarded) the Prop is too strong.  It is refuted in
+`FourierMotzkinExtension` on the fixture `[x = 0, x >= 1]`: an equality row is at
+once a lower and an upper bound on the pivot, so it lands in a single sign bucket
+and its opposite half is dropped, letting a round emit an empty (satisfiable) system
+from an unsatisfiable input.  Under the extra hypothesis that every input row is an
+inequality (`lfmRelationIsInequality`) the extension holds, and because the pipeline
+maintains that invariant — seeds are weighted sums, every round preserves
+inequality-ness — `FourierMotzkinExtension` recovers Farkas completeness from the
+guarded form.  The one-pair interval algebra it iterates is `lfmOnePairExtensionCore`,
+proven below.
 
 ## Zero-axiom discipline
 
-Init only plus the sibling import.  Structural recursion throughout (the driver's
+Init only plus the checker import.  Structural recursion throughout (the driver's
 fuel is the max coefficient length); no `WellFounded.fix`.  No `propext`,
 `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `funext`, `omega`, no
 `decide` on `Prop`, no catch-all match arms, no `List.append`, no `Int`, no
 `Nat.sub/mod/div/min/max` (witnessed `lfmNatDelta` differences instead; the
-two-branch maximum is the hand-rolled `lfmNatGreater` over `cond`).  Nat facts
-restricted to the sibling's probed-clean core; new AC identities are hand-proved
-(`lfmNatAddMulDistrib`).  Per-declaration gate in
-`FX1PolyAudit/ComputerAlgebra/Decision/FourierMotzkinCompleteness.lean`. -/
+two-branch maximum is the hand-rolled `lfmNatGreater` over `cond`).  Nat facts are
+restricted to the checker's probed-clean core; new AC identities are hand-proved
+(`lfmNatAddMulDistrib`).  The per-declaration zero-axiom gate lives in the
+`FX1PolyAudit` twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -925,7 +914,7 @@ theorem lfmScaledOppositeEntriesCancel (positiveEntry negativeEntry : LfkInt)
               (lfmNatDeltaRecovers negativeEntry.negativePart negativeEntry.positivePart
                 negativeWeakWitness))))))
 
-/-! ## Stage 1 — certified rows: a constraint plus its provenance -/
+/-! ## Certified rows: a constraint plus its provenance -/
 
 /-- A certified row: the constraint TOGETHER with the Nat multipliers that derive
 it from the expanded original system.  The invariant `lfmRowMatchesProvenance`
@@ -1073,7 +1062,7 @@ theorem lfmFilterOutputsPassTest (filterTest : LfmCertifiedRow → Bool) :
                   (lfmFilterRowsByTest filterTest rowTail)) testFalse)).trans
             (lfmFilterOutputsPassTest filterTest rowTail)
 
-/-! ## Stage 2 — one elimination round with certificate composition -/
+/-! ## One elimination round with certificate composition -/
 
 /-- The positive-row scaling magnitude: the witnessed excess of the coefficient's
 positive part (for a cross-positive entry, its integer value). -/
@@ -1105,8 +1094,8 @@ def lfmCombineRowPair (variableIndex : Nat)
       (lfmProvenanceScale (lfmPositiveMagnitudeAt variableIndex positiveRow)
         negativeRow.provenance))
 
-/-- STAGE-2(a): combination preserves provenance exactness — the constraint-level
-add/scale is EXACTLY the provenance-level add/scale, by the bilinearity theorems. -/
+/-- Combination preserves provenance exactness: the constraint-level add and scale
+are exactly the provenance-level add and scale, by the bilinearity theorems. -/
 theorem lfmCombineRowPairExact (expandedSystem : List LfkConstraint) (variableIndex : Nat)
     (positiveRow negativeRow : LfmCertifiedRow)
     (positiveExact : lfmRowMatchesProvenance expandedSystem positiveRow)
@@ -1133,8 +1122,8 @@ theorem lfmCombineRowPairExact (expandedSystem : List LfkConstraint) (variableIn
         (lfmProvenanceScale (lfmPositiveMagnitudeAt variableIndex positiveRow)
           negativeRow.provenance) expandedSystem).symm)
 
-/-- STAGE-2(b): combination preserves satisfaction — immediate from the sibling's
-scale/add preservation lemmas. -/
+/-- Combination preserves satisfaction, from the checker's scale and add
+preservation lemmas. -/
 theorem lfmCombineRowPairSatisfied (env : List LfkInt) (variableIndex : Nat)
     (positiveRow negativeRow : LfmCertifiedRow)
     (positiveSat : lfkSatisfiesConstraint env positiveRow.constraint = true)
@@ -1151,8 +1140,8 @@ theorem lfmCombineRowPairSatisfied (env : List LfkInt) (variableIndex : Nat)
     (lfkScalePreservesSatisfaction env (lfmPositiveMagnitudeAt variableIndex positiveRow)
       negativeRow.constraint negativeSat)
 
-/-- STAGE-2(c): the combined row's coefficient at the eliminated position is
-cross-zero (the cancellation lemma through the entry-extraction homomorphisms). -/
+/-- The combined row's coefficient at the eliminated position is cross-zero (the
+cancellation lemma through the entry-extraction homomorphisms). -/
 theorem lfmCombineRowPairZeroAtTarget (variableIndex : Nat)
     (positiveRow negativeRow : LfmCertifiedRow)
     (positiveTest : lfmRowHasPositiveCoefficientAt variableIndex positiveRow = true)
@@ -1400,7 +1389,7 @@ theorem lfmRoundPreservesExactness (expandedSystem : List LfkConstraint)
         positiveExact negativeExact)
     rows rowsWitness
 
-/-- STAGE-2(b) at round level: satisfaction is preserved forward. -/
+/-- At round level: satisfaction is preserved forward. -/
 theorem lfmRoundPreservesSatisfaction (env : List LfkInt) (variableIndex : Nat)
     (rows : List LfmCertifiedRow)
     (rowsWitness : lfmAllRowsPass
@@ -1414,9 +1403,9 @@ theorem lfmRoundPreservesSatisfaction (env : List LfkInt) (variableIndex : Nat)
         positiveSat negativeSat)
     rows rowsWitness
 
-/-- STAGE-2(c) at round level: EVERY output row has cross-zero coefficient at the
-eliminated position — unconditionally (zero bucket by its filter test, cross
-combinations by cancellation). -/
+/-- At round level: every output row has cross-zero coefficient at the eliminated
+position, unconditionally (zero bucket by its filter test, cross combinations by
+cancellation). -/
 theorem lfmRoundEliminatesTargetVariable (variableIndex : Nat)
     (rows : List LfmCertifiedRow) :
     lfmAllRowsPass (lfmRowCoefficientIsZeroAt variableIndex)
@@ -1459,7 +1448,7 @@ theorem lfmRoundPreservesLengthWithin (lengthBound variableIndex : Nat)
         positiveWithin negativeWithin)
     rows rowsWitness
 
-/-! ## Stage 3 — seeds, the driver, the ground scan, THE COMPOSITION THEOREM -/
+/-! ## Seeds, the driver, the ground scan, the composition theorem -/
 
 /-- Seed rows: row `i` of the expanded system becomes the certified row whose
 constraint is the unit-provenance weighted sum — exactness is DEFINITIONAL. -/
@@ -1750,7 +1739,7 @@ theorem lfmFinalRowsAreGround (system : List LfkConstraint) :
             (Nat.zero_add (lfmMaxCoefficientLength (lfkExpandSystem system)))).trans
           coveredWitness))
 
-/-! ## Stage 4 — the backward direction: shipped step machinery + the honest wall -/
+/-! ## The backward direction: the one-pair step and the round-extension Prop -/
 
 /-- The extension witness for one positive/negative pair: the rational lower bound
 `(positiveBound - positiveRest) / positiveMagnitude` cleared to the common scale
@@ -1760,7 +1749,7 @@ def lfmExtensionWitnessValue (negativeMagnitude : Nat)
     (positiveBound positiveRest : LfkInt) : LfkInt :=
   lfkIntScaleByNat negativeMagnitude (lfkIntAdd positiveBound (lfkIntNegate positiveRest))
 
-/-- THE ONE-PAIR EXTENSION CORE (weak relations): reading the positive row as
+/-- The one-pair extension core (weak relations): reading the positive row as
 `aP*x + positiveRest >= positiveBound` and the negative row as
 `-cN*x + negativeRest >= negativeBound`, if their Fourier-Motzkin combination
 `cN*positiveBound + aP*negativeBound <= cN*positiveRest + aP*negativeRest` holds,
@@ -1771,10 +1760,9 @@ after clearing denominators by `m := aP*cN`:
     (with equality — `v` sits exactly on the lower endpoint);
   * negative row (scaled by `m`): `cN*v + m*negativeBound <= m*negativeRest`.
 
-This is the interval-nonemptiness algebra that the walled round-extension lemma
-iterates over the max-lower/min-upper endpoints; strict variants need the extra
-factor 2 and the +1 headroom from the strict combination (documented at the
-wall). -/
+This is the interval-nonemptiness algebra that the inequality-guarded round
+extension iterates over the max-lower or min-upper endpoints; strict variants add a
+factor of 2 and one unit of headroom from the strict combination. -/
 theorem lfmOnePairExtensionCore (positiveMagnitude negativeMagnitude : Nat)
     (positiveRest positiveBound negativeRest negativeBound : LfkInt)
     (comboWitness : lfkIntLe
@@ -1932,30 +1920,28 @@ theorem lfmOnePairExtensionCore (positiveMagnitude negativeMagnitude : Nat)
       droppedZero
   And.intro positiveClaim negativeClaim
 
-/-! ## The honest wall — the round-extension lemma (owner-false) -/
+/-! ## The round-extension Prop (stated, uninhabited here) -/
 
 /-- Extract the bare constraints of a certified-row list (cons-only). -/
 def lfmConstraintsOfRows : List LfmCertifiedRow → List LfkConstraint
   | List.nil => List.nil
   | rowHead :: rowTail => rowHead.constraint :: lfmConstraintsOfRows rowTail
 
-/-- THE WALL (owner-false, NOT proven): the round-extension lemma — if some
-integer environment satisfies the ROUND OUTPUT at a positive denominator (the
-sibling's `lfkScaleBoundsForDenominator` encoding of a rational point), then some
-integer environment satisfies the ROUND INPUT at some positive denominator.
-Classically this is the backward direction of Fourier–Motzkin equisatisfiability
-(Nipkow JAR 2010 proves it certificate-free in Isabelle/HOL); constructively the
-witness is the cleared max-lower/min-upper endpoint (weak case) or midpoint
-(strict case) — `lfmOnePairExtensionCore` above is the exact one-pair algebra,
-fired on a concrete instance in the smokes.  The remaining mass is LIST-level
-endpoint selection with tie-strictness bookkeeping plus the
-environment-update/dot-product decomposition kit; three attack shapes were
-driven into that mass before walling (see the file header).  With THIS statement
-inhabited, `lfkFarkasCompletenessStatement` follows from the grounding theorem
-(`lfmFinalRowsAreGround`) + base-scan satisfaction + the seed/expanded
-transports.  Owner: `fxDissatArith_hasFourierMotzkinCompleteness := false`; the
-sibling's `fxDissatArith_hasFarkasCompleteness := false` stays authoritative and
-untouched. -/
+/-- The round-extension Prop: if some integer environment satisfies the ROUND
+OUTPUT at a positive denominator (the checker's `lfkScaleBoundsForDenominator`
+encoding of a rational point), then some integer environment satisfies the ROUND
+INPUT at a positive denominator, over arbitrary certified rows.  This is the
+backward direction of Fourier–Motzkin equisatisfiability, whose constructive
+witness is the cleared max-lower or min-upper endpoint in the weak case and the
+midpoint in the strict case; `lfmOnePairExtensionCore` above is the one-pair
+algebra it iterates.  The Prop is stated but not inhabited here.
+
+As written it is unguarded and too strong: `FourierMotzkinExtension` refutes it on
+`[x = 0, x >= 1]`, where an equality row occupies a single sign bucket and its
+opposite half is dropped.  Restricting to inequality input rows makes it hold, and
+that guarded form yields `lfkFarkasCompletenessStatement` downstream together with
+the grounding theorem `lfmFinalRowsAreGround`.  This file records
+`fxDissatArith_hasFourierMotzkinCompleteness = false`. -/
 def lfmRoundExtensionStatement : Prop :=
   ∀ (variableIndex : Nat) (rows : List LfmCertifiedRow)
     (outputDenominatorPred : Nat) (outputEnv : List LfkInt),
@@ -1967,21 +1953,19 @@ def lfmRoundExtensionStatement : Prop :=
         (lfkScaleBoundsForDenominator (inputDenominatorPred + 1)
           (lfmConstraintsOfRows rows)) = true
 
-/-- DECIDED marker: stages 1–3 — certified rows with unit-provenance seeds, the
-elimination round with provenance threading (bilinearity), the fuel driver, the
-grounding theorem, and THE COMPOSITION THEOREM
-(`lfmFoundContradictionCertifies`: finder output is checker-accepted verbatim)
-— fully proven, zero-axiom. -/
+/-- The certificate-composition pipeline is fully proven, zero-axiom: certified
+rows with unit-provenance seeds, the elimination round with provenance threading
+(bilinearity), the fuel driver, the grounding theorem, and the composition theorem
+`lfmFoundContradictionCertifies` (finder output is checker-accepted verbatim). -/
 def fxDissatArith_hasFmCertificateComposition : Bool := true
 
-/-- Owner flag for the completeness target: `lfkFarkasCompletenessStatement`
-remains UNPROVEN here — the round-extension wall (`lfmRoundExtensionStatement`)
-is the single missing ingredient.  NOT a supersession of the sibling's
-`fxDissatArith_hasFarkasCompleteness := false`, which stays authoritative. -/
+/-- Completeness (`lfkFarkasCompletenessStatement`) is not proven within this file:
+the round-extension Prop `lfmRoundExtensionStatement` is stated but uninhabited
+here.  Its inequality-guarded form is inhabited, and completeness obtained, in
+`FourierMotzkinExtension`. -/
 def fxDissatArith_hasFourierMotzkinCompleteness : Bool := false
 
-/-! ## Smokes — end-to-end finder→checker fires (Bool outputs only; FALSE cases
-included; kernel-checked `rfl` pins) -/
+/-! ## Smokes — finder → checker fires and clean scans (Bool `rfl` pins and `#eval`s) -/
 
 /-- Run the finder and hand whatever certificate it returns to the sibling's
 checker; `false` when the finder returns nothing. -/

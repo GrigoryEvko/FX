@@ -1,16 +1,16 @@
 import FX1Poly.ComputerAlgebra.Decision.FourierMotzkinExtension
 
-/-! # FX1Poly/ComputerAlgebra/Decision/PresburgerCooper — the LAST ARITH WALL:
+/-! # FX1Poly/ComputerAlgebra/Decision/PresburgerCooper —
     Cooper quantifier elimination over the lane's pair integers, zero-axiom
 
-The DISSAT-ARITH lane's Presburger wall
-(`lfkPresburgerDecisionStatement`, LinearFarkasCertificate.lean, owner
-`fxDissatArith_hasPresburgerDecision := false`) demands full decidability of
-integer satisfiability for linear-constraint systems.  Farkas/Fourier–Motzkin
-certificates CANNOT close it: `2x = 1` is rationally feasible (hence
-certificate-free) yet integer-unsatisfiable.  The fix, after Cooper 1972 as
-mechanized by Chaieb–Nipkow (LPAR'05) and Norrish (TPHOLs'03), is quantifier
-elimination with DIVISIBILITY atoms.  This brick delivers the full pipeline:
+Full decidability of integer satisfiability for linear-constraint systems
+(`lfkPresburgerDecisionStatement`, `LinearFarkasCertificate.lean`; the flag
+`fxDissatArith_hasPresburgerDecision` records the statement).
+Farkas/Fourier–Motzkin certificates do not suffice: `2x = 1` is rationally
+feasible (hence certificate-free) yet integer-unsatisfiable.  The decision
+procedure is Cooper 1972 quantifier elimination with divisibility atoms,
+following the mechanizations of Chaieb–Nipkow (LPAR'05) and Norrish
+(TPHOLs'03).  The pipeline has four parts:
 
   * **(A) Syntax + semantics** — reflected Presburger formulas over `LfkInt`
     pair integers: linear terms `PcqTerm` (dense coefficient vector reusing
@@ -34,8 +34,8 @@ elimination with DIVISIBILITY atoms.  This brick delivers the full pipeline:
       `(∃ x, holds x m)  ↔  (⋁_{j=1..δ} holds j (minusInf m))
                             ∨ (⋁_{b ∈ B} ⋁_{j=1..δ} holds (b + j) m)`
     BOTH directions over the Prop semantics, `δ := pcqDelta m` the product of
-    all divisibility moduli.  The proof follows the brief's skeleton
-    constructively: shift-invariance of `minusInf` by `δ`-multiples
+    all divisibility moduli.  The proof is constructive:
+    shift-invariance of `minusInf` by `δ`-multiples
     (periodicity, Chaieb–Nipkow (7)), agreement of `m` with `minusInf m`
     below a computed threshold ((6)), the descent lemma ((9)) with the
     lower-bound window extraction, iterated descent below the threshold, and
@@ -47,17 +47,16 @@ elimination with DIVISIBILITY atoms.  This brick delivers the full pipeline:
     NNF → separate → `pcqCooperStep`), producing a quantifier-free
     equivalent; `pcqDecide` evaluates it in the empty environment.
     Soundness and completeness are two-sided
-    (`pcqDecideTrueSound` / `pcqDecideFalseComplete`).  The lane wall
-    statement `lfkPresburgerDecisionStatement` is then confronted VERBATIM
-    and INHABITED (`pcqPresburgerDecisionHolds`): each constraint row
+    (`pcqDecideTrueSound` / `pcqDecideFalseComplete`).
+    `lfkPresburgerDecisionStatement` is then inhabited
+    (`pcqPresburgerDecisionHolds`): each constraint row
     translates atom-for-atom (`>=`/`>`/`=` via the succ-le encoding, the SAME
     `lfkDotProduct`), the system closes under `n := pcqSystemVarCount`
     inner existentials (`pcqFexN`), and truncation/padding semantics make
     satisfaction depend only on the first `n` variables.
 
-Fires (kernel-decided, tiny deltas) live in the sibling
-`PresburgerCooperFires.lean`: the `2x = 1` integrality gap decides FALSE
-(the lane's signature separator), `∃x (3 | x ∧ x > 5)` decides TRUE, a
+Worked examples live in the sibling `PresburgerCooperFires.lean`: the
+`2x = 1` integrality gap decides FALSE, `∃x (3 | x ∧ x > 5)` decides TRUE, a
 two-quantifier instance, and negative controls.
 
 ## Zero-axiom discipline
@@ -78,7 +77,7 @@ set_option relaxedAutoImplicit false
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## Stage 0a — Nat kit additions (counting divider, cancellation, shapes) -/
+/-! ## Nat kit additions (counting divider, cancellation, shapes) -/
 
 /-- Structural predecessor (total; `0 ↦ 0`). -/
 def pcqNatPred : Nat → Nat
@@ -153,7 +152,7 @@ theorem pcqNatNonZeroShape : ∀ (value : Nat), Nat.beq value 0 = false →
   | Nat.zero, contradictoryWitness => Bool.noConfusion contradictoryWitness
   | Nat.succ predecessorValue, _nonZeroWitness => Exists.intro predecessorValue rfl
 
-/-! ## Stage 0b — THE COUNTING DIVIDER (structural on the dividend; no
+/-! ## THE COUNTING DIVIDER (structural on the dividend; no
 `Nat.mod`/`Nat.div`/`Nat.sub`; certificates by plain induction) -/
 
 /-- Remainder of `value` modulo `modulusPred + 1`, computed by counting: each
@@ -269,7 +268,7 @@ theorem pcqNatUniqueRemainderZero : ∀ (modulusPred remainderValue innerQuotien
               (modulusPred + 1)).trans mixedEq))
         boundWitness
 
-/-! ## Stage 0c — Nat divisibility (witnessed multiples of the product) -/
+/-! ## Nat divisibility (witnessed multiples of the product) -/
 
 /-- `divisor` divides `target` — the multiplicative witness Prop. -/
 def pcqNatDividesProp (divisor target : Nat) : Prop :=
@@ -318,7 +317,7 @@ theorem pcqNatCountingQuotientExact (divisorPred target : Nat)
             remainderZero).symm).trans
           (pcqNatDivModRecovers divisorPred target))
 
-/-! ## Stage 0d — Bool kit additions -/
+/-! ## Bool kit additions -/
 
 /-- Destruct a true disjunction. -/
 theorem pcqBoolOrDestructTrue : ∀ (leftFlag rightFlag : Bool),
@@ -369,7 +368,7 @@ theorem pcqBoolNotTrueOfFalse : ∀ (flag : Bool), flag = false → Bool.not fla
   | false, _trivialWitness => rfl
   | true, contradictoryWitness => Bool.noConfusion contradictoryWitness
 
-/-! ## Stage 0e — LfkInt kit additions (order corners, cross-eq congruence) -/
+/-! ## LfkInt kit additions (order corners, cross-eq congruence) -/
 
 /-- Strict order plus reverse weak order is absurd. -/
 theorem pcqIntLtLeAbsurd {lowerValue higherValue : LfkInt}
@@ -526,7 +525,7 @@ theorem pcqIntLesserLeRight (leftValue rightValue : LfkInt) :
       (congrArg (fun probe => lfkIntLe (cond probe leftValue rightValue) rightValue)
         compareCases).trans (lfmIntLeRefl rightValue)
 
-/-! ## Stage A1 — divisibility over pair integers: Prop, decomposition, DECIDER -/
+/-! ## divisibility over pair integers: Prop, decomposition, DECIDER -/
 
 /-- `modulus` divides the pair integer `value`: a multiplicative witness up to
 cross-sum equality (unnormalized pairs never demand syntactic equality). -/
@@ -691,7 +690,7 @@ theorem pcqDividesDropScaled (modulus cofactor : Nat) (value shiftValue : LfkInt
       (lfkIntAdd value (lfkIntScaleByNat (modulus * cofactor) shiftValue))
       (lfkIntNegate shiftValue) dividesWitness)
 
-/-! ## Stage A2 — linear terms (dense coefficient vector + constant) -/
+/-! ## linear terms (dense coefficient vector + constant) -/
 
 /-- A linear term: dense coefficient vector (entry `i` multiplies de Bruijn
 variable `i`, truncation/padding semantics from the sibling dot product) plus
@@ -793,7 +792,7 @@ theorem pcqTermEvalConsSplit (pivotValue : LfkInt) (env : List LfkInt) :
       lfkIntAddAssoc (lfkIntMul pivotValue headCoefficient)
         (lfkDotProduct env tailCoefficients) constantValue
 
-/-! ## Stage A3 — reflected formulas: surface (with exists) and QF layers -/
+/-! ## reflected formulas: surface (with exists) and QF layers -/
 
 /-- Surface Presburger formulas (de Bruijn binders; strict inequality in the
 succ-le encoding; structurally positive divisibility moduli; negated
@@ -937,7 +936,7 @@ theorem pcqIntEqOfEq {leftValue rightValue : LfkInt} (plainEq : leftValue = righ
     lfkIntEq leftValue rightValue = true :=
   plainEq ▸ lfkIntEqRefl leftValue
 
-/-! ## Stage C0 — the unitary matrix layer (one distinguished pivot variable;
+/-! ## the unitary matrix layer (one distinguished pivot variable;
 matrix terms live over the OUTER environment) -/
 
 /-- A unitary Cooper matrix: every pivot occurrence has coefficient exactly
@@ -1111,7 +1110,7 @@ theorem pcqMatrixHoldsCrossEq (env : List LfkInt) {oldPivot newPivot : LfkInt}
       | Or.inr rightHolds =>
           Or.inr (pcqMatrixHoldsCrossEq env pivotEq rightBranch rightHolds))
 
-/-! ## Stage C1 — minus-infinity form, delta, lower-bound set -/
+/-! ## minus-infinity form, delta, lower-bound set -/
 
 /-- The minus-infinity form: upper bounds hold, lower bounds fail, everything
 else (in particular divisibility) is untouched. -/
@@ -1260,7 +1259,7 @@ theorem pcqModuliDivideDelta : ∀ (matrix : PcqMatrix),
         (pcqAllModuliDivideMulLeft rightBranch (pcqDelta rightBranch)
           (pcqDelta leftBranch) (pcqModuliDivideDelta rightBranch))
 
-/-! ## Stage C2 — finite disjunction kits (recursive Props mirroring the
+/-! ## finite disjunction kits (recursive Props mirroring the
 output formula's disjunction structure) -/
 
 /-- Some index in `[1..bound]` satisfies the property. -/
@@ -1360,7 +1359,7 @@ theorem pcqAnyTermConcatRight (property : PcqTerm → Prop) :
   | _headTerm :: tailTerms, secondList, anyWitness =>
       Or.inr (pcqAnyTermConcatRight property tailTerms secondList anyWitness)
 
-/-! ## Stage C3 — periodicity: the minus-infinity form is invariant under
+/-! ## periodicity: the minus-infinity form is invariant under
 delta-multiple shifts of the pivot (Chaieb–Nipkow fact (7), pair-shift form) -/
 
 /-- Shift invariance of the minus-infinity form: only divisibility atoms
@@ -1428,7 +1427,7 @@ theorem pcqMinusInfShift (env : List LfkInt) (deltaValue : Nat) (shiftValue : Lf
           Or.inr (pcqMinusInfShift env deltaValue shiftValue rightBranch pivotValue
             divideWitness.right rightHolds))
 
-/-! ## Stage C4 — agreement below a computed threshold (Chaieb–Nipkow (6)) -/
+/-! ## agreement below a computed threshold (Chaieb–Nipkow (6)) -/
 
 /-- The low threshold: below it, every bound atom agrees with its
 minus-infinity substitution. -/
@@ -1500,7 +1499,7 @@ theorem pcqMinusInfAgreesBelow (env : List LfkInt) :
           | Or.inl leftHolds => Or.inl (leftIff.mpr leftHolds)
           | Or.inr rightHolds => Or.inr (rightIff.mpr rightHolds))
 
-/-! ## Stage C5 — the descent lemma (Chaieb–Nipkow (9)): descend by delta or
+/-! ## the descent lemma (Chaieb–Nipkow (9)): descend by delta or
 land in a lower-bound window -/
 
 /-- One descent step: either the matrix still holds at `pivot - delta`, or
@@ -1644,7 +1643,7 @@ theorem pcqDescentWindow (env : List LfkInt) (deltaValue : Nat)
               Or.inr (pcqAnyTermConcatRight _ (pcqLowerBounds leftBranch)
                 (pcqLowerBounds rightBranch) rightWindow)))
 
-/-! ## Stage C6 — the executable window test and its reflections -/
+/-! ## the executable window test and its reflections -/
 
 /-- Boolean range disjunction. -/
 def pcqAnyUpToBool (test : Nat → Bool) : Nat → Bool
@@ -1717,7 +1716,7 @@ def pcqWindowTest (env : List LfkInt) (matrix : PcqMatrix) : Bool :=
       (pcqDelta matrix))
     (pcqLowerBounds matrix)
 
-/-! ## Stage C7 — iterated descent and the reach-below construction -/
+/-! ## iterated descent and the reach-below construction -/
 
 /-- One descent step under a failed window test. -/
 theorem pcqDescentStep (env : List LfkInt) (matrix : PcqMatrix)
@@ -1791,7 +1790,7 @@ theorem pcqReachBelowThreshold (deltaValue : Nat)
           (lreNatLeAddLeft (thresholdValue.positivePart + startValue.negativePart)
             (deltaValue * stepCount)))))
 
-/-! ## Stage C8 — window reduction: shift any point into `[1..delta]` modulo
+/-! ## window reduction: shift any point into `[1..delta]` modulo
 delta (the counting-divider congruence) -/
 
 /-- Reduce any pair integer into the window `[1..delta]` by a delta-multiple
@@ -1896,7 +1895,7 @@ theorem pcqWindowReduce : ∀ (deltaValue : Nat), Nat.ble 1 deltaValue = true �
                           (Nat.le_succ deltaPred)))
                       (lreIntEqTrans substituteEq cancelEq)))))
 
-/-! ## Stage C9 — THE COOPER ELIMINATION THEOREM (both directions) -/
+/-! ## THE COOPER ELIMINATION THEOREM (both directions) -/
 
 /-- Forward: a witness yields the minus-infinity branch or the window
 branch. -/
@@ -2007,7 +2006,7 @@ theorem pcqCooperElimination (env : List LfkInt) (matrix : PcqMatrix) :
       | Or.inr windowBranch =>
           pcqCooperBackwardWindow env matrix (pcqLowerBounds matrix) windowBranch)
 
-/-! ## Stage B1 — negation normal form (negation survives only on
+/-! ## negation normal form (negation survives only on
 divisibility; inequality negation flips through the succ-le encoding) -/
 
 /-- NNF formulas: no negation connective; negated divisibility is an atom. -/
@@ -2138,7 +2137,7 @@ theorem pcqNnfOfQfSound (env : List LfkInt) : ∀ (formula : PcqQfFormula),
               | Or.inl bodyHolds => bodyHolds
               | Or.inr bodyFails => False.elim (doubleNegation bodyFails))))
 
-/-! ## Stage B2 — order and scale corners for the unitarization step -/
+/-! ## order and scale corners for the unitarization step -/
 
 /-- Strict-order cancellation of a positive Nat multiplier (succ-le form). -/
 theorem pcqNatMulLtCancelLeft (multiplierPred leftValue rightValue : Nat)
@@ -2292,7 +2291,7 @@ theorem pcqDividesNegate (modulus : Nat) (value : LfkInt)
   | Exists.intro quotient quotientEq =>
       Exists.intro (lfkIntNegate quotient) (pcqIntEqNegateCongr quotientEq)
 
-/-! ## Stage B3 — pair-integer sign analysis (the witnessed magnitude and the
+/-! ## pair-integer sign analysis (the witnessed magnitude and the
 three-way view: cross-zero / positive `ofNat` / negative `negate ofNat`) -/
 
 /-- Propositional-equality transport for the LEFT side of an `Iff`
@@ -2453,7 +2452,7 @@ theorem pcqIntEqZeroOfIsZero {value : LfkInt} (zeroWitness : lfkIntIsZero value 
         (Nat.zero_add value.negativePart).symm :
       value.positivePart + 0 = 0 + value.negativePart))
 
-/-! ## Stage B4 — the global unitarization scale (product of clamped pivot
+/-! ## the global unitarization scale (product of clamped pivot
 magnitudes) and its divisibility certificate -/
 
 /-- The pivot-difference coefficient of a strict-inequality atom under the
@@ -2557,7 +2556,7 @@ theorem pcqNnfCoeffsDivideScale : ∀ (formula : PcqNnfFormula),
         (pcqNnfCoeffsDivideMulLeft rightBranch (pcqNnfScale rightBranch)
           (pcqNnfScale leftBranch) (pcqNnfCoeffsDivideScale rightBranch))
 
-/-! ## Stage B5 — the unit matrix builder (every pivot occurrence scaled to
+/-! ## the unit matrix builder (every pivot occurrence scaled to
 coefficient exactly +1; pivot-free atoms drop to free atoms) -/
 
 /-- Rewriting matrix satisfaction of a `cond` by a true condition flag. -/
@@ -3196,7 +3195,7 @@ theorem pcqUnitMatrixEquiv (env : List LfkInt) (scaleValue : Nat)
           | Or.inl leftHolds => Or.inl (leftIff.mpr leftHolds)
           | Or.inr rightHolds => Or.inr (rightIff.mpr rightHolds))
 
-/-! ## Stage B6 — the separated matrix: the U-step recorded as ONE added
+/-! ## the separated matrix: the U-step recorded as ONE added
 `scale | pivot` divisibility atom (Chaieb–Nipkow fact (2)) -/
 
 /-- The separated (fully unitary) matrix: the unit matrix conjoined with the
@@ -3253,7 +3252,7 @@ theorem pcqSeparateEquiv (env : List LfkInt) (formula : PcqNnfFormula) :
                   (pcqMatrixHoldsCrossEq env (lreIntEqSymm quotientEq)
                     (pcqUnitMatrix scaleValue formula) holdsWitness.left)))
 
-/-! ## Stage D1 — quantifier-free emission of a matrix at a pivot term -/
+/-! ## quantifier-free emission of a matrix at a pivot term -/
 
 /-- The trivially-true quantifier-free formula (`0 < 1`). -/
 def pcqQfTrueFormula : PcqQfFormula :=
@@ -3354,7 +3353,7 @@ theorem pcqQfOfMatrixAtHolds (env : List LfkInt) (pivotTerm : PcqTerm) :
           | Or.inl leftHolds => Or.inl (leftIff.mpr leftHolds)
           | Or.inr rightHolds => Or.inr (rightIff.mpr rightHolds))
 
-/-! ## Stage D2 — quantifier-free finite disjunction builders and their
+/-! ## quantifier-free finite disjunction builders and their
 reflections into the recursive `pcqAnyUpTo` / `pcqAnyTerm` Props -/
 
 /-- The disjunction of `builder j` over `j` in `[1..bound]`. -/
@@ -3409,7 +3408,7 @@ theorem pcqQfOrOverTermsHolds (env : List LfkInt) (builder : PcqTerm → PcqQfFo
           | Or.inl headHolds => Or.inl headHolds
           | Or.inr tailAny => Or.inr (tailIff.mpr tailAny))
 
-/-! ## Stage D3 — THE COOPER STEP as a quantifier-free formula -/
+/-! ## THE COOPER STEP as a quantifier-free formula -/
 
 /-- One full Cooper elimination round on an NNF body: separate, then emit the
 minus-infinity disjunction and the boundary-window disjunction over
@@ -3524,7 +3523,7 @@ theorem pcqCooperStepEquiv (env : List LfkInt) (formula : PcqNnfFormula) :
       | Or.inl minusInfProp => Or.inl (minusInfBranchIff.mpr minusInfProp)
       | Or.inr windowProp => Or.inr (windowBranchIff.mpr windowProp))
 
-/-! ## Stage D4 — THE FULL ELIMINATION AND DECISION -/
+/-! ## THE FULL ELIMINATION AND DECISION -/
 
 /-- Eliminate all quantifiers, inside-out: the `fexists` case runs
 NNF -> separate -> Cooper step on the recursively eliminated body. -/
@@ -3607,10 +3606,10 @@ theorem pcqDecideFalseComplete (formula : PcqFormula)
   pcqQfEvalFalseComplete List.nil (pcqEliminate formula) decideWitness
     ((pcqEliminateEquiv formula List.nil).mpr interpWitness)
 
-/-! ## Stage D5 — THE LANE WALL CONFRONTED: `lfkPresburgerDecisionStatement`
-inhabited VERBATIM.  Each constraint row translates atom-for-atom through the
-succ-le encoding; the system closes under `pcqSystemVarCount` existentials;
-truncation/padding makes satisfaction depend only on the bound prefix. -/
+/-! ## The lane decidability statement inhabited: `lfkPresburgerDecisionStatement`.
+Each constraint row translates atom-for-atom through the succ-le encoding; the
+system closes under `pcqSystemVarCount` existentials; truncation/padding makes
+satisfaction depend only on the bound prefix. -/
 
 /-- Cross-sum equality yields both weak cross-sum orders. -/
 theorem pcqIntLeLeOfEq {leftValue rightValue : LfkInt}
@@ -3924,12 +3923,11 @@ theorem pcqFexNElim : ∀ (count : Nat) (tailEnv : List LfkInt) (formula : PcqFo
           | Exists.intro headValue bodyWitness =>
               Exists.intro (headValue :: witnessList) bodyWitness
 
-/-- THE LANE WALL, INHABITED VERBATIM: every integer linear-constraint system
-either has a satisfying environment or refutes them all — decided by Cooper
-elimination on the translated, existentially closed formula.  This is the
-statement owned false by `fxDissatArith_hasPresburgerDecision` in
-`LinearFarkasCertificate.lean`; the flag itself lives in that frozen file, so
-the DECIDED marker here is `pcqHasPresburgerDecision`. -/
+/-- Every integer linear-constraint system either has a satisfying
+environment or is unsatisfiable, decided by Cooper elimination on the
+translated, existentially closed formula.  This inhabits
+`lfkPresburgerDecisionStatement` (`LinearFarkasCertificate.lean`), the
+decidability statement flagged by `fxDissatArith_hasPresburgerDecision`. -/
 theorem pcqPresburgerDecisionHolds : lfkPresburgerDecisionStatement :=
   fun system =>
     match decideCase : pcqDecide (pcqFexN (pcqSystemVarCount system)
@@ -3962,13 +3960,11 @@ theorem pcqPresburgerDecisionHolds : lfkPresburgerDecisionStatement :=
                       (pcqRowsFitVarCount system))).trans
                     satisfiesWitness))))
 
-/-- CONTENT MARKER (DECIDED): the full Cooper pipeline — syntax/semantics,
+/-- Records that the Cooper decision pipeline — syntax and semantics,
 two-sided ground evaluation, NNF, product-scale unitarization, the two-sided
 elimination theorem, the inside-out eliminator, the closed-formula decision,
-and the verbatim inhabitation of `lfkPresburgerDecisionStatement`
-(`pcqPresburgerDecisionHolds`) — is fully proven, zero-axiom.  The stale
-owner flag `fxDissatArith_hasPresburgerDecision := false` lives in the frozen
-`LinearFarkasCertificate.lean` and is SUPERSEDED by this marker. -/
+and the inhabitation of `lfkPresburgerDecisionStatement`
+(`pcqPresburgerDecisionHolds`) — is fully proven, zero-axiom. -/
 def pcqHasPresburgerDecision : Bool := true
 
 end FX1Poly.ComputerAlgebra

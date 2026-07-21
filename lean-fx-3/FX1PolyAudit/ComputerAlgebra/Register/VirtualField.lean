@@ -3,12 +3,10 @@ import FX1Poly.ComputerAlgebra.Register.VirtualField
 
 /-! # FX1PolyAudit/ComputerAlgebra/Register/VirtualField — zero-axiom gate
 
-Per-declaration zero-axiom gate for the virtual-field / non-overlap layer
-(fx_design.md §18.1 virtual reassembly, §18.2 pattern non-overlap, §18.4): the
-width-explicit slice, the `totalFieldWidth` fold and the `bitVecConcat` virtual
-reassembly, the decidable `Bool` non-overlap folds (`isDisjointSpec`,
-`isDisjointFromAll`, `isNonOverlapping`) with the `Prop` face, and the
-range-semantics tie-off (`boolOrCases`, `isDisjointSpec_ne`).
+Per-declaration zero-axiom gate for the virtual-field and non-overlap layer
+(fx_design.md §18.1 reassembly, §18.2 pattern non-overlap, §18.4): the slice, the
+`totalFieldWidth`/`bitVecConcat` reassembly, the `Bool` non-overlap folds with their
+`Prop` face, and the range tie-off.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

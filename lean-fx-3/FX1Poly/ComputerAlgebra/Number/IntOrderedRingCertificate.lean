@@ -6,24 +6,22 @@ import FX1Poly.ComputerAlgebra.Number.IntSubNatNat
 import FX1Poly.ComputerAlgebra.Number.IntOrderCore
 import FX1Poly.ComputerAlgebra.Number.IntOrderAlgebra
 
-/-! # The ordered-commutative-ring certificate (NUM-Z-PACK)
+/-! # The ordered-commutative-ring certificate
 
-The hand-rolled `Int` corpus — built lemma by lemma for the floating-point arc —
-packaged as ONE value: a linearly ordered commutative ring witness.  The structure
-is the ℤ rung's certificate in the zero-axiom number tower and the reuse target for
-the later rungs (ℚ instantiates it on gcd-normal forms, where the setoid collapses
-to `Eq`).
+The hand-rolled `Int` corpus, packaged as one value: a linearly ordered commutative ring
+witness. This structure is the ℤ rung's certificate in the zero-axiom number tower and the
+reuse target for later rungs (ℚ instantiates it on gcd-normal forms, where the setoid
+collapses to `Eq`).
 
-Nothing here is new mathematics: every field is a shipped theorem, so the witness
-doubles as a completeness checklist for the corpus.  The one genuinely new fact is
-nontriviality (`0 ≠ 1`), a constructor-disagreement one-liner. -/
+Every field is a corpus theorem, so the witness doubles as a completeness checklist; the one
+new fact is nontriviality (`0 ≠ 1`), a constructor-disagreement one-liner. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-- **A linearly ordered commutative ring, as data**: carrier, operations, order,
-and every law as a proof field.  Stated over `Eq` — rungs whose sameness is a
-proper setoid (ℤ[1/β], ℝ) get separate congruence packages; this structure serves
-the rungs with canonical normal forms. -/
+/-- A linearly ordered commutative ring, as data: carrier, operations, order, and every law
+as a proof field. Stated over `Eq`; rungs whose sameness is a proper setoid (ℤ[1/β], ℝ) get
+separate congruence packages, so this structure serves the rungs with canonical normal
+forms. -/
 structure OrderedCommutativeRingWitness (carrier : Type) where
   zero : carrier
   one : carrier
@@ -78,9 +76,9 @@ structure OrderedCommutativeRingWitness (carrier : Type) where
 theorem intZeroIsDistinctFromOne : (0 : Int) ≠ 1 :=
   fun zeroEqualsOne => Nat.noConfusion (Int.ofNat.inj zeroEqualsOne)
 
-/-- **The ℤ certificate**: `Int` with its shipped hand-rolled corpus is a linearly
-ordered commutative ring.  Every field IS a corpus theorem (eta-wrapped where the
-theorem binds its subjects implicitly). -/
+/-- The ℤ certificate: `Int` with its hand-rolled corpus is a linearly ordered commutative
+ring. Every field is a corpus theorem (eta-wrapped where the theorem binds its subjects
+implicitly). -/
 def intOrderedCommutativeRingWitness : OrderedCommutativeRingWitness Int where
   zero := 0
   one := 1

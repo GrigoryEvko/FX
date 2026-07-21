@@ -1,47 +1,18 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.FourierMotzkinExtension
 
-/-! # FX1PolyAudit/ComputerAlgebra/Decision/FourierMotzkinExtension — zero-axiom gate
-    (DISSAT-ARITH round-extension push: wall refuted as stated, corrected form
-    proven, Farkas completeness inhabited)
+/-! # Zero-axiom gate — Fourier-Motzkin round extension and Farkas completeness
 
-Per-declaration zero-axiom gate for the round-extension brick: the Nat kit
-additions (hand-rolled `le`-add embeddings, positive-multiplier cancellation
-for `le` and `Eq`, product positivity, the succ-shape existential, the
-`cond`-of-Option none split), the `LfkInt` transport kit (cross-sum equality
-symmetry/transitivity, the `<=`/`<` congruence transports, the one-shift
-strictness bridges, the movers `lreIntLeMoveNegAcross` /
-`lreIntLeSplitAcross` / `lreIntLeSwapSides` with strict forms, scale
-monotonicity/cancellation, the padding strict-slack lemmas, the
-positive/negative pivot-entry cross-equalities), the environment-update /
-dot-product decomposition kit (`lreZeroCoefficientAt`, `lreUpdateEnvAt`, THE
-SPLIT LEMMA `lreDotProductSplitAt`, THE MASTER DECOMPOSITION
-`lreDotProductUpdateAt`, the scaled-environment dot `lreDotProductScaledEnv`),
-the bespoke membership kit (`lreRowIsAmong`/`lreAllRowsAmong` with
-filter/join/cross-combination propagation and scaled-satisfaction
-extraction), the row endpoint data (rest dots, lower/upper numerators), THE
-COMBO UNFOLD (`lreComboUnfoldForms` and the weak/strict endpoint bounds), the
-endpoint arithmetic cores (generic dominance transitivity with middle-
-magnitude cancellation, the midpoint lower/upper weak+strict cores, the
-lone-bucket whole-unit-pad cores), the dominating-row selection fold with its
-membership+dominance invariant, the per-row verification steps
-(zero/positive/negative) at the constructed witness, THE CORRECTED
-ROUND-EXTENSION THEOREM (`lreRoundExtensionForInequalityRows`, statement
-`lreRoundExtensionInequalityStatement`, inhabitant `lreRoundExtensionHolds`),
-THE REFUTATION of the sibling wall Prop as stated
-(`lreRoundExtensionStatementRefuted` on the `[x = 0, x >= 1]` fixture whose
-round output is empty), the cascade (round/driver inequality preservation,
-backward driver induction, the scan-clean ground base, unit-provenance seed
-extraction with zero-weight peel and head extract, expansion re-assembly),
-THE COMPLETENESS INHABITANT `lreFarkasCompletenessHolds :
-lfkFarkasCompletenessStatement` (the LinearFarkasCertificate wall Prop,
-verbatim), the scaled-checker kit (accepted certificates refute the rational
-relaxation), the supersession markers, and the kernel-checked smoke pins
-(the concrete two-round backward extension witnesses, the refutation pins,
-the completeness fires on the sibling fixtures, the satisfiable controls).
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
-`sorry`, `native_decide`, `omega`. -/
+Per-declaration axiom gate for
+`FX1Poly.ComputerAlgebra.Decision.FourierMotzkinExtension`.  Each
+`#assert_no_axioms` below confirms that the named declaration — the Nat and
+`LfkInt` transport kits, the environment-update and dot-product decomposition
+kit, the bespoke membership predicate, the combo-unfold and endpoint-arithmetic
+cores, the dominating-row selection fold, the per-row verification steps, the
+corrected round-extension theorem, the refutation of the naive statement, the
+completeness cascade and its Farkas inhabitant, the scaled-checker kit, the
+markers, and the smoke pins — is built without `propext`, `Quot.sound`,
+`Classical.choice`, `sorry`, `native_decide`, or `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -177,7 +148,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.lreGroundContradictionScaledBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.lreCheckerAcceptsScaledBounds
 #assert_no_axioms FX1Poly.ComputerAlgebra.lreScaledInfeasibilityOfAcceptedCertificate
-#assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatArith_hasRoundExtension
 #assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatArith_roundExtensionAsStatedRefuted
 #assert_no_axioms FX1Poly.ComputerAlgebra.fxDissatArith_hasFourierMotzkinCompletenessProven
 #assert_no_axioms FX1Poly.ComputerAlgebra.lreSmokeLowerRow

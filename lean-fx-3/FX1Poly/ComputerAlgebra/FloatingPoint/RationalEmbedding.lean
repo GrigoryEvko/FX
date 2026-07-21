@@ -2,17 +2,16 @@ import FX1Poly.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 import FX1Poly.ComputerAlgebra.Number.RationalPair
 
 /-! # FX1Poly/ComputerAlgebra/FloatingPoint/RationalEmbedding — ℤ[1/β] ↪ ℚ
-    (NUM-Q-5)
 
-Every radix-scaled integer IS a rational: `mantissa * radix ^ exponent` reads as
+Every radix-scaled integer is a rational: `mantissa * radix ^ exponent` reads as
 the pair `(mantissa * radix ^ exponent.toNat) / radix ^ (-exponent).toNat` — the
-SAME min-free clamping that powers cross-alignment splits the exponent's sign
+same min-free clamping that powers cross-alignment splits the exponent's sign
 into numerator pumping versus denominator pumping, with no case split.  The
-theorem is that this reading is a SETOID EMBEDDING: two radix-scaled integers
+theorem is that this reading is a setoid embedding: two radix-scaled integers
 denote the same value exactly when their rational readings do.  Every float
-rounding-error certificate therefore re-reads EXACTLY in ℚ — where Flocq
-evaluates float semantics into classical ℝ, the zero-axiom tower never leaves
-exact arithmetic.
+rounding-error certificate therefore re-reads exactly in ℚ: unlike Flocq, which
+evaluates float semantics into classical ℝ, this development never leaves exact
+arithmetic.
 
 Both directions are one scale-and-cancel: pump the hypothesis by the clamps it
 is missing, land both sides on one total exponent via `intSplitClampsBalance`,
@@ -20,8 +19,8 @@ and cancel the shared power at the positive radix.
 
 ## Zero-axiom
 
-Structure projections + `congrArg`/`Eq.trans` chains over the shipped power and
-clamp kits.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+Structure projections + `congrArg`/`Eq.trans` chains over the power and clamp
+kits.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`.  Per-declaration gated in
 `FX1PolyAudit/ComputerAlgebra/FloatingPoint/RationalEmbedding.lean`. -/
 
@@ -51,7 +50,7 @@ theorem rationalOfRadixScaledDenominatorInt {radix : Int}
       (intLessEqualOfLessThan
         (intPowerPos isRadixPositive (-value.exponent).toNat)))
 
-/-- **Setoid preservation, forward**: cross-aligned agreement transfers to the
+/-- Setoid preservation, forward: cross-aligned agreement transfers to the
 rational cross-multiplication.  Scale the hypothesis by the right value's split
 clamps, land both totals on the balanced exponent via `intSplitClampsBalance`,
 cancel the shared gap clamp, and fold onto the embedded components. -/
@@ -137,7 +136,7 @@ theorem rationalOfRadixScaledRespectsDenotesSame {radix : Int}
             (rationalOfRadixScaledDenominatorInt isRadixPositive
               leftValue)).symm)))
 
-/-- **Setoid reflection, backward**: rational cross-multiplication agreement
+/-- Setoid reflection, backward: rational cross-multiplication agreement
 reflects to cross-alignment.  Unfold onto the split clamps, scale by the gap
 clamp, land on the same balanced total, and cancel the split clamps. -/
 theorem denotesSameOfRationalOfRadixScaled {radix : Int}
@@ -213,9 +212,9 @@ theorem denotesSameOfRationalOfRadixScaled {radix : Int}
           (rightValue.exponent - leftValue.exponent).toNat
           (rightValue.exponent.toNat + (-leftValue.exponent).toNat)).symm))
 
-/-- **ℤ[1/β] ↪ ℚ is a setoid embedding** — radix-scaled integers denote the
-same value exactly when their rational readings do; float rounding-error
-certificates re-read EXACTLY in ℚ. -/
+/-- ℤ[1/β] ↪ ℚ is a setoid embedding: radix-scaled integers denote the same
+value exactly when their rational readings do, so float rounding-error
+certificates re-read exactly in ℚ. -/
 theorem rationalOfRadixScaledDenotesSameAsIff {radix : Int}
     (isRadixPositive : (0 : Int) < radix)
     (leftValue rightValue : RadixScaledInteger) :
@@ -225,16 +224,16 @@ theorem rationalOfRadixScaledDenotesSameAsIff {radix : Int}
   ⟨rationalOfRadixScaledRespectsDenotesSame isRadixPositive,
     denotesSameOfRationalOfRadixScaled isRadixPositive⟩
 
-/-! ## Order preservation — the FLOAT-3 error bounds transfer
+/-! ## Order preservation
 
 The order iff is the `≤`-mirror of the setoid iff: every `congrArg` rewrite
 becomes an endpoint transport (`intLessEqualOfEqLeft`/`Right`), scaling by the
 missing clamps becomes `intMulLeMulRightOfNonNeg`, and cancelling the shared
-power becomes `intLeOfMulLeMulRightOfPos`.  With both iffs, every shipped
-rounding certificate — brackets, Galois adjunctions, monotonicity — re-reads
-verbatim as a ℚ statement about the embedded values. -/
+power becomes `intLeOfMulLeMulRightOfPos`.  With both iffs, a rounding-error
+bound on the embedded values reads as a ℚ statement about their rational
+readings. -/
 
-/-- **Order preservation, forward**: the cross-aligned bound transfers to the
+/-- Order preservation, forward: the cross-aligned bound transfers to the
 rational cross-multiplication bound. -/
 theorem rationalOfRadixScaledRespectsLessEqual {radix : Int}
     (isRadixPositive : (0 : Int) < radix)
@@ -312,7 +311,7 @@ theorem rationalOfRadixScaledRespectsLessEqual {radix : Int}
           (rationalOfRadixScaledDenominatorInt isRadixPositive
             leftValue)).symm))
 
-/-- **Order reflection, backward**: the rational cross-multiplication bound
+/-- Order reflection, backward: the rational cross-multiplication bound
 reflects to the cross-aligned bound. -/
 theorem lessEqualOfRationalOfRadixScaled {radix : Int}
     (isRadixPositive : (0 : Int) < radix)
@@ -391,10 +390,9 @@ theorem lessEqualOfRationalOfRadixScaled {radix : Int}
           (rightValue.exponent - leftValue.exponent).toNat
           (rightValue.exponent.toNat + (-leftValue.exponent).toNat)).symm))
 
-/-- **ℤ[1/β] ↪ ℚ is an order embedding** — the cross-aligned order and the
-rational cross-multiplication order agree through the embedding; every
-FLOAT-3 bracket, Galois-adjunction, and monotonicity certificate re-reads
-verbatim as a ℚ bound. -/
+/-- ℤ[1/β] ↪ ℚ is an order embedding: the cross-aligned order and the rational
+cross-multiplication order agree through the embedding, so a rounding-error
+bound reads as a ℚ bound. -/
 theorem rationalOfRadixScaledLessEqualAsIff {radix : Int}
     (isRadixPositive : (0 : Int) < radix)
     (leftValue rightValue : RadixScaledInteger) :

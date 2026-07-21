@@ -7,7 +7,7 @@ Per-declaration zero-axiom gate for the golden-reference ISA (fx_design.md §18.
 the concrete state alias (`IsaState`), the `Instruction` set, the field layout
 constants, the total `decode` (opcode `if`-chain over `Nat.decEq`, no match-compiler
 propext), the exhaustive total `execute`, the composed `step`, the execute-level
-correctness corollaries, and the tie-in to the refinement scaffold
+correctness corollaries, and the tie-in to the refinement carrier
 (`isaSelfRefinement`, `isaSelfRefinement_onAllRuns`).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,

@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.RigTypeIsomorphism
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/RigTypeIsomorphism — zero-axiom gate
-    (WP-TYPEISO: the free-rig type-isomorphism word problem)
 
 Per-declaration zero-axiom gate for the rig type-isomorphism decision: the clean
 Nat scalar kit (`natAddMulClean`/`natAddSwapLeft`/`natAddPosLeftIsNonzero`/

@@ -4,39 +4,41 @@ import FX1Poly.ComputerAlgebra.Analysis.RealDerivative
 import FX1Poly.ComputerAlgebra.Number.RealOrderMonotoneMultiply
 
 /-! # The constructive integral — Riemann sums of a uniformly continuous map
-    (ANALYSIS-INTEGRAL-1)
 
-The calculus rung above the finite sum.  For a rational interval
+The constructive integral over the finite sum.  For a rational interval
 `[lowerBound, upperBound]` cut into `cellCountPredecessor + 1` equal cells, the
-LEFT-endpoint Riemann sum of a function `RegularReal -> RegularReal` is
+left-endpoint Riemann sum of a function `RegularReal -> RegularReal` is
 
     meshWidth * Sigma_{cell} function (sample cell)
 
-with `meshWidth = (upperBound - lowerBound) / cellCount` a RATIONAL scale (all
+with `meshWidth = (upperBound - lowerBound) / cellCount` a rational scale (all
 division symbolic in the `RationalPair` denominator, never evaluated) and the
 sample points rational, embedded through `constantReal`.
 
-This file lands the Riemann-sum FUNCTIONAL and its exact algebraic laws — the
-half of the integral that is pure ring reshaping over the shipped finite-sum
-corpus, no analysis:
+The Riemann-sum functional and its exact algebraic laws are pure ring reshaping
+over the finite-sum corpus, no analysis:
 
   * the constant-real homomorphisms `constantReal (p + q) ~ constantReal p +
     constantReal q` and `constantReal (p * q) ~ constantReal p * constantReal q`
-    (both hold by DEFINITIONAL reduction of the constant approximations —
+    (both hold by definitional reduction of the constant approximations —
     self-distance closes them), and the natural-scaling law
     `Sigma_{k} X ~ (natRational k) * X`;
-  * **linearity of the Riemann sum** in the integrand
-    `R(f + g) = R f + R g` and `R(c * f) = c * R f` — left-distribution and
-    associativity/commutativity over the sampled finite sum;
-  * **the exact constant Riemann sum** `R (fun _ => c) ~ (upperBound -
-    lowerBound) * c` — the mesh times the cell count telescopes to the interval
-    width EXACTLY, independent of the partition, so the constant integrand's
-    Riemann sequence is setoid-constant.
+  * linearity of the Riemann sum in the integrand `R(f + g) = R f + R g` and
+    `R(c * f) = c * R f` — left-distribution and associativity/commutativity
+    over the sampled finite sum;
+  * the exact constant Riemann sum `R (fun _ => c) ~ (upperBound - lowerBound)
+    * c` — the mesh times the cell count telescopes to the interval width
+    exactly, independent of the partition, so the constant integrand's Riemann
+    sequence is setoid-constant.
 
 The analytic half — the uniform-continuity Cauchy estimate that turns the
 Riemann sequence into a `RegularRealSequence` and feeds `limitReal` to build
-`integralOfUC` — is the genuine common-refinement content and is NOT in this
-file (see the module note at the end).  Zero axioms throughout. -/
+`integralOfUC` — is the common-refinement content: a coarse Riemann sum and its
+block refinement sit within `(upperBound - lowerBound)/(k+1)`, the Archimedean
+cell-count schedule drives that bound to zero, and the diagonal limit is the
+integral.  The elementary integral laws (constant, additivity, homogeneity,
+monotonicity, negation, subtraction, degeneracy, sign, triangle) follow.  Zero
+axioms throughout. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -44,16 +46,16 @@ open RationalPair
 
 /-! ## Constant-real homomorphisms -/
 
-/-- **The constant embedding carries addition** — both approximations reduce
-DEFINITIONALLY to `addExact p q`, so the setoid bound is self-distance. -/
+/-- The constant embedding carries addition: both approximations reduce
+definitionally to `addExact p q`, so the setoid bound is self-distance. -/
 theorem constantRealAddExact (leftValue rightValue : RationalPair) :
     DenotesSameReal (constantReal (addExact leftValue rightValue))
       (addReal (constantReal leftValue) (constantReal rightValue)) :=
   fun index =>
     isWithinBoundSelfOfNonNegative (ratioOfNatSuccIsNonNegative 2 index)
 
-/-- **The constant embedding carries multiplication** — both approximations
-reduce DEFINITIONALLY to `mulExact p q`, so the setoid bound is self-distance. -/
+/-- The constant embedding carries multiplication: both approximations reduce
+definitionally to `mulExact p q`, so the setoid bound is self-distance. -/
 theorem constantRealMulExact (leftValue rightValue : RationalPair) :
     DenotesSameReal (constantReal (mulExact leftValue rightValue))
       (mulReal (constantReal leftValue) (constantReal rightValue)) :=
@@ -75,7 +77,7 @@ theorem natRationalSuccDenotesSame (count : Nat) :
             (intMulOne (Int.ofNat count))).trans
           (congrArg (Int.ofNat count + ·) (intMulOne (1 : Int))))).symm)
 
-/-- **The natural scaling law**: summing `count` copies of a real denotes that
+/-- The natural scaling law: summing `count` copies of a real denotes that
 real times the natural `count`.  Induction on `count`, closing the step by
 right-distribution and the one-identity. -/
 theorem replicateRealEqScale (value : RegularReal) (count : Nat) :
@@ -106,14 +108,14 @@ theorem replicateRealEqScale (value : RegularReal) (count : Nat) :
 
 /-! ## The rational mesh and sample points -/
 
-/-- **The mesh width** — the interval width scaled by `1 / cellCount`, a purely
+/-- The mesh width: the interval width scaled by `1 / cellCount`, a purely
 symbolic rational (the denominator carries the division, never evaluated). -/
 def meshWidth (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat) :
     RationalPair :=
   mulExact (subExact upperBound lowerBound)
     (reciprocalOfSucc cellCountPredecessor)
 
-/-- **The left endpoint of cell `cellIndex`** — `lowerBound + cellIndex *
+/-- The left endpoint of cell `cellIndex`: `lowerBound + cellIndex *
 meshWidth`. -/
 def samplePoint (lowerBound upperBound : RationalPair)
     (cellCountPredecessor cellIndex : Nat) : RationalPair :=
@@ -121,7 +123,7 @@ def samplePoint (lowerBound upperBound : RationalPair)
     (mulExact (natRational cellIndex)
       (meshWidth lowerBound upperBound cellCountPredecessor))
 
-/-- **The cell count times the mesh width telescopes to the interval width** —
+/-- The cell count times the mesh width telescopes to the interval width:
 `(cellCount) * (upperBound - lowerBound)/cellCount ~ upperBound - lowerBound`. -/
 theorem cellCountMeshWidthDenotesSame (lowerBound upperBound : RationalPair)
     (cellCountPredecessor : Nat) :
@@ -169,16 +171,16 @@ theorem cellCountMeshWidthDenotesSame (lowerBound upperBound : RationalPair)
 /-! ## Exact nonnegative-constant scaling (the refinement estimate's ℚ core)
 
 The refinement estimate multiplies a per-term oscillation bound by the mesh
-width — a NONNEGATIVE rational constant.  The shipped product-difference law
-`mulExactRespectsIsWithinBoundLeft` scales a distance by a MAGNITUDE bound on
-the multiplier; feeding it the constant AS ITS OWN magnitude bound
-(`IsMagnitudeWithin c c`, which holds exactly when `c ≥ 0`) yields the EXACT
-scaled bound `c · q` with no integer-ceiling blow-up.  This is the load-bearing
-ℚ-level piece the mesh/count cancellation needs. -/
+width — a nonnegative rational constant.  The product-difference law
+`mulExactRespectsIsWithinBoundLeft` scales a distance by a magnitude bound on
+the multiplier; feeding it the constant as its own magnitude bound
+(`IsMagnitudeWithin c c`, which holds exactly when `c ≥ 0`) yields the exact
+scaled bound `c · q` with no integer-ceiling blow-up.  This is the ℚ-level piece
+the mesh/count cancellation needs. -/
 
-/-- **A nonnegative rational bounds its own magnitude** — `|c| ≤ c` when
-`0 ≤ c`, since `-c ≤ 0 ≤ c`.  This turns the shipped product-difference law
-into an EXACT constant scaling. -/
+/-- A nonnegative rational bounds its own magnitude: `|c| ≤ c` when `0 ≤ c`,
+since `-c ≤ 0 ≤ c`.  This turns the product-difference law into an exact
+constant scaling. -/
 theorem isMagnitudeWithinSelfOfNonNegative {value : RationalPair}
     (isNonNegative : IsNonNegative value) : IsMagnitudeWithin value value :=
   have negativeNumeratorBelowZero : -value.numerator ≤ (0 : Int) :=
@@ -193,8 +195,8 @@ theorem isMagnitudeWithinSelfOfNonNegative {value : RationalPair}
         (intZeroMul (denominatorInt (negExact value))).symm)
   ⟨lessEqualAsRefl value, lessEqualAsTrans negValueBelowZero isNonNegative⟩
 
-/-- **The exact nonnegative-constant distance scaling**, at ℚ — a within-bound
-pair scaled by a nonnegative constant lands within the EXACTLY scaled bound. -/
+/-- The exact nonnegative-constant distance scaling, at ℚ — a within-bound
+pair scaled by a nonnegative constant lands within the exactly scaled bound. -/
 theorem mulExactRespectsIsWithinBoundConstantLeft {constant leftValue rightValue
     diffBound : RationalPair} (isConstantNonNegative : IsNonNegative constant)
     (isWithin : IsWithinBound leftValue rightValue diffBound)
@@ -211,10 +213,10 @@ theorem mulExactRespectsIsWithinBoundConstantLeft {constant leftValue rightValue
 theorem natRationalZeroDenotesZero :
     DenotesSameAs (natRational 0) zeroRational := rfl
 
-/-- **The count-scale IS the scalar product** — `count` copies of `bound` added
+/-- The count-scale is the scalar product: `count` copies of `bound` added
 denote `natRational count · bound`.  Induction on `count`: the base collapses
 `0 · bound`, the step adds one `bound` by right-distribution and the one-identity
-(the ℚ sibling of the shipped real-level `replicateRealEqScale`). -/
+(the ℚ sibling of the real-level `replicateRealEqScale`). -/
 theorem natScaleRationalDenotesScale (count : Nat) (bound : RationalPair) :
     DenotesSameAs (natScaleRational count bound)
       (mulExact (natRational count) bound) :=
@@ -235,26 +237,26 @@ theorem natScaleRationalDenotesScale (count : Nat) (bound : RationalPair) :
               (addExactCongrRight (mulExact (natRational count) bound)
                 (mulExactOneLeft bound)))))
 
-/-! ## The exact nonnegative-constant real-scale bridge (B1)
+/-! ## The exact nonnegative-constant real-scale bridge
 
-Multiplying a real-level distance by a NONNEGATIVE rational constant scales the
-bound EXACTLY — `IsWithinRealBound x y q` lifts to `IsWithinRealBound (c·x)(c·y)
-(c·q)`.  The shipped `mulRealRespectsIsWithinRealBound` scales by an INTEGER
+Multiplying a real-level distance by a nonnegative rational constant scales the
+bound exactly — `IsWithinRealBound x y q` lifts to `IsWithinRealBound (c·x)(c·y)
+(c·q)`.  The law `mulRealRespectsIsWithinRealBound` scales by an integer
 magnitude ceiling, which blows up the mesh/count cancellation; this bridge keeps
 the exact `c·q` by feeding the ℚ product-difference law the constant as its own
 magnitude (§`mulExactRespectsIsWithinBoundConstantLeft`).
 
-Both products share the SAME left factor `constantReal c` but sample the right
+Both products share the same left factor `constantReal c` but sample the right
 factor at factor-dependent scaled indices, so the proof is one slack closure:
 per shared index, chain both products to the deep slack index by their own
 regularity; there the right factors bridge their sampling mismatch by regularity
 onto the fixed `bound` plus a vanishing `4/(slack+1)`; the exact ℚ scaling lands
 `c·(bound + 4/slack)`; the constant slack piece `c·4/slack` relaxes to the
-integer-ceiling `(M·4)/slack` (harmless — it VANISHES), and the chain reshapes
+integer-ceiling `(M·4)/slack` (harmless — it vanishes), and the chain reshapes
 onto `c·bound + 2/(shared+1)` plus that vanishing slack. -/
 
-/-- **Exact nonnegative-constant real-scale** — a real-level within-bound pair,
-scaled by a nonnegative rational constant, lands within the EXACTLY scaled
+/-- Exact nonnegative-constant real-scale — a real-level within-bound pair,
+scaled by a nonnegative rational constant, lands within the exactly scaled
 bound `c · bound`. -/
 theorem scalarMulRealExactBoundOfNonNegative {constant : RationalPair}
     (isConstantNonNegative : IsNonNegative constant)
@@ -398,10 +400,10 @@ theorem scalarMulRealExactBoundOfNonNegative {constant : RationalPair}
 
 /-! ## Bounded-range sum bound -/
 
-/-- **The sum respects a per-term bound that holds only on the summed range** —
-the range-restricted sibling of `sumRealRespectsIsWithinRealBound`.  Needed
-because the refinement's per-subcell oscillation bound holds only for inner
-indices BELOW the block size. -/
+/-- The sum respects a per-term bound that holds only on the summed range —
+the range-restricted sibling of `sumRealRespectsIsWithinRealBound`.  The
+refinement's per-subcell oscillation bound holds only for inner indices below
+the block size. -/
 theorem sumRealRespectsIsWithinRealBoundOnRange {leftTerm rightTerm : Nat → RegularReal}
     {bound : RationalPair} (count : Nat)
     (termsWithin : ∀ position, position < count →
@@ -420,22 +422,22 @@ theorem sumRealRespectsIsWithinRealBoundOnRange {leftTerm rightTerm : Nat → Re
             termsWithin position (Nat.lt_succ_of_lt isBelow)))
         (termsWithin count (Nat.lt_succ_self count))
 
-/-! ## The block-refinement mesh and sample identities (R1, R2, R3) -/
+/-! ## The block-refinement mesh and sample identities -/
 
 /-- The refined cell-count predecessor — `(blockSizePred+1)·cellCountPredecessor
 + blockSizePred`, spelled so `refinedCellCountPredecessor + 1` reduces
-DEFINITIONALLY to `(blockSizePred+1)·(cellCountPredecessor+1)`. -/
+definitionally to `(blockSizePred+1)·(cellCountPredecessor+1)`. -/
 def refinedCellCountPredecessor (blockSizePredecessor cellCountPredecessor : Nat) :
     Nat :=
   (blockSizePredecessor + 1) * cellCountPredecessor + blockSizePredecessor
 
-/-- **The natural rationals are multiplicative** — `a/1 · b/1 ~ (a·b)/1`. -/
+/-- The natural rationals are multiplicative: `a/1 · b/1 ~ (a·b)/1`. -/
 theorem natRationalMul (leftCount rightCount : Nat) :
     DenotesSameAs (mulExact (natRational leftCount) (natRational rightCount))
       (natRational (leftCount * rightCount)) :=
   mulExactRatioRatioDenotesSame leftCount rightCount 0
 
-/-- **The block reciprocal cancels** — `(blockSize)/1 · 1/(refined+1) ~ 1/(coarse
+/-- The block reciprocal cancels: `(blockSize)/1 · 1/(refined+1) ~ 1/(coarse
 +1)`, since `refined+1` is definitionally `blockSize·(coarse+1)`. -/
 theorem reciprocalBlockCancels (blockSizePredecessor cellCountPredecessor : Nat) :
     DenotesSameAs
@@ -453,8 +455,8 @@ theorem reciprocalBlockCancels (blockSizePredecessor cellCountPredecessor : Nat)
           (refinedCellCountPredecessor blockSizePredecessor cellCountPredecessor
             + 1)).symm))
 
-/-- **The coarse mesh is the block-scaled fine mesh** (R1) — refining each cell
-into `blockSize` subcells scales the mesh down by `blockSize`. -/
+/-- The coarse mesh is the block-scaled fine mesh — refining each cell into
+`blockSize` subcells scales the mesh down by `blockSize`. -/
 theorem meshWidthRefinesByBlock (lowerBound upperBound : RationalPair)
     (blockSizePredecessor cellCountPredecessor : Nat) :
     DenotesSameAs (meshWidth lowerBound upperBound cellCountPredecessor)
@@ -478,7 +480,7 @@ theorem meshWidthRefinesByBlock (lowerBound upperBound : RationalPair)
           (mulExactCongrRight intervalWidth
             (reciprocalBlockCancels blockSizePredecessor cellCountPredecessor)))))
 
-/-- **The coarse left endpoint IS the refined block-base endpoint** (R2) — the
+/-- The coarse left endpoint is the refined block-base endpoint — the
 `blockIndex`-th coarse sample equals the `(blockSize·blockIndex)`-th fine sample. -/
 theorem samplePointBaseRefines (lowerBound upperBound : RationalPair)
     (blockSizePredecessor cellCountPredecessor blockIndex : Nat) :
@@ -505,13 +507,13 @@ theorem samplePointBaseRefines (lowerBound upperBound : RationalPair)
           (mulExactCongrLeft refinedMesh
             (natRationalMul (blockSizePredecessor + 1) blockIndex)))))
 
-/-- **The natural rationals are additive** — `(a+b)/1 ~ a/1 + b/1`. -/
+/-- The natural rationals are additive: `(a+b)/1 ~ a/1 + b/1`. -/
 theorem natRationalAddDenotesSame (leftCount rightCount : Nat) :
     DenotesSameAs (natRational (leftCount + rightCount))
       (addExact (natRational leftCount) (natRational rightCount)) :=
   denotesSameAsSymm (ratioOfNatSuccSumDenotesSame leftCount rightCount 0)
 
-/-- `base + (value − base)` on the RIGHT collapses — `base − (base+value)`
+/-- `base + (value − base)` on the right collapses — `base − (base+value)`
 denotes `−value`. -/
 theorem subExactSelfAddRightDenotesSame (base value : RationalPair) :
     DenotesSameAs (subExact base (addExact base value)) (negExact value) :=
@@ -523,7 +525,7 @@ theorem subExactSelfAddRightDenotesSame (base value : RationalPair) :
         (addExactCongrLeft (negExact value) (addExactNegRight base))
         (addExactZeroLeft (negExact value))))
 
-/-- **The fine offset sample shifts the block base by `inner · fineMesh`** — the
+/-- The fine offset sample shifts the block base by `inner · fineMesh` — the
 `(blockSize·blockIndex + innerIndex)`-th fine sample is the block-base sample
 plus `innerIndex` fine mesh steps. -/
 theorem samplePointOffsetShift (lowerBound upperBound : RationalPair)
@@ -555,11 +557,11 @@ theorem samplePointOffsetShift (lowerBound upperBound : RationalPair)
       (addExactAssoc lowerBound (mulExact (natRational blockBase) refinedMesh)
         (mulExact (natRational innerIndex) refinedMesh)))
 
-/-- **The per-subcell sample gap is within the coarse mesh** (R3) — inside one
-coarse cell, the fine sample `blockSize·blockIndex + innerIndex` sits within one
-coarse mesh width of the block base, provided `innerIndex ≤ blockSize` and the
-interval is nondegenerate.  This is the input hypothesis the uniform-continuity
-modulus consumes. -/
+/-- The per-subcell sample gap is within the coarse mesh — inside one coarse
+cell, the fine sample `blockSize·blockIndex + innerIndex` sits within one coarse
+mesh width of the block base, provided `innerIndex ≤ blockSize` and the interval
+is nondegenerate.  This is the input hypothesis the uniform-continuity modulus
+consumes. -/
 theorem samplePointGapWithinMesh (lowerBound upperBound : RationalPair)
     (blockSizePredecessor cellCountPredecessor blockIndex innerIndex : Nat)
     (isInnerWithinBlock : innerIndex ≤ blockSizePredecessor + 1)
@@ -612,7 +614,7 @@ theorem samplePointGapWithinMesh (lowerBound upperBound : RationalPair)
             gap)))
       (isMagnitudeWithinNegExact gapMagnitude))
 
-/-- **The ℚ→ℝ constant re-read** — a ℚ-level distance between two rationals IS a
+/-- The ℚ→ℝ constant re-read — a ℚ-level distance between two rationals is a
 real-level distance between their constant embeddings (the constant approximants
 never move, so the setoid modulus is pure headroom). -/
 theorem constantRealIsWithinRealBoundOfIsWithinBound {leftValue rightValue bound :
@@ -626,8 +628,8 @@ theorem constantRealIsWithinRealBoundOfIsWithinBound {leftValue rightValue bound
 
 /-! ## The Riemann sum functional -/
 
-/-- **The left-endpoint Riemann sum** — `meshWidth` times the sum of the
-function at the `cellCount` left endpoints. -/
+/-- The left-endpoint Riemann sum — `meshWidth` times the sum of the function
+at the `cellCount` left endpoints. -/
 def riemannSum (function : RegularReal → RegularReal)
     (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat) :
     RegularReal :=
@@ -638,7 +640,7 @@ def riemannSum (function : RegularReal → RegularReal)
           (constantReal
             (samplePoint lowerBound upperBound cellCountPredecessor cellIndex))))
 
-/-- **Linearity — additivity**: the Riemann sum of a pointwise sum is the sum of
+/-- Linearity — additivity: the Riemann sum of a pointwise sum is the sum of
 the Riemann sums.  The mesh distributes over the additive finite sum. -/
 theorem riemannSumAddReal (leftFunction rightFunction : RegularReal → RegularReal)
     (lowerBound upperBound : RationalPair) (cellCountPredecessor : Nat) :
@@ -674,7 +676,7 @@ theorem riemannSumAddReal (leftFunction rightFunction : RegularReal → RegularR
             (constantReal
               (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))))
 
-/-- **Linearity — homogeneity**: the Riemann sum of a scaled function is the
+/-- Linearity — homogeneity: the Riemann sum of a scaled function is the
 scaled Riemann sum.  The scalar pulls through the finite sum, then commutes past
 the mesh factor. -/
 theorem riemannSumScalarMulReal (factor : RegularReal)
@@ -708,7 +710,7 @@ theorem riemannSumScalarMulReal (factor : RegularReal)
           (denotesSameRealRefl sampledSum))
         (mulRealAssoc factor meshFactor sampledSum)))
 
-/-- **Monotonicity**: a pointwise `LessEqualReal` between two integrands lifts
+/-- Monotonicity: a pointwise `LessEqualReal` between two integrands lifts
 to their Riemann sums, provided the interval is nondegenerate (`upperBound -
 lowerBound ≥ 0`, making the mesh width a nonnegative scalar).  `sumRealMonotone`
 orders the sampled finite sums, and `realMulLeftMonotone` scales by the
@@ -731,7 +733,7 @@ theorem riemannSumMonotone {leftFunction rightFunction : RegularReal → Regular
           (constantReal
             (samplePoint lowerBound upperBound cellCountPredecessor position))))
 
-/-- **The exact constant Riemann sum** — the Riemann sum of a constant function
+/-- The exact constant Riemann sum — the Riemann sum of a constant function
 denotes `(upperBound - lowerBound) * constantValue`, independent of the
 partition.  The mesh times the cell count telescopes to the interval width. -/
 theorem riemannSumConstant (constantValue : RegularReal)
@@ -773,7 +775,7 @@ theorem riemannSumConstant (constantValue : RegularReal)
                   cellCountPredecessor)))))
         (denotesSameRealRefl constantValue)))
 
-/-- **Well-definedness of the Riemann sum** — a pointwise `DenotesSameReal`
+/-- Well-definedness of the Riemann sum — a pointwise `DenotesSameReal`
 between two integrands lifts to their Riemann sums at any partition.  The shared
 mesh factor is reflexive; the summed factor transports through
 `sumRealRespectsDenotesSame` on the per-cell witnesses.  This is the setoid
@@ -796,7 +798,7 @@ theorem riemannSumRespectsDenotesSame
             (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))
       (cellCountPredecessor + 1))
 
-/-- **Linearity — negation**: the Riemann sum of a negated integrand is the
+/-- Linearity — negation: the Riemann sum of a negated integrand is the
 negation of the Riemann sum.  `sumRealNegReal` pulls the negation out of the
 sampled sum, then `mulRealNegRightDenotesSame` pulls it past the mesh factor. -/
 theorem riemannSumNegReal (function : RegularReal → RegularReal)
@@ -823,7 +825,7 @@ theorem riemannSumNegReal (function : RegularReal → RegularReal)
             (constantReal
               (samplePoint lowerBound upperBound cellCountPredecessor cellIndex)))))
 
-/-- **The degenerate Riemann sum** — over a collapsed interval (`U - L ~ 0`) the
+/-- The degenerate Riemann sum — over a collapsed interval (`U - L ~ 0`) the
 Riemann sum denotes real zero at every partition.  The zero interval width makes
 the mesh factor denote zero, and a zero factor annihilates the sampled sum. -/
 theorem riemannSumDegenerate (function : RegularReal → RegularReal)
@@ -856,7 +858,7 @@ theorem riemannSumDegenerate (function : RegularReal → RegularReal)
 
 /-! ## The common-refinement Cauchy estimate -/
 
-/-- **The refinement estimate** — the analytic core.  For a uniformly continuous
+/-- The refinement estimate — the analytic core.  For a uniformly continuous
 integrand and a coarse partition whose mesh is finer than the UC tolerance
 `1/(modulus outputPrecision + 1)`, the coarse Riemann sum and its
 `blockSize`-refinement sit within `(upperBound - lowerBound)/(outputPrecision+1)`
@@ -865,12 +867,13 @@ in the real-level distance.
 Decomposition: the fine sum regroups into `cellCount` outer blocks of `blockSize`
 inner subcells (`sumRealRegroupProduct`), and the coarse sum re-expresses as the
 same double sum with the inner term held at the coarse left endpoint (each coarse
-term replicated `blockSize`-fold, mesh rescaled by R1).  Oscillation: per subcell
-the two sample points sit within the coarse mesh (R3), hence within the UC
-tolerance (mesh condition), so the integrand values sit within `1/(k+1)` (UC).
-Assembly: the per-subcell bounds sum to `(cellCount·blockSize)·(1/(k+1))`; scaling
-by the shared fine mesh (B1) and telescoping the cell count against the mesh
-(`cellCountMeshWidthDenotesSame`) collapses to the interval width over `k+1`. -/
+term replicated `blockSize`-fold, mesh rescaled by the mesh-refinement identity).
+Oscillation: per subcell the two sample points sit within the coarse mesh (the
+sample-gap bound), hence within the UC tolerance (mesh condition), so the
+integrand values sit within `1/(k+1)` (UC).  Assembly: the per-subcell bounds
+sum to `(cellCount·blockSize)·(1/(k+1))`; scaling by the shared fine mesh and
+telescoping the cell count against the mesh (`cellCountMeshWidthDenotesSame`)
+collapses to the interval width over `k+1`. -/
 theorem refinementEstimate {function : RegularReal → RegularReal}
     {modulus : Nat → Nat}
     (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
@@ -920,7 +923,7 @@ theorem refinementEstimate {function : RegularReal → RegularReal}
         (mulReal (constantReal refinedMesh) doubleFine) :=
     mulRealRespectsDenotesSame (denotesSameRealRefl (constantReal refinedMesh))
       (sumRealRegroupProduct blockSize blockCount fineTerm)
-  -- The coarse Riemann sum re-expresses over the SAME fine mesh and double sum.
+  -- The coarse Riemann sum re-expresses over the same fine mesh and double sum.
   have riemannCoarseRewrite :
       DenotesSameReal
         (riemannSum function lowerBound upperBound cellCountPredecessor)
@@ -997,7 +1000,7 @@ theorem refinementEstimate {function : RegularReal → RegularReal}
       (mulExactIsNonNegative (ratioOfNatSuccIsNonNegative blockCount 0)
         (mulExactIsNonNegative (ratioOfNatSuccIsNonNegative blockSize 0)
           (ratioOfNatSuccIsNonNegative 1 outputPrecision)))
-  -- Scale the double-sum bound by the shared fine mesh (B1).
+  -- Scale the double-sum bound by the shared fine mesh.
   have scaledBound :
       IsWithinRealBound (mulReal (constantReal refinedMesh) doubleCoarse)
         (mulReal (constantReal refinedMesh) doubleFine)
@@ -1044,7 +1047,7 @@ theorem refinementEstimate {function : RegularReal → RegularReal}
 
 /-! ## The Archimedean mesh bound (the ℚ core of the schedule)
 
-The mesh condition `refinementEstimate` consumes reduces to a single `Int`
+The mesh condition that `refinementEstimate` consumes reduces to a single `Int`
 inequality: for a nonnegative interval width `W`, the mesh
 `W · 1/(largeCount)` sits below `1/(smallCount)` as soon as the fine cell
 count dominates the Archimedean bound `N = |W.numerator| + 1` scaled by the
@@ -1052,7 +1055,7 @@ coarse count — `N · smallCount ≤ largeCount`.  The chain mirrors
 `lessThanArchimedeanBound`: `W.numerator ≤ N`, scale by the coarse count,
 push through the cell-count bound, and pad by the positive denominator. -/
 
-/-- **The Archimedean mesh bound** — with `intervalWidth` nonnegative, the mesh
+/-- The Archimedean mesh bound — with `intervalWidth` nonnegative, the mesh
 `intervalWidth · 1/(largePredecessor+1)` lands below `1/(smallPredecessor+1)`
 whenever the fine cell count dominates the Archimedean bound times the coarse
 count.  Pure `Int` monotonicity over the cross-multiplication order. -/
@@ -1098,9 +1101,9 @@ A modulus-driven running product.  Member `index` refines every earlier member
 large enough that the mesh at that member beats the uniform-continuity tolerance
 for output precision `N·(index+1)` — exactly what the leg estimate needs to drive
 the produced bound `(U-L)/(outputPrecision+1)` down to `1/(index+1)`.  The whole
-schedule is spelled predecessor-form over the shipped `refinedCellCountPredecessor`,
-whose `+1` reduces DEFINITIONALLY to the product, so the block/product identities
-are all `rfl`. -/
+schedule is spelled predecessor-form over `refinedCellCountPredecessor`, whose
+`+1` reduces definitionally to the product, so the block/product identities are
+all `rfl`. -/
 
 /-- Composition of refinements is a refinement — the block predecessors multiply,
 by the definitional `+1` product identity plus one clean `natMulAssoc`. -/
@@ -1152,7 +1155,7 @@ def integralOutputPrecisionPredecessor (lowerBound upperBound : RationalPair)
     (index : Nat) : Nat :=
   refinedCellCountPredecessor (subExact upperBound lowerBound).numerator.natAbs index
 
-/-- **The schedule cell count dominates its own block factor** — the running
+/-- The schedule cell count dominates its own block factor — the running
 product is at least its last factor, since the earlier product is positive. -/
 theorem scheduleCellCountSelfGeStepFactor (boundPredecessor : Nat)
     (modulus : Nat → Nat) (index : Nat) :
@@ -1166,9 +1169,9 @@ theorem scheduleCellCountSelfGeStepFactor (boundPredecessor : Nat)
         ((scheduleBlockPredecessor boundPredecessor modulus (predecessorIndex + 1) + 1) *
           scheduleCellCountPredecessor boundPredecessor modulus predecessorIndex)
 
-/-- **The mesh condition at each schedule member** — the schedule cell count is
+/-- The mesh condition at each schedule member — the schedule cell count is
 built to make the mesh beat the UC tolerance at output precision
-`integralOutputPrecisionPredecessor`.  Its cell-count bound IS
+`integralOutputPrecisionPredecessor`.  Its cell-count bound is
 `scheduleCellCountSelfGeStepFactor` up to the definitional block/product identity. -/
 theorem integralScheduleMeshCondition (lowerBound upperBound : RationalPair)
     (modulus : Nat → Nat) (index : Nat) :
@@ -1183,7 +1186,7 @@ theorem integralScheduleMeshCondition (lowerBound upperBound : RationalPair)
     (scheduleCellCountSelfGeStepFactor
       (subExact upperBound lowerBound).numerator.natAbs modulus index)
 
-/-- **The schedule refines by an integer block over a fixed gap** — member
+/-- The schedule refines by an integer block over a fixed gap — member
 `baseIndex + gap` is a `refinedCellCountPredecessor` of member `baseIndex`.
 Induction on the gap: the base is the trivial refinement, the step folds the new
 block factor and re-associates the composition (`refinedCellCountPredecessorAssoc`). -/
@@ -1217,7 +1220,7 @@ theorem scheduleRefinementFromGap (boundPredecessor : Nat) (modulus : Nat → Na
                 blockPredecessorInductive
                 (scheduleCellCountPredecessor boundPredecessor modulus baseIndex))⟩
 
-/-- **The schedule refines by an integer block between ordered members** — the
+/-- The schedule refines by an integer block between ordered members — the
 gap form re-expressed through `Nat.le.dest`. -/
 theorem scheduleRefinementBetween (boundPredecessor : Nat) (modulus : Nat → Nat)
     {firstIndex secondIndex : Nat} (isBelow : firstIndex ≤ secondIndex) :
@@ -1229,7 +1232,7 @@ theorem scheduleRefinementBetween (boundPredecessor : Nat) (modulus : Nat → Na
   | ⟨gap, gapEquation⟩ =>
       gapEquation ▸ scheduleRefinementFromGap boundPredecessor modulus firstIndex gap
 
-/-- **The forward schedule leg** — for `firstIndex ≤ secondIndex`, the coarser
+/-- The forward schedule leg — for `firstIndex ≤ secondIndex`, the coarser
 Riemann sum sits within `1/(firstIndex+1)` of the finer one.  The finer member is
 a block refinement of the coarser (transport), so `refinementEstimate` applies at
 output precision `integralOutputPrecisionPredecessor firstIndex`; its produced
@@ -1279,10 +1282,10 @@ theorem reciprocalLeAddReciprocalRight (leftIndex rightIndex : Nat) :
     (addExactMonotoneLeft (reciprocalOfSucc rightIndex)
       (ratioOfNatSuccIsNonNegative 1 leftIndex))
 
-/-- **The schedule Riemann sequence is Cauchy** — the load-bearing brick.  For any
-two members, the forward leg (ordered by `Nat.le_total`) gives a bound
-`1/(min+1)`, relaxed to the regular Cauchy shape `1/(i+1) + 1/(j+1)`; the reversed
-case rides `isWithinRealBoundSymm`. -/
+/-- The schedule Riemann sequence is Cauchy.  For any two members, the forward
+leg (ordered by `Nat.le_total`) gives a bound `1/(min+1)`, relaxed to the
+regular Cauchy shape `1/(i+1) + 1/(j+1)`; the reversed case rides
+`isWithinRealBoundSymm`. -/
 theorem scheduleRiemannSumIsCauchy
     {function : RegularReal → RegularReal} {modulus : Nat → Nat}
     (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
@@ -1308,7 +1311,7 @@ theorem scheduleRiemannSumIsCauchy
           (scheduleRiemannLegBelow isUniformlyContinuousFunction lowerBound upperBound
             isIntervalNonNegative isAbove))
 
-/-- **The schedule Riemann sequence** — the regular Cauchy sequence of Riemann
+/-- The schedule Riemann sequence — the regular Cauchy sequence of Riemann
 sums whose diagonal limit is the integral. -/
 def riemannSumScheduleSequence
     {function : RegularReal → RegularReal} {modulus : Nat → Nat}
@@ -1322,10 +1325,9 @@ def riemannSumScheduleSequence
     isCauchy := scheduleRiemannSumIsCauchy isUniformlyContinuousFunction
       lowerBound upperBound isIntervalNonNegative }
 
-/-- **The constructive integral of a uniformly continuous integrand** — the
-diagonal limit of the Archimedean-schedule Riemann sums.  This OPENS the integral
-layer: the analytic Cauchy witness is discharged, so the integral EXISTS as a
-`RegularReal`, zero axioms. -/
+/-- The constructive integral of a uniformly continuous integrand — the
+diagonal limit of the Archimedean-schedule Riemann sums.  The analytic Cauchy
+witness is discharged, so the integral exists as a `RegularReal`, zero axioms. -/
 def integralOfUC
     {function : RegularReal → RegularReal} {modulus : Nat → Nat}
     (isUniformlyContinuousFunction : IsUniformlyContinuous function modulus)
@@ -1345,7 +1347,7 @@ theorem isUniformlyContinuousConstantReal (value : RegularReal) :
     isWithinRealBoundOfDenotesSameReal (denotesSameRealRefl value)
       (ratioOfNatSuccIsNonNegative 1 outputPrecision)
 
-/-- **The exact constant integral** — `integralOfUC (fun _ => c) ~ (U-L)·c`.
+/-- The exact constant integral — `integralOfUC (fun _ => c) ~ (U-L)·c`.
 Independent of the partition: `riemannSumConstant` makes every schedule member
 setoid-equal to `(U-L)·c`, so the sequence converges to it, and the diagonal limit
 is unique. -/
@@ -1367,9 +1369,9 @@ theorem integralOfUCConstant (value : RegularReal)
       (convergesToConstant
         (mulReal (constantReal (subExact upperBound lowerBound)) value)))
 
-/-- **Integral additivity** — at a SHARED modulus, `integralOfUC (f + g) ~
-integralOfUC f + integralOfUC g`.  The shared modulus forces the SAME schedule for
-all three, so `riemannSumAddReal` aligns pointwise; the shipped sum-limit law sends
+/-- Integral additivity — at a shared modulus, `integralOfUC (f + g) ~
+integralOfUC f + integralOfUC g`.  The shared modulus forces the same schedule for
+all three, so `riemannSumAddReal` aligns pointwise; the sum-limit law sends
 the pointwise Riemann sums to the sum of limits, and diagonal-limit uniqueness
 closes it. -/
 theorem integralOfUCAddReal
@@ -1400,9 +1402,9 @@ theorem integralOfUCAddReal
           (riemannSumScheduleSequence isRightUC lowerBound upperBound
             isIntervalNonNegative))))
 
-/-- **Integral monotonicity** — at a SHARED modulus, a pointwise `LessEqualReal`
+/-- Integral monotonicity — at a shared modulus, a pointwise `LessEqualReal`
 between two integrands lifts to their integrals.  Both integrals are diagonal
-limits of the SAME Archimedean schedule of Riemann sums, `riemannSumMonotone`
+limits of the same Archimedean schedule of Riemann sums, `riemannSumMonotone`
 orders those sums member-by-member, and the limit-order law
 `lessEqualRealOfConvergesTo` carries the order to the limits. -/
 theorem integralOfUCMonotone
@@ -1425,14 +1427,14 @@ theorem integralOfUCMonotone
         isIntervalNonNegative))
     (fun _ => riemannSumMonotone pointwiseBelow isIntervalNonNegative)
 
-/-- **Integral homogeneity** — at a SHARED modulus, `integralOfUC (c * f) ~
-c * integralOfUC f`.  The shared modulus forces the SAME schedule for both, so
+/-- Integral homogeneity — at a shared modulus, `integralOfUC (c * f) ~
+c * integralOfUC f`.  The shared modulus forces the same schedule for both, so
 `riemannSumScalarMulReal` aligns the scaled Riemann sums pointwise with the scaled
-originals; the shipped scalar-limit law `convergesToScalarMulReal` sends the
-original Riemann sequence's limit to `c` times it, and diagonal-limit uniqueness
-closes it.  Like additivity, the scaled certificate `isScalarUC` is demanded at
-the shared modulus — `integralOfUC` has no schedule-independence lemma, so the
-honest Lipschitz modulus of `c * f` (which differs) cannot feed it directly. -/
+originals; the scalar-limit law `convergesToScalarMulReal` sends the original
+Riemann sequence's limit to `c` times it, and diagonal-limit uniqueness closes
+it.  The scaled certificate `isScalarUC` is demanded at the shared modulus:
+`integralOfUC` has no schedule-independence lemma, so the honest Lipschitz
+modulus of `c * f` (which differs) cannot feed it directly. -/
 theorem integralOfUCScalarMul
     {function : RegularReal → RegularReal} {modulus : Nat → Nat}
     (factor : RegularReal)
@@ -1458,13 +1460,13 @@ theorem integralOfUCScalarMul
           (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
             isIntervalNonNegative))))
 
-/-- **Well-definedness of the integral** — at a SHARED modulus, pointwise
+/-- Well-definedness of the integral — at a shared modulus, pointwise
 `DenotesSameReal` integrands have setoid-equal integrals.  The shared modulus
-forces the SAME Archimedean schedule for both, so `riemannSumRespectsDenotesSame`
+forces the same Archimedean schedule for both, so `riemannSumRespectsDenotesSame`
 aligns the two schedule sequences pointwise; the left sequence therefore
 converges to the right integral as well, and diagonal-limit uniqueness closes it.
 This is the setoid congruence that makes `integralOfUC` a well-defined operation
-on the real-function setoid — the last elementary integral law. -/
+on the real-function setoid. -/
 theorem integralOfUCRespectsDenotesSame
     {leftFunction rightFunction : RegularReal → RegularReal} {modulus : Nat → Nat}
     (isLeftUC : IsUniformlyContinuous leftFunction modulus)
@@ -1490,8 +1492,8 @@ theorem integralOfUCRespectsDenotesSame
         (riemannSumScheduleSequence isRightUC lowerBound upperBound
           isIntervalNonNegative)))
 
-/-- **Integral negation** — at a SHARED modulus, `integralOfUC (-f) ~
--integralOfUC f`.  The shared modulus forces the SAME schedule for both, so
+/-- Integral negation — at a shared modulus, `integralOfUC (-f) ~
+-integralOfUC f`.  The shared modulus forces the same schedule for both, so
 `riemannSumNegReal` aligns the negated Riemann sums pointwise with the negated
 originals; `convergesToNegReal` sends the original sequence's limit to its
 negation, and diagonal-limit uniqueness closes it. -/
@@ -1519,7 +1521,7 @@ theorem integralOfUCNegReal
           (riemannSumScheduleSequence isFunctionUC lowerBound upperBound
             isIntervalNonNegative))))
 
-/-- **Integral subtraction** — at a SHARED modulus, `integralOfUC (f - g) ~
+/-- Integral subtraction — at a shared modulus, `integralOfUC (f - g) ~
 integralOfUC f - integralOfUC g`.  Since `subReal a b` is `addReal a (negReal
 b)` definitionally, this is additivity applied to `f` and `-g`, with negation
 pulled through the second integral by `integralOfUCNegReal`.  The subtracted
@@ -1548,7 +1550,7 @@ theorem integralOfUCSubReal
       (integralOfUCNegReal isRightUC isNegRightUC lowerBound upperBound
         isIntervalNonNegative))
 
-/-- **The degenerate integral** — over a collapsed interval (`U - L ~ 0`) the
+/-- The degenerate integral — over a collapsed interval (`U - L ~ 0`) the
 integral denotes real zero.  `riemannSumDegenerate` makes every schedule member
 setoid-equal to zero, so the sequence converges to zero, and the diagonal limit
 is unique. -/
@@ -1588,7 +1590,7 @@ theorem riemannSumZeroFunction (lowerBound upperBound : RationalPair)
       cellCountPredecessor)
     (mulRealZeroRight (constantReal (subExact upperBound lowerBound)))
 
-/-- **The Riemann sum of a non-negative integrand is non-negative** —
+/-- The Riemann sum of a non-negative integrand is non-negative —
 `riemannSumMonotone` against the zero function, transported through
 `riemannSumZeroFunction`. -/
 theorem riemannSumNonNegative (function : RegularReal → RegularReal)
@@ -1605,10 +1607,9 @@ theorem riemannSumNonNegative (function : RegularReal → RegularReal)
     (riemannSumMonotone (leftFunction := fun _ => constantReal zeroRational)
       (rightFunction := function) pointwiseNonNegative isIntervalNonNegative)
 
-/-- **The integral of a non-negative integrand is non-negative** — every
-schedule member is non-negative by `riemannSumNonNegative`, so the limit is too
-by `lessEqualRealOfConvergesTo` against the constant-zero sequence.  The order
-half of the concentration-inequality substrate (MEAS). -/
+/-- The integral of a non-negative integrand is non-negative — every schedule
+member is non-negative by `riemannSumNonNegative`, so the limit is too by
+`lessEqualRealOfConvergesTo` against the constant-zero sequence. -/
 theorem integralOfUCNonNegative
     {function : RegularReal → RegularReal} {modulus : Nat → Nat}
     (isFunctionUC : IsUniformlyContinuous function modulus)
@@ -1628,7 +1629,7 @@ theorem integralOfUCNonNegative
         (integralSchedulePredecessor lowerBound upperBound modulus position)
         pointwiseNonNegative isIntervalNonNegative)
 
-/-- **The Riemann sum of a bounded integrand is bounded** — `riemannSumMonotone`
+/-- The Riemann sum of a bounded integrand is bounded — `riemannSumMonotone`
 against the constant bound, transported through `riemannSumConstant`. -/
 theorem riemannSumUpperBoundConstant (function : RegularReal → RegularReal)
     (boundValue : RegularReal)
@@ -1645,11 +1646,9 @@ theorem riemannSumUpperBoundConstant (function : RegularReal → RegularReal)
     (riemannSumMonotone (leftFunction := function)
       (rightFunction := fun _ => boundValue) pointwiseAbove isIntervalNonNegative)
 
-/-- **The integral of a bounded integrand is bounded by `(U-L)*c`** — every
-schedule member is bounded by `riemannSumUpperBoundConstant`, so the limit is too
-by `lessEqualRealOfConvergesTo` against the constant bound sequence.  With
-`integralOfUCNonNegative` this is the sandwich the concentration inequalities
-(MEAS) rest on. -/
+/-- The integral of a bounded integrand is bounded by `(U-L)*c` — every schedule
+member is bounded by `riemannSumUpperBoundConstant`, so the limit is too by
+`lessEqualRealOfConvergesTo` against the constant bound sequence. -/
 theorem integralOfUCUpperBound
     {function : RegularReal → RegularReal} {modulus : Nat → Nat}
     (isFunctionUC : IsUniformlyContinuous function modulus)
@@ -1673,7 +1672,7 @@ theorem integralOfUCUpperBound
 
 /-! ## The Riemann-sum triangle inequality -/
 
-/-- **The Riemann-sum triangle inequality** `|R f| ≤ R |f|` — the absolute value
+/-- The Riemann-sum triangle inequality `|R f| ≤ R |f|` — the absolute value
 of a Riemann sum is bounded by the Riemann sum of the absolute values, provided
 the interval is nondegenerate (so the mesh is a nonnegative scalar).  The
 nonnegative mesh pulls out of the absolute value (`absRealMulConstantNonNeg`),

@@ -1,14 +1,11 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntMulAssociativity — zero-axiom gate
-    (FLOAT-1 brick 5)
+/-! # Zero-axiom gate for `IntMulAssociativity`
 
-Per-declaration zero-axiom gate for the hand-rolled Nat/Int multiplication associativity
-and the four mixed-sign mul helpers.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for Nat/Int multiplication associativity and the four
+mixed-sign mul helpers. Every declaration must be free of `propext`, `Quot.sound`,
+`Classical.choice`, `sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

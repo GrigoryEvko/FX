@@ -1,6 +1,6 @@
 import FX1Poly.ComputerAlgebra.Number.RationalDistance
 
-/-! # RegularReal — Bishop regular sequences over ℚ (NUM-R-1)
+/-! # RegularReal — Bishop regular sequences over ℚ
 
 The ℝ carrier: a real is a sequence of rationals with the convergence modulus
 BAKED IN — `distance (x m) (x n) ≤ 1/(m+1) + 1/(n+1)`.  No choice principle is

@@ -6,20 +6,18 @@ import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntExactDivision
 import FX1Poly.ComputerAlgebra.Number.NatGreatestCommonDivisor
 
-/-! # RationalPair — the ℚ carrier (NUM-Q-1)
+/-! # RationalPair — the ℚ carrier
 
-The ℚ rung of the zero-axiom number tower: a rational is a pair
-`numerator / (denominatorPredecessor + 1)`.  The SUCCESSOR SHAPE makes denominator
-positivity STRUCTURAL — no subtype, no invariant to thread, no proof field to
-transport.  Sameness is the cross-multiplication setoid `a/b ~ c/d ⟺ a·d = c·b`,
-decidable because it IS an `Int` equality.
+A rational is a pair `numerator / (denominatorPredecessor + 1)`.  The successor
+shape makes denominator positivity structural: no subtype, no invariant to
+thread, no proof field to transport.  Sameness is the cross-multiplication
+setoid `a/b ~ c/d ⟺ a·d = c·b`, decidable because it is an `Int` equality.
 
 Transitivity is the one contentful law: scale the target equation by the middle
-denominator, walk a right-commutation chain through both hypotheses, and cancel —
-the cancellation is exactly `intMulRightCancel` at the middle denominator, whose
-positivity the successor shape hands over for free.  This is the same
-scale-chain-cancel shape as `denotesSameAsTrans` on the float carrier, with the
-radix-power plumbing gone. -/
+denominator, walk a right-commutation chain through both hypotheses, and cancel
+via `intMulRightCancel` at the middle denominator, whose positivity the
+successor shape supplies.  The same scale-chain-cancel shape governs the setoid
+carriers throughout the number tower. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -39,13 +37,13 @@ theorem denominatorIntIsPositive (value : RationalPair) :
     (0 : Int) < denominatorInt value :=
   intOfNatLeOfNat (Nat.le.intro (Nat.add_comm 1 value.denominatorPredecessor))
 
-/-- **Value equality by cross-multiplication** — `a/b` and `c/d` denote the same
+/-- Value equality by cross-multiplication: `a/b` and `c/d` denote the same
 rational exactly when `a * d = c * b`. -/
 def DenotesSameAs (leftValue rightValue : RationalPair) : Prop :=
   leftValue.numerator * denominatorInt rightValue =
     rightValue.numerator * denominatorInt leftValue
 
-/-- The setoid is decidable — it IS an `Int` equality (`Int.decEq` is clean). -/
+/-- The setoid is decidable — it is an `Int` equality (`Int.decEq` is clean). -/
 def decideDenotesSameAs (leftValue rightValue : RationalPair) :
     Decidable (DenotesSameAs leftValue rightValue) :=
   Int.decEq (leftValue.numerator * denominatorInt rightValue)
@@ -59,7 +57,7 @@ theorem denotesSameAsSymm {leftValue rightValue : RationalPair}
     (areSame : DenotesSameAs leftValue rightValue) :
     DenotesSameAs rightValue leftValue := areSame.symm
 
-/-- **Transitivity** — scale by the middle denominator, chain five
+/-- Transitivity: scale by the middle denominator, chain five
 right-commutation steps through both hypotheses, cancel the positive middle
 denominator. -/
 theorem denotesSameAsTrans {firstValue middleValue lastValue : RationalPair}
@@ -76,11 +74,11 @@ theorem denotesSameAsTrans {firstValue middleValue lastValue : RationalPair}
             (intMulRightComm lastValue.numerator (denominatorInt middleValue)
               (denominatorInt firstValue))))))
 
-/-! ## Exact field operations (NUM-Q-2)
+/-! ## Exact field operations
 
-Addition and multiplication both land on the PRODUCT denominator.  Built
+Addition and multiplication both land on the product denominator.  Built
 predecessor-shaped — `(leftPredecessor + 1) * rightPredecessor + leftPredecessor` —
-its successor is DEFINITIONALLY `(leftPredecessor + 1) * (rightPredecessor + 1)`
+its successor is definitionally `(leftPredecessor + 1) * (rightPredecessor + 1)`
 (`Nat.mul` recurses on its second argument, `Nat.add` on its second), so the
 "result denominator = product of denominators" equations are `rfl`.  Every
 congruence is then one `intRightDistrib` dispatch over per-term
@@ -100,7 +98,7 @@ theorem addExactNumerator (leftValue rightValue : RationalPair) :
       leftValue.numerator * denominatorInt rightValue +
         rightValue.numerator * denominatorInt leftValue := rfl
 
-/-- The addition denominator IS the product of the denominators — definitional,
+/-- The addition denominator is the product of the denominators — definitional,
 by the predecessor-shaped construction. -/
 theorem addExactDenominatorInt (leftValue rightValue : RationalPair) :
     denominatorInt (addExact leftValue rightValue) =
@@ -118,7 +116,7 @@ theorem mulExactNumerator (leftValue rightValue : RationalPair) :
     (mulExact leftValue rightValue).numerator =
       leftValue.numerator * rightValue.numerator := rfl
 
-/-- The multiplication denominator IS the product of the denominators —
+/-- The multiplication denominator is the product of the denominators —
 definitional. -/
 theorem mulExactDenominatorInt (leftValue rightValue : RationalPair) :
     denominatorInt (mulExact leftValue rightValue) =
@@ -129,9 +127,9 @@ def negExact (value : RationalPair) : RationalPair :=
   { numerator := -value.numerator
     denominatorPredecessor := value.denominatorPredecessor }
 
-/-- **Addition respects the setoid on the left**: distribute, fix each summand by
+/-- Addition respects the setoid on the left: distribute, fix each summand by
 one `intMulSwapMiddle` chain (the hypothesis enters the first term; the second term
-is EXACTLY one middle swap), and fold back. -/
+is exactly one middle swap), and fold back. -/
 theorem addExactCongrLeft {leftValue newLeftValue : RationalPair}
     (rightValue : RationalPair)
     (leftAgrees : DenotesSameAs leftValue newLeftValue) :
@@ -170,7 +168,7 @@ theorem addExactCongrLeft {leftValue newLeftValue : RationalPair}
           (rightValue.numerator * denominatorInt newLeftValue)
           (denominatorInt leftValue * denominatorInt rightValue)).symm))
 
-/-- **Addition respects the setoid on the right** — the mirror dispatch; the
+/-- Addition respects the setoid on the right — the mirror dispatch; the
 right-denominator swaps route through one extra commutation per term. -/
 theorem addExactCongrRight (leftValue : RationalPair)
     {rightValue newRightValue : RationalPair}
@@ -221,7 +219,7 @@ theorem addExactCongrRight (leftValue : RationalPair)
           (newRightValue.numerator * denominatorInt leftValue)
           (denominatorInt leftValue * denominatorInt rightValue)).symm))
 
-/-- **Addition is a setoid congruence** — chain the two one-sided congruences. -/
+/-- Addition is a setoid congruence — chain the two one-sided congruences. -/
 theorem addExactRespectsDenotesSameAs
     {leftValue newLeftValue rightValue newRightValue : RationalPair}
     (leftAgrees : DenotesSameAs leftValue newLeftValue)
@@ -231,7 +229,7 @@ theorem addExactRespectsDenotesSameAs
   denotesSameAsTrans (addExactCongrLeft rightValue leftAgrees)
     (addExactCongrRight newLeftValue rightAgrees)
 
-/-- **Multiplication respects the setoid on the left** — one swap in, hypothesis,
+/-- Multiplication respects the setoid on the left — one swap in, hypothesis,
 one swap out. -/
 theorem mulExactCongrLeft {leftValue newLeftValue : RationalPair}
     (rightValue : RationalPair)
@@ -245,7 +243,7 @@ theorem mulExactCongrLeft {leftValue newLeftValue : RationalPair}
       (intMulSwapMiddle newLeftValue.numerator rightValue.numerator
         (denominatorInt leftValue) (denominatorInt rightValue)).symm)
 
-/-- **Multiplication respects the setoid on the right** — the mirror. -/
+/-- Multiplication respects the setoid on the right — the mirror. -/
 theorem mulExactCongrRight (leftValue : RationalPair)
     {rightValue newRightValue : RationalPair}
     (rightAgrees : DenotesSameAs rightValue newRightValue) :
@@ -258,7 +256,7 @@ theorem mulExactCongrRight (leftValue : RationalPair)
       (intMulSwapMiddle leftValue.numerator newRightValue.numerator
         (denominatorInt leftValue) (denominatorInt rightValue)).symm)
 
-/-- **Multiplication is a setoid congruence** — chain the two one-sided
+/-- Multiplication is a setoid congruence — chain the two one-sided
 congruences. -/
 theorem mulExactRespectsDenotesSameAs
     {leftValue newLeftValue rightValue newRightValue : RationalPair}
@@ -269,7 +267,7 @@ theorem mulExactRespectsDenotesSameAs
   denotesSameAsTrans (mulExactCongrLeft rightValue leftAgrees)
     (mulExactCongrRight newLeftValue rightAgrees)
 
-/-- **Negation is a setoid congruence** — pull the sign out of both
+/-- Negation is a setoid congruence — pull the sign out of both
 cross-products around the hypothesis. -/
 theorem negExactRespectsDenotesSameAs {leftValue rightValue : RationalPair}
     (areSame : DenotesSameAs leftValue rightValue) :
@@ -278,26 +276,26 @@ theorem negExactRespectsDenotesSameAs {leftValue rightValue : RationalPair}
     ((congrArg Int.neg areSame).trans
       (intNegMul rightValue.numerator (denominatorInt leftValue)).symm)
 
-/-! ## The cross-multiplication order (NUM-Q-3)
+/-! ## The cross-multiplication order
 
 `a/b <= c/d ⟺ a·d <= c·b` — valid because both denominators are structurally
-positive.  Same shape as the float carrier's cross-aligned order: decidable,
-reflexive, total; antisymmetry lands ON THE SETOID (mutual bounds force
-cross-equality); transitivity is scale-chain-cancel at the middle denominator;
-trichotomy splits the total order through the strict-or-equal gap. -/
+positive.  Decidable, reflexive, total; antisymmetry lands on the setoid (mutual
+bounds force cross-equality); transitivity is scale-chain-cancel at the middle
+denominator; trichotomy splits the total order through the strict-or-equal
+gap. -/
 
-/-- **The cross-multiplication order**: `a/b <= c/d ⟺ a·d <= c·b`. -/
+/-- The cross-multiplication order: `a/b <= c/d ⟺ a·d <= c·b`. -/
 def LessEqualAs (leftValue rightValue : RationalPair) : Prop :=
   leftValue.numerator * denominatorInt rightValue ≤
     rightValue.numerator * denominatorInt leftValue
 
-/-- The order is decidable — it IS an `Int` bound (`Int.decLe` is clean). -/
+/-- The order is decidable — it is an `Int` bound (`Int.decLe` is clean). -/
 def decideLessEqualAs (leftValue rightValue : RationalPair) :
     Decidable (LessEqualAs leftValue rightValue) :=
   Int.decLe (leftValue.numerator * denominatorInt rightValue)
     (rightValue.numerator * denominatorInt leftValue)
 
-/-- **The strict cross-multiplication order.** -/
+/-- The strict cross-multiplication order. -/
 def LessThanAs (leftValue rightValue : RationalPair) : Prop :=
   leftValue.numerator * denominatorInt rightValue <
     rightValue.numerator * denominatorInt leftValue
@@ -308,7 +306,7 @@ def decideLessThanAs (leftValue rightValue : RationalPair) :
   Int.decLt (leftValue.numerator * denominatorInt rightValue)
     (rightValue.numerator * denominatorInt leftValue)
 
-/-- Strict implies weak — `Int.lt` IS the unit-shifted `Int.le`. -/
+/-- Strict implies weak — `Int.lt` is the unit-shifted `Int.le`. -/
 theorem lessEqualAsOfLessThan {leftValue rightValue : RationalPair}
     (isLessThan : LessThanAs leftValue rightValue) :
     LessEqualAs leftValue rightValue :=
@@ -331,14 +329,14 @@ theorem lessEqualAsOfDenotesSame {leftValue rightValue : RationalPair}
   intLessEqualOfEqLeft areSame
     (intLessEqualRefl (rightValue.numerator * denominatorInt leftValue))
 
-/-- **Antisymmetry lands on the setoid**: mutual bounds force cross-equality. -/
+/-- Antisymmetry lands on the setoid: mutual bounds force cross-equality. -/
 theorem denotesSameAsOfLessEqualBoth {leftValue rightValue : RationalPair}
     (isForward : LessEqualAs leftValue rightValue)
     (isBackward : LessEqualAs rightValue leftValue) :
     DenotesSameAs leftValue rightValue :=
   intLessEqualAntisymm isForward isBackward
 
-/-- **Transitivity** — scale each bound by the missing denominator, meet at the
+/-- Transitivity — scale each bound by the missing denominator, meet at the
 middle by one right-commutation each, cancel the positive middle denominator. -/
 theorem lessEqualAsTrans {firstValue middleValue lastValue : RationalPair}
     (isFirstBelowMiddle : LessEqualAs firstValue middleValue)
@@ -375,7 +373,7 @@ theorem lessEqualAsCongrRight {leftValue rightValue newRightValue : RationalPair
     LessEqualAs leftValue newRightValue :=
   lessEqualAsTrans isLessEqual (lessEqualAsOfDenotesSame areSame)
 
-/-- **Trichotomy**: strictly below, setoid-equal, or strictly above — the total
+/-- Trichotomy: strictly below, setoid-equal, or strictly above — the total
 order split through the strict-or-equal gap. -/
 theorem lessThanAsTrichotomy (leftValue rightValue : RationalPair) :
     LessThanAs leftValue rightValue ∨ DenotesSameAs leftValue rightValue ∨
@@ -390,11 +388,11 @@ theorem lessThanAsTrichotomy (leftValue rightValue : RationalPair) :
       | .inl isStrict => .inr (.inr isStrict)
       | .inr areEqual => .inr (.inl areEqual.symm)
 
-/-! ## Ordered-field compatibility (NUM-Q-3b)
+/-! ## Ordered-field compatibility
 
 Addition is monotone in each argument (mirror the congruence dispatch with
 `≤`-plumbing at the hypothesis term, scaled by the shared denominator square),
-and multiplication of nonnegatives is nonnegative (nonnegativity READS on the
+and multiplication of nonnegatives is nonnegative (nonnegativity reads on the
 numerator because the denominator is structurally positive). -/
 
 /-- The rational zero: `0/1`. -/
@@ -407,7 +405,7 @@ def IsNonNegative (value : RationalPair) : Prop :=
   LessEqualAs zeroRational value
 
 /-- Nonnegativity reads on the numerator — the denominator is positive, so the
-sign of `a/b` IS the sign of `a`. -/
+sign of `a/b` is the sign of `a`. -/
 theorem numeratorNonNegativeOfIsNonNegative {value : RationalPair}
     (isNonNegative : IsNonNegative value) : (0 : Int) ≤ value.numerator :=
   intLessEqualOfEqLeft (intZeroMul (denominatorInt value)).symm
@@ -421,7 +419,7 @@ theorem isNonNegativeOfNumeratorNonNegative {value : RationalPair}
     (intLessEqualOfEqRight isNumeratorNonNegative
       (intMulOne value.numerator).symm)
 
-/-- **Addition is monotone on the left** — mirror `addExactCongrLeft`: the
+/-- Addition is monotone on the left — mirror `addExactCongrLeft`: the
 hypothesis term is scaled by the shared right-denominator square, the second
 term rides along as an equality. -/
 theorem addExactMonotoneLeft {lowValue highValue : RationalPair}
@@ -466,7 +464,7 @@ theorem addExactMonotoneLeft {lowValue highValue : RationalPair}
           (rightValue.numerator * denominatorInt highValue)
           (denominatorInt lowValue * denominatorInt rightValue)).symm))
 
-/-- **Addition is monotone on the right** — the mirror dispatch; the shared
+/-- Addition is monotone on the right — the mirror dispatch; the shared
 left-denominator swaps route through one extra commutation per term. -/
 theorem addExactMonotoneRight (leftValue : RationalPair)
     {lowValue highValue : RationalPair}
@@ -518,7 +516,7 @@ theorem addExactMonotoneRight (leftValue : RationalPair)
           (highValue.numerator * denominatorInt leftValue)
           (denominatorInt leftValue * denominatorInt lowValue)).symm))
 
-/-- **Addition is monotone** — chain the two one-sided monotonicities through
+/-- Addition is monotone — chain the two one-sided monotonicities through
 the mixed midpoint. -/
 theorem addExactMonotone {lowLeft highLeft lowRight highRight : RationalPair}
     (isLeftLessEqual : LessEqualAs lowLeft highLeft)
@@ -527,7 +525,7 @@ theorem addExactMonotone {lowLeft highLeft lowRight highRight : RationalPair}
   lessEqualAsTrans (addExactMonotoneLeft lowRight isLeftLessEqual)
     (addExactMonotoneRight highLeft isRightLessEqual)
 
-/-- **Multiplication of nonnegatives is nonnegative** — read both signs off
+/-- Multiplication of nonnegatives is nonnegative — read both signs off
 the numerators, multiply at the `Int` layer, read back. -/
 theorem mulExactIsNonNegative {leftValue rightValue : RationalPair}
     (isLeftNonNegative : IsNonNegative leftValue)
@@ -537,10 +535,10 @@ theorem mulExactIsNonNegative {leftValue rightValue : RationalPair}
     (intMulNonNeg (numeratorNonNegativeOfIsNonNegative isLeftNonNegative)
       (numeratorNonNegativeOfIsNonNegative isRightNonNegative))
 
-/-! ## The canonical normal form (NUM-Q-4c)
+/-! ## The canonical normal form
 
 Divide numerator and denominator by their gcd.  The magnitude quotient and
-the counting divider are EXACT here because the gcd divides both sides
+the counting divider are exact here because the gcd divides both sides
 (`natDividesRemainderIsZero`); the normalized denominator stays structurally
 positive because the exact quotient of a successor is positive. -/
 
@@ -554,7 +552,7 @@ theorem magnitudeRemainderVanishesOfDividesNatAbs {divisor : Nat}
   | .ofNat _, divides => natDividesRemainderIsZero isDivisorPositive divides
   | .negSucc _, divides => natDividesRemainderIsZero isDivisorPositive divides
 
-/-- **Normalization**: divide out `gcd(|numerator|, denominator)`.  Proof-free
+/-- Normalization: divide out `gcd(|numerator|, denominator)`.  Proof-free
 and computable — the numerator goes through the sign-splitting magnitude
 quotient, the denominator through the counting divider with the result stored
 back in predecessor form. -/
@@ -569,7 +567,7 @@ def normalize (value : RationalPair) : RationalPair :=
           (natGcd value.numerator.natAbs
             (value.denominatorPredecessor + 1))).fst }
 
-/-- **Normalization stays in the class**: `normalize value ~ value`.  Both
+/-- Normalization stays in the class: `normalize value ~ value`.  Both
 sides factor through the gcd — substitute the two exact factorizations into
 the cross-multiplication and re-associate. -/
 theorem normalizeDenotesSame (value : RationalPair) :
@@ -635,7 +633,7 @@ theorem normalizeDenotesSame (value : RationalPair) :
             value.numerator * Int.ofNat denominatorMagnitude)
           (natSuccPredOfPositive quotientIsPositive)).symm))
 
-/-- **The normal form is reduced**: the normalized numerator's magnitude and
+/-- The normal form is reduced: the normalized numerator's magnitude and
 the normalized denominator are coprime.  Rewrite both components onto the
 counting quotients (`intMagnitudeQuotientNatAbs` for the magnitude, the
 predecessor re-fold for the denominator) and land on the generic
@@ -667,29 +665,29 @@ theorem normalizeIsCoprime (value : RationalPair) :
         (natSuccPredOfPositive quotientIsPositive)).trans
       (natGcdOfExactQuotientsIsOne gcdIsPositive))
 
-/-! ## Uniqueness of the normal form (NUM-Q-4c-4)
+/-! ## Uniqueness of the normal form
 
-Reduced pairs that denote the same rational are EQUAL — the ℚ carrier's
+Reduced pairs that denote the same rational are equal — the ℚ carrier's
 canonical-representative theorem.  Reading the cross-multiplication equation at
 `natAbs` (multiplicative over the positive denominators) makes each denominator
 divide the opposite side's product; Euclid's lemma strips the coprime numerator
 magnitude, so the denominators mutually divide and are equal by antisymmetry;
 the numerators then agree by cancelling the shared positive denominator at the
-`Int` level.  Consequently `DenotesSameAs` is CHARACTERIZED by equality of
+`Int` level.  Consequently `DenotesSameAs` is characterized by equality of
 normal forms — the decidable setoid computes through `normalize`. -/
 
-/-- A pair is **reduced** when its numerator magnitude and denominator are
+/-- A pair is reduced when its numerator magnitude and denominator are
 coprime — the shape `normalize` produces (`normalizeIsCoprime`). -/
 def IsReduced (value : RationalPair) : Prop :=
   NatCoprime value.numerator.natAbs (value.denominatorPredecessor + 1)
 
-/-- Reducedness is decidable — the gcd computes and coprimality IS a `Nat`
+/-- Reducedness is decidable — the gcd computes and coprimality is a `Nat`
 equality. -/
 def decideIsReduced (value : RationalPair) : Decidable (IsReduced value) :=
   Nat.decEq
     (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1)) 1
 
-/-- **Uniqueness of reduced representatives**: reduced pairs denoting the same
+/-- Uniqueness of reduced representatives: reduced pairs denoting the same
 rational are equal.  The denominators mutually divide through Euclid's lemma on
 the `natAbs` cross-multiplication reading, antisymmetry pins them equal, and
 the numerators follow by cancelling the shared positive denominator. -/
@@ -746,7 +744,7 @@ theorem eqOfReducedOfDenotesSame {leftValue rightValue : RationalPair}
       numeratorsEqual).trans
     (congrArg (RationalPair.mk rightValue.numerator) predecessorsEqual)
 
-/-- Setoid-equal values have EQUAL normal forms — both normal forms are reduced
+/-- Setoid-equal values have equal normal forms — both normal forms are reduced
 and denote the same value through `normalize l ~ l ~ r ~ normalize r`, so
 uniqueness pins them. -/
 theorem normalizeEqOfDenotesSameAs {leftValue rightValue : RationalPair}
@@ -772,7 +770,7 @@ theorem denotesSameAsOfNormalizeEq {leftValue rightValue : RationalPair}
     (denotesSameAsTrans normalsDenoteSame
       (normalizeDenotesSame rightValue))
 
-/-- **The characterization**: the decidable cross-multiplication setoid IS
+/-- The characterization: the decidable cross-multiplication setoid is
 equality of normal forms — `normalize` is a computable canonical-representative
 function for ℚ. -/
 theorem denotesSameAsIffNormalizeEq (leftValue rightValue : RationalPair) :
@@ -792,7 +790,7 @@ theorem normalizeIsIdempotent (value : RationalPair) :
     normalize (normalize value) = normalize value :=
   normalizeOfReducedIsSelf (normalizeIsCoprime value)
 
-/-! ## The setoid ring laws (NUM-Q-6)
+/-! ## The setoid ring laws
 
 The commutative-group and commutative-monoid skeleton of the ℚ field, up to
 `DenotesSameAs`.  The definitional denominator equations
@@ -804,7 +802,7 @@ on the denominator products — no `Nat`/`ofNat` juggling anywhere. -/
 def oneRational : RationalPair :=
   { numerator := 1, denominatorPredecessor := 0 }
 
-/-- **Addition is commutative** up to the setoid — flip the numerator sum and
+/-- Addition is commutative up to the setoid — flip the numerator sum and
 the denominator product. -/
 theorem addExactComm (leftValue rightValue : RationalPair) :
     DenotesSameAs (addExact leftValue rightValue)
@@ -817,7 +815,7 @@ theorem addExactComm (leftValue rightValue : RationalPair) :
           leftValue.numerator * denominatorInt rightValue) * ·)
       (intMulComm (denominatorInt rightValue) (denominatorInt leftValue)))
 
-/-- **Zero is a right identity** up to the setoid — the scaled-zero summand
+/-- Zero is a right identity up to the setoid — the scaled-zero summand
 vanishes and both unit denominators collapse. -/
 theorem addExactZeroRight (value : RationalPair) :
     DenotesSameAs (addExact value zeroRational) value :=
@@ -830,13 +828,13 @@ theorem addExactZeroRight (value : RationalPair) :
   (congrArg (· * denominatorInt value) numeratorCollapses).trans
     (congrArg (value.numerator * ·) (intMulOne (denominatorInt value)).symm)
 
-/-- **Zero is a left identity** up to the setoid — commute and reuse. -/
+/-- Zero is a left identity up to the setoid — commute and reuse. -/
 theorem addExactZeroLeft (value : RationalPair) :
     DenotesSameAs (addExact zeroRational value) value :=
   denotesSameAsTrans (addExactComm zeroRational value)
     (addExactZeroRight value)
 
-/-- **Negation is a right inverse** up to the setoid — the numerator folds to
+/-- Negation is a right inverse up to the setoid — the numerator folds to
 `(n + -n) * d` and annihilates. -/
 theorem addExactNegRight (value : RationalPair) :
     DenotesSameAs (addExact value (negExact value)) zeroRational :=
@@ -852,8 +850,8 @@ theorem addExactNegRight (value : RationalPair) :
       (intZeroMul
         (denominatorInt (addExact value (negExact value)))).symm)
 
-/-- **Addition is associative** up to the setoid.  The two numerators are
-EQUAL as integers — distribute both nested sums, fix the middle term with one
+/-- Addition is associative up to the setoid.  The two numerators are
+equal as integers — distribute both nested sums, fix the middle term with one
 right-commutation and the last with one association-then-right-commutation,
 regroup — and the denominators differ by one association, so cross-
 multiplication needs no scaling at all. -/
@@ -926,7 +924,7 @@ theorem addExactAssoc (firstValue middleValue lastValue : RationalPair) :
       (intMulAssoc (denominatorInt firstValue) (denominatorInt middleValue)
         (denominatorInt lastValue)).symm)
 
-/-- **Multiplication is commutative** up to the setoid — flip both products. -/
+/-- Multiplication is commutative up to the setoid — flip both products. -/
 theorem mulExactComm (leftValue rightValue : RationalPair) :
     DenotesSameAs (mulExact leftValue rightValue)
       (mulExact rightValue leftValue) :=
@@ -935,19 +933,19 @@ theorem mulExactComm (leftValue rightValue : RationalPair) :
     (congrArg ((rightValue.numerator * leftValue.numerator) * ·)
       (intMulComm (denominatorInt rightValue) (denominatorInt leftValue)))
 
-/-- **One is a right identity** up to the setoid — both unit factors collapse. -/
+/-- One is a right identity up to the setoid — both unit factors collapse. -/
 theorem mulExactOneRight (value : RationalPair) :
     DenotesSameAs (mulExact value oneRational) value :=
   (congrArg (· * denominatorInt value) (intMulOne value.numerator)).trans
     (congrArg (value.numerator * ·) (intMulOne (denominatorInt value)).symm)
 
-/-- **One is a left identity** up to the setoid — commute and reuse. -/
+/-- One is a left identity up to the setoid — commute and reuse. -/
 theorem mulExactOneLeft (value : RationalPair) :
     DenotesSameAs (mulExact oneRational value) value :=
   denotesSameAsTrans (mulExactComm oneRational value)
     (mulExactOneRight value)
 
-/-- **Multiplication is associative** up to the setoid — one association on
+/-- Multiplication is associative up to the setoid — one association on
 each side of the cross-multiplication. -/
 theorem mulExactAssoc (firstValue middleValue lastValue : RationalPair) :
     DenotesSameAs (mulExact (mulExact firstValue middleValue) lastValue)
@@ -963,7 +961,7 @@ theorem mulExactAssoc (firstValue middleValue lastValue : RationalPair) :
       (intMulAssoc (denominatorInt firstValue) (denominatorInt middleValue)
         (denominatorInt lastValue)).symm)
 
-/-- **Multiplication distributes over addition on the left** up to the setoid
+/-- Multiplication distributes over addition on the left up to the setoid
 — the first genuinely setoid-level ring law: the distributed side carries one
 extra factor of the multiplier's denominator.  Gather each distributed term
 back onto that shared factor, refold both distributions, and split the
@@ -1056,7 +1054,7 @@ theorem mulExactLeftDistrib (factor leftSummand rightSummand : RationalPair) :
           (mulExact factor (addExact leftSummand rightSummand)))
         numeratorGathers.symm))
 
-/-- **Multiplication distributes over addition on the right** up to the setoid
+/-- Multiplication distributes over addition on the right up to the setoid
 — commute onto the left law and repair the summands by congruence. -/
 theorem mulExactRightDistrib (factor leftSummand rightSummand : RationalPair) :
     DenotesSameAs (mulExact (addExact leftSummand rightSummand) factor)
@@ -1069,16 +1067,16 @@ theorem mulExactRightDistrib (factor leftSummand rightSummand : RationalPair) :
       (addExactRespectsDenotesSameAs (mulExactComm factor leftSummand)
         (mulExactComm factor rightSummand)))
 
-/-! ## The inverse on apartness (NUM-Q-6c)
+/-! ## The inverse on apartness
 
-The Heyting-field leg: apartness from zero is the SETOID-INVARIANT
+The Heyting-field leg: apartness from zero is the setoid-invariant
 `¬ DenotesSameAs · zeroRational` — for ℚ it is decidable (the numerator's sign
-is observable), unlike the ℝ rung where apartness will be Σ-witnessed.  The
-inverse swaps numerator and denominator carrying the sign to the numerator;
-it is total, returning `zeroRational` as junk at zero, and the field law
-holds under apartness.  Each constructor arm of the law is ONE
-`intMulComm` — for a negative numerator, `negSucc * negSucc` and the swapped
-`ofNat * ofNat` product reduce to the SAME `ofNat` definitionally. -/
+is observable), unlike the ℝ rung where apartness is Σ-witnessed.  The inverse
+swaps numerator and denominator carrying the sign to the numerator; it is total,
+returning `zeroRational` as junk at zero, and the field law holds under
+apartness.  Each constructor arm of the law is one `intMulComm`: for a negative
+numerator, `negSucc * negSucc` and the swapped `ofNat * ofNat` product reduce to
+the same `ofNat` definitionally. -/
 
 /-- Apartness from zero, setoid-invariantly. -/
 def IsApartFromZero (value : RationalPair) : Prop :=
@@ -1102,8 +1100,8 @@ def invExact (value : RationalPair) : RationalPair :=
       { numerator := Int.negSucc value.denominatorPredecessor
         denominatorPredecessor := magnitudePredecessor }
 
-/-- **The field law**: a value apart from zero times its inverse denotes one.
-The zero arm refutes the apartness (a zero numerator DOES denote zero); the
+/-- The field law: a value apart from zero times its inverse denotes one.
+The zero arm refutes the apartness (a zero numerator does denote zero); the
 sign arms collapse both unit factors and flip the one product. -/
 theorem mulExactInvRight : ∀ {value : RationalPair},
     IsApartFromZero value →
@@ -1131,24 +1129,24 @@ theorem mulExactInvRight : ∀ {value : RationalPair},
           (intOneMul (Int.ofNat (denominatorPredecessor + 1) *
             Int.ofNat (magnitudePredecessor + 1))).symm)
 
-/-- **The field law, left** — commute and reuse. -/
+/-- The field law, left — commute and reuse. -/
 theorem mulExactInvLeft {value : RationalPair}
     (isApart : IsApartFromZero value) :
     DenotesSameAs (mulExact (invExact value) value) oneRational :=
   denotesSameAsTrans (mulExactComm (invExact value) value)
     (mulExactInvRight isApart)
 
-/-! ## The Archimedean property and density (NUM-Q-6d)
+/-! ## The Archimedean property and density
 
-Both order-theoretic legs come with COMPUTABLE witnesses.  Archimedean: every
+Both order-theoretic legs come with computable witnesses.  Archimedean: every
 value sits strictly below the successor of its numerator's magnitude — the
 denominator only helps (it is at least one), so the strict integer bound scales
-up.  Density: the Stern-Brocot MEDIANT `(a+c)/(b+d)` sits strictly between any
+up.  Density: the Stern-Brocot mediant `(a+c)/(b+d)` sits strictly between any
 strictly-ordered pair — no halving, no division; both cross-multiplication
 goals distribute and cancel the shared product against the hypothesis.  The
 mediant's denominator predecessor is shaped so that
 `denominatorInt (mediant l r) = denominatorInt l + denominatorInt r` is `rfl`,
-the same trick as `addExact`. -/
+the same construction as `addExact`. -/
 
 /-- The constant embedding ℤ ↪ ℚ: `value/1`. -/
 def rationalOfInt (value : Int) : RationalPair :=
@@ -1158,7 +1156,7 @@ def rationalOfInt (value : Int) : RationalPair :=
 def archimedeanBound (value : RationalPair) : Nat :=
   value.numerator.natAbs + 1
 
-/-- **The Archimedean property**: every rational sits strictly below a natural
+/-- The Archimedean property: every rational sits strictly below a natural
 number, and the witness computes.  The integer heart is
 `intLessThanOfNatNatAbsSucc`; the denominator scales the bound up because it is
 at least one. -/
@@ -1184,19 +1182,19 @@ theorem lessThanArchimedeanBound (value : RationalPair) :
       (intLessThanOfLessThanOfLessEqual numeratorIsBelowBound
         boundScalesByDenominator)
 
-/-- **The mediant** `(a+c)/(b+d)` — the division-free between-point.  The
-denominator predecessor is shaped so the denominator SUM reads back by `rfl`. -/
+/-- The mediant `(a+c)/(b+d)` — the division-free between-point.  The
+denominator predecessor is shaped so the denominator sum reads back by `rfl`. -/
 def mediant (leftValue rightValue : RationalPair) : RationalPair :=
   { numerator := leftValue.numerator + rightValue.numerator
     denominatorPredecessor :=
       leftValue.denominatorPredecessor + 1 + rightValue.denominatorPredecessor }
 
-/-- The mediant's denominator IS the sum — definitional. -/
+/-- The mediant's denominator is the sum — definitional. -/
 theorem mediantDenominatorInt (leftValue rightValue : RationalPair) :
     denominatorInt (mediant leftValue rightValue) =
       denominatorInt leftValue + denominatorInt rightValue := rfl
 
-/-- The mediant sits strictly ABOVE the left endpoint: distribute both
+/-- The mediant sits strictly above the left endpoint: distribute both
 cross-products and cancel the shared `Nl·Dl` on the left. -/
 theorem mediantLiesAboveLeft {leftValue rightValue : RationalPair}
     (isLessThan : LessThanAs leftValue rightValue) :
@@ -1225,7 +1223,7 @@ theorem mediantLiesAboveLeft {leftValue rightValue : RationalPair}
           (leftValue.numerator * denominatorInt leftValue))
         crossExpandsRight.symm)
 
-/-- The mediant sits strictly BELOW the right endpoint: distribute both
+/-- The mediant sits strictly below the right endpoint: distribute both
 cross-products and cancel the shared `Nr·Dr` on the right. -/
 theorem mediantLiesBelowRight {leftValue rightValue : RationalPair}
     (isLessThan : LessThanAs leftValue rightValue) :
@@ -1256,7 +1254,7 @@ theorem mediantLiesBelowRight {leftValue rightValue : RationalPair}
           (rightValue.numerator * denominatorInt rightValue))
         crossExpandsRight.symm)
 
-/-- **Density**: between any strictly-ordered pair the mediant lies strictly
+/-- Density: between any strictly-ordered pair the mediant lies strictly
 between — the computable between-point, packaged. -/
 theorem mediantIsBetween {leftValue rightValue : RationalPair}
     (isLessThan : LessThanAs leftValue rightValue) :

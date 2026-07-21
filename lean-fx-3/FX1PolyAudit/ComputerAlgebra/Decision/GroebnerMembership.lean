@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.GroebnerMembership
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/GroebnerMembership — zero-axiom gate
-    (DISSAT-GROB brick: ideal membership by checkable cofactor certificates, F2)
+    (ideal membership by checkable cofactor certificates, F2 coefficients)
 
 Per-declaration zero-axiom gate for the Gröbner certificate route: the hand-rolled
 Bool xor/and kit, the Nat beq/strict-order kit, `GrbVarPower` variable powers with

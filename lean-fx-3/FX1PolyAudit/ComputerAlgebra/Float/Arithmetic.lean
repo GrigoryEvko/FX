@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Float.Arithmetic
 
-/-! # FX1PolyAudit/ComputerAlgebra/Float/Arithmetic — zero-axiom gate (FLOAT-1b)
+/-! # FX1PolyAudit/ComputerAlgebra/Float/Arithmetic — zero-axiom gate
 
 Per-declaration zero-axiom gate for the exact-then-round total float operations
 (add/sub/mul) and their half-ulp correctness brackets.  Every declaration must

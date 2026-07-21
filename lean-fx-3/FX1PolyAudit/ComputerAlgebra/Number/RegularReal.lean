@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularReal
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularReal — zero-axiom gate
-    (NUM-R-1)
 
 Per-declaration zero-axiom gate for the ℝ carrier: the ε/3 shims on ℚ, the
 Bishop regular-real structure, the pointwise setoid with its refl/symm/trans

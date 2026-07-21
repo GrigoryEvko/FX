@@ -1,12 +1,12 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealMultiplication
 
-/-! # RegularReal order — the positivity core (NUM-R-4a)
+/-! # RegularReal order — the positivity core
 
 The ℝ order is APARTNESS-FIRST and its strict relations CARRY DATA: a
 positivity claim is a `Type`-valued witness structure, not a `Prop`-level
-existential — downstream constructions (the inverse on apartness, R-5)
+existential — downstream constructions (the constructive inverse on apartness)
 must COMPUTE from the witness index, and Lean's `Prop`-existentials do not
-project.  Locked decisions:
+project.  Key choices:
 
   * **Positivity = a doubled margin at one index**: `x` is positive when
     some approximant clears `2/(w+1)`.  The doubling is what makes the
@@ -17,9 +17,8 @@ project.  Locked decisions:
   * Setoid transport re-witnesses at the QUADRUPLED index, where the
     margin arithmetic is EXACT (two doubling identities, no estimates).
 
-The enabling ℚ kit shipped here: shunting (`a − b ≤ c → a ≤ b + c`) and
-the shared-addend CANCELLATION on the order — the two fundamental moves
-the corpus was still missing. -/
+The enabling ℚ kit: shunting (`a − b ≤ c → a ≤ b + c`) and the
+shared-addend CANCELLATION on the order. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -142,7 +141,7 @@ open RationalPair
 
 /-- **The positivity witness**: an index whose approximant clears the
 DOUBLED margin `2/(w+1)`.  `Type`-valued — the constructive order carries
-data, and the inverse (R-5) computes from the index. -/
+data, and the constructive inverse computes from the index. -/
 structure RealPositivityWitness (value : RegularReal) : Type where
   marginIndex : Nat
   hasDoubledMargin : LessEqualAs (ratioOfNatSucc 2 marginIndex)
@@ -224,7 +223,7 @@ def realPositivityWitnessCongr {value newValue : RegularReal}
             (ratioOfNatSuccSumDenotesSame 2 2 newMarginIndex))
       lessEqualAsAddRightCancel (lessEqualAsCongrLeft quadruples chained) }
 
-/-! ## The strict order and cotransitivity (NUM-R-4b)
+/-! ## The strict order and cotransitivity
 
 `a < b` is a positivity witness on the difference; apartness is a sum of
 strict orders.  COTRANSITIVITY replaces trichotomy: from `a < b`, any `c`
@@ -357,19 +356,13 @@ def lessThanRealCotransitive {leftValue rightValue : RegularReal}
               (reciprocalHalvesDenotesSame (2 * baseIndex + 1))
               (lessEqualAsAddRightCancel relaxedThroughMiddle) }
 
-/-! ## Irreflexivity, congruence, additive compatibility (NUM-R-4c)
+/-! ## Irreflexivity, congruence, additive compatibility
 
 The remaining strict-order package: irreflexivity (the self-difference
 denotes zero, refuting any margin), the setoid congruences (re-witness
 through the subtraction congruence), the apartness corollaries, and
 additive op-compatibility (the shared summand cancels EXACTLY pointwise,
-so the witness transports through one tail step and one halving).
-
-The R-4c deferral ledger is fully discharged: multiplicative positivity
-shipped with R-5a, the `Prop`-valued non-strict order `LessEqualReal`
-with R-5b.  Still ahead in R-5: `LessEqualReal` setoid congruence and
-tightness (mutual `≤` gives the setoid) — both ride the vanishing-slack
-closure `lessEqualAsOfForallSlack`. -/
+so the witness transports through one tail step and one halving). -/
 
 namespace RationalPair
 
@@ -560,7 +553,7 @@ theorem lessThanRealAsymm {leftValue rightValue : RegularReal}
     (isAbove : LessThanReal rightValue leftValue) : False :=
   lessThanRealIrrefl (lessThanRealTrans isBelow isAbove)
 
-/-! ## Multiplicative positivity (NUM-R-5a)
+/-! ## Multiplicative positivity
 
 Positivity is closed under `mulReal`: both tails fire at the product's
 sampling index, the product of the two reciprocal margins IS the
@@ -672,7 +665,7 @@ def realPositivityWitnessMulReal {leftValue rightValue : RegularReal}
         (reciprocalHalvesDenotesSame productDenominatorPredecessor)
         productBound }
 
-/-! ## The non-strict order (NUM-R-5b)
+/-! ## The non-strict order
 
 `left ≤ right` is `Prop`-valued and carries NO data — Bishop's
 vanishing lower bound: every approximant of the difference sits above

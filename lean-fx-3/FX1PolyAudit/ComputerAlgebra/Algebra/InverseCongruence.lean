@@ -2,14 +2,13 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Algebra.InverseCongruence
 
 /-! # FX1PolyAudit/ComputerAlgebra/Algebra/InverseCongruence — zero-axiom gate
-    (NUM-ALG-3)
 
-Per-declaration zero-axiom gate for the analytic inverse congruences: the ℝ
-positivity inverse, the ℝ apartness inverse, and the ℂ Gauss inverse — each
-base-congruent and witness-independent by inverse uniqueness.
+Per-declaration zero-axiom gate for the ℝ and ℂ inverse congruences: each of the
+ℝ positivity inverse, ℝ apartness inverse, and ℂ Gauss inverse is base-congruent
+and witness-independent.
 
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
-`sorry`, `native_decide`, `omega`. -/
+Free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`,
+`omega`. -/
 
 namespace FX1PolyAudit
 

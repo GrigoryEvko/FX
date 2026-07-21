@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrderTightness
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealOrderTightness — zero-axiom gate
-    (NUM-R-5c)
 
 Per-declaration zero-axiom gate for the ℝ order's tightness and setoid
 congruence: negation antitone on the ℚ order, the two ε/3 and slack-tail

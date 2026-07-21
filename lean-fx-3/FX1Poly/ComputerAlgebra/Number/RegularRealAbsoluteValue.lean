@@ -1,14 +1,14 @@
 import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
 
-/-! # RegularRealAbsoluteValue — the real absolute value `|x| = √(x²)` (NUM-R-ABS)
+/-! # RegularRealAbsoluteValue — the real absolute value `|x| = √(x²)`
 
 The number tower's real absolute value on the zero-axiom Bishop-real setoid,
 built as the constructive square root of the square: `absReal x = √(x²)`.  The
-nonnegative-radicand witness is the shipped `mulRealSelfIsNonNegativeReal` (a
-real square is pointwise a rational square), so `absReal` reuses the entire
+nonnegative-radicand witness is `mulRealSelfIsNonNegativeReal` (a real square is
+pointwise a rational square), so `absReal` reuses the entire
 square-root/order/triangle-inequality stack with no new analytic content.
 
-Everything is corollary of the shipped square-root order layer:
+Everything is a corollary of the square-root order layer:
 
 * `absRealNonNegative`   — `√` is pointwise nonnegative;
 * `selfLeAbsReal`        — `x ≤ √(x²)` is exactly `selfLeSqrtRealSquare`;
@@ -16,7 +16,7 @@ Everything is corollary of the shipped square-root order layer:
                            sign-blind square `(-x)² ~ x²`;
 * `absRealRespectsDenotesSame` — setoid congruence, from `mulReal` and `sqrtReal`
                            each respecting the setoid;
-* `absRealSubAdditive`   — the REAL triangle inequality `|x + y| ≤ |x| + |y|`,
+* `absRealSubAdditive`   — the real triangle inequality `|x + y| ≤ |x| + |y|`,
                            the 1-D specialisation of `modulusTriangleInequality`:
                            both sides nonnegative, compare squares
                            (`nonNegSquareOrderReflect`), binomial-expand each
@@ -29,19 +29,15 @@ The product bound `x·y ≤ |x|·|y|` is the real Cauchy–Schwarz: `x·y ≤ �
 √(x²·y²) ~ √(x²)·√(y²) = |x|·|y|`, the middle step by the multiplicative medial
 and `sqrtRealMulDenotesSame`.
 
-## Zero-axiom
-
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`, `WellFounded.fix`.  Every declaration is a term-mode composition of the
-shipped square-root and real-order lemmas; per-declaration gated in the audit
-twin. -/
+Zero-axiom: every declaration is a term-mode composition of the square-root and
+real-order lemmas; per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
 /-- **The real absolute value** `|x| = √(x²)` — the constructive square root of
-the real square, whose nonnegative-radicand witness is the shipped
+the real square, whose nonnegative-radicand witness is
 `mulRealSelfIsNonNegativeReal`. -/
 def absReal (value : RegularReal) : RegularReal :=
   sqrtReal (mulReal value value) (mulRealSelfIsNonNegativeReal value)
@@ -54,7 +50,7 @@ theorem absRealNonNegative (value : RegularReal) :
   sqrtRealIsNonNegativeReal (mulReal value value)
     (mulRealSelfIsNonNegativeReal value)
 
-/-- **`x ≤ |x|`** — definitionally the shipped `x ≤ √(x²)`. -/
+/-- **`x ≤ |x|`** — definitionally `x ≤ √(x²)`. -/
 theorem selfLeAbsReal (value : RegularReal) :
     LessEqualReal value (absReal value) :=
   selfLeSqrtRealSquare value
@@ -86,10 +82,9 @@ theorem absRealRespectsDenotesSame {leftValue rightValue : RegularReal}
 setoid — the 1-D specialisation of `modulusTriangleInequality`.  Both sides are
 nonnegative, so it suffices to compare squares (`nonNegSquareOrderReflect`).
 Binomial expansion gives `|x + y|² ~ (x² + y²) + (xy + xy)` and `(|x| + |y|)² ~
-(x² + y²) + (|x||y| + |x||y|)` (the shipped `sqrtRealSquareDenotesSame` collapses
+(x² + y²) + (|x||y| + |x||y|)` (`sqrtRealSquareDenotesSame` collapses
 `|x|² ~ x²`), and the product bound `x·y ≤ |x|·|y|` lifts the shared `x² + y²`
-prefix through `lessEqualRealAddCompatLeft` to `|x + y|² ≤ (|x| + |y|)²`.  This
-unlocks the integral triangle inequality toward Bishop-L1. -/
+prefix through `lessEqualRealAddCompatLeft` to `|x + y|² ≤ (|x| + |y|)²`. -/
 theorem absRealSubAdditive (leftValue rightValue : RegularReal) :
     LessEqualReal (absReal (addReal leftValue rightValue))
       (addReal (absReal leftValue) (absReal rightValue)) :=
@@ -181,7 +176,7 @@ theorem absRealNegReal (value : RegularReal) :
 
 /-- **The reverse triangle inequality** `|x − y| ≤ |x| + |y|` — the subadditivity
 of `|x + (−y)|` (definitionally `|x − y|`) with the sign-blind `|−y| ~ |y|` folded
-into the right endpoint.  The warm-up toward the integral triangle inequality. -/
+into the right endpoint. -/
 theorem absRealReverseTriangle (leftValue rightValue : RegularReal) :
     LessEqualReal (absReal (subReal leftValue rightValue))
       (addReal (absReal leftValue) (absReal rightValue)) :=
@@ -220,8 +215,8 @@ theorem absRealOfNonNegDenotesSame {value : RegularReal}
 /-- **A nonnegative constant scalar pulls through the absolute value** —
 `|c · S| ~ c · |S|` when `c ≥ 0`.  Medially regroup `(cS)² ~ c²S²`, split the root
 multiplicatively (`√(c²S²) ~ √(c²)·√(S²) = |c|·|S|`), and collapse `|c| ~ c` by
-`absRealOfNonNegDenotesSame`.  The mesh-scaling helper the Riemann-sum triangle
-inequality consumes. -/
+`absRealOfNonNegDenotesSame`.  A mesh-scaling identity for the Riemann-sum
+triangle inequality. -/
 theorem absRealMulConstantNonNeg {meshValue : RationalPair}
     (isMeshNonNegative : IsNonNegative meshValue) (summand : RegularReal) :
     DenotesSameReal

@@ -4,23 +4,19 @@ import FX1Poly.ComputerAlgebra.Decision.ClauseProofChecker
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/ClauseProofChecker — zero-axiom gate
     (the certified LRAT-style clause-proof checker: hinted RUP + deletion + RAT)
 
-Per-declaration zero-axiom gate for the DISSAT-RESIDUE clause-proof checker: the
-Boolean/Nat structural kits, literals with hand-rolled decidable equality, the
-clause/formula/forced-list Boolean semantics with the membership force lemma, the
-unfalsified-survivor collector with its truth-preservation engine
-(`cpcCollectPreservesTruth`), positional clause fetch/removal, the fuel-free
-hint-driven RUP walk with the semantic propagation invariant (`cpcRupHintsSound`)
-and the entailment bridge (`cpcRupAdditionEntails`), the proof-trace walker with
-RUP additions, positional deletions, and the empty-clause acceptance, the RAT
-extension (whole-formula candidate coverage + the constructive pivot-flip
-model-modification chain `cpcFlipEnv`/`cpcRatCandidatesSound`), and THE headline
-theorem `cpcProofSound`: an accepted trace refutes every assignment of the input
-formula.
+Per-declaration zero-axiom gate for the clause-proof checker: the Boolean/Nat structural kits,
+literals with hand-rolled decidable equality, the clause/formula/forced-list Boolean semantics with
+the membership force lemma, the unfalsified-survivor collector with its truth-preservation engine
+(`cpcCollectPreservesTruth`), positional clause fetch/removal, the fuel-free hint-driven RUP walk
+with the propagation invariant (`cpcRupHintsSound`) and the entailment bridge
+(`cpcRupAdditionEntails`), the proof-trace walker with RUP additions, positional deletions, and the
+empty-clause acceptance, the RAT extension (whole-formula candidate coverage + the constructive
+pivot-flip model-modification chain `cpcFlipEnv`/`cpcRatCandidatesSound`), and the headline theorem
+`cpcProofSound`: an accepted trace refutes every assignment of the input formula.
 
-Markers: `fxDissatResidue_hasRupChecker := true`,
-`fxDissatResidue_hasRatExtension := true`,
-`fxDissatResidue_hasCdclFinder := false` (owner-false forever — quarantined-finder
-architecture: search is untrusted, only checking is kernel).
+Markers: `fxDissatResidue_hasRupChecker := true`, `fxDissatResidue_hasRatExtension := true`,
+`fxDissatResidue_hasCdclFinder := false` (the finder is out of scope by architecture: search is
+untrusted, only checking is kernel).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

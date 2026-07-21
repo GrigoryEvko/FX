@@ -1,13 +1,11 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntPower
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntPower — zero-axiom gate (FLOAT-2 brick 1)
+/-! # Zero-axiom gate for `IntPower`
 
-Per-declaration zero-axiom gate for the hand-rolled Nat-power of an Int and its
-alignment/positivity algebra.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the Nat-power of an Int and its alignment/positivity
+algebra. Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
+`sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

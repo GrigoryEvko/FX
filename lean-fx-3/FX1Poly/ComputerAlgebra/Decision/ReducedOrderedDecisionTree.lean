@@ -1,5 +1,6 @@
-/-! # FX1Poly/ComputerAlgebra/Decision/ReducedOrderedDecisionTree — the DISSAT-BOOL ROBDD half
-    (reduced ordered binary decision TREES: canonicity + formula-equivalence decision)
+/-! # FX1Poly/ComputerAlgebra/Decision/ReducedOrderedDecisionTree — the ROBDD half of
+    Boolean-equivalence decision (reduced ordered binary decision TREES: canonicity +
+    formula-equivalence decision)
 
 Boolean-formula equivalence is decided by compilation to **reduced ordered binary decision
 trees** — the tree form of Bryant's ROBDDs (Bryant IEEE TC 1986; Andersen's lecture-note
@@ -1340,8 +1341,8 @@ instance robddFormulaEquivDecidable (formulaA formulaB : RobddFormula) :
   | false => isFalse (fun hEquiv => Bool.noConfusion
       (hDecide.symm.trans ((robddEquivIffDecide formulaA formulaB).mp hEquiv)))
 
-/-- DISSAT-BOOL marker: the ROBDD half of canonical Boolean forms is DECIDED —
-canonicity + biconditional + instance. -/
+/-- Marker: the ROBDD half of canonical Boolean-equivalence decision is DECIDED —
+canonicity + biconditional + `Decidable` instance. -/
 def fxDissatBool_hasRobddDecision : Bool := true
 
 /-! ## Smoke tests (genuineness pins, false cases included)

@@ -6,33 +6,30 @@ import FX1Poly.ComputerAlgebra.Register.FieldLayout
 /-! # FixedWidth/Widening — value-preserving widenings + the number-tower map
 
 FX §3.8 makes `uN → uM` (zero-extend) an implicit lossless coercion, and reads a
-fixed-width value out to `Nat` (`toNat`) or `Int` (`toInt`).  This module ships
-the HONEST content of that request.
+fixed-width value out to `Nat` (`toNat`) or `Int` (`toInt`).
 
-## The mathematical honesty note
+## Zero-extension is a value-preserving section, not a homomorphism
 
 Zero-extension, sign-extension, and the out-embeddings `toNat`/`toInt` are
-**value-preserving sections, NOT ring homomorphisms.**  The source ring
-`Z / 2^n Z` wraps at a
-different modulus than the target, so widening does not commute with `add`
-(e.g. in `Z/2`, `1 + 1 = 0`; zero-extended to `Z/4`, `1 + 1 = 2 ≠ 0`).  The
-genuine ring/semiring homomorphism runs the OTHER way — it is the **reduction**
+value-preserving sections, not ring homomorphisms.  The source ring `Z / 2^n Z`
+wraps at a different modulus than the target, so widening does not commute with
+`add` (e.g. in `Z/2`, `1 + 1 = 0`; zero-extended to `Z/4`, `1 + 1 = 2 ≠ 0`).
+The genuine ring/semiring homomorphism runs the other way — the reduction
 `Nat ↠ BitVec (width+1)`, the correct-direction number-tower arrow, whose
 retraction the zero-extension provides.
 
-So we deliver two distinct, both-true things:
+Two results:
 
-1. **Value-preservation of zero-extension** — `zeroExtend` preserves `toNat` when
-   the target is at least as wide (parameterised by `extra`, `newWidth =
+1. Value-preservation of zero-extension — `zeroExtend` preserves `toNat` when the
+   target is at least as wide (parameterised by `extra`, `newWidth =
    width + extra`, to keep the pow bound structural), plus the `UIntN` view form.
-2. **The genuine tower hom** `reduceNatToBitVec : Nat ↠ BitVec (width+1)` as a
-   `SetoidSemiringHom` into the shipped `bitVecCommutativeRingWitness` — the
-   mirror of the shipped `embedNatToInt`, all five obligations from the modular
-   corpus.  `preservesOne` is `rfl` (the unit is defined as `bitVecOfNatMod 1`).
+2. The tower hom `reduceNatToBitVec : Nat ↠ BitVec (width+1)` as a
+   `SetoidSemiringHom` into `bitVecCommutativeRingWitness` — the mirror of
+   `embedNatToInt`, all five obligations from the modular corpus.  `preservesOne`
+   is `rfl` (the unit is defined as `bitVecOfNatMod 1`).
 
 Signed sign-extension value-preservation (`bitVecToInt`-preserving) and the
-`Int ↠ BitVec` ring hom are the heavier signed follow-on brick (`negSucc` ↔
-complement algebra); documented as the residual.
+`Int ↠ BitVec` ring hom (`negSucc` ↔ complement algebra) are not covered here.
 
 `Init`-only, genuine-`Eq`, zero axioms. -/
 
@@ -51,7 +48,7 @@ theorem valueBelowWiderModulus {width extra bound : Nat}
 
 /-! ## (1) Zero-extension preserves the unsigned value -/
 
-/-- **Widening zero-extension preserves `toNat`.**  `bitVecZeroExtend` reduces
+/-- Widening zero-extension preserves `toNat`.  `bitVecZeroExtend` reduces
 `value.toNat` `mod 2^newWidth`; at a wider width the value is already below the
 modulus, so the reduction is the identity. -/
 theorem bitVecZeroExtendWideningPreservesToNat {width : Nat} (extra : Nat)
@@ -60,23 +57,23 @@ theorem bitVecZeroExtendWideningPreservesToNat {width : Nat} (extra : Nat)
   (bitVecOfNatModToNat value.toNat).trans
     (natRemainderOfLt (valueBelowWiderModulus value.isLt))
 
-/-- **Unsigned view widening** — zero-extend a `UIntN width` to `UIntN
+/-- Unsigned view widening: zero-extend a `UIntN width` to `UIntN
 (width + extra)`. -/
 def UIntN.zeroExtend {width : Nat} (value : UIntN width) (extra : Nat) :
     UIntN (width + extra) :=
   ⟨bitVecZeroExtend value.bits (width + extra)⟩
 
-/-- The widened unsigned view reads back the SAME unsigned value. -/
+/-- The widened unsigned view reads back the same unsigned value. -/
 theorem uIntNZeroExtendPreservesValue {width : Nat} (value : UIntN width) (extra : Nat) :
     (value.zeroExtend extra).unsignedValue = value.unsignedValue :=
   bitVecZeroExtendWideningPreservesToNat extra value.bits
 
-/-! ## (2) The genuine number-tower map: `Nat ↠ BitVec (width+1)`
+/-! ## (2) The number-tower map: `Nat ↠ BitVec (width+1)`
 
 The reduction `Nat ↠ Z/2^(width+1)` is a semiring homomorphism (like `ℕ ↪ ℤ`,
 `Nat` has no negation).  The two operation obligations reduce, via `toNat`, to
-"reduce-before-adding is invisible to the outer reduction" — the shipped
-`natRemainderAddPush` / `natRemainderMulPush`. -/
+"reduce-before-adding is invisible to the outer reduction" — the
+`natRemainderAddPush` / `natRemainderMulPush` lemmas. -/
 
 /-- Reducing a sum equals adding the two reduced summands (the `bitVecAdd`
 homomorphism law for the reducer). -/
@@ -136,10 +133,10 @@ theorem bitVecOfNatModZero {width : Nat} :
     ((bitVecOfNatModToNat 0).trans
       ((natRemainderOfLt (Nat.two_pow_pos width)).trans bitVecZeroToNat.symm))
 
-/-- **`Nat ↠ BitVec (width+1)`** — the number-tower reduction as a genuine
-setoid semiring homomorphism into the shipped commutative-ring witness.  This is
-the honest, correct-direction fixed-width tower map (mirror of `embedNatToInt`).
-`preservesOne` is `rfl` because `bitVecOne := bitVecOfNatMod 1`. -/
+/-- `Nat ↠ BitVec (width+1)`: the number-tower reduction as a setoid semiring
+homomorphism into the commutative-ring witness — the correct-direction
+fixed-width tower map (mirror of `embedNatToInt`).  `preservesOne` is `rfl`
+because `bitVecOne := bitVecOfNatMod 1`. -/
 def reduceNatToBitVec (width : Nat) :
     SetoidSemiringHom natCommutativeSemiringWitness
       (commutativeSemiringWitnessOfRing (bitVecCommutativeRingWitness width)) where

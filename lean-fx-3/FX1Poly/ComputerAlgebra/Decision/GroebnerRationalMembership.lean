@@ -1,31 +1,29 @@
 import FX1Poly.ComputerAlgebra.Decision.GroebnerMembership
 import FX1Poly.ComputerAlgebra.Number.NormalizedRational
 
-/-! # FX1Poly/ComputerAlgebra/Decision/GroebnerRationalMembership — the DISSAT-GROB
-    certificate route over ℚ (ideal membership by checkable cofactor certificates,
+/-! # FX1Poly/ComputerAlgebra/Decision/GroebnerRationalMembership — the Gröbner
+    ideal-membership certificate route over ℚ (checkable cofactor certificates,
     canonical-normal-form rational coefficients)
 
-The F2 brick (`GroebnerMembership.lean`, prefix `grb`) shipped the reflection split —
+The F2 brick (`GroebnerMembership.lean`, prefix `grb`) provides the reflection split —
 untrusted fuel-bounded finder with cofactor accumulation, certified checker
 `p = Σ qᵢ·gᵢ`, semantic inductive, soundness on the checker only — at Bool
-coefficients, because ℚ had no canonical normal form and structural beq on sorted
-coefficient lists would have been equality-up-to-setoid everywhere.  That
-prerequisite landed as `NormalizedRational.lean` (prefix `qnf`): `QnfRat` with
+coefficients, because ℚ has no canonical normal form under the raw setoid and
+structural beq on sorted coefficient lists would be equality-up-to-setoid everywhere.
+The canonical carrier is `NormalizedRational.lean` (prefix `qnf`): `QnfRat` with
 byte-equality = rational equality, plain-`Eq` field laws, structural `qnfBeq` with
 `qnfBeqIffEq`, and `qnfInv` + `qnfMulInvCancels` on a plain disequality.  This module
-is the SAME certificate architecture instantiated at `QnfRat`.
+is the same certificate architecture instantiated at `QnfRat`.
 
-## Architecture decision: (B) monomorphic clone, consciously
+## Architecture: monomorphic clone at `QnfRat`
 
-Two shapes were on the table: (A) a shared core parameterized over a
-coefficient-field bundle, instantiated at Bool and `QnfRat`; (B) a concrete
-monomorphic clone at `QnfRat`.  This module is (B): polymorphic `Eq` manipulation is
-a known propext source in this repo (match-compiler splitter auxes over a type
-variable pull `propext`; the zero-axiom recipes are all per-carrier), the repo norm
-is per-carrier monomorphic kits (the whole `qnf`/`Int`/`Nat` number tower), and the
-F2 brick stays untouched as the commissioned reference.  The price — structural
-duplication of the order/insert/scan scaffolding — is paid once and audited per
-declaration.
+A shared core parameterized over a coefficient-field bundle (instantiated at Bool and
+`QnfRat`) is rejected in favour of a concrete monomorphic clone.  Polymorphic `Eq`
+manipulation is a propext source in this repo (match-compiler splitter auxes over a
+type variable pull `propext`; the zero-axiom recipes are all per-carrier), and the
+repo norm is per-carrier monomorphic kits (the whole `qnf`/`Int`/`Nat` number tower).
+The price — structural duplication of the order/insert/scan scaffolding — is audited
+per declaration.
 
 ## What ℚ changes against F2, layer by layer
 
@@ -73,17 +71,16 @@ declaration.
     `grqFireFinderEmitsRationalCofactor`): no ℤ cofactor exists (`3q = 2` has no
     integer solution), the exact content a rational coefficient field adds.
 
-## The honest wall (cited, not re-minted)
+## The honest wall (cited)
 
 Full NON-membership decision is out of scope exactly as in the F2 brick: see
 `grbNonMembershipDecisionStatement` with owner
 `fxDissatGrob_hasNonMembershipDecision := false` in `GroebnerMembership.lean` —
 walled at Buchberger termination (Dickson, certified zero-axiom-impossible at
-`fxNet4_dicksonWall`) plus Newman confluence.  The same two legs block the ℚ case;
-no new wall `Prop` is minted here.  The F2 brick's evaluation-homomorphism layer
-(`grbEvalPoly` common-zero grounding) is intentionally NOT cloned in this first
-landing — the semantic content here is `GrqInIdeal` + `grqCertificateSound`; the
-ℚ evaluation layer is the natural successor brick.
+`fxNet4_dicksonWall`) plus Newman confluence.  The same two legs block the ℚ case; no
+new wall `Prop` is minted here.  The semantic content here is `GrqInIdeal` +
+`grqCertificateSound`; the ℚ evaluation-homomorphism layer (common-zero grounding) is
+provided separately in `GroebnerRationalEvaluation`.
 
 ## Zero-axiom discipline
 
@@ -920,7 +917,7 @@ theorem grqCoeffNonzeroImpliesLessThanHead : (tail : GrqPoly) → (head : GrqTer
                 hSecondLess
 
 /-- **Canonical-list extensionality**: canonical polynomials with pointwise-equal
-QnfRat coefficient functions are byte-equal lists — the T1 keystone, structurally
+QnfRat coefficient functions are byte-equal lists — the keystone, structurally
 true BECAUSE the coefficients are canonical. -/
 theorem grqPolyExtensionality : (leftPoly rightPoly : GrqPoly) →
     GrqPolyCanonical leftPoly → GrqPolyCanonical rightPoly →
@@ -1298,12 +1295,12 @@ theorem grqCertificateSound (generators cofactors : List GrqPoly) (target : GrqP
 
 /-! ## THE FINDER: fuel-bounded top-reduction with rational cofactor accumulation
 
-Untrusted-but-verified-on-success.  THE STEP F2 GOT FOR FREE: the reducer scale is
-`leadCoefficient · qnfInv(generatorLeadCoefficient)` — exact division by an
-arbitrary nonzero rational leading coefficient.  Scale/quotient CORRECTNESS is
-never needed by any theorem (it only affects progress); the invariant holds at
-EVERY fuel level, so fuel exhaustion still leaves a checkable partial
-certificate, and a run reaching remainder `[]` yields cofactors the checker
+Untrusted-but-verified-on-success.  The reducer scale is
+`leadCoefficient · qnfInv(generatorLeadCoefficient)` — exact division by an arbitrary
+nonzero rational leading coefficient, the step the F2 brick does not need.
+Scale/quotient CORRECTNESS is never needed by any theorem (it only affects progress);
+the invariant holds at EVERY fuel level, so fuel exhaustion still leaves a checkable
+partial certificate, and a run reaching remainder `[]` yields cofactors the checker
 accepts (`grqFoundCertificateCertifies`). -/
 
 /-- A reducer choice: which generator fires, with what rational scale and

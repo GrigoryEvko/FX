@@ -4,22 +4,22 @@ import FX1Poly.ComputerAlgebra.Number.NatEuclideanDivision
 /-! # FixedWidth/OverflowArithmetic — wrap / trap / saturate (dim 16)
 
 The three non-`exact` overflow modes of FX §6.3 dim 16 as typed operations on the
-shipped `BitVec` substrate, each with proven semantics.  The overflow TEST is the
-STRUCTURAL `Nat` order on the un-reduced true sum/product `a.toNat (+/*) b.toNat`
-via `Nat.blt` (a `Bool` program, `propext`-clean) — never a `shiftRight`/`div`
-bit comparison, which would leak `propext`.
+`BitVec` substrate, each with proven semantics.  The overflow test is the
+structural `Nat` order on the un-reduced true sum/product `a.toNat (+/*) b.toNat`
+via `Nat.blt` (a `Bool` program, `propext`-clean); a `shiftRight`/`div` bit
+comparison would leak `propext`.
 
-* **wrap** — `bitVecAdd`/`bitVecMul` are ALREADY the `mod 2^n` ops; the wrap
-  result is exactly `(a (+/*) b) mod 2^n` (`bitVecAddToNat`, re-exported).  The
-  wrap algebra IS the shipped `bitVecCommutativeRingWitness`.
-* **trap** — `Option`; `some (reduced result)` iff the true result FITS below
-  `2^n`, `none` on overflow.  On the fits domain trap agrees with wrap.
-* **saturate** — clamps to the top value `2^n − 1` on overflow, the exact reduced
+* wrap — `bitVecAdd`/`bitVecMul` are the `mod 2^n` ops, so the wrap result is
+  `(a (+/*) b) mod 2^n` (`bitVecAddToNat`, re-exported); the wrap algebra is
+  `bitVecCommutativeRingWitness`.
+* trap — `Option`; `some (reduced result)` when the true result is below `2^n`,
+  `none` on overflow.  On the fits domain trap agrees with wrap.
+* saturate — clamps to the top value `2^n − 1` on overflow, the exact reduced
   result otherwise.
 
-Unsigned add and mul are covered for each mode.  Signed trap/saturate (target
-window `[-2^(n-1), 2^(n-1))`, needing an `Int → BitVec` encoder + round-trip) are
-the heavier signed follow-on brick.
+Unsigned add and mul are covered for each mode.  Signed trap/saturate over the
+window `[-2^(n-1), 2^(n-1))` (needing an `Int → BitVec` encoder and round-trip)
+live in `FixedWidth/SignedSemantics`.
 
 `Init`-only, structural, genuine-`Eq`, zero axioms. -/
 
@@ -47,7 +47,7 @@ theorem natBltEqFalseOfLe {low high : Nat} (isNotBelow : high ≤ low) :
     Nat.blt low high = false :=
   natBleEqFalseOfLt (Nat.lt_succ_of_le isNotBelow)
 
-/-! ## wrap — the shipped `mod 2^n` arithmetic -/
+/-! ## wrap — the `mod 2^n` arithmetic -/
 
 /-- Wrapping addition (FX `overflow(wrap)`). -/
 def wrapAdd {width : Nat} (left right : BitVec width) : BitVec width :=
@@ -57,12 +57,12 @@ def wrapAdd {width : Nat} (left right : BitVec width) : BitVec width :=
 def wrapMul {width : Nat} (left right : BitVec width) : BitVec width :=
   bitVecMul left right
 
-/-- **Wrap add is the modular sum** `(a + b) mod 2^n`. -/
+/-- Wrap add is the modular sum `(a + b) mod 2^n`. -/
 theorem wrapAddIsModularSum {width : Nat} (left right : BitVec width) :
     (wrapAdd left right).toNat = natRemainder (left.toNat + right.toNat) (2 ^ width) :=
   bitVecAddToNat left right
 
-/-- **Wrap mul is the modular product** `(a * b) mod 2^n`. -/
+/-- Wrap mul is the modular product `(a * b) mod 2^n`. -/
 theorem wrapMulIsModularProduct {width : Nat} (left right : BitVec width) :
     (wrapMul left right).toNat = natRemainder (left.toNat * right.toNat) (2 ^ width) :=
   bitVecMulToNat left right
@@ -82,8 +82,8 @@ def trapMul {width : Nat} (left right : BitVec width) : Option (BitVec width) :=
     (some (bitVecOfNatMod (left.toNat * right.toNat)))
     none
 
-/-- **Trap add returns `some` exactly on the fits domain**, and the payload is
-the exact (un-wrapped) sum. -/
+/-- Trap add returns `some` exactly on the fits domain, and the payload is the
+exact (un-wrapped) sum. -/
 theorem trapAddFits {width : Nat} (left right : BitVec width)
     (fits : left.toNat + right.toNat < 2 ^ width) :
     trapAdd left right = some (bitVecOfNatMod (left.toNat + right.toNat)) :=
@@ -91,7 +91,7 @@ theorem trapAddFits {width : Nat} (left right : BitVec width)
     (fun flag => cond flag (some (bitVecOfNatMod (left.toNat + right.toNat))) none)
     (natBltEqTrueOfLt fits)
 
-/-- **Trap add returns `none` exactly on overflow.** -/
+/-- Trap add returns `none` exactly on overflow. -/
 theorem trapAddOverflows {width : Nat} (left right : BitVec width)
     (overflows : 2 ^ width ≤ left.toNat + right.toNat) :
     trapAdd left right = none :=
@@ -99,19 +99,19 @@ theorem trapAddOverflows {width : Nat} (left right : BitVec width)
     (fun flag => cond flag (some (bitVecOfNatMod (left.toNat + right.toNat))) none)
     (natBltEqFalseOfLe overflows)
 
-/-- On the fits domain the trap payload is the EXACT sum (no wrap-around). -/
+/-- On the fits domain the trap payload is the exact sum (no wrap-around). -/
 theorem trapAddSomeIsExact {width : Nat} (left right : BitVec width)
     (fits : left.toNat + right.toNat < 2 ^ width) :
     (bitVecOfNatMod (width := width) (left.toNat + right.toNat)).toNat
       = left.toNat + right.toNat :=
   (bitVecOfNatModToNat (left.toNat + right.toNat)).trans (natRemainderOfLt fits)
 
-/-- The trap payload AGREES with the wrap result (both are the reduced sum). -/
+/-- The trap payload agrees with the wrap result (both are the reduced sum). -/
 theorem trapAddSomeAgreesWrap {width : Nat} (left right : BitVec width) :
     bitVecOfNatMod (width := width) (left.toNat + right.toNat) = wrapAdd left right :=
   rfl
 
-/-- **Trap mul returns `some` exactly on the fits domain.** -/
+/-- Trap mul returns `some` exactly on the fits domain. -/
 theorem trapMulFits {width : Nat} (left right : BitVec width)
     (fits : left.toNat * right.toNat < 2 ^ width) :
     trapMul left right = some (bitVecOfNatMod (left.toNat * right.toNat)) :=
@@ -119,7 +119,7 @@ theorem trapMulFits {width : Nat} (left right : BitVec width)
     (fun flag => cond flag (some (bitVecOfNatMod (left.toNat * right.toNat))) none)
     (natBltEqTrueOfLt fits)
 
-/-- **Trap mul returns `none` exactly on overflow.** -/
+/-- Trap mul returns `none` exactly on overflow. -/
 theorem trapMulOverflows {width : Nat} (left right : BitVec width)
     (overflows : 2 ^ width ≤ left.toNat * right.toNat) :
     trapMul left right = none :=
@@ -157,7 +157,7 @@ def saturateMulUnsigned {width : Nat} (left right : BitVec width) : BitVec width
     (bitVecOfNatMod (left.toNat * right.toNat))
     bitVecMaxUnsigned
 
-/-- **In range, saturate add is the exact sum.** -/
+/-- In range, saturate add is the exact sum. -/
 theorem saturateAddInRange {width : Nat} (left right : BitVec width)
     (fits : left.toNat + right.toNat < 2 ^ width) :
     (saturateAddUnsigned left right).toNat = left.toNat + right.toNat :=
@@ -167,7 +167,7 @@ theorem saturateAddInRange {width : Nat} (left right : BitVec width)
       (natBltEqTrueOfLt fits)).trans
     ((bitVecOfNatModToNat (left.toNat + right.toNat)).trans (natRemainderOfLt fits))
 
-/-- **On overflow, saturate add clamps to `2^n − 1`.** -/
+/-- On overflow, saturate add clamps to `2^n − 1`. -/
 theorem saturateAddClamps {width : Nat} (left right : BitVec width)
     (overflows : 2 ^ width ≤ left.toNat + right.toNat) :
     (saturateAddUnsigned left right).toNat = 2 ^ width - 1 :=
@@ -185,7 +185,7 @@ theorem natLeSubOneOfLt {value bound : Nat} (isBelow : value < bound) :
     (Nat.add_comm (bound - 1) 1).trans (natAddSubOfLe oneLe)
   Nat.le_of_succ_le_succ (reconstruct.symm ▸ isBelow)
 
-/-- **Saturate add is upper-bounded by `2^n − 1`** on both branches (clamp
+/-- Saturate add is upper-bounded by `2^n − 1` on both branches (clamp
 correctness). -/
 theorem saturateAddUpperBounded {width : Nat} (left right : BitVec width) :
     (saturateAddUnsigned left right).toNat ≤ 2 ^ width - 1 :=

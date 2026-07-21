@@ -11,7 +11,7 @@ and skew duality, the semantic force lemmas, the certificate-bearing reachabilit
 with PROVEN fuel adequacy (`twoSatIterateStabilizes`) and the closed-set refutation
 linchpin (`twoSatClosedRefutesPath`), the Even–Itai–Shamir decision augmentation with the
 no-mutual-reach preservation invariant, and the decision procedure `twoSatDecide` with
-BOTH commissioned theorems: `twoSatDecideUnsatSound` (two path certificates refute every
+both soundness theorems: `twoSatDecideUnsatSound` (two path certificates refute every
 assignment) and `twoSatDecideSatSound` (the selected assignment satisfies every clause).
 
 Marker: `fxDissatIsland_hasTwoSatDecision := true` (DECIDED).

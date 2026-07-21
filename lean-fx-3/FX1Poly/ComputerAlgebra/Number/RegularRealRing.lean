@@ -1,19 +1,20 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealInverse
 
-/-! # RegularReal commutative-ring laws (NUM-R-4)
+/-! # RegularReal commutative-ring laws
 
-The ℝ-level ring axioms on `RegularReal`, the substrate the ℂ = (re, im)
-lift consumes.  The arithmetic operations (`addReal`, `negReal`, `subReal`,
-`mulReal`) and their setoid congruences ship in the R-2/R-3 files; here we
-prove the LAWS those operations satisfy up to `DenotesSameReal`.
+The ℝ-level ring axioms on `RegularReal`, the substrate underlying the
+ℂ = (re, im) lift.  The arithmetic operations (`addReal`, `negReal`, `subReal`,
+`mulReal`) and their setoid congruences are defined in the arithmetic and
+multiplication modules; this file proves the LAWS those operations satisfy up
+to `DenotesSameReal`.
 
 Three sampling geometries govern the difficulty:
 
 * **Pointwise** — both sides sample every atom at the SAME index, so the law
   is a per-index ℚ setoid identity carried through `isWithinBoundCongr*` on a
   reflexive self-bound.  Commutativity of `+`, the additive inverse, and the
-  two negation-passing bricks (`negRealNegReal`, `negRealAddReal`) are all of
-  this kind — no analysis beyond the shipped `*Exact` ℚ law.
+  two negation-passing laws (`negRealNegReal`, `negRealAddReal`) are all of
+  this kind — no analysis beyond the `*Exact` ℚ law.
 
 * **One-sided sampling shift** — one side samples an atom at `2n+1` (or the
   bound-scaled deep index) while the comparison target samples it at `n`.
@@ -28,7 +29,7 @@ Three sampling geometries govern the difficulty:
 
 Associativity of `+`, and associativity/distributivity of `·`, sample atoms
 at genuinely distinct depths on the two sides and are the real slack-closure
-bricks — they live further down in this file (or are flagged open). -/
+theorems — they appear later in this file. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -54,7 +55,7 @@ theorem deepSampleDriftIsWithinSetoidBound (value : RegularReal)
         (lessEqualAsRefl (reciprocalOfSucc shallowIndex)))
       (value.isRegular deepIndex shallowIndex))
 
-/-! ## Negation-passing bricks (pointwise) -/
+/-! ## Negation-passing laws (pointwise) -/
 
 /-- Double negation on reals denotes the value back — pointwise, from the ℚ
 numerator round-trip. -/
@@ -853,11 +854,11 @@ theorem mulRealRightDistrib (leftSummand rightSummand factor : RegularReal) :
       (addRealRespectsDenotesSame (mulRealComm factor leftSummand)
         (mulRealComm factor rightSummand)))
 
-/-! ## Distributive corollaries the ℂ lift consumes
+/-! ## Distributive corollaries for the ℂ lift
 
-The four regrouping identities that let the Gaussian product's cross terms be
-reshuffled purely through the ℝ ring laws: the additive four-term medial, `·`
-over subtraction on each side, and the subtraction cross-pair. -/
+The four regrouping identities that reshuffle the Gaussian product's cross terms
+purely through the ℝ ring laws: the additive four-term medial, `·` over
+subtraction on each side, and the subtraction cross-pair. -/
 
 /-- **The additive medial** — swap the two inner summands of a four-term sum:
 `(a + b) + (c + d) ~ (a + c) + (b + d)`.  Associativity out, commute the

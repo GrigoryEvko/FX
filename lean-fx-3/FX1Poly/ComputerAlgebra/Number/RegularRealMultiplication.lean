@@ -1,13 +1,13 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealArithmetic
 
-/-! # RegularReal multiplication substrate (NUM-R-3a)
+/-! # RegularReal multiplication substrate
 
-The kit `mulReal` will consume, in two layers.
+The two-layer substrate underlying `mulReal`.
 
 **ℚ layer — the magnitude predicate and the product-difference bound.**
 `IsMagnitudeWithin value bound` is the abs-free `|value| ≤ bound`: the
 conjunction `value ≤ bound ∧ -value ≤ bound`, mirroring `IsWithinBound`'s
-two-sided discipline (NUM-R-0).  Its keystone is the product bound
+two-sided discipline.  Its keystone is the product bound
 
     |a| ≤ K  →  |c| ≤ E  →  0 ≤ E  →  |a·c| ≤ K·E
 
@@ -328,15 +328,15 @@ theorem approximationIsWithinCanonicalBound (value : RegularReal) (index : Nat) 
     (ratioOfNatSuccSumDenotesSame (value.approximation 0).numerator.natAbs 2 0)
     (isMagnitudeWithinTriangle regularityRelaxed baseMagnitude)
 
-/-! ## The scaled sampling index and its exact collapse (NUM-R-3b)
+/-! ## The scaled sampling index and its exact collapse
 
 `mulReal` samples both factors at a bound-scaled index.  The index is
 predecessor-shaped so that `scaled + 1` is DEFINITIONALLY
 `2·(bound)·(index+1)` — then the bound's numerator cancels against the
-scaled denominator as a SETOID IDENTITY (the R-2 exactness pattern), the
-medial regrouping pairs the doubled halves, and the R-2 half-reciprocal
-recombination finishes: the product's regularity certificate needs no
-inequality reasoning beyond the two product-difference legs. -/
+scaled denominator as a SETOID IDENTITY (the arithmetic layer's exactness
+pattern), the medial regrouping pairs the doubled halves, and the
+half-reciprocal recombination finishes: the product's regularity certificate
+needs no inequality reasoning beyond the two product-difference legs. -/
 
 namespace RationalPair
 
@@ -387,7 +387,7 @@ theorem mulRatioReciprocalScaledCollapses (boundPredecessor index : Nat) :
 modulus at the scaled index pair, `K·M + K·M` denotes
 `1/(first+1) + 1/(second+1)` — distribute `K` over `M`, collapse each
 scaled reciprocal to its half-reciprocal, regroup medially, and recombine
-the doubled halves (the R-2 identities). -/
+the doubled halves (the doubled-index identities). -/
 theorem doubledProductBoundCollapses
     (boundPredecessor firstIndex secondIndex : Nat) :
     DenotesSameAs
@@ -514,7 +514,7 @@ def mulReal (leftValue rightValue : RegularReal) : RegularReal :=
               (productSamplingIndex leftValue rightValue secondIndex))
             modulusIsNonNegative)) }
 
-/-! ## The multiplication congruence (NUM-R-3b-ii)
+/-! ## The multiplication congruence
 
 Two products of setoid-equal factors sample at DIFFERENT scaled indices, so
 the congruence cannot be pointwise.  It goes through SLACK CLOSURE: chain

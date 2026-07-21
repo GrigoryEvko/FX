@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.FloatingPoint.RealEmbedding
 
 /-! # FX1PolyAudit/ComputerAlgebra/FloatingPoint/RealEmbedding — zero-axiom
-    gate (NUM-R-7c)
+    gate
 
 Per-declaration zero-axiom gate for the float bridge: the ℤ[1/β] ↪ ℝ
 embedding, its setoid faithfulness (both directions), the constant

@@ -1,37 +1,35 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.FourierMotzkinCompleteness
 
-/-! # FX1PolyAudit/ComputerAlgebra/Decision/FourierMotzkinCompleteness — zero-axiom gate
-    (DISSAT-ARITH brick, half 2: Fourier–Motzkin elimination with certificate
-    composition)
+/-! # FX1PolyAudit/ComputerAlgebra/Decision/FourierMotzkinCompleteness — zero-axiom
+    gate (Fourier–Motzkin elimination with certificate composition)
 
 Per-declaration zero-axiom gate for the verified-finder route: the Nat kit
 extensions (right distributivity, the witnessed structural difference
 `lfmNatDelta` with its recovery spec, ble flips, the `cond`-based two-branch
-maximum `lfmNatGreater`), the `LfkInt`/vector/relation/constraint algebra
+maximum `lfmNatGreater`), the `LfkInt`, vector, relation, and constraint algebra
 extensions (scale composition, multiplier distribution, cross-zero closure, the
 trivial-row identities guarded by `lfmRelationIsInequality`), the provenance
-Nat-vector algebra with THE BILINEARITY THEOREMS
-(`lfmWeightedSumOfScaledCertificate`, `lfmWeightedSumOfAddedCertificates` —
+Nat-vector algebra with the bilinearity theorems
+(`lfmWeightedSumOfScaledCertificate`, `lfmWeightedSumOfAddedCertificates`,
 structural constraint equalities), coefficient extraction with the
 beyond-length-is-zero semantics, the scaled-opposite-entries cancellation core,
 certified rows (`LfmCertifiedRow`) with the exactness invariant
-(`lfmRowMatchesProvenance`), the elimination round (zero bucket + positive×
+(`lfmRowMatchesProvenance`), the elimination round (zero bucket plus positive-by-
 negative cross combination with provenance composition) and its preservation
-lemmas (exactness, forward satisfaction, target elimination, zero/length
-stability), the fuel driver with zero-coverage, THE GROUNDING THEOREM
-(`lfmFinalRowsAreGround`), the ground scan and THE COMPOSITION THEOREM
+lemmas (exactness, forward satisfaction, target elimination, zero and length
+stability), the fuel driver with zero-coverage, the grounding theorem
+(`lfmFinalRowsAreGround`), the ground scan and the composition theorem
 (`lfmFoundContradictionCertifies`: finder output is accepted verbatim by the
-sibling's `lfkCheckRefutation`) plus its soundness corollary
+checker's `lfkCheckRefutation`) plus its soundness corollary
 (`lfmFoundCertificateRefutes`), the one-pair extension core
-(`lfmOnePairExtensionCore` — the backward-direction step algebra), the honest
-wall (`lfmRoundExtensionStatement`, owner
-`fxDissatArith_hasFourierMotzkinCompleteness = false` — the round-extension
-lemma; the sibling's `fxDissatArith_hasFarkasCompleteness = false` stays
-authoritative), the DECIDED marker `fxDissatArith_hasFmCertificateComposition
-= true`, and the kernel-checked end-to-end smoke pins (finder→checker fires on
-the sibling fixtures and the two-variable chain, clean scans on satisfiable
-systems, the fired one-pair core instance).
+(`lfmOnePairExtensionCore`, the backward-direction step algebra), the
+round-extension Prop (`lfmRoundExtensionStatement`,
+`fxDissatArith_hasFourierMotzkinCompleteness = false`, stated but uninhabited
+here), the composition marker `fxDissatArith_hasFmCertificateComposition = true`,
+and the kernel-checked smoke pins (finder → checker fires on the checker fixtures
+and the two-variable chain, clean scans on satisfiable systems, the one-pair core
+instance).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

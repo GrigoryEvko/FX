@@ -1,13 +1,11 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntDistributivity
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntDistributivity — zero-axiom gate (FLOAT-1 brick 4)
+/-! # Zero-axiom gate for `IntDistributivity`
 
 Per-declaration zero-axiom gate for the `negOfNat` addition kit, the mul-over-`subNatNat`
-bridges, and hand-rolled `Int` distributivity.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+bridges, and hand-rolled `Int` distributivity. Every declaration must be free of `propext`,
+`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

@@ -2,45 +2,40 @@ import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
 import FX1Poly.ComputerAlgebra.Number.IntOrderCore
 import FX1Poly.ComputerAlgebra.Number.NatEuclideanDivision
 
-/-! # FX1Poly/ComputerAlgebra/Number/NatGreatestCommonDivisor — counting Euclid
-    (NUM-Q-4a)
+/-! # Counting Euclid — the natural-number gcd
 
-Init's `Nat.gcd` is defined by well-founded recursion (banned: `WellFounded.fix`
-does not compute by kernel reduction and its equation lemmas are propext-dirty).
-This module hand-rolls Euclid's algorithm STRUCTURALLY on a fuel argument over
-the counting divider (`natDivModCounting`), with the divides certificates proved
-by the same fuel induction.
+Init's `Nat.gcd` is defined by well-founded recursion, which is unavailable here:
+`WellFounded.fix` does not compute by kernel reduction and its equation lemmas leak
+`propext`. Euclid's algorithm is recursed structurally on a fuel argument over the
+counting divider (`natDivModCounting`), with the divides certificates proved by the same
+fuel induction.
 
-  * `NatDivides divisor value` is the explicit-witness divisibility
-    `∃ quotient, value = divisor * quotient` — divisor on the LEFT, matching the
-    counting divider's reconstruction shape, so the multiple-of-the-divisor step
-    is one `natMulAssoc`.
+  * `NatDivides divisor value` is explicit-witness divisibility
+    `∃ quotient, value = divisor * quotient`, the divisor on the LEFT to match the
+    counting divider's reconstruction shape, so a multiple-of-the-divisor step is one
+    `natMulAssoc`.
   * `natGcdWithFuel` recurses on fuel only; the Euclid step swaps
-    `(leftValue, rightValue) ↦ (rightValue mod leftValue, leftValue)`, and the
-    remainder bound keeps the invariant `leftValue < fuel` — so `fuel =
-    leftValue + 1` always suffices (`natGcd`).
-  * The divides-left and divides-right certificates are mutually entangled
-    through the argument swap, so `natGcdWithFuelDividesBoth` proves the
-    conjunction in ONE induction; the wrappers project it.
+    `(leftValue, rightValue) ↦ (rightValue mod leftValue, leftValue)`, and the remainder
+    bound keeps the invariant `leftValue < fuel`, so `fuel = leftValue + 1` always
+    suffices (`natGcd`).
+  * The divides-left and divides-right certificates are entangled through the argument
+    swap, so `natGcdWithFuelDividesBoth` proves the conjunction in ONE induction; the
+    wrappers project it.
 
-The extended-Euclid layer (NUM-Q-4b) rides the same fuel induction: the
-Bezout identity `NatBezoutIdentityFor` is the Nat-safe disjunctive form
-`s*a = t*b + g ∨ t*b = s*a + g` (the ℤ coefficients' signs become the
-disjunct), maintained through Euclid's swap by the coefficient update
-`(s', t') ↦ (s'*Q + t', s')` which FLIPS the disjunct.  Greatest-ness
-(`natDividesGcdOfDividesBoth`) follows without a second induction: scale the
-common divisor into the identity and cancel a summand
-(`natDividesAddCancelLeft`, discharged by Euclidean quotient uniqueness
-against the zero remainder).  Still deferred: fuel-irrelevance (the
-recurrence equation between `natGcd` calls at different fuels).
+The extended-Euclid layer rides the same fuel induction. The Bezout identity
+`NatBezoutIdentityFor` is the Nat-safe disjunctive form `s*a = t*b + g ∨ t*b = s*a + g`
+(the ℤ coefficients' signs become the disjunct), maintained through Euclid's swap by the
+coefficient update `(s', t') ↦ (s'*Q + t', s')`, which flips the disjunct. Greatest-ness
+(`natDividesGcdOfDividesBoth`) follows without a second induction: scale the common
+divisor into the identity and cancel a summand (`natDividesAddCancelLeft`, discharged by
+Euclidean quotient uniqueness against the zero remainder). One caveat: fuel-irrelevance —
+the recurrence equation between `natGcd` calls at different fuels — is not established
+here.
 
-## Zero-axiom
-
-Structural fuel recursion, `Exists` witness arithmetic over
-`congrArg`/`Eq.trans`, `nomatch` on the empty fuel-exhausted bound.  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, no
-`WellFounded.fix`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/NatGreatestCommonDivisor.lean`. -/
+Structural fuel recursion, `Exists` witness arithmetic over `congrArg`/`Eq.trans`, and
+`nomatch` on the empty fuel-exhausted bound; free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`, and `WellFounded.fix`.
+Per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -178,7 +173,7 @@ theorem natGcdOfSuccLeftIsPositive (leftPredecessor rightValue : Nat) :
     0 < natGcd (leftPredecessor + 1) rightValue :=
   natDivisorOfSuccIsPositive (natGcdDividesLeft (leftPredecessor + 1) rightValue)
 
-/-! ## Extended Euclid — the Bezout identity (NUM-Q-4b) -/
+/-! ## Extended Euclid — the Bezout identity -/
 
 /-- A divisor of `value` divides every left multiple of `value` — commute the
 scale across the witness and re-associate. -/
@@ -445,7 +440,7 @@ theorem natDividesGcdOfDividesBoth {commonDivisor leftValue rightValue : Nat}
         (natDividesOfEq scaledRightIdentity.symm
           (natDividesMulLeft rightCoefficient dividesRight))
 
-/-! ## Exact division and Euclid's lemma (NUM-Q-4c prerequisites) -/
+/-! ## Exact division and Euclid's lemma -/
 
 /-- A positive divisor that divides leaves ZERO remainder in the counting
 divider — the divides witness and the divider give two Euclidean

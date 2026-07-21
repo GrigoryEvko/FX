@@ -4,11 +4,8 @@ import FX1Poly.ComputerAlgebra.Register.FieldLayout
 /-! # FX1PolyAudit/ComputerAlgebra/Register/FieldLayout — zero-axiom gate
 
 Per-declaration zero-axiom gate for the register bit-field layer (fx_design.md
-§18.1 / §18.4): the layout predicates (`fitsIn`, `isDisjointFrom`), the clean Nat
-helpers (two-power split, monotone/strict multiplication, quotient uniqueness /
-bound / add-multiple / high-collapse, sub-of-add-le), the arithmetic `extractField`
-/`insertField`, the "splice does not overflow" bridge `insertFieldToNat`, and the
-two round-trips (`extractField_insertField_same`, `extractField_insertField_disjoint`).
+§18.1 / §18.4): the layout predicates, the Nat helpers, `extractField` /
+`insertField`, the overflow bridge `insertFieldToNat`, and the two round-trips.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

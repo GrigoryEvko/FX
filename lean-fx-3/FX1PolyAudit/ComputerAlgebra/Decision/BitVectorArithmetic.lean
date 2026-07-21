@@ -2,17 +2,17 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.BitVectorArithmetic
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/BitVectorArithmetic — zero-axiom gate
-    (DISSAT-BV brick: bit-level operations ARE `Z/2^n` arithmetic)
+    (bit-level operations as `Z/2^n` arithmetic)
 
 Per-declaration zero-axiom gate for the bit-vector arithmetic bridge: the
 hand-rolled Bool kit (`bvaAndElimLeft`/`bvaAndElimRight`/`bvaAndIntro`), the
 little-endian value map `bvaToNat` with the fresh doubling power `bvaPow2`
 (positivity, `2·v = v + v`), the explicit additive telescopes
-(`bvaAddRiffle`/`bvaAddSwapRight`/`bvaMulTwoSwap` — the propext-dirty AC
-`simp only` route is banned), the width bound (`bvaConsValueBound`,
+(`bvaAddRiffle`/`bvaAddSwapRight`/`bvaMulTwoSwap`, replacing the propext-dirty AC
+`simp only` set), the width bound (`bvaConsValueBound`,
 `bvaToNatIsBounded`), the full adder (`bvaBitXor`, `bvaFullAdderSum`,
 `bvaFullAdderCarry`, the eight-case bit equation), the ripple-carry adder
-`bvaAddWithCarryOut` with ★ THE CARRY INVARIANT
+`bvaAddWithCarryOut` with the carry invariant
 (`bvaAddWithCarryOutInvariant` — exact-sum, subtraction-free) and the
 truncating `bvaAdd` certified modulo `2^n` (`bvaAddCorrect`), the zero/one
 vectors, the cons-only `bvaTake`/`bvaDrop` with the split lemma

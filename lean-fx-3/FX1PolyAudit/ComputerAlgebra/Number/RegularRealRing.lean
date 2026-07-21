@@ -2,10 +2,9 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealRing
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealRing — zero-axiom gate
-    (NUM-R-4)
 
 Per-declaration zero-axiom gate for the `RegularReal` commutative-ring laws:
-the deep-sample drift bridge, the negation-passing bricks, the additive-group
+the deep-sample drift bridge, the negation-passing laws, the additive-group
 laws (comm, zero identities, right inverse, associativity), the ℚ zero-product
 identities, the multiplicative identities/zero laws, commutativity, and the
 compare-bound collapse feeding additive associativity.

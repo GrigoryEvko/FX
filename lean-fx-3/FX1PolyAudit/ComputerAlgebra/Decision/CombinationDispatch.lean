@@ -2,34 +2,29 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.CombinationDispatch
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/CombinationDispatch — zero-axiom gate
-    (DISSAT-COMBINE brick: certificate-level Nelson–Oppen combination of the
-    ground-congruence and Farkas engines)
+    (certificate-level Nelson–Oppen combination of the ground-congruence and Farkas engines)
 
-Per-declaration zero-axiom gate for the combination dispatch: the cross-sum
-equivalence kit on `LfkInt` (symmetry, transitivity via middle-value cancellation,
-the unit-multiplication laws), the purified problem `NocProblem` with the shared
-interface (variable index ↦ ground term), dense environment lookup and unit /
-difference vectors (padding sums, no subtraction), the joint-model semantics
-(`nocFunctionalConsistencyHolds`, `nocIsJointModel`) and its two-theory grounding
-(`NocMixedModel`, `nocGroundTermValue`, the `GccDeriv` induction
-`nocDerivPreservedByModel`, and `nocModelAgreementGivesConsistency` — the bridge is
-derived, not assumed), the combination certificate `NocCertificate` with THE CHECKER
-(`nocCheckCombination`: every derived equality gcc-checks and the Farkas certificate
-refutes the equality-augmented A-side), the soundness chain (`nocDotUnitVector`,
-`nocDotDifferenceVector`, `nocDerivedRowSatisfiedOfEnvEq`,
+Per-declaration zero-axiom gate for the combination dispatch: the cross-sum equivalence kit on
+`LfkInt` (symmetry, transitivity via middle-value cancellation, the unit-multiplication laws), the
+purified problem `NocProblem` with the shared interface (variable index ↦ ground term), dense
+environment lookup and unit / difference vectors (padding sums, no subtraction), the joint-model
+semantics (`nocFunctionalConsistencyHolds`, `nocIsJointModel`) and its two-theory grounding
+(`NocMixedModel`, `nocGroundTermValue`, the `GccDeriv` induction `nocDerivPreservedByModel`, and
+`nocModelAgreementGivesConsistency` — the bridge is derived, not assumed), the combination
+certificate `NocCertificate` with the checker (`nocCheckCombination`: every derived equality
+gcc-checks and the Farkas certificate refutes the equality-augmented A-side), the soundness chain
+(`nocDotUnitVector`, `nocDotDifferenceVector`, `nocDerivedRowSatisfiedOfEnvEq`,
 `nocCheckedEqualityGivesEnvEq`, `nocAugmentedSystemSatisfied`) up to the headlines
-`nocCombinationSound` / `nocCombinationSoundForMixedSemantics`, the end-to-end finder
-(one-round E→A propagation filtered by the checker itself + the sibling
-Fourier–Motzkin finder; `nocFinderSound`, `nocFinderRefutesJointModels`), the honest
-walls over the faithful mixed AST (`nocPurificationStatement`, owner
-`fxDissatCombine_hasPurificationEquivalence = false` — the purifier itself is the
-missing artifact; `nocCombinationCompletenessStatement`, owner
-`fxDissatCombine_hasCombinationCompleteness = false` — FALSE over ℤ as stated,
-convexity / Farkas-ℚ-completeness / amalgamation legs named), the DECIDED markers
-`fxDissatCombine_hasDispatchSoundness = true` and
-`fxDissatCombine_hasEndToEndFinder = true`, and the kernel-checked smoke pins
-(accepted joint contradiction, rejected unprovable-equality and bogus-multiplier
-certificates, the pure-A degenerate dispatch, finder hit and miss, the exhibited
+`nocCombinationSound` / `nocCombinationSoundForMixedSemantics`, the end-to-end finder (one-round E→A
+propagation filtered by the checker itself + the sibling Fourier–Motzkin finder; `nocFinderSound`,
+`nocFinderRefutesJointModels`), the walls over the faithful mixed AST (`nocPurificationStatement`,
+owner `fxDissatCombine_hasPurificationEquivalence = false` — the purifier itself is the missing
+artifact; `nocCombinationCompletenessStatement`, owner
+`fxDissatCombine_hasCombinationCompleteness = false` — false over ℤ as stated, with the convexity /
+Farkas-ℚ-completeness / amalgamation legs named), the markers
+`fxDissatCombine_hasDispatchSoundness = true` and `fxDissatCombine_hasEndToEndFinder = true`, and the
+kernel-checked smoke pins (accepted joint contradiction, rejected unprovable-equality and
+bogus-multiplier certificates, the pure-A degenerate dispatch, finder hit and miss, the exhibited
 joint model of the satisfiable variant, and the universal no-certificate capstone).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,

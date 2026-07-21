@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Analysis.RealMultiplicativeContinuity
 
 /-! # FX1PolyAudit/ComputerAlgebra/Analysis/RealMultiplicativeContinuity —
-    zero-axiom gate (ANALYSIS-MULCONT-1)
+    zero-axiom gate
 
 Per-declaration zero-axiom gate for real multiplicative continuity: the
 fixed-factor scale collapse and zero-leg drop shims, bounded-domain two-variable

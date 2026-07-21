@@ -1,45 +1,35 @@
 import FX1Poly.ComputerAlgebra.Number.IntDistributivity
 import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntNegation — negation vs add/mul
-    (FLOAT-1 brick 6)
+/-! # Negation versus addition and multiplication
 
-Init's `Int.neg_add` / `Int.neg_mul` / `Int.mul_neg` are propext-dirty; this module
-hand-rolls all three.  Two new helpers on top of the brick-2..5 substrate:
+Init's `Int.neg_add`, `Int.neg_mul`, and `Int.mul_neg` leak `propext`; this module rebuilds
+all three. Two helpers support them:
 
   * `intNegNegOfNat` — negation undoes `negOfNat`; both arms definitional.
-  * `intNegSubNatNat` — negation FLIPS the arguments of a `subNatNat`.  Same double
-    recursion as the brick-3 add bridges: the right-zero column goes through
-    `intSubNatNatZeroRight` + `intNegOfNatEqSubNatNatZero`, the left-zero column is
-    definitional up to `intSubNatNatZeroRight`, and the step case is
+  * `intNegSubNatNat` — negation flips the arguments of a `subNatNat`, by double recursion:
+    the right-zero column via `intSubNatNatZeroRight` and `intNegOfNatEqSubNatNatZero`, the
+    left-zero column definitional up to `intSubNatNatZeroRight`, and the step case via
     `intSubNatNatSuccSucc` on both sides of the inductive hypothesis.
 
-`intNegAdd` is then a four-way constructor bash (the mixed `Int.add` arms are `subNatNat`
-calls, so negation flips them straight onto the brick-4 `negOfNat` addition kit);
-`intNegMul` collapses through the brick-5 mixed-sign mul helpers; `intMulNeg` is the
-corollary through `intMulComm`.
+`intNegAdd` is a four-way constructor case split (the mixed `Int.add` arms are `subNatNat`
+calls that negation flips onto the `negOfNat` addition helpers); `intNegMul` collapses
+through the mixed-sign multiplication helpers; `intMulNeg` follows via `intMulComm`.
 
-## Zero-axiom
-
-Structural recursion + `congrArg`/`Eq.trans` chains over clean Nat lemmas
-(`Nat.succ_add`) and the brick-2..5 kits.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/IntNegation.lean`. -/
+Structural recursion with `congrArg`/`Eq.trans` chains over `Nat.succ_add` and the corpus
+kit; free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, and
+`omega`; per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## The negation helpers -/
-
-/-- Negation undoes `negOfNat` — both arms definitional (`-(ofNat 0)` reduces to
-`negOfNat 0` which is `ofNat 0`; `-(negSucc m)` reduces to `ofNat (m + 1)`). -/
+/-- Negation undoes `negOfNat`; both arms definitional. -/
 theorem intNegNegOfNat : ∀ value : Nat, -(Int.negOfNat value) = Int.ofNat value
   | 0 => rfl
   | _ + 1 => rfl
 
-/-- **Negation flips `subNatNat`'s arguments.**  Double recursion in the brick-3 shape:
-right-zero column via `intSubNatNatZeroRight` + `intNegOfNatEqSubNatNatZero`, left-zero
-column definitional up to `intSubNatNatZeroRight`, step case via `intSubNatNatSuccSucc`
-on both sides of the inductive hypothesis. -/
+/-- Negation flips `subNatNat`'s arguments. Double recursion: right-zero column via
+`intSubNatNatZeroRight` and `intNegOfNatEqSubNatNatZero`, left-zero column definitional up
+to `intSubNatNatZeroRight`, step case via `intSubNatNatSuccSucc`. -/
 theorem intNegSubNatNat : ∀ leftValue rightValue : Nat,
     -(Int.subNatNat leftValue rightValue) = Int.subNatNat rightValue leftValue
   | leftValue, 0 =>
@@ -51,12 +41,9 @@ theorem intNegSubNatNat : ∀ leftValue rightValue : Nat,
         ((intNegSubNatNat leftValue rightValue).trans
           (intSubNatNatSuccSucc rightValue leftValue).symm)
 
-/-! ## Negation vs addition -/
-
-/-- **Negation distributes over addition** (Init's `Int.neg_add` is propext-dirty).
-Four-way constructor bash: the same-sign arms land on the brick-4 `negOfNat` addition
-kit (or one `Nat.succ_add` shuffle), the mixed arms are `subNatNat` calls flipped by
-`intNegSubNatNat`. -/
+/-- Negation distributes over addition. Four-way constructor case split: same-sign arms
+land on the `negOfNat` addition helpers (or a `Nat.succ_add` shuffle), mixed arms are
+`subNatNat` calls flipped by `intNegSubNatNat`. -/
 theorem intNegAdd : ∀ leftSummand rightSummand : Int,
     -(leftSummand + rightSummand) = -leftSummand + -rightSummand
   | .ofNat leftValue, .ofNat rightValue =>
@@ -71,11 +58,9 @@ theorem intNegAdd : ∀ leftSummand rightSummand : Int,
       (congrArg (fun sumValue => Int.ofNat (sumValue + 1))
         (Nat.succ_add leftPredecessor rightPredecessor)).symm
 
-/-! ## Negation vs multiplication -/
-
-/-- **Negating the left factor negates the product** (Init's `Int.neg_mul` is
-propext-dirty).  Four-way bash through the brick-5 mixed-sign mul helpers and
-`intNegNegOfNat`; the double-`negSucc` arm is definitional. -/
+/-- Negating the left factor negates the product. Four-way case split through the
+mixed-sign multiplication helpers and `intNegNegOfNat`; the double-`negSucc` arm is
+definitional. -/
 theorem intNegMul : ∀ leftFactor rightFactor : Int,
     -leftFactor * rightFactor = -(leftFactor * rightFactor)
   | .ofNat leftValue, .ofNat rightValue => intNegOfNatMulOfNat leftValue rightValue
@@ -86,17 +71,17 @@ theorem intNegMul : ∀ leftFactor rightFactor : Int,
       (intNegNegOfNat ((leftPredecessor + 1) * rightValue)).symm
   | .negSucc _, .negSucc _ => rfl
 
-/-- **Negating the right factor negates the product** (Init's `Int.mul_neg` is
-propext-dirty) — corollary of `intNegMul` through `intMulComm`. -/
+/-- Negating the right factor negates the product, a corollary of `intNegMul` through
+`intMulComm`. -/
 theorem intMulNeg (leftFactor rightFactor : Int) :
     leftFactor * -rightFactor = -(leftFactor * rightFactor) :=
   (intMulComm leftFactor (-rightFactor)).trans
     ((intNegMul rightFactor leftFactor).trans
       (congrArg Int.neg (intMulComm rightFactor leftFactor)))
 
-/-- **Negation swaps a difference**: `-(minuend - subtrahend) = subtrahend - minuend`
-(subtraction IS addition of the negation, so this is `intNegAdd` + `intNegNeg` + one
-commutation). -/
+/-- Negation swaps a difference: `-(minuend - subtrahend) = subtrahend - minuend`.
+Subtraction is addition of the negation, so this is `intNegAdd`, `intNegNeg`, and one
+commutation. -/
 theorem intNegSub (minuend subtrahend : Int) :
     -(minuend - subtrahend) = subtrahend - minuend :=
   (intNegAdd minuend (-subtrahend)).trans

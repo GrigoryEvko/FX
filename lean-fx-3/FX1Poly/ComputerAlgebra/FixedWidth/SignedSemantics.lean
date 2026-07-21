@@ -5,25 +5,25 @@ import FX1Poly.ComputerAlgebra.Decision.BitVectorArithmetic
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
-/-! # FixedWidth/SignedSemantics — the SIGNED half of dim 16 (trap / saturate / extend)
+/-! # FixedWidth/SignedSemantics — the signed half of dimension 16 (trap, saturate, extend)
 
 The unsigned overflow corpus (`OverflowArithmetic`, `SaturateMulSemantics`,
-`Widening`) certifies wrap/trap/saturate and zero-extension on the `[0, 2^n)`
-reading.  This file supplies the signed half over the SAME substrate: the
-two's-complement window `[-2^(n-1), 2^(n-1))` read through the LIVE encoding
+`Widening`) certifies wrap, trap, saturate, and zero-extension on the `[0, 2^n)`
+reading.  This file supplies the signed half over the same substrate: the
+two's-complement window `[-2^(n-1), 2^(n-1))` read through the encoding
 `SIntN.signedValue = bitVecToInt bits`, where the sign test is the structural
-`bitVecIsNegative = !decide (2 * toNat < 2^n)`.
+`bitVecIsNegative = !decide (2 * toNat < 2^n)` (spec §3.1, §3.8).
 
 ## The subtraction-free convention
 
-Every statement is phrased in the encoding's own `Nat` terms — never through
+Every statement is phrased in the encoding's own `Nat` terms rather than through
 library `Int` lemmas (the two `sIntNSignedValueOf*` anchors mention `Int` in
-their STATEMENT only; their proofs are single `congrArg`s over the sign flag).
+their statement only; their proofs are single `congrArg`s over the sign flag).
 The window bookkeeping runs through one interpretation helper:
 
 * `sIntNBiasedValue value = signedValue value + 2^(n-1)`, a `Nat` in
   `[0, 2^n)` — top bit clear: `toNat + 2^(n-1)`; top bit set: the complement
-  magnitude `toNat - 2^(n-1)`, characterized ADDITIVELY
+  magnitude `toNat - 2^(n-1)`, characterized additively
   (`sIntNBiasedValueOfNegative : biased + 2^(n-1) = toNat`).
 
 In biased coordinates the signed window is `[0, 2^n)`, the exact signed sum of
@@ -32,26 +32,30 @@ exact signed product is `sIntNMulBiasedShiftedProduct - sIntNMulBiasCross`
 (`s1*s2 = (b1*b2 + 2^(n-1)*2^(n-1)) - (2^(n-1)*b1 + 2^(n-1)*b2)`), so every
 fits test and every exactness equation is a pure `Nat` (in)equality.
 
-## The four bricks
+## Signed range, trap, saturation, sign extension, and the BitVec value bridge
 
-1. **Signed range** — `sIntNValueIsBounded` (the `Views` docstring promise):
-   top bit clear ⟹ `toNat < 2^(n-1)` (so `signedValue = toNat < 2^(n-1)`);
-   top bit set ⟹ `2^(n-1) ≤ toNat` (so `signedValue = toNat - 2^n ≥ -2^(n-1)`).
-2. **Signed trap** — `sIntNTrapAdd` / `sIntNTrapMul` return `some` exactly on
-   the signed window, `none` on signed overflow (both sides), and the `some`
-   payload's biased value satisfies the exact-sum/product `Nat` equation
+1. Signed range — `sIntNValueIsBounded` (the `Views` promise): top bit
+   clear ⟹ `toNat < 2^(n-1)` (so `signedValue = toNat < 2^(n-1)`); top bit
+   set ⟹ `2^(n-1) ≤ toNat` (so `signedValue = toNat - 2^n ≥ -2^(n-1)`).
+2. Signed trap — `sIntNTrapAdd` / `sIntNTrapMul` return `some` exactly on the
+   signed window, `none` on signed overflow (both sides), and the `some`
+   payload's biased value satisfies the exact sum/product `Nat` equation
    (`sIntNTrapAddSomeIsExact`, `sIntNTrapMulSomeIsExact`).
-3. **Signed saturate** — `sIntNSaturateAdd` / `sIntNSaturateMul` clamp to
+3. Signed saturation — `sIntNSaturateAdd` / `sIntNSaturateMul` clamp to
    `sIntNMostNegative` (`toNat = 2^(n-1)`, i.e. `-2^(n-1)`) below and
    `sIntNMostPositive` (`toNat + 1 = 2^(n-1)`, i.e. `2^(n-1) - 1`) above, and
    are exact in range.
-4. **Sign extension** — `SIntN.signExtend` preserves the signed value: top bit
-   clear reduces to the shipped zero-extension reading (`toNat` unchanged); top
-   bit set preserves the complement magnitude additively
+4. Sign extension — `SIntN.signExtend` preserves the signed value: top bit
+   clear reduces to the zero-extension reading (`toNat` unchanged); top bit set
+   preserves the complement magnitude additively
    (`extToNat + 2^width = toNat + 2^(width+extra)`); the sign bit is preserved.
+5. BitVec value bridge — `fwsBitVecToBvaBits` converts a `BitVec` to the
+   `Decision/BitVectorArithmetic` little-endian `List Bool` carrier, and
+   `fwsBitVecToBvaBitsToNat` / `fwsBitVecToBvaBitsRoundTrip` identify its
+   Horner reading `bvaToNat` with `BitVec.toNat`.
 
-Like the sibling ring witnesses, everything windowed is indexed by `width + 1`
-(positive width) so the half modulus `2^width` is meaningful.
+Everything windowed is indexed by `width + 1` (positive width) so the half
+modulus `2^width` is meaningful.
 
 `Init`-only, structural, genuine-`Eq`, zero axioms. -/
 
@@ -142,8 +146,8 @@ theorem fwsLtOfDoubleLtDouble {small large : Nat}
       (Nat.lt_irrefl (2 * small)
         (Nat.lt_of_lt_of_le isDoubledLt (fwsDoubleLeDoubleOfLe isGe))).elim
 
-/-- Left-addend cancellation for `≤` (the propext-clean replacement for Init's
-`Nat.le_of_add_le_add_left`, which is dirty — probed). -/
+/-- Left-addend cancellation for `≤`, avoiding Init's `Nat.le_of_add_le_add_left`
+(which routes through `propext`). -/
 theorem fwsLeOfAddLeAddLeft {sharedAddend lowValue highValue : Nat}
     (isLe : sharedAddend + lowValue ≤ sharedAddend + highValue) :
     lowValue ≤ highValue :=
@@ -173,11 +177,11 @@ theorem fwsPowLeWiderPow {width extra : Nat} : 2 ^ width ≤ 2 ^ (width + extra)
   (twoPowAdd 2 width extra).symm ▸
     Nat.le_mul_of_pos_right (2 ^ width) (Nat.two_pow_pos extra)
 
-/-! ## Brick 1 — the signed range (the `Views` docstring promise)
+/-! ## The signed range
 
 `signedValue = toNat` when the top bit is clear and `toNat - 2^(n+1)` (as `Int`)
-when set, so the window `[-2^n, 2^n)` at width `n+1` is EXACTLY the pair of
-`Nat` facts below — subtraction-free. -/
+when set, so the window `[-2^n, 2^n)` at width `n+1` is exactly the pair of
+`Nat` facts below, stated subtraction-free. -/
 
 /-- Top bit clear ⟹ the raw reading is below the half modulus (so
 `signedValue = toNat < 2^width`). -/
@@ -197,8 +201,8 @@ theorem sIntNNegativeValueIsBounded {width : Nat} (value : SIntN (width + 1))
   fwsLeOfDoubleLeDouble
     (Nat.le_trans (Nat.le_of_eq fwsDoublePow) (fwsDoubleGeOfBitVecNegative isNegative))
 
-/-- **The signed value lies in the two's-complement window** — the case-split
-range lemma promised by `Views`, phrased subtraction-free in the live encoding:
+/-- The signed value lies in the two's-complement window: the case-split range
+lemma promised by `Views`, phrased subtraction-free in the encoding as
 `[-2^width, 2^width)` at carrier width `width + 1`. -/
 theorem sIntNValueIsBounded {width : Nat} (value : SIntN (width + 1)) :
     (value.isNegative = false → value.bits.toNat < 2 ^ width)
@@ -233,7 +237,7 @@ theorem sIntNSignedValueOfNegative {width : Nat} (value : SIntN width)
 window `[-2^width, 2^width)` becomes `[0, 2^(width+1))`, and all signed
 overflow tests become `Nat` comparisons. -/
 
-/-- **Biased readout** — the signed value shifted up by the half modulus. -/
+/-- Biased readout: the signed value shifted up by the half modulus. -/
 def sIntNBiasedValue {width : Nat} (value : SIntN (width + 1)) : Nat :=
   cond value.isNegative
     (value.bits.toNat - 2 ^ width)
@@ -279,11 +283,11 @@ theorem sIntNBiasedValueIsBounded {width : Nat} (value : SIntN (width + 1)) :
             (2 ^ width))
           (Nat.le_of_eq fwsHalfAddHalf))
 
-/-- **The biased-window encode lemma** (the shared engine behind every signed
-exactness claim): reducing `encoded ∈ [2^width, 2^width + 2^(width+1))` into the
-carrier and reading the biased value back recovers `encoded - 2^width`, stated
-additively.  In signed terms: `encoded = trueValue + 2^(width+1)` encodes the
-in-window `trueValue` exactly. -/
+/-- The biased-window encode lemma, shared by every signed exactness claim:
+reducing `encoded ∈ [2^width, 2^width + 2^(width+1))` into the carrier and
+reading the biased value back recovers `encoded - 2^width`, stated additively.
+In signed terms `encoded = trueValue + 2^(width+1)` encodes the in-window
+`trueValue` exactly. -/
 theorem sIntNEncodeBiasedWindow {width : Nat} {encoded : Nat}
     (lowFits : 2 ^ width ≤ encoded)
     (highFits : encoded < 2 ^ width + 2 ^ (width + 1)) :
@@ -342,12 +346,12 @@ theorem sIntNEncodeBiasedWindow {width : Nat} {encoded : Nat}
 
 /-! ## The window ends (the saturate clamp targets) -/
 
-/-- **The most negative signed value** — bit pattern `10…0`, i.e. `-2^width` at
+/-- The most negative signed value: bit pattern `10…0`, i.e. `-2^width` at
 carrier width `width + 1`. -/
 def sIntNMostNegative {width : Nat} : SIntN (width + 1) :=
   ⟨bitVecOfNatMod (2 ^ width)⟩
 
-/-- **The most positive signed value** — bit pattern `01…1`, i.e. `2^width - 1`
+/-- The most positive signed value: bit pattern `01…1`, i.e. `2^width - 1`
 at carrier width `width + 1`. -/
 def sIntNMostPositive {width : Nat} : SIntN (width + 1) :=
   ⟨bitVecOfNatMod (2 ^ width - 1)⟩
@@ -405,7 +409,7 @@ theorem sIntNMostPositiveBiasedValueSucc {width : Nat} :
           ((congrArg (fun head => head + 2 ^ width) sIntNMostPositiveToNatSucc).trans
             fwsHalfAddHalf))))
 
-/-! ## Brick 2 — signed trap (add / mul)
+/-! ## Signed trap (add, mul)
 
 Fits tests in biased coordinates: the exact signed sum `s1 + s2` fits the
 window iff `2^width ≤ b1 + b2 < 2^width + 2^(width+1)` (since
@@ -419,7 +423,7 @@ def sIntNAddBiasedEncode {width : Nat} (left right : SIntN (width + 1)) :
     SIntN (width + 1) :=
   ⟨bitVecOfNatMod (sIntNBiasedValue left + sIntNBiasedValue right)⟩
 
-/-- **Signed trapping addition** — `some` of the exact sum's encoding when the
+/-- Signed trapping addition: `some` of the exact sum's encoding when the
 signed sum fits the window, `none` on signed overflow (either side). -/
 def sIntNTrapAdd {width : Nat} (left right : SIntN (width + 1)) :
     Option (SIntN (width + 1)) :=
@@ -429,7 +433,7 @@ def sIntNTrapAdd {width : Nat} (left right : SIntN (width + 1)) :
     (some (sIntNAddBiasedEncode left right))
     none
 
-/-- **Trap add returns `some` exactly on the signed window.** -/
+/-- Trap add returns `some` exactly on the signed window. -/
 theorem sIntNTrapAddFits {width : Nat} (left right : SIntN (width + 1))
     (lowFits : 2 ^ width ≤ sIntNBiasedValue left + sIntNBiasedValue right)
     (highFits : sIntNBiasedValue left + sIntNBiasedValue right
@@ -445,7 +449,7 @@ theorem sIntNTrapAddFits {width : Nat} (left right : SIntN (width + 1))
       (fun flag => cond flag (some (sIntNAddBiasedEncode left right)) none)
       (natBltEqTrueOfLt highFits))
 
-/-- **Trap add returns `none` on negative overflow** (`s1 + s2 < -2^width`). -/
+/-- Trap add returns `none` on negative overflow (`s1 + s2 < -2^width`). -/
 theorem sIntNTrapAddOverflowsBelow {width : Nat} (left right : SIntN (width + 1))
     (underflows : sIntNBiasedValue left + sIntNBiasedValue right < 2 ^ width) :
     sIntNTrapAdd left right = none :=
@@ -456,7 +460,7 @@ theorem sIntNTrapAddOverflowsBelow {width : Nat} (left right : SIntN (width + 1)
       (some (sIntNAddBiasedEncode left right)) none)
     (natBleEqFalseOfLt underflows)
 
-/-- **Trap add returns `none` on positive overflow** (`2^width ≤ s1 + s2`). -/
+/-- Trap add returns `none` on positive overflow (`2^width ≤ s1 + s2`). -/
 theorem sIntNTrapAddOverflowsAbove {width : Nat} (left right : SIntN (width + 1))
     (overflows : 2 ^ width + 2 ^ (width + 1)
       ≤ sIntNBiasedValue left + sIntNBiasedValue right) :
@@ -472,7 +476,7 @@ theorem sIntNTrapAddOverflowsAbove {width : Nat} (left right : SIntN (width + 1)
       (fun flag => cond flag (some (sIntNAddBiasedEncode left right)) none)
       (natBltEqFalseOfLe overflows))
 
-/-- **The trap-add payload is the EXACT signed sum**, as the subtraction-free
+/-- The trap-add payload is the exact signed sum, as the subtraction-free
 biased equation `biased(payload) + 2^width = biased(left) + biased(right)`
 (i.e. `signed(payload) = s1 + s2` after unshifting both sides). -/
 theorem sIntNTrapAddSomeIsExact {width : Nat} (left right : SIntN (width + 1))
@@ -501,7 +505,7 @@ def sIntNMulBiasedEncode {width : Nat} (left right : SIntN (width + 1)) :
   ⟨bitVecOfNatMod ((sIntNMulBiasedShiftedProduct left right + 2 ^ (width + 1))
     - sIntNMulBiasCross left right)⟩
 
-/-- **Signed trapping multiplication** — `some` of the exact product's encoding
+/-- Signed trapping multiplication: `some` of the exact product's encoding
 when the signed product fits the window, `none` on signed overflow. -/
 def sIntNTrapMul {width : Nat} (left right : SIntN (width + 1)) :
     Option (SIntN (width + 1)) :=
@@ -512,7 +516,7 @@ def sIntNTrapMul {width : Nat} (left right : SIntN (width + 1)) :
     (some (sIntNMulBiasedEncode left right))
     none
 
-/-- **Trap mul returns `some` exactly on the signed window.** -/
+/-- Trap mul returns `some` exactly on the signed window. -/
 theorem sIntNTrapMulFits {width : Nat} (left right : SIntN (width + 1))
     (lowFits : sIntNMulBiasCross left right
       ≤ sIntNMulBiasedShiftedProduct left right + 2 ^ width)
@@ -529,7 +533,7 @@ theorem sIntNTrapMulFits {width : Nat} (left right : SIntN (width + 1))
       (fun flag => cond flag (some (sIntNMulBiasedEncode left right)) none)
       (natBltEqTrueOfLt highFits))
 
-/-- **Trap mul returns `none` on negative overflow** (`s1*s2 < -2^width`). -/
+/-- Trap mul returns `none` on negative overflow (`s1*s2 < -2^width`). -/
 theorem sIntNTrapMulOverflowsBelow {width : Nat} (left right : SIntN (width + 1))
     (underflows : sIntNMulBiasedShiftedProduct left right + 2 ^ width
       < sIntNMulBiasCross left right) :
@@ -541,7 +545,7 @@ theorem sIntNTrapMulOverflowsBelow {width : Nat} (left right : SIntN (width + 1)
       (some (sIntNMulBiasedEncode left right)) none)
     (natBleEqFalseOfLt underflows)
 
-/-- **Trap mul returns `none` on positive overflow** (`2^width ≤ s1*s2`). -/
+/-- Trap mul returns `none` on positive overflow (`2^width ≤ s1*s2`). -/
 theorem sIntNTrapMulOverflowsAbove {width : Nat} (left right : SIntN (width + 1))
     (overflows : sIntNMulBiasCross left right + 2 ^ width
       ≤ sIntNMulBiasedShiftedProduct left right) :
@@ -560,10 +564,9 @@ theorem sIntNTrapMulOverflowsAbove {width : Nat} (left right : SIntN (width + 1)
       (fun flag => cond flag (some (sIntNMulBiasedEncode left right)) none)
       (natBltEqFalseOfLe overflows))
 
-/-- **The trap-mul payload is the EXACT signed product**, as the
-subtraction-free `Nat` combination
-`(biased(payload) + 2^width) + cross = shifted + 2^(width+1)` — unshifting,
-`signed(payload) = s1*s2 = shifted - cross`. -/
+/-- The trap-mul payload is the exact signed product, as the subtraction-free
+`Nat` combination `(biased(payload) + 2^width) + cross = shifted + 2^(width+1)`;
+unshifting gives `signed(payload) = s1*s2 = shifted - cross`. -/
 theorem sIntNTrapMulSomeIsExact {width : Nat} (left right : SIntN (width + 1))
     (lowFits : sIntNMulBiasCross left right
       ≤ sIntNMulBiasedShiftedProduct left right + 2 ^ width)
@@ -615,13 +618,13 @@ theorem sIntNTrapMulSomeIsExact {width : Nat} (left right : SIntN (width + 1))
         (sIntNMulBiasCross left right)).trans
       splitEq)
 
-/-! ## Brick 3 — signed saturate (add / mul)
+/-! ## Signed saturate (add, mul)
 
 Clamps to the window ends: below the window to `sIntNMostNegative`
 (`-2^width`), above it to `sIntNMostPositive` (`2^width - 1`, stated
 additively as `toNat + 1 = 2^width`), exact in range. -/
 
-/-- **Signed saturating addition.** -/
+/-- Signed saturating addition. -/
 def sIntNSaturateAdd {width : Nat} (left right : SIntN (width + 1)) :
     SIntN (width + 1) :=
   cond (Nat.blt (sIntNBiasedValue left + sIntNBiasedValue right) (2 ^ width))
@@ -631,7 +634,7 @@ def sIntNSaturateAdd {width : Nat} (left right : SIntN (width + 1)) :
       (sIntNAddBiasedEncode left right)
       sIntNMostPositive)
 
-/-- **In range, saturate add is the exact-sum encoding.** -/
+/-- In range, saturate add is the exact-sum encoding. -/
 theorem sIntNSaturateAddInRange {width : Nat} (left right : SIntN (width + 1))
     (lowFits : 2 ^ width ≤ sIntNBiasedValue left + sIntNBiasedValue right)
     (highFits : sIntNBiasedValue left + sIntNBiasedValue right
@@ -648,7 +651,7 @@ theorem sIntNSaturateAddInRange {width : Nat} (left right : SIntN (width + 1))
       (fun flag => cond flag (sIntNAddBiasedEncode left right) sIntNMostPositive)
       (natBltEqTrueOfLt highFits))
 
-/-- **In range, saturate add is EXACT** — same biased equation as trap. -/
+/-- In range, saturate add is exact: same biased equation as trap. -/
 theorem sIntNSaturateAddInRangeIsExact {width : Nat} (left right : SIntN (width + 1))
     (lowFits : 2 ^ width ≤ sIntNBiasedValue left + sIntNBiasedValue right)
     (highFits : sIntNBiasedValue left + sIntNBiasedValue right
@@ -659,7 +662,7 @@ theorem sIntNSaturateAddInRangeIsExact {width : Nat} (left right : SIntN (width 
       (sIntNSaturateAddInRange left right lowFits highFits)).trans
     (sIntNTrapAddSomeIsExact left right lowFits highFits)
 
-/-- **On negative overflow, saturate add clamps to the most negative value.** -/
+/-- On negative overflow, saturate add clamps to the most negative value. -/
 theorem sIntNSaturateAddClampsLow {width : Nat} (left right : SIntN (width + 1))
     (underflows : sIntNBiasedValue left + sIntNBiasedValue right < 2 ^ width) :
     sIntNSaturateAdd left right = sIntNMostNegative :=
@@ -671,7 +674,7 @@ theorem sIntNSaturateAddClampsLow {width : Nat} (left right : SIntN (width + 1))
         sIntNMostPositive))
     (natBltEqTrueOfLt underflows)
 
-/-- **On positive overflow, saturate add clamps to the most positive value.** -/
+/-- On positive overflow, saturate add clamps to the most positive value. -/
 theorem sIntNSaturateAddClampsHigh {width : Nat} (left right : SIntN (width + 1))
     (overflows : 2 ^ width + 2 ^ (width + 1)
       ≤ sIntNBiasedValue left + sIntNBiasedValue right) :
@@ -688,13 +691,13 @@ theorem sIntNSaturateAddClampsHigh {width : Nat} (left right : SIntN (width + 1)
       (fun flag => cond flag (sIntNAddBiasedEncode left right) sIntNMostPositive)
       (natBltEqFalseOfLe overflows))
 
-/-- **Saturate add stays in the biased window** on every branch (clamp
-correctness — the signed mirror of the unsigned upper-bound leg). -/
+/-- Saturate add stays in the biased window on every branch (clamp
+correctness, the signed mirror of the unsigned upper-bound leg). -/
 theorem sIntNSaturateAddIsBounded {width : Nat} (left right : SIntN (width + 1)) :
     sIntNBiasedValue (sIntNSaturateAdd left right) < 2 ^ (width + 1) :=
   sIntNBiasedValueIsBounded (sIntNSaturateAdd left right)
 
-/-- **Signed saturating multiplication.** -/
+/-- Signed saturating multiplication. -/
 def sIntNSaturateMul {width : Nat} (left right : SIntN (width + 1)) :
     SIntN (width + 1) :=
   cond (Nat.blt (sIntNMulBiasedShiftedProduct left right + 2 ^ width)
@@ -705,7 +708,7 @@ def sIntNSaturateMul {width : Nat} (left right : SIntN (width + 1)) :
       (sIntNMulBiasedEncode left right)
       sIntNMostPositive)
 
-/-- **In range, saturate mul is the exact-product encoding.** -/
+/-- In range, saturate mul is the exact-product encoding. -/
 theorem sIntNSaturateMulInRange {width : Nat} (left right : SIntN (width + 1))
     (lowFits : sIntNMulBiasCross left right
       ≤ sIntNMulBiasedShiftedProduct left right + 2 ^ width)
@@ -723,7 +726,7 @@ theorem sIntNSaturateMulInRange {width : Nat} (left right : SIntN (width + 1))
       (fun flag => cond flag (sIntNMulBiasedEncode left right) sIntNMostPositive)
       (natBltEqTrueOfLt highFits))
 
-/-- **In range, saturate mul is EXACT** — same biased equation as trap. -/
+/-- In range, saturate mul is exact: same biased equation as trap. -/
 theorem sIntNSaturateMulInRangeIsExact {width : Nat} (left right : SIntN (width + 1))
     (lowFits : sIntNMulBiasCross left right
       ≤ sIntNMulBiasedShiftedProduct left right + 2 ^ width)
@@ -738,7 +741,7 @@ theorem sIntNSaturateMulInRangeIsExact {width : Nat} (left right : SIntN (width 
       (sIntNSaturateMulInRange left right lowFits highFits)).trans
     (sIntNTrapMulSomeIsExact left right lowFits highFits)
 
-/-- **On negative overflow, saturate mul clamps to the most negative value.** -/
+/-- On negative overflow, saturate mul clamps to the most negative value. -/
 theorem sIntNSaturateMulClampsLow {width : Nat} (left right : SIntN (width + 1))
     (underflows : sIntNMulBiasedShiftedProduct left right + 2 ^ width
       < sIntNMulBiasCross left right) :
@@ -751,7 +754,7 @@ theorem sIntNSaturateMulClampsLow {width : Nat} (left right : SIntN (width + 1))
         sIntNMostPositive))
     (natBltEqTrueOfLt underflows)
 
-/-- **On positive overflow, saturate mul clamps to the most positive value.** -/
+/-- On positive overflow, saturate mul clamps to the most positive value. -/
 theorem sIntNSaturateMulClampsHigh {width : Nat} (left right : SIntN (width + 1))
     (overflows : sIntNMulBiasCross left right + 2 ^ width
       ≤ sIntNMulBiasedShiftedProduct left right) :
@@ -771,18 +774,18 @@ theorem sIntNSaturateMulClampsHigh {width : Nat} (left right : SIntN (width + 1)
       (fun flag => cond flag (sIntNMulBiasedEncode left right) sIntNMostPositive)
       (natBltEqFalseOfLe overflows))
 
-/-- **Saturate mul stays in the biased window** on every branch. -/
+/-- Saturate mul stays in the biased window on every branch. -/
 theorem sIntNSaturateMulIsBounded {width : Nat} (left right : SIntN (width + 1)) :
     sIntNBiasedValue (sIntNSaturateMul left right) < 2 ^ (width + 1) :=
   sIntNBiasedValueIsBounded (sIntNSaturateMul left right)
 
-/-! ## Brick 4 — sign extension preserves the signed value
+/-! ## Sign extension preserves the signed value
 
-`bitVecSignExtend` branches on the sign bit; the clear branch IS the shipped
+`bitVecSignExtend` branches on the sign bit; the clear branch is the
 zero-extension reading, the set branch adds the mask `2^(width+extra) - 2^width`
 whose sole reasoning interface is the gated `natAddSubOfLe`. -/
 
-/-- **Signed view widening** — sign-extend a `SIntN width` to
+/-- Signed view widening: sign-extend a `SIntN width` to
 `SIntN (width + extra)`. -/
 def SIntN.signExtend {width : Nat} (value : SIntN width) (extra : Nat) :
     SIntN (width + extra) :=
@@ -819,8 +822,8 @@ theorem sIntNSignExtendNonNegativeMatchesZeroExtend {width : Nat} (value : SIntN
     (value.signExtend extra).bits = bitVecZeroExtend value.bits (width + extra) :=
   fwsBitVecSignExtendOfNonNegative isNonNegative
 
-/-- **Top bit clear: sign extension preserves the raw reading** (hence the
-signed value — this leg reduces to the shipped zero-extension argument). -/
+/-- Top bit clear: sign extension preserves the raw reading (hence the
+signed value); this leg reduces to the zero-extension argument. -/
 theorem sIntNSignExtendPreservesNonNegativeValue {width : Nat} (value : SIntN width)
     (extra : Nat) (isNonNegative : value.isNegative = false) :
     (value.signExtend extra).bits.toNat = value.bits.toNat :=
@@ -829,10 +832,10 @@ theorem sIntNSignExtendPreservesNonNegativeValue {width : Nat} (value : SIntN wi
     ((bitVecOfNatModToNat value.bits.toNat).trans
       (natRemainderOfLt (valueBelowWiderModulus value.bits.isLt)))
 
-/-- **Top bit set: sign extension preserves the complement magnitude**, stated
+/-- Top bit set: sign extension preserves the complement magnitude, stated
 additively: `extToNat + 2^width = toNat + 2^(width+extra)` (both sides are the
 shared magnitude `2^width - toNat = 2^(width+extra) - extToNat` shifted by the
-sum of the two moduli — i.e. the signed value is unchanged). -/
+sum of the two moduli, so the signed value is unchanged). -/
 theorem sIntNSignExtendPreservesNegativeValue {width : Nat} (value : SIntN width)
     (extra : Nat) (isNegative : value.isNegative = true) :
     (value.signExtend extra).bits.toNat + 2 ^ width
@@ -857,7 +860,7 @@ theorem sIntNSignExtendPreservesNegativeValue {width : Nat} (value : SIntN width
           (Nat.add_comm (2 ^ (width + extra) - 2 ^ width) (2 ^ width))).trans
         (congrArg (fun tail => value.bits.toNat + tail) deltaEq)))
 
-/-- **Sign extension preserves the sign bit.** -/
+/-- Sign extension preserves the sign bit. -/
 theorem sIntNSignExtendPreservesSign {width : Nat} (value : SIntN width)
     (extra : Nat) :
     (value.signExtend extra).isNegative = value.isNegative :=
@@ -904,20 +907,14 @@ theorem sIntNSignExtendPreservesSign {width : Nat} (value : SIntN width)
                           (Nat.le_of_eq deltaEq))))).symm))))
       (fwsBitVecIsNegativeEqTrueOfDoubleGe doubledGe).trans isNegative.symm
 
-/-! ## The closure marker (NUM-Z-FIXED signed half) -/
-
-/-- **NUM-Z-FIXED signed-half marker** — bricks 1-4 (signed range, signed trap
-add/mul, signed saturate add/mul, sign-extension value preservation) are all
-DECIDED zero-axiom in this file. -/
-def fxNumZFixed_hasSignedSemantics : Bool := true
-
-/-! ## Brick 5 — the island bridge: `BitVec.toNat` meets `bvaToNat`
+/-! ## The BitVec-to-Decision value bridge
 
 `Decision/BitVectorArithmetic` carries its own little-endian `List Bool`
 carrier with the Horner value `bvaToNat`.  The explicit conversion peels the
 substrate's `toNat` bit by bit through the structural `natQuotient` /
-`natRemainder` pair (NEVER `>>>`-to-division bridging, which is the walled
-propext path), and the round-trip theorems identify the two value readings. -/
+`natRemainder` pair, avoiding the `>>>`-to-division route (`Nat.shiftRight`
+routes through `propext`); the round-trip theorems identify the two value
+readings. -/
 
 /-- One dyadic digit as its `bvaBoolToNat` reading: a value below `2` survives
 the `== 1` flag round-trip. -/
@@ -944,7 +941,7 @@ theorem fwsNatBitsLittleEndianLength : ∀ (width value : Nat),
       congrArg (fun tail => tail + 1)
         (fwsNatBitsLittleEndianLength width (natQuotient value 2))
 
-/-- **The value round-trip**: on the fits domain the Horner reading of the
+/-- The value round-trip: on the fits domain the Horner reading of the
 expansion recovers the value (induction on the width; the head digit is the
 structural remainder, the tail is the quotient's expansion). -/
 theorem fwsNatBitsLittleEndianToNat : ∀ (width value : Nat), value < 2 ^ width →
@@ -975,8 +972,7 @@ theorem fwsNatBitsLittleEndianToNat : ∀ (width value : Nat), value < 2 ^ width
           ((Nat.add_comm (natRemainder value 2) (2 * natQuotient value 2)).trans
             reconstruct.symm))
 
-/-- **The island conversion**: a `BitVec width` as the Decision carrier's
-little-endian bit list. -/
+/-- Convert a `BitVec width` to the Decision carrier's little-endian bit list. -/
 def fwsBitVecToBvaBits {width : Nat} (value : BitVec width) : List Bool :=
   fwsNatBitsLittleEndian width value.toNat
 
@@ -985,13 +981,13 @@ theorem fwsBitVecToBvaBitsLength {width : Nat} (value : BitVec width) :
     List.length (fwsBitVecToBvaBits value) = width :=
   fwsNatBitsLittleEndianLength width value.toNat
 
-/-- **The two value readings agree**: `bvaToNat` of the conversion is
+/-- The two value readings agree: `bvaToNat` of the conversion is
 `BitVec.toNat` (the `isLt` bound feeds the fits domain). -/
 theorem fwsBitVecToBvaBitsToNat {width : Nat} (value : BitVec width) :
     bvaToNat (fwsBitVecToBvaBits value) = value.toNat :=
   fwsNatBitsLittleEndianToNat width value.toNat value.isLt
 
-/-- **Full round-trip**: reducing the Horner reading back into the substrate
+/-- Full round-trip: reducing the Horner reading back into the substrate
 recovers the original vector. -/
 theorem fwsBitVecToBvaBitsRoundTrip {width : Nat} (value : BitVec width) :
     (bitVecOfNatMod (bvaToNat (fwsBitVecToBvaBits value)) : BitVec width) = value :=
@@ -1001,27 +997,28 @@ theorem fwsBitVecToBvaBitsRoundTrip {width : Nat} (value : BitVec width) :
           (fwsBitVecToBvaBitsToNat value)).trans
         (natRemainderOfLt value.isLt)))
 
-/-- **NUM-Z-FIXED island-bridge marker** — the optional brick 5:
-`bvaToNat`-vs-`BitVec.toNat` agreement plus the full round-trip are DECIDED
-zero-axiom in this file. -/
-def fxNumZFixed_hasBvaValueBridge : Bool := true
+/-- Subsystem marker for the fixed-width signed semantics: signed range, signed
+trap add/mul, signed saturate add/mul, sign-extension value preservation, and
+the `bvaToNat`-versus-`BitVec.toNat` value bridge with its full round-trip are
+all established zero-axiom in this file. -/
+def fxNumZFixed_hasSignedSemantics : Bool := true
 
-/-! ## Smokes (interpretation via `signedValue`, FALSE cases included)
+/-! ## Smoke tests (interpretation via `signedValue`, refutation cases included)
 
-Add/saturate at width 8: `100 + 27 = 127` fits; `100 + 28 = 128` overflows;
+Add and saturate at width 8: `100 + 27 = 127` fits; `100 + 28 = 128` overflows;
 `(-100) + (-28) = -128` fits exactly at the window floor; `(-100) + (-29)`
-overflows; saturate clamps the same pairs to `127` / `-128`.
+overflows; saturate clamps the same pairs to `127` and `-128`.
 
-The repo's structural `natRemainder` counts the dividend down one unit per
-recursion, and `lake build` runs `#eval` in the interpreter with the default
-stack (~8k frames measured), so the IN-FILE mul and extension smokes use small
-carriers: mul at width 6 (window `[-32, 32)`, bias shift `32 * 32 = 1024`
-frames) — `7 * 4 = 28` fits, `7 * 5 = 35` overflows, `(-8) * 4 = -32` fits at
-the floor, `(-8) * 5` overflows; extension at `8 -> 12` (`-1` and `5`
-preserved, raw depth `4095`).  The commissioned width-8 mul and `8 -> 16`
-extension smokes (bias shift `16384`, all-ones `65535` — beyond the default
-interpreter stack) are exercised in the verification probe under
-`lean --tstack=500000`; same expressions, same interpreters. -/
+The structural `natRemainder` counts the dividend down one unit per recursion,
+and `lake build` runs `#eval` in the interpreter with the default stack
+(about 8k frames), so the in-file mul and extension smokes use small carriers:
+mul at width 6 (window `[-32, 32)`, bias shift `32 * 32 = 1024` frames) with
+`7 * 4 = 28` fitting, `7 * 5 = 35` overflowing, `(-8) * 4 = -32` at the floor,
+`(-8) * 5` overflowing; extension from width `8` to `12` (`-1` and `5`
+preserved, raw depth `4095`).  The width-8 mul and width `8` to `16` extension
+checks (bias shift `16384`, all-ones `65535`, beyond the default interpreter
+stack) run in the verification probe under `lean --tstack=500000` with the same
+expressions. -/
 
 #eval (sIntNTrapAdd (SIntN.ofNat 100 : i8) (SIntN.ofNat 27)).map SIntN.signedValue
 #eval (sIntNTrapAdd (SIntN.ofNat 100 : i8) (SIntN.ofNat 28)).map SIntN.signedValue
@@ -1041,7 +1038,7 @@ interpreter stack) are exercised in the verification probe under
 #eval ((SIntN.ofNat 5 : i8).signExtend 4).signedValue
 #eval bvaToNat (fwsBitVecToBvaBits (SIntN.ofNat 156 : i8).bits)
 #eval fwsBitVecToBvaBits (SIntN.ofNat 156 : i8).bits
--- FALSE cases: wrong-value comparisons must be rejected.
+-- Refutation cases: wrong-value comparisons must evaluate to false.
 #eval bvaToNat (fwsBitVecToBvaBits (SIntN.ofNat 156 : i8).bits) == 155
 #eval (sIntNTrapAdd (SIntN.ofNat 100 : i8) (SIntN.ofNat 27)).map SIntN.signedValue
   == some 128

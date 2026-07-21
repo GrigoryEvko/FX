@@ -1,78 +1,50 @@
 import FX1Poly.ComputerAlgebra.Number.NormalizedRational
 
-/-! # ComputerAlgebra/Combinatorics/GroupoidCardinality — finite-groupoid
-cardinality as decategorification (CSHD)
+/-! # Finite-groupoid cardinality as decategorification
 
-The groupoid cardinality of Baez-Dolan: a finite groupoid presented by its
-skeleton — one automorphism-group order per isomorphism class — has a
-cardinality `Σ 1/|Aut(x)|`, an exact rational.  This is the decategorified
-shadow of a category: a NUMBER read off a groupoid, with the two structural
-laws that make it a `Rig` homomorphism —
+The groupoid cardinality of Baez and Dolan: a finite groupoid, presented by its
+skeleton as one automorphism-group order per isomorphism class, has cardinality
+`Sum 1/|Aut(x)|`, an exact rational.  As a decategorified invariant it carries
+the two structural laws of a rig homomorphism:
 
-  * **disjoint union is addition**: `card (G ⊔ H) = card G + card H`;
-  * **product is multiplication**: `card (G × H) = card G · card H`,
+  * disjoint union is addition, `card (G + H) = card G + card H`;
+  * cartesian product is multiplication, `card (G x H) = card G * card H`,
 
-the second riding the reciprocal-multiplicativity fact `1/(a·b) = (1/a)·(1/b)`
-(the automorphism group of a product object is the product of the automorphism
-groups).
+the product law resting on reciprocal multiplicativity `1/(a*b) = (1/a)*(1/b)`,
+mirroring the automorphism group of a product being the product of automorphism
+groups.
 
-Built directly on the canonical-NF ℚ carrier `QnfRat` (NUM-Q-7): a finite
-`List Nat` of automorphism-group orders, cardinality a cons-only `qnfAdd`
-fold of reciprocals `qnfInv (qnfOfInt (Int.ofNat order))`.  The addition law
-is the append-splits-sum shape shared with the shipped `fpdMassSumCat`; the
-product law adds one genuinely new arithmetic brick — reciprocal
-multiplicativity — proved by field-law inverse-uniqueness plus the ℕ→ℚ
-multiplicative homomorphism (both from the shipped `QnfRat` suite, no descent
-to the setoid layer).
+The carrier is a `List Nat` of automorphism-group orders over the canonical-NF
+rational type `QnfRat`; cardinality is a cons-only `qnfAdd` fold of reciprocals
+`qnfInv (qnfOfInt (Int.ofNat order))`.  Addition is an append-splits-sum
+induction; multiplication adds reciprocal multiplicativity, proved from
+field-law inverse uniqueness and the natural-number-to-rational multiplicative
+homomorphism.
 
-## What lands (DECIDED)
+`fgcInverseAmbiguityWitness` places the point `[1]` and the two-object groupoid
+`[2,2]` (each object of automorphism order two) at the common cardinality `1`,
+so decategorification is not injective.  Three extensions recorded false by
+`fgcHasGroupoidExtensions` lie outside this finite model: inverse
+categorification (no map from a rational back to a groupoid), infinite-groupoid
+cardinality (a convergent real series such as `Sum 1/n! = e` the finite fold
+cannot complete), and equivalence of groupoids given by raw generators and
+relations (graph-isomorphism-hard, automorphism-order extraction an orbit
+problem); equivalence of the skeleton-list representation stays decidable by
+sorting and comparing orders.
 
-  * `FgcGroupoid` — the carrier (`autOrders : List Nat`), with
-    `fgcIsWellFormed` (every order ≥ 1).
-  * `fgcCardinality` — the reciprocal sum, with the four distinguished values
-    (empty ↦ `0`, point ↦ `1`, one `Z/2` object ↦ `1/2`, two points ↦ `2`).
-  * `fgcCardinalityUnion` — disjoint union is addition (structural, riding the
-    append-splits-sum `fgcReciprocalSumCat`), plus both empty-unit laws.
-  * `fgcCardinalityProduct` — product is multiplication (structural, riding the
-    reciprocal-multiplicativity `fgcReciprocalMul` + the ℕ→ℚ homomorphism
-    `fgcNatToRatMul` + inverse distributivity `fgcInvMulDistrib`), plus both
-    point-unit laws.
-  * `fgcInverseAmbiguityWitness` — the point and the two-`Z/2`-object groupoid
-    share cardinality `1`: the concrete non-injectivity of decategorification.
-
-## The walls (WALLED, `false` markers)
-
-  * `fgcHasInverseCategorification := false` — recovering a groupoid from its
-    rational cardinality is NOT a function (`fgcInverseAmbiguityWitness` is the
-    computable refutation: two non-equivalent groupoids at cardinality `1`).
-  * `fgcHasInfiniteGroupoidCardinality := false` — an infinite groupoid's
-    cardinality is a convergent real series (the groupoid of finite sets has
-    cardinality `Σ 1/n! = e`); the finite `qnfAdd` fold has no completion.
-    Same walled node as the MEAS-1 `fpdHasCountableSupport := false` (the
-    Bishop-real L1 limit).
-  * `fgcHasGroupoidEquivalenceDecision := false` — for the skeleton-list
-    representation equivalence IS decidable (sort the orders, compare); the
-    wall is deciding equivalence of two groupoids given by raw
-    generators/relations (graph-isomorphism-hard + the group-order/orbit
-    problem), the structural sibling of `cswHasPresentedCommWordDecision`.
-
-## Zero-axiom
-
-Structural recursion on `List` / `Nat` (never `WellFounded.fix`), full-enum
-constructor matches (no wildcard arms over a split scrutinee), `QnfRat` kernel
-arithmetic + its field-law suite, `congrArg`/`Eq.trans` and `calc` chains.  No
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`, `funext`, `decide`-on-`Prop`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Combinatorics/GroupoidCardinality.lean`. -/
+Zero-axiom: structural recursion on `List` and `Nat`, full-enumeration
+constructor matches, `QnfRat` kernel arithmetic with its field-law suite, and
+`calc`, `congrArg`, and `Eq.trans` reasoning.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or `decide` on
+`Prop`.  Gated per declaration in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## Scalar `QnfRat` lemmas the product law needs
+/-! ## Scalar `QnfRat` field-law lemmas
 
-`qnfMulZeroRight`/`Left` live in the MEAS-1 probability file; re-derived here
-(self-contained, no cross-import) alongside the multiplicative middle-four,
-inverse uniqueness, product-nonzero, and inverse distributivity — all from the
-shipped `QnfRat` field-law suite. -/
+Multiplicative zero, the middle-four exchange, inverse uniqueness,
+product-nonzero, inverse distributivity, and the integer and natural-number
+multiplicative homomorphisms, all derived from the `QnfRat` field-law suite. -/
 
 /-- `factor * 0 = 0` — from left distributivity and additive cancellation. -/
 theorem fgcMulZeroRight (factor : QnfRat) : qnfMul factor qnfZero = qnfZero := by
@@ -96,8 +68,8 @@ theorem fgcMulZeroRight (factor : QnfRat) : qnfMul factor qnfZero = qnfZero := b
 theorem fgcMulZeroLeft (factor : QnfRat) : qnfMul qnfZero factor = qnfZero :=
   (qnfMulComm qnfZero factor).trans (fgcMulZeroRight factor)
 
-/-- The multiplicative middle-four exchange — `(a·b)·(c·d) = (a·c)·(b·d)` —
-from commutativity and associativity. -/
+/-- Multiplicative middle-four exchange `(a*b)*(c*d) = (a*c)*(b*d)`, from
+commutativity and associativity. -/
 theorem fgcMulMiddleFour (firstFactor secondFactor thirdFactor fourthFactor : QnfRat) :
     qnfMul (qnfMul firstFactor secondFactor) (qnfMul thirdFactor fourthFactor) =
       qnfMul (qnfMul firstFactor thirdFactor) (qnfMul secondFactor fourthFactor) := by
@@ -107,8 +79,7 @@ theorem fgcMulMiddleFour (firstFactor secondFactor thirdFactor fourthFactor : Qn
     qnfMulAssoc thirdFactor secondFactor fourthFactor,
     ← qnfMulAssoc firstFactor thirdFactor (qnfMul secondFactor fourthFactor)]
 
-/-- **Inverse uniqueness**: a right multiplicative inverse of a nonzero value IS
-the canonical inverse — multiply through by `qnfInv base` and collapse. -/
+/-- Inverse uniqueness: a nonzero value's right inverse equals `qnfInv base`. -/
 theorem fgcInverseUnique {base other : QnfRat} (baseNonzero : base ≠ qnfZero)
     (isInverse : qnfMul base other = qnfOne) : other = qnfInv base := by
   calc other = qnfMul qnfOne other := (qnfMulOneLeft other).symm
@@ -117,8 +88,8 @@ theorem fgcInverseUnique {base other : QnfRat} (baseNonzero : base ≠ qnfZero)
     _ = qnfMul (qnfInv base) qnfOne := by rw [isInverse]
     _ = qnfInv base := qnfMulOneRight _
 
-/-- A product of nonzero values is nonzero — cancel the left factor by its
-inverse against a hypothetical zero product. -/
+/-- A product of nonzero values is nonzero, by cancelling the left factor
+against a hypothetical zero product. -/
 theorem fgcMulNeZero {leftFactor rightFactor : QnfRat}
     (leftNonzero : leftFactor ≠ qnfZero) (rightNonzero : rightFactor ≠ qnfZero) :
     qnfMul leftFactor rightFactor ≠ qnfZero := by
@@ -131,9 +102,9 @@ theorem fgcMulNeZero {leftFactor rightFactor : QnfRat}
     _ = qnfMul (qnfInv leftFactor) qnfZero := by rw [isZero]
     _ = qnfZero := fgcMulZeroRight _
 
-/-- **Inverse distributes over multiplication** on nonzero factors:
-`(x·y)⁻¹ = x⁻¹·y⁻¹`.  The candidate `x⁻¹·y⁻¹` is a right inverse of `x·y` by the
-middle-four exchange, then inverse uniqueness pins it. -/
+/-- Inverse distributes over multiplication on nonzero factors,
+`(x*y) inverse = (x inverse)*(y inverse)`: the candidate is a right inverse of
+`x*y` by the middle-four exchange, then pinned by inverse uniqueness. -/
 theorem fgcInvMulDistrib {leftFactor rightFactor : QnfRat}
     (leftNonzero : leftFactor ≠ qnfZero) (rightNonzero : rightFactor ≠ qnfZero) :
     qnfInv (qnfMul leftFactor rightFactor) =
@@ -145,10 +116,9 @@ theorem fgcInvMulDistrib {leftFactor rightFactor : QnfRat}
       qnfMulInvCancels leftNonzero, qnfMulInvCancels rightNonzero, qnfMulOneRight]
   exact (fgcInverseUnique (fgcMulNeZero leftNonzero rightNonzero) prodInverse).symm
 
-/-- The ℤ→ℚ multiplicative homomorphism: `(a/1)·(b/1) = (a·b)/1` — the canonical
-integer embeddings' product is the embedding of the product, since
-`mulExact` of two `value/1` pairs is definitionally `(value·value)/1`, fixed by
-the canonical normal form. -/
+/-- The integer-to-rational multiplicative homomorphism
+`(a/1)*(b/1) = (a*b)/1`: the product of canonical integer embeddings is the
+embedding of their product, fixed by the canonical normal form. -/
 theorem fgcRatOfIntMul (leftValue rightValue : Int) :
     qnfMul (qnfOfInt leftValue) (qnfOfInt rightValue) = qnfOfInt (leftValue * rightValue) :=
   qnfNormalizeFixesCanonical (qnfOfInt (leftValue * rightValue))
@@ -157,9 +127,9 @@ theorem fgcRatOfIntMul (leftValue rightValue : Int) :
 def fgcNatToRat (order : Nat) : QnfRat :=
   qnfOfInt (Int.ofNat order)
 
-/-- The ℕ→ℚ multiplicative homomorphism: `fgcNatToRat (a·b) =
-fgcNatToRat a · fgcNatToRat b` — the ℤ homomorphism plus `Int.ofNat` being a
-multiplicative homomorphism definitionally. -/
+/-- The natural-number-to-rational multiplicative homomorphism
+`fgcNatToRat (a*b) = fgcNatToRat a * fgcNatToRat b`, from the integer
+homomorphism and `Int.ofNat` preserving multiplication. -/
 theorem fgcNatToRatMul (leftOrder rightOrder : Nat) :
     qnfMul (fgcNatToRat leftOrder) (fgcNatToRat rightOrder) =
       fgcNatToRat (Nat.mul leftOrder rightOrder) := by
@@ -181,11 +151,11 @@ theorem fgcNatMulZeroLeft : (order : Nat) → Nat.mul 0 order = 0
   | 0 => rfl
   | orderPredecessor + 1 => fgcNatMulZeroLeft orderPredecessor
 
-/-! ## T1 — the carrier, the reciprocal, the cardinality -/
+/-! ## The carrier, the reciprocal, the cardinality -/
 
 /-- A finite groupoid presented by its skeleton: one automorphism-group order
-per isomorphism class.  Well-formedness (every order ≥ 1) is a separate
-predicate `fgcIsWellFormed`, not baked into the carrier. -/
+per isomorphism class.  Well-formedness is the separate predicate
+`fgcIsWellFormed`. -/
 structure FgcGroupoid where
   autOrders : List Nat
 
@@ -198,7 +168,7 @@ def fgcReciprocalSum : List Nat → QnfRat
   | [] => qnfZero
   | order :: rest => qnfAdd (fgcReciprocal order) (fgcReciprocalSum rest)
 
-/-- **Groupoid cardinality**: `Σ 1/|Aut(x)|` over the iso-class skeleton. -/
+/-- Groupoid cardinality: `Σ 1/|Aut(x)|` over the iso-class skeleton. -/
 def fgcCardinality (groupoid : FgcGroupoid) : QnfRat :=
   fgcReciprocalSum groupoid.autOrders
 
@@ -211,8 +181,7 @@ def fgcAllOrdersPositive : List Nat → Bool
   | [] => true
   | order :: rest => fgcOrderIsPositive order && fgcAllOrdersPositive rest
 
-/-- **Well-formedness**: every automorphism order is at least one (a group has
-at least its identity). -/
+/-- Well-formedness: every automorphism order is at least one. -/
 def fgcIsWellFormed (groupoid : FgcGroupoid) : Bool :=
   fgcAllOrdersPositive groupoid.autOrders
 
@@ -236,15 +205,15 @@ def fgcThreeAut : FgcGroupoid :=
 def fgcTwoPoints : FgcGroupoid :=
   { autOrders := [1, 1] }
 
-/-- Two objects each with automorphism group `Z/2`, cardinality `1/2 + 1/2 = 1`
-— the decategorification-ambiguity partner of the point. -/
+/-- Two objects each with automorphism group `Z/2`, cardinality
+`1/2 + 1/2 = 1`. -/
 def fgcTwoHalves : FgcGroupoid :=
   { autOrders := [2, 2] }
 
-/-! ## T2 — disjoint union is addition -/
+/-! ## Disjoint union is addition -/
 
-/-- Cons-only concatenation of two skeletons (own list op — avoids the
-propext-leak-prone `List.append` lemmas). -/
+/-- Cons-only concatenation of two skeletons, avoiding the propext-leaking
+`List.append` lemmas. -/
 def fgcListCat : List Nat → List Nat → List Nat
   | [], right => right
   | order :: rest, right => order :: fgcListCat rest right
@@ -253,8 +222,7 @@ def fgcListCat : List Nat → List Nat → List Nat
 def fgcDisjointUnion (leftGroupoid rightGroupoid : FgcGroupoid) : FgcGroupoid :=
   { autOrders := fgcListCat leftGroupoid.autOrders rightGroupoid.autOrders }
 
-/-- **Append splits the reciprocal sum** — the decategorification addition
-kernel (same shape as the shipped `fpdMassSumCat`). -/
+/-- Append splits the reciprocal sum: the disjoint-union addition kernel. -/
 theorem fgcReciprocalSumCat : (leftOrders rightOrders : List Nat) →
     fgcReciprocalSum (fgcListCat leftOrders rightOrders) =
       qnfAdd (fgcReciprocalSum leftOrders) (fgcReciprocalSum rightOrders)
@@ -267,7 +235,7 @@ theorem fgcReciprocalSumCat : (leftOrders rightOrders : List Nat) →
         qnfAddAssoc (fgcReciprocal order) (fgcReciprocalSum leftRest)
           (fgcReciprocalSum rightOrders)]
 
-/-- **DISJOINT UNION IS ADDITION**: `card (G ⊔ H) = card G + card H`. -/
+/-- Disjoint union is addition: `card (G ⊔ H) = card G + card H`. -/
 theorem fgcCardinalityUnion (leftGroupoid rightGroupoid : FgcGroupoid) :
     fgcCardinality (fgcDisjointUnion leftGroupoid rightGroupoid) =
       qnfAdd (fgcCardinality leftGroupoid) (fgcCardinality rightGroupoid) :=
@@ -285,15 +253,15 @@ theorem fgcCardinalityUnionEmptyLeft (groupoid : FgcGroupoid) :
   rw [fgcCardinalityUnion]
   exact qnfAddZeroLeft (fgcCardinality groupoid)
 
-/-! ## T3 — product is multiplication
+/-! ## Product is multiplication
 
-The reciprocal-multiplicativity brick `fgcReciprocalMul` (`1/(a·b) =
-(1/a)·(1/b)`) makes the product law port the `fpdProductSupportMassSum` shape
-verbatim with the reciprocal in the mass column. -/
+The product law rests on reciprocal multiplicativity `fgcReciprocalMul`,
+`1/(a*b) = (1/a)*(1/b)`, applied across the product grid of automorphism
+orders. -/
 
-/-- **Reciprocal multiplicativity**: `1/(a·b) = (1/a)·(1/b)`, unconditional on
-ℕ — zero orders collapse both sides (`fgcMulZeroRight`/`Left`), positive orders
-ride the inverse-distributivity + ℕ→ℚ-homomorphism bricks. -/
+/-- Reciprocal multiplicativity `1/(a*b) = (1/a)*(1/b)`, unconditional on the
+naturals: zero orders collapse both sides by multiplicative zero, positive
+orders use inverse distributivity and the natural-number homomorphism. -/
 theorem fgcReciprocalMul (leftOrder rightOrder : Nat) :
     fgcReciprocal (Nat.mul leftOrder rightOrder) =
       qnfMul (fgcReciprocal leftOrder) (fgcReciprocal rightOrder) := by
@@ -330,8 +298,8 @@ def fgcProductOrders : List Nat → List Nat → List Nat
 def fgcProduct (leftGroupoid rightGroupoid : FgcGroupoid) : FgcGroupoid :=
   { autOrders := fgcProductOrders leftGroupoid.autOrders rightGroupoid.autOrders }
 
-/-- A product row's reciprocal sum is `(1/leftOrder) · (right's sum)` — riding
-reciprocal multiplicativity + left distributivity. -/
+/-- A product row's reciprocal sum is `(1/leftOrder) * (right-hand sum)`, from
+reciprocal multiplicativity and left distributivity. -/
 theorem fgcProductRowSum (leftOrder : Nat) : (rightOrders : List Nat) →
     fgcReciprocalSum (fgcProductRow leftOrder rightOrders) =
       qnfMul (fgcReciprocal leftOrder) (fgcReciprocalSum rightOrders)
@@ -345,9 +313,8 @@ theorem fgcProductRowSum (leftOrder : Nat) : (rightOrders : List Nat) →
         qnfMulLeftDistrib (fgcReciprocal leftOrder) (fgcReciprocal rightOrder)
           (fgcReciprocalSum rest)]
 
-/-- The product skeleton's reciprocal sum is the product of the sums — the
-decategorification multiplication kernel (same shape as
-`fpdProductSupportMassSum`). -/
+/-- The product skeleton's reciprocal sum is the product of the two sums: the
+product-is-multiplication kernel. -/
 theorem fgcProductOrdersSum : (leftOrders rightOrders : List Nat) →
     fgcReciprocalSum (fgcProductOrders leftOrders rightOrders) =
       qnfMul (fgcReciprocalSum leftOrders) (fgcReciprocalSum rightOrders)
@@ -365,7 +332,7 @@ theorem fgcProductOrdersSum : (leftOrders rightOrders : List Nat) →
         qnfMulRightDistrib (fgcReciprocal leftOrder) (fgcReciprocalSum leftRest)
           (fgcReciprocalSum rightOrders)]
 
-/-- **PRODUCT IS MULTIPLICATION**: `card (G × H) = card G · card H`. -/
+/-- Product is multiplication: `card (G × H) = card G · card H`. -/
 theorem fgcCardinalityProduct (leftGroupoid rightGroupoid : FgcGroupoid) :
     fgcCardinality (fgcProduct leftGroupoid rightGroupoid) =
       qnfMul (fgcCardinality leftGroupoid) (fgcCardinality rightGroupoid) :=
@@ -386,96 +353,57 @@ theorem fgcCardinalityProductPointLeft (groupoid : FgcGroupoid) :
     fgcCardinality (fgcProduct fgcPoint groupoid) = fgcCardinality groupoid := by
   rw [fgcCardinalityProduct, fgcCardinalityPoint, qnfMulOneLeft]
 
-/-! ## T4 — the walls -/
+/-! ## Non-injectivity and out-of-scope extensions -/
 
-/-- WALLED: decategorification has no computable inverse — recovering a groupoid
-from its rational cardinality is NOT a function.  Concrete obstruction:
-`fgcInverseAmbiguityWitness` — the point `[1]` (cardinality `1`) and the
-two-`Z/2`-object groupoid `[2,2]` (cardinality `1/2 + 1/2 = 1`) are
-non-equivalent groupoids sharing cardinality `1`, so no rational determines a
-unique groupoid.
-
-Burned attack A: "invert by reading the reciprocal-sum backwards" — the sum
-`1` decomposes as `1/1`, as `1/2 + 1/2`, as `1/3 + 1/3 + 1/3`, …; the
-decomposition is a partition-of-a-rational problem with infinitely many
-solutions, not a function.  Burned attack B: "restrict to a canonical
-decomposition (e.g. all-singletons)" — that only recovers the DISCRETE groupoid
-with `card` copies of the point; every groupoid with nontrivial automorphisms
-(any order ≥ 2) is then unrecoverable, so the map is not a section. -/
-def fgcHasInverseCategorification : Bool := false
-
-/-- WALLED: the cardinality of an infinite groupoid is a convergent real series,
-out of finite-`QnfRat` scope.  The groupoid of finite sets has cardinality
-`Σ_{n≥0} 1/n! = e`, an irrational limit; the finite `qnfAdd` fold represents no
-infinite tail.  Same walled node as the MEAS-1 `fpdHasCountableSupport := false`
-(the missing Bishop-real L1 completion).
-
-Burned attack A: "extend the fold to a lazy stream and take the limit" — `QnfRat`
-has no completion in this layer; the limit lives in `RegularReal`, and no finite
-`List Nat` presents `1/n!` for all `n`.  Burned attack B: "bound by a rational
-tail estimate and pin an interval" — that gives a `RegularReal` Cauchy witness,
-not a `QnfRat`; the deliverable's cardinality type is exact-rational, so the
-infinite case is a genuinely different (real-valued) construction. -/
-def fgcHasInfiniteGroupoidCardinality : Bool := false
-
-/-- WALLED: deciding groupoid equivalence from a RAW presentation
-(generators/relations) is out of scope — it is graph-isomorphism-hard, and
-extracting the automorphism-order skeleton is the group-order/orbit problem.
-For the SKELETON-list representation used here equivalence IS decidable (sort
-the orders with `cswSort`, compare with `cswListNatBeq`); the wall is only the
-presented case, the structural sibling of `cswHasPresentedCommWordDecision`
-(deciding a congruence from a presentation, not from a normal form).
-
-Burned attack A: "compare skeletons directly" — decides the skeleton case, not
-the presented case (which first requires computing the skeleton).  Burned
-attack B: "enumerate isomorphisms of the presentation graphs" — that IS the
-graph-isomorphism search this wall names; no zero-axiom polynomial procedure is
-in scope. -/
-def fgcHasGroupoidEquivalenceDecision : Bool := false
-
-/-- The computable non-injectivity witness: the point and the two-`Z/2`-object
-groupoid — non-equivalent — share cardinality `1`.  Both reciprocal sums reduce
-to the canonical `1/1`, so the equality is a kernel `rfl`; decategorification
-therefore cannot be inverted. -/
+/-- Non-injectivity of decategorification: the point `[1]` and the two-object
+groupoid `[2,2]` (each object with automorphism group of order two) are not
+equivalent yet share cardinality `1`.  Both reciprocal sums reduce to the
+canonical `1/1`, so the equality holds by `rfl` and no rational determines a
+unique groupoid. -/
 theorem fgcInverseAmbiguityWitness :
     fgcCardinality fgcPoint = fgcCardinality fgcTwoHalves := rfl
 
-/-! ## Content markers -/
+/-- The three extensions beyond the finite skeleton model that are out of scope:
+inverse categorification, infinite-groupoid cardinality, and equivalence of
+groupoids from raw generators and relations, all detailed in the module
+header. -/
+def fgcHasGroupoidExtensions : Bool := false
 
-/-- DECIDED: finite-groupoid cardinality is a computable exact rational
-(`fgcCardinality`), the reciprocal sum over the iso-class skeleton. -/
+/-! ## Capability summary -/
+
+/-- Finite-groupoid cardinality is a computable exact rational
+(`fgcCardinality`), the reciprocal sum over the iso-class skeleton, and its two
+decategorification laws hold as zero-axiom theorems: disjoint union is addition
+(`fgcCardinalityUnion`) and product is multiplication (`fgcCardinalityProduct`),
+with the empty- and point-unit laws and the reciprocal-multiplicativity lemma
+`fgcReciprocalMul`. -/
 def fgcHasGroupoidCardinality : Bool := true
 
-/-- DECIDED: the two decategorification laws hold as zero-axiom structural
-theorems — disjoint union is addition (`fgcCardinalityUnion`) and product is
-multiplication (`fgcCardinalityProduct`), with the empty- and point-unit laws
-and the reciprocal-multiplicativity brick `fgcReciprocalMul`. -/
-def fgcHasDecategorificationLaws : Bool := true
+/-! ## Worked examples -/
 
-/-! ## Fires -/
-
-/-- Fire: the empty groupoid has cardinality zero. -/
+/-- The empty groupoid has cardinality zero. -/
 theorem fgcFireEmptyCardinality : fgcCardinality fgcEmpty = qnfZero := rfl
 
-/-- Fire: the one-`Z/2` groupoid has cardinality `1/2`. -/
+/-- A single object with automorphism group of order two has cardinality `1/2`. -/
 theorem fgcFireTwoAutCardinality :
     fgcCardinality fgcTwoAut = qnfNormalize { numerator := 1, denominatorPredecessor := 1 } := rfl
 
-/-- Fire: the two-rigid-points groupoid has cardinality `2`. -/
+/-- Two rigid points have cardinality `2`. -/
 theorem fgcFireTwoPointsCardinality :
     fgcCardinality fgcTwoPoints = qnfNormalize { numerator := 2, denominatorPredecessor := 0 } := rfl
 
-/-- Fire: disjoint union is addition on a concrete pair (two `Z/2` objects). -/
+/-- Disjoint union is addition on a concrete pair of order-two-automorphism
+objects. -/
 theorem fgcFireUnionAddition :
     fgcCardinality (fgcDisjointUnion fgcTwoAut fgcTwoAut) =
       qnfAdd (fgcCardinality fgcTwoAut) (fgcCardinality fgcTwoAut) :=
   fgcCardinalityUnion fgcTwoAut fgcTwoAut
 
-/-- Fire: the product of `[2]` and `[3]` is the skeleton `[6]`. -/
+/-- The product of `[2]` and `[3]` is the skeleton `[6]`. -/
 theorem fgcFireProductOrdersSixth :
     (fgcProduct fgcTwoAut fgcThreeAut).autOrders = [6] := rfl
 
-/-- Fire: `card [2] × card [3] = 1/6` — product is multiplication, computed. -/
+/-- Product is multiplication computed: `card [2] * card [3] = 1/6`. -/
 theorem fgcFireProductSixthValue :
     fgcCardinality (fgcProduct fgcTwoAut fgcThreeAut) =
       qnfNormalize { numerator := 1, denominatorPredecessor := 5 } := rfl

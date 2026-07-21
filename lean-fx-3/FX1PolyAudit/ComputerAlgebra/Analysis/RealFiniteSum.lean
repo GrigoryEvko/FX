@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Analysis.RealFiniteSum
 
 /-! # FX1PolyAudit/ComputerAlgebra/Analysis/RealFiniteSum — zero-axiom gate
-    (ANALYSIS-FINSUM-1)
 
 Per-declaration zero-axiom gate for the real finite-sum layer: the prefix
 fold, its setoid congruence, additivity, scalar pull, the count-scaled bound

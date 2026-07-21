@@ -1,6 +1,6 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealCompleteness
 
-/-! # RegularReal approximation — rationals are dense in ℝ (NUM-R-7a/7b)
+/-! # RegularReal approximation — rationals are dense in ℝ
 
 Every real sits within `1/(n+1)` of the constant real of its own `n`-th
 approximant — Bishop's rational approximation, exactly tight, straight

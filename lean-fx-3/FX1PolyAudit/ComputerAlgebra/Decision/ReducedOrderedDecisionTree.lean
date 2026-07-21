@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.ReducedOrderedDecisionTree
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/ReducedOrderedDecisionTree — zero-axiom gate
-    (DISSAT-BOOL brick: the ROBDD half of canonical Boolean forms)
+    (the ROBDD half of canonical Boolean-equivalence decision)
 
 Per-declaration zero-axiom gate for the reduced-ordered-binary-decision-TREE engine: the
 hand-rolled Bool/Nat kits (conjunction/disjunction intro-elim, `robddBoolBeq`,

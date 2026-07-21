@@ -1,16 +1,12 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntGapArithmetic
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntGapArithmetic — zero-axiom gate
-    (FLOAT-2 brick 4e-i)
+/-! # Zero-axiom gate for `IntGapArithmetic`
 
 Per-declaration zero-axiom gate for the order-aware clamped-gap kit: the base-cancel
-witness extractor, the clamped-gap floor symmetry (promoted here from the
-RadixScaledInteger carrier), the two floor lower bounds, and the gap-addition lemma
-across an intermediate bound.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+witness extractor, the clamped-gap floor symmetry, the two floor lower bounds, and the
+gap-addition lemma across an intermediate bound. Every declaration must be free of
+`propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

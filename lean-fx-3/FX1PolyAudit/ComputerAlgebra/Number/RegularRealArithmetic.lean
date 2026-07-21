@@ -1,10 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealArithmetic
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealArithmetic — zero-axiom
-    gate (NUM-R-2)
+/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealArithmetic — zero-axiom gate
 
-Per-declaration zero-axiom gate for the first ℝ operations: the ℚ-side shims
+Per-declaration zero-axiom gate for the additive ℝ operations: the ℚ-side shims
 (double negation, negation over addition, the medial regrouping, negation and
 parallel-addition respect for the two-sided bound, the two doubled-modulus
 collapse identities) and the real-level negation/addition with their setoid

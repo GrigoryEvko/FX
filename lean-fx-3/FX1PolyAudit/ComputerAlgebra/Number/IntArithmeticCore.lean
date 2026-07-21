@@ -1,15 +1,15 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntArithmeticCore
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntArithmeticCore — zero-axiom gate (FLOAT-1 brick 1)
+/-! # Zero-axiom gate for `IntArithmeticCore`
 
 Per-declaration zero-axiom gate for the hand-rolled Int commutative core and the re-exported
-clean Init survivors.  The re-export gates double as TRIPWIRES: if a toolchain bump dirties
-`Int.add_zero`/`Int.one_mul`/`Int.mul_zero`/`Int.neg_neg`/`Int.neg_zero`/`Int.sub_eq_add_neg`,
-these fail and the kit hand-rolls the replacement.
+clean Init survivors. The re-export gates double as tripwires: should a toolchain bump dirty
+`Int.add_zero`, `Int.one_mul`, `Int.mul_zero`, `Int.neg_neg`, `Int.neg_zero`, or
+`Int.sub_eq_add_neg`, these fail and the kit must hand-roll the replacement.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+`native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

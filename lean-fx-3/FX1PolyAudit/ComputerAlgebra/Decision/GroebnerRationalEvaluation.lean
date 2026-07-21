@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.GroebnerRationalEvaluation
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/GroebnerRationalEvaluation — zero-axiom gate
-    (DISSAT-GROB-Q evaluation layer: the ℚ common-zero grounding of ideal membership)
+    (ℚ evaluation layer: the common-zero grounding of ideal membership)
 
 Per-declaration zero-axiom gate for the ℚ Gröbner evaluation homomorphism layer that
 grounds the certificate route semantically: the canonical power `qnfPow` with the

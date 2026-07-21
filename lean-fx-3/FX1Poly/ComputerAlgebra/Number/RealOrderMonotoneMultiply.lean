@@ -1,48 +1,40 @@
 import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
 
-/-! # RealOrderMonotoneMultiply — ℝ-order monotone multiplication (NUM-R-5d)
+/-! # RealOrderMonotoneMultiply — ℝ-order monotone multiplication
 
-The bottleneck lemma the polynomial growth bound (FTA path) and the integral
-layer both consume: multiplication by a nonnegative real is monotone for the
-non-strict Bishop order.  `weight ≥ 0` and `x ≤ y` give `weight·x ≤ weight·y`.
+Multiplication by a nonnegative real is monotone for the non-strict Bishop
+order: `weight ≥ 0` and `x ≤ y` give `weight·x ≤ weight·y`.  The polynomial
+growth bound and the integral layer both rely on it.
 
-## Why the naive lift fails, and the route that works
-
-`mulReal a c` samples EACH factor at a factor-dependent
+`mulReal a c` samples each factor at a factor-dependent
 `productSamplingIndex a c index`, so `mulReal weight x` and `mulReal weight y`
-sample at DIFFERENT depths — a pointwise lift of the ℚ product monotonicity
-does not even typecheck.  The clean `(y − x)·weight ≥ 0` route would need the
-STRONG pointwise nonnegativity `IsNonNegativeReal (subReal y x)` out of the
-WEAK vanishing-lower-bound `LessEqualReal x y`, a bridge this codebase
-deliberately bypasses.
+sample at different depths — a pointwise lift of the ℚ product monotonicity does
+not typecheck, and the clean `(y − x)·weight ≥ 0` route would need the strong
+pointwise `IsNonNegativeReal (subReal y x)` from the weak vanishing-lower-bound
+`LessEqualReal x y`, a bridge this development bypasses.
 
-Instead we prove the CRUX directly and POINTWISE
+The crux is proved directly and pointwise
 (`mulRealVanishingLowerBoundLeftNonNeg`): if `weight` is pointwise nonnegative
 and the difference `d` clears the vanishing lower bound `−1/(index+1)` at every
 index, then so does `mulReal weight d`.  At the comparison index `n` the product
 samples both factors at `s = productSamplingIndex weight d n`; there
-`weight_s ≥ 0` and `d_s ≥ −1/(s+1)`, so `weight_s·(d_s + 1/(s+1)) ≥ 0`, i.e.
-`weight_s·d_s ≥ −weight_s/(s+1)`.  The deep sampling index makes this EXACT: the
-shared magnitude bound `sharedBound = (P+1)/1` dominates `weight_s`, and
-`sharedBound · 1/(s+1)` collapses (the shipped `mulRatioReciprocalScaledCollapses`,
-because `s + 1` is definitionally `2·(P+1)·(n+1)`) to `1/(2n+2)`, which sits
-below `1/(n+1)`.  So `weight_s·d_s ≥ −1/(2n+2) ≥ −1/(n+1)` — no slack closure,
-no real-order case split.
+`weight_s ≥ 0` and `d_s ≥ −1/(s+1)`, so `weight_s·d_s ≥ −weight_s/(s+1)`.  The
+deep sampling index makes this exact: the shared magnitude bound
+`sharedBound = (P+1)/1` dominates `weight_s`, and `sharedBound · 1/(s+1)`
+collapses (`mulRatioReciprocalScaledCollapses`, since `s + 1` is definitionally
+`2·(P+1)·(n+1)`) to `1/(2n+2) ≤ 1/(n+1)` — no slack closure, no real-order case
+split.
 
 From the crux the one-sided `realMulLeftMonotone` is a distribution
 (`mulReal weight (subReal y x) ~ subReal (mulReal weight y) (mulReal weight x)`)
 carried across by `realNonNegativeRespectsDenotesSame`; the right-factor version
 commutes; and the two-sided `realMulMonotone` chains `a·c ≤ b·c ≤ b·d` through
-`lessEqualRealTrans` (which needs the upper-left `b` and the shared `c`
-pointwise nonnegative — the honest hypotheses, since `a ≥ 0` and `a ≤ b` give
-`b ≥ 0` only WEAKLY, not pointwise).
+`lessEqualRealTrans`, which needs the upper-left `b` and the shared `c` pointwise
+nonnegative (the honest hypotheses, since `a ≥ 0` and `a ≤ b` give `b ≥ 0` only
+weakly).
 
-## Zero-axiom
-
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`, `WellFounded.fix`.  Only explicit rational witnesses and the shipped
-slack/monotone ℚ kit; no real `≤`/equality is ever case-split.  Per-declaration
-gated in the audit twin. -/
+Zero-axiom: only explicit rational witnesses and the slack/monotone ℚ kit; no
+real `≤`/equality is ever case-split.  Per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -50,11 +42,10 @@ open RationalPair
 
 /-- **The multiplicative crux, pointwise**: a pointwise-nonnegative `weight`
 scales a vanishing-lower-bounded `difference` to a vanishing-lower-bounded
-product.  At the comparison index `comparisonIndex` the product samples both
-factors at `sampleIndex = productSamplingIndex weight difference comparisonIndex`;
-`weight_s ≥ 0` and `difference_s ≥ −1/(s+1)` give
-`weight_s·difference_s ≥ −(weight_s/(s+1))`, and the shared bound scaled by the
-deep reciprocal collapses EXACTLY to `1/(2·comparisonIndex+2) ≤ 1/(comparisonIndex+1)`. -/
+product.  At `comparisonIndex` the product samples both factors at
+`sampleIndex = productSamplingIndex weight difference comparisonIndex`, where the
+shared bound scaled by the deep reciprocal collapses exactly to
+`1/(2·comparisonIndex+2) ≤ 1/(comparisonIndex+1)`. -/
 theorem mulRealVanishingLowerBoundLeftNonNeg {weight difference : RegularReal}
     (isWeightNonNegative : IsNonNegativeReal weight)
     (isDifferenceVanishing : ∀ index : Nat,
@@ -174,7 +165,7 @@ theorem realMulMonotone {a b c d : RegularReal}
     (realMulLeftMonotone isUpperLeftNonNegative isRightBelow)
 
 /-- Marker: the real order carries monotone multiplication by a nonnegative
-factor (one-sided both ways and two-sided). -/
+factor. -/
 def fxRegularReal_hasOrderMonotoneMultiply : Bool := true
 
 end FX1Poly.ComputerAlgebra

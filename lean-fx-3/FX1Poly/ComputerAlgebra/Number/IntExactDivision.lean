@@ -3,29 +3,26 @@ import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntOrderAlgebra
 import FX1Poly.ComputerAlgebra.Number.NatEuclideanDivision
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntExactDivision — sign-aware exact division
-    (FLOAT-2 brick 5a)
+/-! # Sign-aware exact division of an Int by a Nat divisor
 
-Radix normalization divides the mantissa by the radix exactly for as long as it can.
-The counting divider works on `Nat`, so this module reattaches the sign: divide the
-MAGNITUDE of an `Int` by a `Nat` divisor, and when the remainder vanishes the
-factorization `mantissa = quotient * divisor` holds in `Int` — the ONLY fact the
-normalization loop rewrites by.
+Radix normalization divides the mantissa by the radix exactly while it can. The counting
+divider works on `Nat`, so this module reattaches the sign: it divides the magnitude of an
+`Int` by a `Nat` divisor, and when the remainder vanishes the factorization
+`mantissa = quotient * divisor` holds in `Int` — the fact the normalization loop rewrites
+by. The module also develops the directed rounding quotients (floor, ceiling, away, and
+nearest-ties-even) with their Galois-adjunction and half-ulp brackets.
 
   * `intMagnitudeRemainder` / `intMagnitudeQuotient` — the counting division of the
     magnitude, quotient sign-reattached.
   * `intMagnitudeDivisionExact` — a vanishing remainder yields the exact `Int`
-    factorization (per-constructor: `ofNat` is one `congrArg Int.ofNat`, `negSucc`
-    rides `intNegMul` through the definitional `-(Int.ofNat (n + 1)) = negSucc n`).
-  * `intOfNatToNatOfNonNeg` — `Int.ofNat value.toNat = value` on nonnegative values,
-    the round-trip that lets a positive `Int` radix feed the `Nat` divider.
+    factorization; the `ofNat` arm is one `congrArg Int.ofNat`, the `negSucc` arm rides
+    `intNegMul` through the definitional `-(Int.ofNat (n + 1)) = negSucc n`.
+  * `intOfNatToNatOfNonNeg` — `Int.ofNat value.toNat = value` on nonnegative values, the
+    round-trip that lets a positive `Int` radix feed the `Nat` divider.
 
-## Zero-axiom
-
-Constructor matches + `congrArg`/`Eq.trans` chains over the counting-divider
-certificates.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/IntExactDivision.lean`. -/
+Constructor matches and `congrArg`/`Eq.trans` chains over the counting-divider
+certificates, free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, and `omega`; per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -160,13 +157,13 @@ theorem intMagnitudeQuotientByOne : ∀ mantissa : Int,
           (natDivModCountingByOne (magnitudePredecessor + 1))
       quotientTransported
 
-/-! ## The order supplement — magnitude-quotient monotonicity + scaling invariance
+/-! ## Magnitude-quotient monotonicity and scaling invariance
 
-The `Int` layer of rounding monotonicity (FLOAT-3c): the magnitude quotient is
-sign-aware MONOTONE at a fixed divisor, and INVARIANT under scaling dividend and
-divisor by one common positive factor.  Both ride the counting-divider certificates
-(`natDivModCountingQuotientIsMonotone` / `natDivModCountingQuotientScales`); the sign
-plumbing is `intNegLeNegOfLe` plus three small `ofNat`/`negSucc` order facts. -/
+The magnitude quotient is sign-aware monotone at a fixed divisor, and invariant under
+scaling both dividend and divisor by one common positive factor. Both ride the
+counting-divider certificates (`natDivModCountingQuotientIsMonotone` /
+`natDivModCountingQuotientScales`); the sign plumbing is `intNegLeNegOfLe` plus three small
+`ofNat`/`negSucc` order facts. -/
 
 /-- Extract the `Nat` bound out of an `ofNat` bound — the inverse of
 `intOfNatLeOfNat`: the additive witness re-reads through `Int.ofNat.inj` (the `Int`
@@ -246,16 +243,15 @@ theorem intMagnitudeQuotientScales {divisor scaleFactor : Nat}
               (divisor := divisor) (scaleFactor := scalePredecessor + 1)
               isDivisorPositive isSuccScalePositive)
 
-/-! ## The floor quotient — division toward negative infinity (FLOAT-3d)
+/-! ## The floor quotient — division toward negative infinity
 
-The directed rounding modes correct the toward-zero quotient by one unit when the
-dropped remainder is nonzero and points against the rounding direction.  Floor keeps
-the magnitude quotient on `ofNat` mantissas and steps one below it on `negSucc`
-mantissas with a nonzero remainder.  Two BRACKET certificates pin the semantics:
-`floor * divisor` never exceeds the mantissa, and the mantissa sits strictly below
-`floor * divisor + divisor` — together they make the floor quotient THE greatest
-integer whose divisor-multiple is at or below the mantissa (the Galois-connection
-form the carrier-level floor mode rides). -/
+Directed rounding corrects the toward-zero quotient by one unit when the dropped remainder
+is nonzero and points against the rounding direction. Floor keeps the magnitude quotient on
+`ofNat` mantissas and steps one below it on `negSucc` mantissas with a nonzero remainder.
+Two bracket certificates pin the semantics: `floor * divisor` never exceeds the mantissa,
+and the mantissa sits strictly below `floor * divisor + divisor`; together they make the
+floor quotient the greatest integer whose divisor-multiple is at or below the mantissa (the
+Galois-connection form the carrier-level floor mode rides). -/
 
 /-- The floor quotient: the magnitude quotient corrected one step down on a negative
 mantissa with a nonzero remainder.  Written with `cond` so the Bool scrutinee stays
@@ -669,7 +665,7 @@ theorem intCeilQuotientLeOfMantissaLeMul {divisor : Nat}
 
 Round away from zero = grow the magnitude: ceiling behavior on nonnegative
 mantissas, floor behavior on negative ones — one constructor dispatch, so every
-bracket is inherited from the shipped ceiling/floor certificates.  Not an IEEE
+bracket is inherited from the ceiling/floor certificates.  Not an IEEE
 rounding-direction attribute by itself; it is the quotient core of the
 `roundTiesToAway` tie-break. -/
 

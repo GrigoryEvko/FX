@@ -2,11 +2,11 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RationalOrderedFieldCertificate
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RationalOrderedFieldCertificate —
-    zero-axiom gate (NUM-Q-6e)
+    zero-axiom gate
 
 Per-declaration zero-axiom gate for the ℚ certificate: the setoid-relative
-decidable ordered-Heyting-field witness structure, the nontriviality
-one-liner, and the packaged `RationalPair` instance.
+decidable ordered-Heyting-field witness structure, the nontriviality one-liner,
+and the packaged `RationalPair` instance.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

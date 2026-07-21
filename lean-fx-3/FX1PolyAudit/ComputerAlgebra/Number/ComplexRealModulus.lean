@@ -2,12 +2,11 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.ComplexRealModulus
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexRealModulus — zero-axiom gate
-    (NUM-C-2 modulus)
 
 Per-declaration zero-axiom gate for the Gaussian-real modulus: the sign-blind
-square-nonneg bricks, the pointwise nonneg helpers, the squared modulus and
-its nonnegativity, the `z * conj z ~ |z|^2` identity, the modulus, and the
-square law.
+square-nonneg lemmas, the pointwise-nonneg helpers, the squared modulus and its
+nonnegativity, the `z * conj z ~ |z|²` identity, the modulus, and the square
+law.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

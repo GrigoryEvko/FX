@@ -1,32 +1,29 @@
 import FX1Poly.ComputerAlgebra.Number.RationalPair
 
-/-! # The two-sided rational distance kit (NUM-R-0)
+/-! # RationalDistance — the two-sided rational distance kit
 
-The ℝ rung's DESIGN-LOCK, with its enabling substrate.  Locked decisions:
+The metric substrate for the Bishop real layer over `RationalPair`, resting on
+four design choices:
 
-  * **ℝ = Bishop regular sequences over `RationalPair`**: a real will be
+  * ℝ as Bishop regular sequences over `RationalPair`: a real is
     `approximation : Nat → RationalPair` with the regularity certificate
-    `distance (x m) (x n) ≤ 1/(m+1) + 1/(n+1)` — the convergence modulus is
-    BAKED IN, so no choice principle is ever needed to extract rates.
-  * **Two-sided bounds, NO absolute value**: `IsWithinBound l r bound` is the
-    conjunction `l − r ≤ bound ∧ r − l ≤ bound`.  Every metric obligation then
-    lands on the shipped order/monotonicity corpus (`addExactMonotone`,
-    `lessEqualAsCongr*`, the group laws) instead of a `natAbs` constructor
-    bash — the abs-free discipline is what keeps the ℝ layer mechanical.
-    An `absExact` can be added later and CHARACTERIZED by this predicate;
-    it is deliberately not the primitive.
-  * **Funext-free discipline**: sameness of reals is the POINTWISE setoid
-    `∀ n, IsWithinBound (x n) (y n) (2/(n+1))` — never `Eq` on the
-    approximation functions.  No law about reals is ever an `Eq`, so `funext`
-    can never be needed.
-  * `ratioOfNatSucc k n` denotes `k/(n+1)` — the bounds `1/(n+1)` and
-    `2/(n+1)` are single constructor applications, not arithmetic.
+    `distance (x m) (x n) ≤ 1/(m+1) + 1/(n+1)`; the convergence modulus is built
+    in, so no choice principle is needed to extract rates.
+  * Two-sided bounds without absolute value: `IsWithinBound l r bound` is the
+    conjunction `l − r ≤ bound ∧ r − l ≤ bound`.  Every metric obligation lands
+    on the order/monotonicity corpus (`addExactMonotone`, `lessEqualAsCongr*`,
+    the group laws) rather than a `natAbs` case analysis; an `absExact` can be
+    characterized by this predicate rather than taken as primitive.
+  * Function-extensionality-free sameness: equality of reals is the pointwise
+    setoid `∀ n, IsWithinBound (x n) (y n) (2/(n+1))`, never `Eq` on the
+    approximation functions, so `funext` is never needed.
+  * `ratioOfNatSucc k n` denotes `k/(n+1)`; the bounds `1/(n+1)` and `2/(n+1)`
+    are single constructor applications, not arithmetic.
 
-This file ships the kit that makes the ℝ setoid mechanical: subtraction, the
-structurally-positive bound constructors, the two-sided predicate with its
-decidability, symmetry, bound-monotonicity, self-distance, setoid congruence,
-the subtraction chain law, and THE TRIANGLE — from which ℝ's ε/3
-transitivity will fall out by instantiation. -/
+Contents: subtraction, the structurally-positive bound constructors, the
+two-sided predicate with its decidability, symmetry, bound-monotonicity,
+self-distance, setoid congruence, the subtraction chain law, and the triangle
+inequality, from which ℝ's ε/3 transitivity follows by instantiation. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -46,8 +43,8 @@ def ratioOfNatSucc (numeratorNat denominatorPredecessor : Nat) : RationalPair :=
 def reciprocalOfSucc (denominatorPredecessor : Nat) : RationalPair :=
   ratioOfNatSucc 1 denominatorPredecessor
 
-/-- **The two-sided distance bound**: both differences sit below the bound.
-The abs-free primitive — `|l − r| ≤ bound` without an absolute value. -/
+/-- The two-sided distance bound: both differences sit below the bound.  This is
+`|l − r| ≤ bound` without an absolute value. -/
 def IsWithinBound (leftValue rightValue bound : RationalPair) : Prop :=
   LessEqualAs (subExact leftValue rightValue) bound ∧
     LessEqualAs (subExact rightValue leftValue) bound
@@ -125,9 +122,9 @@ theorem isWithinBoundCongrBound
   ⟨lessEqualAsCongrRight boundsAgree isWithin.left,
     lessEqualAsCongrRight boundsAgree isWithin.right⟩
 
-/-- **The subtraction chain law**: `(a − b) + (b − c)` denotes `a − c` — the
-middle term cancels through the group laws (associate, collapse `−b + b` to
-zero, absorb the zero). -/
+/-- The subtraction chain law: `(a − b) + (b − c)` denotes `a − c`.  The middle
+term cancels through the group laws (associate, collapse `−b + b` to zero, absorb
+the zero). -/
 theorem subExactChainDenotesSame
     (firstValue middleValue lastValue : RationalPair) :
     DenotesSameAs
@@ -150,10 +147,10 @@ theorem subExactChainDenotesSame
             (denotesSameAsRefl (negExact lastValue)))
           (addExactZeroLeft (negExact lastValue)))))
 
-/-- **The triangle inequality**, two-sidedly: chain two bounds through the
-shared middle value — the differences ADD (`addExactMonotone`) and the chain
-law rewrites the sum of differences to the outer difference.  ℝ's ε/3
-transitivity is an instantiation of this. -/
+/-- The triangle inequality, two-sidedly: chain two bounds through the shared
+middle value.  The differences add (`addExactMonotone`) and the chain law
+rewrites the sum of differences to the outer difference.  ℝ's ε/3 transitivity is
+an instantiation. -/
 theorem isWithinBoundTriangle
     {firstValue middleValue lastValue firstBound lastBound : RationalPair}
     (isFirstWithin : IsWithinBound firstValue middleValue firstBound)
@@ -167,15 +164,15 @@ theorem isWithinBoundTriangle
         (subExactChainDenotesSame lastValue middleValue firstValue)
         (addExactMonotone isLastWithin.right isFirstWithin.right))⟩
 
-/-! ## The slack-closure principle (NUM-R-1a)
+/-! ## The slack-closure principle
 
-Bishop's workhorse: a bound that holds with EVERY vanishing slack holds
-outright — `(∀ m, value ≤ bound + k/(m+1)) → value ≤ bound`.  Constructively
-this is a computation, not a limit: decide the conclusion; if it fails, the
-strict reverse bound saturates the slack hypothesis at the PRODUCT index
+Bishop's workhorse: a bound that holds with every vanishing slack holds
+outright, `(∀ m, value ≤ bound + k/(m+1)) → value ≤ bound`.  Constructively this
+is a computation, not a limit: decide the conclusion; if it fails, the strict
+reverse bound saturates the slack hypothesis at the product index
 `k·(denominator of bound)·(denominator of value)`, where cross-multiplication
-collapses to `n + 1 ≤ n` on a single `ofNat` — refuted by irreflexivity.
-ℝ's ε/3 setoid transitivity will consume this through the two-sided wrapper. -/
+collapses to `n + 1 ≤ n` on a single `ofNat`, refuted by irreflexivity.  ℝ's ε/3
+setoid transitivity consumes this through the two-sided wrapper. -/
 
 /-- The bounds `k/(n+1)` are nonnegative — the numerator IS an `ofNat`. -/
 theorem ratioOfNatSuccIsNonNegative
@@ -201,10 +198,10 @@ theorem ratioOfNatSuccSumDenotesSame
       (Int.ofNat (denominatorPredecessor + 1))
       (Int.ofNat (denominatorPredecessor + 1)))
 
-/-- **Slack closure**: below the bound with every vanishing slack means below
-the bound.  Decidability supplies the dichotomy; the failing branch scales the
-strict reverse bound by the saturation denominator and cancels down to
-`ofNat + 1 ≤ ofNat` — irreflexivity closes it. -/
+/-- Slack closure: below the bound with every vanishing slack means below the
+bound.  Decidability supplies the dichotomy; the failing branch scales the strict
+reverse bound by the saturation denominator and cancels down to
+`ofNat + 1 ≤ ofNat`, which irreflexivity refutes. -/
 theorem lessEqualAsOfForallSlack {value bound : RationalPair}
     {slackNumerator : Nat}
     (isBoundedWithSlack : ∀ slackIndex : Nat,

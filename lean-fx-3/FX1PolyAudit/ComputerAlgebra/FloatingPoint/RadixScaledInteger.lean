@@ -2,12 +2,10 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 
 /-! # FX1PolyAudit/ComputerAlgebra/FloatingPoint/RadixScaledInteger — zero-axiom gate
-    (FLOAT-2 brick 2)
 
 Per-declaration zero-axiom gate for the RadixScaledInteger carrier: the Int
 cancellation helpers, the cross-alignment relation with its decidability and refl/symm
-laws, exact multiplication, and the rescaling-preserves-denotation theorem.  (The
-`toNat` pins moved to the `Number/IntToNatCycle` gate with their declarations.)
+laws, exact multiplication, and the rescaling-preserves-denotation theorem.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/

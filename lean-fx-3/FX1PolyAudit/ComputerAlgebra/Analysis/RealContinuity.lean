@@ -2,10 +2,9 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Analysis.RealContinuity
 
 /-! # FX1PolyAudit/ComputerAlgebra/Analysis/RealContinuity — zero-axiom gate
-    (ANALYSIS-CONT-1)
 
 Per-declaration zero-axiom gate for real uniform continuity: the one- and
-two-variable modulus-of-continuity predicates, the negation/addition
+two-variable modulus-of-continuity predicates, the negation and addition
 continuous operations, and the category of uniformly continuous maps
 (identity, composition, negation as a bundled map).
 

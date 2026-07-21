@@ -1,26 +1,26 @@
-/-! # FX1Poly/ComputerAlgebra/Decision/GroebnerMembership — the DISSAT-GROB certificate route
-    (ideal membership by checkable cofactor certificates, F2 coefficients)
+/-! # FX1Poly/ComputerAlgebra/Decision/GroebnerMembership — the Gröbner
+    ideal-membership certificate route (checkable cofactor certificates, F2 coefficients)
 
-The ring/ideal-membership use-case dissolves WITHOUT termination: the positive
-certificate for `target ∈ ⟨g1..gk⟩` is a cofactor list `q1..qk` with
+Ideal membership dissolves WITHOUT termination: the positive certificate for
+`target ∈ ⟨g1..gk⟩` is a cofactor list `q1..qk` with
 `target = q1*g1 + ... + qk*gk` as polynomials, and CHECKING a certificate is pure
 polynomial arithmetic — no search, no Dickson, no confluence.  This is the
 Grégoire–Pottier / nsatz reflection split (Coq `nsatz`; Lean `linear_combination` /
 `polyrith`): an untrusted FINDER emits the certificate, a verified CHECKER validates it,
 and the soundness theorem lives entirely on the checker.
 
-## Coefficient choice — F2, honestly
+## Coefficient choice — F2
 
-The commissioned first attempt was ℚ via the live `RationalPair` kit.  That kit is a
-cross-multiplication SETOID (`DenotesSameAs`, no canonical normal form), so structural
-beq on sorted coefficient-carrying lists would be equality-up-to-setoid everywhere —
-every AC lemma, canonicity, and the checker's final beq would need setoid transport.
-Per commission the fallback is **F2 = Bool** (xor/and), which keeps every theorem
-meaningful and makes the representation CANONICAL: a nonzero F2 coefficient is 1, so a
-polynomial IS a strictly-descending sorted list of exponent vectors, addition is the
-symmetric-difference merge (collision = xor 1 1 = 0 = drop), negation is the identity
-(-1 = 1), and every leading coefficient is a unit — division is always exact, and the
-nsatz scalar `c` and Rabinowitsch exponent `r` both degenerate to 1.
+Coefficients are **F2 = Bool** (xor/and) rather than ℚ.  A ℚ coefficient via the
+`RationalPair` kit is a cross-multiplication setoid (`DenotesSameAs`, no canonical normal
+form), so structural beq on sorted coefficient-carrying lists would be
+equality-up-to-setoid everywhere — every AC lemma, canonicity, and the checker's final
+beq would need setoid transport.  F2 keeps every theorem meaningful and makes the
+representation CANONICAL: a nonzero F2 coefficient is 1, so a polynomial IS a
+strictly-descending sorted list of exponent vectors, addition is the symmetric-difference
+merge (collision = xor 1 1 = 0 = drop), negation is the identity (-1 = 1), and every
+leading coefficient is a unit — division is always exact, and the nsatz scalar `c` and
+Rabinowitsch exponent `r` both degenerate to 1.
 
 ## The layers
 
@@ -62,8 +62,7 @@ nsatz scalar `c` and Rabinowitsch exponent `r` both degenerate to 1.
     `remainder + Σ cofᵢ·genᵢ = poly + Σ cof⁰ᵢ·genᵢ` as sorted lists — so fuel exhaustion
     still leaves a checkable partial certificate.  `grbFinderSound`: remainder `[]` ⟹
     the returned cofactors pass `grbCheckCertificate`.  No termination claim anywhere.
-    The optional one-round S-polynomial enrichment was NOT attempted (commission marks
-    it optional).
+    One-round S-polynomial enrichment is out of scope.
 
 ## The honest wall
 
@@ -74,7 +73,7 @@ termination — Dickson's lemma, certified IMPOSSIBLE zero-axiom in this repo
 AF-product route forces `WellFounded.fix`) — and Newman-style confluence of the
 completed basis (reduce-to-nonzero refutes membership only over a confluent basis).
 Neither is attempted.  The certificate route (`fxDissatGrob_hasCertificateRoute :=
-true`) is the commissioned bar and is fully DECIDED.
+true`) is fully DECIDED.
 
 ## Zero-axiom discipline
 
@@ -1906,7 +1905,7 @@ def grbNonMembershipDecisionStatement : Prop :=
 Dickson (`fxNet4_dicksonWall`) + Newman confluence. -/
 def fxDissatGrob_hasNonMembershipDecision : Bool := false
 
-/-- DECIDED marker for the certificate route (Stages 1–4): the sorted-list F2
+/-- DECIDED marker for the certificate route: the sorted-list F2
 polynomial substrate, the AC lemma family by sorted-list extensionality, the
 certificate checker with `grbCertificateSound`, and the fuel-bounded finder with
 `grbReduceInvariant` + `grbFinderSound`. -/

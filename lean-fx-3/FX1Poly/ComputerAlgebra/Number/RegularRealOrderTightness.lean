@@ -1,13 +1,13 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrder
 import FX1Poly.ComputerAlgebra.Number.RegularRealRing
 
-/-! # RegularReal order — tightness and setoid congruence (NUM-R-5c)
+/-! # RegularReal order — tightness and setoid congruence
 
-The R-5 keystone: the non-strict order `LessEqualReal` is TIGHT (mutual
+The order-layer keystone: the non-strict order `LessEqualReal` is TIGHT (mutual
 `≤` collapses to the setoid) and SETOID-INVARIANT (it transports through
 `DenotesSameReal` on both endpoints).  Both ride the vanishing-slack
 closure `lessEqualAsOfForallSlack` — no case split on real order, no
-estimate outside the shipped ℚ kit.
+estimate outside the ℚ kit.
 
   * **Tightness** (`denotesSameRealOfLessEqualBoth`): the two one-sided
     bounds negate into the two-sided `IsWithinBound` at the doubled
@@ -21,9 +21,8 @@ estimate outside the shipped ℚ kit.
     modulus is recovered through slack closure at numerator `4` — the
     same discipline `denotesSameRealTrans` already uses.
 
-The enabling ℚ move shipped here: negation is antitone on the cross-
-multiplication order (`lessEqualAsNegBoth`).  Deferred to R-5d: the
-monotone-add/`sqrtRealMonotone` payoff toward the ℂ triangle inequality. -/
+The enabling ℚ move is that negation is antitone on the cross-multiplication
+order (`lessEqualAsNegBoth`). -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -91,7 +90,7 @@ theorem tightnessChainBoundCollapses
             (ratioOfNatSuccSumDenotesSame 1 1 outerPredecessor)
             (ratioOfNatSuccSumDenotesSame 1 1 innerPredecessor)))))
 
-/-- `−v + v` denotes zero — commute onto the shipped right-inverse. -/
+/-- `−v + v` denotes zero — commute onto the right-inverse. -/
 theorem addExactNegLeftDenotesSame (value : RationalPair) :
     DenotesSameAs (addExact (negExact value) value) zeroRational :=
   denotesSameAsTrans (addExactComm (negExact value) value)
@@ -228,7 +227,7 @@ end RationalPair
 
 open RationalPair
 
-/-! ## Tightness (NUM-R-5c) -/
+/-! ## Tightness -/
 
 /-- **Tightness**: mutual non-strict order collapses to the setoid.  Each
 `LessEqualReal` arm, negated (`lessEqualAsNegBoth`) and read through the
@@ -287,7 +286,7 @@ theorem lessEqualRealTight {leftValue rightValue : RegularReal}
     DenotesSameReal leftValue rightValue :=
   denotesSameRealOfLessEqualBoth isLeftBelowRight isRightBelowLeft
 
-/-! ## Setoid congruence (NUM-R-5c) -/
+/-! ## Setoid congruence -/
 
 /-- **Nonnegativity of a difference is setoid-invariant**: if every
 approximant of `value` clears `−1/(index+1)` and `newValue` denotes the
@@ -372,14 +371,14 @@ theorem lessEqualRealCongr
     LessEqualReal newLeftValue newRightValue :=
   lessEqualRealRespectsDenotesSame leftAgrees rightAgrees isBelow
 
-/-! ## Additive monotonicity — the order-layer payoff (NUM-R-5c) -/
+/-! ## Additive monotonicity -/
 
 /-- **Additive monotonicity of the non-strict order**: a shared summand
 preserves `≤`.  The shared value cancels out of the difference —
 `(b + c) − (a + c) ~ b − a` by the subtraction cross-pair, self-difference
 to zero, and dropping the zero — and `realNonNegativeRespectsDenotesSame`
-carries the nonnegativity across that setoid identity.  This is the
-monotone step the ℂ triangle inequality consumes. -/
+carries the nonnegativity across that setoid identity.  The monotone step
+underlying the ℂ triangle inequality. -/
 theorem lessEqualRealAddCompat {leftValue rightValue : RegularReal}
     (isBelow : LessEqualReal leftValue rightValue) (sharedValue : RegularReal) :
     LessEqualReal (addReal leftValue sharedValue)

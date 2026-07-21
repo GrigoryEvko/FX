@@ -2,35 +2,32 @@ import FX1Poly.ComputerAlgebra.Number.IntSubNatNat
 import FX1Poly.ComputerAlgebra.Number.IntAddAssociativity
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntToNatCycle — the clamped-gap cycle balance
-    (FLOAT-2 brick 4a)
+/-! # The clamped-gap cycle balance
 
-Cross-alignment transitivity looks like it needs a six-way sign-ordering case analysis
-over the clamped gaps `(a - b).toNat`.  It does not: the ONE identity it needs is
-ORDER-FREE —
+Cross-alignment transitivity needs a single order-free identity over the clamped gaps
+`(a - b).toNat`:
 
     A.toNat + B.toNat + C.toNat = (-A).toNat + (-B).toNat + (-C).toNat
                                                 whenever A + B + C = 0,
 
-because `ofNat (w.toNat) = ofNat ((-w).toNat) + w` for EVERY Int `w` (the positive-part
+because `ofNat (w.toNat) = ofNat ((-w).toNat) + w` for every Int `w` (the positive-part
 decomposition, a two-case bash), so the two sides differ by the telescoping sum
-`A + B + C`.  Applied to the exponent-gap cycle `A = x - y`, `B = y - z`, `C = z - x`,
-this lets the two cross-alignment equations be multiplied up to a COMMON scale and
-cancelled — no `min`, no sign splits.
+`A + B + C`. Applied to the exponent-gap cycle `A = x - y`, `B = y - z`, `C = z - x`, this
+lets the two cross-alignment equations be multiplied up to a common scale and cancelled,
+with no `min` and no sign splits.
 
-  * `intToNatOfNat` / `intToNatNegOfNat` — the `toNat` computation pins (promoted from
-    the RadixScaledInteger carrier file now that they have a second consumer).
+  * `intToNatOfNat` / `intToNatNegOfNat` — the `toNat` computation pins.
   * `intOfNatToNatDecomposition` — the positive-part decomposition.
   * `intAddSwapMiddle` — the four-term AC shuffle `(a+b)+(c+d) = (a+c)+(b+d)`.
   * `intGapCycleTelescopes` — the exponent-gap cycle sums to zero.
-  * `intToNatCycleBalance` — the headline identity, by decomposing all three summands
-    and shuffling the telescoping sum out.
+  * `intToNatCycleBalance` — the headline identity, by decomposing all three summands and
+    shuffling the telescoping sum out.
+  * `intSplitClampsBalance` — the two-exponent corollary the ℚ embedding of radix-scaled
+    integers uses.
 
-## Zero-axiom
-
-Two-case constructor bashes + `congrArg`/`Eq.trans` chains over the brick-1..3 kit.
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/Number/IntToNatCycle.lean`. -/
+Two-case constructor bashes with `congrArg`/`Eq.trans` chains, free of `axiom`, `sorry`,
+`propext`, `Quot.sound`, `Classical`, `native_decide`, and `omega`; per-declaration gated
+in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -60,8 +57,8 @@ theorem intOfNatToNatDecomposition : ∀ value : Int,
 
 /-! ## AC plumbing -/
 
-/-- The four-term exchange `(a + b) + (c + d) = (a + c) + (b + d)` — the only AC
-shuffle the cycle balance needs, extracted once. -/
+/-- The four-term exchange `(a + b) + (c + d) = (a + c) + (b + d)` — the only AC shuffle
+the cycle balance needs. -/
 theorem intAddSwapMiddle (firstLeft firstRight secondLeft secondRight : Int) :
     (firstLeft + firstRight) + (secondLeft + secondRight) =
       (firstLeft + secondLeft) + (firstRight + secondRight) :=
@@ -94,9 +91,9 @@ theorem intGapCycleTelescopes (firstValue secondValue thirdValue : Int) :
 
 /-! ## The cycle balance -/
 
-/-- **The clamped-gap cycle balance** — the order-free identity behind cross-alignment
+/-- The clamped-gap cycle balance, the order-free identity behind cross-alignment
 transitivity: over a telescoping cycle, the sum of positive parts equals the sum of
-negative parts.  Decompose all three summands by `intOfNatToNatDecomposition`, shuffle
+negative parts. Decompose all three summands by `intOfNatToNatDecomposition`, shuffle
 with `intAddSwapMiddle`, and the telescoping sum drops out. -/
 theorem intToNatCycleBalance {firstGap secondGap thirdGap : Int}
     (isTelescoping : firstGap + secondGap + thirdGap = 0) :
@@ -124,12 +121,11 @@ theorem intToNatCycleBalance {firstGap secondGap thirdGap : Int}
                     isTelescoping).trans
                   (intAddZero ((negFirst + negSecond) + negThird))))))))
 
-/-- **The split-clamps balance** — the two-exponent corollary the ℚ embedding of
-radix-scaled integers rides: the gap clamp plus the OTHER value's split clamps
-(`toNat` of each exponent and of its negation) lands both cross-alignment sides
-on one total exponent.  Instantiate the cycle balance at the telescoping triple
-`(left - right, right, -left)`, fold the double negation and the negated gap,
-and shuffle. -/
+/-- The split-clamps balance, the two-exponent corollary the ℚ embedding of radix-scaled
+integers uses: the gap clamp plus the other value's split clamps (`toNat` of each
+exponent and of its negation) lands both cross-alignment sides on one total exponent.
+Instantiate the cycle balance at the telescoping triple `(left - right, right, -left)`,
+fold the double negation and the negated gap, and shuffle. -/
 theorem intSplitClampsBalance (leftExponent rightExponent : Int) :
     (leftExponent - rightExponent).toNat +
         (rightExponent.toNat + (-leftExponent).toNat) =

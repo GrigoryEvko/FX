@@ -1,16 +1,15 @@
 import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
 
-/-! # FX1Poly/ComputerAlgebra/Number/NatEuclideanDivision — the structural counting divider
-    (FLOAT-1 brick 9)
+/-! # The structural counting divider — Euclidean division on `Nat`
 
-Init's `Nat.div` is WellFounded-based and its correctness corpus (`Nat.div_add_mod`,
-`Int.ediv_add_emod`) is propext-dirty (probed 2026-07-02), so the rounding-certificate
-layer cannot use it.  This module rebuilds Euclidean division ZERO-AXIOM by the COUNTING
-recursion: instead of repeated subtraction (which needs well-founded recursion), walk the
-dividend up one unit at a time, bumping the quotient whenever the remainder is about to
-reach the divisor.  Structural on the dividend — O(dividend) as a program, which is
-irrelevant here: this layer is CERTIFICATE-FIRST, and the certificate checker is just
-multiplication + addition + comparison.
+Init's `Nat.div` is well-founded and its correctness corpus (`Nat.div_add_mod`,
+`Int.ediv_add_emod`) leaks `propext`, so the rounding-certificate layer cannot use it.
+This module rebuilds Euclidean division zero-axiom by a counting recursion: rather than
+repeated subtraction (which needs well-founded recursion), walk the dividend up one unit
+at a time, bumping the quotient whenever the remainder is about to reach the divisor. The
+recursion is structural on the dividend, hence `O(dividend)` as a program; that cost is
+irrelevant here, since the layer is certificate-first and the certificate checker is only
+multiplication, addition, and comparison.
 
   * `natDivModStep` — one counting step, written with `cond` so the Bool scrutinee is
     exposed for `congrArg` transport (no match-motive surgery).
@@ -25,13 +24,11 @@ multiplication + addition + comparison.
     dividend and divisor (the cross-scale bridge rounding monotonicity rides).
   * `natEuclideanDivisionExists` — the packaged existence certificate.
 
-## Zero-axiom
-
 Structural recursion on the dividend, `cond`-transport by `congrArg` over
-`Nat.eq_of_beq_eq_true` / `Nat.ne_of_beq_eq_false` (both clean), witness arithmetic over
-`Nat.le.dest` / `Nat.le.intro` / `Nat.succ_add`.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/NatEuclideanDivision.lean`. -/
+`Nat.eq_of_beq_eq_true` / `Nat.ne_of_beq_eq_false`, and witness arithmetic over
+`Nat.le.dest` / `Nat.le.intro` / `Nat.succ_add`, free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, and `omega`; per-declaration gated in the
+audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -165,8 +162,7 @@ successor cancellation, the ≤-0 collapse) plus the shrink bound "an exact quot
 divisor ≥ 2 is strictly smaller than the dividend".  All are `Nat.le.dest`/`Nat.le.intro`
 witness bookkeeping — no Init order corpus. -/
 
-/-- Transitivity by witness addition (Init's `Nat.le_trans` is avoided on principle —
-this is two destructs and one reassociation). -/
+/-- Transitivity by witness addition: two destructs and one reassociation. -/
 theorem natLeTrans {lowValue middleValue highValue : Nat}
     (isLowMiddle : lowValue ≤ middleValue) (isMiddleHigh : middleValue ≤ highValue) :
     lowValue ≤ highValue :=
@@ -305,8 +301,7 @@ theorem natSuccLeSuccOfLe {lowValue highValue : Nat}
         ((Nat.succ_add lowValue differenceWitness).trans
           (congrArg (· + 1) differenceEquation))
 
-/-- **Totality of `≤`** — double structural descent (Init's `Nat.le_total` is avoided
-on principle with the rest of the order corpus). -/
+/-- Totality of `≤` by double structural descent. -/
 theorem natLeTotal : ∀ leftValue rightValue : Nat,
     leftValue ≤ rightValue ∨ rightValue ≤ leftValue
   | 0, rightValue => .inl (natZeroLe rightValue)
@@ -495,7 +490,7 @@ theorem natDivModCountingQuotientScales (dividend : Nat) {divisor scaleFactor : 
         (divisor * scaleFactor)).symm.trans
       scaledBaseDecomposition)
 
-/-! ## Round-nearest-ties-even: the Nat layer (FLOAT-3e)
+/-! ## Round-nearest-ties-even on `Nat`
 
 The nearest quotient corrects the counting divider's output by comparing the
 DOUBLED remainder against the divisor (no division by two anywhere): keep the
@@ -605,9 +600,9 @@ def natNearestEvenQuotient (divisor dividend : Nat) : Nat :=
   natNearestCorrectedQuotient divisor (natDivModCounting dividend divisor).fst
     (natDivModCounting dividend divisor).snd
 
-/-! ## The doubled half-ulp certificates (FLOAT-3e)
+/-! ## The doubled half-ulp certificates
 
-The defining property of the nearest quotient, stated WITHOUT division by two: the
+The defining property of the nearest quotient, stated without division by two: the
 doubled corrected multiple stays within one divisor of the doubled dividend, on both
 sides.  Everything is `Nat.le.dest`/`Nat.le.intro` witness algebra over the
 reconstruction `dividend = divisor * quotient + remainder`. -/

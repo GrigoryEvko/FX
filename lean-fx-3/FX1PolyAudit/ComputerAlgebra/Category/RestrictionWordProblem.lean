@@ -1,23 +1,23 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Category.RestrictionWordProblem
 
-/-! # FX1PolyAudit/ComputerAlgebra/Category/RestrictionWordProblem — zero-axiom gate
-    (the free restriction category word problem)
+/-! # Zero-axiom gate for the free restriction category word problem
 
 Per-declaration zero-axiom gate for the restriction-category word-problem kit: the
-Boolean/`Nat` micro-kit, decidable list equality, hand-rolled append laws, the guard
-meet-semilattice (membership / subset / set-equality with commutativity, idempotency,
+Boolean and `Nat` micro-kit, decidable list equality, hand-rolled append laws, the guard
+meet-semilattice (membership, subset, and set-equality with commutativity, idempotency,
 absorption, and congruence), the restriction-morphism normal form `RcmMor` with the
-combinator `rcmRestrict`, composition `rcmComp`, and well-formedness `rcmWfComp`, the R1–R4
-restriction axioms and category laws SOUND on the normal form (T2), the raw term calculus
+combinator `rcmRestrict`, composition `rcmComp`, and well-formedness `rcmWfComp`, the R1-R4
+restriction axioms and category laws sound on the normal form, the raw term calculus
 `RcmTerm` with the generated congruence `RestrConv`, the decision `rcmDecideConv` with its
-soundness (`rcmConvDecides`), the guard-semilattice fragment completeness building blocks
-(`rcmRestrIdem`, `rcmGuardSwap`, `rcmGuardContract`, `rcmGuardDup`), the capability/wall
+soundness `rcmConvDecides`, the guard-semilattice fragment completeness building blocks
+(`rcmRestrIdem`, `rcmGuardSwap`, `rcmGuardContract`, `rcmGuardDup`), the capability and wall
 markers, and the ground fires.
 
-The FULL readback completeness is WALLED (`rcmHasFullReadbackCompleteness = false`); the deep
-nontrivial-edge free restriction category is WALLED (`rcmHasDeepGuardRestriction = false`);
-the Turing-category / universal-object extension is WALLED (`rcmHasTuringCategory = false`).
+Full readback completeness is walled (`rcmHasFullReadbackCompleteness = false`); richer
+restriction-category structure beyond the commutative-idempotent guard model, namely the deep
+prefix-subsuming free restriction category and the Turing-category universal-object extension,
+is walled (`rcmHasRicherRestrictionCategory = false`).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -114,11 +114,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmGuardSwap
 #assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmGuardContract
 #assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmGuardDup
-#assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmHasRestrictionNormalForm
-#assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmHasGuardSemilatticeFragment
+#assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmDecidesRestrictionCategoryWordProblem
 #assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmHasFullReadbackCompleteness
-#assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmHasDeepGuardRestriction
-#assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmHasTuringCategory
+#assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmHasRicherRestrictionCategory
 #assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmFireRestrictGen
 #assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmFireRestrictNotId
 #assert_no_axioms FX1Poly.ComputerAlgebra.Category.rcmFireR1Decides

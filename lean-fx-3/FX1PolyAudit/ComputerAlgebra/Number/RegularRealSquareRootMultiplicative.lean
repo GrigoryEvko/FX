@@ -2,11 +2,11 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealSquareRootMultiplicative
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealSquareRootMultiplicative —
-    zero-axiom gate (NUM-R-SQRT-MUL)
+    zero-axiom gate
 
 Per-declaration zero-axiom gate for `sqrt` multiplicativity on nonnegative Bishop
 reals: the rational quadratic estimate (`squareZeroImpliesZero`), the
-difference-of-squares reduction and its ring bricks, the equal-nonnegative-squares
+difference-of-squares reduction and its ring lemmas, the equal-nonnegative-squares
 cancellation crux, and the headline `sqrtRealMulDenotesSame`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,

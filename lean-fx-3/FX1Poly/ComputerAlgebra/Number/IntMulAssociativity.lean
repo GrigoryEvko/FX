@@ -1,38 +1,32 @@
 import FX1Poly.ComputerAlgebra.Number.IntArithmeticCore
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntMulAssociativity — hand-rolled mul associativity
-    (FLOAT-1 brick 5)
+/-! # Integer multiplication associativity
 
-Init's `Nat.mul_assoc` and `Int.mul_assoc` are propext-dirty (probed 2026-07-02, v4.29.1);
-this module hand-rolls both.  Three pieces:
+Init's `Nat.mul_assoc` and `Int.mul_assoc` leak `propext`, so both are re-derived here.
 
-  * `natMulAssoc` — the Nat backing.  Structural recursion on the RIGHT factor (Nat.mul
+  * `natMulAssoc` — the Nat backing. Structural recursion on the right factor (`Nat.mul`
     recurses on its second argument, so `x * (r + 1)` is definitionally `x * r + x`); the
-    step case is one `Nat.left_distrib` (clean) after the inductive hypothesis.
-  * The four MIXED-SIGN MUL HELPERS (`intOfNatMulNegOfNat` / `intNegOfNatMulOfNat` /
-    `intNegOfNatMulNegSucc` / `intNegSuccMulNegOfNat`): the `Int.mul` arms produce
-    `negOfNat`, so re-associating a triple product needs multiplication characterized on
-    `negOfNat` operands.  Each is a two-case split; the `negOfNat 0` arms either close by
-    `rfl` (`factor * 0` is definitionally `0`) or need one `Nat.zero_mul` fixup on each
-    side (`0 * factor` is NOT definitional).
-  * `intMulAssoc` — the eight-way constructor bash.  Every case lands on a shared
-    `ofNat`/`negOfNat` form through the helpers, closing with `congrArg` over
-    `natMulAssoc`.
+    step case is one `Nat.left_distrib` after the inductive hypothesis.
+  * The four mixed-sign mul helpers (`intOfNatMulNegOfNat`, `intNegOfNatMulOfNat`,
+    `intNegOfNatMulNegSucc`, `intNegSuccMulNegOfNat`): the `Int.mul` arms produce
+    `negOfNat`, so re-associating a triple product needs multiplication characterised on
+    `negOfNat` operands. Each is a two-case split; the `negOfNat 0` arm closes by `rfl`
+    (`factor * 0` reduces to `0`) or needs one `Nat.zero_mul` fixup per side (`0 * factor`
+    is not definitional).
+  * `intMulAssoc` — the eight-way constructor bash. Every case lands on a shared
+    `ofNat`/`negOfNat` form through the helpers, closing with `congrArg` over `natMulAssoc`.
 
-## Zero-axiom
-
-Structural recursion + `congrArg`/`Eq.trans` chains over clean Nat lemmas
-(`Nat.left_distrib`, `Nat.zero_mul`).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/IntMulAssociativity.lean`. -/
+Structural recursion with `congrArg`/`Eq.trans` chains over clean Nat lemmas
+(`Nat.left_distrib`, `Nat.zero_mul`); free of `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, and `omega`; per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-! ## The Nat backing -/
 
-/-- **Nat multiplication associativity** (Init's `Nat.mul_assoc` is propext-dirty).
-Recursion on the right factor: `x * (r + 1)` is definitionally `x * r + x`, so the step
-case is the inductive hypothesis under `(· + leftFactor * middleFactor)` followed by one
+/-- Nat multiplication associativity (Init's `Nat.mul_assoc` leaks `propext`). Recursion on
+the right factor: `x * (r + 1)` is definitionally `x * r + x`, so the step case is the
+inductive hypothesis under `(· + leftFactor * middleFactor)` followed by one
 `Nat.left_distrib`. -/
 theorem natMulAssoc : ∀ leftFactor middleFactor rightFactor : Nat,
     leftFactor * middleFactor * rightFactor = leftFactor * (middleFactor * rightFactor)
@@ -60,7 +54,7 @@ theorem intNegOfNatMulOfNat : ∀ headValue factorValue : Nat,
         (congrArg Int.negOfNat (Nat.zero_mul factorValue)).symm
   | _ + 1, _ => rfl
 
-/-- `negOfNat * negSucc` is a NONNEGATIVE product.  The zero arm needs `Nat.zero_mul` on
+/-- `negOfNat * negSucc` is a nonnegative product; the zero arm needs `Nat.zero_mul` on
 each side. -/
 theorem intNegOfNatMulNegSucc : ∀ headValue tailPredecessor : Nat,
     Int.negOfNat headValue * Int.negSucc tailPredecessor =
@@ -70,7 +64,7 @@ theorem intNegOfNatMulNegSucc : ∀ headValue tailPredecessor : Nat,
         (congrArg Int.ofNat (Nat.zero_mul (tailPredecessor + 1))).symm
   | _ + 1, _ => rfl
 
-/-- `negSucc * negOfNat` is a NONNEGATIVE product — both arms definitional
+/-- `negSucc * negOfNat` is a nonnegative product; both arms definitional
 (`factor * 0` reduces to `0`). -/
 theorem intNegSuccMulNegOfNat : ∀ headPredecessor tailValue : Nat,
     Int.negSucc headPredecessor * Int.negOfNat tailValue =
@@ -80,9 +74,9 @@ theorem intNegSuccMulNegOfNat : ∀ headPredecessor tailValue : Nat,
 
 /-! ## Associativity -/
 
-/-- **Int multiplication associativity** (Init's `Int.mul_assoc` is propext-dirty).
-Eight-way constructor bash: every mixed case collapses through the mixed-sign mul helpers
-onto a shared `ofNat`/`negOfNat` form, closing with `congrArg` over `natMulAssoc`. -/
+/-- Int multiplication associativity (Init's `Int.mul_assoc` leaks `propext`). Eight-way
+constructor bash: every mixed case collapses through the mixed-sign mul helpers onto a
+shared `ofNat`/`negOfNat` form, closing with `congrArg` over `natMulAssoc`. -/
 theorem intMulAssoc : ∀ leftFactor middleFactor rightFactor : Int,
     leftFactor * middleFactor * rightFactor = leftFactor * (middleFactor * rightFactor)
   | .ofNat leftNat, .ofNat middleNat, .ofNat rightNat =>
@@ -115,9 +109,9 @@ theorem intMulAssoc : ∀ leftFactor middleFactor rightFactor : Int,
       congrArg Int.negOfNat
         (natMulAssoc (leftPredecessor + 1) (middlePredecessor + 1) (rightPredecessor + 1))
 
-/-- The four-factor exchange `(a * b) * (c * d) = (a * c) * (b * d)` — the
-multiplicative twin of the additive `intAddSwapMiddle`, and the move that turns a
-product of two scaled mantissas into one mantissa product at one accumulated scale. -/
+/-- The four-factor exchange `(a * b) * (c * d) = (a * c) * (b * d)` — the multiplicative
+twin of the additive `intAddSwapMiddle`, turning a product of two scaled mantissas into one
+mantissa product at one accumulated scale. -/
 theorem intMulSwapMiddle (firstLeft firstRight secondLeft secondRight : Int) :
     (firstLeft * firstRight) * (secondLeft * secondRight) =
       (firstLeft * secondLeft) * (firstRight * secondRight) :=
@@ -128,9 +122,9 @@ theorem intMulSwapMiddle (firstLeft firstRight secondLeft secondRight : Int) :
             (intMulAssoc secondLeft firstRight secondRight)))).trans
       (intMulAssoc firstLeft secondLeft (firstRight * secondRight)).symm)
 
-/-- Right commutation of a triple product — swap the two right factors.  One
-associate-commute-associate telescope; the workhorse of cross-multiplication
-reasoning (every rational setoid step is a chain of these). -/
+/-- Right commutation of a triple product: swap the two right factors via one
+associate-commute-associate telescope. Underlies cross-multiplication reasoning, where each
+rational setoid step is a chain of these. -/
 theorem intMulRightComm (leftFactor middleFactor rightFactor : Int) :
     leftFactor * middleFactor * rightFactor =
       leftFactor * rightFactor * middleFactor :=

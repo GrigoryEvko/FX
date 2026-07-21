@@ -2,12 +2,12 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Analysis.RealIntegral
 
 /-! # FX1PolyAudit/ComputerAlgebra/Analysis/RealIntegral — zero-axiom gate
-    (ANALYSIS-INTEGRAL-1)
 
-Per-declaration zero-axiom gate for the Riemann-sum functional layer: the
-constant-real homomorphisms, the natural-scaling law, the rational mesh and
-sample points, the cell-count/mesh telescope, the Riemann-sum functional, and
-its exact linearity + constant laws.
+Per-declaration zero-axiom gate for the constructive integral: the constant-real
+homomorphisms, the natural-scaling law, the rational mesh and sample points, the
+cell-count/mesh telescope, the Riemann-sum functional with its exact linearity
+and constant laws, the common-refinement Cauchy estimate, the Archimedean
+cell-count schedule, `integralOfUC`, and the elementary integral laws.
 
 Every declaration must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/

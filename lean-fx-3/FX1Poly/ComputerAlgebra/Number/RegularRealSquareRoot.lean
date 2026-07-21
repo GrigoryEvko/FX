@@ -2,7 +2,6 @@ import FX1Poly.ComputerAlgebra.Number.NatEuclideanDivision
 import FX1Poly.ComputerAlgebra.Number.RegularRealInverse
 
 /-! # FX1Poly/ComputerAlgebra/Number/RegularRealSquareRoot — constructive square root
-    (NUM-R-SQRT #1961)
 
 Constructive `sqrt` on nonnegative Bishop regular reals, built √-free: the true real
 square root never appears as an intermediate; every step is rational `≤`/square algebra
@@ -12,17 +11,14 @@ surrogate for √-monotonicity.
 Dependency order:
 
   1. `natSqrt` — integer square root by structural COUNTING recursion, an exact mirror
-     of the shipped `natDivModCounting`: walk the radicand up one unit at a time, bump
+     of `natDivModCounting`: walk the radicand up one unit at a time, bump
      the root exactly when the count reaches the next perfect square.  Two-sided
      certificate `natSqrt v * natSqrt v ≤ v < (natSqrt v + 1) * (natSqrt v + 1)`, proved
      as ONE structural induction carrying the conjunction, then projected.
 
-## Zero-axiom
-
-Structural recursion on the radicand, `cond`-transport by `congrArg` over
-`Nat.eq_of_beq_eq_true` / `Nat.ne_of_beq_eq_false` (both clean).  No `axiom`, `sorry`,
-`propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/RegularRealSquareRoot.lean`. -/
+Zero-axiom: structural recursion on the radicand, `cond`-transport by `congrArg` over
+`Nat.eq_of_beq_eq_true` / `Nat.ne_of_beq_eq_false` (both clean).  Per-declaration gated
+in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -247,7 +243,7 @@ theorem rationalSqrtApproxSuccSqGe {value : RationalPair} (gridPredecessor : Nat
     (congrArg (· * (Int.ofNat gridSuccessor * Int.ofNat gridSuccessor)) numeratorEquation)
     (intOfNatLeOfNat natChain)
 
-/-! ## sqrtReal — the sampling scaffolding (NUM-R-SQRT, real layer)
+/-! ## sqrtReal — the sampling scaffolding
 
 The real square root samples its argument at a QUADRATICALLY deeper index and rounds to
 a fixed output grid.  `sqrtSampleIndex n + 1 = (2n+2)² = 4(n+1)²` pre-shrinks the input
@@ -257,8 +253,8 @@ is `1/(2(n+1)) = reciprocalOfSucc (2n+1)`.
 
 The pointwise approximation sequence `sqrtRealApproximation` is defined here and TOTAL
 (the clamp in `rationalSqrtApprox` keeps it defined on every real, nonnegative or not).
-Packaging it into a `RegularReal` requires the Hölder-½ regularity bound — the genuine
-analytic node (see the module report). -/
+Packaging it into a `RegularReal` requires the Hölder-½ regularity bound, the genuine
+analytic content of the construction. -/
 
 /-- The quadratic-depth input sample index: `sqrtSampleIndex n + 1 = (2n+2)²`. -/
 def sqrtSampleIndex (index : Nat) : Nat :=
@@ -282,13 +278,13 @@ grid.  TOTAL on every real. -/
 def sqrtRealApproximation (value : RegularReal) (index : Nat) : RationalPair :=
   rationalSqrtApprox (value.approximation (sqrtSampleIndex index)) (sqrtGridIndex index)
 
-/-! ## The square-reflection bridge (NUM-R-SQRT brick 4)
+/-! ## The square-reflection bridge
 
 The Hölder-½ regularity threads the two square brackets `s² ≤ q ≤ (s+grid)²` through
 `a`'s own regularity and then must take a SQUARE ROOT of the resulting square bound to
 recover a bound on `s` itself.  That √-back step is the rational reflection
-`0 ≤ t → s² ≤ t² → s ≤ t`, whose engine is the Int-level strict square monotonicity
-of NODE 1.  This section builds the reflection on `RationalPair` (the shape the
+`0 ≤ t → s² ≤ t² → s ≤ t`, whose engine is the Int-level strict square monotonicity.
+This section builds the reflection on `RationalPair` (the shape the
 regularity consumes) plus the output-nonnegativity fact the whole chain rides on
 (`natSqrt m / (g+1)` has an `ofNat` numerator). -/
 
@@ -347,7 +343,7 @@ theorem mulExactLtSquareOfNonNegOfLt {lowValue highValue : RationalPair}
 /-- **The rational square reflection** (√-back) — `0 ≤ t` and `s² ≤ t²` give `s ≤ t`.
 By trichotomy: `s < t` or `s = t` land directly; the reversed `t < s` would force
 `t² < s²` (strict monotonicity above), contradicting `s² ≤ t²` by irreflexivity.
-This is THE consumer of NODE 1 the Hölder regularity takes its square root with. -/
+The square-root step the Hölder regularity uses. -/
 theorem lessEqualAsOfMulExactSquareLeNonNeg {lowValue highValue : RationalPair}
     (isHighNonNeg : IsNonNegative highValue)
     (areSquaresOrdered :
@@ -366,14 +362,14 @@ theorem lessEqualAsOfMulExactSquareLeNonNeg {lowValue highValue : RationalPair}
           ((mulExact highValue highValue).numerator *
             denominatorInt (mulExact lowValue lowValue)))
 
-/-! ## Route-B regularity infrastructure (NUM-R-SQRT brick 5)
+/-! ## One-sided √-regularity infrastructure
 
 The honest √-regularity does NOT prove the literal `(u−v)² ≤ |a−b|` (false for
 the APPROXIMATE roots — the brackets carry a grid unit of slack each).  It
 instead bounds each root by the other plus the full modulus, ONE-SIDEDLY, via
-the shipped square reflection: from `s_i² ≤ (s_j + budget)²` and nonnegativity
+the square reflection: from `s_i² ≤ (s_j + budget)²` and nonnegativity
 of `s_j + budget`, reflect to `s_i ≤ s_j + budget`, then shunt to the two-sided
-`IsWithinBound`.  This section ships the four magnitude-free arithmetic bricks
+`IsWithinBound`.  This section provides the four magnitude-free arithmetic lemmas
 that thread the budget: the "value sits below itself plus a nonnegative", the
 `a² + b² ≤ (a + b)²` cross-term drop, the reverse shunt
 `s ≤ l + b → s − l ≤ b`, and the two DEFINITIONAL modulus identities linking the
@@ -417,7 +413,7 @@ theorem sumSquaresLeSquareSumNonNeg {leftValue rightValue : RationalPair}
     (denotesSameAsSymm (mulExactLeftDistrib sumValue leftValue rightValue))
     (addExactMonotone leftSquareBelow rightSquareBelow)
 
-/-- **The reverse shunt** `s ≤ l + b → s − l ≤ b` — the converse of the shipped
+/-- **The reverse shunt** `s ≤ l + b → s − l ≤ b` — the converse of
 `lessEqualAsAddOfSubLessEqual`.  Add `−l` to both sides; the right side's
 `(l + b) + (−l)` collapses to `b` through the additive group laws. -/
 theorem lessEqualAsSubOfLessEqualAdd {highValue lowValue bound : RationalPair}
@@ -459,29 +455,29 @@ theorem reciprocalDenotesGridSum (index : Nat) :
   denotesSameAsTrans (reciprocalHalvesDenotesSame index)
     (denotesSameAsSymm (ratioOfNatSuccSumDenotesSame 1 1 (2 * index + 1)))
 
-/-! ## sqrtReal — the packaged regular real (NUM-R-SQRT brick 6)
+/-! ## sqrtReal — the packaged regular real
 
 Nonnegativity of the ARGUMENT enters as the pointwise predicate
 `IsNonNegativeReal` — every rational approximant is nonnegative, exactly the
 hypothesis the two square brackets consume.  (This is stronger than Bishop
 nonnegativity and NOT setoid-stable; the mathematically-clean
-`0 ≤_ℝ value → IsNonNegativeReal (canonicalise value)` reduction is deferred —
-it needs a clamp-Lipschitz bracket that is out of this node's scope.)
+`0 ≤_ℝ value → IsNonNegativeReal (canonicalise value)` reduction is not provided
+here — it needs a clamp-Lipschitz bracket.)
 
-The regularity is route B: at comparison indices `i, j`, bound each root by the
-other plus the full modulus `1/(i+1) + 1/(j+1)` one-sidedly.  The magnitude-free
-budget threads because the quadratic sample depth pre-shrinks the input drift to
+The regularity is one-sided: at comparison indices `i, j`, bound each root by the
+other plus the full modulus `1/(i+1) + 1/(j+1)`.  The magnitude-free budget
+threads because the quadratic sample depth pre-shrinks the input drift to
 `gridStep²` (`recipSampleDenotesGridSquare`), and the two grid roundings fit the
 remaining half of the modulus (`reciprocalDenotesGridSum`); the polynomial
-domination is two `sumSquaresLeSquareSumNonNeg` drops and the √-back is the
-shipped `lessEqualAsOfMulExactSquareLeNonNeg`. -/
+domination is two `sumSquaresLeSquareSumNonNeg` drops and the √-back is
+`lessEqualAsOfMulExactSquareLeNonNeg`. -/
 
 /-- **Pointwise nonnegativity** of a real — every rational approximant is
 nonnegative.  The argument-side hypothesis the square brackets consume. -/
 def IsNonNegativeReal (value : RegularReal) : Prop :=
   ∀ index : Nat, IsNonNegative (value.approximation index)
 
-/-- **The one-sided √-regularity, sample-parametric** (route B): the difference
+/-- **The one-sided √-regularity, sample-parametric**: the difference
 bound depends on `value` through ONLY the two nonnegative samples and their
 input regularity, so lifting those three references to parameters recovers BOTH
 the intra-real regularity (same real, two indices) AND the cross-real congruence
@@ -615,7 +611,7 @@ theorem sqrtApproxPairDifferenceBounded {sampleFirst sampleSecond : RationalPair
         (reciprocalDenotesGridSum secondIndex)))
     differenceBelowBudgetHalf
 
-/-- **The one-sided √-regularity** (route B), same real at two indices — the
+/-- **The one-sided √-regularity**, same real at two indices — the
 sample-parametric lemma fed `value`'s two samples and their input regularity. -/
 theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
     (isNonNegativeReal : IsNonNegativeReal value) (firstIndex secondIndex : Nat) :
@@ -630,7 +626,7 @@ theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
     (value.isRegular (sqrtSampleIndex firstIndex) (sqrtSampleIndex secondIndex))
 
 /-- **The √-approximation sequence is regular** — the two-sided bound from the
-one-sided route-B lemma and its index swap. -/
+one-sided lemma and its index swap. -/
 theorem sqrtRealApproximationIsRegular {value : RegularReal}
     (isNonNegativeReal : IsNonNegativeReal value) (firstIndex secondIndex : Nat) :
     IsWithinBound (sqrtRealApproximation value firstIndex)
@@ -650,11 +646,11 @@ def sqrtReal (value : RegularReal) (isNonNegativeReal : IsNonNegativeReal value)
   { approximation := sqrtRealApproximation value
     isRegular := sqrtRealApproximationIsRegular isNonNegativeReal }
 
-/-! ## The square law (NUM-R-SQRT brick 7)
+/-! ## The square law
 
 `(√a)² = a` on the real setoid.  There is no residual analytic wall: the whole
-argument re-uses the two shipped square brackets and the shipped product-difference
-laws.  The one genuinely new brick is the LOCAL SQUARING TOLERANCE — at each index
+argument re-uses the two square brackets and the product-difference
+laws.  The one genuinely new ingredient is the LOCAL SQUARING TOLERANCE — at each index
 the squared approximant sits within a reciprocal-scaled tolerance of the radicand
 because the interval `[s², (s+grid)²]` that traps the radicand has width bounded by
 `2·magnitude·grid` through the mixed product `s·(s+grid)`.  The assembly is the
@@ -697,7 +693,7 @@ theorem negExactNonPositiveOfNonNegative {value : RationalPair}
 
 /-- **The local squaring tolerance** — the squared √-approximant sits within
 `2·magnitudeBound·gridStep` of its radicand.  The radicand is trapped in the
-interval `[s², (s+grid)²]` by the two shipped brackets; the interval's width is
+interval `[s², (s+grid)²]` by the two brackets; the interval's width is
 bounded by two product-difference legs through the mixed product `s·(s+grid)` (each
 leg is `magnitudeBound·gridStep`); the span lemma then reads back the tolerance on
 `s²` versus the radicand.  `magnitudeBound` must cover BOTH the root and its

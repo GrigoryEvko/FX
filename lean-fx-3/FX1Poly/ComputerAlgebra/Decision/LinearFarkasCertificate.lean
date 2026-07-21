@@ -1,102 +1,91 @@
-/-! # FX1Poly/ComputerAlgebra/Decision/LinearFarkasCertificate — the DISSAT-ARITH certificate route
-    (integer linear-arithmetic refutation by Farkas certificates, Nat multipliers)
+/-! # Integer linear-arithmetic refutation by Farkas certificates
 
-Half 1 of the DISSAT-ARITH lane: an unsatisfiability CERTIFICATE checker for systems of
-integer linear constraints, after Besson's weakened Farkas lemma (Fast Reflexive
-Arithmetic Tactics, TYPES'06, Lemma 2) and the Rocq micromega / SMT `la_generic`
-checker split: an untrusted FINDER (not in scope here) emits a list of nonnegative
-multipliers; the verified CHECKER scales each constraint by its multiplier, adds
-everything up, and accepts exactly when the weighted sum is a GROUND contradiction
-(all variable coefficients cancel and the residual numeric comparison is false).  The
-headline theorem `lfkRefutationSound` lives entirely on the checker: an accepted
-certificate refutes EVERY integer environment.
+An unsatisfiability certificate checker for systems of integer linear constraints, after Besson's
+weakened Farkas lemma (Fast Reflexive Arithmetic Tactics, TYPES'06, Lemma 2) and the Rocq micromega
+/ SMT `la_generic` checker split: an untrusted finder (not in scope here) emits a list of
+nonnegative multipliers; the verified checker scales each constraint by its multiplier, adds
+everything up, and accepts exactly when the weighted sum is a ground contradiction (all variable
+coefficients cancel and the residual numeric comparison is false). The headline theorem
+`lfkRefutationSound` lives entirely on the checker: an accepted certificate refutes every integer
+environment.
 
 ## The integer kit — (positivePart, negativePart) Nat pairs
 
-`LfkInt` represents the integer `positivePart - negativePart`; the representation is
-NEVER normalized (certificate arithmetic only ADDS and SCALES, and every comparison is
-a cross-sum on Nat, e.g. `a <= b  :=  Nat.ble (a.pos + b.neg) (b.pos + a.neg)`).  This
-keeps the whole file inside the kernel-clean Nat kit: no `Int`, no `Nat.sub`, no
-normalization lemmas.  Strict order is the succ-le form (`... + 1 <= ...`).
+`LfkInt` represents the integer `positivePart - negativePart`; the representation is never
+normalized (certificate arithmetic only adds and scales, and every comparison is a cross-sum on Nat,
+e.g. `a <= b := Nat.ble (a.pos + b.neg) (b.pos + a.neg)`). This keeps the whole file inside the
+kernel-clean Nat kit: no `Int`, no `Nat.sub`, no normalization lemmas. Strict order is the succ-le
+form (`... + 1 <= ...`).
 
 ## Constraints, dense vectors, truncating dot product
 
-A constraint is `coefficients . env  REL  bound` with `REL` one of `>=`, `>`, `=`.
-Coefficient vectors and environments are DENSE `List LfkInt` indexed by variable
-0, 1, 2, ...; `lfkDotProduct` zips structurally and TRUNCATES at the shorter list
-(absent entries read as zero).  Vector addition (`lfkAddCoefficientVectors`) PADS: when
-one summand runs out the other's tail is kept verbatim, so the empty list is a genuine
-zero vector and dot-product additivity holds with NO length hypotheses — the soundness
-theorem is stated both unconditionally (`lfkRefutationSoundUnconditional`) and in the
-commissioned length-guarded form (`lfkRefutationSound`).
+A constraint is `coefficients . env REL bound` with `REL` one of `>=`, `>`, `=`. Coefficient vectors
+and environments are dense `List LfkInt` indexed by variable 0, 1, 2, ...; `lfkDotProduct` zips
+structurally and truncates at the shorter list (absent entries read as zero). Vector addition
+(`lfkAddCoefficientVectors`) pads: when one summand runs out the other's tail is kept verbatim, so
+the empty list is a genuine zero vector and dot-product additivity holds with no length hypotheses —
+the soundness theorem is stated both unconditionally (`lfkRefutationSoundUnconditional`) and in a
+length-guarded form (`lfkRefutationSound`).
 
 ## Equalities — row splitting (the SMT-checker convention)
 
-A Nat multiplier cannot subtract, but refutations may need an equality with a NEGATIVE
-weight.  Following the Alethe/cvc5 convention (and the brief's recommendation over
-micromega's Equal-op partial checker), `lfkExpandSystem` replaces each `isEqualTo` row
-by TWO `isGreaterOrEqual` rows — the row itself and its flip (coefficients and bound
-negated, i.e. both (pos,neg) pairs swapped).  A certificate is a bare `List Nat`
-aligned with the EXPANDED system: an equality row consumes two consecutive multiplier
-slots (forward weight, then backward weight), so the signed weight lambda+ - lambda- is
-expressed without ever writing a signed number.  A certificate shorter than the
-expanded system leaves the remaining rows unused (multiplier zero); extra entries are
-ignored — both are sound because the weighted-sum lemma quantifies over exactly the
-rows that are incorporated.
+A Nat multiplier cannot subtract, but refutations may need an equality with a negative weight.
+Following the Alethe/cvc5 convention (over micromega's Equal-op partial checker), `lfkExpandSystem`
+replaces each `isEqualTo` row by two `isGreaterOrEqual` rows — the row itself and its flip
+(coefficients and bound negated, i.e. both (pos,neg) pairs swapped). A certificate is a bare
+`List Nat` aligned with the expanded system: an equality row consumes two consecutive multiplier
+slots (forward weight, then backward weight), so the signed weight lambda+ - lambda- is expressed
+without ever writing a signed number. A certificate shorter than the expanded system leaves the
+remaining rows unused (multiplier zero); extra entries are ignored — both sound because the
+weighted-sum lemma quantifies over exactly the rows incorporated.
 
 ## Strictness threading (the Motzkin corner)
 
-`lfkScaleRelation` degrades a strict row scaled by 0 to `>=` (0·(t > b) would be the
-FALSE ground row 0 > 0), and `lfkJoinRelations` makes strict absorb (`isEqualTo` is the
-additive unit, per the micromega `OpAdd` table restricted to the expanded fragment).
-Hence the weighted sum is strict exactly when some strict row carries a POSITIVE
-multiplier, and the final numeric test matches the joined relation: a `>=` sum is
-contradictory when its bound is strictly positive, a `>` sum already when the bound is
-nonnegative, an `=` sum when the bound is nonzero (unreachable from the checker path —
-the fold's base relation is `>=` — but kept total and proved sound).
+`lfkScaleRelation` degrades a strict row scaled by 0 to `>=` (0·(t > b) would be the false ground
+row 0 > 0), and `lfkJoinRelations` makes strict absorb (`isEqualTo` is the additive unit, per the
+micromega `OpAdd` table restricted to the expanded fragment). Hence the weighted sum is strict
+exactly when some strict row carries a positive multiplier, and the final numeric test matches the
+joined relation: a `>=` sum is contradictory when its bound is strictly positive, a `>` sum when the
+bound is nonnegative, an `=` sum when the bound is nonzero (unreachable from the checker path, whose
+fold base relation is `>=`, but kept total and proved sound).
 
-## Soundness (the commissioned bar — DECIDED)
+## Soundness
 
-  * `lfkWeightedSumSatisfied` — any environment satisfying every row satisfies the
-    weighted sum (induction along the fold; per step `lfkScalePreservesSatisfaction`
-    and `lfkAddPreservesSatisfaction`, the latter a 9-case relation-join dispatch over
-    the cross-sum monotonicity kit).
-  * `lfkSatisfiesExpandedOfSatisfies` — satisfaction transports to the expanded system
-    (an equality yields both derived inequalities; the flip side goes through
-    `lfkDotProductNegatedVector`, which is definitional on (pos,neg) pairs).
-  * `lfkGroundContradictionRefutes` — a satisfied ground-contradictory row is `False`
-    (all-zero coefficients force a cross-zero dot value; the residual Nat comparison
-    collapses to `x + 1 <= x`).
+  * `lfkWeightedSumSatisfied` — any environment satisfying every row satisfies the weighted sum
+    (induction along the fold; per step `lfkScalePreservesSatisfaction` and
+    `lfkAddPreservesSatisfaction`, the latter a 9-case relation-join dispatch over the cross-sum
+    monotonicity kit).
+  * `lfkSatisfiesExpandedOfSatisfies` — satisfaction transports to the expanded system (an equality
+    yields both derived inequalities; the flip side goes through `lfkDotProductNegatedVector`, which
+    is definitional on (pos,neg) pairs).
+  * `lfkGroundContradictionRefutes` — a satisfied ground-contradictory row is `False` (all-zero
+    coefficients force a cross-zero dot value; the residual Nat comparison collapses to `x + 1 <= x`).
   * `lfkRefutationSound` / `lfkRefutationSoundUnconditional` — the composition:
     `lfkCheckRefutation certificate system = true` refutes every environment.
 
-## The honest walls (owner-false, NOT attempted)
+## The walls
 
-  * `lfkFarkasCompletenessStatement` — every RATIONALLY infeasible system (encoded
-    integer-only: no scaled environment satisfies the denominator-scaled system) has an
-    accepted certificate.  True classically (Farkas/Motzkin); constructively REACHABLE
-    by Fourier–Motzkin elimination with certificate composition — fuel = variable
-    count, eliminate one variable per round, each derived row carries its two-row
-    provenance, compose multipliers back down the elimination tree.  This is a genuine
-    future brick, NOT Dickson-walled (FM terminates structurally on the variable
-    count).  Owner `fxDissatArith_hasFarkasCompleteness := false`.
-  * `lfkPresburgerDecisionStatement` — full integer satisfiability decision (Cooper
-    quantifier elimination; Farkas alone is incomplete over the integers — the
-    canonical gap `2x = 1` is rationally feasible, hence certificate-free, yet has no
-    integer solution).  A SEPARATE future brick.  Owner
-    `fxDissatArith_hasPresburgerDecision := false`.
+  * `lfkFarkasCompletenessStatement` — every rationally infeasible system (encoded integer-only: no
+    scaled environment satisfies the denominator-scaled system) has an accepted certificate. True
+    classically (Farkas/Motzkin), and constructively reachable by Fourier–Motzkin elimination with
+    certificate composition (fuel = variable count, one variable eliminated per round, each derived
+    row carrying its two-row provenance so multipliers compose back down the elimination tree); it is
+    not Dickson-walled, since FM terminates structurally on the variable count
+    (`fxDissatArith_hasFarkasCompleteness`).
+  * `lfkPresburgerDecisionStatement` — full integer satisfiability decision (Cooper quantifier
+    elimination); Farkas alone is incomplete over the integers, since `2x = 1` is rationally
+    feasible, hence certificate-free, yet has no integer solution
+    (`fxDissatArith_hasPresburgerDecision`).
 
 ## Zero-axiom discipline
 
-Init only, no repo imports.  Structural recursion throughout; no `WellFounded.fix`.
-No `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `funext`,
-`omega`, no `decide` on `Prop`, no catch-all match arms.  Nat facts restricted to the
-probed-clean core family (`Nat.add_comm/assoc`, `Nat.mul_add/mul_comm/zero_mul/
-succ_mul/mul_one`, the plain `le` kit) plus hand-rolled `ble`/`beq` reflection,
-left-cancellation, and mul-monotonicity; the four-term AC shuffle is the single
-hand-proved `lfkNatAddSwapMiddle`.  All list helpers are bespoke, monomorphic,
-cons-only — no `List.append`.  Per-declaration gate in
-`FX1PolyAudit/ComputerAlgebra/Decision/LinearFarkasCertificate.lean`. -/
+Init only, no repo imports. Structural recursion throughout; no `WellFounded.fix`, no `propext`,
+`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `funext`, `omega`, no `decide` on
+`Prop`, no catch-all match arms. Nat facts are restricted to the probed-clean core family
+(`Nat.add_comm/assoc`, `Nat.mul_add/mul_comm/zero_mul/succ_mul/mul_one`, the plain `le` kit) plus
+hand-rolled `ble`/`beq` reflection, left-cancellation, and mul-monotonicity; the four-term AC
+shuffle is the single hand-proved `lfkNatAddSwapMiddle`. All list helpers are bespoke, monomorphic,
+cons-only. Per-declaration gate in the twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -256,7 +245,7 @@ theorem lfkBoolNotTrueImpliesFalse : ∀ (flag : Bool), Bool.not flag = true →
   | true, contradictoryWitness => Bool.noConfusion contradictoryWitness
   | false, _trivialWitness => rfl
 
-/-! ## Stage 1 — the (positivePart, negativePart) integer kit -/
+/-! ## The (positivePart, negativePart) integer kit -/
 
 /-- An integer as an UNNORMALIZED pair of Nats denoting
 `positivePart - negativePart`.  Certificates only add and scale, and every comparison
@@ -577,7 +566,7 @@ theorem lfkIntAddZeroPreserving {leftValue rightValue : LfkInt}
       (lfkNatEqOfBeq leftValue.positivePart leftValue.negativePart leftZero)
       (lfkNatEqOfBeq rightValue.positivePart rightValue.negativePart rightZero))
 
-/-! ## Stage 2 — dense coefficient vectors, the truncating dot product -/
+/-! ## Dense coefficient vectors, the truncating dot product -/
 
 /-- A linear term: DENSE coefficient vector, entry `i` multiplies variable `i`.
 Vectors shorter than the environment read as zero-extended. -/
@@ -686,7 +675,7 @@ theorem lfkDotProductZeroCoefficients : ∀ (env coefficientVector : List LfkInt
         (lfkIntMulZeroRight envHead coefficientHead destructured.left)
         (lfkDotProductZeroCoefficients envTail coefficientTail destructured.right)
 
-/-! ## Stage 2 — constraints and satisfaction -/
+/-! ## Constraints and satisfaction -/
 
 /-- Constraint relations: `coefficients . env  REL  bound`. -/
 inductive LfkRelation where
@@ -716,16 +705,16 @@ def lfkSatisfiesSystem (env : List LfkInt) : List LfkConstraint → Bool
   | constraintHead :: constraintTail =>
       lfkSatisfiesConstraint env constraintHead && lfkSatisfiesSystem env constraintTail
 
-/-- The commissioned well-formedness guard: every row's coefficient vector has exactly
-the environment's length (the padding/truncating semantics make the soundness theorem
-true even without it — see `lfkRefutationSoundUnconditional`). -/
+/-- A well-formedness guard: every row's coefficient vector has exactly the environment's length.
+The padding/truncating semantics make the soundness theorem true even without it (see
+`lfkRefutationSoundUnconditional`). -/
 def lfkEnvMatchesLength (env : List LfkInt) : List LfkConstraint → Bool
   | List.nil => true
   | constraintHead :: constraintTail =>
       Nat.beq (List.length constraintHead.coefficients) (List.length env)
         && lfkEnvMatchesLength env constraintTail
 
-/-! ## Stage 3 — row splitting for equalities, the weighted sum, THE CHECKER -/
+/-! ## Row splitting for equalities, the weighted sum, the checker -/
 
 /-- The forward `>=` row of an equality (same coefficients and bound). -/
 def lfkForwardEqualityRow (constraint : LfkConstraint) : LfkConstraint :=
@@ -824,7 +813,7 @@ system is a ground contradiction.  O(rows · variables) Nat arithmetic, no searc
 def lfkCheckRefutation (certificate : List Nat) (system : List LfkConstraint) : Bool :=
   lfkIsGroundContradiction (lfkWeightedSum certificate (lfkExpandSystem system))
 
-/-! ## Stage 4 — soundness -/
+/-! ## Soundness -/
 
 /-- Scaling preserves satisfaction: exactly for equalities, monotonely for `>=`, and
 for strict rows via the positive-multiplier case (zero degrades to the vacuous
@@ -1087,8 +1076,8 @@ theorem lfkGroundContradictionRefutes (env : List LfkInt) :
         ((lfkBoolNotTrueImpliesFalse (lfkIntIsZero boundValue) destructured.right).symm.trans
           (lfkNatBeqOfEq boundValue.positivePart boundValue.negativePart boundPartsEq.symm))
 
-/-- HEADLINE (unconditional form): an accepted certificate refutes EVERY environment —
-no length hypothesis needed, thanks to the padding/truncating vector semantics. -/
+/-- Headline (unconditional form): an accepted certificate refutes every environment, with no length
+hypothesis needed, thanks to the padding/truncating vector semantics. -/
 theorem lfkRefutationSoundUnconditional (certificate : List Nat) (system : List LfkConstraint)
     (checkWitness : lfkCheckRefutation certificate system = true) (env : List LfkInt)
     (systemWitness : lfkSatisfiesSystem env system = true) : False :=
@@ -1097,8 +1086,8 @@ theorem lfkRefutationSoundUnconditional (certificate : List Nat) (system : List 
     (lfkWeightedSumSatisfied certificate (lfkExpandSystem system) env
       (lfkSatisfiesExpandedOfSatisfies env system systemWitness))
 
-/-- HEADLINE (commissioned form): accepted certificate + length-matching environment
-+ satisfaction is absurd. -/
+/-- Headline (length-guarded form): accepted certificate + length-matching environment + satisfaction
+is absurd. -/
 theorem lfkRefutationSound (certificate : List Nat) (system : List LfkConstraint)
     (checkWitness : lfkCheckRefutation certificate system = true) :
     ∀ (env : List LfkInt), lfkEnvMatchesLength env system = true →
@@ -1106,7 +1095,7 @@ theorem lfkRefutationSound (certificate : List Nat) (system : List LfkConstraint
   fun env _lengthWitness systemWitness =>
     lfkRefutationSoundUnconditional certificate system checkWitness env systemWitness
 
-/-! ## Stage 5 — the honest walls (owner-false Props) -/
+/-! ## The walls (owner-false Props) -/
 
 /-- Scale every BOUND by the denominator, leaving coefficients alone: the integer
 environment `env` satisfies the scaled system exactly when the rational vector
@@ -1119,16 +1108,14 @@ def lfkScaleBoundsForDenominator (denominator : Nat) : List LfkConstraint → Li
           (lfkIntScaleByNat denominator constraintHead.bound) constraintHead.relation
         :: lfkScaleBoundsForDenominator denominator constraintTail
 
-/-- COMPLETENESS WALL (owner-false, NOT proven here): every RATIONALLY infeasible
-system has an accepted Farkas certificate.  Rational infeasibility is encoded
-integer-only: no positive denominator `d` admits an integer environment for the
-`d`-scaled-bounds system (`env` then denotes the rational point `env / d`).  True
-classically (Farkas/Motzkin transposition); constructively REACHABLE — the route is
-Fourier–Motzkin elimination with certificate composition, fuel = number of variables,
-one variable eliminated per round, each derived row remembering its two parent rows so
-the final ground contradiction unwinds into multipliers for the original rows.  This
-is a genuine future brick, NOT Dickson-walled: FM recursion is structural on the
-variable count.  Owner: `fxDissatArith_hasFarkasCompleteness := false`. -/
+/-- Farkas completeness, not proven here: every rationally infeasible system has an accepted Farkas
+certificate. Rational infeasibility is encoded integer-only — no positive denominator `d` admits an
+integer environment for the `d`-scaled-bounds system (`env` then denotes the rational point
+`env / d`). True classically (Farkas/Motzkin transposition), and constructively reachable via
+Fourier–Motzkin elimination with certificate composition (fuel = number of variables, one variable
+eliminated per round, each derived row remembering its two parent rows so the final ground
+contradiction unwinds into multipliers for the original rows); it is not Dickson-walled, since FM
+recursion is structural on the variable count (`fxDissatArith_hasFarkasCompleteness`). -/
 def lfkFarkasCompletenessStatement : Prop :=
   ∀ (system : List LfkConstraint),
     (∀ (denominatorPred : Nat) (env : List LfkInt),
@@ -1136,30 +1123,27 @@ def lfkFarkasCompletenessStatement : Prop :=
           (lfkScaleBoundsForDenominator (denominatorPred + 1) system) = true → False) →
     ∃ (certificate : List Nat), lfkCheckRefutation certificate system = true
 
-/-- PRESBURGER WALL (owner-false, NOT attempted): full decidability of integer
-satisfiability for these systems (Cooper / Omega-test quantifier elimination).  Farkas
-certificates alone CANNOT close this: `2x = 1` is integer-unsatisfiable but rationally
-feasible, hence certificate-free — the standard escape hatches are cutting planes /
-bound tightening (`INT_TIGHT_UB/LB`) on top of the summing engine.  A SEPARATE future
-brick.  Owner: `fxDissatArith_hasPresburgerDecision := false`. -/
+/-- Presburger decision, not proven here: full decidability of integer satisfiability for these
+systems (Cooper / Omega-test quantifier elimination). Farkas certificates alone cannot close this,
+since `2x = 1` is integer-unsatisfiable but rationally feasible, hence certificate-free; the standard
+route adds cutting planes / bound tightening (`INT_TIGHT_UB/LB`) on top of the summing engine
+(`fxDissatArith_hasPresburgerDecision`). -/
 def lfkPresburgerDecisionStatement : Prop :=
   ∀ (system : List LfkConstraint),
     Or (∃ (env : List LfkInt), lfkSatisfiesSystem env system = true)
       (∀ (env : List LfkInt), lfkSatisfiesSystem env system = true → False)
 
-/-- DECIDED marker: the Farkas-certificate refutation engine (integer kit, dense
-constraint semantics, row-split checker, and the soundness chain through
-`lfkRefutationSound`) is fully proven, zero-axiom, finder-free. -/
+/-- The Farkas-certificate refutation engine: integer kit, dense constraint semantics, row-split
+checker, and the soundness chain through `lfkRefutationSound`, finder-free. -/
 def fxDissatArith_hasFarkasCertificate : Bool := true
 
-/-- Owner flag for `lfkFarkasCompletenessStatement` — NOT proven (future FM brick). -/
+/-- Owner flag for `lfkFarkasCompletenessStatement`, not proven. -/
 def fxDissatArith_hasFarkasCompleteness : Bool := false
 
-/-- Owner flag for `lfkPresburgerDecisionStatement` — NOT proven (future Cooper
-brick). -/
+/-- Owner flag for `lfkPresburgerDecisionStatement`, not proven. -/
 def fxDissatArith_hasPresburgerDecision : Bool := false
 
-/-! ## Smokes (Bool outputs only; FALSE cases included; kernel-checked `rfl` pins) -/
+/-! ## Smoke tests (Bool outputs, false cases included, kernel-checked `rfl` pins) -/
 
 /-- Smoke fixture: `x >= 1` and `-x >= 0` — rationally infeasible. -/
 def lfkSmokeContradictorySystem : List LfkConstraint :=

@@ -2,8 +2,8 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.GroebnerRationalMembership
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/GroebnerRationalMembership — zero-axiom gate
-    (DISSAT-GROB-Q brick: ideal membership by checkable cofactor certificates over
-    canonical-normal-form rational coefficients)
+    (ideal membership by checkable cofactor certificates over canonical-normal-form
+    rational coefficients)
 
 Per-declaration zero-axiom gate for the ℚ Gröbner certificate route: the derived
 QnfRat group/ring telescopes (`grqQnf*` — swap-left, exchange, inverse uniqueness,

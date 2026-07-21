@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealAbsoluteValue
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealAbsoluteValue — zero-axiom
-    gate (NUM-R-ABS real absolute value)
+    gate for the real absolute value
 
 Per-declaration zero-axiom gate for the real absolute value `absReal x = √(x²)`
 and its core order/setoid theory: nonnegativity, the `x ≤ |x|` / `-x ≤ |x|`

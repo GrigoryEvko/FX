@@ -1,23 +1,15 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Order.AlmostFull
 
-/-! # FX1PolyAudit/ComputerAlgebra/Order/AlmostFull — zero-axiom gate
-    (NET-4 brick: constructive almost-full relations)
+/-! # Zero-axiom gate: constructive almost-full relations
 
-Per-declaration zero-axiom gate for the constructive almost-full kit: the structural
-Boolean order on `Nat` (`afNatBle` + reflexivity / totality / transitivity / the boundary
-lemma), the Boolean disjunction helpers, the `AlmostFull` higher-order `Prop` inductive
-(with both constructors), the always-true smoke lemma, weakening / monotonicity, pullback
-closure, the degenerate product fragment, the staged proof that `Nat`'s order is
-almost-full (`afNatLeStage` → `afNat`), and the Dickson-wall marker.
-
-The AF-product / intersection theorem (`afInter` / `afProduct`) — the crux of Dickson's
-lemma — is WALLED (see the source header): its both-`later` case demands a non-structural,
-well-founded tree recursion that `WellFounded.fix` would supply, which is forbidden here.
-`dicksonLemma` is left undeclared; the marker `fxNet4_dicksonWall = false` records the wall.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+Per-declaration freeness from `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega` for the almost-full kit: the structural Boolean order on `Nat`
+(`afNatBle` with reflexivity, totality, transitivity, boundary lemma), the disjunction
+helpers, the `AlmostFull` inductive and both constructors, the always-true lemma,
+weakening/monotonicity, pullback closure, the degenerate product fragment, the staged proof
+`afNatLeStage` then `afNat`, and the marker `fxNet4_dicksonWall`.  The AF intersection/product
+theorem is walled (source header), so `dicksonLemma` is undeclared. -/
 
 namespace FX1PolyAudit
 

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Float.BlockScaled
 
-/-! # FX1PolyAudit/ComputerAlgebra/Float/BlockScaled — zero-axiom gate (FLOAT-2)
+/-! # FX1PolyAudit/ComputerAlgebra/Float/BlockScaled — zero-axiom gate
 
 Per-declaration zero-axiom gate for the MXFP4 / NVFP4 block-scaled quantization
 model + the precision bridge (scaled half-ulp error).  Every declaration must be

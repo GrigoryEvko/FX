@@ -1,56 +1,47 @@
-/-! # FX1Poly/ComputerAlgebra/Decision/ClauseProofChecker — certified clause-proof checker
+/-! # Certified clause-proof checker
 
-DISSAT-RESIDUE core: an LRAT-style hint-driven clausal proof checker, zero-axiom.
+An LRAT-style hint-driven clausal proof checker. The checker consumes a CNF formula and an untrusted
+proof trace of steps:
 
-The checker consumes a CNF formula and an UNTRUSTED proof trace of steps
-
-  * `addClause  (clause, unitHints)` — reverse-unit-propagation (RUP) addition: the
-    negated clause literals seed a partial assignment, and each hint index must name a
-    working-formula clause that is UNIT (extending the assignment) or FALSIFIED
-    (conflict — accept) under the accumulated assignment.  Strict linear checking: a
-    hinted clause with two or more unfalsified literals rejects the step.
-  * `addRatClause (clause, ratHints)` — resolution-asymmetric-tautology (RAT) addition
-    on the pivot = head literal: EVERY working-formula clause containing the negated
-    pivot must carry a hint group whose RUP run refutes the resolvent (coverage is
-    checked by walking the WHOLE working formula, closing the known walk-only-the-hints
-    unsoundness hole).  The empty clause has no pivot and is rejected here.
+  * `addClause  (clause, unitHints)` — reverse-unit-propagation (RUP) addition: the negated clause
+    literals seed a partial assignment, and each hint index must name a working-formula clause that
+    is unit (extending the assignment) or falsified (conflict — accept) under the accumulated
+    assignment. Strict linear checking: a hinted clause with two or more unfalsified literals rejects
+    the step.
+  * `addRatClause (clause, ratHints)` — resolution-asymmetric-tautology (RAT) addition on the pivot
+    = head literal: every working-formula clause containing the negated pivot must carry a hint group
+    whose RUP run refutes the resolvent. Coverage is checked by walking the whole working formula, so
+    a missing candidate rejects. The empty clause has no pivot and is rejected here.
   * `deleteClause index` — remove the clause at a position (cons-only `removeAt`).
 
-The trace is accepted only when some `addClause` step adds the EMPTY clause with a
-valid RUP check.  Clause indices are POSITIONAL against the current working formula
-(additions cons at index 0, deletions shift) — the checker is sound for ANY hint
-content, so positional discipline costs completeness only, never soundness.
+The trace is accepted only when some `addClause` step adds the empty clause with a valid RUP check.
+Clause indices are positional against the current working formula (additions cons at index 0,
+deletions shift); the checker is sound for any hint content, so positional discipline costs
+completeness only, never soundness.
 
-**Headline theorem** `cpcProofSound`: an accepted trace refutes every assignment of the
-ORIGINAL formula — `cpcCheckProof formula steps = true → ∀ env, ¬(formula holds)`.
-The per-step invariant is model TRANSPORT, not model identity: RUP additions preserve
-the exact model set (`cpcRupAdditionEntails` — genuine entailment via the semantic
-propagation invariant `cpcRupHintsSound`), deletion only grows it, and a RAT addition
-transports a model across the pivot flip (`cpcFlipEnv`, the Cruz-Filipe/Heule/Hunt/
-Kaufmann/Schneider-Kamp CADE'17 model-modification argument, constructive: the flipped
-assignment is NAMED, no choice principle).
+`cpcProofSound` is the headline: an accepted trace refutes every assignment of the original formula
+(`cpcCheckProof formula steps = true → ∀ env, ¬(formula holds)`). The per-step invariant is model
+transport, not model identity: RUP additions preserve the exact model set (`cpcRupAdditionEntails`,
+genuine entailment via the propagation invariant `cpcRupHintsSound`), deletion only grows it, and a
+RAT addition transports a model across the pivot flip (`cpcFlipEnv`, the
+Cruz-Filipe/Heule/Hunt/Kaufmann/Schneider-Kamp CADE'17 model-modification argument; constructive —
+the flipped assignment is named, no choice principle).
 
-Assignments are TOTAL functions `Nat → Bool`, only ever APPLIED — never compared,
-never extended as data — so no `funext` anywhere.  Propagation state is the list of
-literals currently forced true; a literal is falsified when its negation is a member.
-Hint-driven checking is fuel-free: structural recursion on the hint list and the step
-list (the whole point of LRAT over DRAT for kernel checking).
+Assignments are total functions `Nat → Bool`, only ever applied — never compared, never extended as
+data — so no `funext` anywhere. Propagation state is the list of literals currently forced true; a
+literal is falsified when its negation is a member. Hint-driven checking is fuel-free: structural
+recursion on the hint list and the step list.
 
-**Quarantined-finder architecture**: the CDCL proof FINDER is out of scope forever —
-finding is untrusted search (any SAT solver emitting LRAT), only CHECKING is kernel
-business.  Marker `fxDissatResidue_hasCdclFinder := false` (owner-false).
+Scope: the CDCL proof finder is deliberately out of scope (any external SAT solver emitting LRAT
+traces supplies the untrusted search; only checking is kernel business), recorded by
+`fxDissatResidue_hasCdclFinder := false`. The two capabilities that ARE checked —
+`fxDissatResidue_hasRupChecker` (RUP + deletion + empty-clause verdict with full soundness) and
+`fxDissatResidue_hasRatExtension` (RAT addition with model-modification soundness) — are `true`.
 
-Markers: `fxDissatResidue_hasRupChecker := true` (RUP + deletion + empty-clause
-verdict with full soundness), `fxDissatResidue_hasRatExtension := true` (RAT addition
-with model-modification soundness).
-
-## Zero-axiom discipline
-
-Init only.  Structural recursion and full constructor enumeration everywhere; no
-`omega`, no `decide` on `Prop`, no `Nat.sub`/`Nat.le_*`/`List.append`/`List.find?`
-library surface — equality tests (`cpcNatBeq`, `cpcBoolBeq`, `cpcLiteralBeq`), list
-membership, stacking, and removal are purpose-built with hand-proven laws.
-Per-declaration gate in `FX1PolyAudit/ComputerAlgebra/Decision/ClauseProofChecker.lean`. -/
+Init only. Structural recursion and full constructor enumeration everywhere; no `omega`, no `decide`
+on `Prop`, no `Nat.sub`/`Nat.le_*`/`List.append`/`List.find?` library surface — equality tests
+(`cpcNatBeq`, `cpcBoolBeq`, `cpcLiteralBeq`), list membership, stacking, and removal are purpose-built
+with hand-proven laws. Per-declaration gate in the twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -561,10 +552,10 @@ theorem cpcStackAllHold (assignment : Nat → Bool) : (first second : List CpcLi
             (cpcAllLiteralsHold assignment rest) hFirst)
           hSecond)
 
-/-- Walk the WHOLE working formula: every clause containing the negated pivot must
-carry a hint group whose RUP run refutes the resolvent (added clause plus the
-candidate minus the negated pivot).  Whole-formula coverage — a missing candidate
-REJECTS, closing the walk-only-the-hints unsoundness hole. -/
+/-- Walk the whole working formula: every clause containing the negated pivot must carry a hint
+group whose RUP run refutes the resolvent (added clause plus the candidate minus the negated pivot).
+A missing candidate rejects, so coverage is over the whole formula rather than the supplied hints
+alone. -/
 def cpcCheckRatCandidates (workingFormula : List CpcClause) (addedClause : CpcClause)
     (negatedPivot : CpcLiteral) (ratHints : List CpcRatHintGroup) :
     Nat → List CpcClause → Bool
@@ -934,7 +925,7 @@ theorem cpcProofSound (formula : List CpcClause) (steps : List CpcProofStep)
   fun assignment hFormula =>
     cpcProofStepsSound steps formula assignment hCheck hFormula
 
-/-! ## Genuineness smokes — accepted traces AND rejected garbage -/
+/-! ## Smoke tests — accepted traces and rejected malformed traces -/
 
 /-- The positive literal of a variable. -/
 def cpcPositiveLiteral (variableIndex : Nat) : CpcLiteral :=
@@ -1033,19 +1024,16 @@ def cpcSmokeRatMissingCandidateFormula : List CpcClause :=
 
 /-! ## Markers -/
 
-/-- DECIDED marker: the hinted-RUP clause-proof checker ships with deletion, the
-empty-clause verdict, and FULL soundness (`cpcProofSound`) — zero-axiom. -/
+/-- The hinted-RUP clause-proof checker with deletion, the empty-clause verdict, and full soundness
+(`cpcProofSound`). -/
 def fxDissatResidue_hasRupChecker : Bool := true
 
-/-- DECIDED marker: the RAT extension ships — whole-formula candidate coverage plus the
-constructive pivot-flip model-modification soundness (`cpcRatCandidatesSound`), folded
-into the same headline theorem. -/
+/-- The RAT extension: whole-formula candidate coverage plus the constructive pivot-flip
+model-modification soundness (`cpcRatCandidatesSound`), folded into the same headline theorem. -/
 def fxDissatResidue_hasRatExtension : Bool := true
 
-/-- OWNER-FALSE forever: the CDCL proof FINDER is out of scope by architecture — the
-quarantined-finder split keeps search untrusted (any external SAT solver emitting
-LRAT-style traces) while only the CHECKER above is kernel business.  This flag is a
-declaration of intent, not a to-do. -/
+/-- The CDCL proof finder is out of scope by architecture: search stays untrusted (any external SAT
+solver emitting LRAT-style traces), and only the checker above is kernel business. -/
 def fxDissatResidue_hasCdclFinder : Bool := false
 
 end FX1Poly.ComputerAlgebra

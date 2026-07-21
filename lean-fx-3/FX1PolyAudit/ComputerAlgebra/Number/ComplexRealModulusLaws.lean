@@ -2,11 +2,11 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.ComplexRealModulusLaws
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexRealModulusLaws —
-    zero-axiom gate (NUM-C-3)
+    zero-axiom gate
 
-Per-declaration zero-axiom gate for ℂ modulus multiplicativity: the ℂ
-multiplicative medial, the squared-modulus identity `|z w|^2 ~ |z|^2 |w|^2`, and
-the headline `|z w| ~ |z| |w|`.
+Per-declaration zero-axiom gate for complex modulus multiplicativity: the
+multiplicative medial, the squared-modulus identity `|z w|² ~ |z|² |w|²`, and
+`|z w| ~ |z| |w|`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

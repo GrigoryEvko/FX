@@ -1,8 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealCompleteness
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealCompleteness — zero-axiom
-    gate (NUM-R-6b/6c/6d)
+/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealCompleteness — zero-axiom gate
 
 Per-declaration zero-axiom gate for the diagonal limit: the
 quarter-scaled sampling depth, the regular-Cauchy-sequence structure,

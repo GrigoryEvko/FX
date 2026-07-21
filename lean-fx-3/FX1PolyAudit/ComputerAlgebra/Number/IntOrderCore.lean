@@ -1,14 +1,12 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntOrderCore
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntOrderCore — zero-axiom gate (FLOAT-1 brick 7)
+/-! # Zero-axiom gate for `IntOrderCore`
 
 Per-declaration zero-axiom gate for the additive-witness order core: the `NonNeg`
 destructor, the witness intro/dest interface, the `OfEq` rewriting helpers, and the
-hand-rolled refl/trans/antisymm laws.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+hand-rolled refl/trans/antisymm laws. Every declaration must be free of `propext`,
+`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

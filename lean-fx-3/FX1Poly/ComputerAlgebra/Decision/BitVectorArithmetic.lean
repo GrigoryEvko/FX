@@ -1,63 +1,50 @@
 import FX1Poly.ComputerAlgebra.Number.NatModularReduction
 
-/-! # FX1Poly/ComputerAlgebra/Decision/BitVectorArithmetic — the DISSAT-BV structural bridge
-    (bit-level operations ARE `Z/2^n` arithmetic, certified)
+/-! # Bit-level operations as certified `Z/2^n` arithmetic
 
-Little-endian bit vectors (`List Bool`, head = LSB) with ripple-carry addition,
-shift-add multiplication, two's-complement negation, and the pointwise Boolean
-layer — every operation certified against `Nat` semantics modulo `2^n` through
-the propext-clean counting-divider kit (`natRemainder`, `NatModularReduction`).
-The closest mechanized prior art is Lean core's `Init.Data.BitVec.Bitblast`
-(index-recursive, `%`-based carry) and Isabelle's `Word_Lib/Reversed_Bit_Lists`
-(the same LSB-first list representation); the exact-sum carry invariant below is
-the ACL2/Coquet induction form, structural on the lists, subtraction-free.
+Little-endian bit vectors (`List Bool`, head = LSB) with ripple-carry addition, shift-add
+multiplication, two's-complement negation, and the pointwise Boolean layer — every operation
+certified against `Nat` semantics modulo `2^n` through the propext-clean counting-divider kit
+(`natRemainder`, `NatModularReduction`). The closest mechanized prior art is Lean core's
+`Init.Data.BitVec.Bitblast` (index-recursive, `%`-based carry) and Isabelle's
+`Word_Lib/Reversed_Bit_Lists` (the same LSB-first list representation); the exact-sum carry invariant
+below is the ACL2/Coquet induction form, structural on the lists, subtraction-free.
 
-  * **Value** — `bvaToNat` (Horner, base 2) with the fresh structural power
-    `bvaPow2` (doubling recursion) and the width bound `bvaToNatIsBounded`.
-  * **The adder** — `bvaAddWithCarryOut` (simultaneous structural recursion,
-    same length by contract, junk arms dead under the length hypothesis) and
-    ★ THE CARRY INVARIANT `bvaAddWithCarryOutInvariant`:
-    `toNat sum + 2^n * carryOut = toNat u + toNat v + carryIn` — exact, no
-    subtraction, no `%`.  The truncating `bvaAdd` then satisfies
-    `bvaAddCorrect : toNat (bvaAdd u v) = natRemainder (toNat u + toNat v) 2^n`
-    by remainder uniqueness.
-  * **The multiplier** — `bvaMulAux` (structural on the multiplier bits, the
-    multiplicand doubled through the width-preserving truncating shift
-    `bvaShiftLeftTrunc = take n (false :: u)`), certified by the split lemma
-    `bvaSplitEquation` (`toNat (take k w) + 2^k * toNat (drop k w) = toNat w`)
-    and the remainder push lemmas:
+  * Value — `bvaToNat` (Horner, base 2) with the fresh structural power `bvaPow2` (doubling
+    recursion) and the width bound `bvaToNatIsBounded`.
+  * The adder — `bvaAddWithCarryOut` (simultaneous structural recursion, same length by contract,
+    junk arms dead under the length hypothesis) and the carry invariant
+    `bvaAddWithCarryOutInvariant`: `toNat sum + 2^n * carryOut = toNat u + toNat v + carryIn`, exact,
+    no subtraction, no `%`. The truncating `bvaAdd` then satisfies
+    `bvaAddCorrect : toNat (bvaAdd u v) = natRemainder (toNat u + toNat v) 2^n` by remainder
+    uniqueness.
+  * The multiplier — `bvaMulAux` (structural on the multiplier bits, the multiplicand doubled
+    through the width-preserving truncating shift `bvaShiftLeftTrunc = take n (false :: u)`),
+    certified by the split lemma `bvaSplitEquation`
+    (`toNat (take k w) + 2^k * toNat (drop k w) = toNat w`) and the remainder push lemmas:
     `bvaMulCorrect : toNat (bvaMul u v) = natRemainder (toNat u * toNat v) 2^n`.
-  * **Negation, subtraction-free** — `bvaComplementIdentity`
-    (`toNat u + toNat (bvaNot u) + 1 = 2^n`) and
+  * Negation, subtraction-free — `bvaComplementIdentity` (`toNat u + toNat (bvaNot u) + 1 = 2^n`) and
     `bvaNegCancels : natRemainder (toNat u + toNat (bvaNeg u)) 2^n = 0`.
-  * **Bitwise layer** — `bvaXor`/`bvaAnd`/`bvaOr` via `bvaZipWith`;
-    disjoint-support addition (`bvaDisjointAddIsXor`, `bvaDisjointXorToNat`),
-    `bvaXorSelfIsZeroes`, `bvaAndSelfIsIdentity`.
-  * **Ground decision** — the variable-free expression language `BvaExpr`
-    (constants + add/mul/neg/xor/and/or/not) with `bvaEval`, the Bool
-    well-formedness check `bvaExprIsWellFormedAtWidth`, and the decision
-    `bvaDecideGroundEq = bvaBeq (bvaEval e1) (bvaEval e2)` proved equivalent to
-    `Nat`-level value equality (`bvaDecideGroundEqIffToNatEq`) through
-    `bvaToNatInjectiveOfSameLength` (parity + double-cancellation).
+  * Bitwise layer — `bvaXor`/`bvaAnd`/`bvaOr` via `bvaZipWith`; disjoint-support addition
+    (`bvaDisjointAddIsXor`, `bvaDisjointXorToNat`), `bvaXorSelfIsZeroes`, `bvaAndSelfIsIdentity`.
+  * Ground decision — the variable-free expression language `BvaExpr`
+    (constants + add/mul/neg/xor/and/or/not) with `bvaEval`, the Bool well-formedness check
+    `bvaExprIsWellFormedAtWidth`, and the decision `bvaDecideGroundEq = bvaBeq (bvaEval e1)
+    (bvaEval e2)` proved equivalent to `Nat`-level value equality (`bvaDecideGroundEqIffToNatEq`)
+    through `bvaToNatInjectiveOfSameLength` (parity + double-cancellation).
   * Marker `fxDissatBv_hasArithmeticBridge := true`.
 
-Design choices: same-length pairs are managed by `Prop` hypotheses
-(`List.length u = List.length v`) rather than a Bool gate — the theorems
-compose directly and the junk arms are killed by `Nat.noConfusion`.  Widths are
-never padded: every intermediate list has the multiplicand's length BY
-CONSTRUCTION.
+Same-length pairs are managed by `Prop` hypotheses (`List.length u = List.length v`) rather than a
+Bool gate — the theorems compose directly and the junk arms are killed by `Nat.noConfusion`. Widths
+are never padded: every intermediate list has the multiplicand's length by construction.
 
-## Zero-axiom discipline
-
-`Init` plus the repo-internal `NatModularReduction` kit only.  Structural
-recursion throughout (no `WellFounded.fix`, no fuel).  No `propext`,
-`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `funext`, `omega`,
-no `decide` on `Prop` goals, no wildcard match arms over inductive scrutinees
-(all matches fully enumerated), no `Nat.sub`/`Nat.mod`/`Nat.div`, no Init order
-corpus (the hand-rolled `natLe*` kit from `NatEuclideanDivision` throughout),
-no `simp` (the AC-set `simp only` was probed propext-dirty 2026-07-18) — every
-additive shuffle is an explicit `congrArg`/`trans` telescope.  Per-declaration
-gate in `FX1PolyAudit/ComputerAlgebra/Decision/BitVectorArithmetic.lean`. -/
+`Init` plus the repo-internal `NatModularReduction` kit only. Structural recursion throughout (no
+`WellFounded.fix`, no fuel). No `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `funext`, `omega`, no `decide` on `Prop` goals, no wildcard match arms over
+inductive scrutinees (all matches fully enumerated), no `Nat.sub`/`Nat.mod`/`Nat.div`, no Init order
+corpus (the hand-rolled `natLe*` kit from `NatEuclideanDivision` throughout), and no `simp` (the AC
+`simp only` set is propext-dirty) — every additive shuffle is an explicit `congrArg`/`trans`
+telescope. Per-declaration gate in the twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -116,9 +103,8 @@ theorem bvaTwoMulIsAddSelf (value : Nat) : 2 * value = value + value :=
 
 /-! ## Additive shuffle telescopes (the hand-rolled AC steps)
 
-The AC `simp only [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]` route was
-probed propext-dirty, so the three shuffle shapes the inductions need are
-proved once as explicit telescopes. -/
+The AC `simp only [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]` set is propext-dirty, so the
+three shuffle shapes the inductions need are proved once as explicit telescopes. -/
 
 /-- Riffle: `(a + b) + (c + d) = (a + c) + (b + d)`. -/
 theorem bvaAddRiffle (firstTerm secondTerm thirdTerm fourthTerm : Nat) :
@@ -298,8 +284,8 @@ theorem bvaAdderStepArithmetic
           (bvaAddRiffle headFirstValue headSecondValue
             (2 * tailFirstValue) (2 * tailSecondValue))
 
-/-- ★ **THE CARRY INVARIANT** — exact and subtraction-free: for same-length
-operands, `toNat sum + 2^n · carryOut = toNat u + toNat v + carryIn`. -/
+/-- The carry invariant, exact and subtraction-free: for same-length operands,
+`toNat sum + 2^n · carryOut = toNat u + toNat v + carryIn`. -/
 theorem bvaAddWithCarryOutInvariant : ∀ (firstBits secondBits : List Bool) (carryBit : Bool),
     List.length firstBits = List.length secondBits →
     bvaToNat (bvaAddWithCarryOut firstBits secondBits carryBit).fst
@@ -1252,9 +1238,8 @@ theorem bvaDecideGroundEqIffToNatEq (width : Nat) (leftExpr rightExpr : BvaExpr)
       (congrArg (bvaBeq · (bvaEval rightExpr)) vectorsAgree).trans
         (bvaBeqRefl (bvaEval rightExpr)))
 
-/-- DECIDED marker: the DISSAT-BV structural bridge — bit-level ripple-carry /
-shift-add / two's-complement operations are certified `Z/2^n` arithmetic, with
-a sound-and-complete ground equality decision. -/
+/-- Bit-level ripple-carry / shift-add / two's-complement operations as certified `Z/2^n`
+arithmetic, with a sound-and-complete ground equality decision. -/
 def fxDissatBv_hasArithmeticBridge : Bool := true
 
 /-! ## Smoke tests (width 8; values printed through `bvaToNat`)

@@ -2,27 +2,25 @@ import FX1Poly.ComputerAlgebra.Algebra.SetoidRingHom
 import FX1Poly.ComputerAlgebra.Number.IntOrderedRingCertificate
 import FX1Poly.ComputerAlgebra.Number.RationalOrderedFieldCertificate
 
-/-! # SetoidRingTower — the ℕ → ℤ → ℚ → ℝ → ℂ diagram of setoid-rings (NUM-ALG-2)
+/-! # SetoidRingTower — the ℕ → ℤ → ℚ → ℝ → ℂ diagram of setoid-rings
 
-This module turns the object-level number tower into a genuine categorical
-DIAGRAM: the ring floors ℤ, ℚ, ℝ, ℂ as `CommutativeRingWitness` objects, and
-the widening maps between them as `SetoidRingHom` arrows, each discharging all
-five homomorphism obligations from the SHIPPED arithmetic.
+The number tower as a categorical diagram: the ring floors ℤ, ℚ, ℝ, ℂ as
+`CommutativeRingWitness` objects and the widening maps between them as
+`SetoidRingHom` arrows, each discharging the five homomorphism obligations from
+the underlying arithmetic.
 
-* ℤ↪ℚ (`rationalOfInt`, `n ↦ n/1`) — `preservesMul`/`preservesZero`/
-  `preservesOne` are `rfl`; `preservesAdd` is two `intMulOne` collapses;
-  `respectsDenotesSame` is `congrArg` on the `Eq` source setoid.
-* ℚ↪ℝ (`constantReal`) — `respectsDenotesSame` is the shipped
-  `constantRealRespectsDenotesSame`; every preservation law holds by
-  reflexivity, because `addReal`/`mulReal` of two CONSTANT sequences IS the
-  constant sequence of the ℚ sum/product.
-* ℝ↪ℂ (`complexOfReal`, `r ↦ r + 0i`) — real-part obligations reflexive, the
-  imaginary-part Gauss collapse assembled from the shipped ℝ zero-laws.
+* ℤ↪ℚ (`rationalOfInt`, `n ↦ n/1`): `preservesMul`, `preservesZero`, `preservesOne`
+  are `rfl`; `preservesAdd` is two `intMulOne` collapses; `respectsDenotesSame`
+  is `congrArg` on the `Eq` source setoid.
+* ℚ↪ℝ (`constantReal`): `respectsDenotesSame` is `constantRealRespectsDenotesSame`;
+  every preservation law is reflexivity, since `addReal` and `mulReal` of two
+  constant sequences give the constant sequence of the ℚ sum or product.
+* ℝ↪ℂ (`complexOfReal`, `r ↦ r + 0i`): real-part obligations reflexive, the
+  imaginary-part Gauss collapse assembled from the ℝ zero-laws.
 
-The ℕ caveat (§6): ℕ has no additive inverse, so it is NOT an object of the
-category of setoid-RINGS.  Honestly, ℕ↪ℤ is presented as a `SetoidSemiringHom`
-into the underlying commutative SEMIRING of ℤ — the Grothendieck completion
-step — never a faked ℕ negation.
+ℕ has no additive inverse, so it is not an object of the category of setoid-rings;
+ℕ↪ℤ is instead a `SetoidSemiringHom` into the underlying commutative semiring of ℤ,
+the Grothendieck-completion step, rather than a faked ℕ negation.
 
 `Init`-only, certificate-first, zero axioms. -/
 
@@ -32,10 +30,9 @@ open RationalPair
 
 /-! ## ℤ as a `CommutativeRingWitness` (setoid = `Eq`) -/
 
-/-- **The ℤ ring object.**  The integer commutative-ring laws are shipped as
-`Int` corpus lemmas; the setoid is definitional equality, so its trio is
-`rfl`/`Eq.symm`/`Eq.trans` and the operation congruences are `congrArg`
-chains. -/
+/-- The ℤ ring object.  The commutative-ring laws are `Int` lemmas; the setoid is
+definitional equality, so its reflexivity, symmetry, and transitivity are
+`rfl`/`Eq.symm`/`Eq.trans` and the operation congruences are `congrArg` chains. -/
 def intCommutativeRingWitness : CommutativeRingWitness Int where
   denotesSame := Eq
   zero := 0
@@ -66,9 +63,8 @@ def intCommutativeRingWitness : CommutativeRingWitness Int where
 
 /-! ## ℚ as a `CommutativeRingWitness` (forget order/decidability/inverse) -/
 
-/-- **The ℚ ring object.**  The full ℚ field certificate forgets down to the
-commutative-ring skeleton — every field is a shipped `RationalPair` corpus
-lemma. -/
+/-- The ℚ ring object: the ℚ field certificate forgotten down to the
+commutative-ring skeleton, every field a `RationalPair` lemma. -/
 def rationalCommutativeRingWitness : CommutativeRingWitness RationalPair where
   denotesSame := DenotesSameAs
   zero := zeroRational
@@ -97,12 +93,12 @@ def rationalCommutativeRingWitness : CommutativeRingWitness RationalPair where
 
 /-! ## The commutative-semiring floor for ℕ
 
-ℕ is a semiring, not a ring.  A minimal `CommutativeSemiringWitness` (the ring
-witness minus negation) hosts ℕ as an object and receives every ring as a
-forgetful image, so ℕ↪ℤ is an honest arrow without inventing a ℕ negation. -/
+ℕ is a semiring, not a ring.  A `CommutativeSemiringWitness` (the ring witness
+minus negation) hosts ℕ as an object and receives every ring as a forgetful image,
+so ℕ↪ℤ is an arrow without a ℕ negation. -/
 
-/-- **A setoid-relative commutative semiring** — a commutative ring witness
-with the negation data dropped. -/
+/-- A setoid-relative commutative semiring: a commutative ring witness with the
+negation data dropped. -/
 structure CommutativeSemiringWitness (carrier : Type) where
   denotesSame : carrier → carrier → Prop
   zero : carrier
@@ -149,7 +145,7 @@ structure CommutativeSemiringWitness (carrier : Type) where
         (add (mul factor leftSummand) (mul factor rightSummand))
   zeroIsApartFromOne : Not (denotesSame zero one)
 
-/-- **Every commutative ring is a commutative semiring** — forget the
+/-- Every commutative ring is a commutative semiring, by forgetting the
 negation. -/
 def commutativeSemiringWitnessOfRing {carrier : Type}
     (ring : CommutativeRingWitness carrier) : CommutativeSemiringWitness carrier where
@@ -172,9 +168,9 @@ def commutativeSemiringWitnessOfRing {carrier : Type}
   mulDistributesOverAdd := ring.mulDistributesOverAdd
   zeroIsApartFromOne := ring.zeroIsApartFromOne
 
-/-- **The ℕ semiring object** — the `Nat` core lemmas, `Eq` setoid.  Note:
-`mulIsAssociative` uses the SHIPPED `natMulAssoc` (§ IntMulAssociativity), which
-is propext-clean; the stdlib `Nat.mul_assoc` leaks `propext`. -/
+/-- The ℕ semiring object: the `Nat` core lemmas over the `Eq` setoid.
+`mulIsAssociative` uses `natMulAssoc` (module `IntMulAssociativity`), which is
+propext-clean, rather than the stdlib `Nat.mul_assoc`, which leaks `propext`. -/
 def natCommutativeSemiringWitness : CommutativeSemiringWitness Nat where
   denotesSame := Eq
   zero := 0
@@ -200,8 +196,8 @@ def natCommutativeSemiringWitness : CommutativeSemiringWitness Nat where
   mulDistributesOverAdd := Nat.mul_add
   zeroIsApartFromOne := fun zeroEqualsOne => Nat.noConfusion zeroEqualsOne
 
-/-- **A setoid-relative commutative-semiring homomorphism** — the same six
-obligations as `SetoidRingHom`, over semiring witnesses. -/
+/-- A setoid-relative commutative-semiring homomorphism, with the same obligations
+as `SetoidRingHom` but over semiring witnesses. -/
 structure SetoidSemiringHom {sourceCarrier targetCarrier : Type}
     (source : CommutativeSemiringWitness sourceCarrier)
     (target : CommutativeSemiringWitness targetCarrier) where
@@ -223,9 +219,9 @@ structure SetoidSemiringHom {sourceCarrier targetCarrier : Type}
 
 /-! ## The four widenings -/
 
-/-- **ℕ ↪ ℤ** as a semiring homomorphism — `Int.ofNat`.  `Int.add`/`Int.mul`
-recurse so that `ofNat (m + n) = ofNat m + ofNat n` and the product analogue
-hold by `rfl`; the constants map on the nose. -/
+/-- ℕ ↪ ℤ as a semiring homomorphism via `Int.ofNat`.  `Int.add`/`Int.mul` recurse
+so that `ofNat (m + n) = ofNat m + ofNat n` and the product analogue hold by `rfl`;
+the constants map directly. -/
 def embedNatToInt :
     SetoidSemiringHom natCommutativeSemiringWitness
       (commutativeSemiringWitnessOfRing intCommutativeRingWitness) where
@@ -236,7 +232,7 @@ def embedNatToInt :
   preservesZero := rfl
   preservesOne := rfl
 
-/-- **ℤ ↪ ℚ** as a ring homomorphism — `rationalOfInt` (`n ↦ n/1`). -/
+/-- ℤ ↪ ℚ as a ring homomorphism via `rationalOfInt` (`n ↦ n/1`). -/
 def embedIntToRat :
     SetoidRingHom intCommutativeRingWitness rationalCommutativeRingWitness where
   map := rationalOfInt
@@ -252,10 +248,9 @@ def embedIntToRat :
   preservesZero := denotesSameAsRefl zeroRational
   preservesOne := denotesSameAsRefl oneRational
 
-/-- **ℚ ↪ ℝ** as a ring homomorphism — the constant Cauchy embedding
-`constantReal`.  Additivity and multiplicativity are reflexivity: the sum /
-product of two constant sequences IS the constant sequence of the ℚ sum /
-product. -/
+/-- ℚ ↪ ℝ as a ring homomorphism, the constant Cauchy embedding `constantReal`.
+Additivity and multiplicativity are reflexivity: the sum or product of two constant
+sequences is the constant sequence of the ℚ sum or product. -/
 def embedRatToReal :
     SetoidRingHom rationalCommutativeRingWitness regularRealCommutativeRingWitness where
   map := constantReal
@@ -267,13 +262,13 @@ def embedRatToReal :
   preservesZero := denotesSameRealRefl (constantReal zeroRational)
   preservesOne := denotesSameRealRefl (constantReal oneRational)
 
-/-- **The ℝ ↪ ℂ embedding** `r ↦ r + 0i`. -/
+/-- The ℝ ↪ ℂ embedding `r ↦ r + 0i`. -/
 def complexOfReal (value : RegularReal) : ComplexReal :=
   { realPart := value, imaginaryPart := constantReal zeroRational }
 
-/-- **ℝ ↪ ℂ** as a ring homomorphism.  Real-part obligations are reflexive; the
-imaginary-part Gauss collapse `a·0 + 0·b ~ 0` and the real-part `a·b − 0·0 ~
-a·b` are assembled from the shipped ℝ zero-laws. -/
+/-- ℝ ↪ ℂ as a ring homomorphism.  Real-part obligations are reflexive; the
+imaginary-part Gauss collapse `a·0 + 0·b ~ 0` and the real-part `a·b − 0·0 ~ a·b`
+are assembled from the ℝ zero-laws. -/
 def embedRealToComplex :
     SetoidRingHom regularRealCommutativeRingWitness complexCommutativeRingWitness where
   map := complexOfReal
@@ -301,10 +296,10 @@ def embedRealToComplex :
     ⟨denotesSameRealRefl (constantReal oneRational),
       denotesSameRealRefl (constantReal zeroRational)⟩
 
-/-! ## Composite widenings — the diagram composes
+/-! ## Composite widenings
 
 The index poset `ℤ < ℚ < ℝ < ℂ` is thin, so functoriality is automatic: every
-composite widening is a `composeRingHom` chain, no commuting-square debt. -/
+composite widening is a `composeRingHom` chain. -/
 
 /-- ℤ ↪ ℝ, the composite through ℚ. -/
 def embedIntToReal :

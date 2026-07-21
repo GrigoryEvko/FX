@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.GroundCongruenceClosure
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/GroundCongruenceClosure — zero-axiom gate
-    (DISSAT-UF brick: ground congruence closure decided with zero search)
+    (ground congruence closure decided with zero search)
 
 Per-declaration zero-axiom gate for the ground-congruence-closure decision engine: the
 hand-rolled Nat/Bool kit, the `GccTerm` curried-term type with its structural beq

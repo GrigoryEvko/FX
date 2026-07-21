@@ -1,8 +1,8 @@
 import FX1Poly.ComputerAlgebra.Number.RegularReal
 
-/-! # RegularReal distance — the real-level within-bound predicate (NUM-R-6a)
+/-! # RegularReal distance — the real-level within-bound predicate
 
-The completeness arc's statement substrate.  `IsWithinRealBound l r q`
+The real-level distance predicate underlying completeness.  `IsWithinRealBound l r q`
 says every pair of approximants at a shared index sits within
 `q + 2/(n+1)` — Bishop's pointwise distance bound, abs-free, with the
 setoid modulus as the per-index tolerance.  `DenotesSameReal` is

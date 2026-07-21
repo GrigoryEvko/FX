@@ -1,13 +1,12 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntNegation — zero-axiom gate (FLOAT-1 brick 6)
+/-! # Zero-axiom gate for `IntNegation`
 
-Per-declaration zero-axiom gate for the hand-rolled negation-vs-add/mul relations and
-their `negOfNat`/`subNatNat` helpers.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the negation-versus-addition and
+negation-versus-multiplication relations and their `negOfNat`/`subNatNat` helpers. Every
+declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

@@ -2,51 +2,44 @@ import FX1Poly.ComputerAlgebra.Number.NatGreatestCommonDivisor
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntOrderAlgebra
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntGreatestCommonDivisor — the signed gcd (H2-SMITH r1, B1a)
+/-! # The signed greatest common divisor
 
-The Smith-normal-form engine over ZZ (`ComputerAlgebra/LinearAlgebra/SmithNormalForm`) needs an
-INTEGER greatest-common-divisor with witnessed properties: the pivot-selection cascade divides by
-the gcd, and the invariant-factor chain `d1 | d2 | ...` is a chain of `IntDivides`.  Init's
-`Int.gcd` and the whole `Int` divisibility corpus are propext-dirty on this toolchain, so this
-brick lifts the shipped Nat kit (`NatGreatestCommonDivisor`) through `Int.natAbs` and reattaches
-the sign, certificate-first.
+The Smith-normal-form engine over ℤ (`ComputerAlgebra/LinearAlgebra/SmithNormalForm`) needs an
+integer gcd with witnessed properties: the pivot-selection cascade divides by the gcd, and the
+invariant-factor chain `d1 | d2 | ...` is a chain of `IntDivides`. Init's `Int.gcd` and the `Int`
+divisibility corpus leak `propext` on this toolchain, so the gcd is built by lifting the Nat kit
+(`NatGreatestCommonDivisor`) through `Int.natAbs` and reattaching the sign, certificate-first.
 
   * `IntDivides divisor value := ∃ factor, value = divisor * factor` — the `Int` sibling of
-    `NatDivides` (divisor on the LEFT), definitionally the same shape as `IntMatrix`'s
-    layer-local `dividesExactly`, so the SNF divisibility chain plugs in without a coercion.
-  * `intGcd a b := Int.ofNat (natGcd a.natAbs b.natAbs)` — canonicalised NONNEGATIVE (the ZZ gcd
-    is unique only up to the unit `±1`; the nonnegative representative matches
+    `NatDivides` (divisor on the LEFT), the same shape as `IntMatrix`'s `dividesExactly`.
+  * `intGcd a b := Int.ofNat (natGcd a.natAbs b.natAbs)` — the canonical NONNEGATIVE
+    representative (the ℤ gcd is unique only up to the unit `±1`; nonnegative matches
     `IsSmithNormalFormWithin.diagonalIsNonnegative`).
-  * The two sign bridges — `intDividesOfNatDividesNatAbs` (Nat magnitude divisibility rises to
-    `Int`, per-constructor on the value's sign) and `natDividesNatAbsOfIntDivides` (the reverse,
-    via `intNatAbsMul`) — carry `natGcdDividesLeft/Right` and `natDividesGcdOfDividesBoth` up to
-    the signed `intGcdDividesLeft/Right` and `intGcdGreatest`.
+  * The sign bridges `intDividesOfNatDividesNatAbs` and `natDividesNatAbsOfIntDivides` carry
+    `natGcdDividesLeft/Right` and `natDividesGcdOfDividesBoth` up to the signed
+    `intGcdDividesLeft/Right` and `intGcdGreatest`.
 
-The Bezout coefficient identity over `Int` (the disjunctive `NatBezoutIdentityFor` collapsed to a
-single signed pair) and a decidable `IntDivides` instance are the r2 upgrade — this brick ships
-the divides/greatest structure the SNF driver and its non-vacuity checks consume.
+One caveat: a Bezout coefficient identity over `Int` and a decidable `IntDivides` instance are
+not provided here; this module supplies the divides/greatest structure the SNF driver consumes.
 
-## Zero-axiom
-
-Per-constructor `Int` matches, `congrArg`/`Eq.trans` over the propext-clean `Int` negation kit
-(`intNegMul`, `intMulNeg`, `intNegNegOfNat`) and the shipped Nat gcd certificates.  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, no `WellFounded.fix`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/Number/IntGreatestCommonDivisor.lean`. -/
+Per-constructor `Int` matches and `congrArg`/`Eq.trans` over the negation kit and the Nat gcd
+certificates; free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`omega`, and `WellFounded.fix`. Per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-! ## Integer divisibility with explicit witnesses -/
 
-/-- `divisor` divides `value` over the integers — explicit cofactor, divisor on the LEFT (the
-`Int` sibling of `NatDivides`, matching the counting divider's reconstruction shape). -/
+/-- `divisor` divides `value` over the integers, with explicit cofactor and divisor on the
+LEFT (the `Int` sibling of `NatDivides`). -/
 def IntDivides (divisor value : Int) : Prop :=
   ∃ factor, value = divisor * factor
 
-/-- Everything divides itself — `value * 1` is `value` through `intMulOne`. -/
+/-- Everything divides itself, via `intMulOne`. -/
 theorem intDividesRefl (value : Int) : IntDivides value value :=
   ⟨1, (intMulOne value).symm⟩
 
-/-- Everything divides zero — `divisor * 0` reduces through `intMulZero`. -/
+/-- Everything divides zero, via `intMulZero`. -/
 theorem intDividesZero (divisor : Int) : IntDivides divisor 0 :=
   ⟨0, (intMulZero divisor).symm⟩
 
@@ -57,8 +50,8 @@ theorem natAbsNegOfNat : ∀ magnitude : Nat, (Int.negOfNat magnitude).natAbs = 
   | 0 => rfl
   | _ + 1 => rfl
 
-/-- `natAbs` is fully multiplicative over `Int` products — the mixed-sign arms land on
-`Int.negOfNat`, whose magnitude is read off by `natAbsNegOfNat`; the same-sign arms are `rfl`. -/
+/-- `natAbs` is multiplicative over `Int` products: mixed-sign arms land on `Int.negOfNat`
+(magnitude via `natAbsNegOfNat`), same-sign arms are `rfl`. -/
 theorem intNatAbsMul : ∀ leftFactor rightFactor : Int,
     (leftFactor * rightFactor).natAbs = leftFactor.natAbs * rightFactor.natAbs
   | .ofNat _, .ofNat _ => rfl
@@ -68,9 +61,8 @@ theorem intNatAbsMul : ∀ leftFactor rightFactor : Int,
       natAbsNegOfNat ((leftPredecessor + 1) * rightValue)
   | .negSucc _, .negSucc _ => rfl
 
-/-- **Rising bridge**: Nat divisibility of a value's magnitude by a magnitude `commonDivisor`
-lifts to `Int` divisibility by `Int.ofNat commonDivisor`.  The `negSucc` value arm pulls the
-sign out through `intMulNeg`. -/
+/-- Rising bridge: magnitude divisibility by `commonDivisor` lifts to `Int` divisibility by
+`Int.ofNat commonDivisor`; the `negSucc` value arm pulls the sign out through `intMulNeg`. -/
 theorem intDividesOfNatDividesNatAbs {commonDivisor : Nat} {value : Int}
     (divides : NatDivides commonDivisor value.natAbs) :
     IntDivides (Int.ofNat commonDivisor) value :=
@@ -82,8 +74,8 @@ theorem intDividesOfNatDividesNatAbs {commonDivisor : Nat} {value : Int}
         (congrArg (fun magnitude => -(Int.ofNat magnitude)) valueEquation).trans
           (intMulNeg (Int.ofNat commonDivisor) (Int.ofNat quotient)).symm⟩
 
-/-- **Falling bridge**: `Int` divisibility descends to Nat divisibility of the magnitudes — the
-cofactor's magnitude is the Nat cofactor, transported by `intNatAbsMul`. -/
+/-- Falling bridge: `Int` divisibility descends to magnitude divisibility; the cofactor's
+magnitude is the Nat cofactor, via `intNatAbsMul`. -/
 theorem natDividesNatAbsOfIntDivides {divisor value : Int}
     (divides : IntDivides divisor value) :
     NatDivides divisor.natAbs value.natAbs :=
@@ -92,9 +84,8 @@ theorem natDividesNatAbsOfIntDivides {divisor value : Int}
       ⟨factor.natAbs,
         (congrArg Int.natAbs valueEquation).trans (intNatAbsMul divisor factor)⟩
 
-/-- **Sign normalisation of the divisor**: divisibility by `Int.ofNat divisor.natAbs` upgrades to
-divisibility by `divisor` itself — the `negSucc` arm flips the cofactor's sign through
-`intMulNeg`/`intNegMul` (`-(negSucc m) = ofNat (m + 1)` by `intNegNegOfNat`). -/
+/-- Sign normalisation of the divisor: divisibility by `Int.ofNat divisor.natAbs` upgrades to
+divisibility by `divisor`; the `negSucc` arm flips the cofactor's sign. -/
 theorem intDividesOfNatAbsDivides {divisor value : Int}
     (divides : IntDivides (Int.ofNat divisor.natAbs) value) : IntDivides divisor value :=
   match divisor, divides with
@@ -108,9 +99,8 @@ theorem intDividesOfNatAbsDivides {divisor value : Int}
 
 /-! ## The signed gcd -/
 
-/-- The greatest common divisor over the integers — the NONNEGATIVE representative
-`Int.ofNat (natGcd |a| |b|)`.  Nonnegativity is the canonical sign choice matching the
-Smith-normal-form diagonal. -/
+/-- The integer gcd: the NONNEGATIVE representative `Int.ofNat (natGcd |a| |b|)`, the canonical
+sign choice matching the Smith-normal-form diagonal. -/
 def intGcd (leftValue rightValue : Int) : Int :=
   Int.ofNat (natGcd leftValue.natAbs rightValue.natAbs)
 
@@ -119,7 +109,7 @@ theorem intGcdIsNonnegative (leftValue rightValue : Int) :
     (0 : Int) ≤ intGcd leftValue rightValue :=
   intZeroLeOfNat (natGcd leftValue.natAbs rightValue.natAbs)
 
-/-- The gcd divides its left argument — `natGcdDividesLeft` rises through the sign bridges. -/
+/-- The gcd divides its left argument, via the sign bridges. -/
 theorem intGcdDividesLeft (leftValue rightValue : Int) :
     IntDivides (intGcd leftValue rightValue) leftValue :=
   intDividesOfNatAbsDivides
@@ -131,7 +121,7 @@ theorem intGcdDividesRight (leftValue rightValue : Int) :
   intDividesOfNatAbsDivides
     (intDividesOfNatDividesNatAbs (natGcdDividesRight leftValue.natAbs rightValue.natAbs))
 
-/-- **Greatest-ness**: every common divisor divides the gcd — descend both divisibilities to the
+/-- Greatest-ness: every common divisor divides the gcd — descend both divisibilities to the
 magnitudes, apply `natDividesGcdOfDividesBoth`, and rise back through the divisor sign bridge. -/
 theorem intGcdGreatest {commonDivisor leftValue rightValue : Int}
     (dividesLeft : IntDivides commonDivisor leftValue)
@@ -143,7 +133,7 @@ theorem intGcdGreatest {commonDivisor leftValue rightValue : Int}
         (natDividesNatAbsOfIntDivides dividesLeft)
         (natDividesNatAbsOfIntDivides dividesRight)))
 
-/-- The gcd is commutative — the underlying Nat gcd is (`natGcdComm`), lifted through `ofNat`. -/
+/-- The gcd is commutative, lifting `natGcdComm` through `ofNat`. -/
 theorem intGcdComm (leftValue rightValue : Int) :
     intGcd leftValue rightValue = intGcd rightValue leftValue :=
   congrArg Int.ofNat (natGcdComm leftValue.natAbs rightValue.natAbs)

@@ -2,13 +2,11 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.ComplexReal
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexReal — zero-axiom gate
-    (NUM-C-1)
 
 Per-declaration zero-axiom gate for the Gaussian reals: the carrier, the
 product setoid with refl/symm/trans, the operations and constants, every
-operation congruence, the three conjugation laws, and the closable half of
-the commutative-ring laws (commutativity, additive associativity/inverse, the
-identities).
+operation congruence, the three conjugation laws, the commutative-ring laws, and
+the ℝ and ℂ commutative-ring certificates.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

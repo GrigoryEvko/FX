@@ -2,19 +2,18 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.NormalizedRational
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/NormalizedRational — zero-axiom gate
-    (NUM-Q-7)
 
-Per-declaration zero-axiom gate for the canonical-NF ℚ carrier: the reduced-pair
-bundle `QnfRat` (equality of the bundle IS equality of the pair, by structure eta
-plus definitional proof irrelevance), THE HEADLINE normalization uniqueness
+Per-declaration zero-axiom gate for the canonical-normal-form ℚ carrier: the
+reduced-pair bundle `QnfRat` (bundle equality is pair equality, by structure eta
+plus definitional proof irrelevance), normalization uniqueness
 (`qnfNormalizeUnique` / `qnfNormalizeEqIffDenotesSame`) with fixed-point and
 round-trip laws, the ring operations as raw-op-then-normalize with negation and
-inversion staying canonical directly, the FULL field-law suite in plain `Eq`
-(transported through uniqueness from the setoid laws, never re-proved), the
-zero-numerator collapse chain feeding the `value ≠ qnfZero` field witness
-(`qnfMulInvCancels`), the structural Boolean comparator with `qnfBeqIffEq` and
-the manual `DecidableEq`, the kernel-`rfl` closed-value fires, and the DECIDED
-markers `qnfHasCanonicalNormalForm` / `qnfHasFieldLaws`.
+inversion staying canonical directly, the field-law suite in plain `Eq`
+(transported through uniqueness from the setoid laws), the zero-numerator
+collapse chain feeding the `value ≠ qnfZero` field witness (`qnfMulInvCancels`),
+the structural Boolean comparator with `qnfBeqIffEq` and the manual
+`DecidableEq`, the kernel-`rfl` closed-value fires, and the content markers
+`qnfHasCanonicalNormalForm` / `qnfHasFieldLaws`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

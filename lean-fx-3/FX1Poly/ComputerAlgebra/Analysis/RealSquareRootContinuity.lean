@@ -2,27 +2,23 @@ import FX1Poly.ComputerAlgebra.Number.RegularRealSquareRoot
 import FX1Poly.ComputerAlgebra.Analysis.RealContinuity
 
 /-! # Real square-root continuity — Hölder-1/2 with a quadratic modulus
-    (ANALYSIS-SQRTCONT-1)
 
 The square root is uniformly continuous on the nonnegative reals with the
-QUADRATIC modulus `omega k = sqrtSampleIndex k = (2k+2)^2 - 1`.  The shipped
-Hölder-1/2 difference bound `sqrtApproxPairDifferenceBounded` does NOT lift
-directly: at running index `i` it demands the TIGHT input hypothesis
-`|a_i - b_i| <= 2/(deep+1)`, but a fixed continuity bound only delivers
-`recip(modulus k) + 2/(deep+1)` — looser by the fixed `recip(modulus k)`, which
-no fixed modulus can shed as `i -> infinity`.  That is exactly the
-shrinking->fixed rework the `RealContinuity` scope note flagged.
+quadratic modulus `omega k = sqrtSampleIndex k = (2k+2)^2 - 1`.  The Hölder-1/2
+difference bound `sqrtApproxPairDifferenceBounded` does not lift directly: at
+running index `i` it demands the tight input hypothesis `|a_i - b_i| <=
+2/(deep+1)`, but a fixed continuity bound only delivers `recip(modulus k) +
+2/(deep+1)` — looser by the fixed `recip(modulus k)`, which no fixed modulus can
+shed as `i -> infinity`.
 
-It closes with NO analytic wall: the fixed input slack enters as an exact
-grid-square `recip(modulus k) = (recip(sqrtGridIndex k))^2` (the shipped
-`recipSampleDenotesGridSquare`), and `sqrtApproxPairDifferenceBoundedWithSlack`
-— a faithful sibling of the shipped bound carrying that extra grid-square
-through a THREE-term sum-of-squares drop — outputs the extra
-`recip(sqrtGridIndex k) + recip(sqrtGridIndex k)`, which the shipped
-`reciprocalDenotesGridSum` recombines with the running budget to
-`recip k`.  Every ingredient is shipped and zero-axiom.
+The fixed input slack enters as an exact grid-square `recip(modulus k) =
+(recip(sqrtGridIndex k))^2` (`recipSampleDenotesGridSquare`), and
+`sqrtApproxPairDifferenceBoundedWithSlack` — a sibling of that bound carrying the
+extra grid-square through a three-term sum-of-squares drop — outputs the extra
+`recip(sqrtGridIndex k) + recip(sqrtGridIndex k)`, which `reciprocalDenotesGridSum`
+recombines with the running budget to `recip k`.
 
-`sqrtReal` is a DEPENDENT map (`(value) -> IsNonNegativeReal value -> RegularReal`),
+`sqrtReal` is a dependent map (`(value) -> IsNonNegativeReal value -> RegularReal`),
 so it cannot inhabit the total-map `IsUniformlyContinuous`; the predicate
 `IsUniformlyContinuousOnNonNeg` quantifies over nonnegative reals with their
 proofs. -/
@@ -33,8 +29,8 @@ open RationalPair
 
 /-! ## The three-term sum-of-squares drop -/
 
-/-- **Three nonnegative squares sit below the square of the sum**:
-`(a^2 + b^2) + c^2 <= ((a+b)+c)^2` — two applications of the shipped two-term
+/-- Three nonnegative squares sit below the square of the sum:
+`(a^2 + b^2) + c^2 <= ((a+b)+c)^2` — two applications of the two-term
 `sumSquaresLeSquareSumNonNeg`, folding `(a+b)` into one value. -/
 theorem sumThreeSquaresLeSquareSumNonNeg {firstValue secondValue thirdValue :
     RationalPair}
@@ -56,15 +52,14 @@ theorem sumThreeSquaresLeSquareSumNonNeg {firstValue secondValue thirdValue :
 
 /-! ## The slack-carrying Hölder-1/2 difference bound -/
 
-/-- **The one-sided sqrt-difference bound with a fixed grid-square slack** — the
-shrinking->fixed sibling of `sqrtApproxPairDifferenceBounded`.  The input
-regularity carries an extra `(recip slackGridPredecessor)^2`, and the output
-carries the extra `recip slackGridPredecessor + recip slackGridPredecessor`.
-The proof is the shipped skeleton with the fixed grid threaded: the input bound
+/-- The one-sided sqrt-difference bound with a fixed grid-square slack — the
+fixed-bound sibling of `sqrtApproxPairDifferenceBounded`.  The input regularity
+carries an extra `(recip slackGridPredecessor)^2`, and the output carries the
+extra `recip slackGridPredecessor + recip slackGridPredecessor`.  The input bound
 resolves to `(gridFirst^2 + gridSecond^2) + slackGrid^2`, dominated by
-`((gridFirst + gridSecond) + slackGrid)^2` via the three-term sum-of-squares,
-and the remaining budget and half budget each absorb the doubled slack grid so
-the reflect-and-shunt lands on `(recip firstIndex + recip secondIndex) +
+`((gridFirst + gridSecond) + slackGrid)^2` via the three-term sum-of-squares, and
+the remaining budget and half budget each absorb the doubled slack grid so the
+reflect-and-shunt lands on `(recip firstIndex + recip secondIndex) +
 (slackGrid + slackGrid)`. -/
 theorem sqrtApproxPairDifferenceBoundedWithSlack {sampleFirst sampleSecond :
     RationalPair}
@@ -240,7 +235,7 @@ theorem sqrtApproxPairDifferenceBoundedWithSlack {sampleFirst sampleSecond :
 
 /-! ## Uniform continuity on the nonnegative reals -/
 
-/-- **Uniform continuity of a partial (nonnegativity-dependent) map** with an
+/-- Uniform continuity of a partial (nonnegativity-dependent) map with an
 explicit modulus — the total-map `IsUniformlyContinuous` cannot host `sqrtReal`
 because it takes a nonnegativity proof, so the predicate quantifies over
 nonnegative reals with their witnesses. -/
@@ -255,12 +250,11 @@ def IsUniformlyContinuousOnNonNeg
       IsWithinRealBound (function leftValue isLeftNonNeg)
         (function rightValue isRightNonNeg) (reciprocalOfSucc outputPrecision)
 
-/-- **The square root is uniformly continuous on the nonnegative reals** with
-the quadratic modulus `sqrtSampleIndex`.  At each running index the fixed input
-slack `recip(sqrtSampleIndex k)` resolves to the grid-square
-`recip(sqrtGridIndex k)^2`, the slack-carrying difference bound absorbs it, and
-the output slack `recip(sqrtGridIndex k) + recip(sqrtGridIndex k)` recombines to
-`recip k` — no residual analytic wall. -/
+/-- The square root is uniformly continuous on the nonnegative reals with the
+quadratic modulus `sqrtSampleIndex`.  At each running index the fixed input slack
+`recip(sqrtSampleIndex k)` resolves to the grid-square `recip(sqrtGridIndex k)^2`,
+the slack-carrying difference bound absorbs it, and the output slack
+`recip(sqrtGridIndex k) + recip(sqrtGridIndex k)` recombines to `recip k`. -/
 theorem sqrtRealIsUniformlyContinuous :
     IsUniformlyContinuousOnNonNeg sqrtReal (fun outputPrecision => sqrtSampleIndex outputPrecision) :=
   fun leftValue rightValue isLeftNonNeg isRightNonNeg outputPrecision isClose index =>

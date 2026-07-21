@@ -1,8 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealInverse
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealInverse — zero-axiom
-    gate (NUM-R-5c/5d/5e)
+/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealInverse — zero-axiom gate
 
 Per-declaration zero-axiom gate for the ℚ reciprocal kit and the real
 inverse: the two margin-refutation lemmas, the sign-free scaled

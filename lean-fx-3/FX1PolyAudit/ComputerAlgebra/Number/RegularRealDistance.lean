@@ -1,8 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealDistance
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealDistance — zero-axiom
-    gate (NUM-R-6a)
+/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealDistance — zero-axiom gate
 
 Per-declaration zero-axiom gate for the real-level distance substrate:
 the pointwise within-bound predicate, its symmetry, the two setoid

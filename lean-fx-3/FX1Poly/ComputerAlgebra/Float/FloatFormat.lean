@@ -3,20 +3,19 @@ import FX1Poly.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 /-! # FloatFormat — the radix-generic float ADT, rounding-into-a-format, and the
     half-ulp error bound
 
-This is the FLOAT layer proper (fx_design.md §3.11 floating-point control,
-FLOAT-0..1 #1935-#1936).  The exact-value substrate (`RadixScaledInteger` =
-`mantissa * radix^exponent`, never evaluated into ℝ) and the full IEEE rounding
-suite — `roundTowardZero` / `roundTowardNegative` / `roundTowardPositive` /
-`roundNearestTiesEven`, each with its faithfulness + monotonicity + sub-ulp
-certificate — are already shipped in
+The format layer over the exact-value substrate (fx_design.md §3.11 floating-point
+control).  `RadixScaledInteger` = `mantissa * radix^exponent`, never evaluated into
+ℝ, together with the full IEEE rounding suite — `roundTowardZero` /
+`roundTowardNegative` / `roundTowardPositive` / `roundNearestTiesEven`, each with
+its faithfulness + monotonicity + sub-ulp certificate — live in
 `FX1Poly/ComputerAlgebra/FloatingPoint/RadixScaledInteger.lean`.
 
-What this file adds, following Flocq's `SpecFloat` / `Binary` split:
+This file follows Flocq's `SpecFloat` / `Binary` split:
 
 * `FloatFormat` — the four numbers `(radix, precision, emin, emax)` that pin a
   concrete format (binary16/32/64, FP8 E4M3/E5M2, FP4 E2M1, dec*).  A `def`
   bundle, not a proof-carrying subtype — positivity of the radix travels as an
-  explicit hypothesis, exactly as the shipped rounding theorems demand.
+  explicit hypothesis, exactly as the rounding theorems demand.
 
 * `BinaryFloat` — the proof-free IEEE ADT (`Flocq.SpecFloat.spec_float`):
   `posZero / negZero / posInf / negInf / nan / finite (sign) (mantissa) (exp)`.
@@ -24,13 +23,12 @@ What this file adds, following Flocq's `SpecFloat` / `Binary` split:
   zero value and a finite to its exact `RadixScaledInteger`.
 
 * `roundNearestToExponent` — round an exact `RadixScaledInteger` to a target
-  canonical exponent, delivered AS a `BinaryFloat` (sign split off the rounded
-  mantissa).  Its `toRadixScaled` is *definitionally* the shipped
-  `roundNearestTiesEven`, so the shipped **doubled half-ulp bound**
-  `2 * |rounded - value| <= ulp` and the shipped **faithfulness** disjunction
-  lift to the float layer by `congrArg`.
+  canonical exponent, delivered as a `BinaryFloat` (sign split off the rounded
+  mantissa).  Its `toRadixScaled` is definitionally the `roundNearestTiesEven`, so
+  the doubled half-ulp bound `2 * |rounded - value| <= ulp` and the faithfulness
+  disjunction lift to the float layer by `congrArg`.
 
-`Init`-only (via the shipped siblings), structural, zero axioms. -/
+`Init`-only (via the sibling module), structural, zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -74,7 +72,7 @@ end FloatFormat
 /-! ## The IEEE ADT (proof-free, computational — Flocq `spec_float`) -/
 
 /-- An IEEE-754 value as a finite/special tagged union.  Proof-free: the
-format-membership certificate is a SEPARATE predicate (`IsCanonicalFinite`), so
+format-membership certificate is a separate predicate (`IsCanonicalFinite`), so
 the carrier is fully inductive and axiom-clean. -/
 inductive BinaryFloat where
   | posZero
@@ -177,8 +175,8 @@ end BinaryFloat
 `roundNearestToExponent fmt value targetExponent` rounds the exact
 `RadixScaledInteger` `value` to the nearest representable at `targetExponent`
 (ties to even), and returns it as a `BinaryFloat`.  Its exact reading is
-*definitionally* the shipped `RadixScaledInteger.roundNearestTiesEven`, so the
-shipped correctness certificates lift verbatim. -/
+definitionally `RadixScaledInteger.roundNearestTiesEven`, so the correctness
+certificates lift verbatim. -/
 
 /-- Round `value` to nearest, ties-to-even, at `targetExponent`, delivered as a
 `BinaryFloat`. -/
@@ -188,8 +186,8 @@ def roundNearestToExponent (fmt : FloatFormat) (value : RadixScaledInteger)
     (RadixScaledInteger.roundNearestTiesEven fmt.radix value targetExponent).mantissa
     targetExponent
 
-/-- The rounded float reads back as EXACTLY the shipped nearest-rounded exact
-value — the bridge that carries every shipped certificate to the float layer. -/
+/-- The rounded float reads back as exactly the nearest-rounded exact value — the
+bridge that carries every certificate to the float layer. -/
 theorem toRadixScaled_roundNearestToExponent (fmt : FloatFormat) (value : RadixScaledInteger)
     (targetExponent : Int) :
     BinaryFloat.toRadixScaled (roundNearestToExponent fmt value targetExponent) =
@@ -200,12 +198,12 @@ theorem toRadixScaled_roundNearestToExponent (fmt : FloatFormat) (value : RadixS
 
 /-! ## The half-ulp error bound at the float layer
 
-The two shipped doubled-bracket inequalities, transported through the
+The two doubled-bracket inequalities, transported through the
 `toRadixScaled = roundNearestTiesEven` bridge.  Together they are
 `2 * |rounded - value| <= ulp` where the ulp is `radix^(targetExponent -
 value.exponent)` read at the common (lower) scale. -/
 
-/-- **Rounded stays within half an ulp above** (doubled, no division by two). -/
+/-- Rounded stays within half an ulp above (doubled, no division by two). -/
 theorem roundNearestErrorBoundBelow {fmt : FloatFormat}
     (isRadixPositive : (0 : Int) < fmt.radix) (value : RadixScaledInteger)
     (targetExponent : Int) :
@@ -222,7 +220,7 @@ theorem roundNearestErrorBoundBelow {fmt : FloatFormat}
       (toRadixScaled_roundNearestToExponent fmt value targetExponent)).mpr
     (RadixScaledInteger.roundNearestTiesEvenMulTwiceIsBelow isRadixPositive value targetExponent)
 
-/-- **The value stays within half an ulp above the rounded** (doubled dual). -/
+/-- The value stays within half an ulp above the rounded (doubled dual). -/
 theorem roundNearestErrorBoundAbove {fmt : FloatFormat}
     (isRadixPositive : (0 : Int) < fmt.radix) (value : RadixScaledInteger)
     (targetExponent : Int) :
@@ -239,7 +237,7 @@ theorem roundNearestErrorBoundAbove {fmt : FloatFormat}
       (toRadixScaled_roundNearestToExponent fmt value targetExponent)).mpr
     (RadixScaledInteger.roundNearestTiesEvenMulTwiceIsAbove isRadixPositive value targetExponent)
 
-/-- **Faithfulness at the float layer**: the rounded value is one of the two
+/-- Faithfulness at the float layer: the rounded value is one of the two
 directed roundings (floor toward `-inf`, ceiling toward `+inf`) at the target
 exponent — never anything in between. -/
 theorem roundNearestIsFaithful {fmt : FloatFormat}

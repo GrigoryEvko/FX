@@ -2,38 +2,36 @@ import FX1Poly.ComputerAlgebra.Analysis.RealLimit
 import FX1Poly.ComputerAlgebra.Number.RegularRealMultiplication
 
 /-! # Real multiplicative limit laws — the product and scalar rungs
-    (ANALYSIS-MULLIMIT-1)
 
-The multiplicative core of the calculus foundation, and the genuine analytic
-content the `RealContinuity` honest-scope note deferred: reworking the shipped
-`mulRealRespectsDenotesSame` from a SHRINKING setoid bound (bound `0`) to a
-FIXED continuity bound `q`.  Once that real-level product-difference law is in
-hand, the product limit law, the scalar limit law, and (in the sibling
-continuity module) bounded-domain multiplication continuity all fall out.
+The multiplicative core of the calculus foundation: `mulRealRespectsDenotesSame`
+uses a shrinking setoid bound (bound `0`); here the product-difference law is
+stated at a fixed continuity bound `q`.  From it follow the product limit law,
+the scalar limit law, and (in the sibling continuity module) bounded-domain
+multiplication continuity.
 
 The telescope is `x_n y_n - a b = x_n (y_n - b) + (x_n - a) b`, so
 
     |x_n y_n - a b| <= |x_n| |y_n - b| + |b| |x_n - a|.
 
-`mulRealRespectsIsWithinRealBound` proves exactly this at the real level: with
-a UNIFORM magnitude bound `M` on the left sequence (nat ratio) and `L` on the
-right limit (nat ratio), the product of two reals within `leftEps` / `rightEps`
-of their limits lands within `M * rightEps + L * leftEps`.  Its proof is a
-faithful generalisation of `mulRealRespectsDenotesSame`: the slack-closure
-skeleton is identical, but the two mismatched-sampling factor differences relax
-to `eps + 4/(slack+1)` (fixed eps plus vanishing slack) instead of the pure
-`4/(slack+1)`, and the middle bound carries `bound + (4M + 4L)/(slack+1)` so the
-non-vanishing `bound` survives while the nat-numerator slack closes.
+`mulRealRespectsIsWithinRealBound` proves exactly this at the real level: with a
+uniform magnitude bound `M` on the left sequence (nat ratio) and `L` on the right
+limit (nat ratio), the product of two reals within `leftEps` / `rightEps` of
+their limits lands within `M * rightEps + L * leftEps`.  The slack-closure
+skeleton matches `mulRealRespectsDenotesSame`, but the two mismatched-sampling
+factor differences relax to `eps + 4/(slack+1)` (fixed eps plus vanishing slack)
+instead of the pure `4/(slack+1)`, and the middle bound carries
+`bound + (4M + 4L)/(slack+1)` so the non-vanishing `bound` survives while the
+nat-numerator slack closes.
 
-The UNIFORM bound comes from `convergentSequenceIsBounded`: a convergent real
+The uniform bound comes from `convergentSequenceIsBounded`: a convergent real
 sequence is uniformly magnitude-bounded, its tail dominated by the limit's
-canonical bound plus `3` (the worst `1 + 2/(index+1)` drift at precision `0`)
-and its finite prefix dominated by a structural SUM of the per-member canonical
+canonical bound plus `3` (the worst `1 + 2/(index+1)` drift at precision `0`) and
+its finite prefix dominated by a structural sum of the per-member canonical
 bounds — never a `Nat.max`, so no `le_max` propext leak.
 
 The product law `convergesToMulReal` samples the two convergence hypotheses at
 bound-scaled precision indices so that `M * rightEps` and `L * leftEps` each
-collapse EXACTLY to `1/(2k+2)` and recombine to `1/(k+1)`.  The scalar law
+collapse to `1/(2k+2)` and recombine to `1/(k+1)`.  The scalar law
 `convergesToScalarMulReal` is the product law fed a constant left sequence.
 
 Zero axioms throughout. -/
@@ -59,10 +57,10 @@ theorem addExactSwapOuterIntoInner (outerPiece epsPiece innerPiece : RationalPai
         (denotesSameAsRefl innerPiece))
       (addExactAssoc epsPiece outerPiece innerPiece))
 
-/-- **The four-atom gather**: `a + (b + (c + d))` denotes `(c + a) + (b + d)` —
-pull `c` to the front and pair the remaining slack pieces.  Threads the
-non-vanishing bound `c` out of the middle so the vanishing pieces `b`, `d`
-collect for slack closure. -/
+/-- Four-atom gather: `a + (b + (c + d))` denotes `(c + a) + (b + d)` — pull `c`
+to the front and pair the remaining slack pieces.  Threads the non-vanishing
+bound `c` out of the middle so the vanishing pieces `b`, `d` collect for slack
+closure. -/
 theorem addExactGatherDenotesSame (firstPiece secondPiece thirdPiece fourthPiece :
     RationalPair) :
     DenotesSameAs
@@ -88,12 +86,11 @@ end RationalPair
 
 /-! ## Uniform magnitude bound of a convergent sequence -/
 
-/-- **The convergent tail is uniformly bounded**: for every member from
-`modulus 0` onward, and at every approximation index, the magnitude sits within
-`(canonicalBoundNumerator limit + 3)/1`.  At precision `0` the member sits
-within `1 + 2/(index+1) <= 3` of the limit, whose approximant sits within its
-canonical bound; the magnitude triangle adds the two.  This is the only piece on
-the product-law critical path. -/
+/-- The convergent tail is uniformly bounded: for every member from `modulus 0`
+onward, and at every approximation index, the magnitude sits within
+`(canonicalBoundNumerator limit + 3)/1`.  At precision `0` the member sits within
+`1 + 2/(index+1) <= 3` of the limit, whose approximant sits within its canonical
+bound; the magnitude triangle adds the two. -/
 theorem convergentTailIsBounded {sequence : Nat → RegularReal} {limit : RegularReal}
     {modulus : Nat → Nat} (converges : ConvergesTo sequence limit modulus)
     (position : Nat) (isTail : modulus 0 ≤ position) (index : Nat) :
@@ -123,12 +120,12 @@ theorem convergentTailIsBounded {sequence : Nat → RegularReal} {limit : Regula
     (ratioOfNatSuccSumDenotesSame (canonicalBoundNumerator limit) 3 0) triangle
 
 /-- A structural prefix sum: `sum_{i < count} valueOf i` — the finite-prefix
-dominator, a SUM (never a `Nat.max`). -/
+dominator, a sum (never a `Nat.max`). -/
 def sumOverPrefix : Nat → (Nat → Nat) → Nat
   | 0, _ => 0
   | count + 1, valueOf => sumOverPrefix count valueOf + valueOf count
 
-/-- **Every prefix member sits below the prefix sum** — structural induction on
+/-- Every prefix member sits below the prefix sum — structural induction on
 `count`, the successor step landing the last member on the tail addend and every
 earlier member on the accumulated head. -/
 theorem natMemberLeSumOverPrefix (valueOf : Nat → Nat) :
@@ -145,7 +142,7 @@ theorem natMemberLeSumOverPrefix (valueOf : Nat → Nat) :
             (congrArg valueOf (Nat.le_antisymm (Nat.le_of_lt_succ isBelow) isAtLeastCount))
             (natSelfLeAddLeft (valueOf count) (sumOverPrefix count valueOf))
 
-/-- **A convergent real sequence is uniformly magnitude-bounded** across ALL
+/-- A convergent real sequence is uniformly magnitude-bounded across all
 positions and approximation indices.  The bound numerator is the tail dominator
 `(canonicalBoundNumerator limit + 3)` plus the structural prefix sum of the
 finitely-many pre-tail members' canonical bounds — the tail branch dominated by
@@ -186,16 +183,15 @@ theorem convergentSequenceIsBounded {sequence : Nat → RegularReal}
             0)
           (convergentTailIsBounded converges position isTail index)
 
-/-! ## The real-level product-difference law (the deferred analytic core) -/
+/-! ## The real-level product-difference law -/
 
-/-- **Multiplication respects the real-level bound** — the FIXED-bound
-generalisation of `mulRealRespectsDenotesSame`.  With `M = multiplierBoundNumerator/1`
-a uniform magnitude bound on the left sequence and `L = limitBoundNumerator/1` a
-uniform magnitude bound on the right limit, two products of `leftEps` / `rightEps`
--close factors land within `M * rightEps + L * leftEps`.
+/-- Multiplication respects the real-level bound — the fixed-bound generalisation
+of `mulRealRespectsDenotesSame`.  With `M = multiplierBoundNumerator/1` a uniform
+magnitude bound on the left sequence and `L = limitBoundNumerator/1` a uniform
+magnitude bound on the right limit, two products of `leftEps` / `rightEps`-close
+factors land within `M * rightEps + L * leftEps`.
 
-The slack-closure skeleton mirrors `mulRealRespectsDenotesSame` exactly: per
-shared index, both products chain to the slack index by their own regularity;
+Per shared index, both products chain to the slack index by their own regularity;
 there the mixed middle `leftSeq(old) * rightLim(new)` splits the difference into
 two product-difference legs at the uniform bounds; each factor difference bridges
 its sampling mismatch by regularity and lands on the fixed `eps` plus a vanishing
@@ -373,17 +369,17 @@ theorem mulRealRespectsIsWithinRealBound
 /-! ## The product limit law -/
 
 /-- The canonical bound numerator's predecessor — `natAbs (numerator x_0) + 1`,
-so `canonicalBoundNumeratorPredecessor value + 1` is DEFINITIONALLY
+so `canonicalBoundNumeratorPredecessor value + 1` is definitionally
 `canonicalBoundNumerator value` and the scale collapse matches. -/
 def canonicalBoundNumeratorPredecessor (value : RegularReal) : Nat :=
   (value.approximation 0).numerator.natAbs + 1
 
-/-- **Limit law — product**: the product of two convergent sequences converges
-to the product of the limits.  The left sequence is uniformly bounded by
+/-- Limit law — product: the product of two convergent sequences converges to
+the product of the limits.  The left sequence is uniformly bounded by
 `(canonicalBoundNumerator limitLeft + 3)/1` on its tail; the right limit by its
-canonical bound.  The combined modulus (SUM-form, propext-clean) samples each
+canonical bound.  The combined modulus (sum-form, propext-clean) samples each
 convergence at a bound-scaled precision so that `M * rightEps` and `L * leftEps`
-collapse to `1/(2k+2)` and recombine EXACTLY to `1/(k+1)`, plus a third summand
+collapse to `1/(2k+2)` and recombine to `1/(k+1)`, plus a third summand
 `modulusLeft 0` forcing the tail bound valid. -/
 theorem convergesToMulReal {sequenceLeft sequenceRight : Nat → RegularReal}
     {limitLeft limitRight : RegularReal} {modulusLeft modulusRight : Nat → Nat}
@@ -446,7 +442,7 @@ theorem convergesToMulReal {sequenceLeft sequenceRight : Nat → RegularReal}
 
 /-! ## The scalar limit law -/
 
-/-- **Limit law — scalar (left factor)**: multiplying a convergent sequence by a
+/-- Limit law — scalar (left factor): multiplying a convergent sequence by a
 fixed real converges to the fixed real times the limit.  The product law fed a
 constant left sequence — the constant converges at the zero modulus, so the
 combined modulus collapses to the right sequence's, pre-composed with the

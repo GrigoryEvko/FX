@@ -1,15 +1,12 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.NatEuclideanDivision
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/NatEuclideanDivision — zero-axiom gate
-    (FLOAT-1 brick 9)
+/-! # Zero-axiom gate for `NatEuclideanDivision`
 
 Per-declaration zero-axiom gate for the structural counting divider: the step function,
-the counter, the strictness upgrade, and the reconstruction / remainder-bound /
-existence certificates.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+the counter, the strictness upgrade, the reconstruction / remainder-bound / existence
+certificates, and the round-nearest-ties-even corrector. Every declaration must be free
+of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

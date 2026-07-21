@@ -4,14 +4,9 @@ import FX1Poly.ComputerAlgebra.Register.VirtualFieldPositional
 /-! # FX1PolyAudit/ComputerAlgebra/Register/VirtualFieldPositional — zero-axiom gate
 
 Per-declaration zero-axiom gate for the positional virtual-field-decode layer
-(fx_design.md §18.1): the `2^0` quotient/remainder degeneracies
-(`natRemainderTwoPowZero`, `natQuotientTwoPowZero`), the hand-rolled structural
-positional accessors (`dropSpecs`, `prefixFieldWidth`, `headSpec`, `fieldSpecAt`,
-`fieldWidthAt`, `fieldOffsetAt`), the head-drop quotient
-(`virtualReassembledSum_dropsHeadByQuotient`), the prefix-drop iterated quotient
-(`virtualReassembledSum_dropsPrefixByQuotient`), the arbitrary-list head-slice
-bridge (`virtualReassembledSum_recoversHeadFieldSlice`), and the §18.1 capstone
-(`virtualReassembledSum_recoversFieldAt`).
+(fx_design.md §18.1): the `2^0` quotient/remainder degeneracies, the positional
+accessors, the head-drop and prefix-drop quotients, the arbitrary-list head-slice
+bridge, and the §18.1 capstone `virtualReassembledSum_recoversFieldAt`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

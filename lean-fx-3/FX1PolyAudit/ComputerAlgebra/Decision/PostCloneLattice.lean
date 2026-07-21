@@ -6,9 +6,9 @@ import FX1Poly.ComputerAlgebra.Decision.PostCloneLattice
 Per-declaration zero-axiom gate for the named Post-clone lattice: the truth-table carrier
 `PclBoolFn`, the structural micro-kit, the five named-clone preservation predicates
 (`pclPreservesZero`/`pclPreservesOne`/`pclIsMonotone`/`pclIsSelfDual`/`pclIsAffine`), clone
-membership, the seven-element named-clone inclusion order (refl + trans), the SOUND Schaefer
-tractability witness, the DECIDED capability markers, the three WALL markers (full Post lattice /
-higher-domain dichotomy / clone-generation closure, all `false`), and the ground fires.
+membership, the seven-element named-clone inclusion order (reflexivity and transitivity), the sound
+Schaefer tractability witness, the capability markers (three left `false`: full Post lattice /
+higher-domain dichotomy / clone-generation closure), and the ground fires.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `funext`, `WellFounded.fix`, `omega`. -/

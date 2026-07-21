@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.ComplexRealField
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexRealField — zero-axiom gate
-    (NUM-C-2 field)
 
 Per-declaration zero-axiom gate for the ℂ apartness-first Heyting field: the
 apartness predicate and its congruence, the complex inverse, the Heyting-field

@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealMultiplication
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealMultiplication —
-    zero-axiom gate (NUM-R-3a)
+    zero-axiom gate
 
 Per-declaration zero-axiom gate for the multiplication substrate: the
 negation-through-product setoid identities, the abs-free magnitude predicate

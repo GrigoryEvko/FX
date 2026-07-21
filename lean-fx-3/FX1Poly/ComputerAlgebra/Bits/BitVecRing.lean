@@ -1,23 +1,22 @@
 import FX1Poly.ComputerAlgebra.Bits.BitVec
 import FX1Poly.ComputerAlgebra.Number.ComplexReal
 
-/-! # BitVecRing — `BitVec (width+1)` as a commutative ring `Z / 2^(width+1) Z`
+/-! # BitVecRing — `BitVec (width+1)` as the commutative ring `Z / 2^(width+1) Z`
 
-The algebra deliverable of the hardware substrate: fixed-width machine integers
-form a commutative ring under the modular arithmetic of `Bits/BitVec`, packaged
-as the shipped `CommutativeRingWitness` (`ComplexReal`) — the SAME structure the
-number tower uses for ℤ, ℚ, ℝ, ℂ.
+Fixed-width machine integers form a commutative ring under the modular arithmetic of
+`Bits/BitVec`, packaged as the `CommutativeRingWitness` (`ComplexReal`) shared with
+the number tower's ℤ, ℚ, ℝ, ℂ.
 
-Crucially the setoid is GENUINE `Eq` (not a coarsening): the carrier is core
-`BitVec`, `toNat`-extensional and decidable, so the setoid trio is
-`rfl`/`.symm`/`.trans` and the three operation congruences are `congrArg`
-chains.  Every ring law reduces (via `BitVec.eq_of_toNat_eq`) to a `natRemainder`
-identity discharged by the `NatModularReduction` homomorphism steps.
+The setoid is genuine `Eq`, not a coarsening: the carrier is core `BitVec`,
+`toNat`-extensional and decidable, so the setoid trio is `rfl` / `.symm` / `.trans`
+and the three operation congruences are `congrArg` chains. Each ring law reduces via
+`BitVec.eq_of_toNat_eq` to a `natRemainder` identity discharged by the
+`NatModularReduction` homomorphism steps.
 
-The witness is indexed by `width + 1` (POSITIVE width): `BitVec 0` is the trivial
-ring `0 = 1`, satisfying every law EXCEPT nontriviality (`zeroIsApartFromOne`),
-so — exactly as `SetoidRingTower` excludes ℕ from RINGS at negation — width 0 is
-excluded from NONTRIVIAL rings at apartness, and the `+1` is forced there alone.
+The witness is indexed by `width + 1`: `BitVec 0` is the trivial ring `0 = 1`,
+satisfying every law except nontriviality (`zeroIsApartFromOne`). As
+`SetoidRingTower` excludes ℕ from rings at negation, width 0 is excluded from
+nontrivial rings at apartness, so the `+1` is forced there alone.
 
 `Init`-only, certificate-first, genuine-`Eq`, zero axioms. -/
 
@@ -189,9 +188,9 @@ theorem bitVecZeroApartOne {width : Nat} (isWide : 1 < 2 ^ width) :
 
 /-! ## The commutative-ring witness -/
 
-/-- **`Z / 2^(width+1) Z` as a commutative ring** — genuine `Eq` setoid over core
-`BitVec (width+1)`, all eight laws discharged from the modular-reduction corpus.
-The `+1` guarantees `1 < 2^(width+1)`, hence nontriviality. -/
+/-- `Z / 2^(width+1) Z` as a commutative ring: genuine `Eq` setoid over core
+`BitVec (width+1)`, all eight laws discharged from the modular-reduction corpus. The
+`+1` guarantees `1 < 2^(width+1)`, hence nontriviality. -/
 def bitVecCommutativeRingWitness (width : Nat) :
     CommutativeRingWitness (BitVec (width + 1)) :=
   let isWide : 1 < 2 ^ (width + 1) :=

@@ -4,27 +4,25 @@ import FX1Poly.ComputerAlgebra.Bits.BitVecRing
 /-! # FixedWidth/ViewsRing — the `uN` / `iN` views as commutative-ring witnesses
 
 `FixedWidth/Views` builds the two nominal facades `UIntN` / `SIntN` over the one
-`BitVec` carrier and notes (its own docstring) that "a single
-`bitVecCommutativeRingWitness` backs both".  This file DELIVERS that: it lifts
-the shipped `bitVecCommutativeRingWitness` corpus through the one-field wrappers
-into two `CommutativeRingWitness` objects, giving the `iN` / `uN` views the same
-categorical-witness-object status every number-tower rung (ℤ, ℚ, ℝ, ℂ) already
-has.
+`BitVec` carrier.  This module lifts the `bitVecCommutativeRingWitness` corpus
+through the one-field wrappers into two `CommutativeRingWitness` objects, giving
+the `iN` / `uN` views the same witness-object status the number-tower rungs
+(ℤ, ℚ, ℝ, ℂ) carry.
 
 The lift is pure packaging: the setoid is genuine `Eq` (the wrapper keeps
 equality structural), so the setoid trio is `rfl` / `.symm` / `.trans`, the three
 operation congruences are `congrArg` chains, and each of the eight ring laws
 transports the corresponding `BitVec` law through the wrapper injectivity lemma
-(`sIntNEqOfBitsEq` / `uIntNEqOfBitsEq`) — the `.bits` of `⟨x⟩` is defeq `x`, so
-the shipped hypothesis lands exactly on the goal.
+(`sIntNEqOfBitsEq` / `uIntNEqOfBitsEq`); the `.bits` of `⟨x⟩` is defeq `x`, so the
+hypothesis lands exactly on the goal.
 
-Like `BitVecRing`, both witnesses are indexed by `width + 1` (POSITIVE width):
-`BitVec 0` is the trivial ring `0 = 1`, satisfying every law EXCEPT
-nontriviality, so the `+1` is forced there alone (via `Nat.one_lt_two_pow`).
+Both witnesses are indexed by `width + 1` (positive width): `BitVec 0` is the
+trivial ring `0 = 1`, satisfying every law except nontriviality, so the `+1` is
+forced there alone (via `Nat.one_lt_two_pow`).
 
-`SIntN` already ships `SIntN.neg`; `UIntN` does not, so its two's-complement
-negation `UIntN.neg` is supplied here as a one-line prerequisite (identical
-delegation to `bitVecNeg`, wrap-by-default).
+`Views` gives `SIntN.neg` but no `UIntN.neg`; the unsigned two's-complement
+negation `UIntN.neg` (identical delegation to `bitVecNeg`, wrap-by-default) is a
+prerequisite here.
 
 `Init`-only, certificate-first, genuine-`Eq`, zero axioms. -/
 
@@ -44,7 +42,7 @@ def UIntN.neg {width : Nat} (value : UIntN width) : UIntN width :=
 
 Each law is the corresponding `BitVecRing` law transported through
 `sIntNEqOfBitsEq`; the wrapped op's `.bits` is defeq to the bare `BitVec` op, so
-the shipped equality is exactly the required bits-equality. -/
+the equality is exactly the required bits-equality. -/
 
 /-- Signed additive commutativity. -/
 theorem sIntNAddComm {width : Nat} (left right : SIntN width) :
@@ -97,7 +95,7 @@ theorem sIntNZeroApartOne {width : Nat} (isWide : 1 < 2 ^ width) :
 
 Identical transport through `uIntNEqOfBitsEq`; the u/i split is invisible to the
 ring structure (two's-complement arithmetic is bit-identical to unsigned
-`mod 2^n`), so both families lift the SAME `BitVec` corpus. -/
+`mod 2^n`), so both families lift the same `BitVec` corpus. -/
 
 /-- Unsigned additive commutativity. -/
 theorem uIntNAddComm {width : Nat} (left right : UIntN width) :
@@ -148,10 +146,10 @@ theorem uIntNZeroApartOne {width : Nat} (isWide : 1 < 2 ^ width) :
 
 /-! ## The commutative-ring witnesses -/
 
-/-- **`i(width+1)` as a commutative ring** — the signed fixed-width view packaged
-as the shipped `CommutativeRingWitness`, genuine `Eq` setoid, every law lifted
-from `bitVecCommutativeRingWitness`.  The `+1` guarantees `1 < 2^(width+1)`,
-hence nontriviality. -/
+/-- `i(width+1)` as a commutative ring: the signed fixed-width view packaged as
+`CommutativeRingWitness`, genuine `Eq` setoid, every law lifted from
+`bitVecCommutativeRingWitness`.  The `+1` guarantees `1 < 2^(width+1)`, hence
+nontriviality. -/
 def sIntNCommutativeRingWitness (width : Nat) :
     CommutativeRingWitness (SIntN (width + 1)) :=
   let isWide : 1 < 2 ^ (width + 1) :=
@@ -184,10 +182,10 @@ def sIntNCommutativeRingWitness (width : Nat) :
     mulDistributesOverAdd := sIntNMulDistribLeft
     zeroIsApartFromOne := sIntNZeroApartOne isWide }
 
-/-- **`u(width+1)` as a commutative ring** — the unsigned fixed-width view
-packaged as the shipped `CommutativeRingWitness`, sharing the SAME `BitVec` ring
-corpus as its signed twin (two's-complement is bit-identical to unsigned
-`mod 2^n`).  The `+1` guarantees nontriviality. -/
+/-- `u(width+1)` as a commutative ring: the unsigned fixed-width view packaged as
+`CommutativeRingWitness`, sharing the same `BitVec` ring corpus as its signed
+twin (two's-complement is bit-identical to unsigned `mod 2^n`).  The `+1`
+guarantees nontriviality. -/
 def uIntNCommutativeRingWitness (width : Nat) :
     CommutativeRingWitness (UIntN (width + 1)) :=
   let isWide : 1 < 2 ^ (width + 1) :=

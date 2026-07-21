@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RationalPair
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RationalPair — zero-axiom gate
-    (NUM-Q-1)
 
 Per-declaration zero-axiom gate for the ℚ carrier: the successor-shaped pair, the
 positive denominator read-back, and the decidable cross-multiplication setoid with

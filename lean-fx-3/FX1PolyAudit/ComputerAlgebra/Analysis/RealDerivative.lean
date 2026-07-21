@@ -2,9 +2,8 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Analysis.RealDerivative
 
 /-! # FX1PolyAudit/ComputerAlgebra/Analysis/RealDerivative — zero-axiom gate
-    (ANALYSIS-DERIV-1)
 
-Per-declaration zero-axiom gate for the derivative rung: the real-level
+Per-declaration zero-axiom gate for the real derivative layer: the real-level
 distance congruences and convergence-transport lemmas, the ring reshaping
 shims, the difference quotient and `HasDerivativeAt` predicate, the
 constant/identity/linearity/scalar rules, differentiable-implies-continuous,

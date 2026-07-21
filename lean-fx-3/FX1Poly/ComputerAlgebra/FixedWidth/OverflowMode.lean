@@ -3,7 +3,7 @@
 FX §6.3 dim 16 makes the overflow dimension a four-element set
 `{exact, wrap, trap, saturate}` ordered as a bounded-below preorder: `exact` is
 the bottom (`exact ≤ everything`), and `wrap`, `trap`, `saturate` are pairwise
-INCOMPARABLE.  This is a lattice FRAGMENT, distinct from the arithmetic each mode
+incomparable.  This is a lattice fragment, distinct from the arithmetic each mode
 selects (that lives on `BitVec`, `OverflowArithmetic`).
 
 The order is a `Bool` program (`overflowLe`) — fully enumerated, no wildcard, so
@@ -14,14 +14,14 @@ transitive) proved by finite case analysis.
 
 namespace FX1Poly.ComputerAlgebra
 
-/-- **The four overflow modes** (FX §6.3 dim 16). -/
+/-- The four overflow modes (FX §6.3 dim 16). -/
 inductive OverflowMode
   | exact
   | wrap
   | trap
   | saturate
 
-/-- **The mode preorder as a `Bool` program.**  Fully enumerated (16 arms):
+/-- The mode preorder as a `Bool` program.  Fully enumerated (16 arms):
 reflexive on the diagonal, `exact` below everything, all other off-diagonal
 pairs incomparable (`false`). -/
 def overflowLe : OverflowMode → OverflowMode → Bool
@@ -42,21 +42,21 @@ def overflowLe : OverflowMode → OverflowMode → Bool
   | .saturate, .trap => false
   | .saturate, .saturate => true
 
-/-- **Reflexivity** — every mode is `≤` itself. -/
+/-- Reflexivity: every mode is `≤` itself. -/
 theorem overflowLeRefl : ∀ mode : OverflowMode, overflowLe mode mode = true
   | .exact => rfl
   | .wrap => rfl
   | .trap => rfl
   | .saturate => rfl
 
-/-- **`exact` is the bottom** — below every mode. -/
+/-- `exact` is the bottom: below every mode. -/
 theorem exactIsBottom : ∀ mode : OverflowMode, overflowLe .exact mode = true
   | .exact => rfl
   | .wrap => rfl
   | .trap => rfl
   | .saturate => rfl
 
-/-- **Transitivity** — the preorder composes.  Above `exact` the order is thin
+/-- Transitivity: the preorder composes.  Above `exact` the order is thin
 (reflexive only), so each surviving pair forces the middle to equal the first. -/
 theorem overflowLeTrans : ∀ (leftMode middleMode rightMode : OverflowMode),
     overflowLe leftMode middleMode = true → overflowLe middleMode rightMode = true →

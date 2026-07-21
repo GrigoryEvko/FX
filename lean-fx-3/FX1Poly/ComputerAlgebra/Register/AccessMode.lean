@@ -2,37 +2,23 @@ import FX1Poly.ComputerAlgebra.Bits.BitVec
 
 /-! # AccessMode — the register access-mode algebra (fx_design.md §18.3)
 
-The eight hardware register access modes as typed state transitions over
-`BitVec width`.  Each mode is a `RegisterAccessMode`: what a read RETURNS
-(`readValue`), what a read LEAVES BEHIND (`readResidual`, for the read-side-effect
-modes RC/RS), how a write UPDATES the register (`writeUpdate`), and which writes
-are LEGAL (`mayWrite`, only `RSVD` constrains it — "reserved bits must be written
-zero").
+The eight hardware register access modes as typed transitions over `BitVec width`.
+A `RegisterAccessMode` records the read result (`readValue`), the post-read residual
+(`readResidual`, nontrivial only for RC/RS), the write update (`writeUpdate`), and
+write legality (`mayWrite`, constrained only by `RSVD`: reserved bits must be written
+zero).
 
-## What is proven here
+Six modes are definitional, each law closing by `rfl`: `RW` installs the written
+value; `RO` rejects writes; `WO` reads as zero; `RC` reads then clears; `RS` reads
+then sets all bits; `RSVD` reads zero, ignores writes, and admits a write exactly
+when it is zero.  The read semantics of all eight modes and the `W1C`/`W1S` write
+forms — `bitVecAnd old (bitVecNot write)` and `bitVecOr old write` — are pinned
+definitionally too.
 
-Six of the eight modes are DEFINITIONAL — every stated semantics closes by `rfl`:
-
-* `RW` write installs the written value; `RO` write is a no-op (writes rejected via
-  `mayWrite = False`); `WO` read returns zero (reads rejected, softened to "read as
-  zero"); `RC` read returns the value and leaves zero; `RS` read returns the value
-  and leaves all-ones; `RSVD` read returns zero, write is a no-op, and a write is
-  legal exactly when it is zero.
-
-Additionally the READ semantics of all eight modes (`readValue`) and the WRITE
-FORM of `W1C`/`W1S` (`writeUpdate = bitVecAnd old (bitVecNot write)` resp.
-`bitVecOr old write`) are pinned definitionally.
-
-## Honest residual
-
-The PER-BIT effect of `W1C`/`W1S` — "bit k of the result is `old_k && !write_k`"
-resp. "`old_k || write_k`", and the closed forms `W1S old allOnes = allOnes`,
-`W1C old allOnes = zero` — is NOT proven here.  It requires a bit-readback layer
-(`bitAtNat (bitwiseFold …)`), whose enabling bridge `value >>> index =
-natQuotient value (2^index)` is blocked zero-axiom: Init's `Nat.shiftRight`
-reduces through `Nat.div`, whose reconstruction lemmas leak `propext`.  That
-readback layer is a separate, larger arc; the mode DEFINITIONS ship complete here
-so the layer can cap them later without disturbing this file.
+The per-bit residual of `W1C`/`W1S` sits above a bit-readback layer whose bridge
+`value >>> index = natQuotient value (2^index)` is unavailable zero-axiom: Init's
+`Nat.shiftRight` reduces through `Nat.div` and leaks `propext`.  The mode
+definitions are complete without it.
 
 `Init`-only, structural, zero axioms. -/
 

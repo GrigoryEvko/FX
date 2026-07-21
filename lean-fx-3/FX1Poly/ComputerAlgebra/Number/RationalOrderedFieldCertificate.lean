@@ -1,32 +1,29 @@
 import FX1Poly.ComputerAlgebra.Number.RationalPair
 
-/-! # The decidable ordered-Heyting-field certificate (NUM-Q-6e)
+/-! # The decidable ordered-Heyting-field certificate
 
-The ℚ rung's corpus — setoid, exact field operations, cross-multiplication
-order, gcd normal form, inverse on apartness, Archimedean bound, mediant
-density — packaged as ONE value.  The structure is SETOID-RELATIVE: every law
-lands in `denotesSame`, never in `Eq`, so the same shape serves any carrier
-with a decidable sameness and a computable canonical form (ℚ here; fixed-point
-subrings by restriction).  The ℝ rung deliberately does NOT fit: its setoid is
-undecidable and its order is apartness-first (cotransitivity replaces totality
-and trichotomy), so ℝ gets a separate apartness-first certificate — recording
-that boundary honestly is part of the tower's design.
+The ℚ corpus — setoid, exact field operations, cross-multiplication order, gcd
+normal form, inverse on apartness, Archimedean bound, mediant density — packaged
+as one value.  The structure is setoid-relative: every law lands in `denotesSame`,
+never in `Eq`, so the same shape serves any carrier with a decidable sameness and a
+computable canonical form (ℚ here; fixed-point subrings by restriction).  The ℝ
+rung deliberately does not fit: its setoid is undecidable and its order is
+apartness-first (cotransitivity replaces totality and trichotomy), so ℝ gets a
+separate apartness-first certificate.
 
-Nothing here is new mathematics: every field is a shipped theorem, so the
-witness doubles as a completeness checklist for the ℚ corpus.  The one new
-fact is nontriviality (`0` is apart from `1`), a constructor-disagreement
-one-liner mirroring the ℤ certificate's. -/
+Every field is a corpus theorem, so the witness doubles as a completeness
+checklist for the ℚ corpus.  The one new fact is nontriviality (`0` is apart from
+`1`), a constructor-disagreement one-liner mirroring the ℤ certificate. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-- **A decidable ordered Heyting field up to a setoid, as data**: carrier,
-sameness, operations, order, and every law as a proof field.  The
-DISTINGUISHING fields beyond the ℤ certificate: the setoid replaces `Eq`
-(with congruence obligations for every operation), the multiplicative inverse
-cancels on apartness from zero, sameness and order are DECIDABLE, a computable
-`normalForm` characterizes the setoid as `Eq` on canonical representatives,
-and the order-theoretic legs carry computable witnesses (the Archimedean bound
-and the strict between-point). -/
+/-- A decidable ordered Heyting field up to a setoid, as data: carrier, sameness,
+operations, order, and every law as a proof field.  The fields beyond the ℤ
+certificate: the setoid replaces `Eq` (with congruence obligations for every
+operation), the multiplicative inverse cancels on apartness from zero, sameness
+and order are decidable, a computable `normalForm` characterizes the setoid as
+`Eq` on canonical representatives, and the order-theoretic legs carry computable
+witnesses (the Archimedean bound and the strict between-point). -/
 structure DecidableOrderedHeytingFieldWitness (carrier : Type) where
   denotesSame : carrier → carrier → Prop
   lessEqual : carrier → carrier → Prop
@@ -155,11 +152,11 @@ theorem rationalZeroIsApartFromOne :
   fun zeroDenotesOne => Nat.noConfusion (Int.ofNat.inj zeroDenotesOne)
 
 open RationalPair in
-/-- **The ℚ certificate**: `RationalPair` with its shipped corpus is a
-decidable ordered Heyting field up to the cross-multiplication setoid, with
-gcd-canonical normal forms, a computable Archimedean bound, and the mediant as
-the computable between-point.  Every field IS a corpus theorem (eta-wrapped
-where the theorem binds its subjects implicitly). -/
+/-- The ℚ certificate: `RationalPair` with its corpus is a decidable ordered
+Heyting field up to the cross-multiplication setoid, with gcd-canonical normal
+forms, a computable Archimedean bound, and the mediant as the computable
+between-point.  Every field is a corpus theorem (eta-wrapped where the theorem
+binds its subjects implicitly). -/
 def rationalOrderedHeytingFieldWitness :
     DecidableOrderedHeytingFieldWitness RationalPair where
   denotesSame := DenotesSameAs

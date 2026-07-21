@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RealOrderMonotoneMultiply
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RealOrderMonotoneMultiply — zero-axiom
-    gate (NUM-R-5d monotone multiplication)
+    gate for monotone multiplication
 
 Per-declaration zero-axiom gate for ℝ-order monotone multiplication: the
 pointwise multiplicative crux (`mulRealVanishingLowerBoundLeftNonNeg`), the

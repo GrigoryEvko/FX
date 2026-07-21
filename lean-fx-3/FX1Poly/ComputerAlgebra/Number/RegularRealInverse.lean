@@ -1,6 +1,6 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrder
 
-/-! # RegularReal inverse — reciprocal kit + the inverse (NUM-R-5c/5d)
+/-! # RegularReal inverse — reciprocal kit + the inverse
 
 The one hard fact behind the constructive inverse: on values above a
 shared margin `1/(p+1)`, the exact reciprocal is Lipschitz with the
@@ -16,9 +16,9 @@ zero and negative `invExact` arms outright.
 positivity witness: sample the value past the witness's half margin at
 the `(p+1)²`-scaled index, take exact reciprocals pointwise, and the
 Lipschitz bound on the sampled regularity certificate collapses
-EXACTLY (the R-3b numerator cancellation) onto the required modulus.
+EXACTLY (the bound-scaled numerator cancellation) onto the required modulus.
 
-The R-5e margin kit also lives here: a margin makes a value APART FROM
+The margin kit also lives here: a margin makes a value APART FROM
 ZERO (so the exact field law applies at every sampled approximant) and
 bounds its reciprocal's MAGNITUDE by `p+1` (so mismatched-sampling
 drift scales by a constant that slack closure can erase), the per-index
@@ -26,8 +26,8 @@ near-one estimate composes them, and the FIELD LAW closes: `x · x⁻¹`
 denotes one, by slack closure over the vanishing estimate.  The
 apartness extension inverts on EITHER side of zero — the order
 witnesses transport along the zero-difference bridges, negative reals
-invert through `negReal` — and the HEYTING-FIELD LAW closes the R-5
-arc: `x · inverseRealOfApartness x ~ 1` on both branches, the
+invert through `negReal` — and the HEYTING-FIELD LAW closes the
+construction: `x · inverseRealOfApartness x ~ 1` on both branches, the
 negative one through the sign-pull identities with their sampling
 indices reconciled by the sign-blind canonical bound. -/
 
@@ -201,7 +201,7 @@ theorem invExactRespectsIsWithinBound {marginIndex : Nat}
     invExactSubLessEqualScaledOfMargins isRightAboveMargin isLeftAboveMargin
       isBoundNonNegative isWithin.left⟩
 
-/-! ## The margin kit for the field law (NUM-R-5e)
+/-! ## The margin kit for the field law
 
 The two ℚ-side facts the field law `x · x⁻¹ ~ 1` consumes at every
 sampled index: a margin makes the sampled approximant apart from zero
@@ -268,13 +268,13 @@ theorem invExactIsMagnitudeWithinOfMargin {marginIndex : Nat}
             ((marginIndex + 1) * (magnitudePredecessor + 1)))
       ⟨isReciprocalBelowBound, isNegatedReciprocalBelowBound⟩
 
-/-! ## The sampling depth (NUM-R-5d)
+/-! ## The sampling depth
 
 The inverse samples its value at a `boundScaledIndex` whose bound
 predecessor is the PREDECESSOR-SHAPED square `(p+1)·p + p` — so the
 scale factor's numerator is DEFINITIONALLY the Lipschitz constant
-`(p+1)²`, and the R-3b exact collapse cancels it against each scaled
-denominator with no inequality reasoning.  The depth lemma checks the
+`(p+1)²`, and the bound-scaled exact collapse cancels it against each
+scaled denominator with no inequality reasoning.  The depth lemma checks the
 sampled indices clear the witness's half margin. -/
 
 /-- The predecessor-shaped square: `squaredSuccessorPredecessor p + 1`
@@ -313,7 +313,7 @@ approximants sampled past the half margin.  Regularity is the
 reciprocal Lipschitz bound applied to the sampled regularity
 certificate: the margins come from the tail lemma at the scaled depth,
 the `(p+1)²`-scaled modulus distributes and collapses EXACTLY to the
-halved reciprocals (the R-3b numerator cancellation), and antitone
+halved reciprocals (the bound-scaled numerator cancellation), and antitone
 relaxation lands on the required `1/(n+1) + 1/(m+1)`. -/
 def inverseReal {value : RegularReal}
     (witness : RealPositivityWitness value) : RegularReal :=
@@ -382,7 +382,7 @@ def inverseReal {value : RegularReal}
             (natSelfLeDoubleSelfSucc secondIndex)))
         (isWithinBoundCongrBound scaledBoundCollapses scaledBoundIsWithin) }
 
-/-! ## The per-index near-one estimate (NUM-R-5e)
+/-! ## The per-index near-one estimate
 
 At every index, the `x · x⁻¹` approximant sits within a `(p+1)`-scaled
 sampled modulus of ONE.  The approximant IS `x_S · (x_{T·S})⁻¹`
@@ -454,7 +454,7 @@ theorem mulRealInverseApproximationNearOne {value : RegularReal}
   isWithinBoundCongrRight (mulExactInvRightOfMargin isSampleAboveMargin)
     driftIsWithin
 
-/-! ## The field law (NUM-R-5e)
+/-! ## The field law
 
 `x · x⁻¹` DENOTES ONE.  Bishop-style slack closure at each comparison
 index: chain the product's own regularity to an arbitrary slack index,
@@ -594,7 +594,7 @@ theorem mulRealInverseDenotesOne {value : RegularReal}
               scaledTailRelaxesToSlack)
             isChainedThroughSlackSample)))
 
-/-! ## The apartness extension (NUM-R-5e)
+/-! ## The apartness extension
 
 A real APART FROM ZERO gets an inverse on either side.  The strict
 order's witnesses live on `subReal` differences against the constant
@@ -670,7 +670,7 @@ def inverseRealOfApartness {value : RegularReal}
   | .inr isAboveZero =>
       inverseReal (realPositivityWitnessOfAboveZero isAboveZero)
 
-/-! ## The apartness field law (NUM-R-5e closer)
+/-! ## The apartness field law
 
 `x · x⁻¹` denotes one on BOTH sides of zero — the Heyting-field
 multiplicative law in full.  The positive branch is the field law

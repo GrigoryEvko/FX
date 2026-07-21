@@ -1,40 +1,28 @@
 import FX1Poly.ComputerAlgebra.ISA.ArchState
 import FX1Poly.ComputerAlgebra.ISA.StepRefinement
 
-/-! # StepSemantics — the golden-reference ISA: decode + execute + step (fx_design.md §18.12)
+/-! # StepSemantics: golden-reference ISA — decode, execute, step (fx_design.md §18.12)
 
-A small, total, zero-axiom instruction-set architecture over the shipped `BitVec`
-floor.  Word width 32, register-selector width 5 (`2^5 = 32` registers), addresses
-32-bit.  This is the §18.12 "ISA is a `Tot` function over architectural state" golden
-reference:
-
-  step = execute . decode . fetch
-
-Totality is DEFINITIONAL: `decode` is a `Nat`-opcode dispatch with a total catch-all,
-`execute` is an exhaustive match over the instruction constructors, and every leaf is a
-shipped total op (`extractField`, `bitVecSignExtend`, `bitVecAdd`, functional-override
-`ite` under the axiom-clean `DecidableEq (BitVec _)`).  No recursion, no `partial`, no
-fuel, no `WellFounded.fix`.
-
-This is a SPEC/PROOF substrate — memory and registers are total mathematical maps over
-all `2^k` slots (the golden-reference `Tot` shape), NOT a runtime-efficient machine.
-Do not `#eval` large runs; the proof-grade division corpus makes concrete evaluation
-expensive.  `Init`-only, structural, zero axioms. -/
+A small total zero-axiom instruction-set architecture over the `BitVec` floor:
+32-bit words, 5-bit register selectors (`2^5 = 32` registers), 32-bit addresses.
+The §18.12 golden reference `step = execute ∘ decode ∘ fetch` is total by
+construction — `decode` an `if`-chain with a total catch-all, `execute` an
+exhaustive constructor match, every leaf a total op under `DecidableEq (BitVec _)`;
+no recursion, `partial`, fuel, or `WellFounded.fix`.  Registers and memory are total
+maps over all `2^k` slots.  `Init`-only, structural, zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-- The concrete RV-flavoured architectural state: 32-bit words, 32-bit addresses,
-5-bit register selectors (32 registers). -/
+/-- The concrete ISA state, `ArchState 32 32 5`. -/
 abbrev IsaState : Type := ArchState 32 32 5
 
-/-! ## The instruction set -/
+/-! ## Instruction set -/
 
-/-- The demonstrator instruction set.  The `invalid` arm makes `decode` total without a
-partial function: an unrecognised opcode is given DEFINED behaviour (advance PC). -/
+/-- The `invalid` arm makes `decode` total: an unrecognised opcode is a PC advance. -/
 inductive Instruction where
-  /-- `rd := rs1 + rs2` (modular add datapath). -/
+  /-- `rd := rs1 + rs2`. -/
   | addReg   (rd rs1 rs2 : BitVec 5)
-  /-- `rd := imm` (sign-extended 13-bit immediate). -/
+  /-- `rd := imm` (13-bit sign-extended immediate). -/
   | loadImm  (rd : BitVec 5) (imm : BitVec 32)
   /-- `rd := mem[rs1 + offset]`. -/
   | load     (rd rs1 : BitVec 5) (offset : BitVec 32)
@@ -42,14 +30,14 @@ inductive Instruction where
   | store    (rs2 rs1 : BitVec 5) (offset : BitVec 32)
   /-- `if rs1 = rs2 then pc += offset else pc += 1`. -/
   | branchEq (rs1 rs2 : BitVec 5) (offset : BitVec 32)
-  /-- `pc += offset` (unconditional PC-relative jump). -/
+  /-- `pc += offset` (PC-relative jump). -/
   | jump     (offset : BitVec 32)
-  /-- Unrecognised opcode: defined as a PC advance. -/
+  /-- Unrecognised opcode: a PC advance. -/
   | invalid  (raw : BitVec 32)
 
-/-! ## Instruction field layout (LSB-first, 32-bit encoding) -/
+/-! ## Field layout (LSB-first, 32-bit encoding) -/
 
-/-- Opcode field: bits `[0, 4)` — room for 16 opcodes, 6 used. -/
+/-- Opcode: bits `[0, 4)`. -/
 def opcodeField : FieldSpec := ⟨0, 4⟩
 /-- Destination register: bits `[4, 9)`. -/
 def rdField : FieldSpec := ⟨4, 5⟩
@@ -57,14 +45,13 @@ def rdField : FieldSpec := ⟨4, 5⟩
 def rs1Field : FieldSpec := ⟨9, 5⟩
 /-- Second source register: bits `[14, 19)`. -/
 def rs2Field : FieldSpec := ⟨14, 5⟩
-/-- Immediate / offset: bits `[19, 32)` — a 13-bit sign-extended field. -/
+/-- Immediate / offset: bits `[19, 32)`, sign-extended. -/
 def immField : FieldSpec := ⟨19, 13⟩
 
-/-! ## decode — via the register `extractField`, structurally total -/
+/-! ## decode -/
 
-/-- Decode a 32-bit word into an `Instruction`.  Opcode dispatch is an `if`-chain over
-`Nat` equality (`Nat.decEq`, axiom-clean) rather than a numeric-literal match, so no
-match-compiler propext appears.  The final `else` is the total catch-all. -/
+/-- Decode a 32-bit word: an `if`-chain over `Nat.decEq` (avoiding match-compiler
+propext), with a total final `else`. -/
 def decode (word : BitVec 32) : Instruction :=
   let opcode : Nat      := (extractField word opcodeField).toNat
   let rd     : BitVec 5 := extractField word rdField
@@ -79,12 +66,11 @@ def decode (word : BitVec 32) : Instruction :=
   else if opcode = 5 then Instruction.jump imm
   else Instruction.invalid word
 
-/-! ## execute — total per-instruction semantics, each advancing PC -/
+/-! ## execute -/
 
-/-- Execute one decoded instruction against the architectural state.  Exhaustive match
-over the seven constructors; every arm is total.  Address arithmetic, the add datapath,
-and PC-relative control all reuse the modular `bitVecAdd` (`overflow(wrap)`, the correct
-hardware wrap); the branch test reuses `DecidableEq (BitVec 32)`. -/
+/-- Execute one decoded instruction: an exhaustive total match.  Arithmetic and
+PC-relative control use modular `bitVecAdd` (`overflow(wrap)`); the branch test
+uses `DecidableEq (BitVec 32)`. -/
 def execute : Instruction → IsaState → IsaState
   | .addReg rd rs1 rs2, state =>
       (state.writeReg rd (bitVecAdd (state.readReg rs1) (state.readReg rs2))).advancePc
@@ -103,27 +89,26 @@ def execute : Instruction → IsaState → IsaState
   | .invalid _, state =>
       state.advancePc
 
-/-! ## step = execute . decode . fetch -/
+/-! ## step = execute ∘ decode ∘ fetch -/
 
-/-- One golden-reference machine step: fetch the word at PC, decode it, execute it. -/
+/-- One machine step: fetch at PC, decode, execute. -/
 def step (state : IsaState) : IsaState :=
   execute (decode state.fetch) state
 
-/-! ## Bonus correctness theorems (each a shipped-lemma / `rfl` corollary) -/
+/-! ## Execute-level correctness corollaries -/
 
-/-- After `addReg`, the destination register holds the sum (the write survives the PC
-advance, which touches only `pc`). -/
+/-- `addReg` writes the sum `rs1 + rs2` to the destination register. -/
 theorem execute_addReg_readReg (state : IsaState) (rd rs1 rs2 : BitVec 5) :
     (execute (.addReg rd rs1 rs2) state).readReg rd
       = bitVecAdd (state.readReg rs1) (state.readReg rs2) :=
   ArchState.readReg_writeReg_same state rd (bitVecAdd (state.readReg rs1) (state.readReg rs2))
 
-/-- After `loadImm`, the destination register holds the immediate. -/
+/-- `loadImm` writes the immediate to the destination register. -/
 theorem execute_loadImm_readReg (state : IsaState) (rd : BitVec 5) (imm : BitVec 32) :
     (execute (.loadImm rd imm) state).readReg rd = imm :=
   ArchState.readReg_writeReg_same state rd imm
 
-/-- `loadImm` does not disturb any register other than the destination. -/
+/-- `loadImm` leaves registers other than the destination unchanged. -/
 theorem execute_loadImm_readReg_other (state : IsaState) (rd probe : BitVec 5)
     (imm : BitVec 32) (distinct : probe ≠ rd) :
     (execute (.loadImm rd imm) state).readReg probe = state.readReg probe :=
@@ -133,21 +118,19 @@ theorem execute_loadImm_readReg_other (state : IsaState) (rd probe : BitVec 5)
 theorem execute_jump_pc (state : IsaState) (offset : BitVec 32) :
     (execute (.jump offset) state).pc = bitVecAdd state.pc offset := rfl
 
-/-- An unrecognised instruction advances the PC and touches nothing else observable in
-the register file. -/
+/-- `invalid` advances the PC, leaving the register file unchanged. -/
 theorem execute_invalid_readReg (state : IsaState) (raw : BitVec 32) (idx : BitVec 5) :
     (execute (.invalid raw) state).readReg idx = state.readReg idx := rfl
 
-/-! ## Tie-in to the refinement scaffold: the ISA is its own golden reference -/
+/-! ## The ISA as its own golden reference (refinement tie-in) -/
 
-/-- The identity forward simulation of the ISA against itself — the non-vacuous witness
-that `step` inhabits the `StepRefinement` scaffold. -/
+/-- The identity forward simulation of the ISA against itself; `step` inhabits
+`StepRefinement`. -/
 def isaSelfRefinement (init : IsaState) : StepRefinement IsaState IsaState :=
   StepRefinement.identity step init
 
-/-- Every reachable ISA run abstracts to itself (whole-trace correspondence for the
-self-refinement) — the §18.12 follow-on that ISA-level properties transport along the
-trace. -/
+/-- Every reachable ISA run abstracts to itself: the whole-trace correspondence
+(§18.12) for the self-refinement. -/
 theorem isaSelfRefinement_onAllRuns (init : IsaState) (count : Nat) :
     (isaSelfRefinement init).abstracts
       (iterateStep step count init) (iterateStep step count init) :=

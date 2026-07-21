@@ -1,68 +1,60 @@
 import FX1Poly.ComputerAlgebra.Analysis.RealMultiplicativeContinuity
 import FX1Poly.ComputerAlgebra.Number.RegularRealRing
 
-/-! # Real derivatives — modulus of differentiability (ANALYSIS-DERIV-1)
+/-! # Real derivatives — modulus of differentiability
 
-The derivative rung of the calculus stack, resting on the shipped limit
-laws.  A function `RegularReal -> RegularReal` HAS DERIVATIVE `derivative`
-at `point` when, for EVERY null sequence of nonzero increments
-`increments` (each carrying an apartness-from-zero witness so the
-constructive reciprocal `inverseRealOfApartness` is total), the Newton
-DIFFERENCE-QUOTIENT sequence
+A function `RegularReal -> RegularReal` has derivative `derivative` at
+`point` when, for every null sequence of nonzero increments `increments`
+(each carrying an apartness-from-zero witness so the constructive
+reciprocal `inverseRealOfApartness` is total), the Newton difference
+quotient sequence
 
     `(function (point + increment) - function point) * (1 / increment)`
 
 converges to `derivative` with an explicit modulus.  This is the
-sequential / Heine framing — the one on which the shipped SEQUENCE laws
+sequential (Heine) framing, on which the sequence laws
 `convergesToAddReal`, `convergesToMulReal`, `convergesToScalarMulReal`
-act directly, so every rule is an assembly over already-proved analytic
-content.
+act directly.
 
 The difference quotient never forms `1 / increment` from the increment
-alone: it consumes the apartness witness through `inverseRealOfApartness`
-(NUM-R-5e), so the definition is total and the Heyting-field law
+alone: it consumes the apartness witness through `inverseRealOfApartness`,
+so the definition is total, and the Heyting-field law
 `mulRealInverseOfApartnessDenotesOne` (`increment * (1/increment) ~ 1`)
-supplies the identity/product rules their unit.
+supplies the unit for the identity and product rules.
 
-Rules landed here, all zero-axiom:
+Rules proved here, all zero-axiom:
 
-  * **constant** `d/dx c = 0` and **identity** `d/dx x = 1` — each
-    difference-quotient term is setoid-equal to the limit, so converges
-    at the zero modulus;
-  * **linearity (sum)** `(f+g)' = f' + g'` — the cross-pair split
-    `subRealCrossPairsDenotesSame` plus right-distribution regroups the
-    quotient into `DQ_f + DQ_g`, then `convergesToAddReal`;
-  * **scalar** `(c*f)' = c*f'` — left-distribution over subtraction plus
-    associativity pulls the constant out, then `convergesToScalarMulReal`;
-  * **differentiable implies continuous** — `f(x+h) - f(x) = DQ_f * h`, a
+  * constant `d/dx c = 0` and identity `d/dx x = 1` — each difference-
+    quotient term is setoid-equal to the limit, converging at the zero
+    modulus;
+  * linearity (sum) `(f+g)' = f' + g'` — the cross-pair split plus
+    right-distribution regroups the quotient into `DQ_f + DQ_g`;
+  * scalar `(c*f)' = c*f'` — left-distribution over subtraction and
+    associativity pull the constant out;
+  * differentiable implies continuous — `f(x+h) - f(x) = DQ_f * h`, a
     bounded-times-null product vanishing by `convergesToMulReal`;
-  * **product / Leibniz** `(fg)' = f'*g + f*g'` — the telescope
+  * product / Leibniz `(fg)' = f'*g + f*g'` — the telescope
     `f(x+h)g(x+h) - f(x)g(x) = (f(x+h)-f(x))g(x+h) + f(x)(g(x+h)-g(x))`
-    divided by `h` gives `DQ_f * g(x+h) + f(x) * DQ_g`; the first term
-    rides `convergesToMulReal` against the continuity sub-lemma, the
-    second `convergesToScalarMulReal`, recombined by `convergesToAddReal`.
+    divided by `h` gives `DQ_f * g(x+h) + f(x) * DQ_g`.
 
-The one piece of new real-level infrastructure is the LEFT-slot
-congruence `isWithinRealBoundCongrLeftDenotesSameReal` — a real-level
-distance transitivity that transports a convergence across a
-pointwise-setoid-equal reshaping.  Its slack-closure skeleton mirrors
-`denotesSameRealTrans`, reusing the shipped `regularityChainBoundCollapses`
-and `addExactSwapOuterIntoInner`.  Zero axioms throughout. -/
+The real-level transport tool is the left-slot congruence
+`isWithinRealBoundCongrLeftDenotesSameReal`, a distance transitivity
+carrying a convergence across a pointwise-setoid-equal reshaping. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
-/-! ## Real-level distance congruence (the transport tool) -/
+/-! ## Real-level distance congruence -/
 
-/-- **Left-slot congruence of the real-level bound under the setoid**: a
-setoid-equal replacement in the LEFT slot preserves an `IsWithinRealBound`.
+/-- Left-slot congruence of the real-level bound under the setoid: a
+setoid-equal replacement in the left slot preserves an `IsWithinRealBound`.
 The per-index slack skeleton chains
 `newLeft(index) -> newLeft(slack) -> left(slack) -> right(slack) -> right(index)`
 through two regularities, the setoid hypothesis (pure `2/(slack+1)`), and the
-bound hypothesis (`q + 2/(slack+1)`); the accumulated bound reshapes — pull the
+bound hypothesis (`q + 2/(slack+1)`); the accumulated bound reshapes (pull the
 non-vanishing `q` to the front with `addExactSwapOuterIntoInner`, collapse the
-remaining four reciprocal legs by `regularityChainBoundCollapses` — onto
+remaining four reciprocal legs by `regularityChainBoundCollapses`) onto
 `(q + 2/(index+1)) + 6/(slack+1)`, whose nat-numerator slack closes. -/
 theorem isWithinRealBoundCongrLeftDenotesSameReal
     {leftValue newLeftValue rightValue : RegularReal} {bound : RationalPair}
@@ -102,7 +94,7 @@ theorem isWithinRealBoundCongrLeftDenotesSameReal
             (isWithin slackIndex)
             (rightValue.isRegular slackIndex index))))
 
-/-- **Right-slot congruence** — via symmetry, replace the limit slot with a
+/-- Right-slot congruence: via symmetry, replace the limit slot with a
 setoid-equal real. -/
 theorem isWithinRealBoundCongrRightDenotesSameReal
     {leftValue rightValue newRightValue : RegularReal} {bound : RationalPair}
@@ -115,9 +107,9 @@ theorem isWithinRealBoundCongrRightDenotesSameReal
 
 /-! ## Convergence transport across setoid reshaping -/
 
-/-- **Convergence transports across a pointwise-setoid-equal reshaping**: if
+/-- Convergence transports across a pointwise-setoid-equal reshaping: if
 `sequence position` is setoid-equal to `otherSequence position` at every
-position and the latter converges, so does the former, with the SAME modulus. -/
+position and the latter converges, so does the former, with the same modulus. -/
 theorem convergesToOfPointwiseDenotesSameReal
     {sequence otherSequence : Nat → RegularReal} {limit : RegularReal}
     {modulus : Nat → Nat}
@@ -129,7 +121,7 @@ theorem convergesToOfPointwiseDenotesSameReal
     isWithinRealBoundCongrLeftDenotesSameReal (pointwiseAgree position)
       (convergesOther precisionIndex position isReached)
 
-/-- **Convergence transports across a setoid-equal limit**: a setoid-equal
+/-- Convergence transports across a setoid-equal limit: a setoid-equal
 limit is reached by the same sequence with the same modulus. -/
 theorem convergesToCongrLimitDenotesSameReal
     {sequence : Nat → RegularReal} {limit newLimit : RegularReal}
@@ -143,13 +135,13 @@ theorem convergesToCongrLimitDenotesSameReal
 
 /-! ## Ring reshaping shims for the difference quotients -/
 
-/-- **Negation is a left inverse** for addition — commute onto the shipped
+/-- Negation is a left inverse for addition: commute onto the
 right-inverse law. -/
 theorem addRealNegLeft (value : RegularReal) :
     DenotesSameReal (addReal (negReal value) value) (constantReal zeroRational) :=
   denotesSameRealTrans (addRealComm (negReal value) value) (addRealNegRight value)
 
-/-- **Add-then-subtract cancels**: `(point + perturbation) - point` denotes
+/-- Add-then-subtract cancels: `(point + perturbation) - point` denotes
 `perturbation` — commute the sum, associate the cancelling pair, drop zero. -/
 theorem subRealAddPerturbationDenotesSame (point perturbation : RegularReal) :
     DenotesSameReal (subReal (addReal point perturbation) point) perturbation :=
@@ -163,7 +155,7 @@ theorem subRealAddPerturbationDenotesSame (point perturbation : RegularReal) :
           (addRealNegRight point))
         (addRealZeroRight perturbation)))
 
-/-- **Subtract-then-add restores**: `(value - base) + base` denotes `value` —
+/-- Subtract-then-add restores: `(value - base) + base` denotes `value` —
 associate the cancelling pair, drop zero. -/
 theorem addRealSubRealBaseDenotesSame (value base : RegularReal) :
     DenotesSameReal (addReal (subReal value base) base) value :=
@@ -173,7 +165,7 @@ theorem addRealSubRealBaseDenotesSame (value base : RegularReal) :
       (addRealRespectsDenotesSame (denotesSameRealRefl value) (addRealNegLeft base))
       (addRealZeroRight value))
 
-/-- **The three-point telescope**: `(first - middle) + (middle - last)` denotes
+/-- The three-point telescope: `(first - middle) + (middle - last)` denotes
 `first - last` — associate onto the cancelling `(-middle) + middle`. -/
 theorem addRealSubRealTelescopeDenotesSame
     (firstValue middleValue lastValue : RegularReal) :
@@ -192,8 +184,8 @@ theorem addRealSubRealTelescopeDenotesSame
             (denotesSameRealRefl (negReal lastValue)))
           (addRealZeroLeft (negReal lastValue)))))
 
-/-- **The product telescope at the real level**:
-`(a*c) - (b*d)` denotes `(a-b)*c + b*(c-d)` — the Leibniz split.  Push each
+/-- The product telescope at the real level:
+`(a*c) - (b*d)` denotes `(a-b)*c + b*(c-d)`, the Leibniz split.  Push each
 product-difference leg through distributivity, then the three-point telescope
 on `a*c, b*c, b*d`. -/
 theorem subRealMulTelescopeDenotesSame
@@ -212,7 +204,7 @@ theorem subRealMulTelescopeDenotesSame
 
 /-! ## The difference quotient -/
 
-/-- **The Newton difference quotient** at a nonzero perturbation:
+/-- The Newton difference quotient at a nonzero perturbation:
 `(function (point + perturbation) - function point) * (1 / perturbation)`.
 The reciprocal is the apartness-first constructive inverse, consuming exactly
 the `perturbation != 0` datum, so the quotient is total. -/
@@ -226,9 +218,8 @@ def differenceQuotient (function : RegularReal → RegularReal)
 
 /-! ## The derivative predicate -/
 
-/-- **The difference-quotient sequence converges** — the certificate for one
-null increment sequence, bundling the explicit quotient modulus with the
-convergence. -/
+/-- The difference-quotient sequence converges, for one null increment
+sequence: bundles the explicit quotient modulus with the convergence. -/
 structure DifferenceQuotientConverges (function : RegularReal → RegularReal)
     (point derivative : RegularReal) (increments : Nat → RegularReal)
     (apartnessWitnesses :
@@ -243,11 +234,10 @@ structure DifferenceQuotientConverges (function : RegularReal → RegularReal)
           (apartnessWitnesses position))
       derivative quotientModulus
 
-/-- **Has derivative at a point** — for EVERY null sequence of nonzero
+/-- Has derivative at a point: for every null sequence of nonzero
 increments, the difference-quotient sequence converges to `derivative`.
 `Type`-valued because the per-sequence quotient modulus is constructive data,
-exactly like `RegularReal`'s approximation and the `Type`-valued apartness
-witness. -/
+like `RegularReal`'s approximation and the `Type`-valued apartness witness. -/
 def HasDerivativeAt (function : RegularReal → RegularReal)
     (point derivative : RegularReal) : Type :=
   ∀ (increments : Nat → RegularReal)
@@ -261,7 +251,7 @@ def HasDerivativeAt (function : RegularReal → RegularReal)
 
 /-! ## Constant and identity derivatives -/
 
-/-- **The derivative of a constant is zero.**  Each quotient term is
+/-- The derivative of a constant is zero.  Each quotient term is
 `(c - c) * (1/h) ~ 0 * (1/h) ~ 0`, setoid-constantly the limit. -/
 def hasDerivativeAtConstant (constantValue point : RegularReal) :
     HasDerivativeAt (fun _ => constantValue) point (constantReal zeroRational) :=
@@ -277,7 +267,7 @@ def hasDerivativeAtConstant (constantValue point : RegularReal) :
               (inverseRealOfApartness (apartnessWitnesses position))))
         (convergesToConstant (constantReal zeroRational))⟩
 
-/-- **The derivative of the identity is one.**  Each quotient term is
+/-- The derivative of the identity is one.  Each quotient term is
 `((x + h) - x) * (1/h) ~ h * (1/h) ~ 1`, setoid-constantly the limit. -/
 def hasDerivativeAtIdentity (point : RegularReal) :
     HasDerivativeAt (fun value => value) point (constantReal oneRational) :=
@@ -295,7 +285,7 @@ def hasDerivativeAtIdentity (point : RegularReal) :
 
 /-! ## Linearity (sum rule) -/
 
-/-- **The sum rule** `(f + g)' = f' + g'`.  The cross-pair split regroups the
+/-- The sum rule `(f + g)' = f' + g'`.  The cross-pair split regroups the
 sum's difference quotient into `DQ_f + DQ_g`, then `convergesToAddReal`. -/
 def hasDerivativeAtAddReal {function otherFunction : RegularReal → RegularReal}
     {point derivative otherDerivative : RegularReal}
@@ -330,7 +320,7 @@ def hasDerivativeAtAddReal {function otherFunction : RegularReal → RegularReal
 
 /-! ## Scalar rule -/
 
-/-- **The scalar rule** `(c * f)' = c * f'` for a fixed real factor `c`.
+/-- The scalar rule `(c * f)' = c * f'` for a fixed real factor `c`.
 Left-distribution over subtraction and associativity pull the factor out of the
 quotient, then `convergesToScalarMulReal`. -/
 def hasDerivativeAtScalarMulReal {function : RegularReal → RegularReal}
@@ -360,7 +350,7 @@ def hasDerivativeAtScalarMulReal {function : RegularReal → RegularReal}
 
 /-! ## Differentiable implies continuous -/
 
-/-- **The shifted value converges** — the sequential continuity certificate:
+/-- The shifted value converges (sequential continuity):
 `function (point + increment_n)` converges to `function point`. -/
 structure ShiftedValueConverges (function : RegularReal → RegularReal)
     (point : RegularReal) (increments : Nat → RegularReal) : Type where
@@ -369,7 +359,7 @@ structure ShiftedValueConverges (function : RegularReal → RegularReal)
     ConvergesTo (fun position => function (addReal point (increments position)))
       (function point) shiftModulus
 
-/-- **Differentiable implies continuous** (sequential form): at every null
+/-- Differentiable implies continuous (sequential form): at every null
 increment sequence, `function (point + increment_n) -> function point`.  The
 identity `function (point + h) - function point = DQ_f * h` exhibits the shifted
 value as a bounded-convergent quotient times a null increment, so the product
@@ -426,11 +416,11 @@ def differentiableImpliesContinuous {function : RegularReal → RegularReal}
 
 /-! ## Product rule (Leibniz) -/
 
-/-- **The Leibniz reshaping of the product difference quotient**: the raw
+/-- The Leibniz reshaping of the product difference quotient: the raw
 quotient `((a*c) - (b*d)) * e` denotes `(a-b)*e * c + b * ((c-d)*e)` — the
 telescope split, distribution over the reciprocal, and one associativity swap
 per term.  With `a,c` the shifted values, `b,d` the base values, `e` the
-reciprocal, the right side is exactly `DQ_f * g(x+h) + f(x) * DQ_g`. -/
+reciprocal, the right side is `DQ_f * g(x+h) + f(x) * DQ_g`. -/
 theorem productDifferenceQuotientDenotesSame
     (shiftedFunctionValue functionValue shiftedOtherValue otherValue
       reciprocal : RegularReal) :
@@ -469,7 +459,7 @@ theorem productDifferenceQuotientDenotesSame
         (mulRealAssoc functionValue (subReal shiftedOtherValue otherValue)
           reciprocal)))
 
-/-- **The product rule** `(f * g)' = f' * g + f * g'`.  The Leibniz telescope
+/-- The product rule `(f * g)' = f' * g + f * g'`.  The Leibniz telescope
 splits the product's difference quotient into `DQ_f * g(x+h) + f(x) * DQ_g`;
 the first term rides `convergesToMulReal` against the continuity sub-lemma
 (`g(x+h) -> g(x)`, bounded factor absorbed inside `convergesToMulReal`), the

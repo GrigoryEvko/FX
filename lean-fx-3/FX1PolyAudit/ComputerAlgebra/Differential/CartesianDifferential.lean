@@ -1,15 +1,14 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Differential.CartesianDifferential
 
-/-! # FX1PolyAudit/ComputerAlgebra/Differential/CartesianDifferential — zero-axiom gate
-    (the CDC polynomial model: formal derivative, equality decision, easy axioms).
+/-! # Cartesian differential category polynomial model: zero-axiom gate
 
-Per-declaration zero-axiom gate for the cartesian-differential-category polynomial
-model over QnfRat: the natural-number coercion, the structural exponent decrement, the
-formal partial derivative with canonical well-definedness, the directional derivative,
-the equality decision with soundness, the coefficient engine driving CD.1 additivity,
-the CD.3 constant/projection rules, the CD.4 pairing rule, the CD.6 vector-additivity,
-the ground fires, and the DECIDED/WALL content markers.
+Per-declaration zero-axiom gate for the cartesian differential category polynomial model
+over `QnfRat`: the rational coercion, the structural exponent decrement, the formal partial
+derivative with canonical well-definedness, the directional derivative, the equality
+decision with soundness, the coefficient lemmas for CD.1 additivity, the CD.3 constant and
+projection rules, the CD.4 pairing rule, the CD.6 vector-additivity, the ground examples,
+and the capability markers.
 
 Every declaration must be free of propext, Quot.sound, Classical.choice, sorry,
 native_decide, funext, WellFounded.fix, omega. -/
@@ -45,19 +44,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.cdfDirectionalAddVector
 #assert_no_axioms FX1Poly.ComputerAlgebra.cdfXSquared
 #assert_no_axioms FX1Poly.ComputerAlgebra.cdfTwoX
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfFireDerivXSquared
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfFireDerivConstant
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfFireDerivVariableSame
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfFireDecideEqualTrue
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfFireDecideDifferentFalse
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfFireDirectionalXSquared
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfFireSecondDerivSymmetric
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasPolynomialModel
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasFormalDerivative
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasEqualityDecision
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasEasyAxioms
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasChainRule
-#assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasSecondDerivSymmetry
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfExampleDerivXSquared
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfExampleDerivConstant
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfExampleDerivVariableSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfExampleDecideEqualTrue
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfExampleDecideDifferentFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfExampleDirectionalXSquared
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfExampleSecondDerivSymmetric
+#assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasPolynomialCdcModel
 #assert_no_axioms FX1Poly.ComputerAlgebra.cdfHasFreeCdcCompleteness
 
 end FX1PolyAudit

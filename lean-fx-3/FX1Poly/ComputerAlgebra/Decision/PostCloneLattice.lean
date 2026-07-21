@@ -1,32 +1,26 @@
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
-/-! # FX1Poly/ComputerAlgebra/Decision/PostCloneLattice — the named spine of Post's lattice
+/-! # The named spine of Post's lattice
 
 Boolean functions as finite truth tables, the five named maximal Post clones
 (`T0` 0-preserving, `T1` 1-preserving, `M` monotone, `D` self-dual, `L` affine/linear) plus
 a bottom and a top element, their membership tests as decidable `Bool` predicates over the
 finite table, the finite named-clone inclusion order (reflexive + transitive, proved
-structurally over the finite enum), and a SOUND Schaefer tractability WITNESS (the constraint
+structurally over the finite enum), and a sound Schaefer tractability witness (the constraint
 set lies inside one common tractable clone).
 
 A `PclBoolFn` carries an explicit `arity : Nat` and a `table : List Bool` whose intended
 length is `2 ^ arity`; row `r` is the value on the `r`-th mask of `pclAllMasks arity`
-(all-`false` first, all-`true` last, big-endian bit order matching the DISSAT/WalkingBooleanAlgebra
-enumeration).  Length is a `Bool` well-formedness side-check (`pclTablePow2`), never a dependent
-index, so no `Nat.pow` `propext` traps.
+(all-`false` first, all-`true` last, big-endian). Length is a `Bool` well-formedness side-check
+(`pclTablePow2`), never a dependent index, so no `Nat.pow` `propext` traps.
 
-## What is DECIDED here (each `true`, each with an audit twin + independent `#print axioms`)
-
-  * `pclHasNamedCloneMembership` — the five preservation predicates + `pclCloneMembership`.
-  * `pclHasFiniteCloneLattice` — the seven-element named-clone order, refl + trans.
-  * `pclHasSchaeferTractabilityDecision` — the sufficient common-tractable-clone witness.
-
-## What is WALLED (each `false`, obstruction + two burned attacks in its docstring)
-
-  * `pclHasFullPostLattice` — the COMPLETE (infinite) Post lattice.
-  * `pclHasHigherDomainDichotomy` — the general finite-domain CSP dichotomy (Bulatov–Zhuk).
-  * `pclHasCloneGenerationClosure` — composition-closure / `Pol`–`Inv` Galois fixpoint.
+Proven (the `pclHas...` markers left `true`): the five preservation predicates with
+`pclCloneMembership`, the seven-element named-clone order (reflexivity and transitivity), and the
+sufficient common-tractable-clone Schaefer witness. The three markers left `false` name the
+complete infinite Post lattice, the general finite-domain CSP dichotomy (Bulatov–Zhuk), and the
+composition-closure / `Pol`–`Inv` Galois fixpoint; each is an unbounded limit object outside the
+structural budget, for the reason stated at its declaration.
 
 Every declaration is free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `funext`, `WellFounded.fix`, `omega`, and any `decide`-on-`Prop`. -/
@@ -164,7 +158,7 @@ def pclMaskIndex : List Bool → Nat
   | true :: rest => Nat.add (pclPow2 (pclLength rest)) (pclMaskIndex rest)
   | false :: rest => pclMaskIndex rest
 
-/-! ## T1 — the truth-table carrier -/
+/-! ## The truth-table carrier -/
 
 /-- A Boolean function of fixed `arity`, tabulated as `table` of intended length `2 ^ arity`. -/
 structure PclBoolFn where
@@ -179,7 +173,7 @@ def pclTablePow2 (function : PclBoolFn) : Bool :=
 def pclMaskValue (table : List Bool) (mask : List Bool) : Bool :=
   pclTableRow table (pclMaskIndex mask)
 
-/-! ## T2 — the five named-clone preservation predicates -/
+/-! ## The five named-clone preservation predicates -/
 
 /-- `T0`: preserves `0` — the all-`false` row (row `0`) maps to `false`. -/
 def pclPreservesZero (function : PclBoolFn) : Bool :=
@@ -248,7 +242,7 @@ def pclAffineCheck (table : List Bool) (arity : Nat) :
 def pclIsAffine (function : PclBoolFn) : Bool :=
   pclAffineCheck function.table function.arity (pclAllMasks function.arity)
 
-/-! ## T3 — the named-clone enum, membership, finite lattice order, and Schaefer -/
+/-! ## The named-clone enum, membership, finite lattice order, and Schaefer -/
 
 /-- The named Post clones on the decidable spine: bottom, the five maximal clones, top. -/
 inductive PclNamedClone where
@@ -400,78 +394,47 @@ def pclIsSchaeferTractable (constraints : List PclBoolFn) : Bool :=
     || pclAllInClone .cloneM constraints || pclAllInClone .cloneD constraints
     || pclAllInClone .cloneL constraints
 
-/-! ## Capability markers — DECIDED -/
+/-! ## Capability markers -/
 
-/-- The five named-clone preservation tests + membership are DECIDED. -/
+/-- The five named-clone preservation tests with `pclCloneMembership`. -/
 def pclHasNamedCloneMembership : Bool := true
 
-/-- The seven-element named-clone lattice order (refl + trans) is DECIDED. -/
+/-- The seven-element named-clone lattice order (reflexivity and transitivity). -/
 def pclHasFiniteCloneLattice : Bool := true
 
-/-- The sufficient common-tractable-clone Schaefer witness is DECIDED. -/
+/-- The sufficient common-tractable-clone Schaefer witness. -/
 def pclHasSchaeferTractabilityDecision : Bool := true
 
-/-! ## T4 — the walls -/
+/-! ## The walls -/
 
-/-- ★ WALL — the COMPLETE Post lattice.  Post (1941) classifies ALL clones of Boolean functions:
-countably infinitely many, with infinite descending chains (e.g. the chains `T0^{(k)}`, `M∩T0∩…`,
-the `S`/`P` families) that no finite enumeration captures.  The named MAXIMAL clones here are
-finite and decidable; the full lattice is a coinductive/limit object.
-
-Obstruction: an infinite poset with infinite descending chains has no `List`-of-clones carrier,
-and its membership relation quantifies over the infinite chain index — off the Init-only
-structural budget (would need `WellFounded.fix` to found the chains).
-
-Burned attack 1: enumerate clones as `List PclNamedClone` and close under intersection — the
-closure never terminates (the `T0^{(k)}` chain adds a fresh clone at every `k`), so no structural
-fuel bounds it; a fuel cap under-approximates and silently drops the tail (the census-fooling
-failure mode).
-
-Burned attack 2: index clones by a "defining relation arity" `Nat` and decide membership per arity
-— the arity is unbounded (the counting clones `U_k`/`W_k` need arbitrarily large arity to separate),
-so no single `Nat` bound is a complete index; picking any bound refutes completeness by a
-higher-arity separator. -/
+/-- The complete Post lattice, not proven here. Post (1941) classifies all clones of Boolean
+functions: countably infinitely many, with infinite descending chains (`T0^{(k)}`, `M∩T0∩…`, the
+`S`/`P` families) that no finite enumeration captures. Such an infinite poset has no `List`-of-clones
+carrier, and its membership relation quantifies over the infinite chain index, so founding the
+chains would need `WellFounded.fix`. Closing under intersection never terminates (the `T0^{(k)}`
+chain adds a fresh clone at every `k`), and indexing by a defining-relation arity fails because the
+counting clones `U_k`/`W_k` separate above any fixed arity. -/
 def pclHasFullPostLattice : Bool := false
 
-/-- ★ WALL — the general finite-domain CSP dichotomy (Bulatov 2017 / Zhuk 2017).  Schaefer's
-Boolean (`|D| = 2`) dichotomy is the decidable slice shipped here as the tractable-clone witness;
-the `|D| ≥ 3` case (P vs NP-complete for every finite-domain CSP) is a research-grade proof about
-a WEAK NEAR-UNANIMITY polymorphism on an unbounded domain.
-
-Obstruction: the criterion "the constraint language admits a cyclic/WNU polymorphism" ranges over
-polymorphisms of every arity on a domain of arbitrary finite size — not a finite table check; the
-proof of the hard direction is an algebraic argument (absorption theory) with no bounded decision
-procedure.
-
-Burned attack 1: fix the domain to `Fin d` and enumerate binary polymorphisms — a WNU witness can
-require arity far above 2 (Siggers is 6-ary, cyclic terms grow with `d`), so no fixed arity is a
-complete test; a `d = 3` triple with no binary but a ternary WNU refutes the binary-only check.
-
-Burned attack 2: reduce every finite domain to Boolean by bit-encoding and reuse the five clones —
-the encoding does NOT preserve the polymorphism structure (a domain-3 majority does not become a
-Boolean majority on the bits), so the Boolean spine gives false negatives; a domain-3 tractable CSP
-whose bit-encoding fails all five Boolean clones refutes the reduction. -/
+/-- The general finite-domain CSP dichotomy (Bulatov 2017 / Zhuk 2017), not proven here. The
+Boolean (`|D| = 2`) dichotomy is the decidable slice shipped as the tractable-clone witness; the
+`|D| ≥ 3` case is a proof about a weak-near-unanimity polymorphism on an unbounded domain. The
+criterion ranges over polymorphisms of every arity on a domain of arbitrary finite size, and its
+hard direction is an absorption-theory argument with no bounded decision procedure — no fixed arity
+suffices (Siggers is 6-ary), and bit-encoding a finite domain into Boolean does not preserve
+polymorphism structure. -/
 def pclHasHigherDomainDichotomy : Bool := false
 
-/-- ★ WALL — clone GENERATION closure / the `Pol`–`Inv` Galois correspondence.  Deciding whether an
-arbitrary (possibly infinite) set of Boolean functions generates a given clone needs the closure of
-a function set under composition and projection — an unbounded fixpoint.
-
-Obstruction: the composition-closure operator has no structural decreasing measure (composing two
-`arity`-`k` functions yields functions of unboundedly growing arity), so the closure is a least
-fixpoint founded only by `WellFounded.fix`, which is off-budget.
-
-Burned attack 1: bound the composition depth by a fuel `Nat` — a generator set can require
-composition depth exceeding any fixed fuel to reach a target (e.g. building high-arity threshold
-functions), so a fuel cap under-approximates the generated clone; a target one composition beyond
-the cap refutes completeness.
-
-Burned attack 2: precompute the `Inv` side (the invariant relations) and intersect — the invariant
-relations are themselves infinitely many (all arities), so their carrier is again an infinite list;
-the Galois `Pol`–`Inv` round trip closes only in the limit, not at any finite stage. -/
+/-- Clone generation closure / the `Pol`–`Inv` Galois correspondence, not proven here. Deciding
+whether a set of Boolean functions generates a given clone needs the closure under composition and
+projection, an unbounded fixpoint: the composition-closure operator has no structural decreasing
+measure (composing two arity-`k` functions grows arity without bound), so the least fixpoint is
+founded only by `WellFounded.fix`. Capping composition depth by fuel under-approximates, and the
+`Inv` side is itself infinitely many relations of all arities, so the round trip closes only in the
+limit. -/
 def pclHasCloneGenerationClosure : Bool := false
 
-/-! ## T5 — ground fires (concrete small-arity witnesses, all `rfl`) -/
+/-! ## Ground fires (concrete small-arity witnesses, all `rfl`) -/
 
 /-- Conjunction as a truth table: `∧` over `[FF, FT, TF, TT] = [false, false, false, true]`. -/
 def pclAndFn : PclBoolFn := { arity := 2, table := [false, false, false, true] }
@@ -485,69 +448,57 @@ def pclNegFn : PclBoolFn := { arity := 1, table := [true, false] }
 /-- NAND — in NONE of the five named clones (a discriminating non-witness). -/
 def pclNandFn : PclBoolFn := { arity := 2, table := [true, true, true, false] }
 
-/-- Fire: `∧` has a well-formed table (`length = 2^2 = 4`). -/
 theorem pclAndTablePow2 : pclTablePow2 pclAndFn = true := rfl
 
-/-- Fire: `∧` is monotone. -/
 theorem pclAndMonotone : pclIsMonotone pclAndFn = true := rfl
 
-/-- Fire: `∧` preserves `0`. -/
 theorem pclAndPreservesZero : pclPreservesZero pclAndFn = true := rfl
 
-/-- Fire: `∧` preserves `1`. -/
 theorem pclAndPreservesOne : pclPreservesOne pclAndFn = true := rfl
 
-/-- Fire: `∧` is NOT affine (it carries the degree-2 monomial `x·y`). -/
+/-- `∧` carries the degree-2 monomial `x·y`. -/
 theorem pclAndNotAffine : pclIsAffine pclAndFn = false := rfl
 
-/-- Fire: `⊕` is affine (linear — no monomial of degree ≥ 2). -/
 theorem pclXorAffine : pclIsAffine pclXorFn = true := rfl
 
-/-- Fire: `⊕` is NOT monotone (`[F,T] ⊑ [T,T]` but the value drops `true → false`). -/
+/-- `[F,T] ⊑ [T,T]` but the value drops `true → false`. -/
 theorem pclXorNotMonotone : pclIsMonotone pclXorFn = false := rfl
 
-/-- Fire: `¬` is self-dual. -/
 theorem pclNegSelfDual : pclIsSelfDual pclNegFn = true := rfl
 
-/-- Fire: `¬` is NOT monotone. -/
 theorem pclNegNotMonotone : pclIsMonotone pclNegFn = false := rfl
 
-/-- Fire: `∧` is NOT self-dual (a discriminating non-witness for the `D` clone). -/
+/-- A discriminating non-witness for the `D` clone. -/
 theorem pclAndNotSelfDual : pclIsSelfDual pclAndFn = false := rfl
 
-/-- Fire (witnessed-pair soundness): with `∧` monotone, the specific pair `[F,T] ⊑ [T,T]` respects
-the value order. -/
+/-- With `∧` monotone, the pair `[F,T] ⊑ [T,T]` respects the value order. -/
 theorem pclAndRespectsWitnessedPair :
     pclImplies (pclMaskValue pclAndFn.table [false, true])
       (pclMaskValue pclAndFn.table [true, true]) = true := rfl
 
-/-- Fire: `∧` lies in the monotone clone via `pclCloneMembership`. -/
 theorem pclAndInCloneM : pclCloneMembership pclAndFn .cloneM = true := rfl
 
-/-- Fire: the named-clone order is reflexive on `T0`. -/
 theorem pclCloneLeReflT0 : pclCloneLe .cloneT0 .cloneT0 = true := rfl
 
-/-- Fire: bottom is below top. -/
 theorem pclCloneLeBottomAll : pclCloneLe .cloneBottom .cloneAll = true := rfl
 
-/-- Fire: `T0` is below top. -/
 theorem pclCloneLeT0All : pclCloneLe .cloneT0 .cloneAll = true := rfl
 
-/-- Fire: `T0` and `T1` are incomparable (the antichain). -/
+/-- `T0` and `T1` are incomparable (the antichain). -/
 theorem pclCloneLeT0T1Incomparable : pclCloneLe .cloneT0 .cloneT1 = false := rfl
 
-/-- Fire: `⊕` alone is Schaefer-tractable (affine witness). -/
+/-- `⊕` alone is Schaefer-tractable (affine witness). -/
 theorem pclSchaeferXorTractable : pclIsSchaeferTractable [pclXorFn] = true := rfl
 
-/-- Fire: NAND alone finds no common tractable-clone witness (in none of the five clones). -/
+/-- NAND lies in none of the five clones, so no common tractable-clone witness. -/
 theorem pclSchaeferNandNoWitness : pclIsSchaeferTractable [pclNandFn] = false := rfl
 
-/-- Fire: the DECIDED capability markers hold. -/
+/-- The tractable-side capability markers hold. -/
 theorem pclDecidedMarkers :
     (pclHasNamedCloneMembership && pclHasFiniteCloneLattice
       && pclHasSchaeferTractabilityDecision) = true := rfl
 
-/-- Fire: the WALL markers are all `false`. -/
+/-- The wall markers are all `false`. -/
 theorem pclWallMarkers :
     (pclHasFullPostLattice || pclHasHigherDomainDichotomy
       || pclHasCloneGenerationClosure) = false := rfl

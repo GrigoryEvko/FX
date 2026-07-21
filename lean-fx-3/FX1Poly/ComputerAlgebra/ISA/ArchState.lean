@@ -1,31 +1,23 @@
 import FX1Poly.ComputerAlgebra.Register.FieldLayout
 
-/-! # ArchState — the golden-reference architectural machine state (fx_design.md §18.12)
+/-! # ArchState: golden-reference architectural machine state (fx_design.md §18.12)
 
-The state layer of the hardware substrate: a register file, a memory, and a
-program counter over the shipped zero-axiom `BitVec` carrier.  Both stores are
-modelled as TOTAL FUNCTIONS `BitVec key -> BitVec value`, updated by functional
-override under the axiom-clean `DecidableEq (BitVec _)`.  This is exactly the
-§18.12 "ISA is a `Tot` function over architectural state" golden-reference shape:
+A register file, a memory, and a program counter over the zero-axiom `BitVec`
+carrier.  Both stores are total functions `BitVec key → BitVec value`, updated by
+functional override under the axiom-clean `DecidableEq (BitVec _)` — the §18.12
+"ISA is a `Tot` function over architectural state" shape.  Each read and write is
+total with genuine `Eq`: no `Array` bound proofs, no `Nat.mod` index wrap, no
+`Fin.ofNat` decode coercion.  Update prepends one `ite`; the two store laws
+(read-after-write same and other) close by `if_pos`/`if_neg`.
 
-* every read/write is total with genuine `Eq`, no `Array` bound proofs, no
-  `Nat.mod` index wrap, no `Fin.ofNat` coercion at decode sites;
-* update is O(1) (prepend one `ite`); read is O(#writes) at runtime — irrelevant
-  for a spec/proof state, the stated target;
-* the two store laws (read-after-write same / other) close by `if_pos`/`if_neg`,
-  both `match`-on-`Decidable`, so the layer inherits the substrate's zero-axiom
-  status verbatim.
-
-State EQUALITY is deliberately out of scope (proving two whole `ArchState`s equal
-would need `funext`, a `Quot.sound`-derived theorem).  All reasoning here is
-OBSERVATIONAL — `readReg`/`readMem`/`fetch` after a sequence of writes — and every
-observational law closes with `if_pos`/`if_neg`/`rfl`, no funext.
-
-`Init`-only (through the `BitVec` floor), structural, zero axioms. -/
+Whole-state equality is out of scope, needing `funext`.  The theorems here are
+observational — `readReg`/`readMem`/`fetch` after writes — closing by
+`if_pos`/`if_neg`/`rfl`.  `Init`-only through the `BitVec` floor, structural,
+zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## The generic total store (reused for both registers and memory) -/
+/-! ## Generic total store (registers and memory) -/
 
 /-- A total store: a function from a `BitVec`-indexed key to a `BitVec` word.
 `keyWidth` bits of index, `valWidth` bits of payload. -/
@@ -84,7 +76,7 @@ def ArchState.zeroed {wordWidth addrWidth regIdxWidth : Nat} :
   , memory    := BitStore.const bitVecZero
   , pc        := bitVecZero }
 
-/-! ## Register / memory / PC operations (thin field-updating wrappers) -/
+/-! ## Register, memory, and PC operations -/
 
 /-- Read register `idx`. -/
 def ArchState.readReg {wordWidth addrWidth regIdxWidth : Nat}
@@ -124,7 +116,7 @@ def ArchState.fetch {wordWidth addrWidth regIdxWidth : Nat}
     (state : ArchState wordWidth addrWidth regIdxWidth) : BitVec wordWidth :=
   state.readMem state.pc
 
-/-! ## Observational state laws (all zero-axiom, lifted from the store laws) -/
+/-! ## Observational state laws (lifted from the store laws) -/
 
 /-- Reading back a just-written register returns exactly what was written. -/
 theorem ArchState.readReg_writeReg_same {wordWidth addrWidth regIdxWidth : Nat}

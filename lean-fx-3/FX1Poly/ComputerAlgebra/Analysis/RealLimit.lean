@@ -2,36 +2,34 @@ import FX1Poly.ComputerAlgebra.Number.RegularRealArithmetic
 import FX1Poly.ComputerAlgebra.Number.RegularRealCompleteness
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrderTightness
 
-/-! # Real sequence limits — modulus-based convergence (ANALYSIS-LIMIT-1)
+/-! # Real sequence limits — modulus-based convergence
 
-The first calculus rung.  A real sequence `sequence : Nat -> RegularReal`
-CONVERGES to a limit with an EXPLICIT modulus, Bishop-style: at precision
-index `k`, every member from `modulus k` onward sits within `1/(k+1)` of
-the limit in the real-level distance `IsWithinRealBound`.  No unbounded
-existential — the modulus IS the constructive rate, exactly as the
-regularity and Cauchy certificates are baked into `RegularReal` and
-`RegularRealSequence`.
+A real sequence `sequence : Nat -> RegularReal` converges to a limit with an
+explicit modulus, Bishop-style: at precision index `k`, every member from
+`modulus k` onward sits within `1/(k+1)` of the limit in the real-level
+distance `IsWithinRealBound`.  No unbounded existential — the modulus is the
+constructive rate, as the regularity and Cauchy certificates are baked into
+`RegularReal` and `RegularRealSequence`.
 
-The limit is UNIQUE up to `DenotesSameReal`: two limits of one sequence
-are setoid-equal.  Rather than redo the diagonal-limit uniqueness bound,
-the proof feeds the shipped `denotesSameRealOfSharedConvergence` a common
+The limit is unique up to `DenotesSameReal`: two limits of one sequence are
+setoid-equal.  The proof feeds `denotesSameRealOfSharedConvergence` a common
 deep-sampled subsequence `values (firstModulus p + secondModulus p + p)`,
-which the SAME sequence approaches within `1/(p+1)` toward BOTH limits.
+which the same sequence approaches within `1/(p+1)` toward both limits.
 
-The LIMIT LAWS: the sum of two convergent sequences converges to the sum
-of the limits (combined modulus `mx (2k+1) + my (2k+1)` — a SUM, never a
-`Nat.max`, so no `le_max` propext leak — with the doubled reciprocals
-recombining EXACTLY by `reciprocalDoubleSumDenotesSame`), and the
-negation converges to the negated limit with the SAME modulus (negation
-is a pointwise isometry).  Each real-level bound-respecting lemma
-generalizes the shipped `*RespectsDenotesSame` from setoid bound `0` to
-an arbitrary bound `q`.  Zero axioms throughout. -/
+Limit laws: the sum of two convergent sequences converges to the sum of the
+limits (combined modulus `mx (2k+1) + my (2k+1)` — a sum, never a `Nat.max`,
+so no `le_max` propext leak — with the doubled reciprocals recombining exactly
+by `reciprocalDoubleSumDenotesSame`); the negation converges to the negated
+limit with the same modulus (negation is a pointwise isometry).  Each
+real-level bound-respecting lemma generalizes the corresponding
+`*RespectsDenotesSame` from setoid bound `0` to an arbitrary bound `q`.  Zero
+axioms throughout. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
-/-! ## Nat monotonicity shims for SUM-form combined moduli -/
+/-! ## Nat monotonicity shims for sum-form combined moduli -/
 
 /-- A value sits below itself plus any right addend — the additive witness
 is the addend. -/
@@ -72,8 +70,8 @@ theorem isWithinRealBoundCongrBound {leftValue rightValue : RegularReal}
 
 /-! ## Modulus-based convergence -/
 
-/-- **Modulus-based convergence of a real sequence** — Bishop-style with an
-EXPLICIT rate.  At precision index `k`, every member from `modulus k`
+/-- Modulus-based convergence of a real sequence, Bishop-style with an
+explicit rate.  At precision index `k`, every member from `modulus k`
 onward sits within `1/(k+1)` of the limit in the real-level distance. -/
 def ConvergesTo (sequence : Nat → RegularReal) (limit : RegularReal)
     (modulus : Nat → Nat) : Prop :=
@@ -90,9 +88,8 @@ theorem convergesToConstant (value : RegularReal) :
     isWithinRealBoundOfDenotesSameReal (denotesSameRealRefl value)
       (ratioOfNatSuccIsNonNegative 1 precisionIndex)
 
-/-- **The diagonal limit converges with the identity modulus** — the shipped
-tight convergence relaxed so `1/(position+1) <= 1/(k+1)` when
-`position >= k`. -/
+/-- The diagonal limit converges with the identity modulus: the tight
+convergence relaxed so `1/(position+1) <= 1/(k+1)` when `position >= k`. -/
 theorem convergesToLimitReal (sequence : RegularRealSequence) :
     ConvergesTo sequence.values (limitReal sequence) (fun precisionIndex => precisionIndex) :=
   fun precisionIndex position isReached =>
@@ -100,11 +97,11 @@ theorem convergesToLimitReal (sequence : RegularRealSequence) :
       (ratioOfNatSuccAntitoneDenominator 1 isReached)
       (sequenceConvergesToLimitReal sequence position)
 
-/-- **Modulus-form limit uniqueness** — two limits of one sequence are
-setoid-equal.  The shipped `denotesSameRealOfSharedConvergence` closes it
-once fed the common deep-sampled subsequence
+/-- Modulus-form limit uniqueness: two limits of one sequence are
+setoid-equal.  `denotesSameRealOfSharedConvergence` closes it once fed the
+common deep-sampled subsequence
 `values (firstModulus p + secondModulus p + p)`, which the sequence
-approaches within `1/(p+1)` toward BOTH limits (the deep index dominates
+approaches within `1/(p+1)` toward both limits (the deep index dominates
 each modulus). -/
 theorem denotesSameRealOfConvergesToBoth {values : Nat → RegularReal}
     {firstLimit secondLimit : RegularReal} {firstModulus secondModulus : Nat → Nat}
@@ -131,12 +128,12 @@ theorem denotesSameRealOfConvergesToBoth {values : Nat → RegularReal}
 
 /-! ## Limit law: sum -/
 
-/-- **Addition respects the real-level bound** — the abs-free parallel-add
+/-- Addition respects the real-level bound: the abs-free parallel-add
 law lifted from the setoid instance `addRealRespectsDenotesSame` (bound `0`)
 to an arbitrary bound.  At each index both summands sample at `2*index+1`;
 the parallel bound `(q1 + r) + (q2 + r)` regroups medially onto
 `(q1 + q2) + (r + r)`, and the doubled reciprocal `r + r` recombines
-EXACTLY to `2/(index+1)`. -/
+exactly to `2/(index+1)`. -/
 theorem addRealRespectsIsWithinRealBound
     {leftA rightA leftB rightB : RegularReal}
     {firstBound secondBound : RationalPair}
@@ -156,9 +153,9 @@ theorem addRealRespectsIsWithinRealBound
         (isFirstWithin (2 * index + 1))
         (isSecondWithin (2 * index + 1)))
 
-/-- **Limit law — sum**: the sum of two convergent sequences converges to
-the sum of the limits.  Combined modulus `mx (2k+1) + my (2k+1)` (SUM-form,
-propext-clean); the two `1/(2k+2)` bounds recombine EXACTLY to `1/(k+1)`. -/
+/-- Limit law (sum): the sum of two convergent sequences converges to
+the sum of the limits.  Combined modulus `mx (2k+1) + my (2k+1)` (sum-form,
+propext-clean); the two `1/(2k+2)` bounds recombine exactly to `1/(k+1)`. -/
 theorem convergesToAddReal {sequenceLeft sequenceRight : Nat → RegularReal}
     {limitLeft limitRight : RegularReal} {modulusLeft modulusRight : Nat → Nat}
     (convergesLeft : ConvergesTo sequenceLeft limitLeft modulusLeft)
@@ -185,7 +182,7 @@ theorem convergesToAddReal {sequenceLeft sequenceRight : Nat → RegularReal}
 
 /-! ## Limit law: negation -/
 
-/-- **Negation respects the real-level bound** — pointwise, the SAME bound;
+/-- Negation respects the real-level bound: pointwise, the same bound;
 negation is a two-sided isometry.  Generalizes the setoid instance
 `negRealRespectsDenotesSame`. -/
 theorem negRealRespectsIsWithinRealBound {leftValue rightValue : RegularReal}
@@ -194,8 +191,8 @@ theorem negRealRespectsIsWithinRealBound {leftValue rightValue : RegularReal}
     IsWithinRealBound (negReal leftValue) (negReal rightValue) bound :=
   fun index => negExactRespectsIsWithinBound (isWithin index)
 
-/-- **Limit law — negation**: the negation of a convergent sequence
-converges to the negated limit with the SAME modulus. -/
+/-- Limit law (negation): the negation of a convergent sequence
+converges to the negated limit with the same modulus. -/
 theorem convergesToNegReal {sequence : Nat → RegularReal}
     {limit : RegularReal} {modulus : Nat → Nat}
     (converges : ConvergesTo sequence limit modulus) :
@@ -224,7 +221,7 @@ The order law then feeds the difference sequence
 
 namespace RationalPair
 
-/-- **The order-limit slack tail, pure**: the rational tail
+/-- The order-limit slack tail, pure: the rational tail
 `((1/(m+1) + 1/(k+1)) + 3/(m+1)) + 1/(m+1)` denotes `5/(m+1) + 1/(k+1)` —
 rotate `1/(k+1)` to the far right past the three `m`-graded summands, then
 fold `1/(m+1) + 3/(m+1) + 1/(m+1)` onto its shared denominator.  The
@@ -314,7 +311,7 @@ theorem nonNegLimitTailCollapses (outerPredecessor innerPredecessor : Nat) :
       (addExactRespectsDenotesSameAs leftCollapse
         (denotesSameAsRefl (reciprocalOfSucc outerPredecessor))))
 
-/-- **The order-limit slack tail, with the carried base value**: pull the
+/-- The order-limit slack tail, with the carried base value: pull the
 approximant `baseValue` out front over the pure-rational tail, collapse the
 tail by `nonNegLimitTailCollapses`, and re-associate onto the
 `(baseValue + 5/(m+1)) + 1/(k+1)` slack shape. -/
@@ -354,7 +351,7 @@ theorem nonNegLimitTailCollapsesShaped (baseValue : RationalPair)
 
 end RationalPair
 
-/-- **Nonnegativity is closed under modulus limits**: if every member of a
+/-- Nonnegativity is closed under modulus limits: if every member of a
 convergent sequence clears the vanishing lower bound `−1/(index+1)` at every
 index, so does the limit.  Slack closure at numerator `5` reduces the bound
 at comparison index `c` to, for every deep sample `s`, the chain
@@ -424,10 +421,10 @@ theorem realNonNegativeOfConvergesTo {sequence : Nat → RegularReal}
             (addExactNegLeftDenotesSame (reciprocalOfSucc comparisonIndex)))
           shiftedNonNegative))
 
-/-- **Limit law — order preservation**: a pointwise `LessEqualReal` between two
+/-- Limit law (order preservation): a pointwise `LessEqualReal` between two
 convergent sequences lifts to their limits.  The difference sequence
 `sequenceUpper − sequenceLower` converges to `limitUpper − limitLower` (via the
-sum and negation limit laws), each member is nonnegative (that IS the pointwise
+sum and negation limit laws), each member is nonnegative (that is the pointwise
 order hypothesis), and `realNonNegativeOfConvergesTo` carries nonnegativity to
 the limit. -/
 theorem lessEqualRealOfConvergesTo

@@ -1,22 +1,21 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Semigroup.TraceWordProblem
 
-/-! # FX1PolyAudit/ComputerAlgebra/Semigroup/TraceWordProblem — zero-axiom gate
-    (NET-2 brick: Mazurkiewicz trace equivalence)
+/-! # Mazurkiewicz trace equivalence — zero-axiom gate
 
-Per-declaration zero-axiom gate for the trace word problem: the Boolean/keep-test
-micro-kit, the dependent-pair projection `mztKeepAB` with its append/swap laws, the trace
-congruence `MztTraceCongr` with cons-congruence, semantic soundness
-(`mztCongrPreservesKeepAB`), the head-bubbling engine `mztBubbleHead` and semantic
-completeness `mztProjAgreeComplete` (the Keller / Cartier-Foata theorem), the finite pair
-carrier and the Boolean decision `mztDecideTraceEqBool` with its soundness
-(`mztDecideSoundOfCongr`), the acceptance-to-projection bridge (`mztDecideToProjAgree`) and
-Boolean completeness (`mztDecideCompleteOfDecide`, `mztTraceDecisionCorrect`), the
-capability markers, and the ground fires.
+Per-declaration zero-axiom gate for the trace word problem: the Boolean/keep-test micro-kit,
+the dependent-pair projection `mztKeepAB` with its append/swap laws, the trace congruence
+`MztTraceCongr` with cons-congruence, semantic soundness `mztCongrPreservesKeepAB`, the
+head-bubbling engine `mztBubbleHead` and semantic completeness `mztProjAgreeComplete` (the
+Keller / Cartier-Foata theorem), the finite pair carrier and the Boolean decision
+`mztDecideTraceEqBool` with its soundness `mztDecideSoundOfCongr`, the
+acceptance-to-projection bridge `mztDecideToProjAgree`, Boolean completeness
+(`mztDecideCompleteOfDecide`, `mztTraceDecisionCorrect`), the capability marker, and the
+ground fires.
 
-The trace word problem is FULLY decided (no wall): the free partially-commutative monoid
-word problem needs only structural recursion via the projection criterion — unlike the
-finitely-presented commutative case (NET-3 T3), which is walled at Dickson's lemma.
+The trace word problem is fully decided: the free partially-commutative monoid word problem
+needs only structural recursion via the projection criterion, unlike the finitely-presented
+commutative case, which is walled at Dickson's lemma.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -71,9 +70,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.mztDecideToProjAgree
 #assert_no_axioms FX1Poly.ComputerAlgebra.mztDecideCompleteOfDecide
 #assert_no_axioms FX1Poly.ComputerAlgebra.mztTraceDecisionCorrect
-#assert_no_axioms FX1Poly.ComputerAlgebra.mztHasTraceCongruence
-#assert_no_axioms FX1Poly.ComputerAlgebra.mztHasProjectionDecision
-#assert_no_axioms FX1Poly.ComputerAlgebra.mztHasTraceCompleteness
+#assert_no_axioms FX1Poly.ComputerAlgebra.mztHasTraceWordProblemDecided
 #assert_no_axioms FX1Poly.ComputerAlgebra.mztFireIndependentSwapTrue
 #assert_no_axioms FX1Poly.ComputerAlgebra.mztFireDependentSwapFalse
 #assert_no_axioms FX1Poly.ComputerAlgebra.mztFireThreeLetterTrue

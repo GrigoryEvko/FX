@@ -6,8 +6,8 @@ import FX1Poly.ComputerAlgebra.Decision.PolInvGaloisConnection
 Per-declaration zero-axiom gate for the finite Pol-Inv Galois core: the Boolean-connective kit,
 the bit-tuple/row/relation/function equality + membership layer, the `PigBoolRel` carrier, the
 componentwise-preservation predicate `pigPreserves`, the `pigPol`/`pigInv` operators, the Galois
-soundness / base-closure / antitonicity theorems, the pp-definability primitives, the DECIDED and
-WALL capability markers, and the ground fires.
+soundness / base-closure / antitonicity theorems, the pp-definability primitives, the capability
+markers (two left `false`), and the ground fires.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `funext`, `WellFounded.fix`, `omega`. -/

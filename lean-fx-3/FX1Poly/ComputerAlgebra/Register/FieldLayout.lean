@@ -1,26 +1,24 @@
 import FX1Poly.ComputerAlgebra.Bits.BitVec
 
-/-! # FieldLayout — register bit-field layout, extract/insert, and their round-trip
+/-! # FieldLayout — register bit-field layout, extract/insert, and round-trip laws
 
-The register-level layer of the hardware substrate (fx_design.md §18.1 formats,
-§18.4 cross-field dependencies).  A `Format` is a total bit-width; a `FieldSpec`
-carves a `[offset, offset+width)` window out of it.  `extractField` reads a
-window's contents; `insertField` splices a value INTO a window, leaving the bits
-outside untouched.
+The register layer of the hardware substrate (fx_design.md §18.1 formats, §18.4
+cross-field dependencies).  A `Format` is a total bit-width; a `FieldSpec` carves a
+`[offset, offset+width)` window out of it.  `extractField` reads a window's
+contents; `insertField` splices a value into a window, leaving the outside bits
+untouched.
 
-The two central correctness facts:
+Two correctness laws:
 
 * `extractField_insertField_same` — reading back a freshly-written field returns
-  exactly what was written (given the field fits the register).
-* `extractField_insertField_disjoint` — writing field `fs` leaves any DISJOINT
+  exactly what was written, when the field fits the register.
+* `extractField_insertField_disjoint` — writing field `fs` leaves any disjoint
   field `other` bit-for-bit unchanged.
 
-The design is the ARITHMETIC one (not the literal `and-not / or / shift`): every
-op is a `bitVecOfNatMod` whose argument is a `natQuotient`/`natRemainder`/`* 2^k`
-combination, so every proof rides the shipped propext-clean modular corpus
-(`NatModularReduction`, `NatEuclideanDivision`) instead of the un-lemmatized
-bitwise folds or the propext-dirty `<<<`/`>>>` div/mul bridge.  This is
-bit-identical to the mask/shift phrasing but zero-axiom-provable now.
+Each operation is a `bitVecOfNatMod` of a `natQuotient`/`natRemainder`/`* 2^k`
+combination: bit-identical to the mask/shift phrasing, but stated over the modular
+corpus (`NatModularReduction`, `NatEuclideanDivision`) rather than the bitwise
+folds or the `<<<`/`>>>` div/mul bridge.
 
 `Init`-only, structural, zero axioms. -/
 
@@ -251,7 +249,7 @@ def insertField {n : Nat} (v : BitVec n) (fs : FieldSpec) (fieldValue : BitVec f
 
 /-! ## The splice does not overflow the register
 
-The load-bearing bridge for BOTH round-trips: when `fs` fits, the spliced natural
+The bridge for both round-trips: when `fs` fits, the spliced natural
 `low + fieldValue*2^offset + high*2^(offset+width)` is already below `2^n`, so the
 outer `mod 2^n` in `insertField` is the identity and `.toNat` reads the raw sum. -/
 
@@ -335,7 +333,7 @@ theorem extractField_insertField_same {n : Nat} (v : BitVec n) (fs : FieldSpec)
 
 /-! ## Round-trip 2: a write leaves a disjoint field untouched -/
 
-/-- Writing field `fs` leaves any DISJOINT field `other` bit-for-bit unchanged.
+/-- Writing field `fs` leaves any disjoint field `other` bit-for-bit unchanged.
 Two symmetric cases: `other` sits entirely above the write window (the write's low
 bits are discarded by the larger quotient — `natQuotientHighCollapse`), or `other`
 sits entirely below it (the write only touches high bits, a multiple of `other`'s

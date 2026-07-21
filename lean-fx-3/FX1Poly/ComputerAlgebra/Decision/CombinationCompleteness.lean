@@ -1,76 +1,60 @@
 import FX1Poly.ComputerAlgebra.Decision.CombinationDispatch
 import FX1Poly.ComputerAlgebra.Decision.FourierMotzkinExtension
 
-/-! # FX1Poly/ComputerAlgebra/Decision/CombinationCompleteness — the DISSAT-COMBINE
-    completeness legs (Nelson–Oppen completeness for the gcc + Farkas dispatch)
+/-! # FX1Poly/ComputerAlgebra/Decision/CombinationCompleteness — Nelson–Oppen
+    completeness for the ground-congruence + Farkas combination
 
-The completeness-side companion to `CombinationDispatch` (the `noc` core, whose SOUNDNESS
-chain `nocCombinationSound` / `nocFinderSound` / `nocFinderRefutesJointModels` is already
-proven zero-axiom).  This file supplies the reverse direction — an unsatisfiable combined
-system yields an accepted refutation certificate — up to exactly ONE honest semantic wall.
+The completeness-side companion to `CombinationDispatch` (the `noc` core, whose
+soundness chain `nocCombinationSound` / `nocFinderSound` /
+`nocFinderRefutesJointModels` is proven zero-axiom).  This file supplies the reverse
+direction — an unsatisfiable combined system yields an accepted refutation
+certificate — up to one honest semantic wall.  The A-side Farkas leg is discharged
+against the proven `lreFarkasCompletenessHolds` (in `FourierMotzkinExtension`), so
+only the E-side equality-interpolation leg remains premised.
 
-## The drift this file corrects
+## Proven here (zero-axiom, no premise)
 
-`CombinationDispatch`'s combination-completeness wall docstring lists, among its three
-missing legs, "(ii) Farkas completeness over the rationals (the sibling's owner-false
-Fourier–Motzkin backward brick)".  That description is STALE: the Fourier–Motzkin
-completeness brick has since been PROVEN — `lreFarkasCompletenessHolds` (in
-`FourierMotzkinExtension`) inhabits `lfkFarkasCompletenessStatement` verbatim.  This file
-DISCHARGES that leg for the combination: the A-side of the dispatch is no longer premised
-but proven.  What remains is the E-side equality-interpolation / model-amalgamation leg,
-named here as the single owner-false wall.
-
-## What is PROVEN here (zero-axiom, no premise)
-
-  * `nccAugmentedInfeasibleIffFarkasCertificate` — the propagation-augmented A-side is
-    RATIONALLY infeasible (in the exact denominator-encoded shape of
-    `lfkFarkasCompletenessStatement`'s antecedent) IFF a Farkas certificate refutes it.
-    Forward = `lreFarkasCompletenessHolds`; backward = the sibling's
+  * `nccAugmentedInfeasibleIffFarkasCertificate` — the propagation-augmented A-side
+    is rationally infeasible (in the denominator encoding of
+    `lfkFarkasCompletenessStatement`'s antecedent) iff a Farkas certificate refutes
+    it.  Forward is `lreFarkasCompletenessHolds`, backward is
     `lreScaledInfeasibilityOfAcceptedCertificate`.
-  * `nccAcceptedCertificateOfAugmentedInfeasible` — THE COMPLETENESS REDUCTION: if the
-    propagation-augmented A-side is rationally infeasible, the combination checker accepts
-    a certificate carrying exactly the propagated equalities.  The Farkas half is
-    discharged (multipliers from `lreFarkasCompletenessHolds`); the equality half is
-    `nocPropagatedAllCheck`.
-  * `nccJointModelSatisfiesAugmented` — every joint model satisfies the augmented A-side
-    (the bridge fires each propagated equality row; the A-part is a sublist).  This is the
-    completeness-side companion of soundness: a Farkas refutation of the augmented A-side
-    therefore refutes every joint model.
-  * The finite pair census (T1 flavour): `nccPropagatedCountBoundedByTriangle` — the
-    one-round propagation emits at most a triangular-number of shared equalities in the
-    interface length.  This is the constructive-pigeonhole bound that would cap the fuel
-    of a multi-round saturation loop (the loop itself is not built here — the committed
-    finder is one-round).
+  * `nccAcceptedCertificateOfAugmentedInfeasible` — the completeness reduction:
+    rational infeasibility of the augmented A-side yields an accepted combination
+    certificate carrying the propagated equalities (Farkas multipliers from the
+    discharged leg; equality half `nocPropagatedAllCheck`).
+  * `nccJointModelSatisfiesAugmented` — every joint model satisfies the augmented
+    A-side, so a Farkas refutation of that side refutes every joint model.
+  * `nccPropagatedCountBoundedByTriangle` — one-round propagation emits at most a
+    triangular number (in the interface length) of shared equalities: the
+    constructive-pigeonhole bound on the finite pair census that would cap the fuel
+    of a multi-round saturation loop.
 
-## The single honest wall (owner-false, NOT proven)
+## The single honest wall (owner-false)
 
-  * `nccEqualityInterpolationStatement` — joint unsatisfiability of the committed
-    (integer) `nocIsJointModel` semantics upgrades to RATIONAL infeasibility of the
-    propagation-augmented A-side.  FALSE as literally stated over ℤ: the empty-E,
-    A-part `{2x = 1}` problem is integer-joint-unsat yet rationally feasible (`x = 1/2`),
-    so no Farkas certificate exists.  The reachable target is the RATIONAL relaxation, and
-    even there the leg needs (a) equality-interpolation completeness of the E-engine
-    (single shared equalities suffice only for CONVEX theories; ℤ-LIA is non-convex:
-    `1 <= x <= 2` entails `x = 1 ∨ x = 2` with neither disjunct entailed, so non-convex
-    completeness needs equality-disjunction case-split trees / arrangement enumeration),
-    and (b) model amalgamation across the shared arrangement (stable infiniteness /
-    cardinality agreement — a semantic condition no certificate checker inspects).  Owner
-    `fxNccCombine_hasEqualityInterpolation := false`.
+`nccEqualityInterpolationStatement` — joint unsatisfiability of the committed integer
+`nocIsJointModel` semantics upgrades to rational infeasibility of the augmented
+A-side.  FALSE over ℤ as literally stated: the empty-E, A-part `{2x = 1}` problem is
+integer-joint-unsat yet rationally feasible (`x = 1/2`), so no Farkas certificate
+exists.  The reachable rational target additionally needs equality-interpolation
+completeness of the E-engine (single shared equalities suffice only for convex
+theories; ℤ-LIA is non-convex — `1 ≤ x ≤ 2` entails `x = 1 ∨ x = 2` with neither
+disjunct entailed) and model amalgamation across the shared arrangement (stable
+infiniteness / cardinality agreement, a semantic condition no certificate checker
+inspects).  Owner `fxNccCombine_hasEqualityInterpolation := false`.
 
-Given that wall as a hypothesis, `nccCombinationCompleteGivenInterpolation` (completeness)
-and `nccCombinationDecidesGivenInterpolation` (the end-to-end iff: the checker DECIDES
-joint unsatisfiability) both follow — soundness is unconditional, completeness rests on
-the one named leg.  These conditional reductions are the first-class deliverable.
+Given that wall as a hypothesis, `nccCombinationCompleteGivenInterpolation` and the
+end-to-end decision iff `nccCombinationDecidesGivenInterpolation` follow: soundness
+is unconditional, completeness rests on the one named leg.
 
 ## Zero-axiom discipline
 
 Init only; imports the `noc` dispatch and the Fourier–Motzkin completeness cascade.
-Structural recursion; no `WellFounded.fix`, `propext`, `Quot.sound`, `Classical.choice`,
-`sorry`, `native_decide`, `funext`, `omega`, no `decide` on `Prop`, no wildcard arms.
-The census length bound uses only the probed-clean `Nat.le` kit (`Nat.le_refl`,
-`Nat.le_trans`, `Nat.succ_le_succ`, `Nat.le_add_right`, `Nat.add_le_add`).  All list
-helpers are bespoke, monomorphic, cons-only.  Per-declaration gate in
-`FX1PolyAudit/ComputerAlgebra/Decision/CombinationCompleteness.lean`. -/
+Structural recursion; no `WellFounded.fix`, `propext`, `Quot.sound`,
+`Classical.choice`, `sorry`, `native_decide`, `funext`, `omega`, no `decide` on
+`Prop`, no wildcard arms.  The census length bound uses only the probed-clean
+`Nat.le` kit; all list helpers are bespoke, monomorphic, cons-only.  Per-declaration
+gate in the audit twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -94,16 +78,14 @@ def nccAugmentedRationallyInfeasible (problem : NocProblem) : Prop :=
       (lfkScaleBoundsForDenominator (denominatorPred + 1)
         (nccAugmentedArithmetic problem)) = true → False
 
-/-! ## Stage B — the Farkas leg, DISCHARGED (the drift fix)
+/-! ## Stage B — the Farkas leg
 
-The sibling proves both directions of the rational-Farkas iff.  Specialising them to the
-augmented A-side turns the combination's A-side completeness from a premise into a
-theorem. -/
+Both directions of the rational-Farkas iff, specialised to the augmented A-side; this
+turns the combination's A-side completeness from a premise into a theorem. -/
 
-/-- THE A-SIDE IFF: the augmented A-side is rationally infeasible IFF a Farkas certificate
-refutes it.  Forward is the proven completeness inhabitant `lreFarkasCompletenessHolds`;
-backward is the proven `lreScaledInfeasibilityOfAcceptedCertificate`.  This is the leg
-`CombinationDispatch`'s wall docstring still calls owner-false. -/
+/-- The A-side iff: the augmented A-side is rationally infeasible iff a Farkas
+certificate refutes it.  Forward is the completeness inhabitant
+`lreFarkasCompletenessHolds`; backward is `lreScaledInfeasibilityOfAcceptedCertificate`. -/
 theorem nccAugmentedInfeasibleIffFarkasCertificate (problem : NocProblem) :
     Iff (nccAugmentedRationallyInfeasible problem)
       (∃ (farkasCertificate : List Nat),
@@ -149,24 +131,20 @@ theorem nccJointModelSatisfiesAugmented (problem : NocProblem) (env : List LfkIn
   nocAugmentedSystemSatisfied problem env jointModelWitness.right jointModelWitness.left
     (nocPropagateEqualities problem) (nocPropagatedAllCheck problem)
 
-/-- THE EQUALITY-INTERPOLATION WALL (owner-false, NOT proven — FALSE over ℤ as literally
-stated): joint unsatisfiability of the committed integer `nocIsJointModel` semantics
-upgrades to rational infeasibility of the propagation-augmented A-side.  The integer
-counterexample: empty E-part, A-part `{2x = 1}` is integer-joint-unsat yet rationally
-feasible (`x = 1/2`), certificate-free.  The reachable rational target still needs
-equality-interpolation completeness of the E-engine (single equalities suffice only for
-convex theories; ℤ-LIA is non-convex) and model amalgamation over the shared arrangement
-(stable infiniteness / cardinality agreement — a semantic side condition, never
-certificate-checkable).  Owner: `fxNccCombine_hasEqualityInterpolation := false`. -/
+/-- The equality-interpolation wall (owner-false): joint unsatisfiability of the
+committed integer `nocIsJointModel` semantics upgrades to rational infeasibility of the
+augmented A-side.  FALSE over ℤ as stated (the empty-E, A-part `{2x = 1}` problem is
+integer-joint-unsat yet rationally feasible); the reachable rational target further
+needs E-engine equality-interpolation completeness and model amalgamation (see the
+header).  Owner: `fxNccCombine_hasEqualityInterpolation := false`. -/
 def nccEqualityInterpolationStatement : Prop :=
   ∀ (problem : NocProblem),
     (∀ (env : List LfkInt), nocIsJointModel problem env → False) →
       nccAugmentedRationallyInfeasible problem
 
-/-- CONDITIONAL COMPLETENESS (first-class honest reduction): GIVEN the equality-
-interpolation leg, every jointly-unsatisfiable problem has an accepted combination
-certificate.  The Farkas half is unconditional (discharged in Stage B); only the E-side
-interpolation is premised. -/
+/-- Conditional completeness: given the equality-interpolation leg, every
+jointly-unsatisfiable problem has an accepted combination certificate.  The Farkas half
+is unconditional (Stage B); only the E-side interpolation is premised. -/
 theorem nccCombinationCompleteGivenInterpolation
     (interpolationWitness : nccEqualityInterpolationStatement) (problem : NocProblem)
     (jointUnsatWitness : ∀ (env : List LfkInt), nocIsJointModel problem env → False) :
@@ -174,10 +152,10 @@ theorem nccCombinationCompleteGivenInterpolation
   nccAcceptedCertificateOfAugmentedInfeasible problem
     (interpolationWitness problem jointUnsatWitness)
 
-/-- THE END-TO-END IFF (T3, conditional): GIVEN the equality-interpolation leg, the
-combination checker DECIDES joint unsatisfiability — there is an accepted certificate iff
-no joint model exists.  Soundness (`nocCombinationSound`) supplies the backward half with
-NO premise; completeness supplies the forward half through the one named leg. -/
+/-- The end-to-end decision iff: given the equality-interpolation leg, the combination
+checker decides joint unsatisfiability — an accepted certificate exists iff no joint
+model exists.  Soundness (`nocCombinationSound`) supplies the backward half with no
+premise; completeness supplies the forward half through the one named leg. -/
 theorem nccCombinationDecidesGivenInterpolation
     (interpolationWitness : nccEqualityInterpolationStatement) (problem : NocProblem) :
     Iff (∀ (env : List LfkInt), nocIsJointModel problem env → False)
@@ -191,7 +169,7 @@ theorem nccCombinationDecidesGivenInterpolation
         (fun certificate acceptedWitness =>
           nocCombinationSound problem certificate acceptedWitness))
 
-/-! ## Stage D — the finite pair census (T1: the pigeonhole fuel bound) -/
+/-! ## Stage D — the finite pair census (the pigeonhole fuel bound) -/
 
 /-- Bespoke cons-only length of an index-pair list. -/
 def nccPairListLength : List (Nat × Nat) → Nat
@@ -295,26 +273,21 @@ theorem nccPropagatedCountBoundedByTriangle (problem : NocProblem) :
 
 /-! ## Stage E — markers -/
 
-/-- DECIDED marker: the A-side (Farkas / rational) completeness leg of the combination is
-DISCHARGED, not premised — `nccAugmentedInfeasibleIffFarkasCertificate` and
-`nccAcceptedCertificateOfAugmentedInfeasible` route through the proven sibling inhabitant
-`lreFarkasCompletenessHolds`.  Supersedes the stale "owner-false Farkas" leg in
-`CombinationDispatch`'s completeness-wall docstring. -/
-def fxNccCombine_hasFarkasLegDischarged : Bool := true
+/-- The completeness reduction is decided, resting only on the single named
+equality-interpolation leg.  Three zero-axiom deliverables:
+(1) the A-side Farkas leg is discharged, not premised
+    (`nccAugmentedInfeasibleIffFarkasCertificate`,
+    `nccAcceptedCertificateOfAugmentedInfeasible` route through the proven
+    `lreFarkasCompletenessHolds`);
+(2) the conditional completeness reduction and end-to-end decision iff
+    (`nccCombinationCompleteGivenInterpolation`,
+    `nccCombinationDecidesGivenInterpolation`);
+(3) the finite pair census bound `nccPropagatedCountBoundedByTriangle` caps the
+    one-round propagation output by a triangular number of the interface length. -/
+def fxNccCombine_hasCompletenessReduction : Bool := true
 
-/-- DECIDED marker: the conditional completeness reduction and the end-to-end
-decision iff (`nccCombinationCompleteGivenInterpolation`,
-`nccCombinationDecidesGivenInterpolation`) are proven zero-axiom, resting only on the
-single named equality-interpolation leg. -/
-def fxNccCombine_hasConditionalCompleteness : Bool := true
-
-/-- DECIDED marker: the finite pair census bound `nccPropagatedCountBoundedByTriangle`
-caps the one-round propagation output by a triangular number of the interface length. -/
-def fxNccCombine_hasPropagationCensusBound : Bool := true
-
-/-- Owner flag for `nccEqualityInterpolationStatement` — NOT proven; FALSE over ℤ as
-stated (see the wall docstring for the rational-side interpolation and amalgamation
-legs). -/
+/-- Owner flag for `nccEqualityInterpolationStatement` — FALSE over ℤ as stated (see the
+header for the rational-side interpolation and amalgamation legs). -/
 def fxNccCombine_hasEqualityInterpolation : Bool := false
 
 /-! ## Stage F — fires (concrete kernel pins routing through the completeness machinery)
@@ -385,7 +358,7 @@ theorem nccCongruenceAugmentedInfeasible :
   (nccAugmentedInfeasibleIffFarkasCertificate nccCongruenceProblem).mpr
     (Exists.intro [0, 1, 1] rfl)
 
-/-- CONTENT FIRE (end-to-end through the new completeness machinery): the completeness
+/-- CONTENT FIRE (end-to-end through the completeness machinery): the completeness
 reduction produces an accepted combination certificate for the congruence problem — Farkas
 leg discharged, no premise consumed. -/
 theorem nccCongruenceHasAcceptedCertificate :

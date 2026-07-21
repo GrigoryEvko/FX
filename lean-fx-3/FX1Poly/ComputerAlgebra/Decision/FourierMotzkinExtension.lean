@@ -1,90 +1,81 @@
 import FX1Poly.ComputerAlgebra.Decision.FourierMotzkinCompleteness
 
-/-! # FX1Poly/ComputerAlgebra/Decision/FourierMotzkinExtension — the DISSAT-ARITH
-    round-extension push: the wall REFUTED as stated, the inequality-guarded form
-    PROVEN, and Farkas completeness INHABITED
+/-! # Fourier-Motzkin round extension, refutation, and Farkas completeness
 
-Round 2 on the sibling wall `lfmRoundExtensionStatement`
-(FourierMotzkinCompleteness.lean, owner
-`fxDissatArith_hasFourierMotzkinCompleteness := false`).  Outcome, in three acts:
+This module establishes completeness of the Fourier-Motzkin elimination
+pipeline of `FourierMotzkinCompleteness`: every rationally infeasible linear
+system admits a checker-accepted Farkas refutation certificate.  Three results
+carry the argument.
 
-  1. **THE WALL AS STATED IS FALSE** (`lreRoundExtensionStatementRefuted`).  The
-     statement quantifies over ARBITRARY certified rows — including rows whose
-     relation is `isEqualTo`.  The elimination round buckets rows by the SIGN of
-     the target coefficient only, so an equality row (both a lower AND an upper
-     bound on the variable) lands in a single bucket and its opposite bound is
-     forgotten.  Counterexample: `[x = 0, x >= 1]` — both rows sit in the
-     positive bucket, the negative bucket is empty, the round output is the
-     EMPTY list (satisfiable by anything), yet the input is unsatisfiable at
-     every denominator.  Machine-checked below.
-  2. **THE CORRECTED STATEMENT IS PROVEN** (`lreRoundExtensionHolds` inhabiting
-     `lreRoundExtensionInequalityStatement`): the same extension property with
-     the single extra hypothesis that every input row's relation is an
-     inequality (`lfmRelationIsInequality`).  This is exactly the invariant the
-     actual pipeline maintains — seed constraints are weighted sums (always
-     inequalities by `lfmWeightedSumRelationIsInequality`) and rounds preserve
-     inequality-ness — so nothing is lost for the cascade.
-  3. **THE CASCADE CLOSES THE SIBLING WALL** (`lreFarkasCompletenessHolds`
-     inhabits `lfkFarkasCompletenessStatement`, ascribed verbatim): fuel
-     induction back through the driver, the ground+scan-clean base, the
-     unit-provenance seed extraction, and the equality re-assembly transport
-     from the expanded to the original system produce, for every system the
-     finder scans clean, a satisfying scaled environment — contradicting
-     rational infeasibility; on a scan hit the composition theorem hands over
-     the checker-accepted certificate.
+## The naive round-extension statement is false
 
-## Attack shape (per the sibling header's three documented failures)
+`lfmRoundExtensionStatement` (from the sibling module) claims that
+satisfiability of an elimination round's OUTPUT extends back to satisfiability
+of its INPUT, quantifying over arbitrary certified rows.
+`lreRoundExtensionStatementRefuted` shows this is false.  A round buckets rows
+by the SIGN of the pivot coefficient, so an equality row — at once a lower and
+an upper bound on the pivot variable — lands in a single bucket and its
+opposite half is discarded.  On the fixture `[x = 0, x >= 1]` both rows enter
+the positive bucket, the negative bucket is empty, and the round emits the
+empty system (satisfied by any environment), while the input is unsatisfiable
+at every denominator.
 
-This is documented shape 1 (direct structural back-substitution) with three
-deviations that dissolve its recorded pain points:
+## The inequality-guarded round extension holds
 
-  * **Midpoint witness, not endpoint**: with both buckets nonempty the new
-    value for the eliminated variable is `t := cStar·LStar + aStar·UStar` at
-    denominator `D' := D·(aStar·cStar + aStar·cStar)` — the MIDPOINT of the
-    best scaled lower bound `LStar/(D·aStar)` and best scaled upper bound
-    `UStar/(D·cStar)`.  The strict-tie bookkeeping that killed the endpoint
-    route disappears: a strict row tying the weak optimum forces its cross
-    combination to be STRICT, which in the succ-le integer encoding is a whole
-    `+1` of headroom — enough to keep the midpoint strictly inside.  With one
-    bucket empty the witness pads a whole denominator unit
-    (`LStar + D·aStar` resp. `UStar − D·cStar`), again covering weak and
-    strict rows uniformly.  Strictness is absorbed by the encoding; no
-    lexicographic tie state.
-  * **Unconditional decomposition kit**: `lreDotProductSplitAt` (dot = pivot
-    entry · pivot coefficient + rest) and `lreDotProductUpdateAt` (dot after
-    environment update = new value · pivot coefficient + rest) are structural
-    equalities with NO length hypotheses — the padding/truncating semantics of
-    the sibling files already make missing entries genuine zeros.  Everything
-    else moves along cross-sum equality (`lfkIntEq`) congruence lemmas.
-  * **Pairwise combo consumption**: the fold-selected best rows are compared
-    only through the cross combinations the round itself emitted (via the
-    bespoke membership predicate `lreRowIsAmong`), so no lcm/product
-    recombination of heterogeneous denominators ever appears (the trap that
-    relocated attack 2 into attack 1's mass).
+`lreRoundExtensionForInequalityRows`, packaged as
+`lreRoundExtensionInequalityStatement` and inhabited by
+`lreRoundExtensionHolds`, restores the extension under the single extra
+hypothesis that every input row carries an inequality relation
+(`lfmRelationIsInequality`).  This is the invariant the pipeline maintains:
+seed constraints are weighted sums, hence inequalities by
+`lfmWeightedSumRelationIsInequality`, and every round preserves
+inequality-ness, so the guard costs the cascade nothing.
 
-## Supersession notes
+The witness for the eliminated variable is a cleared MIDPOINT.  With both sign
+buckets nonempty, best scaled lower bound `LStar` over `D*aStar` and best
+scaled upper bound `UStar` over `D*cStar`, the new value is
+`cStar*LStar + aStar*UStar` at denominator `D*(aStar*cStar + aStar*cStar)`.  A
+strict parent row forces its cross combination strict, which in the
+successor-le integer encoding contributes a whole unit of headroom — enough to
+keep the midpoint strictly inside the interval, so weak and strict rows are
+treated uniformly with no lexicographic tie state.  With one bucket empty the
+witness pads the surviving best bound by a whole denominator unit
+(`LStar + D*aStar` on the low side, `UStar` less `D*cStar` on the high side),
+again strictly clearing every scaled bound.
 
-  * `lfmRoundExtensionStatement` (sibling wall Prop): REFUTED here, byte-intact
-    there.  The sibling owner flag
-    `fxDissatArith_hasFourierMotzkinCompleteness := false` refers to that file
-    and stays authoritative FOR THAT FILE; the corrected statement and the full
-    completeness cascade live here under
-    `fxDissatArith_hasRoundExtension := true` and
-    `fxDissatArith_hasFourierMotzkinCompletenessProven := true`.
-  * `lfkFarkasCompletenessStatement` (LinearFarkasCertificate.lean wall, owner
-    `fxDissatArith_hasFarkasCompleteness := false` in that file, untouched):
-    INHABITED here by `lreFarkasCompletenessHolds`.
+## Supporting infrastructure
+
+The decomposition kit is structural and unconditional.  `lreDotProductSplitAt`
+reads any dot product as the pivot entry times the pivot coefficient plus the
+pivot-zeroed rest, and `lreDotProductUpdateAt` computes the dot product against
+an environment updated at one position; neither needs length hypotheses, since
+the padding and truncating semantics of the sibling modules make missing
+entries genuine zeros.  The fold-selected best rows are compared only through
+the cross combinations the round itself emits, tracked by the recursive
+membership predicate `lreRowIsAmong`, so no recombination of heterogeneous
+denominators is ever required.
+
+## Farkas completeness
+
+`lreFarkasCompletenessHolds` inhabits `lfkFarkasCompletenessStatement`, the wall
+Prop of `LinearFarkasCertificate`.  On a scan hit the finder's composition
+theorem returns the checker-accepted certificate directly.  On a clean scan,
+fuel induction back through the driver (`lreDriverBackwardExtension`), the
+ground scan-clean base (`lreGroundCleanRowsSatisfied`), the unit-provenance seed
+extraction, and the equality re-assembly from the expanded system to the
+original produce a satisfying scaled environment for every clean system,
+contradicting the rational-infeasibility hypothesis.
 
 ## Zero-axiom discipline
 
-Init only plus the two sibling imports.  Structural recursion throughout; no
-`WellFounded.fix`.  No `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+Init plus the two sibling imports only.  Structural recursion throughout; no
+`WellFounded.fix`, `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `funext`, `omega`, no `decide` on `Prop`, no catch-all match
-arms, no `List.append`, no `Int`, no `Nat.sub/mod/div/min/max`.  Nat facts are
-the siblings' probed-clean core plus hand-rolled additions (`lreNatLeAddLeft`,
-positive-multiplier cancellation `lreNatMulLeCancelLeft` — never the banned
-order corners).  Per-declaration gate in
-`FX1PolyAudit/ComputerAlgebra/Decision/FourierMotzkinExtension.lean`. -/
+arms, no `List.append`, no `Int`, and no `Nat.sub/mod/div/min/max`.  Nat facts
+are the siblings' probed-clean core plus the hand-rolled additions
+`lreNatLeAddLeft` and the positive-multiplier cancellation
+`lreNatMulLeCancelLeft`.  A per-declaration axiom gate lives in the
+`FX1PolyAudit` twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -773,7 +764,7 @@ theorem lreIntSignTrichotomy (value : LfkInt) :
                       (lfmNatBleFalseFlipStrict (value.positivePart + 1)
                         value.negativePart negativeFalse))))))
 
-/-! ## The environment-update / dot-product decomposition kit (Step-1 core) -/
+/-! ## The environment-update / dot-product decomposition kit -/
 
 /-- Replace the coefficient at one position by the genuine zero; vectors too
 short to reach the position are unchanged (their entry already reads as zero). -/
@@ -3836,32 +3827,19 @@ theorem lreScaledInfeasibilityOfAcceptedCertificate (certificate : List Nat)
 
 /-! ## Markers -/
 
-/-- DECIDED marker: the ROUND-EXTENSION push — the wall Prop
-`lfmRoundExtensionStatement` REFUTED as stated
-(`lreRoundExtensionStatementRefuted`: equality rows enter a single sign bucket
-and their opposite bound is forgotten), the corrected inequality-guarded form
-`lreRoundExtensionInequalityStatement` PROVEN (`lreRoundExtensionHolds`) with
-the midpoint witness and the whole-unit strict headroom, and the full
-environment-update/dot-decomposition + endpoint-selection kit shipped
-zero-axiom.  Supersedes the sibling's round-extension wall CONTENT; the
-sibling's owner flag `fxDissatArith_hasFourierMotzkinCompleteness := false`
-stays byte-intact THERE as a historical record of that file's scope. -/
-def fxDissatArith_hasRoundExtension : Bool := true
-
-/-- REFUTATION marker: `lfmRoundExtensionStatement` as literally stated is
-FALSE — machine-checked by `lreRoundExtensionStatementRefuted` on the
-`[x = 0, x >= 1]` fixture. -/
+/-- `lfmRoundExtensionStatement`, as literally stated, is false: machine-checked
+by `lreRoundExtensionStatementRefuted` on the `[x = 0, x >= 1]` fixture, where
+the equality row enters a single sign bucket and its opposite bound is dropped,
+so the round output is empty while the input is unsatisfiable. -/
 def fxDissatArith_roundExtensionAsStatedRefuted : Bool := true
 
-/-- THE CASCADE marker: `lfkFarkasCompletenessStatement` — the
-LinearFarkasCertificate wall, verbatim — is INHABITED by
-`lreFarkasCompletenessHolds`: every rationally infeasible system yields a
-checker-accepted Farkas certificate through the Fourier–Motzkin finder.
-Supersedes the CONTENT of the sibling walls
-`fxDissatArith_hasFarkasCompleteness := false` (LinearFarkasCertificate.lean)
-and `fxDissatArith_hasFourierMotzkinCompleteness := false`
-(FourierMotzkinCompleteness.lean); both flags stay byte-intact in their files
-per the no-edit discipline. -/
+/-- `lfkFarkasCompletenessStatement` — the `LinearFarkasCertificate` wall Prop,
+ascribed verbatim — is inhabited by `lreFarkasCompletenessHolds`: every
+rationally infeasible system yields a checker-accepted Farkas certificate
+through the Fourier-Motzkin finder.  The load-bearing lemma is the corrected
+inequality-guarded round extension `lreRoundExtensionInequalityStatement`,
+inhabited by `lreRoundExtensionHolds`, whose witness is the cleared midpoint of
+the fold-selected best scaled bounds. -/
 def fxDissatArith_hasFourierMotzkinCompletenessProven : Bool := true
 
 /-! ## Smokes — the two-round backward extension fire, the refutation pins,

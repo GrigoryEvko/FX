@@ -1,31 +1,27 @@
 import FX1Poly.ComputerAlgebra.Number.IntArithmeticCore
 import FX1Poly.ComputerAlgebra.Number.IntSubNatNat
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntDistributivity — the mul bridges + distributivity
-    (FLOAT-1 brick 4)
+/-! # The multiplication bridges and distributivity
 
-Init's `Int.mul_add` / `Int.add_mul` are propext-dirty; this module hand-rolls both.  Two new
-pieces on top of the brick-2/3 substrate:
+Init's `Int.mul_add` / `Int.add_mul` leak `propext`, so both are hand-rolled here. Two
+pieces sit on top of the `subNatNat` substrate:
 
-  * The `negOfNat` ADDITION KIT (`intOfNatAddNegOfNat` / `intNegOfNatAddOfNat` /
-    `intNegOfNatAddNegOfNat` / `intNegOfNatEqSubNatNatZero`) — the mixed-sign `Int.mul` arms
-    produce `negOfNat`, so distributivity's right-hand sides are sums over `negOfNat`; each
-    lemma is a two-case split closing by `rfl` or one `congrArg`.
-  * The two MUL-OVER-`subNatNat` BRIDGES (`intOfNatMulSubNatNat` / `intNegSuccMulSubNatNat`):
-    multiplication distributes into both arguments of a `subNatNat` (flipping them under a
-    negative factor).  Same double-recursion shape as the brick-3 add bridges, but the step
-    case is `intSubNatNatShiftInvariant` — because `k * (m + 1)` is DEFINITIONALLY
-    `k * m + k`, shifting both arguments by the factor.
+  * The `negOfNat` addition kit (`intOfNatAddNegOfNat` / `intNegOfNatAddOfNat` /
+    `intNegOfNatAddNegOfNat` / `intNegOfNatEqSubNatNatZero`) — the mixed-sign `Int.mul`
+    arms produce `negOfNat`, so distributivity's right-hand sides are sums over `negOfNat`;
+    each lemma is a two-case split closing by `rfl` or one `congrArg`.
+  * The two mul-over-`subNatNat` bridges (`intOfNatMulSubNatNat` / `intNegSuccMulSubNatNat`):
+    multiplication distributes into both arguments of a `subNatNat`, flipping them under a
+    negative factor. The step case is `intSubNatNatShiftInvariant`, because `k * (m + 1)`
+    is definitionally `k * m + k`, shifting both arguments by the factor.
   * `intLeftDistrib` is then the eight-way constructor bash (every mixed case lands on a
-    shared `subNatNat`/`negOfNat` form), and `intRightDistrib` is the corollary through
+    shared `subNatNat`/`negOfNat` form), and `intRightDistrib` is its corollary through
     `intMulComm`.
 
-## Zero-axiom
-
-Structural recursion + `congrArg`/`Eq.trans` chains over clean Nat lemmas (`Nat.left_distrib`,
-`Nat.succ_add`, `Nat.zero_add`) and the brick-2 kit.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/IntDistributivity.lean`. -/
+Structural recursion with `congrArg`/`Eq.trans` chains over clean Nat lemmas
+(`Nat.left_distrib`, `Nat.succ_add`, `Nat.zero_add`); free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, and `omega`; per-declaration gated in the
+audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -60,8 +56,8 @@ theorem intNegOfNatAddNegOfNat : ∀ headValue tailValue : Nat,
 
 /-! ## The mul-over-subNatNat bridges -/
 
-/-- **Mul bridge (nonnegative factor)**: an `ofNat` factor distributes into both arguments of
-a `subNatNat`.  The step case is `intSubNatNatShiftInvariant`, because `factor * (value + 1)`
+/-- Mul bridge (nonnegative factor): an `ofNat` factor distributes into both arguments of
+a `subNatNat`. The step case is `intSubNatNatShiftInvariant`, because `factor * (value + 1)`
 is definitionally `factor * value + factor`. -/
 theorem intOfNatMulSubNatNat (factorValue : Nat) : ∀ leftValue rightValue : Nat,
     Int.ofNat factorValue * Int.subNatNat leftValue rightValue =
@@ -76,8 +72,8 @@ theorem intOfNatMulSubNatNat (factorValue : Nat) : ∀ leftValue rightValue : Na
           (intSubNatNatShiftInvariant (factorValue * leftValue) (factorValue * rightValue)
             factorValue).symm)
 
-/-- **Mul bridge (negative factor)**: a `negSucc` factor distributes into a `subNatNat` and
-FLIPS its arguments.  Same shape as the nonnegative bridge. -/
+/-- Mul bridge (negative factor): a `negSucc` factor distributes into a `subNatNat` and
+flips its arguments; same shape as the nonnegative bridge. -/
 theorem intNegSuccMulSubNatNat (factorPredecessor : Nat) : ∀ leftValue rightValue : Nat,
     Int.negSucc factorPredecessor * Int.subNatNat leftValue rightValue =
       Int.subNatNat ((factorPredecessor + 1) * rightValue)
@@ -96,9 +92,9 @@ theorem intNegSuccMulSubNatNat (factorPredecessor : Nat) : ∀ leftValue rightVa
 
 /-! ## Distributivity -/
 
-/-- **Left distributivity** (Init's `Int.mul_add` is propext-dirty).  Eight-way constructor
-bash: the mixed cases collapse through the mul bridges and the `negOfNat` addition kit onto a
-shared `subNatNat`/`negOfNat` form; the double-`negSucc` summand cases need one
+/-- Left distributivity (Init's `Int.mul_add` leaks `propext`). Eight-way constructor
+bash: the mixed cases collapse through the mul bridges and the `negOfNat` addition kit onto
+a shared `subNatNat`/`negOfNat` form; the double-`negSucc` summand cases need one
 `Nat.succ_add` shuffle before `Nat.left_distrib`. -/
 theorem intLeftDistrib : ∀ factor leftSummand rightSummand : Int,
     factor * (leftSummand + rightSummand) = factor * leftSummand + factor * rightSummand
@@ -139,7 +135,7 @@ theorem intLeftDistrib : ∀ factor leftSummand rightSummand : Int,
           (Nat.left_distrib (factorPredecessor + 1) (leftPredecessor + 1)
             (rightPredecessor + 1)))
 
-/-- **Right distributivity** (Init's `Int.add_mul` is propext-dirty) — corollary of
+/-- Right distributivity (Init's `Int.add_mul` leaks `propext`): corollary of
 `intLeftDistrib` through `intMulComm`, rewriting each addend back. -/
 theorem intRightDistrib (leftSummand rightSummand factor : Int) :
     (leftSummand + rightSummand) * factor = leftSummand * factor + rightSummand * factor :=

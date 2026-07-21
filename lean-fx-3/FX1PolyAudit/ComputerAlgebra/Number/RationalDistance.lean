@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RationalDistance
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RationalDistance — zero-axiom gate
-    (NUM-R-0)
 
 Per-declaration zero-axiom gate for the two-sided rational distance kit:
 subtraction, the structurally-positive bound constructors, the two-sided

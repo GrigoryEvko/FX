@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealSquareRoot
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealSquareRoot — zero-axiom gate
-    (NUM-R-SQRT #1961)
 
 Per-declaration zero-axiom gate for constructive square root: the integer square root
 by counting and its two-sided certificate, plus the strict-monotone-square micro-lemmas.

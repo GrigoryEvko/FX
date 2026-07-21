@@ -1,16 +1,12 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntToNatCycle
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntToNatCycle — zero-axiom gate
-    (FLOAT-2 brick 4a)
+/-! # Zero-axiom gate for `IntToNatCycle`
 
 Per-declaration zero-axiom gate for the clamped-gap cycle-balance kit: the `toNat`
-computation pins (promoted here from the RadixScaledInteger carrier), the positive-part
-decomposition, the four-term AC exchange, the gap-cycle telescope, and the cycle
-balance itself.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+computation pins, the positive-part decomposition, the four-term AC exchange, the
+gap-cycle telescope, and the cycle balance itself. Every declaration must be free of
+`propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

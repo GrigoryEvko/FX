@@ -1,15 +1,14 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexRealTriangleInequality — zero-axiom
-    gate (NUM-C-4 triangle inequality)
+/-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexRealTriangleInequality — zero-axiom gate
 
-Per-declaration zero-axiom gate for the ℂ modulus triangle inequality: the ℚ
-reflection bricks and the reflection step, the square-root order reflection crux
-and its corollaries (`nonNegSquareOrderReflect`, `sqrtRealMonotone`,
-`leSqrtOfSquareLe`, `selfLeSqrtRealSquare`), the Cauchy–Schwarz inequality with its
-real ring bricks, the transitivity/additivity bricks, and the headline
-`modulusTriangleInequality`.
+Per-declaration zero-axiom gate for the ℂ modulus triangle inequality: the ℚ-level
+reflection lemmas and the reflection step, the square-root order reflection
+(`realLeOfSquareLeNonNeg`) and its corollaries (`nonNegSquareOrderReflect`,
+`sqrtRealMonotone`, `leSqrtOfSquareLe`, `selfLeSqrtRealSquare`), the Cauchy–Schwarz
+inequality with its real ring lemmas, the transitivity and additivity lemmas, and
+`modulusTriangleInequality` itself.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

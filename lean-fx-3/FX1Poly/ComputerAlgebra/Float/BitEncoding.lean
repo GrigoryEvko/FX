@@ -9,9 +9,9 @@ pair; a value packs into a `BitVec (1 + expWidth + mantWidth)` as three
 LSB-first fields — mantissa at offset `0`, exponent at offset `mantWidth`, sign
 at offset `mantWidth + expWidth`.
 
-Everything rides the shipped `Register/FieldLayout` codec (`insertField` /
+Everything rides the `Register/FieldLayout` codec (`insertField` /
 `extractField`) and its two proven round-trips (`extractField_insertField_same`,
-`extractField_insertField_disjoint`).  The FLOAT-layer theorem is
+`extractField_insertField_disjoint`).  The round-trip theorem is
 `decodeEncode_*`: decoding each of the three fields out of a freshly-encoded
 word returns exactly the field that was written.  Instantiated for
 binary16/32/64, FP8 E4M3/E5M2, FP4 E2M1 with their exact widths.
@@ -30,9 +30,9 @@ structure BitLayout where
 
 namespace BitLayout
 
-/-- Total encoded width: trailing mantissa + exponent + sign (1).  Written in
-mantissa-first order (same physical `1 + e + m` bits) so the field bounds fall
-out of `Nat.le_add_right` / `Nat.le_succ` with no reassociation. -/
+/-- Total encoded width: trailing mantissa + exponent + sign, in mantissa-first
+order (physical `1 + e + m` bits), so the field bounds follow from
+`Nat.le_add_right` / `Nat.le_succ` with no reassociation. -/
 def totalWidth (layout : BitLayout) : Nat := layout.mantWidth + layout.expWidth + 1
 
 /-- The mantissa field: `mantWidth` bits at offset `0`. -/
@@ -70,7 +70,7 @@ end BitLayout
 
 /-! ## The Nat side-conditions: every field fits, and the fields are pairwise disjoint
 
-All are simple `≤` facts on `1 + expWidth + mantWidth`; proved with the clean
+All are simple `≤` facts on `1 + expWidth + mantWidth`; proved with the
 `Nat.le_add_*` primitives (no `omega`). -/
 
 /-- The mantissa field fits inside the word: `0 + mantWidth ≤ mantWidth + expWidth + 1`. -/

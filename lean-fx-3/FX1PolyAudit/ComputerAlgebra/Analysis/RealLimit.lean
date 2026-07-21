@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Analysis.RealLimit
 
 /-! # FX1PolyAudit/ComputerAlgebra/Analysis/RealLimit — zero-axiom gate
-    (ANALYSIS-LIMIT-1)
 
 Per-declaration zero-axiom gate for modulus-based real-sequence
 convergence: the Nat monotonicity shims, the real-level bound relaxation

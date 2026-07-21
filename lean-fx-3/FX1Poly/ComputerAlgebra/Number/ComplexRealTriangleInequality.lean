@@ -2,50 +2,46 @@ import FX1Poly.ComputerAlgebra.Number.ComplexRealModulusLaws
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrderTightness
 import FX1Poly.ComputerAlgebra.Number.RegularRealSquareRootMultiplicative
 
-/-! # ComplexRealTriangleInequality — the ℂ modulus triangle inequality (NUM-C-4)
+/-! # ComplexRealTriangleInequality — the ℂ modulus triangle inequality
 
-`|z + w| ≤ |z| + |w|` on the zero-axiom Bishop-real/complex setoid, the key
-analysis theorem toward the Fundamental Theorem of Algebra.  Built on the
-just-shipped real-order tightness/monotonicity layer (`RegularRealOrderTightness`)
-and the multiplicative square root (`RegularRealSquareRootMultiplicative`).
+`|z + w| ≤ |z| + |w|` on the zero-axiom Bishop-real/complex setoid, a key analysis
+theorem toward the Fundamental Theorem of Algebra.  Built on the real-order
+tightness/monotonicity layer (`RegularRealOrderTightness`) and the multiplicative
+square root (`RegularRealSquareRootMultiplicative`).
 
-The single analytic crux is **square-root order reflection**
-(`realLeOfSquareLeNonNeg`): if `s ≥ 0` and `x² ≤ s²` then `x ≤ s`, with `x` of
-ARBITRARY sign — only the right endpoint need be nonnegative.  The proof is the
-abs-free Bishop pattern used by `squareZeroImpliesZero`: at each comparison index,
-sample the difference `s − x` at a quadratically deep index where the vanishing
-lower bound on the product `(s − x)(s + x) = s² − x²` reflects (through the shipped
-rational square-root `lessEqualAsOfMulExactSquareLeNonNeg`, gated by a
-decidable-per-index sign split that touches no real order) into a vanishing lower
-bound on `s − x`, and regularity bridges the deep sample back to the comparison
-index under slack closure.
+The analytic crux is square-root order reflection (`realLeOfSquareLeNonNeg`): if
+`s ≥ 0` and `x² ≤ s²` then `x ≤ s`, with `x` of arbitrary sign — only the right
+endpoint need be nonnegative.  The proof is the abs-free Bishop pattern of
+`squareZeroImpliesZero`: at each comparison index, sample the difference `s − x`
+at a quadratically deep index where the vanishing lower bound on the product
+`(s − x)(s + x) = s² − x²` reflects (through the rational square-root
+`lessEqualAsOfMulExactSquareLeNonNeg`, gated by a decidable-per-index sign split
+that touches no real order) into a vanishing lower bound on `s − x`, and
+regularity bridges the deep sample back to the comparison index under slack
+closure.
 
-From the reflection crux everything else is corollary:
+From the reflection crux the rest is corollary:
 
 * `nonNegSquareOrderReflect` — the both-endpoints-nonnegative special case;
 * `sqrtRealMonotone` — `a ≤ b → √a ≤ √b`;
 * `leSqrtOfSquareLe` / `selfLeSqrtRealSquare` — `x ≤ √R` from `x² ≤ R`, and `x ≤ √(x²)`;
 * `cauchySchwarzReal` — `ac + bd ≤ |⟨a,b⟩| · |⟨c,d⟩|`;
-* `modulusTriangleInequality` — the headline.
+* `modulusTriangleInequality` — the triangle inequality itself.
 
-## Zero-axiom
-
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`, `WellFounded.fix`.  The sign split matches on `Decidable` DATA
-(`decideLessEqualAs`), never `decide`-on-a-Prop, and never case-splits on a real
-order.  Per-declaration gated in the audit twin. -/
+The sign split matches on `Decidable` data (`decideLessEqualAs`), never
+`decide`-on-a-Prop, and never case-splits on a real order.  Zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 namespace RationalPair
 
-/-! ## ℚ-level bricks for the reflection crux -/
+/-! ## ℚ-level lemmas for the reflection crux -/
 
 /-- The negation of the rational zero denotes zero — the numerator is `-0`. -/
 theorem negExactZeroDenotesZero : DenotesSameAs (negExact zeroRational) zeroRational :=
   congrArg (· * denominatorInt zeroRational) intNegZero
 
-/-- **A nonnegative sum reads back as an order**: `0 ≤ base + addend` gives
+/-- A nonnegative sum reads back as an order: `0 ≤ base + addend` gives
 `−addend ≤ base`.  Replace the zero by `(−addend) + addend`, then cancel the
 shared `addend`. -/
 theorem lessEqualAsNegRightOfAddNonNeg {baseValue addend : RationalPair}
@@ -63,7 +59,7 @@ theorem addNonNegOfLessEqualAsNegRight {baseValue addend : RationalPair}
   lessEqualAsCongrLeft (addExactNegLeftDenotesSame addend)
     (addExactMonotoneLeft addend isBelow)
 
-/-- **The reflection-bridge reshaping**: the accumulated bound
+/-- The reflection-bridge reshaping: the accumulated bound
 `((base + (1/(m+1) + 1/(n+1))) + 1/(m+1))` denotes `((base + 2/(m+1)) + 1/(n+1))`
 — rotate the trailing `1/(m+1)` in past the pair and fold the two `1/(m+1)`
 copies onto the shared numerator `2`. -/
@@ -113,13 +109,13 @@ theorem reflectBridgeIdentity (base : RationalPair)
         (addExactAssoc base (ratioOfNatSucc 2 slackPredecessor)
           (reciprocalOfSucc comparisonPredecessor))))
 
-/-- **The reflection step, rationally**: given a difference `d` above `−sum`, the
+/-- The reflection step, rationally: given a difference `d` above `−sum`, the
 product `d · sum` above `−c`, and `c ≤ ε²` with `ε ≥ 0`, conclude `d ≥ −ε`.  A
-sign split on the DECIDABLE rational order of `d` against zero: the nonnegative
+sign split on the decidable rational order of `d` against zero: the nonnegative
 branch reads `−ε ≤ 0 ≤ d` directly; the negative branch takes `(−d)² ≤ (−d)·sum =
 −(d·sum) ≤ c ≤ ε²` (product monotonicity on nonnegatives, since `−d ≤ sum`) and
-the shipped rational square-root reflection sends it to `−d ≤ ε`, i.e. `d ≥ −ε`.
-No real order is ever decided; the split is on `Decidable` data. -/
+the rational square-root reflection sends it to `−d ≤ ε`, i.e. `d ≥ −ε`.  No real
+order is ever decided; the split is on `Decidable` data. -/
 theorem orderReflectStep {differenceApprox sumApprox epsilon boundValue : RationalPair}
     (isDiffAboveNegSum : LessEqualAs (negExact sumApprox) differenceApprox)
     (isProductAboveNegBound :
@@ -172,15 +168,15 @@ end RationalPair
 
 open RationalPair
 
-/-! ## The reflection crux (NUM-C-4a) -/
+/-! ## The reflection crux -/
 
-/-- **Square-root order reflection** — `s ≥ 0` and `x² ≤ s²` give `x ≤ s`, with
-`x` of ARBITRARY sign.  With `d = s − x`, `t = s + x`, difference-of-squares turns
-the squared hypothesis into a vanishing lower bound on `d · t`; `d + t = 2s ≥ 0`
-gives `d ≥ −t` pointwise; and the rational reflection step (`orderReflectStep`)
-plus regularity bridging under slack closure lands the vanishing lower bound on
-`d = s − x` itself, i.e. `x ≤ s`.  The single analytic crux of the ℂ triangle
-inequality; strictly more general than `nonNegSquareOrderReflect`. -/
+/-- Square-root order reflection: `s ≥ 0` and `x² ≤ s²` give `x ≤ s`, with `x` of
+arbitrary sign.  With `d = s − x`, `t = s + x`, difference-of-squares turns the
+squared hypothesis into a vanishing lower bound on `d · t`; `d + t = 2s ≥ 0` gives
+`d ≥ −t` pointwise; and the rational reflection step (`orderReflectStep`) plus
+regularity bridging under slack closure lands the vanishing lower bound on
+`d = s − x` itself, i.e. `x ≤ s`.  The analytic crux of the ℂ triangle inequality;
+strictly more general than `nonNegSquareOrderReflect`. -/
 theorem realLeOfSquareLeNonNeg {baseValue radicandRoot : RegularReal}
     (isRootNonNegative : IsNonNegativeReal radicandRoot)
     (areSquaresOrdered :
@@ -262,7 +258,7 @@ theorem realLeOfSquareLeNonNeg {baseValue radicandRoot : RegularReal}
             slackIndex comparisonIndex)
           (addNonNegOfLessEqualAsNegRight chainRelaxed)))
 
-/-- **Order reflection for nonnegative squares** — `u, v ≥ 0` and `u² ≤ v²` give
+/-- Order reflection for nonnegative squares: `u, v ≥ 0` and `u² ≤ v²` give
 `u ≤ v`.  The both-endpoints-nonnegative special case of `realLeOfSquareLeNonNeg`
 (the left nonnegativity is not needed). -/
 theorem nonNegSquareOrderReflect {leftValue rightValue : RegularReal}
@@ -273,11 +269,11 @@ theorem nonNegSquareOrderReflect {leftValue rightValue : RegularReal}
     LessEqualReal leftValue rightValue :=
   realLeOfSquareLeNonNeg isRightNonNegative areSquaresOrdered
 
-/-! ## Square-root monotonicity and the real-abs bound (NUM-C-4b) -/
+/-! ## Square-root monotonicity and the real-abs bound -/
 
-/-- **The square root is monotone** — `a ≤ b → √a ≤ √b` for nonnegative `a, b`.
-Both roots are nonnegative and square (up to the setoid) to `a` and `b`, so the
-squared order `(√a)² ≤ (√b)²` is `a ≤ b` transported, and reflection concludes. -/
+/-- The square root is monotone: `a ≤ b → √a ≤ √b` for nonnegative `a, b`.  Both
+roots are nonnegative and square (up to the setoid) to `a` and `b`, so the squared
+order `(√a)² ≤ (√b)²` is `a ≤ b` transported, and reflection concludes. -/
 theorem sqrtRealMonotone {leftValue rightValue : RegularReal}
     (isLeftNonNegative : IsNonNegativeReal leftValue)
     (isRightNonNegative : IsNonNegativeReal rightValue)
@@ -291,8 +287,8 @@ theorem sqrtRealMonotone {leftValue rightValue : RegularReal}
       (denotesSameRealSymm (sqrtRealSquareDenotesSame isRightNonNegative))
       isBelow)
 
-/-- **`x ≤ √R`** from `x² ≤ R` and `R ≥ 0` — rewrite the radicand's root-square
-to `R` and reflect. -/
+/-- `x ≤ √R` from `x² ≤ R` and `R ≥ 0`: rewrite the radicand's root-square to `R`
+and reflect. -/
 theorem leSqrtOfSquareLe {baseValue radicand : RegularReal}
     (isRadicandNonNegative : IsNonNegativeReal radicand)
     (isSquareBelow : LessEqualReal (mulReal baseValue baseValue) radicand) :
@@ -304,7 +300,7 @@ theorem leSqrtOfSquareLe {baseValue radicand : RegularReal}
       (denotesSameRealSymm (sqrtRealSquareDenotesSame isRadicandNonNegative))
       isSquareBelow)
 
-/-- **The real absolute-value fact** `x ≤ √(x²)` — the `R = x²` instance of
+/-- The real absolute-value fact `x ≤ √(x²)`: the `R = x²` instance of
 `leSqrtOfSquareLe`, `x² ≤ x²` reflexively. -/
 theorem selfLeSqrtRealSquare (value : RegularReal) :
     LessEqualReal value
@@ -312,7 +308,7 @@ theorem selfLeSqrtRealSquare (value : RegularReal) :
   leSqrtOfSquareLe (mulRealSelfIsNonNegativeReal value)
     (lessEqualRealRefl (mulReal value value))
 
-/-! ## Real ring bricks for Cauchy–Schwarz (NUM-C-4c) -/
+/-! ## Real ring lemmas for Cauchy–Schwarz -/
 
 /-- A square is sign-blind on reals: `(-x)² ~ x²` — two negation passes and one
 double-negation collapse (the ℝ analogue of `mulExactNegNegDenotesSame`). -/
@@ -348,15 +344,15 @@ theorem realVanishingLowerBoundOfNonNeg {value : RegularReal}
       (negExactNonPositiveOfNonNegative (ratioOfNatSuccIsNonNegative 1 index))
       (isNonNegativeReal index)
 
-/-! ## Cauchy–Schwarz (NUM-C-4c) -/
+/-! ## Cauchy–Schwarz -/
 
-/-- **The Cauchy–Schwarz inequality** — `a·c + b·d ≤ |⟨a,b⟩| · |⟨c,d⟩|`.  The
-squared form `(ac + bd)² ≤ (a²+b²)(c²+d²)` is the polynomial identity
-`(a²+b²)(c²+d²) − (ac+bd)² = (ad − bc)²`, routed through the ℂ modulus rather
-than expanded by hand: `|⟨a,b⟩ · conj⟨c,d⟩|² = (a²+b²)(c²+d²)` by the shipped
-squared-modulus multiplicativity, and its Gauss real/imaginary parts are `ac+bd`
-and `−(ad−bc)`, so the sum-of-squares gives `(a²+b²)(c²+d²) ~ (ac+bd)² + (ad−bc)²`.
-Then `ac+bd ≤ √((a²+b²)(c²+d²)) ~ |⟨a,b⟩| · |⟨c,d⟩|` by `leSqrtOfSquareLe` and the
+/-- The Cauchy–Schwarz inequality `a·c + b·d ≤ |⟨a,b⟩| · |⟨c,d⟩|`.  The squared
+form `(ac + bd)² ≤ (a²+b²)(c²+d²)` is the polynomial identity
+`(a²+b²)(c²+d²) − (ac+bd)² = (ad − bc)²`, routed through the ℂ modulus rather than
+expanded by hand: `|⟨a,b⟩ · conj⟨c,d⟩|² = (a²+b²)(c²+d²)` by squared-modulus
+multiplicativity, and its Gauss real/imaginary parts are `ac+bd` and `−(ad−bc)`, so
+the sum-of-squares gives `(a²+b²)(c²+d²) ~ (ac+bd)² + (ad−bc)²`.  Then
+`ac+bd ≤ √((a²+b²)(c²+d²)) ~ |⟨a,b⟩| · |⟨c,d⟩|` by `leSqrtOfSquareLe` and the
 multiplicative square root. -/
 theorem cauchySchwarzReal (realA imaginaryB realC imaginaryD : RegularReal) :
     LessEqualReal (addReal (mulReal realA realC) (mulReal imaginaryB imaginaryD))
@@ -442,9 +438,9 @@ theorem cauchySchwarzReal (realA imaginaryB realC imaginaryD : RegularReal) :
   lessEqualRealCongr (denotesSameRealRefl innerProduct) rootSplits
     (leSqrtOfSquareLe isRadicandNonNegative isSquareBelow)
 
-/-! ## Real bricks for the triangle inequality (NUM-C-4d) -/
+/-! ## Real lemmas for the triangle inequality -/
 
-/-- **The binomial square** `(p + q)² ~ (p² + q²) + (pq + pq)` — right-distribute,
+/-- The binomial square `(p + q)² ~ (p² + q²) + (pq + pq)`: right-distribute,
 left-distribute each leg, and gather the two square terms and the two cross terms
 by commutativity and the medial regrouping. -/
 theorem squareSumExpand (leftValue rightValue : RegularReal) :
@@ -473,7 +469,7 @@ theorem squareSumExpand (leftValue rightValue : RegularReal) :
               (denotesSameRealRefl (mulReal leftValue rightValue))
               (mulRealComm rightValue leftValue))))))
 
-/-- **The vanishing lower bound is additive**: if both `X` and `Y` clear
+/-- The vanishing lower bound is additive: if both `X` and `Y` clear
 `−1/(index+1)` at every index, so does `X + Y` — sample both at the doubled
 index, add, and recombine the doubled halved bound to `−1/(index+1)`. -/
 theorem realVanishingLowerBoundAdd {leftValue rightValue : RegularReal}
@@ -493,8 +489,8 @@ theorem realVanishingLowerBoundAdd {leftValue rightValue : RegularReal}
         (negExactRespectsDenotesSameAs (reciprocalDoubleSumDenotesSame index)))
       (addExactMonotone (isLeftBelow (2 * index + 1)) (isRightBelow (2 * index + 1)))
 
-/-- **The real subtraction chain**: `(first − middle) + (middle − last) ~
-first − last` — the middle term cancels through associativity and the additive
+/-- The real subtraction chain `(first − middle) + (middle − last) ~
+first − last`: the middle term cancels through associativity and the additive
 inverse. -/
 theorem subRealChainDenotesSame (firstValue middleValue lastValue : RegularReal) :
     DenotesSameReal
@@ -512,8 +508,8 @@ theorem subRealChainDenotesSame (firstValue middleValue lastValue : RegularReal)
             (denotesSameRealRefl (negReal lastValue)))
           (addRealZeroLeft (negReal lastValue)))))
 
-/-- **Transitivity of the non-strict real order** — chain the two vanishing
-lower bounds: `c − a ~ (c − b) + (b − a)`, and the vanishing bound is additive. -/
+/-- Transitivity of the non-strict real order: chain the two vanishing lower
+bounds `c − a ~ (c − b) + (b − a)`, and the vanishing bound is additive. -/
 theorem lessEqualRealTrans {firstValue middleValue lastValue : RegularReal}
     (isFirstBelow : LessEqualReal firstValue middleValue)
     (isMiddleBelow : LessEqualReal middleValue lastValue) :
@@ -522,8 +518,8 @@ theorem lessEqualRealTrans {firstValue middleValue lastValue : RegularReal}
     (subRealChainDenotesSame lastValue middleValue firstValue)
     (realVanishingLowerBoundAdd isMiddleBelow isFirstBelow)
 
-/-- Additive compatibility with the shared summand on the LEFT — commute onto the
-shipped right-shared `lessEqualRealAddCompat`. -/
+/-- Additive compatibility with the shared summand on the left: commute onto the
+right-shared `lessEqualRealAddCompat`. -/
 theorem lessEqualRealAddCompatLeft (sharedValue : RegularReal)
     {leftValue rightValue : RegularReal} (isBelow : LessEqualReal leftValue rightValue) :
     LessEqualReal (addReal sharedValue leftValue) (addReal sharedValue rightValue) :=
@@ -531,9 +527,9 @@ theorem lessEqualRealAddCompatLeft (sharedValue : RegularReal)
     (addRealComm rightValue sharedValue)
     (lessEqualRealAddCompat isBelow sharedValue)
 
-/-! ## The headline: the ℂ modulus triangle inequality (NUM-C-4) -/
+/-! ## The triangle inequality -/
 
-/-- **The triangle inequality** `|z + w| ≤ |z| + |w|` on the Gaussian-real setoid.
+/-- The triangle inequality `|z + w| ≤ |z| + |w|` on the Gaussian-real setoid.
 Both `|z + w|` and `|z| + |w|` are nonnegative, so it suffices to compare squares
 (`nonNegSquareOrderReflect`).  Binomial expansion gives
 `|z + w|² ~ (|z|² + |w|²) + 2(ac + bd)` and `(|z| + |w|)² ~ (|z|² + |w|²) +

@@ -2,30 +2,26 @@ import FX1Poly.ComputerAlgebra.Number.IntArithmeticCore
 import FX1Poly.ComputerAlgebra.Number.IntSubNatNat
 import FX1Poly.ComputerAlgebra.Number.IntAddAssociativity
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntOrderCore — the order core via additive witnesses
-    (FLOAT-1 brick 7)
+/-! # The order core via additive witnesses
 
-Init's entire symbolic Int order corpus (`le_refl`/`le_trans`/`le_antisymm`/...) is
-propext-dirty; this module hand-rolls the core.  The technique is the ADDITIVE WITNESS:
+Init's symbolic Int order corpus (`le_refl`/`le_trans`/`le_antisymm`/...) leaks `propext`,
+so the core is hand-rolled here by the additive-witness technique.
 
-  * `leftValue ≤ rightValue` unfolds DEFINITIONALLY to
-    `Int.NonNeg (rightValue + -leftValue)` (probed 2026-07-02, `rfl`), and `Int.NonNeg`
-    is a single-constructor inductive, so destruction is one clean match
-    (`intNonNegDest`).
+  * `leftValue ≤ rightValue` unfolds definitionally to
+    `Int.NonNeg (rightValue + -leftValue)`, and `Int.NonNeg` is a single-constructor
+    inductive, so destruction is one clean match (`intNonNegDest`).
   * `intLessEqualIntro`/`intLessEqualDest` convert between `≤` and the witness form
-    `rightValue = leftValue + Int.ofNat difference` through the brick-1..3 additive-group
-    kit — after which every order law is WITNESS ARITHMETIC: reflexivity is the witness
-    `0`, transitivity ADDS witnesses (`ofNat` addition is definitional), antisymmetry
-    cancels them (`intAddLeftCancel` + `natAddEqZeroLeft`).
-  * `<` needs no separate treatment: `leftValue < rightValue` IS
+    `rightValue = leftValue + Int.ofNat difference` through the additive-group kit; every
+    order law is then witness arithmetic — reflexivity is the witness `0`, transitivity
+    adds witnesses (`ofNat` addition is definitional), antisymmetry cancels them
+    (`intAddLeftCancel` + `natAddEqZeroLeft`).
+  * `<` needs no separate treatment: `leftValue < rightValue` is
     `leftValue + 1 ≤ rightValue` definitionally (`intLessThanAsSuccLessEqual`).
 
-## Zero-axiom
-
-Single-constructor match on `Int.NonNeg`, `congrArg`/`Eq.trans` witness arithmetic over
-the brick-1..3 kit, one `Eq.rec` transport (`▸`) in each `OfEq` rewriting helper.  No
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/Number/IntOrderCore.lean`. -/
+Single-constructor match on `Int.NonNeg`, `congrArg`/`Eq.trans` witness arithmetic, one
+`Eq.rec` transport (`▸`) per `OfEq` rewriting helper; free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, and `omega`; per-declaration gated in the
+audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 

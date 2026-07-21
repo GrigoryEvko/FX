@@ -2,32 +2,29 @@ import FX1Poly.ComputerAlgebra.FloatingPoint.RationalEmbedding
 import FX1Poly.ComputerAlgebra.Number.RegularRealDistance
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrder
 
-/-! # FX1Poly/ComputerAlgebra/FloatingPoint/RealEmbedding — ℤ[1/β] ↪ ℝ
-    (NUM-R-7c, the float bridge)
+/-! # FX1Poly/ComputerAlgebra/FloatingPoint/RealEmbedding — ℤ[1/β] ↪ ℝ, the float bridge
 
-Every radix-scaled integer IS a real: the NUM-Q-5 rational reading
-followed by the constant embedding.  The composite is FAITHFUL — it
-respects and reflects the radix-scaled setoid — and monotone.
+Every radix-scaled integer is a real: the rational reading followed by the
+constant embedding.  The composite is faithful — it respects and reflects the
+radix-scaled setoid — and monotone.
 
-The re-read principle closes the bridge: a ℚ-level distance
-certificate between constant reals IS a real-level distance
-certificate (the constant approximants never move, so the setoid
-modulus is pure headroom).  Every FLOAT-3 rounding-error bound,
-already exact in ℚ through NUM-Q-5, therefore reads as a statement
-about real numbers — where Flocq evaluates float semantics into
-classical ℝ, the zero-axiom tower reaches ℝ without ever leaving
-exact arithmetic. -/
+The re-read principle closes the bridge: a ℚ-level distance certificate between
+constant reals is a real-level distance certificate, since the constant
+approximants never move and the setoid modulus adds only slack.  Every
+rounding-error bound, already exact in ℚ, therefore reads as a statement about
+real numbers: unlike Flocq, which evaluates float semantics into classical ℝ,
+this development reaches ℝ without leaving exact arithmetic. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
-/-- **The ℤ[1/β] ↪ ℝ embedding** — the rational reading, held constant. -/
+/-- The ℤ[1/β] ↪ ℝ embedding: the rational reading, held constant. -/
 def realOfRadixScaled (radix : Int) (value : RadixScaledInteger) :
     RegularReal :=
   constantReal (rationalOfRadixScaled radix value)
 
-/-- The real embedding RESPECTS the radix-scaled setoid — through the
+/-- The real embedding respects the radix-scaled setoid — through the
 rational reading and the constant embedding in turn. -/
 theorem realOfRadixScaledRespectsDenotesSame {radix : Int}
     (isRadixPositive : (0 : Int) < radix)
@@ -39,7 +36,7 @@ theorem realOfRadixScaledRespectsDenotesSame {radix : Int}
   constantRealRespectsDenotesSame
     (rationalOfRadixScaledRespectsDenotesSame isRadixPositive denotesSame)
 
-/-- The real embedding REFLECTS the setoid — both stages are
+/-- The real embedding reflects the setoid — both stages are
 faithful, so setoid-equal embedded reals force cross-aligned
 agreement of the radix-scaled integers. -/
 theorem denotesSameOfRealOfRadixScaled {radix : Int}
@@ -51,10 +48,9 @@ theorem denotesSameOfRealOfRadixScaled {radix : Int}
   denotesSameOfRationalOfRadixScaled isRadixPositive
     (denotesSameAsOfConstantRealDenotesSame realsDenoteSame)
 
-/-- **The re-read principle**: a ℚ-level distance bound between two
-rationals IS a real-level distance bound between their constant
-embeddings — the constant approximants never move, so the setoid
-modulus is pure headroom. -/
+/-- The re-read principle: a ℚ-level distance bound between two rationals is a
+real-level distance bound between their constant embeddings, since the constant
+approximants never move and the setoid modulus adds only slack. -/
 theorem isWithinRealBoundConstantOfIsWithinBound
     {leftValue rightValue bound : RationalPair}
     (isWithin : IsWithinBound leftValue rightValue bound) :
@@ -67,7 +63,7 @@ theorem isWithinRealBoundConstantOfIsWithinBound
           (ratioOfNatSuccIsNonNegative 2 index)))
       isWithin
 
-/-- The constant embedding is MONOTONE: a ℚ-level order between two
+/-- The constant embedding is monotone: a ℚ-level order between two
 rationals is a real-level order between their constant embeddings.
 Per index the difference approximant is exactly the rational
 difference; the shifted vanishing bound sits below the left value,
@@ -105,7 +101,7 @@ theorem lessEqualRealConstantOfLessEqualAs
       (lessEqualAsTrans shiftedVanishingIsBelowLeft
         leftIsBelowShiftedDifference)
 
-/-- The real embedding is MONOTONE on radix-scaled integers — the
+/-- The real embedding is monotone on radix-scaled integers — the
 rational reading respects the order, and the constant embedding
 carries it to the reals. -/
 theorem realOfRadixScaledRespectsLessEqual {radix : Int}

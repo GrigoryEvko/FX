@@ -2,20 +2,20 @@ import FX1Poly.ComputerAlgebra.Number.IntOrderAlgebra
 import FX1Poly.ComputerAlgebra.Number.IntDistributivity
 import FX1Poly.ComputerAlgebra.Float.FloatFormat
 
-/-! # BlockScaled — MXFP4 / NVFP4 block-scaled quantization + the precision bridge
+/-! # BlockScaled — MXFP4 / NVFP4 block-scaled quantization and the precision bridge
 
 The microscaling model (OCP MX v1.0, NVIDIA NVFP4): a block of `blockSize`
 low-precision elements (E2M1) shares one block scale.  The reconstructed value of
-element `i` is `element_i * block_scale` — an EXACT product of two
-`RadixScaledInteger`s (`mulExact`), so dequantization introduces NO error of its
-own; every bit of error lives in the per-element quantization, which the shipped
-`roundNearestTiesEven` half-ulp bracket already certifies.
+element `i` is `element_i * block_scale` — an exact product of two
+`RadixScaledInteger`s (`mulExact`), so dequantization introduces no error of its
+own; every bit of error lives in the per-element quantization, which the
+`roundNearestTiesEven` half-ulp bracket certifies.
 
-The **precision bridge** (dim-14 Precision, FLOAT-2..6 #1937-#1941) is
-`dequantizeErrorBound{Below,Above}`: multiplying the exact block scale through the
-per-element doubled half-ulp bracket scales the error linearly — the reconstructed
-quantized element stays within `scale * (half-ulp)` of the reconstructed exact
-element.  The bridge rests on two reusable facts proved here:
+The precision bridge (dim-14 Precision) is `dequantizeErrorBound{Below,Above}`:
+multiplying the exact block scale through the per-element doubled half-ulp bracket
+scales the error linearly — the reconstructed quantized element stays within
+`scale * (half-ulp)` of the reconstructed exact element.  The bridge rests on two
+facts:
 
 * `crossAlignedMantissaMulExactRight` — cross-alignment factors the shared scale
   out of a `mulExact` product (the block scale cancels in the exponent gap).
@@ -78,7 +78,7 @@ theorem scaleGapTowardMulExactRight (leftValue rightValue scale : RadixScaledInt
   congrArg Int.toNat
     (intAddSubAddRightCancel leftValue.exponent rightValue.exponent scale.exponent)
 
-/-- **Scale factoring**: cross-aligning two `mulExact`-by-`scale` products pulls the
+/-- Scale factoring: cross-aligning two `mulExact`-by-`scale` products pulls the
 scale mantissa out in front of the operands' cross-alignment. -/
 theorem crossAlignedMantissaMulExactRight (radix : Int)
     (leftValue rightValue scale : RadixScaledInteger) :
@@ -100,9 +100,9 @@ theorem crossAlignedMantissaMulExactRight (radix : Int)
               (leftValue.mantissa * intPower radix (scaleGapToward leftValue rightValue))
               scale.mantissa)))))
 
-/-- **The doubled bracket scales by a nonnegative scale**: multiplying both
+/-- The doubled bracket scales by a nonnegative scale: multiplying both
 operands by `scale` (with `0 ≤ scale.mantissa`) rescales the doubled half-ulp
-bracket by `scale.mantissa`.  The reusable engine of the precision bridge. -/
+bracket by `scale.mantissa`.  The engine of the precision bridge. -/
 theorem crossAlignedBracketScaledByMul {radix : Int}
     (leftValue rightValue scale : RadixScaledInteger)
     (isScaleNonnegative : (0 : Int) ≤ scale.mantissa) (extra : Int)
@@ -161,7 +161,7 @@ structure ScaledBlock where
   scale    : RadixScaledInteger
   elements : List RadixScaledInteger
 
-/-- Reconstruct one element: the EXACT product of the element value and the block
+/-- Reconstruct one element: the exact product of the element value and the block
 scale — no rounding, so no dequantization error. -/
 def dequantizeElement (scale element : RadixScaledInteger) : RadixScaledInteger :=
   mulExact element scale
@@ -198,7 +198,7 @@ For an element quantized as `roundNearestTiesEven radix exactElement targetExpon
 with a nonnegative block scale, the reconstructed quantized value stays within
 `scale.mantissa * (one ulp)` of the reconstructed exact value — both directions. -/
 
-/-- **Reconstructed quantized element stays within a scaled half-ulp above.** -/
+/-- Reconstructed quantized element stays within a scaled half-ulp above. -/
 theorem dequantizeErrorBoundBelow {radix : Int} (isRadixPositive : (0 : Int) < radix)
     (exactElement scale : RadixScaledInteger) (isScaleNonnegative : (0 : Int) ≤ scale.mantissa)
     (targetExponent : Int) :
@@ -214,7 +214,7 @@ theorem dequantizeErrorBoundBelow {radix : Int} (isRadixPositive : (0 : Int) < r
     isScaleNonnegative (intPower radix (targetExponent - exactElement.exponent).toNat)
     (RadixScaledInteger.roundNearestTiesEvenMulTwiceIsBelow isRadixPositive exactElement targetExponent)
 
-/-- **Reconstructed exact element stays within a scaled half-ulp above the quantized.** -/
+/-- Reconstructed exact element stays within a scaled half-ulp above the quantized. -/
 theorem dequantizeErrorBoundAbove {radix : Int} (isRadixPositive : (0 : Int) < radix)
     (exactElement scale : RadixScaledInteger) (isScaleNonnegative : (0 : Int) ≤ scale.mantissa)
     (targetExponent : Int) :

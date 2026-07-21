@@ -3,12 +3,13 @@ import FX1Poly.ComputerAlgebra.FixedWidth.SignedSemantics
 
 /-! # FX1PolyAudit/ComputerAlgebra/FixedWidth/SignedSemantics — zero-axiom gate
 
-Per-declaration zero-axiom gate for the SIGNED half of the dim-16 overflow
+Per-declaration zero-axiom gate for the signed half of the dimension-16 overflow
 corpus: the sign-bit/decide bridges, the doubling order kit, the biased
 (`signedValue + 2^width`) interpretation, the signed range lemma promised by
 `Views`, signed trap add/mul with fits/overflows/exactness, signed saturate
 add/mul with in-range/clamp/bounded, sign extension with value and sign
-preservation, and the NUM-Z-FIXED signed-half marker.
+preservation, the `BitVec.toNat`-versus-`bvaToNat` value bridge, and the
+fixed-width signed-semantics subsystem marker.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
@@ -82,7 +83,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignExtendPreservesNonNegativeValue
 #assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignExtendPreservesNegativeValue
 #assert_no_axioms FX1Poly.ComputerAlgebra.sIntNSignExtendPreservesSign
-#assert_no_axioms FX1Poly.ComputerAlgebra.fxNumZFixed_hasSignedSemantics
 #assert_no_axioms FX1Poly.ComputerAlgebra.fwsBoolToNatOfBeqOne
 #assert_no_axioms FX1Poly.ComputerAlgebra.fwsNatBitsLittleEndian
 #assert_no_axioms FX1Poly.ComputerAlgebra.fwsNatBitsLittleEndianLength
@@ -91,6 +91,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecToBvaBitsLength
 #assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecToBvaBitsToNat
 #assert_no_axioms FX1Poly.ComputerAlgebra.fwsBitVecToBvaBitsRoundTrip
-#assert_no_axioms FX1Poly.ComputerAlgebra.fxNumZFixed_hasBvaValueBridge
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxNumZFixed_hasSignedSemantics
 
 end FX1PolyAudit

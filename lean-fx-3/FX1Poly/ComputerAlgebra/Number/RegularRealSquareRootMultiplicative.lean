@@ -1,16 +1,16 @@
 import FX1Poly.ComputerAlgebra.Number.ComplexRealModulus
 
 /-! # FX1Poly/ComputerAlgebra/Number/RegularRealSquareRootMultiplicative — √ is
-    multiplicative on nonnegative Bishop reals (NUM-R-SQRT-MUL)
+    multiplicative on nonnegative Bishop reals
 
 `sqrt(a * b) ~ sqrt a * sqrt b` for `a, b >= 0` on the zero-axiom regular-real
-setoid.  This is the ℝ-layer lemma that unblocks ℂ modulus multiplicativity
-(NUM-C-3): `|z * w| = |z| * |w|` is `sqrt` of a product of squared moduli.
+setoid.  This is the ℝ-layer lemma underlying ℂ modulus multiplicativity
+`|z * w| = |z| * |w|`, itself `sqrt` of a product of squared moduli.
 
 Everything reduces to ONE analytic crux — **equal nonnegative squares have equal
 bases** (`nonNegSquareCancel`).  Given the crux, sqrt-multiplicativity is a short
 corollary: both `sqrt(a*b)` and `sqrt a * sqrt b` are nonnegative and square to
-`a * b` (the shipped square law twice, re-associated by the multiplicative
+`a * b` (the square law twice, re-associated by the multiplicative
 medial), so the crux identifies them.
 
 The crux itself has two genuinely new pieces:
@@ -18,8 +18,8 @@ The crux itself has two genuinely new pieces:
 * **The rational quadratic estimate** (`squareZeroImpliesZero`): if `d * d ~ 0`
   then `d ~ 0`.  This is nonneg-free and is the hardest step.  Per comparison
   index, sample the square at the quadratically deeper index `2 * (m+1)^2`, where
-  the square-zero hypothesis pins `(d.approx)^2 <= (1/(m+1))^2`; the shipped
-  rational square reflection (`lessEqualAsOfMulExactSquareLeNonNeg`) takes the
+  the square-zero hypothesis pins `(d.approx)^2 <= (1/(m+1))^2`; the rational
+  square reflection (`lessEqualAsOfMulExactSquareLeNonNeg`) takes the
   square root of that bound to `|d.approx| <= 1/(m+1)`, and regularity bridges the
   deep sample back to the comparison index — landing exactly on the setoid
   modulus with vanishing slack.
@@ -34,21 +34,18 @@ The crux itself has two genuinely new pieces:
   `d^4 -> d^2 -> d`.
 
 The two identities `d^2 ~ 2a * d` and `d^2 ~ -(2b) * d` (used to multiply out
-`d^4`) rest on the difference-of-squares fact `d * t ~ 0` and the shipped ℝ ring
+`d^4`) rest on the difference-of-squares fact `d * t ~ 0` and the ℝ ring
 laws — no new analysis.
 
-## Zero-axiom
-
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`, `WellFounded.fix`.  The slack-closure dispatch (`isWithinBoundOfForallSlack`)
-matches on the `Decidable` DATA, never `decide`-on-a-Prop.  Per-declaration gated
-in `FX1PolyAudit/ComputerAlgebra/Number/RegularRealSquareRootMultiplicative.lean`. -/
+Zero-axiom: the slack-closure dispatch (`isWithinBoundOfForallSlack`) matches on
+the `Decidable` DATA, never `decide`-on-a-Prop.  Per-declaration gated in the
+audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
-/-! ## ℚ-level bricks -/
+/-! ## Rational lemmas -/
 
 /-- **The reflection target**: `2/(2(p+1)^2 + 1)` sits below the square of the
 grid step `1/(p+1)` — cross-multiplication collapses to `2(p+1)^2 <= 1 * (2(p+1)^2 + 1)`,
@@ -241,14 +238,14 @@ theorem nonNegNonPosSetoidImpliesZero {leftValue negatedRightValue : RegularReal
           (negExactNonPositiveOfNonNegative (isLeftNonNegative sharedIndex))
           (ratioOfNatSuccIsNonNegative 2 sharedIndex))⟩
 
-/-! ## ℝ ring bricks the cancellation consumes -/
+/-! ## Real ring lemmas for the cancellation -/
 
 /-- Self-subtraction denotes zero — `v - v` IS `v + (-v)`. -/
 theorem subRealSelfDenotesZero (value : RegularReal) :
     DenotesSameReal (subReal value value) (constantReal zeroRational) :=
   addRealNegRight value
 
-/-- Adding a value onto its negation denotes zero — commute onto the shipped
+/-- Adding a value onto its negation denotes zero — commute onto the
 right-inverse. -/
 theorem negRealAddSelfDenotesZero (value : RegularReal) :
     DenotesSameReal (addReal (negReal value) value) (constantReal zeroRational) :=
@@ -487,10 +484,10 @@ theorem nonNegSquareCancel {leftValue rightValue : RegularReal}
 /-! ## The headline: sqrt multiplicativity -/
 
 /-- **`sqrt` is multiplicative on nonnegative reals** — `sqrt(a * b) ~ sqrt a * sqrt b`.
-Both sides are nonnegative and square to `a * b` (the shipped square law twice,
+Both sides are nonnegative and square to `a * b` (the square law twice,
 `(uv)^2` re-associated to `u^2 v^2` by the multiplicative medial), so
-`nonNegSquareCancel` identifies them.  The ℝ-layer lemma NUM-C-3 (`|z w| = |z| |w|`)
-consumes. -/
+`nonNegSquareCancel` identifies them.  The base case for ℂ modulus
+multiplicativity `|z w| = |z| |w|`. -/
 theorem sqrtRealMulDenotesSame {leftValue rightValue : RegularReal}
     (isLeftNonNegative : IsNonNegativeReal leftValue)
     (isRightNonNegative : IsNonNegativeReal rightValue)

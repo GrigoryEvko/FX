@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Float.BitEncoding
 
-/-! # FX1PolyAudit/ComputerAlgebra/Float/BitEncoding — zero-axiom gate (FLOAT-1c)
+/-! # FX1PolyAudit/ComputerAlgebra/Float/BitEncoding — zero-axiom gate
 
 Per-declaration zero-axiom gate for the sign|exponent|mantissa bit codec, its
 field-bound / disjointness side-conditions, the concrete format layouts

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Float.FloatFormat
 
-/-! # FX1PolyAudit/ComputerAlgebra/Float/FloatFormat — zero-axiom gate (FLOAT-1)
+/-! # FX1PolyAudit/ComputerAlgebra/Float/FloatFormat — zero-axiom gate
 
 Per-declaration zero-axiom gate for the radix-generic float ADT, rounding into a
 format, and the half-ulp error bound.  Every declaration must be free of

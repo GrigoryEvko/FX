@@ -38,7 +38,7 @@ Pillars:
 
 The decision procedure `twoSatDecide` returns either `isUnsatisfiable` with a variable and
 BOTH path certificates (checkable by `twoSatIsPathFrom`), or `isSatisfiable` with the list
-of true variables (checkable by `twoSatSatisfies`).  Commissioned theorems, both landed:
+of true variables (checkable by `twoSatSatisfies`).  Two soundness theorems characterize it:
 
   1. `twoSatDecideUnsatSound` — an UNSAT verdict refutes every assignment (via the pure
      certificate theorem `twoSatContradictionPathsSound`).
@@ -2679,7 +2679,7 @@ theorem twoSatDecideSatSound (system : List TwoSatClause) (trueVariables : List 
           (twoSatAugmentedSystem system) (twoSatCollectVariables system))) system
         (fun clause hMember => twoSatClauseSatisfiedPointwise system clause hScan hMember)
 
-/-! ## Verdict inspection, genuineness smokes, marker -/
+/-! ## Verdict inspection, smoke tests, marker -/
 
 /-- Is the verdict satisfiable? -/
 def twoSatVerdictIsSatisfiable : TwoSatVerdict → Bool
@@ -2715,7 +2715,7 @@ def twoSatSmokeContradictionSystem : List TwoSatClause :=
    TwoSatClause.mk (TwoSatLiteral.mk 0 false) (TwoSatLiteral.mk 1 true),
    TwoSatClause.mk (TwoSatLiteral.mk 0 false) (TwoSatLiteral.mk 1 false)]
 
--- genuineness smokes
+-- smoke tests
 #eval twoSatVerdictIsSatisfiable (twoSatDecide twoSatSmokeChainSystem)
 -- expected: true
 #eval twoSatVerdictTrueVariables (twoSatDecide twoSatSmokeChainSystem)
@@ -2748,7 +2748,7 @@ def twoSatSmokeContradictionSystem : List TwoSatClause :=
 #eval twoSatVerdictWitnessChecks [] (twoSatDecide [])
 -- expected: true
 
-/-- DECIDED marker: the 2-SAT decision procedure ships with BOTH commissioned theorems —
+/-- Island marker: the 2-SAT decision procedure carries both soundness theorems —
 `twoSatDecideUnsatSound` (certificate refutation of every assignment) and
 `twoSatDecideSatSound` (the APT/Even–Itai–Shamir SAT half), zero-axiom. -/
 def fxDissatIsland_hasTwoSatDecision : Bool := true

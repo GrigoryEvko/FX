@@ -1,20 +1,17 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Combinatorics.GroupoidCardinality
 
-/-! # FX1PolyAudit/ComputerAlgebra/Combinatorics/GroupoidCardinality —
-    zero-axiom gate (CSHD)
+/-! # Audit gate for finite-groupoid cardinality
 
 Per-declaration zero-axiom gate for finite-groupoid cardinality as
-decategorification: the scalar `QnfRat` bricks (multiplicative zero,
-middle-four, inverse uniqueness, product-nonzero, inverse distributivity, the
-ℤ/ℕ multiplicative homomorphisms), the reciprocal-multiplicativity `1/(a·b) =
-(1/a)·(1/b)`, the carrier `FgcGroupoid` with its cardinality, the disjoint-union
-= addition law with unit laws, the product = multiplication law with point-unit
-laws, the non-injectivity witness, the three WALLED markers, the content
-markers, and the closed-value fires.
+decategorification: the scalar `QnfRat` field-law lemmas, reciprocal
+multiplicativity `1/(a*b) = (1/a)*(1/b)`, the carrier `FgcGroupoid` with its
+cardinality, the disjoint-union-is-addition and product-is-multiplication laws
+with their unit laws, the non-injectivity witness, the capability and
+out-of-scope markers, and the worked examples.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
-`sorry`, `native_decide`, `omega`. -/
+`sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -60,12 +57,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcCardinalityPoint
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcCardinalityProductPointRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcCardinalityProductPointLeft
-#assert_no_axioms FX1Poly.ComputerAlgebra.fgcHasInverseCategorification
-#assert_no_axioms FX1Poly.ComputerAlgebra.fgcHasInfiniteGroupoidCardinality
-#assert_no_axioms FX1Poly.ComputerAlgebra.fgcHasGroupoidEquivalenceDecision
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcInverseAmbiguityWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.fgcHasGroupoidExtensions
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcHasGroupoidCardinality
-#assert_no_axioms FX1Poly.ComputerAlgebra.fgcHasDecategorificationLaws
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcFireEmptyCardinality
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcFireTwoAutCardinality
 #assert_no_axioms FX1Poly.ComputerAlgebra.fgcFireTwoPointsCardinality

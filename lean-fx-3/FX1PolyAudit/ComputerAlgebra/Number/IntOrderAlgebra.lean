@@ -1,14 +1,13 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntOrderAlgebra
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntOrderAlgebra — zero-axiom gate
-    (FLOAT-1 brick 8)
+/-! # Zero-axiom gate for `IntOrderAlgebra`
 
 Per-declaration zero-axiom gate for the order/algebra interaction: the sign-case `≤`
 builders, totality, add-monotonicity, and multiplication positivity.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+`native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

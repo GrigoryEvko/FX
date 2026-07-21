@@ -1,42 +1,40 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealRing
 
-/-! # ComplexReal — the Gaussian reals over `RegularReal` (NUM-C-1)
+/-! # ComplexReal — the Gaussian reals over `RegularReal`
 
-The ℂ carrier: a pair of Bishop regular reals `(re, im)`.  No new carrier
-analysis — `ComplexReal` is literally `RegularReal x RegularReal`, its
-sameness the PRODUCT setoid (both components denote the same real), and its
-operations componentwise except `mulComplex`, which is the Gauss product
-`(a+bi)(c+di) = (ac - bd) + (ad + bc) i`.
+The ℂ carrier: a pair of Bishop regular reals `(re, im)`.  `ComplexReal` is
+`RegularReal × RegularReal`, its sameness the product setoid (both components
+denote the same real), and its operations componentwise except `mulComplex`,
+the Gauss product `(a+bi)(c+di) = (ac - bd) + (ad + bc) i`.
 
 Everything here composes the ℝ layer:
 
-* the setoid refl/symm/trans and every operation CONGRUENCE ride the shipped
-  `RegularReal` setoid/congruences alone — no ring law;
-* the CONJUGATION laws (`conj∘conj`, `conj` over `+`, `conj` over `·`) ride
-  the negation-passing bricks — pointwise reals, no ring reassociation;
-* the commutative-ring laws lift the `RegularReal` ring laws (NUM-R-4)
-  componentwise; commutativity/identity/inverse close here, while
-  associativity of `+` and associativity/distributivity of `·` wait on the
-  slack-closure ℝ bricks (`addRealAssoc`, `mulRealAssoc`,
-  `mulRealLeftDistrib`).
+* the setoid refl/symm/trans and every operation congruence ride the
+  `RegularReal` setoid and congruences alone — no ring law;
+* the conjugation laws (`conj∘conj`, `conj` over `+`, `conj` over `·`) ride the
+  negation-passing lemmas — pointwise reals, no ring reassociation;
+* the commutative-ring laws lift the `RegularReal` ring laws componentwise;
+  commutativity, identities, and additive inverse close here, and associativity
+  of `+` and associativity/distributivity of `·` use the ℝ slack-closure lemmas
+  (`addRealAssoc`, `mulRealAssoc`, `mulRealLeftDistrib`).
 
-Sameness is UNDECIDABLE (inherited from `DenotesSameReal`), never `Eq` on the
-approximation sequences — so no `funext`, no `Quot`, zero axioms throughout.
+Sameness is undecidable (inherited from `DenotesSameReal`), never `Eq` on the
+approximation sequences, so no `funext`, no `Quot`, zero axioms throughout.
 
 The modulus `|z| = sqrt(a^2 + b^2)` and the Heyting-field structure are the
-metric layer (NUM-C-2), out of scope here — they need `sqrtReal`. -/
+metric layer, out of scope here — they require `sqrtReal`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
-/-- **A complex regular real** — a pair of Bishop reals. -/
+/-- A complex regular real: a pair of Bishop reals. -/
 structure ComplexReal where
   realPart : RegularReal
   imaginaryPart : RegularReal
 
-/-- **Sameness of complex reals** — the PRODUCT setoid: both components
-denote the same Bishop real.  Undecidable, inherited from `DenotesSameReal`. -/
+/-- Sameness of complex reals: the product setoid, both components denote the
+same Bishop real.  Undecidable, inherited from `DenotesSameReal`. -/
 def DenotesSameComplex (leftValue rightValue : ComplexReal) : Prop :=
   DenotesSameReal leftValue.realPart rightValue.realPart ∧
     DenotesSameReal leftValue.imaginaryPart rightValue.imaginaryPart
@@ -106,9 +104,9 @@ def imaginaryUnit : ComplexReal :=
   { realPart := constantReal zeroRational
     imaginaryPart := constantReal oneRational }
 
-/-! ## Operation congruences — every op respects the product setoid
+/-! ## Operation congruences — every operation respects the product setoid
 
-Each rides the shipped `RegularReal` setoid congruences alone; no ring law. -/
+Each rides the `RegularReal` setoid congruences alone; no ring law. -/
 
 /-- Addition respects the product setoid. -/
 theorem addComplexRespectsDenotesSame
@@ -139,8 +137,8 @@ theorem subComplexRespectsDenotesSame
     subRealRespectsDenotesSame leftAgrees.right rightAgrees.right⟩
 
 /-- Multiplication respects the product setoid — each of the four
-sub-products rides its own `mulRealRespectsDenotesSame`; the cross-index
-slack lives inside that shipped congruence. -/
+sub-products rides its own `mulRealRespectsDenotesSame`; the cross-index slack
+lives inside that congruence. -/
 theorem mulComplexRespectsDenotesSame
     {leftValue newLeftValue rightValue newRightValue : ComplexReal}
     (leftAgrees : DenotesSameComplex leftValue newLeftValue)
@@ -161,7 +159,7 @@ theorem conjComplexRespectsDenotesSame
     DenotesSameComplex (conjComplex leftValue) (conjComplex newLeftValue) :=
   ⟨areSame.left, negRealRespectsDenotesSame areSame.right⟩
 
-/-! ## Conjugation laws — reachable without the slack-closure ring bricks -/
+/-! ## Conjugation laws (no ring reassociation needed) -/
 
 /-- `conj(conj z) ~ z` — real part reflexive, imaginary part double negation. -/
 theorem conjComplexInvolutive (value : ComplexReal) :
@@ -215,25 +213,25 @@ theorem conjComplexMulComplex (leftValue rightValue : ComplexReal) :
           (mulRealNegLeftDenotesSame leftValue.imaginaryPart
             rightValue.realPart)))⟩
 
-/-! ## Commutative-ring laws (the closable half)
+/-! ## Commutative-ring laws
 
 Commutativity, additive inverse, and the identities lift the componentwise
-`RegularReal` ring laws.  Associativity of `+` and assoc/distrib of `·` wait
-on the slack-closure ℝ bricks. -/
+`RegularReal` ring laws.  Associativity of `+` and associativity/distributivity
+of `·` use the ℝ slack-closure lemmas. -/
 
-/-- **Addition is commutative** — componentwise `addRealComm`. -/
+/-- Addition is commutative, componentwise `addRealComm`. -/
 theorem addComplexComm (leftValue rightValue : ComplexReal) :
     DenotesSameComplex (addComplex leftValue rightValue)
       (addComplex rightValue leftValue) :=
   ⟨addRealComm leftValue.realPart rightValue.realPart,
     addRealComm leftValue.imaginaryPart rightValue.imaginaryPart⟩
 
-/-- **Zero is a right identity** for complex addition — componentwise. -/
+/-- Zero is a right identity for complex addition, componentwise. -/
 theorem addComplexZeroRight (value : ComplexReal) :
     DenotesSameComplex (addComplex value zeroComplex) value :=
   ⟨addRealZeroRight value.realPart, addRealZeroRight value.imaginaryPart⟩
 
-/-- **Addition is associative** — componentwise `addRealAssoc`. -/
+/-- Addition is associative, componentwise `addRealAssoc`. -/
 theorem addComplexAssoc (firstValue middleValue lastValue : ComplexReal) :
     DenotesSameComplex
       (addComplex (addComplex firstValue middleValue) lastValue)
@@ -242,18 +240,18 @@ theorem addComplexAssoc (firstValue middleValue lastValue : ComplexReal) :
     addRealAssoc firstValue.imaginaryPart middleValue.imaginaryPart
       lastValue.imaginaryPart⟩
 
-/-- **Zero is a left identity** for complex addition — componentwise. -/
+/-- Zero is a left identity for complex addition, componentwise. -/
 theorem addComplexZeroLeft (value : ComplexReal) :
     DenotesSameComplex (addComplex zeroComplex value) value :=
   ⟨addRealZeroLeft value.realPart, addRealZeroLeft value.imaginaryPart⟩
 
-/-- **Negation is a right inverse** for complex addition — componentwise. -/
+/-- Negation is a right inverse for complex addition, componentwise. -/
 theorem addComplexNegRight (value : ComplexReal) :
     DenotesSameComplex (addComplex value (negComplex value)) zeroComplex :=
   ⟨addRealNegRight value.realPart, addRealNegRight value.imaginaryPart⟩
 
-/-- **Multiplication is commutative** — real part swaps both products under
-the difference; imaginary part swaps both products then commutes the sum. -/
+/-- Multiplication is commutative: the real part swaps both products under the
+difference; the imaginary part swaps both products then commutes the sum. -/
 theorem mulComplexComm (leftValue rightValue : ComplexReal) :
     DenotesSameComplex (mulComplex leftValue rightValue)
       (mulComplex rightValue leftValue) :=
@@ -268,9 +266,9 @@ theorem mulComplexComm (leftValue rightValue : ComplexReal) :
         (mulReal rightValue.imaginaryPart leftValue.realPart)
         (mulReal rightValue.realPart leftValue.imaginaryPart))⟩
 
-/-- **One is a right identity** for complex multiplication — the real part
-collapses `re*1 - im*0` to `re - 0 ~ re`; the imaginary part collapses
-`re*0 + im*1` to `0 + im ~ im`. -/
+/-- One is a right identity for complex multiplication: the real part collapses
+`re*1 - im*0` to `re - 0 ~ re`; the imaginary part collapses `re*0 + im*1` to
+`0 + im ~ im`. -/
 theorem mulComplexOneRight (value : ComplexReal) :
     DenotesSameComplex (mulComplex value oneComplex) value :=
   ⟨denotesSameRealTrans
@@ -284,10 +282,10 @@ theorem mulComplexOneRight (value : ComplexReal) :
         (mulRealOneRight value.imaginaryPart))
       (addRealZeroLeft value.imaginaryPart)⟩
 
-/-- **Left distributivity** `z·(w + u) ~ z·w + z·u` — componentwise: the real
-part distributes each `mulReal` over the addend sums (`mulRealLeftDistrib`)
-then cross-pairs the two differences (`subRealCrossPairsDenotesSame`); the
-imaginary part distributes then medial-swaps the four products. -/
+/-- Left distributivity `z·(w + u) ~ z·w + z·u`, componentwise: the real part
+distributes each `mulReal` over the addend sums (`mulRealLeftDistrib`) then
+cross-pairs the two differences (`subRealCrossPairsDenotesSame`); the imaginary
+part distributes then medial-swaps the four products. -/
 theorem mulComplexLeftDistrib (leftValue middleValue rightValue : ComplexReal) :
     DenotesSameComplex
       (mulComplex leftValue (addComplex middleValue rightValue))
@@ -316,10 +314,10 @@ theorem mulComplexLeftDistrib (leftValue middleValue rightValue : ComplexReal) :
         (mulReal leftValue.imaginaryPart middleValue.realPart)
         (mulReal leftValue.imaginaryPart rightValue.realPart))⟩
 
-/-- **Multiplication is associative** `(z·w)·u ~ z·(w·u)` — each component is
-an eight-term Gauss cross-expansion.  Both sides expand (via `·` over
+/-- Multiplication is associative `(z·w)·u ~ z·(w·u)`: each component is an
+eight-term Gauss cross-expansion.  Both sides expand (via `·` over
 subtraction/addition and `mulRealAssoc`) into the same four signed triple
-products; a purely additive reorder (medial + commutativity) reconciles the
+products; a purely additive reorder (medial and commutativity) reconciles the
 two groupings. -/
 theorem mulComplexAssoc (firstValue middleValue lastValue : ComplexReal) :
     DenotesSameComplex
@@ -415,16 +413,14 @@ theorem mulComplexAssoc (firstValue middleValue lastValue : ComplexReal) :
 
 /-! ## The commutative-ring certificate
 
-The categorical packaging: one setoid-relative `CommutativeRingWitness`
-structure, instantiated on both ℝ and ℂ.  Each field doubles as a
-completeness checklist for the ring corpus; both instances become inhabited
-now that the multiplicative slack-closure bricks land. -/
+One setoid-relative `CommutativeRingWitness` structure, instantiated on both ℝ
+and ℂ.  Each field doubles as a completeness checklist for the ring corpus. -/
 
-/-- **A setoid-relative commutative ring** — carrier, sameness relation, the
+/-- A setoid-relative commutative ring: carrier, sameness relation, the
 zero/one/add/mul/neg operations, the setoid trio, the three operation
 congruences, the eight ring laws, and nontriviality (`0` is apart from `1`).
-Leaner than the ℚ Heyting-field witness: no order, no decidability, no
-inverse — ℂ is neither ordered nor decidable and not yet a field. -/
+Leaner than the ℚ Heyting-field witness: no order, no decidability, no inverse —
+ℂ is neither ordered nor decidable and not a field. -/
 structure CommutativeRingWitness (carrier : Type) where
   denotesSame : carrier → carrier → Prop
   zero : carrier
@@ -484,8 +480,8 @@ theorem regularRealZeroIsApartFromOne :
   fun sameReal =>
     Nat.noConfusion (Int.ofNat.inj (denotesSameAsOfConstantRealDenotesSame sameReal))
 
-/-- **The ℝ certificate**: `RegularReal` with its shipped corpus is a
-commutative ring up to the Bishop setoid. -/
+/-- The ℝ certificate: `RegularReal` with its corpus is a commutative ring up to
+the Bishop setoid. -/
 def regularRealCommutativeRingWitness : CommutativeRingWitness RegularReal where
   denotesSame := DenotesSameReal
   zero := constantReal zeroRational
@@ -518,9 +514,9 @@ theorem complexRealZeroIsApartFromOne :
     Not (DenotesSameComplex zeroComplex oneComplex) :=
   fun sameComplex => regularRealZeroIsApartFromOne sameComplex.left
 
-/-- **The ℂ certificate**: `ComplexReal` is a commutative ring up to the
-product setoid — every field lifts a `RegularReal` ring law componentwise
-through the Gauss product. -/
+/-- The ℂ certificate: `ComplexReal` is a commutative ring up to the product
+setoid — every field lifts a `RegularReal` ring law componentwise through the
+Gauss product. -/
 def complexCommutativeRingWitness : CommutativeRingWitness ComplexReal where
   denotesSame := DenotesSameComplex
   zero := zeroComplex

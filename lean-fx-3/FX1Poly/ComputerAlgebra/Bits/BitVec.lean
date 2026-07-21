@@ -1,35 +1,28 @@
 import FX1Poly.ComputerAlgebra.Number.NatModularReduction
 
-/-! # BitVec — the fixed-width machine-integer substrate (hardware floor)
+/-! # BitVec — fixed-width machine-integer substrate
 
-The zero-axiom bit-vector carrier for the register-layout / fixed-width tower /
-ISA substrate (polycell §3.15 prereq).  Carrier is core Lean `BitVec width`
-(`Fin (2^width)` under the hood); its `DecidableEq`, `toNat`, `ofNatLT`,
-`eq_of_toNat_eq`, and the `isLt` bound are all axiom-clean (checked), so we get
-GENUINE `Eq` — no setoid, no `Quot`.
+Zero-axiom bit-vector carrier for register layout, the fixed-width tower, and the ISA
+substrate (polycell §3.15 prerequisite). The carrier is core Lean `BitVec width`
+(`Fin (2^width)`); its `DecidableEq`, `toNat`, `ofNatLT`, `eq_of_toNat_eq`, and the
+`isLt` bound are axiom-clean, giving genuine `Eq` with no setoid or `Quot`.
 
-The one thing core `BitVec` cannot give us zero-axiom is its ARITHMETIC and
-BITWISE surface: `BitVec.add`/`mul` and `BitVec.and`/`or`/`xor` route through
-`Nat.mod` / `Nat.land` whose reasoning lemmas are propext-poisoned.  So we define
-OUR OWN operations:
+Core `BitVec` arithmetic and bitwise operations route through `Nat.mod` and
+`Nat.land`, whose reasoning lemmas depend on `propext`. The operations here avoid
+that: arithmetic reduces `mod 2^width` through the structural `natRemainder`
+(`NatModularReduction`); bitwise logic is a structural per-bit fold over `Bool` with
+bit access `natRemainder (v >>> i) 2` on `Nat.shiftRight`; shifts, concat, slice, and
+extend wrap `Nat` operations with that reducer; `bitVecToInt` is a two's-complement
+`Int` fold.
 
-* arithmetic reduces `mod 2^width` through the structural `natRemainder`
-  (`NatModularReduction`) — "add/mul in `Nat`, then reduce", never Init `%`;
-* bitwise logic is a structural per-bit fold over `Bool` (never `Nat.land` /
-  `Nat.testBit`, both propext-dirty) — bit access is `natRemainder (v >>> i) 2`,
-  built only on the structural `Nat.shiftRight`;
-* shifts / concat / slice / extend are pure `Nat.shiftLeft`/`shiftRight`/`pow`/
-  arithmetic wrapped by the `mod 2^width` reducer;
-* signed interpretation `bitVecToInt` is a clean two's-complement `Int` fold.
-
-`Init`-only, structural (no well-founded recursion), zero axioms. -/
+`Init`-only, structural, zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-! ## Reduction into a fixed width -/
 
-/-- `value` reduced `mod 2^width` into `BitVec width`, via the structural
-`natRemainder` and the `ofNatLT` (no-mod) constructor. -/
+/-- `value` reduced `mod 2^width` into `BitVec width`, via `natRemainder` and the
+mod-free `ofNatLT` constructor. -/
 def bitVecOfNatMod {width : Nat} (value : Nat) : BitVec width :=
   BitVec.ofNatLT (natRemainder value (2 ^ width)) (natRemainderIsBounded (Nat.two_pow_pos width))
 
@@ -51,7 +44,7 @@ def bitVecOne {width : Nat} : BitVec width :=
 @[simp] theorem bitVecZeroToNat {width : Nat} : (bitVecZero (width := width)).toNat = 0 :=
   BitVec.toNat_ofNatLT _ _
 
-/-! ## Modular arithmetic (add / neg / sub / mul) -/
+/-! ## Modular arithmetic -/
 
 /-- Modular addition. -/
 def bitVecAdd {width : Nat} (left right : BitVec width) : BitVec width :=
@@ -81,15 +74,15 @@ theorem bitVecNegToNat {width : Nat} (value : BitVec width) :
     (bitVecNeg value).toNat = natRemainder (2 ^ width - value.toNat) (2 ^ width) :=
   bitVecOfNatModToNat _
 
-/-! ## Decidable equality (genuine `Eq` on the core carrier) -/
+/-! ## Decidable equality -/
 
 /-- Structural decidable equality on `BitVec width` (core, axiom-clean). -/
 def bitVecDecidableEq {width : Nat} : DecidableEq (BitVec width) := inferInstance
 
 /-! ## Structural per-bit access -/
 
-/-- Bit `index` of `value` as a `Bool`, via the structural `Nat.shiftRight` and the
-counting remainder — no `Nat.land` / `Nat.testBit`. -/
+/-- Bit `index` of `value` as a `Bool`, via `Nat.shiftRight` and the counting
+remainder `natRemainder (value >>> index) 2`. -/
 def bitAtNat (value index : Nat) : Bool :=
   ! (natRemainder (value >>> index) 2 == 0)
 
@@ -97,7 +90,7 @@ def bitAtNat (value index : Nat) : Bool :=
 def bitWeight (isSet : Bool) (position : Nat) : Nat :=
   if isSet then 2 ^ position else 0
 
-/-! ## Bitwise logic (structural fold, never `Nat.land`) -/
+/-! ## Bitwise logic -/
 
 /-- Fold a binary bit-combiner over positions `0 .. count-1`, LSB-first. -/
 def bitwiseFold (combine : Bool → Bool → Bool) (left right : Nat) : Nat → Nat
@@ -177,13 +170,13 @@ def bitVecSignExtend {width : Nat} (value : BitVec width) (newWidth : Nat) :
   else
     bitVecOfNatMod value.toNat
 
-/-! ## Signed interpretation (two's complement) -/
+/-! ## Signed interpretation -/
 
 /-- Unsigned interpretation — the underlying natural. -/
 def bitVecToNat {width : Nat} (value : BitVec width) : Nat := value.toNat
 
 /-- Two's-complement signed interpretation into `Int`: the sign bit carries weight
-`-2^width`, all lower bits positive.  Fully clean (`Int.ofNat`/`Int.sub`). -/
+`-2^width`, all lower bits positive. -/
 def bitVecToInt {width : Nat} (value : BitVec width) : Int :=
   if bitVecIsNegative value then
     Int.ofNat value.toNat - Int.ofNat (2 ^ width)

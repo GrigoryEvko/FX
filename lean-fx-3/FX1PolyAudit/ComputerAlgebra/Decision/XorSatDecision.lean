@@ -14,14 +14,14 @@ its full F2 algebra (nil laws, ascent preservation, slide lemmas, associativity,
 commutativity, self-annihilation, self-cancellation), the membership xor homomorphisms,
 witness surgery (`xorSatRemoveVar` / `xorSatExtendWitness` with exact pivot readback),
 equations and evaluation (the equation shape with constructor and projections, xor-folds
-with THE EVAL LEMMA `xorSatXorFoldToggleMerge`, combination with `xorSatEvalCombine`,
+with the evaluation lemma `xorSatXorFoldToggleMerge`, combination with `xorSatEvalCombine`,
 off-pivot fold agreement), systems (indexed lookup, evaluation, well-formedness, the F2
-selection fold with THE SELECTION LEMMA `xorSatSelectXorSatisfied`), the combine algebra
+selection fold with the selection lemma `xorSatSelectXorSatisfied`), the combine algebra
 (zero laws, commutativity, associativity, self-cancellation, left swap), the fold
 homomorphism (`xorSatSelectXorToggleOne` / `xorSatSelectXorToggleMerge`), working items and
 verdicts (shapes with constructors and projections), the pivot transform with count /
 well-formedness / provenance preservation, the fuel decider `xorSatDecideAux` with its
-five reduction equations, FUEL ADEQUACY (`xorSatDecideAuxIsSome`), back-substitution
+five reduction equations, fuel adequacy (`xorSatDecideAuxIsSome`), back-substitution
 (`xorSatBackSubstituteTail`), SAT and UNSAT soundness at the aux level, the initial working
 set (well-formedness, check bridge, provenance), the top-level decider `xorSatDecide` with
 the totality certificate and the four headline theorems (`xorSatDecideSatSound`,

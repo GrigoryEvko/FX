@@ -1,18 +1,17 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Probability.FiniteSupportDistribution
 
-/-! # FX1PolyAudit/ComputerAlgebra/Probability/FiniteSupportDistribution —
-    zero-axiom gate (MEAS-1)
+/-! # Zero-axiom gate for the finite-support rational distribution layer
 
-Per-declaration zero-axiom gate for the exact finite-support ℚ-probability
-distribution layer: the carrier `FpDist`, the mass-sum fold with its
-append-splits-sum law, well-formedness, the mass-sum-preserving normalisation
-(merge duplicate outcomes, drop zeros, sort), the pushforward / convex mixture
-/ independent product / conditioning operations each with their
-`fpd*PreservesMassOne` total-stays-one theorem, expectation with its linearity
-and dirac laws, the structural equality decision with soundness and the genuine
+Per-declaration zero-axiom gate for the exact finite-support rational
+probability distribution layer: the carrier `FpDist`, the mass-sum fold with its
+append-splits-sum law, well-formedness, the mass-sum-preserving normalisation,
+the pushforward, convex mixture, independent product and conditioning operations
+each with their `fpd*PreservesMassOne` theorem, expectation with its linearity
+and dirac laws, the structural equality decision with soundness and the
 `FpConv` normal-form congruence (both halves), the closed-value fires, and the
-two WALLED markers `fpdHasCountableSupport` / `fpdHasGiryMonadLaws`.
+capability markers `fpdHasCountableSupport`, `fpdHasGiryMonadLaws` and
+`fpdHasFiniteDecidableCore`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
@@ -91,7 +90,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.fpdFireDifferentNotEqual
 #assert_no_axioms FX1Poly.ComputerAlgebra.fpdFireProductFourOutcomes
 #assert_no_axioms FX1Poly.ComputerAlgebra.fpdFireProductMassOne
-#assert_no_axioms FX1Poly.ComputerAlgebra.fpdHasMassPreservation
-#assert_no_axioms FX1Poly.ComputerAlgebra.fpdHasDecidableEquality
+#assert_no_axioms FX1Poly.ComputerAlgebra.fpdHasFiniteDecidableCore
 
 end FX1PolyAudit

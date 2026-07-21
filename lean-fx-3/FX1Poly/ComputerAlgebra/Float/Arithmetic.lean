@@ -3,15 +3,15 @@ import FX1Poly.ComputerAlgebra.Float.FloatFormat
 /-! # Float arithmetic — exact-then-round total operations
 
 The IEEE "compute the infinitely-precise result, then round once" model
-(fx_design.md §3.11).  Each operation forms the EXACT `RadixScaledInteger`
-result via the shipped `addExact` / `mulExact` (never evaluated into ℝ), then
-rounds it to the target canonical exponent with `roundNearestToExponent`.  The
-correctness contract is inherited verbatim: the rounded result lies within one
-half-ulp of the exact result, since its `toRadixScaled` IS
-`roundNearestTiesEven` applied to the exact operand (`toRadixScaled_add/mul`),
-and the shipped doubled half-ulp bracket applies at that operand.
+(fx_design.md §3.11).  Each operation forms the exact `RadixScaledInteger`
+result via `addExact` / `mulExact` (never evaluated into ℝ), then rounds it to
+the target canonical exponent with `roundNearestToExponent`.  The correctness
+contract carries over: the rounded result lies within one half-ulp of the exact
+result, since its `toRadixScaled` is `roundNearestTiesEven` applied to the exact
+operand (`toRadixScaled_add/mul`), and the doubled half-ulp bracket applies at
+that operand.
 
-`Init`-only (via the shipped siblings), structural, zero axioms. -/
+`Init`-only, structural, zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -49,7 +49,7 @@ def mulRounded (fmt : FloatFormat) (targetExponent : Int)
 
 /-! ## Each op reads back as nearest-rounding of the exact result -/
 
-/-- The rounded sum reads back as nearest-rounding of the EXACT sum. -/
+/-- The rounded sum reads back as nearest-rounding of the exact sum. -/
 theorem toRadixScaled_addRounded (fmt : FloatFormat) (targetExponent : Int)
     (leftSummand rightSummand : RadixScaledInteger) :
     BinaryFloat.toRadixScaled (addRounded fmt targetExponent leftSummand rightSummand) =
@@ -57,7 +57,7 @@ theorem toRadixScaled_addRounded (fmt : FloatFormat) (targetExponent : Int)
         (addExact fmt.radix leftSummand rightSummand) targetExponent :=
   toRadixScaled_roundNearestToExponent fmt (addExact fmt.radix leftSummand rightSummand) targetExponent
 
-/-- The rounded difference reads back as nearest-rounding of the EXACT difference. -/
+/-- The rounded difference reads back as nearest-rounding of the exact difference. -/
 theorem toRadixScaled_subRounded (fmt : FloatFormat) (targetExponent : Int)
     (leftSummand rightSummand : RadixScaledInteger) :
     BinaryFloat.toRadixScaled (subRounded fmt targetExponent leftSummand rightSummand) =
@@ -66,7 +66,7 @@ theorem toRadixScaled_subRounded (fmt : FloatFormat) (targetExponent : Int)
   toRadixScaled_roundNearestToExponent fmt
     (addExact fmt.radix leftSummand (negateExact rightSummand)) targetExponent
 
-/-- The rounded product reads back as nearest-rounding of the EXACT product. -/
+/-- The rounded product reads back as nearest-rounding of the exact product. -/
 theorem toRadixScaled_mulRounded (fmt : FloatFormat) (targetExponent : Int)
     (leftFactor rightFactor : RadixScaledInteger) :
     BinaryFloat.toRadixScaled (mulRounded fmt targetExponent leftFactor rightFactor) =

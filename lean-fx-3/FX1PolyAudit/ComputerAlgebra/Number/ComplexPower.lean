@@ -3,8 +3,8 @@ import FX1Poly.ComputerAlgebra.Number.ComplexPower
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexPower — zero-axiom gate
 
-Per-declaration zero-axiom gate for the ℝ/ℂ natural-power folds and the
-modulus-power law `|zⁿ| ~ |z|ⁿ` (the FTA-path polynomial-growth prerequisite).
+Per-declaration zero-axiom gate for the natural-power folds and the modulus-power
+law `|zⁿ| ~ |z|ⁿ`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

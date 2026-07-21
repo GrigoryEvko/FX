@@ -2,10 +2,10 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.ComplexRealModulusComponentBounds
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/ComplexRealModulusComponentBounds — zero-axiom
-    gate (NUM-C-5 modulus component bounds)
+    gate
 
 Per-declaration zero-axiom gate for the ℂ modulus component estimates: the
-self-plus-nonnegative real order brick, the four component dominations
+self-plus-nonnegative real order lemma, the four component dominations
 (`±Re z ≤ |z|`, `±Im z ≤ |z|`), and the abs-sum upper bound `|z| ≤ |Re z| + |Im z|`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,

@@ -3,35 +3,33 @@ import FX1Poly.ComputerAlgebra.Decision.PostCloneLattice
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
-/-! # FX1Poly/ComputerAlgebra/Decision/PolInvGaloisConnection — the finite Pol–Inv Galois core
+/-! # The finite Pol–Inv Galois core
 
 The polymorphism (`Pol`) / invariant-relation (`Inv`) Galois connection over the two-element
-Boolean base, restricted to a FINITE decidable slice: a finite set of Boolean relations
-(`PigBoolRel` — an `arity` plus a `rows : List (List Bool)` list of bit-tuples), the
-componentwise-preservation predicate `pigPreserves` (a function `f` preserves a relation `R`
-iff applying `f` down the columns of any `arity f`-tuple of rows of `R` lands back in `R`), the
-`pigPol` / `pigInv` operators (filter a finite function/relation base by joint preservation), and
-the Galois structure that holds on any finite instance:
+Boolean base, restricted to a finite decidable slice: a finite set of Boolean relations
+(`PigBoolRel` — an `arity` plus `rows : List (List Bool)`), the componentwise-preservation
+predicate `pigPreserves` (a function `f` preserves a relation `R` iff applying `f` down the columns
+of any `arity f`-tuple of rows of `R` lands back in `R`), the `pigPol` / `pigInv` operators (filter
+a finite function/relation base by joint preservation), and the Galois structure that holds on any
+finite instance:
 
-  * `pigPolProducesPreservers` / `pigInvProducesInvariants` — SOUNDNESS of the filters (every
+  * `pigPolProducesPreservers` / `pigInvProducesInvariants` — soundness of the filters (every
     function `Pol` returns preserves all the relations; every relation `Inv` returns is preserved
     by all the functions);
   * `pigPolKeepsPreserver` / `pigInvKeepsInvariant` — the converse filter closure (a base element
     that jointly preserves is kept);
-  * `pigPolAntitone` / `pigInvAntitone` — ANTITONICITY: enlarging the relation set (resp. function
-    set) can only SHRINK `Pol` (resp. `Inv`);
+  * `pigPolAntitone` / `pigInvAntitone` — antitonicity: enlarging the relation set (resp. function
+    set) can only shrink `Pol` (resp. `Inv`);
   * the two Galois expanding inequalities as concrete ground fires (`f ∈ Pol(Inv{f})`).
 
 The function side reuses `PclBoolFn` + `pclMaskValue` + `pclAllMasks`-style cons-only enumeration
 from `PostCloneLattice`; the choice enumeration `pigChooseRows` is an explicit cons-only cartesian
-builder (à la `pclConsAll`), never a `WellFounded.fix` fixpoint.
+builder, never a `WellFounded.fix` fixpoint.
 
-## What is WALLED
-
-The FULL Galois correspondence completeness — that `Pol(Inv(F))` equals the clone-closure of `F`
-and `Inv(Pol(R))` the co-clone (pp-definable) closure of `R` — is the SAME countably-infinite
-clone/co-clone lattice `PostCloneLattice` already walled (`pclHasFullPostLattice`,
-`pclHasCloneGenerationClosure`).  See `pigHasFullGaloisCorrespondence` and
+The full Galois correspondence completeness — that `Pol(Inv(F))` equals the clone-closure of `F`
+and `Inv(Pol(R))` the co-clone (pp-definable) closure of `R` — is the same countably-infinite
+clone/co-clone lattice walled in `PostCloneLattice` (`pclHasFullPostLattice`,
+`pclHasCloneGenerationClosure`); see `pigHasFullGaloisCorrespondence` and
 `pigHasPpDefinabilityClosure` (both `false`).
 
 Every declaration is free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
@@ -81,7 +79,7 @@ theorem pigBoolOrIntroRight : (leftFlag rightFlag : Bool) → rightFlag = true �
   | false, true, _ => rfl
   | false, false, hRight => Bool.noConfusion hRight
 
-/-! ## T1 — the Boolean-relation carrier, tuple/row equality, membership, well-formedness -/
+/-! ## The Boolean-relation carrier, tuple/row equality, membership, well-formedness -/
 
 /-- Structural equality of bit-tuples (full four-arm enumeration, cons-only, `propext`-free). -/
 def pigTupleBeq : List Bool → List Bool → Bool
@@ -186,7 +184,7 @@ def pigFuncMem (function : PclBoolFn) : List PclBoolFn → Bool
   | [] => false
   | head :: rest => pigFuncBeq function head || pigFuncMem function rest
 
-/-! ## T2 — componentwise preservation -/
+/-! ## Componentwise preservation -/
 
 /-- Extract the `index`-th column across a list of tuples: the `index`-th bit of every tuple. -/
 def pigColumn (index : Nat) : List (List Bool) → List Bool
@@ -261,7 +259,7 @@ theorem pigAllPreserveDropTail (function : PclBoolFn) (funcs : List PclBoolFn)
     pigAllPreserve funcs rel = true :=
   (pigBoolAndElim _ _ hAll).right
 
-/-! ## T3 — the `Pol` / `Inv` operators (finite bases) -/
+/-! ## The `Pol` / `Inv` operators (finite bases) -/
 
 /-- Cons `function` onto `rest` exactly when `keep`. -/
 def pigConsIf (keep : Bool) (function : PclBoolFn) (rest : List PclBoolFn) : List PclBoolFn :=
@@ -493,61 +491,41 @@ def pigProjectRows (index : Nat) : List (List Bool) → List (List Bool)
 def pigPpProject (index : Nat) (rel : PigBoolRel) : PigBoolRel :=
   { arity := pigPredecessor rel.arity, rows := pigProjectRows index rel.rows }
 
-/-! ## Capability markers — DECIDED -/
+/-! ## Capability markers -/
 
-/-- The finite componentwise-preservation decision is DECIDED. -/
+/-- The finite componentwise-preservation decision. -/
 def pigHasFinitePreservation : Bool := true
 
-/-- The `Pol`/`Inv` operators over finite bases are DECIDED. -/
+/-- The `Pol`/`Inv` operators over finite bases. -/
 def pigHasBoundedPolInv : Bool := true
 
-/-- The Galois expanding inequalities (on finite instances) are DECIDED. -/
+/-- The Galois expanding inequalities on finite instances. -/
 def pigHasGaloisInequalities : Bool := true
 
-/-- `Pol`/`Inv` antitonicity is DECIDED. -/
+/-- `Pol`/`Inv` antitonicity. -/
 def pigHasPolInvAntitone : Bool := true
 
-/-! ## T4 — the walls -/
+/-! ## The walls -/
 
-/-- ★ WALL — the FULL Pol–Inv Galois correspondence completeness.  That `Pol(Inv(F))` equals the
-clone-closure of `F` (and `Inv(Pol(R))` the co-clone / pp-definable closure of `R`) over the
-UNBOUNDED base is exactly the countably-infinite clone / co-clone lattice already walled in
-`PostCloneLattice` (`pclHasFullPostLattice`, `pclHasCloneGenerationClosure`): the composition
-closure has no structural decreasing measure (composing arity-`k` functions grows arity
-unboundedly), so the least fixpoint is founded only by `WellFounded.fix`.
-
-Obstruction: any finite `functionBase` / `relBase` UNDER-approximates the closure — a polymorphism
-or pp-defined relation one arity above the base separates.
-
-Burned attack 1: bound the base by a `Nat` arity cap and enumerate — a separator one arity above
-the cap (a higher-arity threshold polymorphism / higher-arity pp-defined relation) refutes
-completeness; the census-fooling failure mode of `pclHasCloneGenerationClosure` burned attack 1.
-
-Burned attack 2: precompute the `Inv` side as an explicit `List PigBoolRel` and intersect — the
-invariant relations are themselves infinitely many (all arities), so their carrier is again an
-infinite list and the round trip closes only in the limit (the `pclHasCloneGenerationClosure`
-burned attack 2). -/
+/-- The full Pol–Inv Galois correspondence completeness, not proven here. That `Pol(Inv(F))` equals
+the clone-closure of `F` (and `Inv(Pol(R))` the co-clone / pp-definable closure of `R`) over the
+unbounded base is the countably-infinite clone / co-clone lattice walled in `PostCloneLattice`
+(`pclHasFullPostLattice`, `pclHasCloneGenerationClosure`): the composition closure has no structural
+decreasing measure (composing arity-`k` functions grows arity without bound), so the least fixpoint
+is founded only by `WellFounded.fix`. Any finite `functionBase` / `relBase` under-approximates —
+a polymorphism or pp-defined relation one arity above the base separates. -/
 def pigHasFullGaloisCorrespondence : Bool := false
 
-/-- ★ WALL — the co-clone / pp-definability closure.  The pp-definable closure of a finite relation
-set (conjunction + existential projection + equality, iterated to a fixpoint) is not finitely
-enumerable: projection and conjunction generate relations of ALL arities, so the closure is an
-unbounded least fixpoint over relation arity — the same `WellFounded.fix`-founded object as
-`pclHasFullPostLattice`.
-
-Obstruction: `pigPpConjoin` / `pigPpProject` are single steps; their transitive closure has no
-structural fuel (each projection can be followed by a conjunction reintroducing arity), so no `Nat`
-bound is a complete index.
-
-Burned attack 1: cap the number of pp steps by fuel — a relation needing more conjuncts than the
-fuel to define is missed; a target one step beyond the fuel refutes.
-
-Burned attack 2: cap the relation arity — pp-definability over unbounded arity (the counting
-relations) separates above any fixed arity, the same higher-arity separator that burns
-`pclHasCloneGenerationClosure`. -/
+/-- The co-clone / pp-definability closure, not proven here. The pp-definable closure of a finite
+relation set (conjunction + existential projection + equality, iterated to a fixpoint) is not
+finitely enumerable: projection and conjunction generate relations of all arities, so the closure is
+an unbounded least fixpoint over relation arity. `pigPpConjoin` / `pigPpProject` are single steps
+whose transitive closure has no structural fuel (each projection can be followed by a conjunction
+reintroducing arity), and pp-definability over the counting relations separates above any fixed
+arity. -/
 def pigHasPpDefinabilityClosure : Bool := false
 
-/-! ## T5 — concrete relations, functions, and ground fires -/
+/-! ## Concrete relations, functions, and ground fires -/
 
 /-- The order / implication relation `≤` on bits: `{(0,0), (0,1), (1,1)}`. -/
 def pigOrderRel : PigBoolRel :=
@@ -560,52 +538,47 @@ def pigEqRel : PigBoolRel :=
 /-- A small function base: conjunction and exclusive-or. -/
 def pigFuncBase : List PclBoolFn := [pclAndFn, pclXorFn]
 
-/-- Fire: the order relation is well-formed (both coordinates length `2`). -/
 theorem pigOrderRelWellFormed : pigRelWellFormed pigOrderRel = true := rfl
 
-/-- Fire (teeth+): `∧` PRESERVES the order relation (it is a monotone polymorphism of `≤`). -/
+/-- `∧` is a monotone polymorphism of `≤`. -/
 theorem pigAndPreservesOrder : pigPreserves pclAndFn pigOrderRel = true := rfl
 
-/-- Fire (teeth−): `⊕` does NOT preserve the order relation — the pair `(0,1),(1,1)` images to
-`(1,0) ∉ ≤`. -/
+/-- The pair `(0,1),(1,1)` images to `(1,0) ∉ ≤`. -/
 theorem pigXorNotPreservesOrder : pigPreserves pclXorFn pigOrderRel = false := rfl
 
-/-- Fire: every unary function preserves equality — witnessed by `¬`. -/
+/-- Every unary function preserves equality, witnessed by `¬`. -/
 theorem pigNegPreservesEquality : pigPreserves pclNegFn pigEqRel = true := rfl
 
-/-- Fire: `∧` preserves equality too (the diagonal is closed under any function). -/
+/-- The diagonal is closed under any function. -/
 theorem pigAndPreservesEquality : pigPreserves pclAndFn pigEqRel = true := rfl
 
-/-- Fire (Galois expanding, `f ∈ Pol(Inv{f})`): `∧` lies in `Pol(Inv({∧}))` over the finite base
-— it is retained because it preserves exactly the relations `Inv` kept for it. -/
+/-- Galois expanding, `f ∈ Pol(Inv{f})`: `∧` lies in `Pol(Inv({∧}))` over the finite base. -/
 theorem pigAndInPolInvSelf :
     pigFuncMem pclAndFn (pigPol (pigInv [pclAndFn] [pigOrderRel, pigEqRel]) pigFuncBase) = true :=
   rfl
 
-/-- Fire (antitonicity, one side): with only the equality relation, `⊕` survives in `Pol`. -/
+/-- With only the equality relation, `⊕` survives in `Pol`. -/
 theorem pigXorInPolEqAlone :
     pigFuncMem pclXorFn (pigPol [pigEqRel] pigFuncBase) = true := rfl
 
-/-- Fire (antitonicity, teeth): ENLARGING the relation set with the order relation DROPS `⊕` from
-`Pol` — the larger relation set gives a strictly smaller `Pol`. -/
+/-- Antitonicity: enlarging the relation set with the order relation drops `⊕` from `Pol`. -/
 theorem pigXorDroppedByOrder :
     pigFuncMem pclXorFn (pigPol [pigEqRel, pigOrderRel] pigFuncBase) = false := rfl
 
-/-- Fire (pp-conjunction): `order ∧ equality` lands the equality relation. -/
+/-- `order ∧ equality` lands the equality relation. -/
 theorem pigConjoinOrderEqIsEq :
     pigRelBeq (pigPpConjoin pigOrderRel pigEqRel) pigEqRel = true := rfl
 
-/-- Fire (pp preserves preservation): `∧` preserves the pp-conjunction of two relations it
-preserves. -/
+/-- `∧` preserves the pp-conjunction of two relations it preserves. -/
 theorem pigAndPreservesConjoin :
     pigPreserves pclAndFn (pigPpConjoin pigOrderRel pigEqRel) = true := rfl
 
-/-- Fire: the DECIDED capability markers hold. -/
+/-- The capability markers hold. -/
 theorem pigDecidedMarkers :
     (pigHasFinitePreservation && pigHasBoundedPolInv
       && pigHasGaloisInequalities && pigHasPolInvAntitone) = true := rfl
 
-/-- Fire: the WALL markers are all `false`. -/
+/-- The wall markers are all `false`. -/
 theorem pigWallMarkers :
     (pigHasFullGaloisCorrespondence || pigHasPpDefinabilityClosure) = false := rfl
 

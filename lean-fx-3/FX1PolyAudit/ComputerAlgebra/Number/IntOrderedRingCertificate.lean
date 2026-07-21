@@ -1,14 +1,12 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntOrderedRingCertificate
 
-/-! # FX1PolyAudit/ComputerAlgebra/Number/IntOrderedRingCertificate — zero-axiom gate
-    (NUM-Z-PACK)
+/-! # Zero-axiom gate for `IntOrderedRingCertificate`
 
-Per-declaration zero-axiom gate for the ℤ certificate: the ordered-commutative-ring
-witness structure, the nontriviality one-liner, and the packaged `Int` instance.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the ℤ certificate: the ordered-commutative-ring witness
+structure, the nontriviality one-liner, and the packaged `Int` instance. Every declaration
+must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, and
+`omega`. -/
 
 namespace FX1PolyAudit
 

@@ -1,22 +1,19 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Semigroup.CommWordProblem
 
-/-! # FX1PolyAudit/ComputerAlgebra/Semigroup/CommWordProblem — zero-axiom gate
-    (NET-3 brick: the commutative-semigroup word problem)
+/-! # Commutative-semigroup word problem — zero-axiom gate
 
 Per-declaration zero-axiom gate for the commutative-semigroup word-problem kit: the
-Boolean/`Nat` micro-kit, the structural order `cswLe` (refl / total / antisym / trans),
-decidable list equality, insertion sort with the crux commutation `cswInsertComm`, the
-free commutative-monoid congruence `CswCongr` and its DECIDED word problem
-(`cswFreeWordDecisionCorrect` — sound and complete), the presented congruence
-`CswPresCongr` with the free-embedding bridge and the POSITIVE checkable-derivation route
-(`cswCheckDerivationSound`), the capability markers, and the ground fires.
+Boolean/`Nat` micro-kit, the structural order `cswLe` (reflexive, total, antisymmetric,
+transitive), decidable list equality, insertion sort with the crux commutation
+`cswInsertComm`, the free commutative-monoid congruence `CswCongr` and its decided word
+problem `cswFreeWordDecisionCorrect` (sound and complete), the presented congruence
+`CswPresCongr` with the free-embedding bridge and the positive checkable-derivation route
+`cswCheckDerivationSound`, the capability markers, and the ground fires.
 
-The FULL two-sided presented decision is WALLED (`cswHasPresentedCommWordDecision = false`):
-deciding non-congruence needs a confluent terminating completion whose termination is
-Dickson's lemma / the almost-full product — a certified zero-axiom impossibility here
-(`fxNet4_dicksonWall`, needs `WellFounded.fix`); the shipped Gröbner engine carries only a
-one-sided certificate (`fxDissatGrob_hasNonMembershipDecision = false`).
+The full two-sided presented decision is walled (`cswHasPresentedCommWordDecision = false`)
+at Dickson's lemma / the almost-full product, needing `WellFounded.fix`; the Gröbner engine
+carries only a one-sided certificate (`fxDissatGrob_hasNonMembershipDecision = false`).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -76,7 +73,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.cswCheckDerivation
 #assert_no_axioms FX1Poly.ComputerAlgebra.cswCheckDerivationSound
 #assert_no_axioms FX1Poly.ComputerAlgebra.cswHasFreeCommWordDecision
-#assert_no_axioms FX1Poly.ComputerAlgebra.cswHasPresentedPositiveCertificate
 #assert_no_axioms FX1Poly.ComputerAlgebra.cswHasPresentedCommWordDecision
 #assert_no_axioms FX1Poly.ComputerAlgebra.cswFireEqualExponents
 #assert_no_axioms FX1Poly.ComputerAlgebra.cswFireDifferentExponents

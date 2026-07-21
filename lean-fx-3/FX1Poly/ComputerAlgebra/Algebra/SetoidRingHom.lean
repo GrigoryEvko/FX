@@ -1,32 +1,27 @@
 import FX1Poly.ComputerAlgebra.Number.ComplexReal
 
-/-! # SetoidRingHom — the arrow level over `CommutativeRingWitness` (NUM-ALG-1)
+/-! # SetoidRingHom — the arrow level over `CommutativeRingWitness`
 
-The object-level tower ships a `CommutativeRingWitness` at every number floor
-(ℤ, ℚ, ℝ, ℂ).  This module builds the ARROWS that turn that stack of objects
-into a genuine categorical diagram: a setoid-relative ring homomorphism, its
-identity and composition, the three category laws (up to pointwise-`denotesSame`
-hom equality), and two carrier-generic inverse-uniqueness engines that the
-widenings and the analytic inverses consume downstream.
+A setoid-relative commutative-ring homomorphism between `CommutativeRingWitness`
+objects, together with the identity and composition arrows, the three category
+laws (up to pointwise `denotesSame` hom equality), and two carrier-generic
+inverse-uniqueness lemmas.
 
-Everything is `Init`-only, certificate-first, and rides ONLY the shipped
-`CommutativeRingWitness` fields — no carrier analysis re-enters here.  The
-category laws are DIRECT: the underlying `map` is a bare Lean function, so
-composition is definitionally unital and associative, and pointwise
-`denotesSame` closes each law by reflexivity.  No hom-extensionality, no
-`funext`, no `Quot`, zero axioms. -/
+The category laws are direct: the underlying `map` is a bare Lean function, so
+composition is definitionally unital and associative, and pointwise `denotesSame`
+closes each law by reflexivity.  `Init`-only over the `CommutativeRingWitness`
+fields; no hom-extensionality, no `funext`, no `Quot`, zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-! ## The homomorphism -/
 
-/-- **A setoid-relative commutative-ring homomorphism.**  Doubly indexed by the
-source and target ring witnesses (each tower level is a distinct carrier with a
-distinct setoid).  Six obligations: the map respects the source setoid, and
-preserves addition, multiplication, zero, and one — each up to the TARGET
-setoid.  Negation preservation is NOT a field: `map (neg a)` is an additive
-inverse of `map a`, and additive inverses are unique up to `denotesSame`, so it
-is the derived lemma `homPreservesNeg`. -/
+/-- A setoid-relative commutative-ring homomorphism, doubly indexed by the source
+and target ring witnesses (each carrier has its own setoid).  The map respects the
+source setoid and preserves addition, multiplication, zero, and one, each up to the
+target setoid.  Negation preservation is not a field: `map (neg a)` is an additive
+inverse of `map a`, and additive inverses are unique up to `denotesSame`, so it is
+the derived lemma `homPreservesNeg`. -/
 structure SetoidRingHom {sourceCarrier targetCarrier : Type}
     (source : CommutativeRingWitness sourceCarrier)
     (target : CommutativeRingWitness targetCarrier) where
@@ -48,14 +43,14 @@ structure SetoidRingHom {sourceCarrier targetCarrier : Type}
 
 /-! ## Carrier-generic inverse uniqueness
 
-Both engines are ordinary "inverse is unique, hence congruent" ring algebra,
-stated once at the `CommutativeRingWitness` altitude so no carrier re-proves
-them.  Each is a flat transitive chain of shipped ring-witness fields. -/
+Inverse-is-unique-hence-congruent ring algebra, stated once at the
+`CommutativeRingWitness` level.  Each proof is a flat transitive chain over the
+ring-witness fields. -/
 
-/-- **Multiplicative inverse uniqueness with a congruent base.**  If `baseLeft`
-and `baseRight` denote the same element, and `leftInverse` / `rightInverse`
-invert them respectively, then the two inverses denote the same element.  The
-`baseLeft := baseRight` instance is plain witness-independence. -/
+/-- Multiplicative inverse uniqueness with a congruent base.  If `baseLeft` and
+`baseRight` denote the same element and `leftInverse` / `rightInverse` invert them
+respectively, then the two inverses denote the same element.  Taking
+`baseLeft = baseRight` gives witness-independence. -/
 theorem inverseUniqueInCommutativeRing {carrier : Type}
     (ring : CommutativeRingWitness carrier)
     {baseLeft baseRight leftInverse rightInverse : carrier}
@@ -108,8 +103,8 @@ theorem inverseUniqueInCommutativeRing {carrier : Type}
             (ring.denotesSameIsTransitive _ _ _ leftProductCollapsesToOne
               oneTimesRightIsRight)))))
 
-/-- **Additive inverse uniqueness** for a shared base — the additive analogue,
-consumed by `homPreservesNeg`. -/
+/-- Additive inverse uniqueness for a shared base, the additive analogue used by
+`homPreservesNeg`. -/
 theorem additiveInverseUniqueInCommutativeRing {carrier : Type}
     (ring : CommutativeRingWitness carrier)
     {base leftInverse rightInverse : carrier}
@@ -153,9 +148,9 @@ theorem additiveInverseUniqueInCommutativeRing {carrier : Type}
           (ring.denotesSameIsTransitive _ _ _ leftSumCollapsesToZero
             zeroPlusRightIsRight))))
 
-/-- **Negation is preserved** (derived).  `map (neg a)` and `neg (map a)` are
-both additive inverses of `map a` in the target ring; additive-inverse
-uniqueness identifies them. -/
+/-- Negation is preserved (derived).  `map (neg a)` and `neg (map a)` are both
+additive inverses of `map a` in the target ring; additive-inverse uniqueness
+identifies them. -/
 theorem homPreservesNeg {sourceCarrier targetCarrier : Type}
     {source : CommutativeRingWitness sourceCarrier}
     {target : CommutativeRingWitness targetCarrier}
@@ -178,13 +173,13 @@ theorem homPreservesNeg {sourceCarrier targetCarrier : Type}
 
 /-! ## Hom equality: pointwise target-setoid
 
-`Eq` on the record would demand proof-field equality (`funext` on `map`, and
-proof irrelevance we do NOT have for `Type`-valued apartness).  The axiom-free
-arrow equality is pointwise `denotesSame`, inherited refl/symm/trans from the
-target setoid. -/
+`Eq` on the record would demand proof-field equality (`funext` on `map`, plus
+proof irrelevance unavailable for `Type`-valued apartness).  The axiom-free arrow
+equality is instead pointwise `denotesSame`, with refl/symm/trans inherited from
+the target setoid. -/
 
-/-- **Pointwise sameness of homomorphisms** — equal on every input up to the
-target setoid. -/
+/-- Pointwise sameness of homomorphisms: equal on every input up to the target
+setoid. -/
 def HomDenotesSame {sourceCarrier targetCarrier : Type}
     {source : CommutativeRingWitness sourceCarrier}
     {target : CommutativeRingWitness targetCarrier}
@@ -221,7 +216,7 @@ theorem homDenotesSameTrans {sourceCarrier targetCarrier : Type}
 
 /-! ## Identity and composition -/
 
-/-- **The identity homomorphism** — the identity map; every obligation is
+/-- The identity homomorphism: the identity map, with every obligation
 reflexivity. -/
 def identityRingHom {carrier : Type} (ring : CommutativeRingWitness carrier) :
     SetoidRingHom ring ring where
@@ -234,10 +229,9 @@ def identityRingHom {carrier : Type} (ring : CommutativeRingWitness carrier) :
   preservesZero := ring.denotesSameIsReflexive ring.zero
   preservesOne := ring.denotesSameIsReflexive ring.one
 
-/-- **Composition of homomorphisms** — compose the maps; each preservation law
-pushes the first hom's law through the second hom's map (via
-`respectsDenotesSame`) and chains with the second hom's law by target
-transitivity. -/
+/-- Composition of homomorphisms: compose the maps.  Each preservation law pushes
+the first hom's law through the second hom's map via `respectsDenotesSame`, then
+chains with the second hom's law by target transitivity. -/
 def composeRingHom {sourceCarrier middleCarrier targetCarrier : Type}
     {sourceRing : CommutativeRingWitness sourceCarrier}
     {middleRing : CommutativeRingWitness middleCarrier}
@@ -300,10 +294,9 @@ theorem composeRingHomAssoc {sourceCarrier secondCarrier thirdCarrier targetCarr
     targetRing.denotesSameIsReflexive
       (thirdHom.map (secondHom.map (firstHom.map value)))
 
-/-- **Composition is a congruence for `HomDenotesSame`** — the one law that is
-NOT reflexivity: it pushes the first agreement through the second hom's map and
-chains with the second agreement.  Needed for the diagram to compose up to
-hom-sameness. -/
+/-- Composition is a congruence for `HomDenotesSame`: the one law that is not
+reflexivity.  It pushes the first agreement through the second hom's map and chains
+with the second agreement, so the diagram composes up to hom-sameness. -/
 theorem composeRingHomRespectsHomDenotesSame
     {sourceCarrier middleCarrier targetCarrier : Type}
     {sourceRing : CommutativeRingWitness sourceCarrier}

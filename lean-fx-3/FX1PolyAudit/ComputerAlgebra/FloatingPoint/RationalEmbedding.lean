@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.FloatingPoint.RationalEmbedding
 
 /-! # FX1PolyAudit/ComputerAlgebra/FloatingPoint/RationalEmbedding — zero-axiom
-    gate (NUM-Q-5)
+    gate
 
 Per-declaration zero-axiom gate for the ℤ[1/β] ↪ ℚ embedding: the clamped
 rational reading, the denominator read-back, and the setoid-embedding iff with

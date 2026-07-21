@@ -1,55 +1,52 @@
 import FX1Poly.ComputerAlgebra.Decision.GroebnerRationalMembership
 
 /-! # FX1Poly/ComputerAlgebra/Decision/GroebnerRationalEvaluation — the ℚ evaluation
-    layer that grounds the DISSAT-GROB-Q ideal-membership decision semantically
+    layer grounding the ideal-membership decision semantically
 
 The ℚ Gröbner certificate brick (`GroebnerRationalMembership.lean`, prefix `grq`)
-shipped ideal membership by checkable cofactor certificates — the semantic inductive
-`GrqInIdeal`, the structural checker `grqCheckCertificate`, the headline soundness
-`grqCertificateSound` — but consciously deferred its evaluation-homomorphism layer
-with the exact bill "would need `qnfPow` + pow-add homomorphism".  This module pays
-that bill: it is the F2 brick's `grbEvalPoly` common-zero grounding
-(`GroebnerMembership.lean`) ported from the Bool field to the canonical rational
-carrier `QnfRat`.
+decides ideal membership by checkable cofactor certificates — the semantic inductive
+`GrqInIdeal`, the structural checker `grqCheckCertificate`, the soundness
+`grqCertificateSound`.  This module supplies its evaluation-homomorphism layer: the
+common-zero grounding of `GroebnerMembership.lean`'s `grbEvalPoly`, over the canonical
+rational carrier `QnfRat` instead of the Bool field.
 
-## What the port changes against the F2 template
+## Coefficient field: QnfRat vs Bool
 
-The F2 monomial evaluation multiplies Booleans (`&&`, unit `true`) at a total point
+The Bool monomial evaluation multiplies Booleans (`&&`, unit `true`) at a total point
 `Nat → Bool`; here the coefficient field is `QnfRat`, so `&&` becomes `qnfMul`, the
 monomial unit `true` becomes `qnfOne`, the polynomial fold `grbBoolXor` becomes
-`qnfAdd`, and the polynomial zero `false` becomes `qnfZero`.  Every place the F2
+`qnfAdd`, and the polynomial zero `false` becomes `qnfZero`.  Every place the Bool
 proof closed by `rfl` on a Bool identity (`true && b = b`, `b && true = b`,
 `b && false = false`) now discharges the corresponding `qnf` law
-(`qnfMulOneLeft` / `qnfMulOneRight` / `grqQnfMulZeroRight`) — that is the whole
-delta.  The exponent-vector substrate (`GrbExp`, `grbExpInsert`, `grbExpMul`, the
-order lemmas) is REUSED from the F2 brick by import, untouched.
+(`qnfMulOneLeft` / `qnfMulOneRight` / `grqQnfMulZeroRight`).  The exponent-vector
+substrate (`GrbExp`, `grbExpInsert`, `grbExpMul`, the order lemmas) is reused from the
+Bool brick by import, untouched.
 
 ## Environment convention
 
-The F2 template evaluates at a TOTAL point `Nat → Bool`, so no variable is ever
+The Bool evaluation runs at a TOTAL point `Nat → Bool`, so no variable is ever
 "missing".  Here the environment is a `List QnfRat` indexed by variable number, and
 a variable index past the end of the list evaluates at `qnfZero`
 (`greEnvLookup` returns `qnfZero` out of bounds) — the same convention a dense
 coordinate vector induces, and the one the fires exercise (e.g. `[qnfOfInt 3]` binds
 variable `0` to `3` and leaves every other variable at `0`).
 
-## Deliverable layers
+## Layers
 
-  * **`qnfPow` + the power homomorphism** (T1) — `qnfPow base exponent` structural on
-    the exponent, with `qnfPowAdd` (`x^(m+n) = x^m · x^n`, the deferred bill),
-    `qnfPowOne`, `qnfOnePow`, `qnfMulPow` (`(x·y)^n = x^n · y^n`), telescoped from
-    `qnfMulAssoc`/`qnfMulComm` through the two reusable rearrangers
-    `qnfMulSwapLeft`/`qnfMulExchange`.
-  * **Monomial evaluation** (T2) — `greEvalVarPower`/`greEvalExp` with the
+  * **`qnfPow` and the power homomorphism** — `qnfPow base exponent` structural on the
+    exponent, with `qnfPowAdd` (`x^(m+n) = x^m · x^n`), `qnfPowOne`, `qnfOnePow`,
+    `qnfMulPow` (`(x·y)^n = x^n · y^n`), telescoped from `qnfMulAssoc`/`qnfMulComm`
+    through the two reusable rearrangers `qnfMulSwapLeft`/`qnfMulExchange`.
+  * **Monomial evaluation** — `greEvalVarPower`/`greEvalExp` with the
     exponent-multiplication homomorphism `greEvalExpMul` (eval of `grbExpMul` is the
     product of evals — where `qnfPowAdd` fires, through `greEvalExpInsert`).
-  * **Polynomial evaluation** (T3) — `greEvalPoly` (sum over terms) with the ring
+  * **Polynomial evaluation** — `greEvalPoly` (sum over terms) with the ring
     homomorphisms `greEvalAdd` (through the insert-fold `grqAdd`), `greEvalMul`,
     `greEvalScaleTerm`, and `greEvalSumOfProducts`.
-  * **THE GROUNDING** (T4) — `greCommonZeroOfIdealMember`: a member of the ideal of a
+  * **The grounding** — `greCommonZeroOfIdealMember`: a member of the ideal of a
     generator list vanishes at every common zero of the generators (the easy
     Nullstellensatz direction — no completeness claim), by induction on `GrqInIdeal`
-    through the T3 homomorphisms.
+    through the polynomial homomorphisms.
 
 ## Zero-axiom discipline
 
@@ -65,7 +62,7 @@ set_option relaxedAutoImplicit false
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## T1: canonical power and its homomorphisms -/
+/-! ## Canonical power and its homomorphisms -/
 
 /-- Canonical power (`base ^ exponent` with `base ^ 0 = qnfOne`), structural on the
 exponent. -/
@@ -89,7 +86,7 @@ theorem qnfMulSwapLeft (firstFactor secondFactor thirdFactor : QnfRat) :
         (qnfMulComm firstFactor secondFactor))).trans
     (qnfMulAssoc secondFactor firstFactor thirdFactor)
 
-/-- **THE POWER HOMOMORPHISM** (the deferred bill): `base ^ (left + right) =
+/-- **The power homomorphism**: `base ^ (left + right) =
 base ^ left · base ^ right`, by induction on `right` and `qnfMulAssoc`. -/
 theorem qnfPowAdd : (base : QnfRat) → (left right : Nat) →
     qnfPow base (left + right) = qnfMul (qnfPow base left) (qnfPow base right)
@@ -135,7 +132,7 @@ theorem qnfMulPow : (base other : QnfRat) → (exponent : Nat) →
       rw [qnfMulPow base other exponent]
       exact qnfMulExchange base other (qnfPow base exponent) (qnfPow other exponent)
 
-/-! ## T2: monomial evaluation over a `List QnfRat` environment -/
+/-! ## Monomial evaluation over a `List QnfRat` environment -/
 
 /-- Look up a variable's value in the environment; a variable index past the end of
 the list evaluates at `qnfZero` (the documented missing-variable convention). -/
@@ -201,7 +198,7 @@ theorem greEvalExpMul : (left right : GrbExp) → (env : List QnfRat) →
       exact (qnfMulAssoc (greEvalVarPower env varPower)
         (greEvalExp env rest) (greEvalExp env right)).symm
 
-/-! ## T3: polynomial evaluation and the ring homomorphisms -/
+/-! ## Polynomial evaluation and the ring homomorphisms -/
 
 /-- Evaluate a rational polynomial at the environment — the `qnfAdd` sum over its
 terms, each term contributing `coefficient · (monomial evaluation)`. -/
@@ -367,11 +364,11 @@ theorem greEvalSumOfProducts : (cofactors generators : List GrqPoly) →
       rw [greEvalAdd (grqMul cofactor gen) (grqSumOfProducts cofactorRest genRest) env,
         greEvalMul cofactor gen env, greEvalSumOfProducts cofactorRest genRest env]
 
-/-! ## T4: the common-zero grounding of ideal membership -/
+/-! ## The common-zero grounding of ideal membership -/
 
-/-- **THE GROUNDING** (the easy Nullstellensatz direction): every member of the ideal
+/-- **The grounding** (the easy Nullstellensatz direction): every member of the ideal
 generated by a list vanishes at every common zero of the generators.  By induction on
-`GrqInIdeal` through the T3 homomorphisms — no completeness claim (non-membership
+`GrqInIdeal` through the polynomial homomorphisms — no completeness claim (non-membership
 stays out of scope at the F2 wall `grbNonMembershipDecisionStatement`). -/
 theorem greCommonZeroOfIdealMember (generators : List GrqPoly) (target : GrqPoly)
     (env : List QnfRat) (hInIdeal : GrqInIdeal generators target)
@@ -388,7 +385,7 @@ theorem greCommonZeroOfIdealMember (generators : List GrqPoly) (target : GrqPoly
       rw [greEvalMul multiplier member env, memberVanishes]
       exact grqQnfMulZeroRight (greEvalPoly env multiplier)
 
-/-! ## T5: fires -/
+/-! ## Fires -/
 
 set_option maxRecDepth 8192
 
@@ -432,16 +429,16 @@ theorem greFireXSquaredMinusOneVanishesAtOne :
 theorem greFireTwoVariableEval :
     greEvalPoly [qnfOfInt 2, qnfOfInt 3] grqFireXTimesYMinusOne = qnfOfInt 5 := rfl
 
-/-! ## T6: content markers -/
+/-! ## Content markers -/
 
 /-- DECIDED: the ℚ evaluation-homomorphism layer — `qnfPow` with the power
-homomorphism `qnfPowAdd` (the deferred bill) and `qnfMulPow`, monomial evaluation
+homomorphism `qnfPowAdd` and `qnfMulPow`, monomial evaluation
 `greEvalExp` with the exponent-multiplication homomorphism `greEvalExpMul`, and the
 polynomial ring homomorphisms `greEvalAdd`/`greEvalMul`/`greEvalScaleTerm`/
 `greEvalSumOfProducts`. -/
 def greHasEvaluationHomomorphism : Bool := true
 
-/-- DECIDED: the semantic grounding of the DISSAT-GROB-Q ideal-membership decision —
+/-- DECIDED: the semantic grounding of the ℚ ideal-membership decision —
 `greCommonZeroOfIdealMember`: a member of the ideal vanishes at every common zero of
 the generators (the easy Nullstellensatz direction), so an accepted `grqCheckCertificate`
 now carries semantic content, not merely `GrqInIdeal` membership.  Non-membership /

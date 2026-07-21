@@ -1,51 +1,38 @@
-/-! # FX1Poly/ComputerAlgebra/Category/RestrictionWordProblem — the free restriction
-    category word problem
+/-! # The free restriction category word problem
 
-A **restriction category** (Cockett–Lack) is a category with an operation sending each
-morphism `f : A → B` to a *restriction idempotent* `overline f : A → A` — the partial
-"domain of definedness" of `f` — subject to four axioms (applicative composition `∘`, so
-`g ∘ f` means "first `f`, then `g`"):
+A restriction category (Cockett-Lack) is a category equipped with an operation sending each
+morphism `f : A -> B` to a restriction idempotent `overline f : A -> A`, the partial domain
+of definedness of `f`, subject to four axioms (composition is applicative, so `g ∘ f` means
+"first `f`, then `g`"):
 
-* **R1** `f ∘ overline f = f`
-* **R2** `overline f ∘ overline g = overline g ∘ overline f`
-* **R3** `overline (g ∘ overline f) = overline g ∘ overline f`
-* **R4** `overline g ∘ f = f ∘ overline (g ∘ f)`
+* R1  `f ∘ overline f = f`
+* R2  `overline f ∘ overline g = overline g ∘ overline f`
+* R3  `overline (g ∘ overline f) = overline g ∘ overline f`
+* R4  `overline g ∘ f = f ∘ overline (g ∘ f)`
 
-This file DECIDES, zero-axiom, the word problem for a concrete free restriction category
-over a fixed graph, under the **commutative-idempotent domain** simplification: a morphism
-is a *path* (a `List Nat` of edge indices, the free-monoid word) together with a *guard set*
-(a `List Nat` of edge indices, compared up to SET equality — the domain restriction).  The
-domain of a path is the meet of the restrictions of the edges it traverses, order- and
-multiplicity-independent, so guards form a free **meet-semilattice**.  Restriction is
-genuinely nontrivial: `overline (edge e) = the guard {e} ≠ the identity`.
+This file decides, zero-axiom, the word problem for the concrete free restriction category
+over a fixed graph under the commutative-idempotent domain simplification. A morphism is a
+path (a `List Nat` of edge indices, the free-monoid word) together with a guard set (a
+`List Nat` compared up to set equality, the domain restriction). The domain of a path is the
+meet of the restrictions of the edges it traverses, order- and multiplicity-independent, so
+guards form a free meet-semilattice. Restriction is genuinely nontrivial:
+`overline (edge e)` is the guard `{e}`, distinct from the identity.
 
-## What is DECIDED (zero-axiom)
+Decided: the normal form `RcmMor` with `rcmId`, `rcmGen`, composition `rcmComp`, restriction
+`rcmRestrict`, and well-formedness (composition preserves the domain-marker invariant); R1-R4
+and the category laws as normal-form equivalences (path equal, guard set equal); the decision
+`rcmDecideConv` and its soundness `rcmConvDecides` lifting the axioms through the congruence.
+Completeness is delivered on the guard-semilattice fragment (pure restriction idempotents) via
+`rcmRestrIdem`, `rcmGuardSwap`, `rcmGuardContract`.
 
-* **T1 — normal form + restriction combinator.**  `RcmMor` = `⟨main path, guard set⟩`;
-  `rcmId`, `rcmGen`, vertical composition `rcmComp`, `rcmRestrict`, with well-formedness
-  (composition preserves the domain-marker invariant).
-* **T2 — R1–R4 + category laws are SOUND on the normal form.**  Each restriction axiom and
-  each category law is proved as a normal-form equivalence (path equal, guard set equal).
-  The guard half is the free-semilattice absorption/commutation (set equality of appended
-  guard lists); the path half is the hand-rolled free-monoid append laws.
-* **T3 — the decision.**  `rcmDecideConv` = path-beq AND guard-set-eq of the two normal
-  forms.  Soundness (`rcmConvSound`) lifts T2 through the congruence.  Completeness is
-  delivered on the guard-semilattice fragment (`rcmRestrConvCompleteGuards`, pure
-  restriction idempotents) via a readback; the general readback is discussed at the wall.
-
-## What is WALLED
-
-* **The deep free restriction category** where each generating edge carries a *nontrivial*
-  restriction with prefix subsumption (`overline (g ∘ f) ≤ overline f`) — the guards become
-  finite sets of *words* reduced to a prefix-antichain; its canonical completion is beyond
-  the commutative-idempotent guard model.  Marker `rcmHasDeepGuardRestriction = false`.
-* **The Turing-category / universal-object extension** (Cockett–Hofstra: a restriction
-  category with a universal object modelling partial computable maps) needs a partial
-  combinatory algebra — codes + application whose termination is a Kleene/completion
-  argument beyond any free presentation.  Marker `rcmHasTuringCategory = false`.
+Walled: full readback completeness on the whole term calculus; the deep free restriction
+category where each edge carries a prefix-subsuming restriction `overline (g ∘ f) ≤ overline f`
+(guards become prefix-antichains of words); the Turing-category universal-object extension
+(Cockett-Hofstra), which needs a partial combinatory algebra whose termination is a
+Kleene/completion argument beyond any free presentation.
 
 Every declaration is free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`, `funext`, `WellFounded.fix`.  All list membership/append facts are
+`native_decide`, `omega`, `funext`, `WellFounded.fix`. Membership and append facts are
 hand-rolled structural recursions; no leak-prone library lemma is used. -/
 
 namespace FX1Poly.ComputerAlgebra.Category
@@ -140,7 +127,7 @@ theorem rcmAppendAssoc : (first second third : List Nat) →
   | head :: rest, second, third =>
       congrArg (fun tail => head :: tail) (rcmAppendAssoc rest second third)
 
-/-! ## Guard sets — membership, subset, set-equality (the free meet-semilattice) -/
+/-! ## Guard sets: membership, subset, set-equality (the free meet-semilattice) -/
 
 /-- Membership of a letter in a guard list. -/
 def rcmMemBool (target : Nat) : List Nat → Bool
@@ -217,8 +204,7 @@ theorem rcmSubsetConsIntro (head : Nat) (rest other : List Nat)
   show (rcmMemBool head other && rcmSubset rest other) = true
   exact rcmBoolAndIntro _ _ hHead hTail
 
-/-- Every letter of `left` still lands after weakening the target with more letters:
-membership is monotone, so subset is monotone in its target on the right of `++`. -/
+/-- Subset is monotone into the right of `++`. -/
 theorem rcmSubsetWeakenRight : (left front back : List Nat) →
     rcmSubset left back = true → rcmSubset left (front ++ back) = true
   | [], _, _, _ => rfl
@@ -321,7 +307,7 @@ theorem rcmSetEqIntro (left right : List Nat)
   show (rcmSubset left right && rcmSubset right left) = true
   exact rcmBoolAndIntro _ _ hForward hBackward
 
-/-! ### Guard-merge (`++`) is a commutative-idempotent operation up to `rcmSetEq` -/
+/-! ### Guard-merge (`++`) is commutative-idempotent up to `rcmSetEq` -/
 
 /-- `++` is commutative up to set-equality (guard axiom R2 core). -/
 theorem rcmSetEqAppComm (front back : List Nat) :
@@ -364,7 +350,7 @@ theorem rcmSetEqAppAbsorb (front back : List Nat) :
       (rcmSubsetRefl (back ++ front)))
     (rcmSubsetWeakenRight (back ++ front) front (back ++ front) (rcmSubsetRefl (back ++ front)))
 
-/-! ## T1 — the restriction-morphism normal form, combinator, and operations -/
+/-! ## The restriction-morphism normal form, combinator, and operations -/
 
 /-- A restriction morphism in normal form: a `main` path (free-monoid word of edge indices)
 plus a `guards` set (the domain restriction, a `List Nat` compared up to set-equality). -/
@@ -376,21 +362,20 @@ structure RcmMor where
 def rcmId : RcmMor := ⟨[], []⟩
 
 /-- A single generating edge `edge`: the one-step path `[edge]` whose domain marker is the
-edge itself (so `overline (edge) = the guard {edge}`, genuinely nontrivial). -/
+edge itself, so `overline (edge)` is the guard `{edge}`, genuinely nontrivial. -/
 def rcmGen (edge : Nat) : RcmMor := ⟨[edge], [edge]⟩
 
-/-- Vertical composition `later ∘ earlier` (applicative: do `earlier` first, then `later`).
-Paths concatenate (`earlier` traversed first); guard sets merge (union up to set-equality),
-which transports the `later` guards to the domain (guard axiom R4). -/
+/-- Vertical composition `later ∘ earlier` (applicative: do `earlier` first). Paths concatenate
+(`earlier` traversed first); guard sets merge (union up to set-equality), transporting the
+`later` guards to the domain per R4. -/
 def rcmComp (later earlier : RcmMor) : RcmMor :=
   ⟨earlier.main ++ later.main, later.guards ++ earlier.guards⟩
 
-/-- The restriction combinator `overline`: keep the guard set, drop the path.  The result is
-an endo domain-idempotent on the source. -/
+/-- The restriction combinator `overline`: keep the guard set, drop the path, giving an endo
+domain-idempotent on the source. -/
 def rcmRestrict (morphism : RcmMor) : RcmMor := ⟨[], morphism.guards⟩
 
-/-- Domain-marker well-formedness: every edge on the path is recorded as a guard (the
-commutative-idempotent domain invariant). -/
+/-- Domain-marker well-formedness: every edge on the path is recorded as a guard. -/
 def rcmWf (morphism : RcmMor) : Bool := rcmSubset morphism.main morphism.guards
 
 /-- The identity is well-formed. -/
@@ -404,7 +389,7 @@ theorem rcmWfGen (edge : Nat) : rcmWf (rcmGen edge) = true := by
 /-- A restriction morphism is well-formed (empty path). -/
 theorem rcmWfRestrict (morphism : RcmMor) : rcmWf (rcmRestrict morphism) = true := rfl
 
-/-- **Composition preserves well-formedness** (the domain-marker invariant is maintained). -/
+/-- Composition preserves well-formedness (the domain-marker invariant is maintained). -/
 theorem rcmWfComp (later earlier : RcmMor)
     (hLater : rcmWf later = true) (hEarlier : rcmWf earlier = true) :
     rcmWf (rcmComp later earlier) = true := by
@@ -451,25 +436,25 @@ theorem rcmNfEquivRestr (left right : RcmMor) (hEquiv : RcmNfEquiv left right) :
     RcmNfEquiv (rcmRestrict left) (rcmRestrict right) :=
   ⟨rfl, hEquiv.right⟩
 
-/-! ## T2 — the restriction axioms R1–R4 and category laws, SOUND on the normal form -/
+/-! ## Restriction axioms R1-R4 and category laws, sound on the normal form -/
 
-/-- **R1** `f ∘ overline f = f`. -/
+/-- R1 `f ∘ overline f = f`. -/
 theorem rcmR1 (f : RcmMor) : RcmNfEquiv (rcmComp f (rcmRestrict f)) f :=
   ⟨rfl, rcmSetEqAppSelf f.guards⟩
 
-/-- **R2** `overline f ∘ overline g = overline g ∘ overline f`. -/
+/-- R2 `overline f ∘ overline g = overline g ∘ overline f`. -/
 theorem rcmR2 (f g : RcmMor) :
     RcmNfEquiv (rcmComp (rcmRestrict f) (rcmRestrict g))
       (rcmComp (rcmRestrict g) (rcmRestrict f)) :=
   ⟨rfl, rcmSetEqAppComm f.guards g.guards⟩
 
-/-- **R3** `overline (g ∘ overline f) = overline g ∘ overline f`. -/
+/-- R3 `overline (g ∘ overline f) = overline g ∘ overline f`. -/
 theorem rcmR3 (g f : RcmMor) :
     RcmNfEquiv (rcmRestrict (rcmComp g (rcmRestrict f)))
       (rcmComp (rcmRestrict g) (rcmRestrict f)) :=
   ⟨rfl, rcmSetEqRefl _⟩
 
-/-- **R4** `overline g ∘ f = f ∘ overline (g ∘ f)`. -/
+/-- R4 `overline g ∘ f = f ∘ overline (g ∘ f)`. -/
 theorem rcmR4 (g f : RcmMor) :
     RcmNfEquiv (rcmComp (rcmRestrict g) f) (rcmComp f (rcmRestrict (rcmComp g f))) := by
   refine ⟨?_, ?_⟩
@@ -520,7 +505,7 @@ def rcmEval : RcmTerm → RcmMor
   | RcmTerm.comp later earlier => rcmComp (rcmEval later) (rcmEval earlier)
   | RcmTerm.restr inner => rcmRestrict (rcmEval inner)
 
-/-- The restriction congruence: the equivalence generated by the category laws, R1–R4, and
+/-- The restriction congruence: the equivalence generated by the category laws, R1-R4, and
 congruence for composition and restriction. -/
 inductive RestrConv : RcmTerm → RcmTerm → Prop
   | refl (term : RcmTerm) : RestrConv term term
@@ -548,8 +533,8 @@ inductive RestrConv : RcmTerm → RcmTerm → Prop
       RestrConv (RcmTerm.comp (RcmTerm.restr g) f)
         (RcmTerm.comp f (RcmTerm.restr (RcmTerm.comp g f)))
 
-/-- **T2 headline: the congruence is sound for the normal-form equivalence.**  Convertible
-terms evaluate to equivalent normal forms (paths equal, guard sets equal). -/
+/-- The congruence is sound for the normal-form equivalence: convertible terms evaluate to
+equivalent normal forms (paths equal, guard sets equal). -/
 theorem rcmConvSound {left right : RcmTerm} (hConv : RestrConv left right) :
     RcmNfEquiv (rcmEval left) (rcmEval right) := by
   induction hConv with
@@ -566,15 +551,15 @@ theorem rcmConvSound {left right : RcmTerm} (hConv : RestrConv left right) :
   | r3 g f => exact rcmR3 _ _
   | r4 g f => exact rcmR4 _ _
 
-/-! ## T3 — the decision and its soundness -/
+/-! ## The decision and its soundness -/
 
-/-- **The restriction word decision.**  Compare the two normal forms: path equality AND
+/-- The restriction word decision: compare the two normal forms by path equality and
 guard-set equality. -/
 def rcmDecideConv (left right : RcmTerm) : Bool :=
   rcmListBeq (rcmEval left).main (rcmEval right).main
     && rcmSetEq (rcmEval left).guards (rcmEval right).guards
 
-/-- **T3 soundness: convertible terms are accepted by the decision.** -/
+/-- Soundness: convertible terms are accepted by the decision. -/
 theorem rcmConvDecides {left right : RcmTerm} (hConv : RestrConv left right) :
     rcmDecideConv left right = true := by
   have hEquiv := rcmConvSound hConv
@@ -584,26 +569,24 @@ theorem rcmConvDecides {left right : RcmTerm} (hConv : RestrConv left right) :
   rw [hEquiv.left]
   exact rcmListBeqRefl _
 
-/-! ## T3 — completeness on the guard-semilattice fragment (restriction idempotents)
+/-! ## Completeness on the guard-semilattice fragment (restriction idempotents)
 
-The general readback is walled below; here we DECIDE completeness for the free
-meet-semilattice of guard atoms — pure restriction idempotents — by reassembling any guard
-set from R1–R4.  These are the building blocks (idempotency, commutation) that a full
-readback would iterate. -/
+The general readback is walled. Completeness for the free meet-semilattice of guard atoms
+(pure restriction idempotents) is delivered here by reassembling any guard set from R1-R4:
+idempotency, commutation, and contraction, the building blocks a full readback would iterate. -/
 
 /-- A pure-guard term: a meet (composite) of restriction atoms `overline (gen r)`. -/
 def rcmGuardTerm : List Nat → RcmTerm
   | [] => RcmTerm.idTerm
   | atom :: rest => RcmTerm.comp (RcmTerm.restr (RcmTerm.gen atom)) (rcmGuardTerm rest)
 
-/-- **Restriction is idempotent** (`overline f ∘ overline f = overline f`), derived from R1
-and R3 — the guard-semilattice idempotency law, syntactically. -/
+/-- Restriction is idempotent (`overline f ∘ overline f = overline f`), from R1 and R3. -/
 theorem rcmRestrIdem (f : RcmTerm) :
     RestrConv (RcmTerm.comp (RcmTerm.restr f) (RcmTerm.restr f)) (RcmTerm.restr f) :=
   RestrConv.trans (RestrConv.symm (RestrConv.r3 f f)) (RestrConv.restrCongr (RestrConv.r1 f))
 
-/-- **Guard commutation**: adjacent guard atoms commute in a guard term (R2 lifted through
-associativity) — the semilattice commutativity law. -/
+/-- Guard commutation: adjacent guard atoms commute in a guard term (R2 lifted through
+associativity), the semilattice commutativity law. -/
 theorem rcmGuardSwap (leftAtom rightAtom : Nat) (rest : List Nat) :
     RestrConv (rcmGuardTerm (leftAtom :: rightAtom :: rest))
       (rcmGuardTerm (rightAtom :: leftAtom :: rest)) := by
@@ -638,8 +621,8 @@ theorem rcmGuardSwap (leftAtom rightAtom : Nat) (rest : List Nat) :
       (RcmTerm.restr (RcmTerm.gen leftAtom)) (rcmGuardTerm rest)
   exact RestrConv.trans hReassoc (RestrConv.trans hSwap hReassoc2)
 
-/-- **Guard contraction**: a duplicate leading guard atom is absorbed (R1/idempotency
-lifted) — the semilattice idempotency law on lists. -/
+/-- Guard contraction: a duplicate leading guard atom is absorbed (R1 and idempotency
+lifted), the semilattice idempotency law on lists. -/
 theorem rcmGuardContract (atom : Nat) (rest : List Nat) :
     RestrConv (rcmGuardTerm (atom :: atom :: rest)) (rcmGuardTerm (atom :: rest)) := by
   have hReassoc :
@@ -661,72 +644,60 @@ theorem rcmGuardDup (atom : Nat) (rest : List Nat) :
 
 /-! ## Capability markers and the honest walls -/
 
-/-- Owner marker: the restriction-morphism normal form, combinator, and R1–R4 + category
-laws are DECIDED and SOUND (T1 + T2). -/
-def rcmHasRestrictionNormalForm : Bool := true
+/-- The restriction-morphism normal form `RcmMor`, the combinator `rcmRestrict`, composition
+`rcmComp`, R1-R4 and the category laws sound on the normal form, the decision `rcmDecideConv`
+with soundness `rcmConvDecides`, and the guard-semilattice completeness building blocks
+(`rcmRestrIdem`, `rcmGuardSwap`, `rcmGuardContract`) are all established in-file. -/
+def rcmDecidesRestrictionCategoryWordProblem : Bool := true
 
-/-- Owner marker: the decision is sound (convertible ⟹ accepted), and the guard-semilattice
-fragment (restriction idempotents) carries its completeness building blocks — idempotency
-`rcmRestrIdem`, commutation `rcmGuardSwap`, contraction `rcmGuardContract`. -/
-def rcmHasGuardSemilatticeFragment : Bool := true
-
-/-- Owner marker (WALL): the FULL readback completeness — from `rcmDecideConv = true` back to
-`RestrConv` for arbitrary terms — is NOT delivered.  Two burned attacks:
-(1) the canonical readback `term ↦ path-term ∘ guard-term` needs a composition-homomorphism
-lemma rearranging `path ++ path` and `guard ++ guard` through R4/associativity;
-(2) the guard half needs `rcmSetEq G1 G2 → RestrConv (rcmGuardTerm G1) (rcmGuardTerm G2)`,
-which requires transporting set-equality through arbitrary permutation-and-contraction —
-membership-driven element removal from the target list — beyond the shipped adjacent-swap +
-leading-contraction building blocks.  Partial: soundness is total; the fragment building
-blocks are shipped. -/
+/-- Wall: full readback completeness, from `rcmDecideConv = true` back to `RestrConv` for
+arbitrary terms, is not delivered. The obstruction is transporting guard set-equality
+`rcmSetEq G1 G2` into `RestrConv (rcmGuardTerm G1) (rcmGuardTerm G2)` through arbitrary
+permutation-and-contraction (membership-driven element removal), beyond the established
+adjacent-swap and leading-contraction building blocks. -/
 def rcmHasFullReadbackCompleteness : Bool := false
 
-/-- Owner marker (WALL): the DEEP free restriction category, where each generating edge
-carries a *nontrivial* restriction with prefix subsumption (`overline (g ∘ f) ≤ overline f`),
-is NOT modelled.  There the guards are finite sets of *words* reduced to a prefix-antichain;
-the commutative-idempotent guard model (guards = sets of edge indices) is a proper quotient
-that cannot see prefix structure, and the antichain completion of word-guards is the deep
-extension. -/
-def rcmHasDeepGuardRestriction : Bool := false
+/-- Wall: restriction-category structure richer than the free commutative-idempotent guard
+model is not built. Two obstructions. (1) The deep free restriction category, where each edge
+carries a prefix-subsuming restriction `overline (g ∘ f) ≤ overline f`, needs guards as
+prefix-antichains of words; the guard model (sets of edge indices) is a proper quotient that
+cannot see prefix structure. (2) The Turing-category universal-object extension
+(Cockett-Hofstra: a universal object `A` with `application : A → (A ⇒ A)` modelling partial
+computable maps) needs a partial combinatory algebra whose application totality is a
+Kleene/completion argument requiring `WellFounded.fix`-style termination, beyond any free
+presentation and a certified zero-axiom impossibility in this repo. -/
+def rcmHasRicherRestrictionCategory : Bool := false
 
-/-- Owner marker (WALL): the Turing-category / universal-object extension (Cockett–Hofstra:
-a restriction category with a universal object `A` and `application : A → (A ⇒ A)` modelling
-partial computable maps) is NOT delivered.  A universal object requires a partial combinatory
-algebra — codes plus application whose totality/normalization is a Kleene/completion
-argument, i.e. exactly the `WellFounded.fix`-requiring termination that is a certified
-zero-axiom impossibility in this repo — beyond any free presentation. -/
-def rcmHasTuringCategory : Bool := false
+/-! ## Ground fires -/
 
-/-! ## T5 — ground fires -/
-
-/-- The restriction idempotent of a concrete generator is the guard `{0}` — nontrivial. -/
+/-- The restriction idempotent of a concrete generator is the guard `{0}`, nontrivial. -/
 theorem rcmFireRestrictGen : rcmRestrict (rcmGen 0) = ⟨[], [0]⟩ := rfl
 
-/-- ...and it is NOT the identity (restriction is genuinely nontrivial). -/
+/-- The generator restriction is not the identity (restriction is genuinely nontrivial). -/
 theorem rcmFireRestrictNotId : rcmListBeq (rcmRestrict (rcmGen 0)).main rcmId.main
     && rcmSetEq (rcmRestrict (rcmGen 0)).guards rcmId.guards = false := rfl
 
-/-- **R1 fires**: `edge 0 ∘ overline (edge 0)` decides equal to `edge 0`. -/
+/-- R1 fires: `edge 0 ∘ overline (edge 0)` decides equal to `edge 0`. -/
 theorem rcmFireR1Decides :
     rcmDecideConv (RcmTerm.comp (RcmTerm.gen 0) (RcmTerm.restr (RcmTerm.gen 0)))
       (RcmTerm.gen 0) = true := rfl
 
-/-- ...and semantically the R1 normal forms are equivalent. -/
+/-- The R1 normal forms are equivalent. -/
 theorem rcmFireR1Nf : RcmNfEquiv (rcmComp (rcmGen 0) (rcmRestrict (rcmGen 0))) (rcmGen 0) :=
   rcmR1 _
 
-/-- **R2 fires**: two commuted restriction idempotents decide equal. -/
+/-- R2 fires: two commuted restriction idempotents decide equal. -/
 theorem rcmFireR2Decides :
     rcmDecideConv
       (RcmTerm.comp (RcmTerm.restr (RcmTerm.gen 0)) (RcmTerm.restr (RcmTerm.gen 1)))
       (RcmTerm.comp (RcmTerm.restr (RcmTerm.gen 1)) (RcmTerm.restr (RcmTerm.gen 0)))
       = true := rfl
 
-/-- **Control (distinct paths)**: `edge 0` and `edge 1` decide NOT equal. -/
+/-- Control (distinct paths): `edge 0` and `edge 1` decide not equal. -/
 theorem rcmFireControlDistinctPaths : rcmDecideConv (RcmTerm.gen 0) (RcmTerm.gen 1) = false := rfl
 
-/-- **Control (distinct guards, same path)**: `edge 0` guarded by `overline (edge 1)` decides
-NOT equal to bare `edge 0` — the guard set difference is detected. -/
+/-- Control (distinct guards, same path): `edge 0` guarded by `overline (edge 1)` decides
+not equal to bare `edge 0`; the guard set difference is detected. -/
 theorem rcmFireControlDistinctGuards :
     rcmDecideConv (RcmTerm.comp (RcmTerm.gen 0) (RcmTerm.restr (RcmTerm.gen 1)))
       (RcmTerm.gen 0) = false := rfl

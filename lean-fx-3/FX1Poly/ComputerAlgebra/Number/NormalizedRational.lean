@@ -1,61 +1,47 @@
 import FX1Poly.ComputerAlgebra.Number.RationalDistance
 
-/-! # NormalizedRational — the canonical-NF ℚ carrier (NUM-Q-7)
+/-! # NormalizedRational — the canonical-normal-form ℚ carrier
 
-The setoid layer (`RationalPair`) already ships the whole ℚ corpus: the
-cross-multiplication setoid, exact field operations, the gcd normal form
-`normalize` with its coprimality certificate, and THE UNIQUENESS theorem
-`eqOfReducedOfDenotesSame` (reduced pairs denoting the same rational are
-EQUAL).  What a structural-equality consumer (the Gröbner ideal-membership
-checker's coefficient comparison, a hash key, a decision-procedure table)
-still lacks is a CARRIER on which plain `Eq` — and a plain structural
-`Bool` comparison — IS rational equality.
+`RationalPair` provides the setoid presentation of ℚ: the cross-multiplication
+equivalence, exact field operations, the gcd normal form `normalize` with its
+coprimality certificate, and the uniqueness theorem `eqOfReducedOfDenotesSame`
+(reduced pairs denoting the same rational are equal).  This module packages a
+carrier on which plain `Eq`, and a structural `Bool` comparison, is rational
+equality — as needed by structural-equality consumers such as coefficient
+comparison in ideal-membership checking, hash keys, and decision-procedure
+tables.
 
-This module packages exactly that:
-
-  * `QnfRat` — a `RationalPair` bundled with its reducedness certificate.
-    Lean's definitional proof irrelevance plus structure eta make equality
-    of the bundle equality of the pair (`qnfEqOfPairEq`), so byte equality
-    on the carrier coincides with rational equality
-    (`qnfEqIffPairsDenoteSame`).
-  * `qnfNormalize` — raw pair to canonical carrier; THE HEADLINE
-    `qnfNormalizeUnique`: cross-multiplication-equal raw pairs normalize to
-    the SAME `QnfRat` (plain `Eq`), with converse and fixed-point/round-trip
-    laws.
-  * Ring operations as raw-op-then-normalize (`qnfAdd`/`qnfMul`/`qnfSub`;
-    `qnfNeg` and `qnfInv` stay canonical WITHOUT renormalizing — negation
-    keeps the magnitude, inversion swaps a coprime pair), with EVERY law in
-    plain `Eq`: transported through `qnfNormalizeUnique` from the setoid
-    laws, never re-proved.
-  * The field witness `qnfMulInvCancels` on `value ≠ qnfZero` — on this
-    carrier nonzeroness IS a plain disequality.
+  * `QnfRat` bundles a `RationalPair` with its reducedness certificate.
+    Definitional proof irrelevance and structure eta make bundle equality
+    equality of the pair (`qnfEqOfPairEq`), so carrier equality coincides with
+    rational equality (`qnfEqIffPairsDenoteSame`).
+  * `qnfNormalize` sends a raw pair to the canonical carrier;
+    `qnfNormalizeUnique` states that cross-multiplication-equal raw pairs
+    normalize to the same `QnfRat` (plain `Eq`), with converse and
+    fixed-point/round-trip laws.
+  * Ring operations as raw-op-then-normalize (`qnfAdd`/`qnfMul`/`qnfSub`);
+    `qnfNeg` and `qnfInv` stay canonical without renormalizing (negation keeps
+    the magnitude, inversion swaps a coprime pair).  Every law is in plain
+    `Eq`, transported through `qnfNormalizeUnique` from the setoid laws.
+  * The field witness `qnfMulInvCancels` on `value ≠ qnfZero`; on this carrier
+    nonzeroness is a plain disequality.
   * Structural Boolean equality `qnfBeq` with `qnfBeqIffEq` and a manual
-    `DecidableEq` (`qnfDecEq`) — the Gröbner-Q successor compares
-    coefficients by `==` and rewrites by `=` with zero setoid plumbing.
-  * Kernel-`rfl` fires pinning normalization, sign handling, the zero
-    collapse, arithmetic, and inverse cancellation on closed values.
+    `DecidableEq` (`qnfDecEq`): coefficients compare by `==` and rewrite by `=`
+    with no setoid plumbing.  The zero-coefficient test is `qnfBeq · qnfZero`,
+    equal to numerator-is-zero by `qnfEqZeroOfNumeratorZero`.
+  * Kernel `rfl` fires pin normalization, sign handling, the zero collapse,
+    arithmetic, and inverse cancellation on closed values.
 
-Route note for the Gröbner-Q successor: instantiate the polynomial
-coefficient type at `QnfRat`, use `qnfBeq`/`qnfDecEq` for the coefficient
-scan (structural, no setoid), `qnfAdd`/`qnfMul`/`qnfNeg` for arithmetic, and
-discharge the coefficient-field obligations with the `qnf*` laws below; the
-zero-coefficient test is `qnfBeq · qnfZero` = numerator-is-zero by
-`qnfEqZeroOfNumeratorZero`.
-
-## Zero-axiom
-
-Structure eta + definitional proof irrelevance (`qnfEqOfPairEq` is one
-explicit-motive `Eq.rec`, no match compiler), `congrArg`/`Eq.trans` chains,
-full-enum constructor matches.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, `omega`, no `WellFounded.fix`.
-Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/NormalizedRational.lean`. -/
+Zero-axiom: structure eta and definitional proof irrelevance (`qnfEqOfPairEq`
+is one explicit-motive `Eq.rec`, no match compiler), `congrArg`/`Eq.trans`
+chains, full-enumeration constructor matches.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`, `WellFounded.fix`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
-/-! ## The canonical carrier (T1) -/
+/-! ## The canonical carrier -/
 
 /-- A rational in canonical normal form: a `RationalPair` (numerator
 `Int`, structurally positive denominator `denominatorPredecessor + 1`)
@@ -72,9 +58,9 @@ structure QnfRat where
 def qnfToRawPair (value : QnfRat) : RationalPair :=
   value.reducedPair
 
-/-- **Bundle equality from pair equality** — one explicit-motive `Eq.rec`;
-the base case closes by structure eta plus definitional proof irrelevance
-(no match compiler, no `Subtype` plumbing). -/
+/-- Bundle equality from pair equality: one explicit-motive `Eq.rec`; the base
+case closes by structure eta plus definitional proof irrelevance (no match
+compiler, no `Subtype` plumbing). -/
 theorem qnfEqOfPairEq {leftValue rightValue : QnfRat}
     (pairsEqual : leftValue.reducedPair = rightValue.reducedPair) :
     leftValue = rightValue :=
@@ -100,8 +86,8 @@ theorem qnfPairEqOfComponentsEq {leftPair rightPair : RationalPair}
       numeratorsEqual).trans
     (congrArg (RationalPair.mk rightPair.numerator) predecessorsEqual)
 
-/-- Canonical carriers whose pairs denote the same rational are EQUAL —
-the setoid-level uniqueness theorem lands as plain `Eq` here. -/
+/-- Canonical carriers whose pairs denote the same rational are equal: the
+setoid-level uniqueness theorem lands as plain `Eq` here. -/
 theorem qnfEqOfPairsDenoteSame {leftValue rightValue : QnfRat}
     (pairsDenoteSame :
       DenotesSameAs leftValue.reducedPair rightValue.reducedPair) :
@@ -121,26 +107,24 @@ theorem qnfPairsDenoteSameOfEq {leftValue rightValue : QnfRat}
     (denotesSameAsRefl leftValue.reducedPair)
     areEqual
 
-/-- **Byte equality IS rational equality** on the canonical carrier — the
-T1 acceptance bar, packaged. -/
+/-- Carrier equality is rational equality on the canonical carrier. -/
 theorem qnfEqIffPairsDenoteSame (leftValue rightValue : QnfRat) :
     leftValue = rightValue ↔
       DenotesSameAs leftValue.reducedPair rightValue.reducedPair :=
   ⟨qnfPairsDenoteSameOfEq, qnfEqOfPairsDenoteSame⟩
 
-/-! ## Normalization and THE HEADLINE (T2) -/
+/-! ## Normalization and its uniqueness -/
 
-/-- Normalize a raw pair onto the canonical carrier — the shipped gcd
-normal form (`RationalPair.normalize`, counting Euclid on structural fuel)
-bundled with its coprimality certificate. -/
+/-- Normalize a raw pair onto the canonical carrier: the gcd normal form
+(`RationalPair.normalize`, counting Euclid on structural fuel) bundled with its
+coprimality certificate. -/
 def qnfNormalize (rawValue : RationalPair) : QnfRat :=
   { reducedPair := normalize rawValue
     hasReducedShape := normalizeIsCoprime rawValue }
 
-/-- **THE HEADLINE — normalization uniqueness**: raw pairs that are
-cross-multiplication equal normalize to the SAME canonical carrier, as
-plain `Eq`.  This is what turns every setoid law into a structural-equality
-law downstream. -/
+/-- Normalization uniqueness: cross-multiplication-equal raw pairs normalize to
+the same canonical carrier, as plain `Eq`.  This is the bridge that turns each
+setoid law into a structural-equality law downstream. -/
 theorem qnfNormalizeUnique {leftRaw rightRaw : RationalPair}
     (denotesSame : DenotesSameAs leftRaw rightRaw) :
     qnfNormalize leftRaw = qnfNormalize rightRaw :=
@@ -159,9 +143,9 @@ theorem qnfNormalizeEqIffDenotesSame (leftRaw rightRaw : RationalPair) :
       qnfNormalize leftRaw = qnfNormalize rightRaw :=
   ⟨qnfNormalizeUnique, qnfDenotesSameOfNormalizeEq⟩
 
-/-- **Round-trip / fixed point**: reading the pair back out of a canonical
-carrier and normalizing returns the same carrier — already-canonical
-values are fixed points of `qnfNormalize`. -/
+/-- Round-trip / fixed point: reading the pair back out of a canonical carrier
+and normalizing returns the same carrier — canonical values are fixed points of
+`qnfNormalize`. -/
 theorem qnfNormalizeFixesCanonical (value : QnfRat) :
     qnfNormalize (qnfToRawPair value) = value :=
   qnfEqOfPairEq (normalizeOfReducedIsSelf value.hasReducedShape)
@@ -198,12 +182,12 @@ theorem qnfZeroNeOne : qnfZero ≠ qnfOne :=
       (congrArg (fun value => value.reducedPair.numerator) areEqual)
       (fun magnitudesEqual => Nat.noConfusion magnitudesEqual)
 
-/-! ## Ring operations (T3): raw op, then normalize
+/-! ## Ring operations: raw op, then normalize
 
-Negation and inversion are the two operations that stay canonical WITHOUT
-a normalization pass — negation preserves the numerator magnitude, and
-inversion swaps an already-coprime pair — so they are defined directly and
-their closure is a transported coprimality certificate, not a gcd run. -/
+Negation and inversion stay canonical without a normalization pass: negation
+preserves the numerator magnitude and inversion swaps an already-coprime pair,
+so each is defined directly with a transported coprimality certificate rather
+than a gcd run. -/
 
 /-- Canonical addition: exact raw addition, then normalize. -/
 def qnfAdd (leftValue rightValue : QnfRat) : QnfRat :=
@@ -244,12 +228,12 @@ theorem qnfSubEqAddNeg (leftValue rightValue : QnfRat) :
     qnfSub leftValue rightValue = qnfAdd leftValue (qnfNeg rightValue) :=
   rfl
 
-/-! ## The ring laws in plain `Eq` — transported, never re-proved
+/-! ## The ring laws in plain `Eq`, transported from the setoid
 
-Every law is ONE application of `qnfNormalizeUnique` to a setoid-law chain;
-where an operand is itself a normalized result, the congruence lemmas strip
-the inner `normalize` through `normalizeDenotesSame`, and identity laws
-close through the canonical fixed point. -/
+Each law is one application of `qnfNormalizeUnique` to a setoid-law chain;
+where an operand is itself a normalized result, the congruence lemmas strip the
+inner `normalize` through `normalizeDenotesSame`, and identity laws close
+through the canonical fixed point. -/
 
 /-- Addition is commutative. -/
 theorem qnfAddComm (leftValue rightValue : QnfRat) :
@@ -370,15 +354,14 @@ theorem qnfMulRightDistrib (leftSummand rightSummand factor : QnfRat) :
             (normalizeDenotesSame
               (mulExact rightSummand.reducedPair factor.reducedPair))))))
 
-/-! ## The inverse and the field witness (T4a)
+/-! ## The inverse and the field witness
 
-On the canonical carrier apartness collapses to a plain disequality: a
-reduced pair with zero numerator IS `0/1` (its reducedness forces the
-denominator to one), so `value ≠ qnfZero` reads directly on the numerator. -/
+On the canonical carrier apartness collapses to a plain disequality: a reduced
+pair with zero numerator is `0/1` (its reducedness forces the denominator to
+one), so `value ≠ qnfZero` reads directly on the numerator. -/
 
-/-- A reduced pair with zero numerator IS the zero pair — reducedness
-collapses the denominator: `gcd 0 (d+1) = d+1 = 1`.  No `Int` constructor
-split needed. -/
+/-- A reduced pair with zero numerator is the zero pair: reducedness collapses
+the denominator, `gcd 0 (d+1) = d+1 = 1`.  No `Int` constructor split needed. -/
 theorem qnfReducedWithZeroNumeratorIsZeroRational {rawValue : RationalPair}
     (hasReducedShape : RationalPair.IsReduced rawValue)
     (numeratorIsZero : rawValue.numerator = 0) :
@@ -439,8 +422,8 @@ def qnfInv (value : QnfRat) : QnfRat :=
   { reducedPair := invExact value.reducedPair
     hasReducedShape := qnfInvExactKeepsReducedShape value.hasReducedShape }
 
-/-- **The field witness**: a nonzero canonical rational times its inverse
-IS one, in plain `Eq`. -/
+/-- The field witness: a nonzero canonical rational times its inverse is one, in
+plain `Eq`. -/
 theorem qnfMulInvCancels {value : QnfRat} (isNonzero : value ≠ qnfZero) :
     qnfMul value (qnfInv value) = qnfOne :=
   (qnfNormalizeUnique
@@ -454,13 +437,13 @@ theorem qnfInvMulCancels {value : QnfRat} (isNonzero : value ≠ qnfZero) :
     qnfMul (qnfInv value) value = qnfOne :=
   (qnfMulComm (qnfInv value) value).trans (qnfMulInvCancels isNonzero)
 
-/-! ## Structural Boolean equality and decidable equality (T4b)
+/-! ## Structural Boolean equality and decidable equality
 
-Hand-rolled, self-contained: the `Bool` comparison is componentwise
-`Nat.beq` (through a per-constructor `Int` comparator), and the equivalence
-with `Eq` rides the carrier's byte-equality property.  Derived `BEq` /
-`DecidableEq` instances are avoided (match-compiler leak risk); the
-instances below wrap the manual definitions. -/
+Hand-rolled, self-contained: the `Bool` comparison is componentwise `Nat.beq`
+(through a per-constructor `Int` comparator), and the equivalence with `Eq`
+rides the carrier's equality property.  Derived `BEq` / `DecidableEq` instances
+are avoided (match-compiler leak risk); the instances below wrap the manual
+definitions. -/
 
 /-- `Nat.beq` is reflexively true — structural induction, both step arms
 definitional. -/
@@ -517,9 +500,9 @@ theorem qnfBoolAndTrueGivesRight : ∀ {leftFlag rightFlag : Bool},
   | true, _, isConjunctionTrue => isConjunctionTrue
   | false, _, isConjunctionTrue => Bool.noConfusion isConjunctionTrue
 
-/-- **Structural Boolean equality** on the canonical carrier — numerator
-comparator AND denominator comparator, nothing else.  Because the carrier
-is canonical, this IS rational equality (`qnfBeqIffEq`). -/
+/-- Structural Boolean equality on the canonical carrier: numerator comparator
+and denominator comparator, nothing else.  Because the carrier is canonical,
+this is rational equality (`qnfBeqIffEq`). -/
 def qnfBeq (leftValue rightValue : QnfRat) : Bool :=
   qnfIntBeq leftValue.reducedPair.numerator
       rightValue.reducedPair.numerator &&
@@ -536,8 +519,7 @@ theorem qnfBeqSelfIsTrue (value : QnfRat) : qnfBeq value value = true :=
       (qnfIntBeqSelfIsTrue value.reducedPair.numerator)).trans
     (qnfNatBeqSelfIsTrue value.reducedPair.denominatorPredecessor)
 
-/-- **Structural `==` IS rational `=`** on the canonical carrier — the
-Gröbner coefficient scan's acceptance bar. -/
+/-- Structural `==` is rational `=` on the canonical carrier. -/
 theorem qnfBeqIffEq (leftValue rightValue : QnfRat) :
     qnfBeq leftValue rightValue = true ↔ leftValue = rightValue :=
   Iff.intro
@@ -584,13 +566,12 @@ instance instBEqQnfRat : BEq QnfRat := ⟨qnfBeq⟩
 /-- The decidable-equality instance — manual, not derived. -/
 instance instDecidableEqQnfRat : DecidableEq QnfRat := qnfDecEq
 
-/-! ## Kernel `rfl` fires (T5)
+/-! ## Kernel `rfl` fires
 
-Closed-value pins: the whole normalize/arithmetic pipeline — counting
-divider, structural-fuel gcd, magnitude quotient — reduces inside the
-kernel, so every pin is a bare `rfl`.  The counting divider recurses once
-per dividend unit, so the `30/30` inverse pin needs the raised recursion
-depth. -/
+Closed-value pins: the whole normalize/arithmetic pipeline — counting divider,
+structural-fuel gcd, magnitude quotient — reduces inside the kernel, so every
+pin is a bare `rfl`.  The counting divider recurses once per dividend unit, so
+the `30/30` inverse pin needs the raised recursion depth. -/
 
 set_option maxRecDepth 8192
 
@@ -657,20 +638,20 @@ theorem qnfFireBeqComputes :
       true :=
   rfl
 
-/-! ## Content markers (T6) -/
+/-! ## Content markers -/
 
-/-- DECIDED: the ℚ carrier has a computable canonical normal form with
-kernel-checked uniqueness (`qnfNormalizeUnique` /
-`qnfNormalizeEqIffDenotesSame`) and byte-equality-is-rational-equality
-(`qnfEqIffPairsDenoteSame`, `qnfBeqIffEq`). -/
+/-- The ℚ carrier has a computable canonical normal form with kernel-checked
+uniqueness (`qnfNormalizeUnique` / `qnfNormalizeEqIffDenotesSame`) and
+carrier-equality-is-rational-equality (`qnfEqIffPairsDenoteSame`,
+`qnfBeqIffEq`). -/
 def qnfHasCanonicalNormalForm : Bool := true
 
-/-- DECIDED: the canonical carrier satisfies the full field-law suite in
-plain `Eq` — commutative-group addition (`qnfAddComm`/`qnfAddAssoc`/
-`qnfAddZeroRight`/`qnfAddNegRight`), commutative-monoid multiplication
-(`qnfMulComm`/`qnfMulAssoc`/`qnfMulOneRight`), two-sided distributivity
-(`qnfMulLeftDistrib`/`qnfMulRightDistrib`), nontriviality (`qnfZeroNeOne`),
-and inverse cancellation on nonzero (`qnfMulInvCancels`). -/
+/-- The canonical carrier satisfies the field-law suite in plain `Eq`:
+commutative-group addition (`qnfAddComm`/`qnfAddAssoc`/`qnfAddZeroRight`/
+`qnfAddNegRight`), commutative-monoid multiplication (`qnfMulComm`/`qnfMulAssoc`/
+`qnfMulOneRight`), two-sided distributivity (`qnfMulLeftDistrib`/
+`qnfMulRightDistrib`), nontriviality (`qnfZeroNeOne`), and inverse cancellation
+on nonzero (`qnfMulInvCancels`). -/
 def qnfHasFieldLaws : Bool := true
 
 end FX1Poly.ComputerAlgebra

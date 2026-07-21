@@ -1,7 +1,7 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealDistance
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrder
 
-/-! # RegularReal completeness — the diagonal limit (NUM-R-6b/6c/6d)
+/-! # RegularReal completeness — the diagonal limit
 
 A regular Cauchy sequence of reals — pairwise within
 `1/(i+1) + 1/(j+1)` in the real-level distance — has a LIMIT built by

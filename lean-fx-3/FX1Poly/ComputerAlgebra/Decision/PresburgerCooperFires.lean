@@ -1,29 +1,26 @@
 import FX1Poly.ComputerAlgebra.Decision.PresburgerCooper
 
 /-! # FX1Poly/ComputerAlgebra/Decision/PresburgerCooperFires — kernel-decided
-    fires for the Cooper decision pipeline (tiny deltas, `rfl` pins)
+    fires for the Cooper decision pipeline (`rfl` pins)
 
 Concrete instances exercising `pcqDecide` end-to-end through NNF,
-product-scale unitarization, the Cooper step, and ground evaluation:
+product-scale unitarization, the Cooper elimination step, and ground
+evaluation:
 
-  * **THE 2x = 1 INTEGRALITY GAP** (the DISSAT-ARITH lane's signature
-    separator): `∃ x. 2x < 2 ∧ 0 < 2x` — i.e. `∃ x. 2x = 1` in the succ-le
-    encoding — decides FALSE, while its rational relaxation is satisfiable
-    (`x = 1/2`), which is exactly why Farkas/Fourier–Motzkin certificates
-    cannot decide the integers (`lfkPresburgerDecisionStatement`'s
-    docstring names this gap).  Pinned BOTH directly and through the lane
-    translation path (`pcqSystemFormula` on the `2x = 1` equality row plus
-    `pcqFexN` closure — the exact route `pcqPresburgerDecisionHolds` runs).
-  * `∃ x. 3 | x ∧ x > 5` decides TRUE (divisibility atom live, delta 3).
-  * A TWO-QUANTIFIER instance `∃ x. ∃ y. x < y ∧ y < x + 2` decides TRUE
-    (two full Cooper rounds, inner then outer).
-  * Negative control `∃ x. x < 0 ∧ 0 < x` decides FALSE.
-  * The negation path: `¬ ∃ x. 2x = 1` decides TRUE (`fneg`/`qneg` live).
+  * The `2x = 1` integrality gap `∃ x. 2x < 2 ∧ 0 < 2x` decides FALSE while
+    its rational relaxation is satisfiable at `x = 1/2` — the exact reason
+    Farkas and Fourier–Motzkin certificates fail to decide the integers.
+    Pinned both directly and through the system-translation path
+    (`pcqSystemFormula` on the `2x = 1` equality row under `pcqFexN`
+    closure, the formula `pcqPresburgerDecisionHolds` evaluates).
+  * `∃ x. 3 | x ∧ x > 5` decides TRUE (divisibility atom).
+  * `∃ x. ∃ y. x < y ∧ y < x + 2` decides TRUE (two Cooper rounds).
+  * `∃ x. x < 0 ∧ 0 < x` decides FALSE (empty strict window).
+  * `¬ ∃ x. 2x = 1` decides TRUE (negation path through `fneg`/`qneg`).
 
-All pins are `rfl` on `Bool` equalities — the kernel evaluates the full
-pipeline.  All deltas are at most 4.  Zero-axiom discipline identical to the
-parent file; per-declaration gate in
-`FX1PolyAudit/ComputerAlgebra/Decision/PresburgerCooperFires.lean`. -/
+All pins are `rfl` on `Bool` equalities; the kernel evaluates the full
+pipeline.  Zero-axiom discipline matches the parent file; per-declaration
+gate in the audit twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -57,46 +54,42 @@ def pcqFireGapFormula : PcqFormula :=
       (PcqFormula.flt pcqFireTwoPivotTerm (pcqConstTerm (LfkInt.mk 2 0)))
       (PcqFormula.flt (pcqConstTerm lfkIntZero) pcqFireTwoPivotTerm))
 
-/-- KERNEL PIN (FALSE): the integrality gap has no integer witness. -/
+/-- FALSE: the integrality gap has no integer witness. -/
 theorem pcqFireGapDecidesFalse : pcqDecide pcqFireGapFormula = false := rfl
 
-/-- The gap as a LANE constraint system: the single equality row `2x = 1`. -/
+/-- The gap as a constraint system: the single equality row `2x = 1`. -/
 def pcqFireGapSystem : List LfkConstraint :=
   LfkConstraint.mk (LfkInt.mk 2 0 :: List.nil) (LfkInt.mk 1 0) LfkRelation.isEqualTo
     :: List.nil
 
-/-- KERNEL PIN (FALSE, lane translation path): deciding the translated,
-existentially closed `2x = 1` system — the exact formula
-`pcqPresburgerDecisionHolds` evaluates — lands FALSE. -/
+/-- FALSE, system-translation path: deciding the translated, existentially
+closed `2x = 1` system (the formula `pcqPresburgerDecisionHolds` evaluates). -/
 theorem pcqFireGapSystemDecidesFalse :
     pcqDecide (pcqFexN (pcqSystemVarCount pcqFireGapSystem)
       (pcqSystemFormula pcqFireGapSystem)) = false := rfl
 
-/-- KERNEL PIN (the separator's other half): the rational point `x = 1/2`
-satisfies the denominator-2-scaled system `2x = 2·(1/2)·... ` — concretely,
-the environment `[1]` satisfies the bounds-doubled system, so the gap system
-is RATIONALLY feasible and hence Farkas-certificate-free, yet integer-FALSE
-by the pin above. -/
+/-- The separator's other half: environment `[1]` satisfies the
+denominator-2-scaled system, so the gap is rationally feasible (`x = 1/2`) and
+certificate-free, yet integer-FALSE by the pin above. -/
 theorem pcqFireGapRationallyFeasible :
     lfkSatisfiesSystem (LfkInt.mk 1 0 :: List.nil)
       (lfkScaleBoundsForDenominator 2 pcqFireGapSystem) = true := rfl
 
 /-! ## Fire 2 — `∃ x. 3 | x ∧ x > 5` decides TRUE -/
 
-/-- `∃ x. 3 | x ∧ 5 < x` (modulus literal `2 + 1 = 3`). -/
+/-- `∃ x. 3 | x ∧ 5 < x`. -/
 def pcqFireDvdFormula : PcqFormula :=
   PcqFormula.fexists
     (PcqFormula.fconj
       (PcqFormula.fdvd 2 pcqFirePivotTerm)
       (PcqFormula.flt (pcqConstTerm (LfkInt.mk 5 0)) pcqFirePivotTerm))
 
-/-- KERNEL PIN (TRUE): `x = 6` exists (found at boundary window `5 + 1`). -/
+/-- TRUE: `x = 6` is a witness. -/
 theorem pcqFireDvdDecidesTrue : pcqDecide pcqFireDvdFormula = true := rfl
 
 /-! ## Fire 3 — two quantifiers: `∃ x. ∃ y. x < y ∧ y < x + 2` decides TRUE -/
 
-/-- `∃ x. ∃ y. x < y ∧ y < x + 2` (inner binder `y` at index 0, outer `x` at
-index 1; the witness is `y = x + 1`). -/
+/-- `∃ x. ∃ y. x < y ∧ y < x + 2` (witness `y = x + 1`). -/
 def pcqFireTwoQuantFormula : PcqFormula :=
   PcqFormula.fexists
     (PcqFormula.fexists
@@ -104,43 +97,37 @@ def pcqFireTwoQuantFormula : PcqFormula :=
         (PcqFormula.flt pcqFireOuterPivotTerm pcqFirePivotTerm)
         (PcqFormula.flt pcqFirePivotTerm pcqFireOuterPivotPlusTwoTerm)))
 
-/-- KERNEL PIN (TRUE): two full Cooper rounds compose. -/
+/-- TRUE: two Cooper rounds compose. -/
 theorem pcqFireTwoQuantDecidesTrue : pcqDecide pcqFireTwoQuantFormula = true := rfl
 
 /-! ## Fire 4 — negative control: `∃ x. x < 0 ∧ 0 < x` decides FALSE -/
 
-/-- `∃ x. x < 0 ∧ 0 < x` — an unsatisfiable window with delta 1. -/
+/-- `∃ x. x < 0 ∧ 0 < x` — an unsatisfiable window. -/
 def pcqFireEmptyWindowFormula : PcqFormula :=
   PcqFormula.fexists
     (PcqFormula.fconj
       (PcqFormula.flt pcqFirePivotTerm (pcqConstTerm lfkIntZero))
       (PcqFormula.flt (pcqConstTerm lfkIntZero) pcqFirePivotTerm))
 
-/-- KERNEL PIN (FALSE): the empty strict window refutes. -/
+/-- FALSE: the empty strict window refutes. -/
 theorem pcqFireEmptyWindowDecidesFalse :
     pcqDecide pcqFireEmptyWindowFormula = false := rfl
 
 /-! ## Fire 5 — the negation path: `¬ ∃ x. 2x = 1` decides TRUE -/
 
-/-- KERNEL PIN (TRUE): the negated gap decides TRUE through `fneg`/`qneg`. -/
+/-- TRUE: the negated gap decides through `fneg`/`qneg`. -/
 theorem pcqFireNegatedGapDecidesTrue :
     pcqDecide (PcqFormula.fneg pcqFireGapFormula) = true := rfl
 
--- The integrality gap, direct encoding. Expect: false
+-- Executable demonstrations; each mirrors an `rfl` pin above.
 #eval pcqDecide pcqFireGapFormula
--- The gap through the lane translation + existential closure. Expect: false
 #eval pcqDecide (pcqFexN (pcqSystemVarCount pcqFireGapSystem)
   (pcqSystemFormula pcqFireGapSystem))
--- The gap's rational relaxation (denominator 2, env [1]). Expect: true
 #eval lfkSatisfiesSystem (LfkInt.mk 1 0 :: List.nil)
   (lfkScaleBoundsForDenominator 2 pcqFireGapSystem)
--- Divisibility fire: exists x, 3 | x and x > 5. Expect: true
 #eval pcqDecide pcqFireDvdFormula
--- Two-quantifier fire. Expect: true
 #eval pcqDecide pcqFireTwoQuantFormula
--- Negative control: empty strict window. Expect: false
 #eval pcqDecide pcqFireEmptyWindowFormula
--- Negation path: not (exists x, 2x = 1). Expect: true
 #eval pcqDecide (PcqFormula.fneg pcqFireGapFormula)
 
 end FX1Poly.ComputerAlgebra

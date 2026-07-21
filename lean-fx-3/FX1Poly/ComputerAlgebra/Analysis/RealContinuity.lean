@@ -1,40 +1,28 @@
 import FX1Poly.ComputerAlgebra.Analysis.RealLimit
 
-/-! # Real uniform continuity — modulus of continuity (ANALYSIS-CONT-1)
+/-! # Real uniform continuity — modulus of continuity
 
-The second calculus rung.  A function `RegularReal -> RegularReal` is
-UNIFORMLY CONTINUOUS with an EXPLICIT modulus of continuity `omega`:
-shrinking the input to `1/(omega k + 1)` forces the output within
-`1/(k+1)` in the real-level distance.  Bishop's discipline — the modulus
-is the constructive witness, no unbounded `∃delta`.  The two-variable
-form perturbs both slots and sums the input hypotheses.
+A function `RegularReal -> RegularReal` is uniformly continuous with an
+explicit modulus `omega` when shrinking the input to `1/(omega k + 1)`
+forces the output within `1/(k+1)` in the real-level distance; the
+two-variable form perturbs both slots and sums the input hypotheses.
+Following Bishop, the modulus is the constructive witness and there is no
+unbounded existential over deltas.
 
-Basic continuous operations land directly from the real-level
-bound-respecting lemmas of `RealLimit`:
+`negReal` is a two-sided isometry (identity modulus). `addReal` is
+uniformly continuous in two variables with modulus `2k+1`, since two
+`1/(2k+2)` perturbations recombine to `1/(k+1)`. Uniformly continuous
+maps form a category: composition is contravariant on moduli
+(`omega_compose k = omega_inner (omega_outer k)`) with the identity map
+carrying the identity modulus. `UniformlyContinuousMap` bundles a map
+with its modulus and continuity certificate.
 
-  * `negReal` is a two-sided ISOMETRY — modulus is the identity (the
-    output bound equals the input bound, unchanged);
-  * `addReal` is uniformly continuous in two variables — modulus
-    `2k+1`, because two `1/(2k+2)` input perturbations recombine EXACTLY
-    to `1/(k+1)` (the same index doubling `addReal` already samples at).
-
-Uniformly continuous maps form a CATEGORY: they compose (moduli compose
-CONTRAVARIANTLY, `omega_compose k = omega_inner (omega_outer k)`), with
-the identity map carrying the identity modulus.  Bundling the map with
-its modulus certificate (`UniformlyContinuousMap`) mirrors the carrier
-discipline of `RegularReal` (approximation + regularity) and
-`RegularRealSequence` (values + Cauchy).
-
-Zero axioms throughout.
-
-HONEST SCOPE: the uniformly continuous operations landed here are the
-Lipschitz-1 ones whose output bound is a fixed recombination of the
-input bound.  `mulReal` (uniformly continuous only on bounded
-subdomains) and `sqrtReal` (Hölder-1/2, quadratic modulus) require
-reworking the shipped `mulRealRespectsDenotesSame` /
-`sqrtApproxPairDifferenceBounded` from a SHRINKING setoid bound to a
-FIXED continuity bound — genuine analytic content, deferred, never
-faked. -/
+Scope: the operations here are the Lipschitz-1 ones whose output bound is
+a fixed recombination of the input bound. `mulReal` (uniformly continuous
+only on bounded subdomains) and `sqrtReal` (Hölder-1/2, quadratic
+modulus) would need the shipped setoid bounds reworked from a shrinking
+bound to a fixed continuity bound; that analytic content is not developed
+here. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -71,14 +59,14 @@ def IsUniformlyContinuousTwo
 
 /-! ## Basic continuous operations -/
 
-/-- **Negation is uniformly continuous** with the identity modulus — a
+/-- Negation is uniformly continuous with the identity modulus: a
 two-sided isometry, the output bound equals the input bound. -/
 theorem isUniformlyContinuousNegReal :
     IsUniformlyContinuous negReal (fun outputPrecision => outputPrecision) :=
   fun _ _ _ isClose => negRealRespectsIsWithinRealBound isClose
 
-/-- **Addition is uniformly continuous** in two variables with modulus
-`2k+1` — the two input perturbations at `1/(2k+2)` recombine EXACTLY to
+/-- Addition is uniformly continuous in two variables with modulus
+`2k+1`: the two input perturbations at `1/(2k+2)` recombine to
 `1/(k+1)`. -/
 theorem isUniformlyContinuousTwoAddReal :
     IsUniformlyContinuousTwo addReal
@@ -90,9 +78,8 @@ theorem isUniformlyContinuousTwoAddReal :
 
 /-! ## The category of uniformly continuous maps -/
 
-/-- **A uniformly continuous self-map of the reals** — the function
-bundled with its modulus of continuity and the certificate.  The map's
-data mirrors the carrier discipline of `RegularReal`. -/
+/-- A uniformly continuous self-map of the reals: the function bundled
+with its modulus of continuity and the continuity certificate. -/
 structure UniformlyContinuousMap where
   apply : RegularReal → RegularReal
   modulus : Nat → Nat
@@ -105,9 +92,9 @@ def idUniformlyContinuousMap : UniformlyContinuousMap :=
     modulus := fun outputPrecision => outputPrecision
     isUniformlyContinuous := fun _ _ _ isClose => isClose }
 
-/-- **Composition** — moduli compose CONTRAVARIANTLY: to reach output
-precision `k` through `outer` after `inner`, pre-shrink the input by
-`inner.modulus (outer.modulus k)`. -/
+/-- Composition of uniformly continuous maps. Moduli compose
+contravariantly: to reach output precision `k` through `outer` after
+`inner`, pre-shrink the input by `inner.modulus (outer.modulus k)`. -/
 def composeUniformlyContinuousMap (outer inner : UniformlyContinuousMap) :
     UniformlyContinuousMap :=
   { apply := fun value => outer.apply (inner.apply value)

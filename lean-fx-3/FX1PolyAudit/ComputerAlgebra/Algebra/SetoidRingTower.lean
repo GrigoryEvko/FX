@@ -2,11 +2,10 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Algebra.SetoidRingTower
 
 /-! # FX1PolyAudit/ComputerAlgebra/Algebra/SetoidRingTower — zero-axiom gate
-    (NUM-ALG-2)
 
-Per-declaration zero-axiom gate for the ℕ→ℤ→ℚ→ℝ→ℂ diagram of setoid-rings: the
-ℤ and ℚ ring objects, the commutative-semiring layer hosting ℕ, the four
-widening homomorphisms, and their composite widenings.
+Per-declaration zero-axiom gate for the ℕ→ℤ→ℚ→ℝ→ℂ diagram of setoid-rings: the ℤ
+and ℚ ring objects, the commutative-semiring layer hosting ℕ, the four widening
+homomorphisms, and their composite widenings.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

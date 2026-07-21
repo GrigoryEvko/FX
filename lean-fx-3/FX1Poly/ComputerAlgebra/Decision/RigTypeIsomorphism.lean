@@ -1,33 +1,27 @@
 import FX1Poly.ComputerAlgebra.Decision.GroebnerMembership
 
-/-! # FX1Poly/ComputerAlgebra/Decision/RigTypeIsomorphism — the free-rig
-    type-isomorphism word problem.
+/-! # The free-rig type-isomorphism word problem
 
-A `RigType` is a formal (+, ×, 0, 1)-expression over indexed base atoms.  Its
-normal form is a multivariate polynomial with NATURAL-number coefficients over
-the shared `GrbExp` sorted-monomial substrate: iso-classes of objects in the free
-rig (bicartesian / commutative-semiring-free) category are exactly the elements of
-`Nat[x_0, x_1, ...]` (Fiore–Leinster), so structural byte-equality of normal forms
-IS the type-isomorphism decision for the finite (+, ×, 0, 1)-fragment.
+A `RigType` is a formal (+, ×, 0, 1)-expression over indexed base atoms. Its normal form is a
+multivariate polynomial with natural-number coefficients over the shared `GrbExp` sorted-monomial
+substrate: iso-classes of objects in the free rig (bicartesian / commutative-semiring-free) category
+are exactly the elements of `Nat[x_0, x_1, ...]` (Fiore–Leinster), so structural byte-equality of
+normal forms is the type-isomorphism decision for the finite (+, ×, 0, 1)-fragment.
 
-The coefficient carrier is `Nat`, a SEMIRING (no negation), so the vanishing-sum
-cancel branch of the rational `grqTermInsert` never fires — `natTermInsert` is a
-strictly-simpler three-way canonical merge.
+The coefficient carrier is `Nat`, a semiring (no negation), so the vanishing-sum cancel branch of
+the rational `grqTermInsert` never fires — `natTermInsert` is a strictly-simpler three-way canonical
+merge. The coefficient-agnostic `GrbExp` monomial kit (`grbExpBeq`, `grbExpBeqEq`, `grbExpInsert`,
+`grbExpMul`, `grbMonoLess` and its order laws) is reused from `GroebnerMembership`, mirroring the
+QnfRat sorted-term-list idiom of `GroebnerRationalMembership` over `Nat`.
 
-Reuses VERBATIM the coefficient-agnostic `GrbExp` monomial kit from
-`GroebnerMembership` (`grbExpBeq`, `grbExpBeqEq`, `grbExpInsert`, `grbExpMul`,
-`grbMonoLess` and its order laws).  Mirrors the QnfRat sorted-term-list idiom of
-`GroebnerRationalMembership` over `Nat`.
-
-The exponential / function-type `(+, ×, ^)` extension is the honest ceiling: the
-equational theory of the high-school identities is not finitely axiomatisable
-(Wilkie/Tarski), so no finite `RigIso^pow` presentation is complete — walled below
-as `rtiHasExponentialTypeIsoCompleteness`.  The multiplicative-congruence soundness
-(distributivity / ×-commutativity / ×-associativity through the normal form) is
-walled as `rtiHasMultiplicativeSoundness` (obstruction: the substrate carries no
-monomial-multiplication commutativity/associativity law and no scale-through-merge
-coefficient-convolution lemma); the DECISION nonetheless computes multiplicative
-isomorphisms correctly (see the ground fires). -/
+Two capabilities are walled. The exponential / function-type `(+, ×, ^)` extension interprets into
+integer exponentiation, whose equational theory (the high-school identities) is not finitely
+axiomatisable (Wilkie/Tarski), so no finite `RigIso^pow` presentation is complete
+(`rtiHasExponentialTypeIsoCompleteness`). The multiplicative-congruence soundness (distributivity,
+×-commutativity, ×-associativity through the normal form) is not proven through `normalize`, since
+the substrate carries no monomial-multiplication commutativity/associativity law and no
+scale-through-merge coefficient-convolution lemma (`rtiHasMultiplicativeSoundness`); the decision
+nonetheless computes multiplicative isomorphisms correctly (see the ground fires). -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -577,8 +571,8 @@ theorem natCoeffNonzeroImpliesLessThanHead : (tail : NatPoly) → (head : NatTer
                   tailNonzero)
                 hSecondLess
 
-/-- **Canonical-list extensionality**: canonical polynomials with pointwise-equal
-coefficient functions are byte-equal lists — the T1 keystone. -/
+/-- Canonical-list extensionality: canonical polynomials with pointwise-equal coefficient
+functions are byte-equal lists (the keystone of the decision). -/
 theorem natPolyExtensionality : (leftPoly rightPoly : NatPoly) →
     NatPolyCanonical leftPoly → NatPolyCanonical rightPoly →
     ((probe : GrbExp) → natCoeff leftPoly probe = natCoeff rightPoly probe) →
@@ -848,7 +842,7 @@ theorem rigIsoSound : {leftType rightType : RigType} →
   | _, _, RigIso.mulZeroRight rigType => natMulNilRight (normalize rigType)
   | _, _, RigIso.mulZeroLeft rigType => natMulNilLeft (normalize rigType)
 
-/-! ## T3: the decision correctness -/
+/-! ## The decision correctness -/
 
 /-- Soundness direction: `RigIso`-related types are decided isomorphic. -/
 theorem rigIsoImpliesDecide {leftType rightType : RigType}
@@ -874,65 +868,61 @@ theorem equalNormalFormsDecide {leftType rightType : RigType}
   rw [hEqual]
   exact natPolyBeqRefl (normalize rightType)
 
-/-! ## T4 + T2-multiplicative WALLS
+/-! ## The walls
 
-`rtiHasMultiplicativeSoundness = false`: the multiplicative-congruence rig axioms
-(distributivity `a·(b+c) ~ a·b + a·c`, ×-commutativity, ×-associativity, ×-unit,
-the symmetric-monoidal swaps) are NOT proven sound through `normalize` in this
-file.  Two burned attacks: (1) structural induction on `natMul` fails because
-`natAdd` is a `natTermInsert`-fold, not a `List.append`, so there is no clean
-induction reconciling `natMul (natAdd x y) z` with `natAdd (natMul x z) (natMul y z)`;
-(2) coefficient-extensionality reduces distributivity to
-`natCoeff (natScaleTerm s m (natAdd b c)) = natCoeff (natScaleTerm s m b) + natCoeff (natScaleTerm s m c)`,
-which needs a scale-through-merge convolution lemma (the monomial-multiplication
-commutativity/associativity laws for `grbExpMul` and a double-sum exchange) that the
-Groebner substrate does not carry.  The DECISION is unaffected — `decideRigIso`
-computes multiplicative isomorphisms correctly (see the ground fires below). -/
+The multiplicative-congruence rig axioms (distributivity `a·(b+c) ~ a·b + a·c`, ×-commutativity,
+×-associativity, ×-unit, the symmetric-monoidal swaps) are not proven sound through `normalize`
+(`rtiHasMultiplicativeSoundness`). Structural induction on `natMul` has no clean reconciliation of
+`natMul (natAdd x y) z` with `natAdd (natMul x z) (natMul y z)` because `natAdd` is a
+`natTermInsert`-fold rather than a `List.append`, and the coefficient-extensionality route reduces
+distributivity to a scale-through-merge convolution lemma (monomial-multiplication commutativity /
+associativity for `grbExpMul` plus a double-sum exchange) that the Groebner substrate does not
+carry. The decision itself is unaffected: `decideRigIso` computes multiplicative isomorphisms
+correctly (see the ground fires below).
+
+The exponential / function-type extension (`rtiHasExponentialTypeIsoCompleteness`) adds a former
+`pow (base exponent)` interpreting into integer exponentiation. The equational theory of
+`(+, ×, ^)` on the positive integers is Tarski's high-school-identity problem, not finitely
+axiomatisable (Wilkie 1980): there are identities true in the positive naturals but underivable from
+the eleven high-school axioms, so no finite `RigIso^pow` presentation is complete for the
+exponential fragment. The (+, ×, 0, 1)-fragment stays fully decided by `decideRigIso`. -/
 def rtiHasMultiplicativeSoundness : Bool := false
 
-/-- `rtiHasExponentialTypeIsoCompleteness = false`: extending the carrier with an
-exponential/function-type former `pow (base exponent)` (object exponentiation
-`cod ^ dom`) interprets into integer exponentiation on the polynomial semiring.
-The equational theory of `(+, ×, ^)` on the positive integers is Tarski's
-high-school-identity problem, which is NOT finitely axiomatisable (Wilkie 1980):
-there exist identities true in the positive naturals but underivable from the
-eleven high-school axioms.  Hence NO finite `RigIso^pow` presentation is complete
-for the exponential fragment — it cannot be closed by adding finitely many axioms.
-(The (+, ×, 0, 1)-fragment stays fully decided by `decideRigIso`.) -/
+/-- See the section docstring above. -/
 def rtiHasExponentialTypeIsoCompleteness : Bool := false
 
-/-! ## T5: ground fires -/
+/-! ## Ground fires -/
 
-/-- A distributivity isomorphism `x·(y+1) ~ x·y + x` decides TRUE — the normal
-form realises distributivity even though its `RigIso` soundness is walled. -/
+/-- Distributivity `x·(y+1) ~ x·y + x` decides true — the normal form realises distributivity even
+though its `RigIso` soundness is walled. -/
 theorem rtiFireDistributivity :
     decideRigIso
       (.mul (.baseAtom 0) (.add (.baseAtom 1) .one))
       (.add (.mul (.baseAtom 0) (.baseAtom 1)) (.baseAtom 0)) = true := rfl
 
-/-- A NON-isomorphism `x + x` (i.e. `2x`) versus `x · x` (i.e. `x²`) decides FALSE. -/
+/-- A non-isomorphism `x + x` (i.e. `2x`) versus `x · x` (i.e. `x²`) decides false. -/
 theorem rtiFireNonIso :
     decideRigIso
       (.add (.baseAtom 0) (.baseAtom 0))
       (.mul (.baseAtom 0) (.baseAtom 0)) = false := rfl
 
-/-- Left-distributivity over a bare sum `x·(y+z) ~ x·y + x·z` decides TRUE. -/
+/-- Left-distributivity over a bare sum `x·(y+z) ~ x·y + x·z` decides true. -/
 theorem rtiFireLeftDistributivity :
     decideRigIso
       (.mul (.baseAtom 0) (.add (.baseAtom 1) (.baseAtom 2)))
       (.add (.mul (.baseAtom 0) (.baseAtom 1)) (.mul (.baseAtom 0) (.baseAtom 2))) = true := rfl
 
-/-- Multiplicative annihilation `x · 0 ~ 0` decides TRUE. -/
+/-- Multiplicative annihilation `x · 0 ~ 0` decides true. -/
 theorem rtiFireMulZero :
     decideRigIso (.mul (.baseAtom 0) .zero) .zero = true := rfl
 
-/-- Control: the additive-commutativity iso `x + y ~ y + x` decides TRUE. -/
+/-- Additive commutativity `x + y ~ y + x` decides true. -/
 theorem rtiFireAddComm :
     decideRigIso
       (.add (.baseAtom 0) (.baseAtom 1))
       (.add (.baseAtom 1) (.baseAtom 0)) = true := rfl
 
-/-- Control non-iso: `x + y` versus `x · y` decides FALSE (a sum is not a product). -/
+/-- `x + y` versus `x · y` decides false (a sum is not a product). -/
 theorem rtiFireControlNonIso :
     decideRigIso
       (.add (.baseAtom 0) (.baseAtom 1))

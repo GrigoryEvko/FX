@@ -2,13 +2,11 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Algebra.SetoidRingHom
 
 /-! # FX1PolyAudit/ComputerAlgebra/Algebra/SetoidRingHom — zero-axiom gate
-    (NUM-ALG-1)
 
-Per-declaration zero-axiom gate for the arrow level over
-`CommutativeRingWitness`: the homomorphism structure, the two carrier-generic
-inverse-uniqueness engines, negation preservation, the pointwise hom setoid,
-identity and composition, and the three category laws plus the composition
-congruence.
+Per-declaration zero-axiom gate for the arrow level over `CommutativeRingWitness`:
+the homomorphism structure, the two carrier-generic inverse-uniqueness lemmas,
+negation preservation, the pointwise hom setoid, identity and composition, and the
+three category laws plus the composition congruence.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

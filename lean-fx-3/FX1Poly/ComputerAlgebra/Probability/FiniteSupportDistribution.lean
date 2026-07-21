@@ -1,64 +1,47 @@
 import FX1Poly.ComputerAlgebra.Number.NormalizedRational
 
-/-! # ComputerAlgebra/Probability/FiniteSupportDistribution — exact
-finite-support ℚ-probability distributions (MEAS-1)
+/-! # Exact finite-support rational probability distributions
 
-A concrete, decidable, zero-axiom probability-mass-function layer built
-directly on the canonical-NF ℚ carrier `QnfRat` (NUM-Q-7): a finite list of
+A decidable, zero-axiom probability-mass-function layer over the canonical-NF
+rational carrier `QnfRat`: a distribution is a finite list of
 `(outcome : Nat, mass : QnfRat)` pairs.  Because masses live on the canonical
-carrier, byte-equality IS rational equality (`qnfBeqIffEq`), so distribution
-equality up to reordering / duplicate-merge is DECIDABLE by structural `Bool`
+carrier, byte-equality is rational equality (`qnfBeqIffEq`), so distribution
+equality up to reordering and duplicate-merge is decidable by structural `Bool`
 comparison of normalized supports.
 
-## What lands (finite, decidable core — DECIDED)
+`FpDist` is the carrier.  `fpdMassSum` is the total mass, a cons-only `qnfAdd`
+fold, with the append-splits-sum law `fpdMassSumCat`.  `fpdIsWellFormed` is the
+pure-`Bool` predicate "every mass nonnegative and total mass one".  `fpdDirac`
+is a point mass.  `fpdNormalise` merges equal outcomes, drops zero masses and
+sorts by outcome, preserving total mass (`fpdNormaliseMassSum`).  The operations
+`fpdMap` (pushforward along `Nat → Nat`), `fpdConvex` (weighted mixture),
+`fpdProduct` (independent product on a pairing of outcomes), `fpdExpectation`,
+and `fpdCondition` (filter and renormalise) each carry a mass-sum-preservation
+theorem `fpd*PreservesMassOne`.  `fpdDistEq` compares normalized supports and,
+by `fpdDistEqIffConv`, coincides exactly with the normal-form congruence
+`FpConv`.  Expectation is linear (`fpdExpectationLinear`) with
+`fpdDiracExpectation` on point masses.
 
-  * `FpDist` — the carrier (`support : List (Nat × QnfRat)`).
-  * `fpdMassSum` — the total mass (cons-only `qnfAdd` fold) with the
-    append-splits-sum law `fpdMassSumCat` (mirrors the shipped `ihcSumCat`).
-  * `fpdIsWellFormed` — every mass nonnegative (numerator-sign read) AND total
-    mass `= qnfOne`, a pure `Bool`.
-  * `fpdDirac` — a point mass, well-formed by `qnfAddZeroRight qnfOne`.
-  * `fpdNormalise` — merge equal outcomes (`qnfAdd` colliding masses), drop
-    zero masses, keep sorted by outcome; MASS-SUM-PRESERVING
-    (`fpdNormaliseMassSum`).
-  * `fpdMap` (pushforward along `Nat → Nat`), `fpdConvex` (weighted mix),
-    `fpdProduct` (independent product on a pairing of outcomes),
-    `fpdExpectation`, `fpdCondition` (filter + renormalise) — each with its
-    mass-sum-preservation theorem (`fpd*PreservesMassOne`), the honest
-    "well-formedness preservation = total stays one" content.
-  * `fpdDistEq` — structural `qnfBeq` comparison of normalized supports, with
-    soundness `fpdDistEqSound` and the genuine equivalence `FpConv`
-    (`fpdConvSound` + the refutation half `fpdConvComplete`).
-  * Expectation linearity (`fpdExpectationLinear`) and
-    `fpdDiracExpectation`, both riding the `QnfRat` distributivity suite.
+Two extensions lie outside the finite `QnfRat`-`List` substrate and are recorded
+as `false` capability markers.  `fpdHasCountableSupport`: a countably-infinite
+or continuous support needs a convergent series in the completion of the
+rationals (Bishop-real L1 integration), a limit no finite mass list denotes.
+`fpdHasGiryMonadLaws`: the Giry-monad multiplication laws and de Finetti
+exchangeability need infinitary and measure-theoretic structure, the same
+obstruction as the copy-discard Markov PROP's `cdwHasMarkovCompleteness`.
 
-## The walls (WALLED, `false` markers)
-
-  * `fpdHasCountableSupport := false` — countably-infinite / continuous
-    distributions need a convergent series in the completion of ℚ (Bishop
-    `RegularReal` L1 integration); no finite `List` support represents a
-    geometric tail.
-  * `fpdHasGiryMonadLaws := false` — the categorical Giry-monad multiplication
-    laws + de Finetti exchangeability are the deep extension; this is the same
-    walled node as the copy-discard Markov PROP's `cdwHasMarkovCompleteness`
-    (row-stochastic-channel reconstruction).
-
-## Zero-axiom
-
-Structural recursion on `List` / `Nat` (never `WellFounded.fix`), full-enum
-constructor matches (no wildcard arms over a split scrutinee), `QnfRat` kernel
-arithmetic + its `qnfBeqIffEq` byte-equality, `congrArg`/`Eq.trans` and `calc`
-chains.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`, `funext`, `decide`-on-`Prop`.  Per-declaration gated
-in `FX1PolyAudit/ComputerAlgebra/Probability/FiniteSupportDistribution.lean`. -/
+Zero-axiom: structural recursion on `List` and `Nat`, full-enum constructor
+matches, `QnfRat` kernel arithmetic with its `qnfBeqIffEq` byte-equality, and
+`congrArg`/`Eq.trans`/`calc` chains.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or
+`decide`-on-`Prop`.  Each declaration is gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## Two `QnfRat` scalar lemmas the fold needs -/
+/-! ## Scalar lemmas on the canonical rational carrier -/
 
-/-- `factor * 0 = 0` on the canonical carrier — derived from left
-distributivity and additive cancellation (no dedicated multiplicative-zero law
-ships in the `QnfRat` suite). -/
+/-- `factor * 0 = 0` on the canonical carrier, derived from left distributivity
+and additive cancellation. -/
 theorem qnfMulZeroRight (factor : QnfRat) : qnfMul factor qnfZero = qnfZero := by
   have hself : qnfMul factor qnfZero
       = qnfAdd (qnfMul factor qnfZero) (qnfMul factor qnfZero) := by
@@ -100,7 +83,7 @@ theorem qnfMulLeftSwap (firstMass secondMass thirdMass : QnfRat) :
     qnfMulComm firstMass secondMass,
     qnfMulAssoc secondMass firstMass thirdMass]
 
-/-! ## T1 — the carrier, the mass sum, well-formedness, dirac -/
+/-! ## Carrier, mass sum, well-formedness, dirac -/
 
 /-- A finite-support ℚ-probability distribution: outcomes are `Nat`, masses
 are canonical rationals.  Well-formedness (`fpdIsWellFormed`) is a separate
@@ -114,14 +97,14 @@ def fpdMassSum : List (Nat × QnfRat) → QnfRat
   | [] => qnfZero
   | (_outcome, mass) :: rest => qnfAdd mass (fpdMassSum rest)
 
-/-- Cons-only concatenation of two supports (own list op — avoids the
-propext-leak-prone `List.append` lemmas). -/
+/-- Cons-only concatenation of two supports, avoiding the propext-leaking
+`List.append` lemmas. -/
 def fpdCat : List (Nat × QnfRat) → List (Nat × QnfRat) → List (Nat × QnfRat)
   | [], rightSupport => rightSupport
   | entry :: leftRest, rightSupport => entry :: fpdCat leftRest rightSupport
 
-/-- **Append splits the sum** — the mass-column analogue of the shipped
-`ihcSumCat`: total over a concatenation is the sum of totals. -/
+/-- Total mass over a concatenation is the sum of totals; the mass-column
+analogue of `ihcSumCat`. -/
 theorem fpdMassSumCat : (leftSupport rightSupport : List (Nat × QnfRat)) →
     fpdMassSum (fpdCat leftSupport rightSupport) =
       qnfAdd (fpdMassSum leftSupport) (fpdMassSum rightSupport)
@@ -144,8 +127,8 @@ def fpdAllMassesNonNeg : List (Nat × QnfRat) → Bool
   | [] => true
   | (_outcome, mass) :: rest => fpdMassIsNonNeg mass && fpdAllMassesNonNeg rest
 
-/-- **Well-formedness**: all masses nonnegative AND total mass is exactly one.
-Both conjuncts are `Bool`, so this is fully decidable by kernel computation. -/
+/-- Well-formedness: all masses nonnegative and total mass exactly one.  Both
+conjuncts are `Bool`, so this is decidable by kernel computation. -/
 def fpdIsWellFormed (mu : FpDist) : Bool :=
   fpdAllMassesNonNeg mu.support && qnfBeq (fpdMassSum mu.support) qnfOne
 
@@ -163,7 +146,7 @@ reduce in the kernel (the outcome is irrelevant to either). -/
 theorem fpdDiracIsWellFormed (outcome : Nat) :
     fpdIsWellFormed (fpdDirac outcome) = true := rfl
 
-/-! ## T1 — normalisation (merge duplicates, drop zeros, sort by outcome) -/
+/-! ## Normalisation: merge duplicates, drop zeros, sort by outcome -/
 
 /-- Insert one `(outcome, mass)` into a support kept sorted by outcome, merging
 (`qnfAdd`) into an existing entry with the same outcome. -/
@@ -254,7 +237,7 @@ theorem fpdDropZerosMassSum : (support : List (Nat × QnfRat)) →
             = qnfAdd mass (fpdMassSum rest)
           rw [fpdDropZerosMassSum rest]
 
-/-- **Normalise**: merge equal outcomes, drop zero masses, keep sorted. -/
+/-- Merge equal outcomes, drop zero masses, keep sorted. -/
 def fpdNormalise (mu : FpDist) : FpDist :=
   { support := fpdDropZeros (fpdMergeAll mu.support) }
 
@@ -265,7 +248,7 @@ theorem fpdNormaliseMassSum (mu : FpDist) :
   (fpdDropZerosMassSum (fpdMergeAll mu.support)).trans
     (fpdMergeAllMassSum mu.support)
 
-/-! ## T2 — the operations and their mass-sum preservation -/
+/-! ## Operations and their mass-sum preservation -/
 
 /-- Relabel outcomes along `relabel`, leaving masses untouched. -/
 def fpdRelabel (relabel : Nat → Nat) :
@@ -283,8 +266,8 @@ theorem fpdRelabelMassSum (relabel : Nat → Nat) :
         = qnfAdd mass (fpdMassSum rest)
       rw [fpdRelabelMassSum relabel rest]
 
-/-- **Pushforward** along `relabel` — relabel outcomes, then merge collisions
-and re-sort. -/
+/-- Pushforward along `relabel`: relabel outcomes, then merge collisions and
+re-sort. -/
 def fpdMap (relabel : Nat → Nat) (mu : FpDist) : FpDist :=
   fpdNormalise { support := fpdRelabel relabel mu.support }
 
@@ -319,8 +302,8 @@ theorem qnfAddWeightComplement (weight : QnfRat) :
     qnfAddComm weight qnfOne, qnfAddAssoc qnfOne weight (qnfNeg weight),
     qnfAddNegRight weight, qnfAddZeroRight qnfOne]
 
-/-- **Convex mixture**: `weight`-scaled `mu` plus `(1 - weight)`-scaled `nu`,
-merged and re-sorted. -/
+/-- Convex mixture: `weight`-scaled `mu` plus `(1 - weight)`-scaled `nu`, merged
+and re-sorted. -/
 def fpdConvex (weight : QnfRat) (mu nu : FpDist) : FpDist :=
   fpdNormalise
     { support :=
@@ -344,9 +327,9 @@ theorem fpdConvexPreservesMassOne (weight : QnfRat) (mu nu : FpDist)
     hMuOne, hNuOne, qnfMulOneRight weight,
     qnfMulOneRight (qnfSub qnfOne weight), qnfAddWeightComplement weight]
 
-/-- A total pairing of outcomes: `2^left · (2·right + 1)`.  Distinct on small
-inputs (no halving, so no `Nat.div` propext leak); a full injectivity proof is
-not needed for the mass-sum laws (any pairing works). -/
+/-- A total pairing of outcomes: `2^left · (2·right + 1)`.  It uses no halving,
+so it avoids the `Nat.div` propext leak; the mass-sum laws hold for any pairing,
+so injectivity is not required. -/
 def fpdPairNat (leftOutcome rightOutcome : Nat) : Nat :=
   Nat.pow 2 leftOutcome * (2 * rightOutcome + 1)
 
@@ -400,7 +383,7 @@ theorem fpdProductSupportMassSum :
         qnfMulRightDistrib leftMass (fpdMassSum leftRest)
           (fpdMassSum rightSupport)]
 
-/-- **Independent product** of two distributions on the paired outcome space. -/
+/-- Independent product of two distributions on the paired outcome space. -/
 def fpdProduct (mu nu : FpDist) : FpDist :=
   fpdNormalise { support := fpdProductSupport mu.support nu.support }
 
@@ -423,8 +406,8 @@ def fpdFilter (predicate : Nat → Bool) :
       | true => (outcome, mass) :: fpdFilter predicate rest
       | false => fpdFilter predicate rest
 
-/-- **Condition** on `predicate`: keep matching outcomes, then renormalise by
-the inverse of the kept mass. -/
+/-- Condition on `predicate`: keep matching outcomes, then renormalise by the
+inverse of the kept mass. -/
 def fpdCondition (predicate : Nat → Bool) (mu : FpDist) : FpDist :=
   fpdNormalise
     { support :=
@@ -445,7 +428,7 @@ theorem fpdConditionPreservesMassOne (predicate : Nat → Bool) (mu : FpDist)
       (fpdFilter predicate mu.support),
     qnfInvMulCancels hKeptNonzero]
 
-/-! ## T3 — expectation, its linearity, dirac expectation -/
+/-! ## Expectation, its linearity, dirac expectation -/
 
 /-- Expectation of a payoff over a support — `Σ mass · payoff outcome`. -/
 def fpdExpectationList (payoff : Nat → QnfRat) :
@@ -458,7 +441,7 @@ def fpdExpectationList (payoff : Nat → QnfRat) :
 def fpdExpectation (payoff : Nat → QnfRat) (mu : FpDist) : QnfRat :=
   fpdExpectationList payoff mu.support
 
-/-- **Dirac expectation**: `E_{δ a}[payoff] = payoff a`. -/
+/-- Dirac expectation: `E_{δ a}[payoff] = payoff a`. -/
 theorem fpdDiracExpectation (payoff : Nat → QnfRat) (outcome : Nat) :
     fpdExpectation payoff (fpdDirac outcome) = payoff outcome := by
   show qnfAdd (qnfMul qnfOne (payoff outcome)) qnfZero = payoff outcome
@@ -505,7 +488,7 @@ theorem fpdExpectationScalePayoff (scalar : QnfRat) (payoff : Nat → QnfRat) :
           (fpdExpectationList payoff rest),
         qnfMulLeftSwap mass scalar (payoff outcome)]
 
-/-- **Expectation linearity**: `E[a·f + b·g] = a·E[f] + b·E[g]` on a fixed
+/-- Expectation linearity: `E[a·f + b·g] = a·E[f] + b·E[g]` on a fixed
 distribution. -/
 theorem fpdExpectationLinear (firstScalar secondScalar : QnfRat)
     (firstPayoff secondPayoff : Nat → QnfRat) (mu : FpDist) :
@@ -528,7 +511,7 @@ theorem fpdExpectationLinear (firstScalar secondScalar : QnfRat)
     fpdExpectationScalePayoff firstScalar firstPayoff mu.support,
     fpdExpectationScalePayoff secondScalar secondPayoff mu.support]
 
-/-! ## T3 — the equality decision and the congruence -/
+/-! ## The equality decision and the congruence -/
 
 /-- Structural `Bool` equality of two supports — outcomes by `Nat.beq`, masses
 by `qnfBeq` (which IS rational equality on the canonical carrier). -/
@@ -571,7 +554,7 @@ theorem fpdSupportBeqSound : (leftSupport rightSupport : List (Nat × QnfRat)) �
           (qnfBoolAndTrueGivesRight isBeqTrue)
       rw [hOutcome, hMass, hRest]
 
-/-- **Distribution equality decision**: `qnfBeq`-compare the two normalised
+/-- Distribution equality decision: `qnfBeq`-compare the two normalised
 supports. -/
 def fpdDistEq (mu nu : FpDist) : Bool :=
   fpdSupportBeq (fpdNormalise mu).support (fpdNormalise nu).support
@@ -583,17 +566,17 @@ theorem fpdEqOfSupportEq {mu nu : FpDist} (supportsEqual : mu.support = nu.suppo
     (motive := fun targetSupport _ => mu = FpDist.mk targetSupport)
     rfl supportsEqual
 
-/-- **Decision soundness**: `fpdDistEq` true forces the normalised
-distributions equal. -/
+/-- Decision soundness: `fpdDistEq` true forces the normalised distributions
+equal. -/
 theorem fpdDistEqSound {mu nu : FpDist} (isEqTrue : fpdDistEq mu nu = true) :
     fpdNormalise mu = fpdNormalise nu :=
   fpdEqOfSupportEq
     (fpdSupportBeqSound (fpdNormalise mu).support (fpdNormalise nu).support
       isEqTrue)
 
-/-- **The distribution congruence**: two distributions are conv-equal exactly
-when they share a normal form.  This is a genuine equivalence relation (it IS
-`Eq` on normal forms) and it is precisely what `fpdDistEq` decides. -/
+/-- The distribution congruence: two distributions are conv-equal exactly when
+they share a normal form.  This is an equivalence relation (it is `Eq` on normal
+forms) and it is precisely what `fpdDistEq` decides. -/
 def FpConv (mu nu : FpDist) : Prop :=
   fpdNormalise mu = fpdNormalise nu
 
@@ -609,15 +592,15 @@ theorem fpConvTrans {mu nu rho : FpDist}
     (firstConv : FpConv mu nu) (secondConv : FpConv nu rho) : FpConv mu rho :=
   firstConv.trans secondConv
 
-/-- **Congruence soundness**: conv-equal distributions decide EQUAL. -/
+/-- Congruence soundness: conv-equal distributions decide equal. -/
 theorem fpdConvSound {mu nu : FpDist} (areConv : FpConv mu nu) :
     fpdDistEq mu nu = true := by
   show fpdSupportBeq (fpdNormalise mu).support (fpdNormalise nu).support = true
   rw [areConv]
   exact fpdSupportBeqRefl (fpdNormalise nu).support
 
-/-- **The refutation half**: distributions that decide EQUAL are conv-equal —
-so `fpdDistEq` is EXACTLY `FpConv`, never over- or under-identifying. -/
+/-- Completeness: distributions that decide equal are conv-equal, so `fpdDistEq`
+is exactly `FpConv`, never over- or under-identifying. -/
 theorem fpdConvComplete {mu nu : FpDist} (isEqTrue : fpdDistEq mu nu = true) :
     FpConv mu nu :=
   fpdDistEqSound isEqTrue
@@ -627,60 +610,40 @@ theorem fpdDistEqIffConv (mu nu : FpDist) :
     fpdDistEq mu nu = true ↔ FpConv mu nu :=
   ⟨fpdConvComplete, fpdConvSound⟩
 
-/-! ## T4 — the walls
+/-! ## Walls
 
-The finite, decidable core above is complete and zero-axiom.  Two extensions
-are genuinely out of reach on the QnfRat + finite-`List` substrate. -/
+The finite decidable core above is complete and zero-axiom.  Two extensions lie
+outside the `QnfRat` plus finite-`List` substrate, each recorded as a `false`
+capability marker with the obstruction that walls it. -/
 
-/-- WALLED — countably-infinite / continuous support.  A finite `List`
-support cannot carry a geometric (or worse) tail: representing `P(n) = 2^{-n}`
-needs the total `Σ 2^{-n} = 1` as a CONVERGENT SERIES in the completion of ℚ,
-i.e. Bishop-real (`RegularReal`) L1 integration — a limit object no finite mass
-list denotes.
-
-Burned attack A (truncate-and-cap): keep the first `k` atoms and dump the tail
-mass on one atom.  This changes the distribution (the capped atom's mass is
-wrong for every finite `k`), so it is not the geometric law — it only ever
-APPROXIMATES, and `fpdDistEq` correctly reports the approximants unequal.  No
-finite `k` is the fixed point.
-
-Burned attack B (symbolic tail entry): add a distinguished "tail" outcome whose
-mass is a closed form `qnfSub qnfOne (partial sum)`.  This is a two-atom
-regrouping, NOT the infinite distribution: expectation of an unbounded payoff
-(`payoff n = qnfOfInt n`) over the true tail DIVERGES in ℚ, while the symbolic
-entry gives a finite wrong answer.  The obstruction is exactly the missing
-Bishop-L1 limit; `fpdExpectation` is a finite `qnfAdd` fold with no completion. -/
+/-- Capability marker (`false`): countably-infinite or continuous support.  A
+finite `List` support cannot carry a geometric or heavier tail: representing
+`P(n) = 2^(-n)` needs the total `sum 2^(-n) = 1` as a convergent series in the
+completion of the rationals, i.e. Bishop-real L1 integration, a limit no finite
+mass list denotes.  A finite truncate-and-cap only approximates (`fpdDistEq`
+reports the approximants unequal for every cutoff), and a symbolic closed-form
+tail entry regroups the mass without capturing the distribution: expectation of
+an unbounded payoff over the true tail diverges in the rationals while a
+finite fold gives a finite wrong answer. -/
 def fpdHasCountableSupport : Bool := false
 
-/-- WALLED — the categorical Giry-monad laws + de Finetti exchangeability.
-The finite join (a distribution-of-distributions flattened by
-`fpdConvex`-style weighting) computes, but the MONAD LAWS (left/right unit and
-associativity of the Kleisli composition at the Markov-category level) and
-exchangeability are the deep structure.  This is the SAME walled node as the
-copy-discard Markov PROP's `cdwHasMarkovCompleteness := false`
-(`FreeCopyDiscard.lean`): reconstructing a row-stochastic channel from its
-matrix.
-
-Burned attack A (join as a `List`-of-`FpDist` weighted fold): defining
-`join : FpDist-of-FpDist → FpDist` is easy, but the associativity law
-`join ∘ map join = join ∘ join` is an equality of NORMAL FORMS over an
-arbitrary pairing of outcomes; `fpdPairNat` is not associative-compatible
-(`pair (pair a b) c ≠ pair a (pair b c)` as `Nat`s), so the two sides land on
-different supports and `fpdDistEq` reports them unequal — the law fails at the
-outcome-encoding layer, not the mass layer.
-
-Burned attack B (de Finetti via a finite exchangeable prior): a finite mixture
-of i.i.d. distributions is exchangeable, but the THEOREM (every exchangeable
-sequence is such a mixture) quantifies over an infinite sequence and a mixing
-MEASURE on the simplex — a continuous object walled by
-`fpdHasCountableSupport` above.  The finite substrate proves the easy direction
-(mixtures are exchangeable) and cannot state the converse. -/
+/-- Capability marker (`false`): the categorical Giry-monad laws and de Finetti
+exchangeability.  A finite distribution-of-distributions join computes, but
+Kleisli associativity `join ∘ map join = join ∘ join` is an equality of normal
+forms over an arbitrary outcome pairing, and `fpdPairNat` is not
+associative-compatible (`pair (pair a b) c` and `pair a (pair b c)` differ as
+`Nat`s), so the two sides land on different supports.  De Finetti's theorem
+quantifies over an infinite exchangeable sequence and a mixing measure on the
+simplex, a continuous object already walled by `fpdHasCountableSupport`; the
+finite substrate proves only that mixtures are exchangeable, not the converse.
+Same obstruction as the copy-discard Markov PROP's `cdwHasMarkovCompleteness`,
+reconstructing a row-stochastic channel from its matrix. -/
 def fpdHasGiryMonadLaws : Bool := false
 
-/-! ## T5 — kernel `rfl` fires
+/-! ## Closed-value kernel fires
 
-Small (2–3 outcome) closed distributions; the whole normalise / arithmetic /
-comparison pipeline reduces in the kernel. -/
+Small (two or three outcome) closed distributions for which the normalise,
+arithmetic and comparison pipeline reduces in the kernel. -/
 
 set_option maxRecDepth 4096
 
@@ -759,17 +722,15 @@ theorem fpdFireProductMassOne :
                (1, qnfNormalize { numerator := 2, denominatorPredecessor := 2 })] }).support
       = qnfOne := rfl
 
-/-! ## T6 — content markers -/
+/-! ## Capability marker -/
 
-/-- DECIDED: the finite ℚ-pmf layer has a mass-sum-preserving normalisation and
-each operation (`fpdMap` / `fpdConvex` / `fpdProduct` / `fpdCondition`) carries
-total mass one (`fpd*PreservesMassOne`), all zero-axiom on the QnfRat kit. -/
-def fpdHasMassPreservation : Bool := true
-
-/-- DECIDED: distribution equality up to reordering / duplicate-merge is
-decidable (`fpdDistEq`) and is EXACTLY the normal-form congruence
+/-- Capability marker (`true`): the finite decidable core is complete.  The
+mass-sum-preserving normalisation gives each operation (`fpdMap`, `fpdConvex`,
+`fpdProduct`, `fpdCondition`) total mass one via its `fpd*PreservesMassOne`
+theorem, and distribution equality up to reordering and duplicate-merge is
+decidable (`fpdDistEq`) and coincides exactly with the normal-form congruence
 (`fpdDistEqIffConv`), with expectation linearity (`fpdExpectationLinear`) and
-dirac expectation (`fpdDiracExpectation`). -/
-def fpdHasDecidableEquality : Bool := true
+the dirac law (`fpdDiracExpectation`). -/
+def fpdHasFiniteDecidableCore : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -2,7 +2,6 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrder
 
 /-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealOrder — zero-axiom gate
-    (NUM-R-4a/4b/4c)
 
 Per-declaration zero-axiom gate for the ℝ order: the ℚ-side shunting and
 shared-addend order cancellation, the reciprocal quadruple split, the

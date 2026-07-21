@@ -1,14 +1,13 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Number.IntNoZeroDivisors
 
-/-! # FX1PolyAudit/.../IntNoZeroDivisors — zero-axiom gate
+/-! # Zero-axiom gate for `IntNoZeroDivisors`
 
-Per-declaration zero-axiom gate for the arbitrary-sign ℤ no-zero-divisor law and power-nonvanishing (a
-Number-layer prerequisite of the ℤ[x] Euclidean GCD's converse root-containment, WP-ENDO #2255).
-
-Built propext-clean by hand — the core `Int.mul_eq_zero` and `Int.natAbs_mul` both leak `propext`, so this
-routes through a hand-structural multiplicative `natAbs` and a `Nat.noConfusion`-based Nat no-zero-divisor.
-Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the arbitrary-sign ℤ no-zero-divisor law and
+power-nonvanishing. The core `Int.mul_eq_zero` and `Int.natAbs_mul` both leak `propext`, so
+the corpus routes through a hand-structural multiplicative `natAbs` and a
+`Nat.noConfusion`-based Nat no-zero-divisor. Every declaration must be free of `propext`,
+`Quot.sound`, `Classical`, `sorry`, `native_decide`, and `omega`. -/
 
 namespace FX1PolyAudit
 

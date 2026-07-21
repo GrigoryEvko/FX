@@ -1,33 +1,28 @@
 import FX1Poly.ComputerAlgebra.Number.IntArithmeticCore
 import FX1Poly.ComputerAlgebra.Number.IntSubNatNat
 
-/-! # FX1Poly/ComputerAlgebra/Number/IntAddAssociativity — the mixed-sign add bridges + assoc
-    (FLOAT-1 brick 3)
+/-! # Integer addition associativity via the mixed-sign add bridges
 
-Init's `Int.add_assoc` is propext-dirty; this module hand-rolls it.  The route is the classic
-one, rebuilt on the brick-2 `subNatNat` kit:
+Init's `Int.add_assoc` leaks `propext`, so it is re-derived here over the `subNatNat` kit.
 
-  * The four MIXED-SIGN ADD BRIDGES push an `ofNat` / `negSucc` summand into a `subNatNat`:
+  * The four mixed-sign add bridges push an `ofNat` or `negSucc` summand into a `subNatNat`:
     `intOfNatAddSubNatNat`, `intSubNatNatAddOfNat`, `intNegSuccAddSubNatNat`,
-    `intSubNatNatAddNegSucc`.  The two primaries are double structural recursions whose
-    step case is exactly `intSubNatNatSuccSucc`; the other two are one-line corollaries
-    through `intAddComm`.
+    `intSubNatNatAddNegSucc`. The two primaries are double structural recursions whose step
+    case is `intSubNatNatSuccSucc`; the other two are corollaries through `intAddComm`.
   * `intAddAssoc` is then an eight-way constructor bash: every mixed case collapses to a
-    bridge (both sides of the association land on the SAME `subNatNat` call), and the two
+    bridge (both sides of the association land on the same `subNatNat` call), and the two
     pure-sign cases are `congrArg` over `Nat.add_assoc`.
 
-## Zero-axiom
-
-Structural recursion + `congrArg`/`Eq.trans` chains over clean Nat lemmas (`Nat.add_comm`,
-`Nat.add_assoc`, `Nat.succ_add`, `Nat.zero_add`) and the brick-2 kit.  No `axiom`, `sorry`,
-`propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/Number/IntAddAssociativity.lean`. -/
+Structural recursion with `congrArg`/`Eq.trans` chains over clean Nat lemmas
+(`Nat.add_comm`, `Nat.add_assoc`, `Nat.succ_add`, `Nat.zero_add`) and the `subNatNat` kit;
+free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, and
+`omega`; per-declaration gated in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-- **Bridge 1**: an `ofNat` head summand enters the left side of a `subNatNat`.  Double
-structural recursion; the `(0, right+1)` base is definitional and the step is the
-`intSubNatNatSuccSucc` workhorse on both sides. -/
+/-- Bridge 1: an `ofNat` head summand enters the left side of a `subNatNat`. Double
+structural recursion; the `(0, right + 1)` base is definitional and the step applies
+`intSubNatNatSuccSucc` on both sides. -/
 theorem intOfNatAddSubNatNat (headValue : Nat) : ∀ leftValue rightValue : Nat,
     Int.ofNat headValue + Int.subNatNat leftValue rightValue =
       Int.subNatNat (headValue + leftValue) rightValue
@@ -40,8 +35,8 @@ theorem intOfNatAddSubNatNat (headValue : Nat) : ∀ leftValue rightValue : Nat,
         ((intOfNatAddSubNatNat headValue leftValue rightValue).trans
           (intSubNatNatSuccSucc (headValue + leftValue) rightValue).symm)
 
-/-- **Bridge 2**: an `ofNat` tail summand enters the left side of a `subNatNat` — a
-corollary of bridge 1 through `intAddComm`. -/
+/-- Bridge 2: an `ofNat` tail summand enters the left side of a `subNatNat`; a corollary of
+bridge 1 through `intAddComm`. -/
 theorem intSubNatNatAddOfNat (leftValue rightValue tailValue : Nat) :
     Int.subNatNat leftValue rightValue + Int.ofNat tailValue =
       Int.subNatNat (leftValue + tailValue) rightValue :=
@@ -49,7 +44,7 @@ theorem intSubNatNatAddOfNat (leftValue rightValue tailValue : Nat) :
     ((intOfNatAddSubNatNat tailValue leftValue rightValue).trans
       (congrArg (Int.subNatNat · rightValue) (Nat.add_comm tailValue leftValue)))
 
-/-- **Bridge 3**: a `negSucc` head summand enters the right side of a `subNatNat`.  Same
+/-- Bridge 3: a `negSucc` head summand enters the right side of a `subNatNat`. Same
 double-recursion shape as bridge 1, with `Nat.succ_add` shuffles in the negative bases. -/
 theorem intNegSuccAddSubNatNat (headPredecessor : Nat) : ∀ leftValue rightValue : Nat,
     Int.negSucc headPredecessor + Int.subNatNat leftValue rightValue =
@@ -68,17 +63,17 @@ theorem intNegSuccAddSubNatNat (headPredecessor : Nat) : ∀ leftValue rightValu
             (congrArg (Int.subNatNat (leftValue + 1))
               (congrArg Nat.succ (Nat.succ_add rightValue headPredecessor)).symm)))
 
-/-- **Bridge 4**: a `negSucc` tail summand enters the right side of a `subNatNat` — a
-corollary of bridge 3 through `intAddComm` (both land on the SAME right-hand side). -/
+/-- Bridge 4: a `negSucc` tail summand enters the right side of a `subNatNat`; a corollary
+of bridge 3 through `intAddComm` (both land on the same right-hand side). -/
 theorem intSubNatNatAddNegSucc (leftValue rightValue tailPredecessor : Nat) :
     Int.subNatNat leftValue rightValue + Int.negSucc tailPredecessor =
       Int.subNatNat leftValue (rightValue + (tailPredecessor + 1)) :=
   (intAddComm (Int.subNatNat leftValue rightValue) (Int.negSucc tailPredecessor)).trans
     (intNegSuccAddSubNatNat tailPredecessor leftValue rightValue)
 
-/-- **Addition associates** (Init's `Int.add_assoc` is propext-dirty).  Eight-way
-constructor bash: the pure-sign arms are `congrArg` over `Nat.add_assoc`; every mixed arm
-collapses through the bridges to a single shared `subNatNat` call, with at most a
+/-- Addition associates (Init's `Int.add_assoc` leaks `propext`). Eight-way constructor
+bash: the pure-sign arms are `congrArg` over `Nat.add_assoc`; every mixed arm collapses
+through the bridges to a single shared `subNatNat` call, with at most a
 `Nat.succ_add`/`Nat.add_comm` shuffle in the second argument. -/
 theorem intAddAssoc : ∀ firstSummand secondSummand thirdSummand : Int,
     firstSummand + secondSummand + thirdSummand =

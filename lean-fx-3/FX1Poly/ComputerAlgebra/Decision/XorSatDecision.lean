@@ -4,10 +4,10 @@ set_option relaxedAutoImplicit false
 /-! # FX1Poly/ComputerAlgebra/Decision/XorSatDecision — XOR-SAT decided with two-sided certificates
 
 Systems of F2-linear equations (XOR-SAT), decided constructively and certificate-first.
-An equation is `XorSatEquation` — a STRICTLY-ASCENDING `variables : List Nat` support plus a
+An equation is `XorSatEquation` — a strictly-ascending `variables : List Nat` support plus a
 `parity : Bool` right-hand side; a system is `List XorSatEquation`.  Under an environment
 `env : Nat → Bool` an equation holds when the xor-fold of `env` over its support equals its
-parity (`xorSatEvalEquation`); environments are only ever APPLIED — no `funext` anywhere.
+parity (`xorSatEvalEquation`); environments are only ever applied, never `funext`ed.
 
 ## The toggle-merge crux
 
@@ -17,16 +17,16 @@ if present — the F2 `x + x = 0`).  Its kit carries, over the `xorSatIsStrictly
 invariant:
 
   * preservation of strict ascent (`xorSatToggleMergePreservesAscending`);
-  * **THE EVAL LEMMA** `xorSatXorFoldToggleMerge` — the xor-fold of an environment over the
+  * the evaluation lemma `xorSatXorFoldToggleMerge` — the xor-fold of an environment over the
     toggle-merge is the `Bool` xor of the two xor-folds (structural induction through
-    `xorSatXorFoldToggleOne`; notably UNCONDITIONAL — no ascent hypothesis);
+    `xorSatXorFoldToggleOne`; unconditional, needing no ascent hypothesis);
   * the full F2 vector-space algebra: commutativity, associativity, self-cancellation
-    (`xorSatToggleMergeComm` / `...Assoc` / `...SelfNil` / `...SelfCancel`), built from the
-    single-toggle commutation `xorSatToggleOneComm` exactly as the Boolean-ring walker
-    builds its coefficient-XOR merge — but with genuine CANCELLATION, so every commutation
-    step rides the strict-ascent invariant;
+    (`xorSatToggleMergeComm` / `...Assoc` / `...SelfNil` / `...SelfCancel`), each built from
+    the single-toggle commutation `xorSatToggleOneComm`, so every commutation step rides the
+    strict-ascent invariant that keeps the cancellation exact;
   * the membership homomorphism `xorSatHasMemberToggleMerge` — membership in the symmetric
-    difference is the xor of memberships (what makes pivot elimination actually eliminate).
+    difference is the xor of memberships, which is what makes pivot elimination remove a
+    variable.
 
 `xorSatCombine` xors two equations (toggle-merged supports, xored parities);
 `xorSatEvalCombine`: any environment satisfying both satisfies the combination.
@@ -34,35 +34,35 @@ invariant:
 ## Provenance and the decision
 
 `xorSatDecide` eliminates by structural fuel over working items `XorSatWorkItem` — an
-equation paired with `comboIndices`, the F2 index-combination of ORIGINAL equations it
+equation paired with `comboIndices`, the F2 index-combination of original equations it
 equals (`xorSatWorkHasProvenance`; combos live in the same toggle-merge algebra, and the
 provenance step is the fold homomorphism `xorSatSelectXorToggleMerge`:
 `selectXor (merge c1 c2) = combine (selectXor c1) (selectXor c2)`).  Each round inspects the
-head equation: empty support + even parity — drop; empty support + odd parity — UNSAT with
-the head's combo as certificate; otherwise pivot on its least variable (the head of the
-ascending support), combine into every tail equation containing the pivot
-(`xorSatPivotTransform`), recurse, and on a satisfiable answer BACK-SUBSTITUTE the pivot
+head equation: empty support with even parity is dropped; empty support with odd parity is
+UNSAT, with the head's combo as certificate; otherwise pivot on its least variable (the head
+of the ascending support), combine into every tail equation containing the pivot
+(`xorSatPivotTransform`), recurse, and on a satisfiable answer back-substitute the pivot
 value forced by the head equation (`xorSatExtendWitness`, exact by construction —
 `xorSatEnvExtendAtPivot` / `...AtOther`).
 
-## Fuel adequacy (proven, not assumed)
+## Fuel adequacy
 
 Each round recurses on a working list exactly one item shorter
 (`xorSatPivotTransformCount`), so fuel = the working count reaches a verdict:
 `xorSatDecideAuxIsSome`, specialized to `xorSatDecideTotalFuelAdequate` — the totality
 certificate for `xorSatDecide`.
 
-## The two headline theorems (the DECIDED bar)
+## The two headline theorems
 
   * SAT side — `xorSatDecideSatSound`: a returned witness passes the executable checker
     `xorSatCheckSystem`; `xorSatCheckSystemHoldsEachEquation`: a passing checker means every
     equation (by index, out-of-range reading as the zero equation) holds under the induced
     environment `xorSatEnvOfWitness`.
   * UNSAT side — `xorSatDecideUnsatSound`: the returned `comboIndices` select original
-    equations whose F2 xor is LITERALLY the contradiction `⟨[], true⟩`
+    equations whose F2 xor is literally the contradiction `⟨[], true⟩`
     (`xorSatSelectXor comboIndices system = xorSatContradictionEquation`); with the
     selection lemma `xorSatSelectXorSatisfied` (any model of the system satisfies the xor of
-    ANY index selection) this refutes every candidate model: `xorSatDecideUnsatRefutes`
+    any index selection) this refutes every candidate model, and `xorSatDecideUnsatRefutes`
     lands `False` by `Bool.noConfusion`.
 
 ## Zero-axiom
@@ -480,7 +480,7 @@ theorem xorSatToggleOnePreservesAscending (value : Nat) : (vars : List Nat) →
               (xorSatCompareNatGtFlips value head hvh) hbelow hrest)
             (xorSatToggleOnePreservesAscending value restVars hrest)
 
-/-- ★ Two single-element toggles commute over a strictly-ascending list. -/
+/-- Two single-element toggles commute over a strictly-ascending list. -/
 theorem xorSatToggleOneComm (firstValue secondValue : Nat) : (vars : List Nat) →
     xorSatIsStrictlyAscending vars = true →
     xorSatToggleOne firstValue (xorSatToggleOne secondValue vars)
@@ -842,8 +842,8 @@ theorem xorSatHasMemberToggleOne (target value : Nat) : (vars : List Nat) →
                   xorSatHasMemberConsOfGt target head restVars hth,
                   xorSatHasMemberToggleOne target value restVars hrest]
 
-/-- ★ Membership in the toggle-merge is the xor of memberships — pivot elimination really
-eliminates. -/
+/-- Membership in the toggle-merge is the xor of memberships, which is what lets pivot
+elimination remove a variable. -/
 theorem xorSatHasMemberToggleMerge (target : Nat) : (first second : List Nat) →
     xorSatIsStrictlyAscending first = true →
     xorSatIsStrictlyAscending second = true →
@@ -1043,8 +1043,8 @@ def xorSatXorFold (env : Nat → Bool) : List Nat → Bool
   | [] => false
   | head :: restVars => xorSatBoolXor (env head) (xorSatXorFold env restVars)
 
-/-- The xor-fold sees a single toggle as one more xor (UNCONDITIONAL — duplicates cancel
-exactly as F2 says they must). -/
+/-- The xor-fold sees a single toggle as one more xor, unconditionally: duplicates cancel
+exactly as F2 requires. -/
 theorem xorSatXorFoldToggleOne (env : Nat → Bool) (value : Nat) : (vars : List Nat) →
     xorSatXorFold env (xorSatToggleOne value vars)
       = xorSatBoolXor (env value) (xorSatXorFold env vars)
@@ -1067,7 +1067,7 @@ theorem xorSatXorFoldToggleOne (env : Nat → Bool) (value : Nat) : (vars : List
           rw [xorSatXorFoldToggleOne env value restVars, xorSatBoolXorLeftSwap]
           rfl
 
-/-- ★ THE EVAL LEMMA: the xor-fold over a toggle-merge is the xor of the two xor-folds. -/
+/-- The evaluation lemma: the xor-fold over a toggle-merge is the xor of the two xor-folds. -/
 theorem xorSatXorFoldToggleMerge (env : Nat → Bool) : (first second : List Nat) →
     xorSatXorFold env (xorSatToggleMerge first second)
       = xorSatBoolXor (xorSatXorFold env first) (xorSatXorFold env second)
@@ -1209,8 +1209,8 @@ theorem xorSatSelectXorIsWellFormed : (comboIndices : List Nat) →
         (xorSatSelectXor restIndices system)
         (xorSatSelectXorIsWellFormed restIndices system hwf)
 
-/-- ★ THE SELECTION LEMMA: any environment satisfying the whole system satisfies the F2 sum
-of ANY index selection. -/
+/-- The selection lemma: any environment satisfying the whole system satisfies the F2 sum
+of any index selection. -/
 theorem xorSatSelectXorSatisfied (env : Nat → Bool) : (comboIndices : List Nat) →
     (system : List XorSatEquation) →
     xorSatEvalSystem env system = true →
@@ -1326,8 +1326,8 @@ theorem xorSatSelectXorToggleOne (system : List XorSatEquation)
                 (xorSatGetEquationIsWellFormed index system hSystemWf)
                 (xorSatSelectXorIsWellFormed restIndices system hSystemWf)]
 
-/-- ★ THE FOLD HOMOMORPHISM: `selectXor` sends combo toggle-merge to equation combination —
-the provenance invariant survives pivot elimination. -/
+/-- The fold homomorphism: `selectXor` sends a combo toggle-merge to an equation combination,
+so the provenance invariant survives pivot elimination. -/
 theorem xorSatSelectXorToggleMerge (system : List XorSatEquation)
     (hSystemWf : xorSatSystemIsWellFormed system = true) :
     (firstCombo secondCombo : List Nat) →
@@ -1360,7 +1360,7 @@ theorem xorSatSelectXorToggleMerge (system : List XorSatEquation)
 
 /-! ## Working items, verdicts, and the pivot transform -/
 
-/-- A working item: the current equation plus the F2 combination of ORIGINAL equation
+/-- A working item: the current equation plus the F2 combination of original equation
 indices it equals. -/
 structure XorSatWorkItem where
   equation : XorSatEquation
@@ -1473,7 +1473,7 @@ theorem xorSatPivotTransformPreservesWellFormed (pivotVar : Nat)
             (xorSatPivotTransformPreservesWellFormed pivotVar pivotEquation pivotCombo
               restItems hrestWf)
 
-/-- Provenance: every working equation IS the F2 selection of its (ascending) combo over
+/-- Provenance: every working equation is the F2 selection of its (ascending) combo over
 the original system. -/
 def xorSatWorkHasProvenance (system : List XorSatEquation) : List XorSatWorkItem → Prop
   | [] => True
@@ -1601,7 +1601,7 @@ theorem xorSatNoneNeSome (verdict : XorSatVerdict)
     (hcontr : (none : Option XorSatVerdict) = some verdict) : False :=
   Bool.noConfusion (congrArg xorSatIsSomeVerdict hcontr)
 
-/-- ★ FUEL ADEQUACY: fuel equal to the working count always reaches a verdict. -/
+/-- Fuel adequacy: fuel equal to the working count always reaches a verdict. -/
 theorem xorSatDecideAuxIsSome : (fuel : Nat) → (workingItems : List XorSatWorkItem) →
     xorSatWorkCount workingItems = fuel →
     xorSatIsSomeVerdict (xorSatDecideAux fuel workingItems) = true
@@ -1835,7 +1835,7 @@ theorem xorSatDecideAuxSatSound : (fuel : Nat) → (workingItems : List XorSatWo
 
 /-! ## UNSAT soundness of the fuel decider -/
 
-/-- A returned unsatisfiability combo selects original equations xoring to the LITERAL
+/-- A returned unsatisfiability combo selects original equations xoring to the literal
 contradiction `⟨[], true⟩`. -/
 theorem xorSatDecideAuxUnsatSound (system : List XorSatEquation)
     (hSystemWf : xorSatSystemIsWellFormed system = true) :
@@ -1972,8 +1972,8 @@ theorem xorSatInitialWorkHasProvenance (system : List XorSatEquation)
         exact hshift.trans
           (congrArg (fun shiftedIndex => xorSatGetEquation shiftedIndex system) harith)
 
-/-- ★ THE DECISION: eliminate with fuel = working count; the fallback arm is provably dead
-(`xorSatDecideTotalFuelAdequate`). -/
+/-- The top-level decision: eliminate with fuel equal to the working count; the fallback arm
+is provably dead (`xorSatDecideTotalFuelAdequate`). -/
 def xorSatDecide (system : List XorSatEquation) : XorSatVerdict :=
   match xorSatDecideAux (xorSatWorkCount (xorSatInitialWorkFrom 0 system))
       (xorSatInitialWorkFrom 0 system) with
@@ -1984,8 +1984,8 @@ def xorSatDecide (system : List XorSatEquation) : XorSatVerdict :=
 def xorSatCheckSystem (witnessTrueSet : List Nat) (system : List XorSatEquation) : Bool :=
   xorSatEvalSystem (xorSatEnvOfWitness witnessTrueSet) system
 
-/-- ★ TOTALITY CERTIFICATE: at fuel = working count the fuel decider delivers a verdict —
-`xorSatDecide`'s fallback arm is dead code. -/
+/-- Totality certificate: at fuel equal to the working count the fuel decider delivers a
+verdict, so `xorSatDecide`'s fallback arm is dead code. -/
 theorem xorSatDecideTotalFuelAdequate (system : List XorSatEquation) :
     xorSatIsSomeVerdict
       (xorSatDecideAux (xorSatWorkCount (xorSatInitialWorkFrom 0 system))
@@ -1995,7 +1995,7 @@ theorem xorSatDecideTotalFuelAdequate (system : List XorSatEquation) :
 
 /-! ## Headline theorem 1: SAT soundness -/
 
-/-- ★ A witness returned by `xorSatDecide` passes the executable checker. -/
+/-- A witness returned by `xorSatDecide` passes the executable checker. -/
 theorem xorSatDecideSatSound (system : List XorSatEquation)
     (hSystemWf : xorSatSystemIsWellFormed system = true)
     (witnessTrueSet : List Nat)
@@ -2027,7 +2027,7 @@ theorem xorSatDecideSatSound (system : List XorSatEquation)
       rw [← xorSatCheckWorkInitial (xorSatEnvOfWitness witnessTrueSet) system 0]
       exact hcheckWork
 
-/-- ★ Checker-eval agreement: a passing checker means every equation (by index; out of
+/-- Checker-eval agreement: a passing checker means every equation (by index; out of
 range reads as the zero equation) holds under the induced environment. -/
 theorem xorSatCheckSystemHoldsEachEquation (witnessTrueSet : List Nat)
     (system : List XorSatEquation)
@@ -2038,8 +2038,8 @@ theorem xorSatCheckSystemHoldsEachEquation (witnessTrueSet : List Nat)
 
 /-! ## Headline theorem 2: UNSAT soundness -/
 
-/-- ★ A combo returned by `xorSatDecide` selects original equations whose F2 xor is the
-LITERAL contradiction `⟨[], true⟩`. -/
+/-- A combo returned by `xorSatDecide` selects original equations whose F2 xor is the
+literal contradiction `⟨[], true⟩`. -/
 theorem xorSatDecideUnsatSound (system : List XorSatEquation)
     (hSystemWf : xorSatSystemIsWellFormed system = true)
     (comboIndices : List Nat)
@@ -2071,7 +2071,7 @@ theorem xorSatDecideUnsatSound (system : List XorSatEquation)
               (Nat.zero_add offset)).symm))
         comboIndices hrun
 
-/-- ★ THE REFUTATION: an UNSAT verdict kills every candidate model — any environment
+/-- The refutation: an UNSAT verdict rules out every candidate model — any environment
 satisfying the system would satisfy the selected xor, which is `0 = 1`. -/
 theorem xorSatDecideUnsatRefutes (system : List XorSatEquation)
     (hSystemWf : xorSatSystemIsWellFormed system = true)
@@ -2119,7 +2119,7 @@ def xorSatCheckUnsatCombo (comboIndices : List Nat) (system : List XorSatEquatio
 
 /-! ## Marker -/
 
-/-- XOR-SAT is DECIDED on this island: fuel-adequate Gaussian-style elimination with
+/-- XOR-SAT is decided on this island: fuel-adequate Gaussian-style elimination with
 back-substitution, provenance-tracked two-sided certificates, checker-eval agreement, and
 the literal-contradiction UNSAT selection — all zero-axiom. -/
 def fxDissatIsland_hasXorSatDecision : Bool := true

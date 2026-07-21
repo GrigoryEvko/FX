@@ -1,8 +1,8 @@
 import FX1Poly.ComputerAlgebra.Number.RegularReal
 
-/-! # RegularReal arithmetic — addition and negation (NUM-R-2)
+/-! # RegularReal arithmetic — addition and negation
 
-The first ℝ operations.  Negation is pointwise — the two-sided distance is
+The additive ℝ operations.  Negation is pointwise — the two-sided distance is
 symmetric under negating both arguments, so regularity transfers verbatim.
 Addition uses Bishop's INDEX DOUBLING: `(x + y) n := x (2n+1) + y (2n+1)`,
 and the doubled-index moduli recombine EXACTLY — `1/(2n+2) + 1/(2n+2)`

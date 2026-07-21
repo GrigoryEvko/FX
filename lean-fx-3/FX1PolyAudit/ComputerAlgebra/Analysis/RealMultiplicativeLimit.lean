@@ -2,12 +2,12 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Analysis.RealMultiplicativeLimit
 
 /-! # FX1PolyAudit/ComputerAlgebra/Analysis/RealMultiplicativeLimit — zero-axiom
-    gate (ANALYSIS-MULLIMIT-1)
+    gate
 
 Per-declaration zero-axiom gate for the real multiplicative limit laws: the
 additive-monoid reshaping shims, the uniform magnitude bound of a convergent
-sequence (tail + structural prefix sum), the real-level product-difference law
-(the deferred analytic core), and the product and scalar limit laws.
+sequence (tail + structural prefix sum), the real-level product-difference law,
+and the product and scalar limit laws.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

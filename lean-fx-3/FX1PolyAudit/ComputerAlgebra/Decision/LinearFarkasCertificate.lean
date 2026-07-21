@@ -2,8 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.Decision.LinearFarkasCertificate
 
 /-! # FX1PolyAudit/ComputerAlgebra/Decision/LinearFarkasCertificate — zero-axiom gate
-    (DISSAT-ARITH brick, half 1: Farkas-certificate refutation for integer linear
-    arithmetic, Nat multipliers)
+    (Farkas-certificate refutation for integer linear arithmetic, Nat multipliers)
 
 Per-declaration zero-axiom gate for the Farkas certificate route: the hand-rolled
 Nat ble/beq reflection + cancellation + mul-monotonicity kit, the Bool conjunction
@@ -18,10 +17,10 @@ weighted sum is a ground contradiction), the soundness chain
 (`lfkScalePreservesSatisfaction`, `lfkAddPreservesSatisfaction`,
 `lfkWeightedSumSatisfied`, `lfkSatisfiesExpandedOfSatisfies`,
 `lfkGroundContradictionRefutes`) up to the headline `lfkRefutationSound` /
-`lfkRefutationSoundUnconditional`, the honest walls
+`lfkRefutationSoundUnconditional`, the walls
 (`lfkFarkasCompletenessStatement`, owner `fxDissatArith_hasFarkasCompleteness =
-false` — future Fourier–Motzkin brick; `lfkPresburgerDecisionStatement`, owner
-`fxDissatArith_hasPresburgerDecision = false` — future Cooper brick), the DECIDED
+false`; `lfkPresburgerDecisionStatement`, owner
+`fxDissatArith_hasPresburgerDecision = false`), the
 marker `fxDissatArith_hasFarkasCertificate = true`, and the kernel-checked smoke
 pins (refutations, rejected bogus certificates, the strictness thread, the
 two-slot equality route, and the satisfiable sanity witness).

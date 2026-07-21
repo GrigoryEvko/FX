@@ -1,39 +1,34 @@
 import FX1Poly.ComputerAlgebra.Number.ComplexRealTriangleInequality
 
-/-! # ComplexRealModulusComponentBounds — the ℂ modulus component estimates (NUM-C-5)
+/-! # ComplexRealModulusComponentBounds — modulus component estimates
 
-The pointwise component bounds on the Gaussian-real modulus, clean corollaries of
-the just-shipped square-root monotonicity layer (`sqrtRealMonotone`,
-`selfLeSqrtRealSquare`) and the square-order reflection (`nonNegSquareOrderReflect`).
-These are the elementary inequalities complex analysis leans on toward the
-Fundamental Theorem of Algebra:
+Pointwise component bounds on the Gaussian-real modulus, corollaries of the
+square-root monotonicity layer (`sqrtRealMonotone`, `selfLeSqrtRealSquare`) and the
+square-order reflection (`nonNegSquareOrderReflect`).  These are the elementary
+inequalities complex analysis uses toward the Fundamental Theorem of Algebra:
 
 * `modulusDominatesRealPart` / `negRealPartLeModulus` — `±Re z ≤ |z|`;
 * `modulusDominatesImaginaryPart` / `negImaginaryPartLeModulus` — `±Im z ≤ |z|`;
 * `modulusLeComponentAbsSum` — `|z| ≤ |Re z| + |Im z|`.
 
-The single new ℝ brick is the self-plus-nonnegative order fact
+The one new ℝ lemma is the self-plus-nonnegative order fact
 `lessEqualRealSelfAddNonNegRight` (`x ≤ x + y` for `y ≥ 0`), which reduces to
 `realNonNegativeRespectsDenotesSame` on the cancellation identity
 `(x + y) − x ~ y`.  Every component estimate then reads off the chain
 `c ≤ √(c²) ≤ √(c² + d²) = |z|` (the middle step by `sqrtRealMonotone` on
 `c² ≤ c² + d²`), and the abs-sum estimate reflects
-`|z|² = |Re z|² + |Im z|² ≤ (|Re z| + |Im z|)²` back through the nonnegative
-square root by `nonNegSquareOrderReflect`.
+`|z|² = |Re z|² + |Im z|² ≤ (|Re z| + |Im z|)²` back through the nonnegative square
+root by `nonNegSquareOrderReflect`.
 
-## Zero-axiom
-
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`, `WellFounded.fix`.  Pure term composition of the shipped monotone/self/
-reflect lemmas and ℝ-ring congruences; no real order or equality is ever
-case-split.  Per-declaration gated in the audit twin. -/
+Pure term composition of the monotone/self/reflect lemmas and ℝ-ring congruences;
+no real order or equality is ever case-split.  Zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## The self-plus-nonnegative real order brick (NUM-C-5a) -/
+/-! ## The self-plus-nonnegative real order lemma -/
 
-/-- **A real sits below itself plus any nonnegative real** — `x ≤ x + y` from
-`y ≥ 0`.  The added value is recovered from the sum (`(x + y) − x ~ y`), and a
+/-- A real sits below itself plus any nonnegative real: `x ≤ x + y` from `y ≥ 0`.
+The added value is recovered from the sum (`(x + y) − x ~ y`), and a
 pointwise-nonnegative real clears the vanishing lower bound at every index; the
 setoid-invariance of that nonnegativity carries the bound onto the difference
 `(x + y) − x`, which is exactly `LessEqualReal x (x + y)`. -/
@@ -44,9 +39,9 @@ theorem lessEqualRealSelfAddNonNegRight (baseValue : RegularReal)
     (denotesSameRealSymm (subRealAddLeftCancelDenotesSame baseValue addend))
     (realVanishingLowerBoundOfNonNeg isAddendNonNegative)
 
-/-! ## The real-part component bounds (NUM-C-5b) -/
+/-! ## The real-part component bounds -/
 
-/-- **The modulus dominates the real part** — `Re z ≤ |z|`.  The chain
+/-- The modulus dominates the real part: `Re z ≤ |z|`.  The chain
 `Re z ≤ √((Re z)²)` (`selfLeSqrtRealSquare`) `≤ √((Re z)² + (Im z)²) = |z|`
 (`sqrtRealMonotone` on `(Re z)² ≤ (Re z)² + (Im z)²`, the imaginary square being
 nonnegative). -/
@@ -61,7 +56,7 @@ theorem modulusDominatesRealPart (value : ComplexReal) :
         (mulReal value.realPart value.realPart)
         (mulRealSelfIsNonNegativeReal value.imaginaryPart)))
 
-/-- **The negated real part is dominated by the modulus** — `−Re z ≤ |z|`, i.e.
+/-- The negated real part is dominated by the modulus: `−Re z ≤ |z|`, i.e.
 `−|z| ≤ Re z`.  Same chain applied to `−Re z`, using the sign-blind square
 `(−Re z)² ~ (Re z)²` to relocate the left endpoint of the squared order. -/
 theorem negRealPartLeModulus (value : ComplexReal) :
@@ -82,9 +77,9 @@ theorem negRealPartLeModulus (value : ComplexReal) :
       (modulusSquaredIsNonNegativeReal value)
       isNegSquareBelow)
 
-/-! ## The imaginary-part component bounds (NUM-C-5c) -/
+/-! ## The imaginary-part component bounds -/
 
-/-- **The modulus dominates the imaginary part** — `Im z ≤ |z|`.  Symmetric to the
+/-- The modulus dominates the imaginary part: `Im z ≤ |z|`.  Symmetric to the
 real-part bound; the add-nonnegative step lands `(Im z)² ≤ (Im z)² + (Re z)²` and
 commutativity re-orders the radicand to `(Re z)² + (Im z)² = |z|²`. -/
 theorem modulusDominatesImaginaryPart (value : ComplexReal) :
@@ -106,9 +101,9 @@ theorem modulusDominatesImaginaryPart (value : ComplexReal) :
       (modulusSquaredIsNonNegativeReal value)
       isImagSquareBelow)
 
-/-- **The negated imaginary part is dominated by the modulus** — `−Im z ≤ |z|`.
-The imaginary sibling of `negRealPartLeModulus`, `(−Im z)² ~ (Im z)²` relocating
-the left endpoint of the imaginary squared order. -/
+/-- The negated imaginary part is dominated by the modulus: `−Im z ≤ |z|`.  The
+imaginary sibling of `negRealPartLeModulus`, `(−Im z)² ~ (Im z)²` relocating the
+left endpoint of the imaginary squared order. -/
 theorem negImaginaryPartLeModulus (value : ComplexReal) :
     LessEqualReal (negReal value.imaginaryPart) (modulus value) :=
   have isImagSquareBelow :
@@ -136,9 +131,9 @@ theorem negImaginaryPartLeModulus (value : ComplexReal) :
       (modulusSquaredIsNonNegativeReal value)
       isNegSquareBelow)
 
-/-! ## The abs-sum upper bound (NUM-C-5d) -/
+/-! ## The abs-sum upper bound -/
 
-/-- **The modulus is bounded by the component absolute values' sum** —
+/-- The modulus is bounded by the component absolute values' sum:
 `|z| ≤ |Re z| + |Im z|`.  Both sides are nonnegative, so it suffices to compare
 squares (`nonNegSquareOrderReflect`).  The binomial expansion
 `(|Re z| + |Im z|)² ~ (|Re z|² + |Im z|²) + 2·|Re z|·|Im z|` recovers the two

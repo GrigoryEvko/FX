@@ -1,25 +1,24 @@
 import FX1Poly.ComputerAlgebra.Number.ComplexReal
 import FX1Poly.ComputerAlgebra.Number.RegularRealSquareRoot
 
-/-! # ComplexRealModulus — the modulus of a Gaussian real (NUM-C-2)
+/-! # ComplexRealModulus — the modulus of a Gaussian real
 
-The metric layer over `ComplexReal`: the squared modulus `|z|^2 = a^2 + b^2`,
-its pointwise nonnegativity, the modulus `|z| = sqrt(a^2 + b^2)` via the
-shipped `sqrtReal`, and the two ring identities that pin it down:
+The metric layer over `ComplexReal`: the squared modulus `|z|² = a² + b²`, its
+pointwise nonnegativity, the modulus `|z| = sqrt(a² + b²)` via `sqrtReal`, and the
+two ring identities that pin it down:
 
-* `|z|^2` is a POINTWISE-nonnegative real (a sum of two rational squares at
-  every index), so it feeds `sqrtReal` directly — the deferred
-  `0 <=_R value -> IsNonNegativeReal (canonicalise value)` bridge is bypassed;
-* the square law `|z|^2 ~ |z| * |z|` is the shipped `sqrtRealSquareDenotesSame`
-  verbatim;
-* `z * conj z ~ |z|^2` (the imaginary part cancels to zero), pure ℝ-ring
-  negation-passing over the shipped bricks.
+* `|z|²` is a pointwise-nonnegative real (a sum of two rational squares at every
+  index), so it feeds `sqrtReal` directly — the `0 ≤ value → IsNonNegativeReal
+  (canonicalise value)` bridge is bypassed;
+* the square law `|z|² ~ |z| * |z|` is `sqrtRealSquareDenotesSame` at this
+  radicand;
+* `z * conj z ~ |z|²` (the imaginary part cancels to zero), pure ℝ-ring
+  negation-passing.
 
-The sole genuinely new prerequisites are the two SIGN-BLIND square-nonneg
-bricks (`intMulSelfNonNegative`, `mulExactSelfIsNonNegative`): every shipped
-nonneg-product fact needs BOTH factors nonnegative, but a square is
-nonnegative regardless of sign.  Both are full-enumeration matches — no
-wildcard, no propext.
+Two sign-blind square-nonneg lemmas support this
+(`intMulSelfNonNegative`, `mulExactSelfIsNonNegative`): the underlying
+nonneg-product facts need both factors nonnegative, but a square is nonnegative
+regardless of sign.  Both are full-enumeration matches — no wildcard, no propext.
 
 Zero axioms throughout. -/
 
@@ -27,18 +26,18 @@ namespace FX1Poly.ComputerAlgebra
 
 open RationalPair
 
-/-! ## The sign-blind square-nonneg bricks -/
+/-! ## Sign-blind square nonnegativity -/
 
-/-- **A square Int is nonnegative** — sign-blind, by full three-shape
-enumeration on the integer (`ofNat` splits definitionally into the two
-`ofNat` cases; `negSucc` squares to `ofNat (succ * succ)` by `Int.mul`).  No
-sign split, no negation lemmas — each arm is one `intZeroLeOfNat`. -/
+/-- A square Int is nonnegative, sign-blind, by full three-shape enumeration on
+the integer (`ofNat` splits definitionally into the two `ofNat` cases; `negSucc`
+squares to `ofNat (succ * succ)` by `Int.mul`).  No sign split, no negation
+lemmas — each arm is one `intZeroLeOfNat`. -/
 theorem intMulSelfNonNegative : ∀ value : Int, (0 : Int) ≤ value * value
   | .ofNat naturalPart => intZeroLeOfNat (naturalPart * naturalPart)
   | .negSucc magnitudePredecessor =>
       intZeroLeOfNat ((magnitudePredecessor + 1) * (magnitudePredecessor + 1))
 
-/-- **A square rational is nonnegative** — the numerator of `mulExact s s` is
+/-- A square rational is nonnegative: the numerator of `mulExact s s` is
 `s.numerator * s.numerator`, sign-blind nonnegative by `intMulSelfNonNegative`,
 read back through the numerator-sign bridge. -/
 theorem mulExactSelfIsNonNegative (sample : RationalPair) :
@@ -47,8 +46,8 @@ theorem mulExactSelfIsNonNegative (sample : RationalPair) :
 
 /-! ## Pointwise nonnegativity of squares and sums of reals -/
 
-/-- **A real square is pointwise nonnegative** — every approximant of
-`mulReal value value` is `mulExact s s` on the SAME sample `s`, a rational
+/-- A real square is pointwise nonnegative: every approximant of
+`mulReal value value` is `mulExact s s` on the same sample `s`, a rational
 square. -/
 theorem mulRealSelfIsNonNegativeReal (value : RegularReal) :
     IsNonNegativeReal (mulReal value value) :=
@@ -56,9 +55,8 @@ theorem mulRealSelfIsNonNegativeReal (value : RegularReal) :
     mulExactSelfIsNonNegative
       (value.approximation (productSamplingIndex value value index))
 
-/-- **Pointwise nonnegativity is closed under addition** — each approximant
-of `addReal` is `addExact` of the two summands' doubled samples, both
-nonnegative. -/
+/-- Pointwise nonnegativity is closed under addition: each approximant of
+`addReal` is `addExact` of the two summands' doubled samples, both nonnegative. -/
 theorem addRealPreservesIsNonNegativeReal {leftValue rightValue : RegularReal}
     (isLeftNonNegative : IsNonNegativeReal leftValue)
     (isRightNonNegative : IsNonNegativeReal rightValue) :
@@ -70,23 +68,21 @@ theorem addRealPreservesIsNonNegativeReal {leftValue rightValue : RegularReal}
 
 /-! ## The squared modulus -/
 
-/-- **The squared modulus** `|z|^2 = a^2 + b^2` — a bare ℝ-ring term, no
-`sqrtReal`. -/
+/-- The squared modulus `|z|² = a² + b²` — a bare ℝ-ring term, no `sqrtReal`. -/
 def modulusSquared (value : ComplexReal) : RegularReal :=
   addReal (mulReal value.realPart value.realPart)
     (mulReal value.imaginaryPart value.imaginaryPart)
 
-/-- `|z|^2` is pointwise nonnegative — a sum of two real squares. -/
+/-- `|z|²` is pointwise nonnegative — a sum of two real squares. -/
 theorem modulusSquaredIsNonNegativeReal (value : ComplexReal) :
     IsNonNegativeReal (modulusSquared value) :=
   addRealPreservesIsNonNegativeReal
     (mulRealSelfIsNonNegativeReal value.realPart)
     (mulRealSelfIsNonNegativeReal value.imaginaryPart)
 
-/-- **`z * conj z ~ |z|^2`** — the imaginary part cancels to zero.  The real
-part pulls a double negation out of `b * (-b)`; the imaginary part swaps and
-commutes to `(-X) + X ~ 0` with `X = a * b`.  Pure ℝ-ring negation-passing;
-no new real bricks. -/
+/-- `z * conj z ~ |z|²`: the imaginary part cancels to zero.  The real part pulls
+a double negation out of `b * (-b)`; the imaginary part swaps and commutes to
+`(-X) + X ~ 0` with `X = a * b`.  Pure ℝ-ring negation-passing. -/
 theorem mulComplexConjDenotesModulusSquared (value : ComplexReal) :
     DenotesSameComplex (mulComplex value (conjComplex value))
       { realPart := modulusSquared value
@@ -113,13 +109,13 @@ theorem mulComplexConjDenotesModulusSquared (value : ComplexReal) :
 
 /-! ## The modulus -/
 
-/-- **The modulus** `|z| = sqrt(a^2 + b^2)` — the shipped `sqrtReal` fed the
-pointwise nonnegativity witness. -/
+/-- The modulus `|z| = sqrt(a² + b²)` — `sqrtReal` fed the pointwise
+nonnegativity witness. -/
 def modulus (value : ComplexReal) : RegularReal :=
   sqrtReal (modulusSquared value) (modulusSquaredIsNonNegativeReal value)
 
-/-- **The square law** `|z| * |z| ~ |z|^2` — the shipped
-`sqrtRealSquareDenotesSame` at the squared modulus. -/
+/-- The square law `|z| * |z| ~ |z|²` — `sqrtRealSquareDenotesSame` at the squared
+modulus. -/
 theorem modulusSquareDenotesModulusSquared (value : ComplexReal) :
     DenotesSameReal (mulReal (modulus value) (modulus value))
       (modulusSquared value) :=

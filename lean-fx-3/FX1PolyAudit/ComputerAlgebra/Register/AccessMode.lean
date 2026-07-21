@@ -6,7 +6,7 @@ import FX1Poly.ComputerAlgebra.Register.AccessMode
 Per-declaration zero-axiom gate for the register access-mode algebra (fx_design.md
 §18.3): the all-ones constant, the `RegisterAccessMode` record, the eight modes
 (RW/RO/WO/W1C/W1S/RC/RS/RSVD), and every proven semantics lemma — the six
-definitional modes plus the read semantics of all eight and the W1C/W1S write FORM.
+definitional modes plus the read semantics of all eight and the W1C/W1S write form.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/

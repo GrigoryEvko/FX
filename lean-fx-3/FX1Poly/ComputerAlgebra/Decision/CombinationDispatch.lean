@@ -2,95 +2,77 @@ import FX1Poly.ComputerAlgebra.Decision.GroundCongruenceClosure
 import FX1Poly.ComputerAlgebra.Decision.LinearFarkasCertificate
 import FX1Poly.ComputerAlgebra.Decision.FourierMotzkinCompleteness
 
-/-! # FX1Poly/ComputerAlgebra/Decision/CombinationDispatch — the DISSAT-COMBINE core
-    (certificate-level Nelson–Oppen combination of the ground-congruence and Farkas engines)
+/-! # Certificate-level Nelson–Oppen combination of the ground-congruence and Farkas engines
 
-The SOUND certificate-combination core for the two live decision engines, after the
-Besson–Cornilleau–Pichardie proof-system reading of Nelson–Oppen (theory-specific
-certificates + explicit shared-variable equalities, each independently checkable) and
-the SMTCoq/Alethe convention that theory combination lives in the certificate, never in
-a verified combination ALGORITHM:
+The sound certificate-combination core for the two decision engines, following the
+Besson–Cornilleau–Pichardie proof-system reading of Nelson–Oppen (theory-specific certificates plus
+explicit shared-variable equalities, each independently checkable) and the SMTCoq/Alethe convention
+that theory combination lives in the certificate rather than in a verified combination algorithm.
 
-  * **The purified problem** (`NocProblem`) — an E-part (ground equations over `GccTerm`),
-    an A-part (`LfkConstraint` rows), and a SHARED INTERFACE mapping arithmetic variable
-    indices to ground terms (`List (Nat × GccTerm)`).  Purification itself — walking a
-    genuinely mixed term bottom-up, replacing alien subterms by fresh shared variables —
-    is syntactic preprocessing OUT of kernel scope here; its equisatisfiability is an
-    honest owner-false wall (`nocPurificationStatement`) stated over a faithful mixed AST
+  * The purified problem (`NocProblem`) — an E-part (ground equations over `GccTerm`), an A-part
+    (`LfkConstraint` rows), and a shared interface mapping arithmetic variable indices to ground
+    terms (`List (Nat × GccTerm)`). Purification itself — walking a mixed term bottom-up, replacing
+    alien subterms by fresh shared variables — is syntactic preprocessing outside kernel scope; its
+    equisatisfiability is stated as `nocPurificationStatement` over a faithful mixed AST
     (`NocMixedTerm`: uninterpreted application + linear arithmetic in one grammar).
-  * **Joint models** (`nocIsJointModel`) — an integer environment for the A-part plus the
-    FUNCTIONAL-CONSISTENCY BRIDGE (`nocFunctionalConsistencyHolds`): shared variables
-    whose terms are `GccDeriv`-provably equal carry cross-sum-equal values.  The bridge is
-    NOT an ad-hoc assumption: `nocModelAgreementGivesConsistency` DERIVES it from a
-    genuine two-theory model (`NocMixedModel` — a symbol valuation plus a congruent
-    binary application operator), by induction over `GccDeriv`
-    (`nocDerivPreservedByModel`).
-  * **The combination certificate** (`NocCertificate`) — a list of derived shared-variable
-    equalities plus Farkas multipliers.  The checker (`nocCheckCombination`) gcc-checks
-    every derived equality (`gccDecide` on the looked-up terms) and runs the sibling
-    Farkas checker on the A-part AUGMENTED with one `x_i - x_j = 0` row per derived
-    equality (difference vectors built as padding sums of unit vectors — no subtraction,
-    no min/max).  An empty derived list degenerates to a pure A-side refutation — the
-    honest Layer-0 dispatch (an E-side refutation cannot exist: the E-language here has
-    no disequations, so ground congruence alone never refutes).
-  * **Soundness** (`nocCombinationSound`, THE COMMISSIONED BAR) — an accepted certificate
-    refutes EVERY joint model: each checked equality yields `GccDeriv` by the gcc
-    engine's decision soundness, the bridge turns it into satisfaction of the augmented
-    row (`nocDerivedRowSatisfiedOfEnvEq`), and `lfkRefutationSoundUnconditional` kills
-    the environment.  `nocCombinationSoundForMixedSemantics` restates the headline
-    against the two-theory model semantics.
-  * **The end-to-end finder** (`nocFindRefutation`) — one round of E→A equality
-    propagation (enumerate shared pairs, keep exactly those the checker accepts) followed
-    by the sibling Fourier–Motzkin finder on the augmented system;
-    `nocFinderSound` proves every found certificate is checker-accepted
-    (composing `lfmFoundContradictionCertifies`), and
-    `nocFinderRefutesJointModels` closes the loop through soundness.
+  * Joint models (`nocIsJointModel`) — an integer environment for the A-part plus the
+    functional-consistency bridge (`nocFunctionalConsistencyHolds`): shared variables whose terms
+    are `GccDeriv`-provably equal carry cross-sum-equal values. The bridge is not an ad-hoc
+    assumption: `nocModelAgreementGivesConsistency` derives it from a genuine two-theory model
+    (`NocMixedModel` — a symbol valuation plus a congruent binary application operator) by induction
+    over `GccDeriv` (`nocDerivPreservedByModel`).
+  * The combination certificate (`NocCertificate`) — derived shared-variable equalities plus Farkas
+    multipliers. The checker (`nocCheckCombination`) gcc-checks every derived equality (`gccDecide`
+    on the looked-up terms) and runs the sibling Farkas checker on the A-part augmented with one
+    `x_i - x_j = 0` row per derived equality (difference vectors built as padding sums of unit
+    vectors — no subtraction, no min/max). An empty derived list degenerates to a pure A-side
+    refutation; ground congruence alone never refutes, since the E-language here has no disequations.
+  * Soundness (`nocCombinationSound`) — an accepted certificate refutes every joint model: each
+    checked equality yields `GccDeriv` by the gcc engine's decision soundness, the bridge turns it
+    into satisfaction of the augmented row (`nocDerivedRowSatisfiedOfEnvEq`), and
+    `lfkRefutationSoundUnconditional` kills the environment. `nocCombinationSoundForMixedSemantics`
+    restates the headline against the two-theory model semantics.
+  * The end-to-end finder (`nocFindRefutation`) — one round of E→A equality propagation (enumerate
+    shared pairs, keep exactly those the checker accepts) followed by the sibling Fourier–Motzkin
+    finder on the augmented system; `nocFinderSound` proves every found certificate is
+    checker-accepted (composing `lfmFoundContradictionCertifies`), and `nocFinderRefutesJointModels`
+    closes the loop through soundness.
 
-## The honest walls (owner-false, NOT attempted)
+Two capabilities are walled. `nocPurificationStatement` asserts a purifier from the mixed AST to
+`NocProblem` preserving and reflecting satisfiability; the missing legs are fresh-variable
+allocation with hash-consing (one variable per distinct alien subterm, which is exactly functional
+consistency), the definitional-extension argument (forward direction), and a term-model construction
+extending a joint environment to a congruent `applyValue` (Nelson–Oppen's total model extension) for
+the reflection direction (`fxDissatCombine_hasPurificationEquivalence`). As a bare existential the
+statement carries no constructive force; the missing artifact is the purifier itself.
+`nocCombinationCompletenessStatement` — every jointly-unsatisfiable problem has an accepted
+certificate — is false over the integers as stated: the A-side alone inherits the Farkas gap
+(`2x = 1` is integer-unsat, rationally feasible, certificate-free). Over the rationals it needs
+(i) equality-interpolation completeness of the E-engine (single equalities suffice only for convex
+theories, and ℤ-LIA is not convex: `1 <= x <= 2` entails `x = 1 ∨ x = 2` with neither disjunct
+entailed, so the non-convex case needs case-split trees over equality disjunctions), (ii) Farkas
+completeness over the rationals (the sibling's owner-false Fourier–Motzkin backward direction), and
+(iii) model amalgamation (stable infiniteness / cardinality agreement, a semantic condition no
+certificate checker inspects) (`fxDissatCombine_hasCombinationCompleteness`).
 
-  * `nocPurificationStatement` — a purifier from the mixed AST to `NocProblem` preserving
-    and reflecting satisfiability.  Missing legs: fresh-variable allocation with
-    hash-consing (one variable per distinct alien subterm — this IS functional
-    consistency), the definitional-extension argument (forward direction), and for the
-    reflection direction a term-model construction extending a joint environment to a
-    congruent `applyValue` (Nelson–Oppen's total model extension).  Owner
-    `fxDissatCombine_hasPurificationEquivalence := false`.
-  * `nocCombinationCompletenessStatement` — every jointly-unsatisfiable problem has an
-    accepted certificate.  FALSE over the integers as stated: the A-side alone inherits
-    the Farkas gap (`2x = 1` is integer-unsat, rationally feasible, certificate-free);
-    over the rationals the statement needs (i) equality-INTERPOLATION completeness of the
-    E-engine (every shared equality entailed by the JOINT system is `GccDeriv`-derivable
-    — congruence closure alone derives only E-entailed equalities; the convex-theory
-    argument that single equalities suffice is exactly LRA convexity, and ℤ-LIA is NOT
-    convex: `1 <= x <= 2` entails `x = 1 ∨ x = 2` with neither disjunct entailed, so
-    non-convex completeness needs case-split trees over equality DISJUNCTIONS or full
-    arrangement enumeration), (ii) Farkas completeness over the rationals (the
-    Fourier–Motzkin backward brick, still owner-false in the sibling), and (iii) the
-    model-amalgamation leg (stable infiniteness / cardinality agreement — a semantic
-    condition on models of arbitrary size, never certificate-checkable).  Owner
-    `fxDissatCombine_hasCombinationCompleteness := false`.
-
-## Zero-axiom discipline
-
-Init only; repo imports only the two engine files and the Fourier–Motzkin finder.
-Structural recursion throughout; no `WellFounded.fix`.  No `propext`, `Quot.sound`,
-`Classical.choice`, `sorry`, `native_decide`, `funext`, `omega`, no `decide` on `Prop`,
-no wildcard constructor arms.  Nat facts restricted to the probed-clean kit already used
-by the engines (`Nat.add_comm`, `Nat.zero_add`, `Nat.mul_one`, `Nat.zero_mul`, `Nat.beq`)
-plus the sibling helpers (`lfkNatAddSwapMiddle`, `lfkNatAddLeftCancel`, beq/ble
-reflection).  All list helpers are bespoke, monomorphic, cons-only — no `List.append`.
-Per-declaration gate in `FX1PolyAudit/ComputerAlgebra/Decision/CombinationDispatch.lean`. -/
+Init only; imports only the two engine files and the Fourier–Motzkin finder. Structural recursion
+throughout; no `WellFounded.fix`, no `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `funext`, `omega`, no `decide` on `Prop`, no wildcard constructor arms. Nat facts
+are restricted to the probed-clean kit used by the engines (`Nat.add_comm`, `Nat.zero_add`,
+`Nat.mul_one`, `Nat.zero_mul`, `Nat.beq`) plus the sibling helpers (`lfkNatAddSwapMiddle`,
+`lfkNatAddLeftCancel`, beq/ble reflection). All list helpers are bespoke, monomorphic, cons-only.
+Per-declaration gate in the twin. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## Stage 0 — cross-sum equality kit on `LfkInt` (symmetry, transitivity, unit laws)
+/-! ## Cross-sum equality kit on `LfkInt` (symmetry, transitivity, unit laws)
 
-The sibling ships reflexivity (`lfkIntEqRefl`); the combination additionally needs the
-equivalence-relation half and the two unit-multiplication laws that make dot products
-against unit vectors read off environment values. -/
+The sibling supplies reflexivity (`lfkIntEqRefl`); the combination additionally needs the
+equivalence-relation half and the two unit-multiplication laws that make dot products against unit
+vectors read off environment values. -/
 
 /-- Cross-sum equality is symmetric. -/
 theorem nocIntEqSymm {leftValue rightValue : LfkInt}
@@ -176,7 +158,7 @@ theorem nocIntAddNegateEqZero {leftValue rightValue : LfkInt}
       ((Nat.add_comm rightValue.positivePart leftValue.negativePart).trans
         (Nat.zero_add (leftValue.negativePart + rightValue.positivePart)).symm))
 
-/-! ## Stage 1 — the purified problem and the shared interface -/
+/-! ## The purified problem and the shared interface -/
 
 /-- A purified two-theory problem: ground equations for the congruence engine, linear
 rows for the Farkas engine, and the shared interface — arithmetic variable `i` denotes
@@ -220,7 +202,7 @@ def nocDerivedEqualityConstraint (firstIndex secondIndex : Nat) : LfkConstraint 
   LfkConstraint.mk (nocDifferenceVector firstIndex secondIndex) lfkIntZero
     LfkRelation.isEqualTo
 
-/-! ## Stage 2 — joint-model semantics and its two-theory grounding -/
+/-! ## Joint-model semantics and its two-theory grounding -/
 
 /-- THE FUNCTIONAL-CONSISTENCY BRIDGE: shared variables whose denoted terms are
 `GccDeriv`-provably equal carry cross-sum-equal environment values.  This is the exact
@@ -317,7 +299,7 @@ theorem nocModelAgreementGivesConsistency (problem : NocProblem) (model : NocMix
           equationsWitness leftTerm rightTerm derivation)
         (nocIntEqSymm (agreementWitness rightIndex rightTerm rightLookup)))
 
-/-! ## Stage 3 — the combination certificate and THE CHECKER -/
+/-! ## The combination certificate and the checker -/
 
 /-- The combination certificate: derived shared-variable equalities (each claiming its
 two indices denote gcc-provably-equal terms) plus Farkas multipliers for the augmented
@@ -367,7 +349,7 @@ def nocCheckCombination (problem : NocProblem) (certificate : NocCertificate) : 
     && lfkCheckRefutation certificate.farkasMultipliers
       (nocAugmentSystem certificate.derivedEqualities problem.arithmeticPart)
 
-/-! ## Stage 4 — soundness of the combination -/
+/-! ## Soundness of the combination -/
 
 /-- Dotting a unit vector reads off the environment value (scaled by the weight);
 truncation and zero-extension agree beyond the environment's length. -/
@@ -508,7 +490,7 @@ theorem nocCombinationSoundForMixedSemantics (problem : NocProblem)
       (nocModelAgreementGivesConsistency problem model env respectWitness
         equationsWitness agreementWitness))
 
-/-! ## Stage 5 — the end-to-end finder (one-round E→A propagation + Fourier–Motzkin) -/
+/-! ## The end-to-end finder (one-round E→A propagation + Fourier–Motzkin) -/
 
 /-- Cons-only append for index-pair lists. -/
 def nocIndexPairListAppend : List (Nat × Nat) → List (Nat × Nat) → List (Nat × Nat)
@@ -699,7 +681,7 @@ theorem nocFinderRefutesJointModels (problem : NocProblem) (certificate : NocCer
   nocCombinationSound problem certificate
     (nocFinderSound problem certificate foundWitness) env jointModelWitness
 
-/-! ## Stage 6 — the honest walls (owner-false Props) -/
+/-! ## The walls (owner-false Props) -/
 
 /-- A genuinely MIXED term: uninterpreted symbols and application interleaved with
 linear-arithmetic constructors.  This is the pre-purification language; the purifier
@@ -751,17 +733,15 @@ def nocMixedAtomsHold (model : NocMixedModel) : List NocMixedAtom → Bool
   | atomHead :: atomTail =>
       nocMixedAtomHolds model atomHead && nocMixedAtomsHold model atomTail
 
-/-- PURIFICATION WALL (owner-false, NOT proven here): some purifier maps every mixed
-conjunction to a `NocProblem` whose joint satisfiability matches mixed satisfiability
-under respecting two-theory models.  The CONTENT is the concrete syntactic purifier and
-its two lemmas, deliberately not built: (forward) alien-subterm extraction with ONE
-fresh shared variable per distinct alien subterm (hash-consing — exactly the source of
-functional consistency) is a definitional extension, so a mixed model extends to a
-joint environment; (backward) a joint environment must be extended to a CONGRUENT
-`applyValue` on the whole carrier — Nelson–Oppen's total model extension / term-model
-construction.  As a bare existential the statement carries no constructive force (a
-classical case split could inhabit it); the wall records that the purifier ITSELF is
-the missing artifact.  Owner: `fxDissatCombine_hasPurificationEquivalence := false`. -/
+/-- Purification equivalence, not proven here: some purifier maps every mixed conjunction to a
+`NocProblem` whose joint satisfiability matches mixed satisfiability under respecting two-theory
+models. The missing content is the concrete syntactic purifier with its two lemmas. Forward:
+alien-subterm extraction with one fresh shared variable per distinct alien subterm (hash-consing,
+the source of functional consistency) is a definitional extension, so a mixed model extends to a
+joint environment. Backward: a joint environment must be extended to a congruent `applyValue` on the
+whole carrier — Nelson–Oppen's total model extension / term-model construction. As a bare
+existential the statement carries no constructive force; the missing artifact is the purifier itself
+(`fxDissatCombine_hasPurificationEquivalence`). -/
 def nocPurificationStatement : Prop :=
   ∃ (purify : List NocMixedAtom → NocProblem),
     ∀ (mixedAtoms : List NocMixedAtom),
@@ -770,47 +750,42 @@ def nocPurificationStatement : Prop :=
           And (nocModelRespectsIntEq model) (nocMixedAtomsHold model mixedAtoms = true))
         (∃ (env : List LfkInt), nocIsJointModel (purify mixedAtoms) env)
 
-/-- COMBINATION-COMPLETENESS WALL (owner-false, NOT attempted — and FALSE over the
-integers as stated): every jointly-unsatisfiable problem would have an accepted
-certificate.  The integer counterexample is inherited from the A-side alone: the
-problem with empty E-part and A-part `{2x = 1}` has no joint model yet no Farkas
-certificate (rationally feasible).  The honest reachable target is the RATIONAL
-relaxation, which still needs: (i) equality-interpolation completeness of the E-side —
-every shared equality entailed by the JOINT system is `GccDeriv`-derivable; single
-equalities suffice only for CONVEX theories (ℚ-LRA is convex, ℤ-LIA is not:
-`1 <= x <= 2` entails the disjunction `x = 1 ∨ x = 2` and neither disjunct — the
-non-convex loop needs case-split trees over equality disjunctions or Bell-number
-arrangement enumeration); (ii) Farkas completeness over the rationals (the sibling's
-owner-false Fourier–Motzkin backward brick); (iii) model amalgamation — gluing an
-E-model and an A-model that agree on the arrangement needs stable infiniteness /
-cardinality agreement (Löwenheim–Skolem territory), a semantic condition that no
-certificate checker inspects.  Owner:
-`fxDissatCombine_hasCombinationCompleteness := false`. -/
+/-- Combination completeness, not proven here and false over the integers as stated: every
+jointly-unsatisfiable problem would have an accepted certificate. The integer counterexample is
+inherited from the A-side alone — the problem with empty E-part and A-part `{2x = 1}` has no joint
+model yet no Farkas certificate (rationally feasible). The reachable target is the rational
+relaxation, which still needs: (i) equality-interpolation completeness of the E-side (every shared
+equality entailed by the joint system is `GccDeriv`-derivable; single equalities suffice only for
+convex theories, and ℤ-LIA is not convex, since `1 <= x <= 2` entails `x = 1 ∨ x = 2` with neither
+disjunct entailed, so the non-convex case needs case-split trees over equality disjunctions);
+(ii) Farkas completeness over the rationals (the sibling's owner-false Fourier–Motzkin backward
+direction); (iii) model amalgamation (gluing an E-model and an A-model agreeing on the arrangement
+needs stable infiniteness / cardinality agreement, a semantic condition no certificate checker
+inspects) (`fxDissatCombine_hasCombinationCompleteness`). -/
 def nocCombinationCompletenessStatement : Prop :=
   ∀ (problem : NocProblem),
     (∀ (env : List LfkInt), nocIsJointModel problem env → False) →
     ∃ (certificate : NocCertificate), nocCheckCombination problem certificate = true
 
-/-- DECIDED marker: the certificate-level combination dispatch (checker, joint-model
-semantics, two-theory grounding of the bridge, and the soundness chain through
-`nocCombinationSound` / `nocCombinationSoundForMixedSemantics`) is fully proven,
-zero-axiom. -/
+/-- The certificate-level combination dispatch: checker, joint-model semantics, two-theory grounding
+of the bridge, and the soundness chain through `nocCombinationSound` /
+`nocCombinationSoundForMixedSemantics`. -/
 def fxDissatCombine_hasDispatchSoundness : Bool := true
 
-/-- DECIDED marker: the end-to-end finder (one-round propagation + Fourier–Motzkin)
-ships with `nocFinderSound` / `nocFinderRefutesJointModels`. -/
+/-- The end-to-end finder (one-round propagation + Fourier–Motzkin), with `nocFinderSound` /
+`nocFinderRefutesJointModels`. -/
 def fxDissatCombine_hasEndToEndFinder : Bool := true
 
-/-- Owner flag for `nocPurificationStatement` — NOT proven (future purifier brick). -/
+/-- Owner flag for `nocPurificationStatement`, not proven. -/
 def fxDissatCombine_hasPurificationEquivalence : Bool := false
 
-/-- Owner flag for `nocCombinationCompletenessStatement` — NOT proven; FALSE over ℤ as
-stated (see the wall docstring for the three missing rational-side legs). -/
+/-- Owner flag for `nocCombinationCompletenessStatement`, not proven and false over ℤ as stated
+(see the wall docstring for the three missing rational-side legs). -/
 def fxDissatCombine_hasCombinationCompleteness : Bool := false
 
-/-! ## Smokes (Bool outputs only; FALSE cases included; kernel-checked `rfl` pins)
+/-! ## Smoke tests (Bool outputs, false cases included, kernel-checked `rfl` pins)
 
-Symbols: `0 = a`, `1 = b`, `3 = f`.  Shared variables: `x0 ↦ a`, `x1 ↦ b`. -/
+Symbols: `0 = a`, `1 = b`, `3 = f`. Shared variables: `x0 ↦ a`, `x1 ↦ b`. -/
 
 /-- Smoke term `a`. -/
 def nocSmokeTermA : GccTerm := GccTerm.symbol 0

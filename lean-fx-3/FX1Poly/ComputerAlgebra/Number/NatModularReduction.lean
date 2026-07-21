@@ -1,29 +1,26 @@
 import FX1Poly.ComputerAlgebra.Number.NatEuclideanDivision
 import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
 
-/-! # NatModularReduction — the propext-clean `mod 2^n` reasoning layer
+/-! # Modular reduction (`mod 2^n`) over the structural divider
 
-Init's remainder VALUE (`Nat.mod`) is computed by well-founded recursion, and
-every characterisation lemma about it (`Nat.mod_eq_of_lt`, `Nat.mod_self`,
-`Nat.add_mod`, `Nat.mul_mod`, ...) is propext-poisoned.  This module re-derives
-the whole modular-reduction surface on top of the SHIPPED structural counting
-divider `natDivModCounting` (`NatEuclideanDivision`), which is fuel-structural
-(no well-founded recursion) and audited zero-axiom.
+Init's remainder value (`Nat.mod`) is computed by well-founded recursion, and its
+characterisation lemmas (`Nat.mod_eq_of_lt`, `Nat.mod_self`, `Nat.add_mod`, `Nat.mul_mod`)
+leak `propext`. This module re-derives the modular-reduction surface on top of the
+fuel-structural counting divider `natDivModCounting` (`NatEuclideanDivision`), with
+`natRemainder d m := (natDivModCounting d m).snd`; from its reconstruction, bound, and
+quotient-uniqueness certificates:
 
-`natRemainder d m := (natDivModCounting d m).snd` is the clean remainder; from
-the reconstruction / bound / quotient-uniqueness certificates we get:
-
-* `natRemainderUnique` — the Euclidean remainder is pinned by any in-bound
-  decomposition (the crux from which everything else follows).
+* `natRemainderUnique` — the Euclidean remainder is pinned by any in-bound decomposition;
+  the base identities and homomorphism steps follow from it.
 * `natRemainderOfLt`, `natRemainderSelf` — the two base identities.
 * `natRemainderAddMultiple` — invariance under adding a multiple of the modulus.
-* `natRemainderAddPush`, `natRemainderMulPush` — the modular add/mul
-  homomorphism steps (`natRemainder (natRemainder a + b) = natRemainder (a+b)`),
-  the workhorses for the `mod 2^n` ring laws.
-* `natAddSubCancelLeft`, `natAddSubOfLe` — the additive-inverse plumbing for the
-  `2^n - a` complement (Init's `Nat.add_sub_cancel*` are propext-dirty).
+* `natRemainderAddPush`, `natRemainderMulPush` — the modular add/mul homomorphism steps
+  (`natRemainder (natRemainder a + b) = natRemainder (a + b)`) underlying the `mod 2^n`
+  ring laws.
+* `natAddSubCancelLeft`, `natAddSubOfLe` — additive-inverse plumbing for the `2^n - a`
+  complement (Init's `Nat.add_sub_cancel*` leak `propext`).
 
-`Init`-only, certificate-first, structural, zero axioms. -/
+Init-only, certificate-first, structural, zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -49,9 +46,9 @@ theorem natRemainderIsBounded {dividend divisor : Nat} (isPositive : 0 < divisor
 
 /-! ## The uniqueness crux -/
 
-/-- **Remainder uniqueness**: any in-bound decomposition pins the Euclidean
-remainder.  Init's `Nat.mod_unique`-flavoured facts leak propext; this rides the
-shipped quotient-uniqueness certificate plus additive left-cancellation. -/
+/-- Remainder uniqueness: any in-bound decomposition pins the Euclidean remainder. Init's
+`Nat.mod_unique`-flavoured facts leak `propext`; this uses the quotient-uniqueness
+certificate plus additive left-cancellation. -/
 theorem natRemainderUnique {dividend divisor quotient remainder : Nat}
     (isBounded : remainder < divisor)
     (decomposition : dividend = divisor * quotient + remainder) :
@@ -101,8 +98,8 @@ theorem natRemainderAddMultiple (base divisor multiple : Nat) (isPositive : 0 < 
       ((Nat.add_right_comm (divisor * quotient) remainder (divisor * multiple)).trans
         (congrArg (· + remainder) (Nat.left_distrib divisor quotient multiple).symm)))
 
-/-- **Modular add step**: reducing the left summand before adding is invisible
-to the outer reduction. -/
+/-- Modular add step: reducing the left summand before adding is invisible to the outer
+reduction. -/
 theorem natRemainderAddPush (leftValue rightValue divisor : Nat) (isPositive : 0 < divisor) :
     natRemainder (natRemainder leftValue divisor + rightValue) divisor =
       natRemainder (leftValue + rightValue) divisor :=
@@ -118,8 +115,8 @@ theorem natRemainderAddPush (leftValue rightValue divisor : Nat) (isPositive : 0
   (natRemainderAddMultiple (remainder + rightValue) divisor quotient isPositive).symm.trans
     (congrArg (fun summed => natRemainder summed divisor) rearrange.symm)
 
-/-- **Modular mul step**: reducing the left factor before multiplying is
-invisible to the outer reduction. -/
+/-- Modular mul step: reducing the left factor before multiplying is invisible to the
+outer reduction. -/
 theorem natRemainderMulPush (leftValue rightValue divisor : Nat) (isPositive : 0 < divisor) :
     natRemainder (natRemainder leftValue divisor * rightValue) divisor =
       natRemainder (leftValue * rightValue) divisor :=

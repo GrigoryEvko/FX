@@ -1,42 +1,22 @@
 import FX1Poly.ComputerAlgebra.Register.VirtualField
 
-/-! # VirtualFieldReassembly — the numeric correctness of a reassembled virtual field
+/-! # VirtualFieldReassembly — numeric correctness of a reassembled virtual field
 
-`VirtualField` builds a `virtual` field (fx_design.md §18.1) as the LSB-first
-`bitVecConcat` fold `extractVirtual`, and ties off the *range* semantics
-(`isDisjointSpec_ne`).  What it does NOT prove is the *numeric* reassembly law: that
-the reassembled vector, read as a natural, places field `k`'s slice at the bit
-offset given by the sum of all prior widths.  That is the honest §18.1 statement,
-and it is exactly the gap this file closes.
+`extractVirtual` (from `VirtualField`) is the LSB-first `bitVecConcat` fold of a
+`virtual` field (fx_design.md §18.1).  Its numeric law: read as a natural, the
+reassembled vector places field `k`'s slice at the bit offset equal to the sum of
+all prior widths.  `bitVecConcatToNat` is the `.toNat` law for LSB-first
+concatenation; `extractVirtualToNat` equates the reassembled `.toNat` with the
+weighted fold `virtualReassembledSum`; `virtualReassembledSum_recoversHeadSlice`
+recovers the head slice.
 
-Two facts, riding the shipped modular-arithmetic corpus that `FieldLayout` already
-uses at much greater depth:
-
-* `bitVecConcatToNat` — the missing `.toNat` law for LSB-first concatenation.
-  `bitVecConcat low high` is definitionally `bitVecOfNatMod (low.toNat + high.toNat *
-  2^lowWidth)` at width `lowWidth + highWidth`; the outer `mod 2^(lowWidth+highWidth)`
-  drops because `natLowPlusScaledLt low.isLt high.isLt` bounds the concatenated
-  natural below `2^lowWidth * 2^highWidth = 2^(lowWidth+highWidth)` (`twoPowAdd`).
-
-* `extractVirtualToNat` — structural induction on the spec list: the reassembled
-  vector's `.toNat` equals the LSB-first weighted fold `virtualReassembledSum`.  The
-  base case is `bitVecZeroToNat`; the cons case is one `bitVecConcatToNat` (lowWidth
-  = the head width) then the induction hypothesis.
-
-The corollary `virtualReassembledSum_recoversHeadSlice` reads the low head-width bits
-back to slice 0, mirroring `FieldLayout`'s `extractField_insertField_same` remainder
-step (`natRemainderUnique`).
-
-`Init`-only, structural (no well-founded recursion), zero axioms. -/
+`Init`-only, structural, zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## The `.toNat` law for LSB-first concatenation -/
-
-/-- `(bitVecConcat low high).toNat = low.toNat + high.toNat * 2^lowWidth`: LSB-first
-concatenation places `high` scaled past `low`'s `lowWidth` bits, and the sum never
-overflows the combined width, so the reducer's `mod 2^(lowWidth+highWidth)` is the
-identity.  Pure `.toNat` `Eq` — no wildcard match, no propext. -/
+/-- `(bitVecConcat low high).toNat = low.toNat + high.toNat * 2^lowWidth`: `high`
+sits scaled past `low`'s `lowWidth` bits, and the sum stays below the combined
+width, so the reducer's outer `mod` is the identity. -/
 theorem bitVecConcatToNat {lowWidth highWidth : Nat}
     (low : BitVec lowWidth) (high : BitVec highWidth) :
     (bitVecConcat low high).toNat = low.toNat + high.toNat * 2 ^ lowWidth :=
@@ -47,21 +27,16 @@ theorem bitVecConcatToNat {lowWidth highWidth : Nat}
   (bitVecOfNatModToNat (width := lowWidth + highWidth) concatArg).trans
     (natRemainderOfLt sumBelowCombined)
 
-/-! ## The reassembled-sum specification and its correctness -/
-
-/-- The LSB-first weighted fold that `extractVirtual` computes as a natural: the head
-slice sits in the low bits, and each tail contribution is scaled past the head's
-`spec.width` bits.  This is the numeric §18.1 virtual-field value. -/
+/-- The LSB-first weighted fold `extractVirtual` computes as a natural: head slice in
+the low bits, each tail contribution scaled past the head's `spec.width` bits. -/
 def virtualReassembledSum {n : Nat} (value : BitVec n) : List FieldSpec → Nat
   | []          => 0
   | spec :: rest =>
       (extractFieldSlice value spec.offset spec.width).toNat
         + virtualReassembledSum value rest * 2 ^ spec.width
 
-/-- **Reassembly correctness**: reading the reassembled virtual field as a natural
-yields exactly the LSB-first weighted fold — field `k`'s slice occupies the bit
-offset equal to the sum of all prior field widths.  Structural induction on the spec
-list: base is `bitVecZeroToNat`, cons is `bitVecConcatToNat` (head width) then the IH. -/
+/-- Reassembly correctness: read as a natural, the reassembled virtual field equals
+the weighted fold `virtualReassembledSum`. -/
 theorem extractVirtualToNat {n : Nat} (value : BitVec n) :
     (specs : List FieldSpec) →
       (extractVirtual value specs).toNat = virtualReassembledSum value specs
@@ -74,11 +49,9 @@ theorem extractVirtualToNat {n : Nat} (value : BitVec n) :
             (extractFieldSlice value spec.offset spec.width).toNat + tailNat * 2 ^ spec.width)
           (extractVirtualToNat value rest))
 
-/-! ## Low-bits corollary -/
-
-/-- The low `spec.width` bits of the reassembled sum read back the head slice: the
-Euclidean remainder by `2^spec.width` discards the (multiple-of-`2^spec.width`) tail
-and returns slice 0.  Pinned by `natRemainderUnique` from the slice's own bound. -/
+/-- The low `spec.width` bits of the reassembled sum recover the head slice: the
+remainder by `2^spec.width` discards the tail, via `natRemainderUnique` from the
+slice's bound. -/
 theorem virtualReassembledSum_recoversHeadSlice {n : Nat} (value : BitVec n)
     (spec : FieldSpec) (rest : List FieldSpec) :
     natRemainder (virtualReassembledSum value (spec :: rest)) (2 ^ spec.width)
