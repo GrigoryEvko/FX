@@ -1,29 +1,20 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialCoeffBounds
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialDegreeBound — degree from coefficient vanishing
-(the ninth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialDegreeBound — degree from coefficient vanishing
 
-To turn r17's leading-term cancellation into a strict degree drop we need the converse of the coefficient
-bounds: a polynomial whose coefficients all vanish at and above a positive bound has degree strictly below
-that bound.  The lever is the *nonzero* leading coefficient — the whole point of the trailing-zero trim.
+The converse of the coefficient bounds, turning leading-term cancellation into a strict degree drop: a
+polynomial whose coefficients all vanish at and above a positive bound has degree strictly below it.  The
+lever is the nonzero leading coefficient (the point of the trailing-zero trim):
 
-## What is PROVEN
-
-  * `polyTrimNilOrLastNonzero`: the trimmed list is either empty or ends in a nonzero coefficient (the trim
-    invariant).
+  * `polyTrimNilOrLastNonzero`: the trimmed list is either empty or ends in a nonzero coefficient.
   * `polyLeadingCoeffNonzeroWhenNonempty`: hence a nonzero polynomial's leading coefficient is nonzero.
-  * `polyCoeffAtDegreeNonzeroWhenNonempty`: equivalently (via the r16 bridge), `polyCoeff p (polyDegree p) ≠
-    0` for a nonzero `p`.
+  * `polyCoeffAtDegreeNonzeroWhenNonempty`: equivalently (via the bridge), `polyCoeff p (polyDegree p) ≠ 0`.
   * `polyDegreeLtOfCoeffVanishingAbove`: if `polyCoeff p k = 0` for all `k ≥ bound` and `1 ≤ bound`, then
-    `polyDegree p < bound` — since otherwise the (nonzero) leading coefficient sits at position ≥ bound.
+    `polyDegree p < bound`.
 
-## Zero-axiom design
-
-Structural induction with `Int.decEq` casing and constructive Nat decidability
-(`Nat.lt_of_not_le`); `List.cons_ne_nil`, `Or.resolve_left`.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialDegreeBound.lean`.
--/
+Structural induction with `Int.decEq` casing and constructive Nat decidability (`Nat.lt_of_not_le`);
+`List.cons_ne_nil`, `Or.resolve_left`.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -69,7 +60,7 @@ theorem polyLeadingCoeffNonzeroWhenNonempty (coeffs : List Int) (isTrimNonempty 
 
 /-- **The coefficient at the degree position is nonzero for a nonzero polynomial.**  `polyTrim coeffs ≠ []
 → polyCoeff coeffs (polyDegree coeffs) ≠ 0` — the leading coefficient (nonzero) is exactly that positional
-coefficient (r16 bridge). -/
+coefficient (the degree↔coefficient bridge). -/
 theorem polyCoeffAtDegreeNonzeroWhenNonempty (coeffs : List Int) (isTrimNonempty : polyTrim coeffs ≠ []) :
     polyCoeff coeffs (polyDegree coeffs) ≠ 0 :=
   fun coeffIsZero =>
@@ -108,10 +99,5 @@ theorem polyLeadingCoeffNonzeroGrounding : polyLeadingCoeff [2, 1] ≠ (0 : Int)
 
 /-- `polyCoeff [2, 1] (polyDegree [2, 1]) = polyCoeff [2, 1] 1 = 1 ≠ 0`. -/
 theorem polyCoeffAtDegreeNonzeroGrounding : polyCoeff [2, 1] (polyDegree [2, 1]) ≠ (0 : Int) := by decide
-
-/-- Marker: the ℤ[x] degree-from-coefficient-vanishing lever ships — the trim invariant (nonzero last
-coefficient), the nonzero leading coefficient, and the strict degree bound when coefficients vanish above a
-positive bound.  This turns r17's leading-term cancellation into a strict degree drop. -/
-def fxIntPoly_hasDegreeFromCoefficientVanishing : Bool := true
 
 end FX1Poly.ComputerAlgebra

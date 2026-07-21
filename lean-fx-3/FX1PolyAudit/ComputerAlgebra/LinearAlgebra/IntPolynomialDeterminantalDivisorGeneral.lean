@@ -3,16 +3,12 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDeterminantalDivisorGe
 
 /-! # FX1PolyAudit/.../IntPolynomialDeterminantalDivisorGeneral — zero-axiom gate
 
-Per-declaration zero-axiom gate for the uniform general-n determinantal-divisor engine (the sixth brick of
-the char-matrix → invariant-factors layer, WP-ENDO #2255): the `k`-subset index enumerator
-(`indicesBelow`/`kSublists`/`kSubsets`/`selectionOf`) instantiating the already-general `polyGcdList ∘
+Per-declaration zero-axiom gate for the uniform general-n determinantal-divisor engine: the `k`-subset index
+enumerator (`indicesBelow`/`kSublists`/`kSubsets`/`selectionOf`) instantiating the general `polyGcdList ∘
 charMatrixMinor` fold at arbitrary dimension (`charDeterminantalDivisor`, `determinantalDivisorSignature`),
-cross-validated to reproduce the hand-rolled r34/r36 values and reaching the full dim-3 signatures
-`[0,0,3]/[0,1,3]/[1,2,3]` that separate all three `(x−2)³` classes.
-
-The `++`/`List.map`/`List.flatMap` used are DATA CONSTRUCTORS (only their equation/decision lemmas leak
-`propext`), so this gate also confirms the enumerator stays axiom-free.  Must be free of `propext`,
-`Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+reaching the full dim-3 signatures `[0,0,3]/[0,1,3]/[1,2,3]` that separate all three `(x−2)³` classes.  The
+`++`/`List.map`/`List.flatMap` used are data constructors, so the enumerator stays axiom-free.  Free of
+`propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 

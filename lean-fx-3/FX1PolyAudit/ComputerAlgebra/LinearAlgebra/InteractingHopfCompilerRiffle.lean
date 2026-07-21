@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfCompilerRiffle
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfCompilerRiffle —
-    zero-axiom gate (WP-PROP-3 brick 7: the generator-transpose riffle)
+    zero-axiom gate for the generator-transpose riffle layer
 
 Per-declaration zero-axiom gate for the riffle layer and the two-row spatial-sum
 constructor: the crossing pair-membership spec (`ihrCrossingRowsSpec`,
@@ -15,8 +15,8 @@ cascade (`ihrMoveRight`) with the width-alignment lemmas
 (`ihrGadgetTensorLayers`, `ihrTwoRowSumDiagram`); the kernel span fires; the full
 concrete instances of the spatial-sum content (`ihrTwoRowSumInstanceOneOut`,
 `ihrTwoRowSumInstanceTwoOut`); the owner-false residual walls
-(`ihrMoveRightDenoteResidual`, `ihrUnshuffleDenoteResidual`) and the three
-markers.
+(`ihrMoveRightDenoteResidual`, `ihrUnshuffleDenoteResidual`) and the riffle-layer
+marker (`ihrHasRiffleLayer`).
 
 No new inductives/structures are introduced, so there are no constructors,
 `mk`, or projections to gate — every declaration is a `def` or `theorem`.
@@ -55,7 +55,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihrMoveRightDenoteResidual
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihrUnshuffleDenoteResidual
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihrHasRiffleLayer
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihrHasTwoRowSpatialSum
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihrHasNormalFormCompiler
 
 end FX1PolyAudit

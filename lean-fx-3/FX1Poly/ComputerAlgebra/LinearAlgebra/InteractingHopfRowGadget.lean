@@ -1,31 +1,30 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfCompiler
 
 /-! # LinearAlgebra/InteractingHopfRowGadget — the single-row IH_Q gadget
-(WP-PROP-3 brick 6)
 
-Executing the brick-5 Stage-7 route residual on `ihzNormalFormStatement`: the
-`R = 1` matrix -> diagram reifier for a single generator row over `IH_Q`.
+The `R = 1` matrix -> diagram reifier for a single generator row over `IH_Q`,
+the single-row instance of `ihzNormalFormStatement`.
 
-* THE SCALAR LAYER (T1, `ihgScalarLayer` / `ihgScalarMirrorLayer`): a horizontal
+* Scalar layer (T1, `ihgScalarLayer` / `ihgScalarMirrorLayer`): a horizontal
   tensor of `scalarBox`/`scalarBoxMirror` cells over a coefficient list, with the
   arbitrary-width per-strand denotation theorems (`ihgScalarLayerDenote`,
   `ihgScalarMirrorLayerDenote`): the layer relates its input vector to the
   pointwise `qnfMul` by the coefficients, proven by structural recursion on the
-  coefficient list via `ihwTensorSpec` + `ihzScalarGraphSpec`/`ihzScalarMirrorSpec`.
+  coefficient list via `ihwTensorSpec` and `ihzScalarGraphSpec`/`ihzScalarMirrorSpec`.
 
-* THE SINGLE-ROW GADGET (T2, `ihgGadgetDiagram`): the four-stage
-  `Collapse ; Expand` pipeline of the Stage-7 route —
-  `scalarBoxMirror`-layer ; mult fan ; copy fan ; `scalarBox`-layer — with THE
-  DENOTATION THEOREM (`ihgGadgetDenote`): the gadget spans the line
-  `{ (scale c inputs, scale c outputs) }`, assembled via `ihqComposeSpec` /
-  `ihwLayersDenoteCat` / `ihsLayersDenoteSnoc` through the committed fan kit.
+* Single-row gadget (T2, `ihgGadgetDiagram`): the four-stage `Collapse ; Expand`
+  pipeline — `scalarBoxMirror`-layer ; mult fan ; copy fan ; `scalarBox`-layer —
+  with its denotation theorem (`ihgGadgetDenote`): the gadget spans the line
+  `{ (scale c inputs, scale c outputs) }`, assembled via `ihqComposeSpec`,
+  `ihwLayersDenoteCat`, and `ihsLayersDenoteSnoc` through the fan kit.
 
-* THE SINGLE-ROW NF CARRIER (T3, `ihgSingleRowNormalForm`): the single-row
-  instance of `ihzNormalFormStatement` — the gadget is a WF diagram span-equal
-  to the single-row matrix `[inputs ++ outputs]`.
+* Single-row NF carrier (T3, `ihgSingleRowNormalForm`): the single-row instance
+  of `ihzNormalFormStatement` — the gadget is a WF diagram span-equal to the
+  single-row matrix `[inputs ++ outputs]`.
 
-* THE MULTI-ROW WALL (T4, `ihgTwoRowSpatialSumStatement`, owner-false): the
-  `R >= 2` spatial sum needs the generator-transpose RIFFLE permutation layer.
+* Two-row spatial-sum carrier (T4, `ihgTwoRowSpatialSumStatement`): the `R >= 2`
+  spatial sum, whose reification needs the generator-transpose riffle
+  permutation layer.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -283,11 +282,6 @@ theorem ihgScalarMirrorLayerDenote : (coefficients : List QnfRat) ->
                 (ihgPointwiseScale restOutputs restCoeffs) restOutputs).mpr
                 (And.intro hRestLen rfl)
 
-/-- DECIDED (T1): the scalar-layer tensor constructor ships with the
-arbitrary-width per-strand denotation theorems for both the `scalarBox` layer
-(`ihgScalarLayerDenote`) and its mirror (`ihgScalarMirrorLayerDenote`). -/
-def ihgHasScalarLayerTensor : Bool := true
-
 /-! ## Stage 2 — the replicate/scale bridge and the two half-gadgets (T2) -/
 
 theorem ihgPointwiseScaleReplicate (value : QnfRat) : (coefficients : List QnfRat) ->
@@ -490,8 +484,8 @@ theorem ihgExpandDenote (outputCoefficients : List QnfRat)
 
 /-! ## Stage 3 — the four-stage gadget and its denotation (T2) -/
 
-/-- THE SINGLE-ROW GADGET: `Collapse ; Expand` of the Stage-7 route, a `m -> n`
-diagram for one generator row `(inputs | outputs)`. -/
+/-- The single-row gadget: `Collapse ; Expand`, a `m -> n` diagram for one
+generator row `(inputs | outputs)`. -/
 def ihgGadgetDiagram (inputCoefficients outputCoefficients : List QnfRat) :
     IhsDiagram :=
   { sourceArity := inputCoefficients.length,
@@ -516,7 +510,7 @@ theorem ihgGadgetWF (inputCoefficients outputCoefficients : List QnfRat) :
   exact ihsLayersWFCast (ihgCollapseCodArity inputCoefficients).symm
     (ihgExpandWF outputCoefficients)
 
-/-- THE GADGET DENOTATION: the gadget for `(inputs | outputs)` spans the line
+/-- The gadget denotation: the gadget for `(inputs | outputs)` spans the line
 `{ (scale c inputs, scale c outputs) }`. -/
 theorem ihgGadgetDenote (inputCoefficients outputCoefficients : List QnfRat)
     (domVec codVec : List QnfRat) :
@@ -562,14 +556,15 @@ theorem ihgGadgetDenote (inputCoefficients outputCoefficients : List QnfRat)
         · exact (ihgExpandDenote outputCoefficients [scale] codVec).mpr
             (Exists.intro scale (And.intro rfl hBoth.right))
 
-/-- DECIDED (T2): the single-row `Collapse ; Expand` gadget ships with its
-line-span denotation theorem `ihgGadgetDenote`, assembled zero-axiom through the
-committed fan kit + `ihqComposeSpec`. -/
+/-- This brick ships the single-row `Collapse ; Expand` gadget with its line-span
+denotation theorem `ihgGadgetDenote`, assembled zero-axiom through the fan kit
+and `ihqComposeSpec` on top of the scalar-layer tensor, whose arbitrary-width
+per-strand denotations are `ihgScalarLayerDenote` and `ihgScalarMirrorLayerDenote`. -/
 def ihgHasSingleRowGadget : Bool := true
 
 /-! ## Stage 4 — the single-row NF carrier instance (T3) -/
 
-/-- THE SINGLE-ROW NF CARRIER: the `rows = [row]` instance of
+/-- The single-row NF carrier: the `rows = [row]` instance of
 `ihzNormalFormStatement` — the gadget is a WF diagram at the row's boundary,
 span-equal to the single-row matrix `[inputs ++ outputs]`. -/
 theorem ihgSingleRowNormalForm (inputCoefficients outputCoefficients : List QnfRat) :
@@ -645,30 +640,23 @@ theorem ihgFireGadgetOneTwo :
       [[ihsScalarTwo, qnfOne, ihsScalarThree]] = true := rfl
 
 set_option maxHeartbeats 4000000 in
-/-- T2 FALSE control: the gadget for `[2, 1/2]` is NOT the different line
+/-- T2 false control: the gadget for `[2, 1/2]` is not the different line
 `[[2, 1]]` (span decision refutes). -/
 theorem ihgFireGadgetOneOneWrong :
     ihqSpanEqB (ihsDiagramDenote (ihgGadgetDiagram [ihsScalarTwo] [ihzScalarHalf]))
       [[ihsScalarTwo, qnfOne]] = false := rfl
 
-/-! ## Stage 6 — the multi-row wall (T4) and markers -/
+/-! ## Stage 6 — the two-row spatial-sum carrier (T4) -/
 
-/-- WALL (T4) — OWNER FALSE, NOT PROVEN THIS BRICK.  The `R >= 2` NF carrier: a
-two-row matrix `[in1 ++ out1, in2 ++ out2]` at a shared boundary is denoted by
-SOME WF diagram.
-
-BURNED ATTACK / precise residual: the single-row gadget factors through ONE
-shared middle strand (`Collapse ; Expand`), so `span (row :: rest)` cannot reuse
-it directly — the spatial sum `span (row :: rest) = span [row] + span rest`
-reifies as `coadd-split ; (rowGadget X restDiagram) ; add-merge`, and routing the
-copy-fan grid into the per-column add fans needs the GENERATOR-TRANSPOSE RIFFLE
-permutation layer (built from `crossing` cells) plus its interleave denotation.
-That riffle layer + denotation is the genuine remaining BUILD (the ZX-arc's
-matrix-reification analogue); it is not shipped this brick.  Attacked twice: (a)
-direct tensor of two single-row gadgets fails — the two `Collapse` middles are
-disjoint, so the tensor denotes the direct SUM of two lines, not their span join;
-(b) sharing a single copy fan across both rows needs the crossing riffle to
-regroup outputs, which is the named obstruction. -/
+/-- The two-row (`R >= 2`) NF carrier statement: a two-row matrix
+`[in1 ++ out1, in2 ++ out2]` at a shared boundary is denoted by some WF diagram.
+The single-row gadget factors through one shared middle strand
+(`Collapse ; Expand`), so `span (row :: rest)` does not reuse it directly: the
+spatial sum `span (row :: rest) = span [row] + span rest` reifies as
+`coadd-split ; (rowGadget X restDiagram) ; add-merge`, and routing the copy-fan
+grid into the per-column add fans needs the generator-transpose riffle
+permutation layer (built from `crossing` cells) together with its interleave
+denotation. -/
 def ihgTwoRowSpatialSumStatement : Prop :=
   (firstInputCoefficients firstOutputCoefficients
     secondInputCoefficients secondOutputCoefficients : List QnfRat) ->
@@ -682,11 +670,5 @@ def ihgTwoRowSpatialSumStatement : Prop :=
             (ihsDiagramDenote sumDiagram)
             [ihqCat firstInputCoefficients firstOutputCoefficients,
               ihqCat secondInputCoefficients secondOutputCoefficients]
-
-/-- OWNER FALSE — the multi-row (`R >= 2`) generator-transpose riffle layer and
-its denotation are NOT built this brick; `ihgTwoRowSpatialSumStatement` names the
-precise residual.  The single-row gadget (`ihgHasSingleRowGadget`) and its NF
-carrier instance (`ihgSingleRowNormalForm`) ARE shipped. -/
-def ihgHasMultiRowRiffle : Bool := false
 
 end FX1Poly.ComputerAlgebra

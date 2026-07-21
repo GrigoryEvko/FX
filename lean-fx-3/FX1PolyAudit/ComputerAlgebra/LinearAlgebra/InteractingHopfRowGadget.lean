@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfRowGadget
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfRowGadget — zero-axiom
-    gate (WP-PROP-3 brick 6: the single-row IH_Q gadget)
+    gate (the single-row IH_Q gadget)
 
 Per-declaration zero-axiom gate for the `R = 1` matrix -> diagram reifier: the
 scalar-layer constructors (`ihgScalarLayer`, `ihgScalarMirrorLayer`) with their
@@ -13,9 +13,9 @@ bridge (`ihgPointwiseScale`, `ihgPointwiseScaleReplicate`); the two half-gadgets
 line-span denotation theorems (`ihgCollapseDenote`, `ihgExpandDenote`); the
 four-stage single-row gadget (`ihgGadgetDiagram`) with arities/WF and the
 line-span denotation theorem (`ihgGadgetDenote`); the single-row NF carrier
-instance (`ihgSingleRowNormalForm`); the kernel span fires; the two `true`
-markers plus the owner-false multi-row wall (`ihgTwoRowSpatialSumStatement`,
-`ihgHasMultiRowRiffle`).
+instance (`ihgSingleRowNormalForm`); the kernel span fires; the
+`ihgHasSingleRowGadget` marker; and the two-row spatial-sum carrier statement
+(`ihgTwoRowSpatialSumStatement`).
 
 No new inductives/structures are introduced, so there are no constructors,
 `mk`, or projections to gate — every declaration is a `def` or `theorem`.
@@ -36,7 +36,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgPointwiseScale
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgScalarLayerDenote
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgScalarMirrorLayerDenote
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihgHasScalarLayerTensor
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgPointwiseScaleReplicate
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgCollapseDiagram
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgExpandDiagram
@@ -62,6 +61,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgFireGadgetOneTwo
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgFireGadgetOneOneWrong
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihgTwoRowSpatialSumStatement
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihgHasMultiRowRiffle
 
 end FX1PolyAudit

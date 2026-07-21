@@ -3,14 +3,12 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntUnivariatePolynomial
 
 /-! # FX1PolyAudit/.../IntUnivariatePolynomial — zero-axiom gate
 
-Per-declaration zero-axiom gate for the ℤ[x] substrate (the first brick of `invariantFactorSeparator`'s
-ℚ[x] arc, WP-ENDO #2255): the ascending-coefficient-list representation, the polynomial operations
-(`polyAdd`/`polyScale`/`polyMul`/`polyEval`), the middle-four interchange helper, and the PROVEN evaluation
-ring homomorphism (`polyEvalAdd`/`polyEvalScale`/`polyEvalMul`, the last being discrete-convolution
-correctness of `polyMul`), plus the `decide` groundings and the marker.
-
-Every operation is structural on the coefficient list; every arithmetic step routes through the corpus `Int`
-lemmas.  Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the ℤ[x] substrate: the ascending-coefficient-list operations
+(`polyAdd`/`polyScale`/`polyMul`/`polyEval`), the evaluation ring homomorphism
+(`polyEvalAdd`/`polyEvalScale`/`polyEvalMul`, the last being discrete-convolution correctness of `polyMul`),
+negation/subtraction, the linear factor and factor theorem, composition, powers, the semantic ring laws,
+and monomials.  Every operation is structural on the coefficient list; corpus `Int` lemmas.  Free of
+`propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -54,6 +52,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalPowGroundingBinomial
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyMonomialExample
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyEvalMonomialGrounding
-#assert_no_axioms FX1Poly.ComputerAlgebra.fxIntPoly_hasEvaluationRingHomomorphism
 
 end FX1PolyAudit

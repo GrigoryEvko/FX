@@ -53,8 +53,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rfcFireIdentityReduced
 #assert_no_axioms FX1Poly.ComputerAlgebra.rfcFireDistinctNonSpanEqual
 #assert_no_axioms FX1Poly.ComputerAlgebra.rfcFireIhqRrefNotCanonical
-#assert_no_axioms FX1Poly.ComputerAlgebra.rfcHasReducedSupportUniqueness
-#assert_no_axioms FX1Poly.ComputerAlgebra.rfcHasBackReduceReducedSupport
 #assert_no_axioms FX1Poly.ComputerAlgebra.rfcHasRreRrefUniqueness
 
 end FX1PolyAudit

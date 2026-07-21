@@ -3,14 +3,12 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialGcdFuelAdequate
 
 /-! # FX1PolyAudit/.../IntPolynomialGcdFuelAdequate — zero-axiom gate
 
-Per-declaration zero-axiom gate for the ℤ[x] GCD fuel-adequacy capstone (the nineteenth brick of
-`invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255): the Euclidean step strictly shrinks the divisor's
-trim-length (`polyGcdStepMeasureDecreases`), a computed fuel reaches the honest-termination branch
-(`polyGcdReachesNilAdequateFuel`), and the converse root-containment holds **unconditionally** at that fuel
-(`polyGcdAdequateFuelRootIffCommonRoot`) — the "polyGcd with adequate fuel = the actual gcd" wiring.
-
-Structural budget recursion + uniform degree bound; r21/r30 measure drop; core Nat order arithmetic.  Must
-be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the ℤ[x] GCD fuel-adequacy capstone: the Euclidean step strictly
+shrinks the divisor's trim-length (`polyGcdStepMeasureDecreases`), a computed fuel reaches the
+honest-termination branch (`polyGcdReachesNilAdequateFuel`), and the converse root-containment holds
+unconditionally at that fuel (`polyGcdAdequateFuelRootIffCommonRoot`).  Structural budget recursion +
+uniform degree bound; core Nat order arithmetic.  Free of `propext`, `Quot.sound`, `Classical`, `sorry`,
+`native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 

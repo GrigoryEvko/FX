@@ -1,32 +1,29 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithWindowedDivisibility
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/SmithWindowedChainReduction — the seed ⟹ chain reduction
-    as a Lean theorem (H2-SMITH r20, #2261)
+/-! # Windowed chain reduction: seed implies `repairChainHolds`
 
-The r19 wall named EXACTLY ONE residual, `SmithCascadeLandsDivisibleSubBlock` (the per-pivot ESTABLISH
-seed), and asserted — in prose only — that seed ⟹ `repairChainHolds`.  The r19 verifier refuted the
-prose.  This module makes that reduction a Lean `theorem`:
+Reduces the per-pivot ESTABLISH seed `SmithCascadeLandsDivisibleSubBlock` to the `repairChainHolds`
+proposition consumed by `smithReduceCompleteDriverOfChain`, as a machine-checked Lean theorem.
 
-  * NODE A (the cross-pivot carrier).  `chainWindowedThroughPivots` — GIVEN the seed, the windowed
-    diagonal chain `MatrixDiagonalChainWindowed` propagates through the whole clearing repair sweep.
-    The load-bearing new obligation r19's prose glossed is the **low-low freeze**: after pivot
-    `earlier` settles, the later sub-sweep at `[earlier+1, ·)` leaves `entryAt earlier earlier` (the
-    windowed divisor) invariant.  The shipped `allOpsBoundedBelow` cannot supply this (its negate arms
-    are unconditionally `true`), so this module ships a PARALLEL confinement `opFreezesBelow` /
-    `allOpsFreezeBelow` (guarded negate arms), the entry-level freeze it certifies, and a structural
-    re-walk of the sweep proving every emitted word freezes the low-low block.
+  * NODE A (`chainWindowedThroughPivots`): given the seed, the windowed diagonal chain
+    `MatrixDiagonalChainWindowed` propagates through the whole clearing repair sweep. The load-bearing
+    obligation is the low-low freeze: after pivot `earlier` settles, the later sub-sweep at
+    `[earlier+1, ·)` leaves `entryAt earlier earlier` (the windowed divisor) invariant. The shipped
+    `allOpsBoundedBelow` cannot supply this (its negate arms are unconditionally `true`), so this module
+    adds a parallel confinement `opFreezesBelow` / `allOpsFreezeBelow` with guarded negate arms, the
+    entry-level freeze it certifies, and a structural re-walk of the sweep.
 
-  * NODE B (the reduction theorem).  `repairChainHoldsOfSeed` — the seed yields the verbatim
-    `repairChainHolds` Prop that `smithReduceCompleteDriverOfChain` consumes; and
-    `smithReduceCompleteDriverOfSubBlockSeed` collapses `SmithReduceCompleteDriverStatement` onto the
-    seed ALONE, as a pure structural assembly term (no kernel evaluation — the defeq ceiling is
-    untouched).
+  * NODE B (`repairChainHoldsOfSeed`, `smithReduceCompleteDriverOfSubBlockSeed`): the seed yields the
+    verbatim `repairChainHolds` proposition and collapses `SmithReduceCompleteDriverStatement` onto the
+    seed alone, as a pure structural assembly term (no kernel evaluation).
 
-Raw Lean 4 + `Init`, STRUCTURAL only (fuel `Nat`).  ASCII identifiers; no `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithWindowedChainReduction.lean`.  Additive: the r19
-world (the seed, `smithReduceCompleteDriverOfChain`, the refuted `smithReduceFull`, the certificate
-API) stays byte-intact. -/
+Later sections (NODE C–E and the keystone) decompose the seed further and isolate its single open
+residual `SmithCascadeLandedPivotDividesMinor` — the landed pivot divides the input minor, i.e. the
+min-abs Euclid cascade computes the minor gcd — a standalone major arc not discharged here.
+
+Raw Lean 4 + `Init`, structural on fuel `Nat`; ASCII identifiers; no `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`. Per-declaration gated in the `FX1PolyAudit`
+twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -34,7 +31,7 @@ open IntMatrix
 
 /-! ## Generic list-slot freeze lemmas — reading at an index OTHER than the write position is invariant -/
 
-/-- **`listReplaceAt` leaves an off-position slot invariant** — reading at any `index ≠ position`
+/-- `listReplaceAt` leaves an off-position slot invariant — reading at any `index ≠ position`
 after a replace returns the original slot.  Structural on `(entries, position, index)`. -/
 theorem listReplaceAtGetOther {Entry : Type} (defaultEntry newEntry : Entry) :
     ∀ (entries : List Entry) (position index : Nat), index ≠ position →
@@ -49,7 +46,7 @@ theorem listReplaceAtGetOther {Entry : Type} (defaultEntry newEntry : Entry) :
       listReplaceAtGetOther defaultEntry newEntry remainingEntries position index
         (fun innerEq => indexNe (congrArg (· + 1) innerEq))
 
-/-- **`listModifyAt` leaves an off-position slot invariant** — reading at any `index ≠ position`
+/-- `listModifyAt` leaves an off-position slot invariant — reading at any `index ≠ position`
 after a modify returns the original slot.  Structural on `(entries, position, index)`. -/
 theorem listModifyAtGetOther {Entry : Type} (defaultEntry : Entry) (transform : Entry → Entry) :
     ∀ (entries : List Entry) (position index : Nat), index ≠ position →
@@ -67,7 +64,7 @@ theorem listModifyAtGetOther {Entry : Type} (defaultEntry : Entry) (transform : 
 /-! ## The operation-freezes-below decidable check (guarded negate arms; the freeze-capable sibling of
 `opIsBoundedBelow`) -/
 
-/-- **The operation leaves the `[0, lo) × [0, lo)` block frozen** — swap needs both indices at `≥ lo`;
+/-- The operation leaves the `[0, lo) × [0, lo)` block frozen — swap needs both indices at `≥ lo`;
 transvection needs only its TARGET at `≥ lo` (the source is read, never written); NEGATION now needs
 its index at `≥ lo` (the shipped `opIsBoundedBelow` returns `true` unconditionally on negate, so it is
 NOT freeze-capable — this is the whole reason for the parallel predicate).  Fully enumerated arms so
@@ -156,7 +153,7 @@ theorem addScaledEntryWithinRowGetOther (row : IntRow) (sourceIndex targetIndex 
       row targetIndex colIndex colNe
   · rfl
 
-/-- **A row-locally applied transform that fixes column `colIndex` fixes the entry `(·, colIndex)`** —
+/-- A row-locally applied transform that fixes column `colIndex` fixes the entry `(·, colIndex)` —
 the `mapAllRows` carrier for column-op freezes: in-range rows read `transform (old row)` (fixed at
 `colIndex` by hypothesis), past-end rows read the empty default on both sides. -/
 theorem mapAllRowsFreezesColEntry (transform : IntRow → IntRow) (colIndex : Nat)
@@ -179,7 +176,7 @@ theorem entryAtOfRowsGet (leftMatrix rightMatrix : IntMatrix) (rowIndex colIndex
     leftMatrix.entryAt rowIndex colIndex = rightMatrix.entryAt rowIndex colIndex :=
   congrArg (fun row => listGetWithDefault 0 row colIndex) rowsEq
 
-/-- **A bounded-below row operation freezes a low-low entry** — its written row is at `≥ lo`, so a
+/-- A bounded-below row operation freezes a low-low entry — its written row is at `≥ lo`, so a
 cell at `rowIndex < lo` is untouched (any column). -/
 theorem applyRowOperationFreezesEntryBelow {lo : Nat} (matrix : IntMatrix)
     (operation : ElementaryRowOperation)
@@ -204,7 +201,7 @@ theorem applyRowOperationFreezesEntryBelow {lo : Nat} (matrix : IntMatrix)
         (addRowMultipleRowsGetOther matrix sourceIndex targetIndex rowIndex coefficient
           (Nat.ne_of_lt (Nat.lt_of_lt_of_le rowLt targetGe)))
 
-/-- **A bounded-below column operation freezes a low-low entry** — its written column is at `≥ lo`, so a
+/-- A bounded-below column operation freezes a low-low entry — its written column is at `≥ lo`, so a
 cell at `colIndex < lo` is untouched (any row). -/
 theorem applyColumnOperationFreezesEntryBelow {lo : Nat} (matrix : IntMatrix)
     (operation : ElementaryColumnOperation)
@@ -242,7 +239,7 @@ theorem applyColumnOperationFreezesEntryBelow {lo : Nat} (matrix : IntMatrix)
             (Nat.ne_of_lt (Nat.lt_of_lt_of_le colLt targetGe)))
           matrix.rows rowIndex
 
-/-- **A single freeze-below operation freezes a low-low entry** — row/column dispatch. -/
+/-- A single freeze-below operation freezes a low-low entry — row/column dispatch. -/
 theorem applyOperationFreezesEntryBelow {lo : Nat} (matrix : IntMatrix)
     (operation : ElementaryOperation) (opFrozen : opFreezesBelow lo operation = true)
     (rowIndex colIndex : Nat) (rowLt : rowIndex < lo) (colLt : colIndex < lo) :
@@ -253,7 +250,7 @@ theorem applyOperationFreezesEntryBelow {lo : Nat} (matrix : IntMatrix)
   | .columnOperation colOp, opFrozen =>
       applyColumnOperationFreezesEntryBelow matrix colOp opFrozen rowIndex colIndex colLt
 
-/-- **A whole freeze-below word freezes a low-low entry** — structural on the word (peeling
+/-- A whole freeze-below word freezes a low-low entry — structural on the word (peeling
 `allOpsFreezeBelow`). -/
 theorem applyOperationsFreezeEntryBelow {lo : Nat} :
     ∀ (operations : List ElementaryOperation) (matrix : IntMatrix) (rowIndex colIndex : Nat),
@@ -268,12 +265,11 @@ theorem applyOperationsFreezeEntryBelow {lo : Nat} :
 
 /-! ## The sweep re-walk — every emitted repair word freezes the low-low block
 
-Verbatim structural mirror of the `…OpsBoundedBelow` confinement chain (SmithWindowedDivisibility
-§confinement), over `allOpsFreezeBelow` in place of `allOpsBoundedBelow`.  The ONLY divergence is the
-sign lemma, which now carries `lo ≤ pivotIndex` (the shipped bounded-below sign lemma did not need it,
-because `opIsBoundedBelow` returns `true` on negate unconditionally — the exact gap the freeze
-predicate closes).  Transvection freezes need only the TARGET at `≥ lo` (source is read, not written),
-so the clear-column/clear-row/fold arms are strictly weaker than their bounded-below twins. -/
+Structural mirror of the `…OpsBoundedBelow` confinement chain over `allOpsFreezeBelow` in place of
+`allOpsBoundedBelow`. The one divergence is the sign lemma, which now carries `lo ≤ pivotIndex`: the
+bounded-below sign lemma did not need it because `opIsBoundedBelow` returns `true` on negate
+unconditionally, the exact gap the freeze predicate closes. Transvection freezes need only the target at
+`≥ lo` (the source is read, not written). -/
 
 /-- `allOpsFreezeBelow` distributes over word concatenation. -/
 theorem allOpsFreezeBelowAppend (lo : Nat) :
@@ -349,7 +345,7 @@ theorem smithSignNormalizeOpsFreezesBelow (matrix : IntMatrix) (lo pivotIndex : 
   · exact boolAndBothTrue (decide_eq_true pivotGe) rfl
   · rfl
 
-/-- **The Euclid cascade word freezes the low-low block** — every letter (move, sign, cross-clear
+/-- The Euclid cascade word freezes the low-low block — every letter (move, sign, cross-clear
 transvections, and the recursive loop) is at indices `≥ pivotIndex ≥ lo`.  Verbatim mirror of
 `smithCascadeSweepBoundedBelow`, threading the sign lemma's new `pivotGe`. -/
 theorem smithCascadeSweepFreezesBelow (lo : Nat) :
@@ -385,7 +381,7 @@ theorem smithCascadeSweepFreezesBelow (lo : Nat) :
             (smithCascadeSweepFreezesBelow lo innerFuel _ pivotIndex height width
               pivotRowInRange pivotColInRange pivotGe))
 
-/-- **The clearing position sweep word freezes the low-low block** — the `none`-branch standalone
+/-- The clearing position sweep word freezes the low-low block — the `none`-branch standalone
 cascade and the `some`-branch fold (target `pivotIndex ≥ lo`) + cascade + loop all freeze below `lo`.
 Structural on the fuel; mirror of `smithRepairPositionSweepClearingBoundedBelow`. -/
 theorem smithRepairPositionSweepClearingFreezesBelow (lo : Nat) :
@@ -412,14 +408,14 @@ theorem smithRepairPositionSweepClearingFreezesBelow (lo : Nat) :
 
 /-! ## NODE A — the cross-pivot carrier `chainWindowedThroughPivots` -/
 
-/-- **The windowed diagonal chain is monotone-down in the pivot index** — a chain over `[0, bigPivot)`
+/-- The windowed diagonal chain is monotone-down in the pivot index — a chain over `[0, bigPivot)`
 restricts to `[0, smallPivot)` for `smallPivot ≤ bigPivot`. -/
 theorem matrixDiagonalChainWindowedMonotone (matrix : IntMatrix) (bigPivot smallPivot : Nat)
     (chainHolds : MatrixDiagonalChainWindowed matrix bigPivot) (leMono : smallPivot ≤ bigPivot) :
     MatrixDiagonalChainWindowed matrix smallPivot :=
   fun earlierIndex earlierLtSmall => chainHolds earlierIndex (Nat.lt_of_lt_of_le earlierLtSmall leMono)
 
-/-- **The clearing repair sweep at successor fuel unfolds to the sweep-split** — pivot `p`'s position
+/-- The clearing repair sweep at successor fuel unfolds to the sweep-split — pivot `p`'s position
 sweep, concatenated with the whole repair sweep restarted at `p+1` on the advanced matrix (guard-true),
 or `[]` (guard-false).  The definitional split the carrier inducts over (`rfl`). -/
 theorem smithDivisibilityRepairSweepClearingSucc (outerFuel : Nat) (matrix : IntMatrix)
@@ -436,20 +432,13 @@ theorem smithDivisibilityRepairSweepClearingSucc (outerFuel : Nat) (matrix : Int
          else []) :=
   rfl
 
-/-- **NODE A — the seed propagates the windowed diagonal chain through the whole clearing sweep.**
-GIVEN the ESTABLISH seed, the chain `MatrixDiagonalChainWindowed matrix pivotIndex` survives the
-repair sweep started at `pivotIndex`, advancing the pivot cap by the outer fuel.  Structural on the
+/-- NODE A: given the ESTABLISH seed, the chain `MatrixDiagonalChainWindowed matrix pivotIndex` survives
+the repair sweep started at `pivotIndex`, advancing the pivot cap by the outer fuel. Structural on the
 fuel; the guard-true step establishes the chain at `pivotIndex + 1` on the advanced matrix by cases on
-`earlier`:
-
-  * `earlier = pivotIndex` — the seed instantiated at this pivot (the advanced matrix IS the seed's
-    landed sub-block, divisor `M'.diagonalEntryAt pivotIndex`).
-  * `earlier < pivotIndex` — transport the incoming `d_earlier`-divisibility through the position sweep
-    (confined below `earlier + 1` via `allOpsBoundedBelowMonotone`), then REWRITE the divisor by the
-    LOW-LOW FREEZE (`smithRepairPositionSweepClearingFreezesBelow` fixes `entryAt earlier earlier`
-    under the sweep bounded below `pivotIndex > earlier`).
-
-The exact shape-mirror of `smithDivisibilityRepairSweepClearingSettlesThroughPivots`. -/
+`earlier`: at `earlier = pivotIndex` it is the seed at this pivot, and at `earlier < pivotIndex` it
+transports the incoming divisibility through the position sweep (confined below `earlier + 1`) and rewrites
+the divisor by the low-low freeze `smithRepairPositionSweepClearingFreezesBelow`. Shape-mirrors
+`smithDivisibilityRepairSweepClearingSettlesThroughPivots`. -/
 theorem chainWindowedThroughPivots (seed : SmithCascadeLandsDivisibleSubBlock) :
     ∀ (outerFuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
       matrix.IsRectangular height width →
@@ -532,12 +521,11 @@ theorem chainWindowedThroughPivots (seed : SmithCascadeLandsDivisibleSubBlock) :
 
 /-! ## NODE B — the kernel reduction theorem: seed ⟹ `repairChainHolds` (THE r20 verifier deliverable) -/
 
-/-- **NODE B — the seed yields the corrected driver's `repairChainHolds`.**  Instantiating the NODE A
-carrier at the driver start (`pivotIndex := 0`, `outerFuel := Nat.min height width`, matrix := the
-Phase-A output) collapses the cap to `Nat.min height width` (`Nat.zero_add` + `natMinSelf`), the base
-chain being vacuous; the SHIPPED read-off `smithChainPrefixOfDiagonalChainWindowed` then yields exactly
-the `SmithChainPrefix` conjunct that `smithReduceCompleteDriverOfChain` consumes.  This is the reduction
-r19 asserted in prose and the r19 verifier refuted — now a Lean theorem, hypothesis = the seed ALONE. -/
+/-- NODE B: the seed yields the corrected driver's `repairChainHolds`. Instantiating the NODE A carrier at
+the driver start (`pivotIndex := 0`, `outerFuel := Nat.min height width`, matrix := the Phase-A output)
+collapses the cap to `Nat.min height width` (`Nat.zero_add` + `natMinSelf`), the base chain being vacuous;
+`smithChainPrefixOfDiagonalChainWindowed` then yields exactly the `SmithChainPrefix` conjunct that
+`smithReduceCompleteDriverOfChain` consumes. Hypothesis is the seed alone. -/
 theorem repairChainHoldsOfSeed (seed : SmithCascadeLandsDivisibleSubBlock) :
     ∀ (matrix : IntMatrix) (height width : Nat),
       matrix.IsRectangular height width →
@@ -562,34 +550,24 @@ theorem repairChainHoldsOfSeed (seed : SmithCascadeLandsDivisibleSubBlock) :
         rw [Nat.zero_add, natMinSelf] at windowedAtCap
         exact windowedAtCap)
 
-/-- **NODE B — the corrected driver totality on the seed ALONE.**  Feed the reduced chain
-`repairChainHoldsOfSeed` into the SHIPPED `smithReduceCompleteDriverOfChain`.  A pure structural
-assembly term (no kernel evaluation — the 3×3/4×4 whole-driver defeq ceiling is untouched).  After this
-brick the corrected driver's totality residual count is honestly ONE:
+/-- NODE B: the corrected driver totality on the seed alone. Feeds the reduced chain
+`repairChainHoldsOfSeed` into `smithReduceCompleteDriverOfChain`, a pure structural assembly term (no
+kernel evaluation). The corrected driver's totality residual count is then one:
 `SmithCascadeLandsDivisibleSubBlock`. -/
 theorem smithReduceCompleteDriverOfSubBlockSeed (seed : SmithCascadeLandsDivisibleSubBlock) :
     SmithReduceCompleteDriverStatement :=
   smithReduceCompleteDriverOfChain (repairChainHoldsOfSeed seed)
 
-/-! ## NODE C — the seed decomposition (honest partials; the seed does NOT close in r20)
+/-! ## NODE C — seed decomposition (partial results only)
 
-The recon adjudicated the seed `SmithCascadeLandsDivisibleSubBlock` decisively:
-
-  * C1 (diagonality-at-exit) is REFUTED as a decomposition — the position sweep's final Euclid cascade
-    move-swaps and column-clears interior cells (`smithCrossIsClear` checks only the pivot cross, never
-    the `[p+1,·)²` interior), so the landed sub-block is generally NON-diagonal.  The seed's off-diagonal
-    content is genuine gcd-ideal invariance (pivot = ideal generator) — the SNF invariant-factor theorem,
-    a standalone major arc, NOT r20-sized.
-  * C2 (the diagonal bridging lemma) is SHIPPED here: from the find-loop `none`-exit + rectangularity,
-    the pivot divides every later DIAGONAL of the sub-block (`subBlockDiagonalDivisibleOfFindNone`, over
-    the shipped `smithFindNonDividingLaterDiagonalNoneDividesAll` + the beyond-window diagonal-zero fact).
-  * C3 (fuel-adequacy descent, connecting the sweep OUTPUT's find to a `none`-exit) remains an honest
-    residual — NOT built (the recon flags it does not finish the seed regardless, since C1's off-diagonal
-    ideal content is unavoidable).
-
-This section ships the machine-checked partials: the seed's diagonal / off-diagonal DECOMPOSITION
-(`matrixEntriesDivisibleByWithinOfHalves`, a clean tautological split naming WHERE the wall is), the
-beyond-window diagonal-zero fact, and the C2 diagonal bridge.  It does NOT fabricate the seed. -/
+Diagonality-at-exit is not a valid decomposition: the position sweep's final Euclid cascade clears interior
+cells (`smithCrossIsClear` checks only the pivot cross, never the `[p+1,·)²` interior), so the landed
+sub-block is generally non-diagonal, and the seed's off-diagonal content is genuine gcd-ideal invariance —
+the SNF invariant-factor theorem, a standalone major arc. This section ships the machine-checked partials:
+the diagonal/off-diagonal split (`matrixEntriesDivisibleByWithinOfHalves`, naming where the wall lies), the
+beyond-window diagonal-zero fact, and the C2 diagonal bridge `subBlockDiagonalDivisibleOfFindNone` (from a
+find-loop `none`-exit plus rectangularity, the pivot divides every later diagonal of the sub-block). The
+seed is not fabricated. -/
 
 /-- The sub-block DIAGONAL half — the pivot divides every diagonal at `≥ lo`. -/
 def SubBlockDiagonalDivisibleFrom (divisor : Int) (lo : Nat) (matrix : IntMatrix) : Prop :=
@@ -601,7 +579,7 @@ def SubBlockOffDiagonalDivisibleFrom (divisor : Int) (lo : Nat) (matrix : IntMat
   ∀ rowIndex colIndex, lo ≤ rowIndex → lo ≤ colIndex → rowIndex ≠ colIndex →
     dividesExactly divisor (matrix.entryAt rowIndex colIndex)
 
-/-- **The seed splits into its diagonal and off-diagonal halves** — a cell of the `[lo, ·)²` quadrant
+/-- The seed splits into its diagonal and off-diagonal halves — a cell of the `[lo, ·)²` quadrant
 is either on the diagonal (`SubBlockDiagonalDivisibleFrom`) or off it (`SubBlockOffDiagonalDivisibleFrom`).
 The clean decomposition that names EXACTLY where the seed's wall lies. -/
 theorem matrixEntriesDivisibleByWithinOfHalves (divisor : Int) (lo : Nat) (matrix : IntMatrix)
@@ -625,7 +603,7 @@ theorem natMinLeToOr (height width position : Nat) (minLe : Nat.min height width
   | isTrue isLe => rw [if_pos isLe] at minLeUnfold; exact Or.inl minLeUnfold
   | isFalse isNotLe => rw [if_neg isNotLe] at minLeUnfold; exact Or.inr minLeUnfold
 
-/-- **A cell beyond the matrix window reads zero** — for a rectangular matrix, an entry whose row is at
+/-- A cell beyond the matrix window reads zero — for a rectangular matrix, an entry whose row is at
 `≥ height` or whose column is at `≥ width` is the default `0`. -/
 theorem entryAtBeyondZero {height width : Nat} (matrix : IntMatrix)
     (isRect : matrix.IsRectangular height width) (rowIndex colIndex : Nat)
@@ -647,7 +625,7 @@ theorem entryAtBeyondZero {height width : Nat} (matrix : IntMatrix)
           rw [listGetWithDefaultGe [] matrix.rows rowIndex rowGe2]
           exact listGetWithDefaultGe 0 [] colIndex (Nat.zero_le colIndex)
 
-/-- **A diagonal beyond the `Nat.min height width` window reads zero** — the diagonal cell
+/-- A diagonal beyond the `Nat.min height width` window reads zero — the diagonal cell
 `(position, position)` at `position ≥ Nat.min height width` is beyond the rows (if `min = height`) or
 beyond the row width (if `min = width`). -/
 theorem diagonalEntryAtBeyondWindowZero {height width : Nat} (matrix : IntMatrix)
@@ -656,7 +634,7 @@ theorem diagonalEntryAtBeyondWindowZero {height width : Nat} (matrix : IntMatrix
     matrix.diagonalEntryAt position = 0 :=
   entryAtBeyondZero matrix isRect position position (natMinLeToOr height width position positionGe)
 
-/-- **C2 — the diagonal bridging lemma: find-loop `none`-exit ⟹ the diagonal half.**  When the driver's
+/-- C2 — the diagonal bridging lemma: find-loop `none`-exit ⟹ the diagonal half.  When the driver's
 non-dividing scan over the window `[pivotIndex+1, Nat.min height width)` reports `none`, the pivot
 diagonal divides every later diagonal of the `[pivotIndex+1, ·)` sub-block: window diagonals via the
 shipped `smithFindNonDividingLaterDiagonalNoneDividesAll`, beyond-window diagonals via
@@ -681,46 +659,29 @@ theorem subBlockDiagonalDivisibleOfFindNone {height width : Nat} (matrix : IntMa
       rw [diagonalEntryAtBeyondWindowZero matrix isRect position positionGeMin]
       exact dividesExactlyZero (matrix.diagonalEntryAt pivotIndex)
 
-/-! ## NODE D — the C3 fuel-adequacy DESCENT REDUCTION (H2-SMITH r21, B1/B2, #2261)
+/-! ## NODE D — the C3 fuel-adequacy descent reduction
 
-C2 (`subBlockDiagonalDivisibleOfFindNone`) reduces the seed's DIAGONAL half to a single fact: the
-clearing position-sweep OUTPUT satisfies the find-loop `none`-exit.  NODE D discharges the FUEL-COUNTING
-half of that fact — the descent induction on the sweep fuel — as a Lean theorem, ISOLATING the two
-irreducible cascade-output residuals (the r11+ wall) as explicit named hypotheses.
+C2 reduces the seed's diagonal half to a single fact: the clearing position-sweep output satisfies the
+find-loop `none`-exit. NODE D discharges the fuel-counting half of that fact — the descent induction on the
+sweep fuel — as a Lean theorem, isolating the two irreducible cascade-output residuals as explicit named
+hypotheses. The two steps of a genuine fold iteration are named as helpers (`smithClearingFoldStep`,
+`smithClearingTerminalStep`), mirroring the loop's `some`- and `none`-branch bodies. The reduction
+`smithClearingSweepReachesFindNoneOfDescent` takes a descent `measure : IntMatrix → Nat` whose base
+(measure `0`) forces the `none`-exit, a `terminalKeepsFindNone` hypothesis (the terminal cascade preserves
+the exit), and a `foldDescends` hypothesis (a genuine fold strictly drops the measure), and concludes by
+structural induction on the fuel that the sweep output satisfies find-`none` whenever `measure matrix ≤
+fuel`. The fuel-counting is complete; the cascade residuals are named, not fabricated. -/
 
-The two steps a genuine fold iteration takes are named as helpers (`smithClearingFoldStep`,
-`smithClearingTerminalStep`), byte-mirroring the loop's `some`- and `none`-branch bodies.  The reduction
-`smithClearingSweepReachesFindNoneOfDescent` takes:
-
-  * `measure : IntMatrix -> Nat` — the descent measure of the work matrix;
-  * `measureBaseFindNone` — measure `0` forces the find-loop `none`-exit (the fuel-`0` base);
-  * `terminalKeepsFindNone` — the `none`-branch terminal cascade PRESERVES the find-`none` exit (cascade
-    residual (2));
-  * `foldDescends` — a genuine `some`-fold strictly drops the measure (cascade residual (1): rides
-    `smithRepairDecreasesPivotSize`'s gcd-of-pair drop THROUGH the cascade output, the r11+ wall);
-
-and concludes, by structural induction on the fuel, that the sweep output satisfies find-`none` whenever
-`measure matrix <= fuel`.  The fuel-counting is MECHANICAL and complete; the cascade residuals are
-NAMED, not fabricated.  This is the r20 reduce-to-named-residual pattern applied to C3.
-
-**Truth-probed** (r21 eval, read-only) — the descent is real with a HUGE margin.  On the r16 refuter
-`diag(6,9,10,10)` at pivot 0 the pivot magnitude descends `6 -> 3 -> 1` in two `some`-folds before the
-`none`-exit, against fuel `smithMinorAbsSum = 35`; at pivot 1 it descends `18 -> 10 -> 2` against fuel
-`58`.  The `outputFindNone = none` target holds on every fixture (the diagonal half is TRUE per input).
-The probe ALSO reveals the descent measure is NOT plain `|pivot|`: a zero pivot BOOTSTRAPS non-monotonically
-(`diag(0,4)` jumps `|pivot| 0 -> 4` on step 1, then `none`), so `foldDescends`'s witness measure is
-lexicographic — its existence is exactly the cascade-output-magnitude content. -/
-
-/-- **One clearing fold+cascade step** — the `some`-branch body of `smithRepairPositionSweepClearing`:
-fold the found row into the pivot row, then fire the standalone Euclid cascade.  Byte-mirrors the loop. -/
+/-- One clearing fold+cascade step: the `some`-branch body of `smithRepairPositionSweepClearing` — fold
+the found row into the pivot row, then fire the standalone Euclid cascade. Mirrors the loop body. -/
 def smithClearingFoldStep (work : IntMatrix) (foundPos pivotIndex height width : Nat) : IntMatrix :=
   let afterFold := work.applyOperations
     [ ElementaryOperation.rowOperation (ElementaryRowOperation.addRowMultiple foundPos pivotIndex 1) ]
   afterFold.applyOperations
     (smithCascadeSweep (smithMinorAbsSum afterFold pivotIndex height width) afterFold pivotIndex height width)
 
-/-- **The clearing terminal cascade** — the `none`-branch body: fire the standalone Euclid cascade on
-the current matrix (the r17 fix that clears an earlier pivot's stranded cross residue). -/
+/-- The clearing terminal cascade: the `none`-branch body — fire the standalone Euclid cascade on the
+current matrix, which clears an earlier pivot's stranded cross residue. -/
 def smithClearingTerminalStep (work : IntMatrix) (pivotIndex height width : Nat) : IntMatrix :=
   work.applyOperations
     (smithCascadeSweep (smithMinorAbsSum work pivotIndex height width) work pivotIndex height width)
@@ -732,14 +693,12 @@ theorem smithClearingFoldStepPreservesRectangular {height width : Nat}
   applyOperationsPreservesRectangular _ _
     (applyOperationsPreservesRectangular _ work isRect)
 
-/-- **NODE D — the fuel-adequacy descent reduction.**  GIVEN a descent `measure` whose base forces the
-find-`none` exit, whose terminal cascade preserves find-`none`, and whose genuine fold strictly drops it,
-the clearing position sweep started with any `fuel >= measure matrix` lands the find-`none` exit on its
-output.  Structural induction on the fuel: the `none`-branch discharges via `terminalKeepsFindNone`; the
-`some`-branch rewrites the output through `applyOperationsAppend` to `smithClearingFoldStep`-then-recursion
-and rides the IH at the dropped measure (`foldDescends` + `Nat.le_of_lt_succ`); the `fuel = 0` base rides
-`measureBaseFindNone` (the loop emits `[]`, output = input).  The mechanical fuel-counting; the cascade
-residuals `terminalKeepsFindNone` / `foldDescends` are the r11+ wall, NAMED not fabricated. -/
+/-- NODE D: the fuel-adequacy descent reduction. Given a descent `measure` whose base forces the
+find-`none` exit, whose terminal cascade preserves it, and whose genuine fold strictly drops it, the
+clearing position sweep started with any `fuel ≥ measure matrix` lands the find-`none` exit on its output.
+Structural induction on the fuel: the `none`-branch discharges via `terminalKeepsFindNone`; the
+`some`-branch rewrites the output through `applyOperationsAppend` and rides the IH at the dropped measure;
+the `fuel = 0` base rides `measureBaseFindNone`. The cascade residuals are named, not fabricated. -/
 theorem smithClearingSweepReachesFindNoneOfDescent
     (pivotIndex height width : Nat)
     (measure : IntMatrix → Nat)
@@ -783,13 +742,12 @@ theorem smithClearingSweepReachesFindNoneOfDescent
             (Nat.le_of_lt_succ
               (Nat.lt_of_lt_of_le (foldDescends matrix isRect pRowLt pColLt foundPos hFind) measureLe))
 
-/-- **NODE D — the seed's DIAGONAL half from the descent reduction.**  Compose the NODE D reduction (at
-the driver's fuel `smithMinorAbsSum matrix pivotIndex height width`) with the shipped C2 bridge
-`subBlockDiagonalDivisibleOfFindNone`.  GIVEN the descent hypotheses AND the fuel-budget bound
-`measure matrix <= smithMinorAbsSum matrix pivotIndex height width`, the sweep output satisfies the seed's
-`SubBlockDiagonalDivisibleFrom` — the DIAGONAL half of `SmithCascadeLandsDivisibleSubBlock` at this pivot.
-The off-diagonal half remains C1 (NODE E).  This is B2's "diagonal half end-to-end" AS A LEAN THEOREM,
-modulo the three named cascade/measure residuals (no fabrication). -/
+/-- NODE D: the seed's diagonal half from the descent reduction. Composes the NODE D reduction (at the
+driver's fuel `smithMinorAbsSum matrix pivotIndex height width`) with the C2 bridge
+`subBlockDiagonalDivisibleOfFindNone`. Given the descent hypotheses and the fuel-budget bound
+`measure matrix ≤ smithMinorAbsSum matrix pivotIndex height width`, the sweep output satisfies the seed's
+`SubBlockDiagonalDivisibleFrom` — the diagonal half at this pivot, modulo the named cascade/measure
+residuals. The off-diagonal half remains open (NODE E). -/
 theorem smithClearingSweepDiagonalHalfOfDescent
     (pivotIndex height width : Nat)
     (measure : IntMatrix → Nat)
@@ -827,25 +785,18 @@ theorem smithClearingSweepDiagonalHalfOfDescent
       measureBaseFindNone terminalKeepsFindNone foldDescends
       (smithMinorAbsSum matrix pivotIndex height width) matrix isRect pRowLt pColLt measureBudget)
 
-/-! ## NODE E — route (i) of the C1 adjudication REFUTED, machine-checked (H2-SMITH r21, B3, #2261)
+/-! ## NODE E — the "sub-block stays diagonal" route is refuted
 
-The r17 route (i) hoped to close the seed's OFF-diagonal half by proving the single-pivot clearing sweep
-leaves the trailing sub-block DIAGONAL (so every off-diagonal is `0`, divisible by anything — the
-"sub-block-stays-diagonal" bridging lemma).  r20 refuted this in PROSE (the settles kit delivers only the
-L-frame `SmithPrefixSettled (p+1)`, never the trailing interior).  NODE E upgrades that to a THEOREM: a
-concrete DIAGONAL rectangular input whose single-pivot sweep output carries a NONZERO interior
-off-diagonal cell.
-
-Witness (r21 eval-found): `diag(15, 10, 6, 4)`, pivot `0`, cell `(3, 1)` lands `-20`.  A `4x4` single-pivot
-kernel pin (within the defeq ceiling; `decide` at `maxRecDepth 8000`, ~0.6s).  So the bridging lemma of
-route (i) CANNOT exist — the off-diagonal half genuinely needs route (ii), the gcd-ideal invariance
-(the fill-in IS divisible by the landed pivot `d_p = 1`, but only via the SNF invariant-factor argument,
-NOT via diagonality).  Truth-probed further: a `3x3` diagonal input keeps its `2x2` interior diagonal
-(fill-in needs a `>=3x3` interior); the WHOLE sweep (all pivots) DOES restore full diagonality — but the
-seed is stated PER pivot, where the interior is generally non-diagonal. -/
+One route hoped to close the seed's off-diagonal half by proving the single-pivot clearing sweep leaves
+the trailing sub-block diagonal (so every off-diagonal is `0`). This is false: `diag(15,10,6,4)` at pivot
+`0` lands `-20` in cell `(3,1)`. A `4x4` single-pivot kernel pin (`decide` at `maxRecDepth 8000`). So the
+off-diagonal half genuinely needs the gcd-ideal invariance route — the fill-in is divisible by the landed
+pivot only via the SNF invariant-factor argument, not via diagonality. The whole sweep (all pivots) does
+restore full diagonality, but the seed is stated per pivot, where the interior is generally
+non-diagonal. -/
 
 set_option maxRecDepth 8000 in
-/-- **NODE E — route (i) refuted.**  A diagonal rectangular matrix whose single-pivot clearing sweep
+/-- NODE E — route (i) refuted.  A diagonal rectangular matrix whose single-pivot clearing sweep
 output has a nonzero interior off-diagonal entry (`diag(15,10,6,4)`, pivot `0`, cell `(3,1) = -20`).  So
 "the single-pivot sweep output is sub-block-diagonal" is FALSE; the seed's off-diagonal half is the
 gcd-ideal (SNF invariant-factor) major arc, not a diagonality bridge. -/
@@ -861,147 +812,21 @@ theorem smithClearingSweepInteriorNotDiagonalWitness :
    ⟨rfl, rfl, rfl, rfl, rfl, trivial⟩,
    by decide, by decide, by decide, by decide, by decide, by decide⟩
 
-/-! ## The r20 arc ledger (H2-SMITH r20, B4, #2261) — the reduction is now a THEOREM; ONE residual left
+/-! ## Measure candidates for `foldDescends` are machine-refuted
 
-**What r20 flipped.**  r19's headline "seed ⟹ `repairChainHolds`" lived only in prose and the verifier
-REFUTED it.  r20 makes it a machine-checked Lean theorem chain, zero-axiom throughout:
-
-  * NODE A — `chainWindowedThroughPivots` (SHIPPED).  The seed propagates the windowed diagonal chain
-    `MatrixDiagonalChainWindowed` through the whole clearing repair sweep.  The load-bearing obligation
-    r19's prose glossed — the LOW-LOW FREEZE (`entryAt earlier earlier` is invariant under the later
-    sub-sweep, so the windowed divisor is stable) — is discharged by an ADDITIVE parallel confinement
-    `opFreezesBelow` / `allOpsFreezeBelow` (guarded negate arms, which the shipped `allOpsBoundedBelow`
-    lacks) + the entry-level freeze + a structural re-walk of the sweep.  Truth-probed on the r16
-    refuter diag(10,10,6,9): the split is real (whole sweep NOT bounded below 1), the confinement fires
-    at startPivot 1 non-trivially (34 ops), entry (0,0) frozen at value 1, diagonal lands 1|2|30|90.
-
-  * NODE B — `repairChainHoldsOfSeed` (SHIPPED).  A Lean `theorem` whose CONCLUSION is verbatim the
-    `repairChainHolds` hypothesis the shipped `smithReduceCompleteDriverOfChain` consumes; and
-    `smithReduceCompleteDriverOfSubBlockSeed : SmithCascadeLandsDivisibleSubBlock →
-    SmithReduceCompleteDriverStatement` collapses the corrected-driver totality onto the seed ALONE, as
-    a pure structural assembly term (no kernel evaluation — the 3×3/4×4 whole-driver defeq ceiling is
-    untouched).  The composition TYPECHECKS: the reduction is real, not prose.
-
-  * NODE C — the seed itself does NOT close (SHIPPED partials only).  The decomposition
-    `matrixEntriesDivisibleByWithinOfHalves` + the C2 diagonal bridge `subBlockDiagonalDivisibleOfFindNone`
-    are machine-checked.
-
-**THE MACHINE-CHECKED RESIDUAL, named EXACTLY** (NOT a prose chain).  `SmithReduceCompleteDriverStatement`
-is now inhabited GIVEN `SmithCascadeLandsDivisibleSubBlock` (the seed) — hypothesis-free totality is NOT
-yet reached.  The seed's remaining wall factors, via `matrixEntriesDivisibleByWithinOfHalves`, into:
-
-  1. `SubBlockOffDiagonalDivisibleFrom (M'.diagonalEntryAt p) (p+1) M'` for the sweep output `M'` — the
-     off-diagonal gcd-ideal invariance (pivot = ideal generator).  This is the SNF invariant-factor
-     theorem, a STANDALONE MAJOR ARC (recon C1, refuted as a diagonality decomposition); NOT r20-sized.
-  2. `SubBlockDiagonalDivisibleFrom (M'.diagonalEntryAt p) (p+1) M'` for the sweep output `M'` — the
-     diagonal half.  C2 (`subBlockDiagonalDivisibleOfFindNone`) discharges it FROM a find-`none` exit;
-     the residual here is the C3 fuel-adequacy that reaches the exit on the sweep output (unbuilt, and
-     the recon flags it does not finish the seed regardless of C1).
-
-**Honest verdict.**  r20 answers the r19 refutation: the seed ⟹ `repairChainHolds` reduction is a Lean
-theorem, and the corrected-driver totality residual count is honestly ONE
-(`SmithCascadeLandsDivisibleSubBlock`).  It does NOT claim driver totality — that would repeat the r19
-error one level up.  `smithReduceFull` and its refutation, the certificate API, and the r18/r19 world
-stay byte-intact (additive only). -/
-
-/-! ## The r21 arc ledger (H2-SMITH r21, B4, #2261) — the two seed halves, honest to the keystone
-
-**What r21 ADDED (all zero-axiom, additive).**
-
-  * NODE D — the C3 FUEL-ADEQUACY, as a Lean theorem chain (B1/B2).  The seed's DIAGONAL half needs
-    exactly one fact: the sweep OUTPUT satisfies the find-loop `none`-exit (C2 then closes it).
-    `smithClearingSweepReachesFindNoneOfDescent` discharges the FUEL-COUNTING half of THAT by structural
-    induction on the sweep fuel, ISOLATING the two irreducible cascade-output facts as explicit named
-    hypotheses (`foldDescends` = per-fold measure drop; `terminalKeepsFindNone` = the terminal cascade
-    preserves the exit).  `smithClearingSweepDiagonalHalfOfDescent` composes it with C2 to yield the seed's
-    `SubBlockDiagonalDivisibleFrom` at a pivot, GIVEN the descent + fuel-budget hypotheses.  The
-    fuel-counting is MECHANICAL and complete; the cascade residuals are NAMED, not fabricated (the r20
-    reduce-to-named-residual pattern applied to C3).
-
-  * NODE E — route (i) of the C1 adjudication REFUTED, machine-checked (B3).
-    `smithClearingSweepInteriorNotDiagonalWitness` exhibits `diag(15,10,6,4)`, a DIAGONAL rectangular
-    input whose single-pivot clearing sweep output carries a NONZERO interior off-diagonal cell
-    (`(3,1) = -20`).  So the r17 "sub-block-stays-diagonal after one pivot" bridging lemma CANNOT exist:
-    the off-diagonal half is genuinely route (ii), the gcd-ideal invariance.
-
-**Truth-probed (r21, read-only eval).**  Fuel-adequacy is real with a HUGE margin: on the r16 refuter
-`diag(6,9,10,10)` the pivot magnitude descends `6 -> 3 -> 1` (two folds) against fuel `35` at pivot 0, and
-`18 -> 10 -> 2` against `58` at pivot 1; `outputFindNone = none` on every fixture.  The descent measure is
-NOT plain `|pivot|` — a zero pivot BOOTSTRAPS non-monotonically (`diag(0,4)` jumps `0 -> 4` then exits),
-so `foldDescends`'s witness measure is lexicographic, and that lex bound IS the cascade-output content.
-Separately: a `3x3` diagonal input keeps its `2x2` interior diagonal (fill-in needs a `>= 3x3` interior);
-the WHOLE sweep (all pivots) restores full diagonality — but the seed is stated PER pivot, where the
-interior fill-in (always `d_p`-divisible, never zero in general) is real.
-
-**THE MACHINE-CHECKED RESIDUAL, named EXACTLY (the r21 sharpening).**  Both surviving halves of the seed
-`SmithCascadeLandsDivisibleSubBlock` bottom out on ONE keystone — the **cascade output pivot = gcd of the
-folded minor** (`gcd-divides-folded-operands`, the r11+ wall named in the SmithCascadeTermination
-design-lock caveat):
-
-  1. DIAGONAL half — NODE D reduces it to `foldDescends` (the cascade output pivot magnitude drops, i.e.
-     `<= (intGcd d_p d_foundPos).natAbs` through the cascade, plus the zero-pivot bootstrap bound) +
-     `terminalKeepsFindNone`.  BOTH are the cascade-computes-a-common-divisor correctness.
-  2. OFF-DIAGONAL half — C1's `SubBlockOffDiagonalDivisibleFrom (M'.diagonalEntryAt p) (p+1) M'` = the
-     interior fill-in is divisible by the landed pivot `d_p` = the same cascade-lands-gcd, i.e. `d_p` is
-     the minor's gcd and every interior cell a ℤ-combination of the minor cells (the SNF invariant-factor
-     theorem).  Route (i) is now REFUTED as a theorem (NODE E); route (ii) is this major arc.
-
-The correct next keystone is therefore `smithCascadeLandsPivotDividesFoldedPair` (the cascade output pivot
-divides both folded operands) — it unblocks foldDescends, terminalKeepsFindNone, AND the off-diagonal
-ideal invariance at once.  It is a STANDALONE MAJOR ARC (the Euclid-cascade-computes-gcd correctness over
-the threaded work matrix), decisively NOT r21-sized.
-
-**The user close criteria, quoted.**  "every rectangular integer matrix, any size, zero kernel evaluation;
-the honest pair finalized" — `SmithReduceCompleteDriverStatement` inhabited HYPOTHESIS-FREE.  This is NOT
-reached in r21.  Its residual is UNCHANGED from r20 (the seed `SmithCascadeLandsDivisibleSubBlock`), now
-factored to the single cascade-lands-gcd keystone with route (i) machine-refuted and the diagonal half's
-fuel-counting mechanized.  No flip is claimed; `smithReduceCompleteDriverOfSubBlockSeed` remains the
-seed-conditional totality, byte-intact.
-
-**Honest verdict.**  r21 does not close the seed — both halves wait on the SNF invariant-factor major arc
-(one keystone).  It DOES: (a) mechanize the fuel-adequacy fuel-counting, naming the exact cascade residual
-(B1/B2); (b) upgrade r20's route-(i) prose refutation to a machine-checked theorem (B3); (c) name the
-single keystone both halves share (B4).  `smithReduceFull`, its refutation, the certificate API, and the
-r18/r19/r20 world stay byte-intact (additive only). -/
-
-/-! ## THE FIT CHECK — Node 3 (`foldDescends`) is a GENUINE three-part delta, machine-refuted
-    (H2-SMITH r22, B1, #2261)
-
-The r21 NODE D reduces the seed's diagonal half to `foldDescends` — a strict drop of some descent
-`measure` on each genuine fold — plus a fuel-BUDGET fit `measure matrix ≤ smithMinorAbsSum matrix …`
-(the fuel the driver fires the sweep with).  The recon's FIT CHECK asked whether `foldDescends`
-COMPOSES from the shipped pure-`Int` `smithRepairDecreasesPivotSize` (`|gcd(a, b)| < |a|` when
-`a ≠ 0`, `a ∤ b`).  It does NOT: three separable deltas block it, TWO machine-refuted here as theorems
-(the NODE-E reduce-to-witness pattern).
-
-  * Δ1 (minor-abs-sum is NOT a descent measure).  The obvious budget-fitting candidate
-    `measure := smithMinorAbsSum · pivot h w` (trivially `≤` the fuel) is NOT monotone-down on a fold:
-    on `diag(6, 10, 8)` pivot `0` the whole-minor magnitude sum RISES `24 → 40` across the single
-    genuine fold+cascade.  `smithMinorAbsSumRaisesOnFoldWitness` pins it.
-
-  * Δ2 (the zero-pivot bootstrap saturates the budget — no lex-into-`Nat` headroom).  A zero pivot folds
-    to a NONZERO pivot, so plain `|pivot|` is not monotone; the witness measure must be lexicographic
-    `(isPivotZero, pivotAbs)`.  But on `diag(0, 4)` the fold lands `|pivot| = 4` EXACTLY equal to the
-    budget `smithMinorAbsSum = 4`, while the input pivot is `0`: any lex-into-`Nat` collapse
-    `flag · K + pivotAbs` needs `K > pivotAbs` to make the flag dominate (`K ≥ 5` here), which BREAKS
-    the budget `measure ≤ 4`.  `smithZeroPivotFoldSaturatesBudgetWitness` pins the clash.
-
-  * Δ3 (cascade ≠ two-operand gcd).  `smithRepairDecreasesPivotSize` bounds `intGcd d_p d_foundPos`,
-    but the fold fires the whole min-abs Euclid cascade, which lands `≤ min-abs(whole minor)` — on
-    `diag(15, 10, 6, 4)` step 1 lands `4 ∤ 15`, `4 ∤ 10`.  So the shipped gcd-of-pair lemma does not
-    characterise the landed pivot (the r11+ wall; this delta is not a `decide`-refutation but is why
-    `foldDescends`'s measure existence IS the cascade-output content, not plumbing).
-
-Truth-probed (r22 eval): `diag(6, 9, 10, 10)` pivot 0 `pivotAbs 6 → 3 → 1` / `minorAbsSum 35 → 41 → 59`;
-`diag(15, 10, 6, 4)` `pivotAbs 15 → 4 → 2 → 1` / `minorAbsSum 35 → 45 → 63 → 77`; `diag(0, 4)`
-`pivotAbs 0 → 4`, `minorAbsSum 4 → 4`.  So `foldDescends`'s witness measure is a genuine
-cascade-output-magnitude fact, NOT free plumbing over `smithRepairDecreasesPivotSize`. -/
+The NODE D reduction leaves the seed's diagonal half resting on `foldDescends` — a strict drop of some
+descent `measure` on each genuine fold — plus the fuel-budget fit `measure matrix ≤ smithMinorAbsSum …`.
+`foldDescends` does not compose from the shipped pure-`Int` `smithRepairDecreasesPivotSize`, because two
+candidate measures fail, both refuted below as theorems: the minor-abs-sum itself is not monotone-down on
+a fold (`smithMinorAbsSumRaisesOnFoldWitness`, `24 → 40`), and the zero-pivot fold saturates the budget so
+no fixed-`K` lexicographic-into-`Nat` measure both fits the budget and descends
+(`smithZeroPivotFoldSaturatesBudgetWitness`, `|pivot| = 4 =` budget on `diag(0,4)`). The genuine content
+is the cascade-output magnitude, not plumbing. -/
 
 set_option maxRecDepth 8000 in
-/-- **Δ1 — the minor-abs-sum measure RISES on a fold** — `smithMinorAbsSum` (the budget/fuel, trivially
-an upper bound) is NOT a descent measure: on `diag(6, 10, 8)` pivot `0` the single genuine fold+cascade
-raises it `24 → 40`.  So the naive budget-fitting `measure := smithMinorAbsSum` cannot drive
-`foldDescends` — a machine-checked refutation of the cheapest measure candidate. -/
+/-- The minor-abs-sum measure rises on a fold: `smithMinorAbsSum` (the budget, trivially an upper bound)
+is not a descent measure — on `diag(6, 10, 8)` pivot `0` the single genuine fold+cascade raises it
+`24 → 40`. So `measure := smithMinorAbsSum` cannot drive `foldDescends`. -/
 theorem smithMinorAbsSumRaisesOnFoldWitness :
     ∃ (matrix : IntMatrix) (foundPos pivotIndex height width : Nat),
       smithMinorAbsSum matrix pivotIndex height width
@@ -1010,12 +835,11 @@ theorem smithMinorAbsSumRaisesOnFoldWitness :
   ⟨{ rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] }, 1, 0, 3, 3, by decide⟩
 
 set_option maxRecDepth 8000 in
-/-- **Δ2 — the zero-pivot fold saturates the budget** — on `diag(0, 4)` the fold lands `|pivot| = 4`,
-EXACTLY the fuel budget `smithMinorAbsSum = 4`, while the input pivot is `0`.  A lex measure
+/-- The zero-pivot fold saturates the budget: on `diag(0, 4)` the fold lands `|pivot| = 4`, exactly the
+fuel budget `smithMinorAbsSum = 4`, while the input pivot is `0`. A lexicographic measure
 `(isPivotZero, pivotAbs)` must rank the zero-flag strictly above `pivotAbs`, so any collapse
-`flag · K + pivotAbs` needs `K > pivotAbs`; here that forces `measure(diag(0, 4)) > 4`, violating the
-budget `measure ≤ smithMinorAbsSum = 4`.  The budget/descent clash (recon Δ2) as a machine-checked
-pin: no fixed-`K` lex-into-`Nat` measure both fits the budget AND strictly descends. -/
+`flag · K + pivotAbs` needs `K > pivotAbs`, which forces `measure(diag(0, 4)) > 4` and violates the
+budget. No fixed-`K` lexicographic-into-`Nat` measure both fits the budget and strictly descends. -/
 theorem smithZeroPivotFoldSaturatesBudgetWitness :
     ∃ (matrix : IntMatrix) (foundPos pivotIndex height width : Nat),
       matrix.diagonalEntryAt pivotIndex = 0 ∧
@@ -1023,32 +847,18 @@ theorem smithZeroPivotFoldSaturatesBudgetWitness :
         = smithMinorAbsSum matrix pivotIndex height width :=
   ⟨{ rows := [[0, 0], [0, 4]] }, 1, 0, 2, 2, by decide, by decide⟩
 
-/-! ## NODE 1 — the gcd-ideal invariance, forward-tower route (H2-SMITH r22, B2, #2261)
+/-! ## NODE 1 — the gcd-ideal invariance via the forward tower
 
-The recon reclassified the "backward tower" (per-op inverses, `applyOperations (word ++
-reverseOperationWord word) = matrix`) as CONDITIONAL — likely NOT needed.  The off-diagonal ideal
-invariance rides the SHIPPED **forward** tower instead:
+The off-diagonal ideal invariance rides the shipped forward tower; no backward tower (op inverses) is
+needed. The pivot-`p` clearing position sweep is confined to indices `≥ p`
+(`smithRepairPositionSweepClearingBoundedBelow` with `lo := p`), so for any divisor `g` of the whole
+`[p, ·)` minor of the input, `applyOperationsPreservesEntriesDivisibleWithin` carries `g`-divisibility to
+the whole `[p, ·)` block of the output, fill-in included (each fill-in cell is a ℤ-combination of
+`g`-divisible input cells). `matrixEntriesDivisibleByWithinLoMono` then restricts up to the `[p+1, ·)`
+sub-block the seed reads. On the concrete window `diag(6,10,8)` the sweep lands `2 = gcd(6,10,8)` at the
+pivot, a common divisor of the whole minor. -/
 
-  * The pivot-`p` clearing position sweep is confined to indices `≥ p`
-    (`smithRepairPositionSweepClearingBoundedBelow` with `lo := p`, `p ≤ p`).
-  * So for ANY divisor `g` that divides the whole `[p, ·)` minor of the INPUT
-    (`MatrixEntriesDivisibleByWithin g p input`), the forward tower
-    `applyOperationsPreservesEntriesDivisibleWithin` carries `g`-divisibility to the whole `[p, ·)`
-    block of the OUTPUT — interior fill-in included (each fill-in cell is a ℤ-combination of the
-    `g`-divisible input cells, so `g` divides it).
-
-`matrixEntriesDivisibleByWithinLoMono` (below) is the last plumbing piece: the `[p, ·)` block
-divisibility restricts UP to the `[p+1, ·)` sub-block the seed reads.  The forward-tower confinement at
-`lo := p` is exactly what turns "`g` divides the input minor" into "`g` divides the output sub-block"
-WITHOUT any inverse machinery — the whole of NODE 1, resting entirely on shipped confinement + tower.
-
-**Probe-first (r22 eval, a concrete gcd > 1 window).**  On `diag(6, 10, 8)` the pivot-0 clearing sweep
-LANDS `2 = gcd(6, 10, 8)` at the pivot (`smithClearingSweepLandsMinorGcdOnConcreteWindow`), and `2`
-divides every input-minor entry `6, 10, 8` — so the landed pivot IS a common divisor of the minor on a
-non-coprime window (the cascade-computes-gcd fact, exhibited concretely; the general statement is the
-keystone below). -/
-
-/-- **Sub-block divisibility restricts UP in the window floor** — the `[loSmall, ·)²` block being
+/-- Sub-block divisibility restricts UP in the window floor — the `[loSmall, ·)²` block being
 `divisor`-divisible implies the smaller `[loBig, ·)²` block is (`loSmall ≤ loBig`).  Both the row guard
 and the column guard weaken through `Nat.le_trans`.  The plumbing that turns the pivot-`p` forward-tower
 output `MatrixEntriesDivisibleByWithin g p M'` into the seed's `[p+1, ·)` sub-block. -/
@@ -1060,7 +870,7 @@ theorem matrixEntriesDivisibleByWithinLoMono {divisor : Int} {loSmall loBig : Na
     divisible rowIndex (Nat.le_trans leMono rowGe) colIndex (Nat.le_trans leMono colGe)
 
 set_option maxRecDepth 8000 in
-/-- **The cascade lands the minor gcd on a concrete gcd > 1 window** — the pivot-0 clearing position
+/-- The cascade lands the minor gcd on a concrete gcd > 1 window — the pivot-0 clearing position
 sweep of `diag(6, 10, 8)` lands `2 = gcd(6, 10, 8)` at the pivot.  A machine-checked positive instance
 of the keystone `SmithCascadeLandedPivotDividesMinor`: on this non-coprime window the landed pivot is a
 common divisor of the whole minor, so the seed's sub-block divisibility holds by NODE 1 (forward tower).
@@ -1072,19 +882,15 @@ theorem smithClearingSweepLandsMinorGcdOnConcreteWindow :
           { rows := [[6, 0, 0], [0, 10, 0], [0, 0, 8]] } 0 3 3)).diagonalEntryAt 0 = 2 := by
   decide
 
-/-! ## NODE 2 — the exit read-off: both r21 seed halves from ONE within-predicate (H2-SMITH r22, B3)
+/-! ## NODE 2 — both seed halves from one within-predicate
 
-r21 split the seed `SmithCascadeLandsDivisibleSubBlock` into a DIAGONAL half
-(`SubBlockDiagonalDivisibleFrom`, reached from a find-`none` exit via C2) and an OFF-DIAGONAL half
-(`SubBlockOffDiagonalDivisibleFrom`, the gcd-ideal wall).  r22 UNIFIES them: BOTH are read off a SINGLE
-`MatrixEntriesDivisibleByWithin divisor lo` fact — the one the NODE 1 forward tower produces — so the
-r21 two-way case split is dissolved into ONE object.  The diagonal half is the on-diagonal slice
-(`diagonalEntryAt position = entryAt position position`), the off-diagonal half is the off-diagonal
-slice (drop the `rowIndex ≠ colIndex` witness).  The "fill-in is `divisor`-divisible" reason of the
-recon trace §2b IS this within-predicate: every fill-in cell of the `[lo, ·)` block is `divisor`-divisible
-because the forward tower carries `divisor` across the confined sweep. -/
+Both halves of the seed are read off a single `MatrixEntriesDivisibleByWithin divisor lo` fact — the one
+the NODE 1 forward tower produces. The diagonal half is the on-diagonal slice (`diagonalEntryAt position =
+entryAt position position`); the off-diagonal half drops the `rowIndex ≠ colIndex` witness. Every fill-in
+cell of the `[lo, ·)` block is `divisor`-divisible because the forward tower carries `divisor` across the
+confined sweep. -/
 
-/-- **The diagonal half from the within-predicate** — a `[lo, ·)²` block that is entirely
+/-- The diagonal half from the within-predicate — a `[lo, ·)²` block that is entirely
 `divisor`-divisible has every diagonal cell `divisor`-divisible (`diagonalEntryAt` is the on-diagonal
 `entryAt`).  The DIAGONAL half of the seed, read off the forward-tower within-predicate directly. -/
 theorem subBlockDiagonalDivisibleOfWithin {divisor : Int} {lo : Nat} {matrix : IntMatrix}
@@ -1092,7 +898,7 @@ theorem subBlockDiagonalDivisibleOfWithin {divisor : Int} {lo : Nat} {matrix : I
     SubBlockDiagonalDivisibleFrom divisor lo matrix :=
   fun position positionGe => within position positionGe position positionGe
 
-/-- **The off-diagonal half from the within-predicate** — a `[lo, ·)²` block that is entirely
+/-- The off-diagonal half from the within-predicate — a `[lo, ·)²` block that is entirely
 `divisor`-divisible has every off-diagonal cell `divisor`-divisible (drop the distinctness witness).
 The OFF-DIAGONAL half of the seed (r21's gcd-ideal wall) is now a trivial slice of the SAME within-fact
 the forward tower supplies — no separate ideal argument once the within-predicate is in hand. -/
@@ -1101,40 +907,22 @@ theorem subBlockOffDiagonalDivisibleOfWithin {divisor : Int} {lo : Nat} {matrix 
     SubBlockOffDiagonalDivisibleFrom divisor lo matrix :=
   fun rowIndex colIndex rowGe colGe _ => within rowIndex rowGe colIndex colGe
 
-/-! ## NODE 4 — THE KEYSTONE ASSEMBLED: the seed reduced to ONE precise residual (H2-SMITH r22, B4)
+/-! ## NODE 4 — the keystone assembled: the seed reduced to one residual
 
-r21 named the keystone `smithCascadeLandsPivotDividesFoldedPair` — "the cascade output pivot divides
-both folded operands".  That name is **REFUTABLE**: on `diag(15, 10, 6, 4)` pivot 0 step 1 the cascade
-lands `4`, and `4 ∤ 15`, `4 ∤ 10` (`smithClearingSweepInteriorNotDiagonalWitness` rides the same
-fixture).  So the literal "divides the folded pair" is FALSE — chasing it would be chasing a false lemma.
+The residual is `SmithCascadeLandedPivotDividesMinor`: the landed pivot divides every entry of the input's
+`[pivotIndex, ·)` minor (a common divisor of the whole minor; since the cascade is unimodular, its
+magnitude equals the minor gcd). This replaces the earlier "divides the folded pair" candidate, which is
+false — `diag(15,10,6,4)` at pivot `0` lands `4`, and `4 ∤ 15`. From the residual the whole seed follows
+via the NODE 1 forward tower (sweep confined below `p`) and the NODE 2 read-off, restricting `[p, ·)` up to
+`[p+1, ·)` by `matrixEntriesDivisibleByWithinLoMono`. Composing with
+`smithReduceCompleteDriverOfSubBlockSeed` collapses the entire driver totality onto this one residual. -/
 
-The CORRECTED, TRUE keystone is `SmithCascadeLandedPivotDividesMinor`: the landed pivot divides every
-entry of the INPUT's `[pivotIndex, ·)` minor (it is a common divisor of the whole minor — equivalently,
-since the cascade is unimodular so the landed pivot lies in the minor's gcd-ideal, its magnitude equals
-the minor gcd).  This is the classic "min-abs Euclid pivoting computes the gcd" fact, exhibited
-concretely on a gcd > 1 window in B2 (`smithClearingSweepLandsMinorGcdOnConcreteWindow`, `2 = gcd(6,10,8)`).
-
-**THE KEYSTONE ASSEMBLY (this brick).**  From `SmithCascadeLandedPivotDividesMinor` the WHOLE seed
-`SmithCascadeLandsDivisibleSubBlock` follows, hypothesis-free-modulo-that-residual, via the NODE 1
-forward tower + NODE 2 read-off:
-
-  landed pivot `g := M'.diagonalEntryAt p` divides the input `[p, ·)` minor         (the residual)
-    ─(forward tower, sweep confined below `p`)→  `g` divides the output `[p, ·)` block
-    ─(`matrixEntriesDivisibleByWithinLoMono`, `p ≤ p+1`)→  `g` divides the `[p+1, ·)` sub-block
-    = the seed at pivot `p`.
-
-Both r21 seed halves collapse onto this ONE residual (unifying r21's two-keystone-sharing halves).
-Composing with the SHIPPED `smithReduceCompleteDriverOfSubBlockSeed` collapses the ENTIRE
-corrected-driver totality onto `SmithCascadeLandedPivotDividesMinor` — a strictly sharper residual than
-r21's `SmithCascadeLandsDivisibleSubBlock` (the whole-sub-block statement is now derived, not assumed). -/
-
-/-- **THE CORRECTED KEYSTONE (r22) — the landed pivot divides the input minor.**  After pivot
-`pivotIndex`'s clearing position sweep, the landed pivot diagonal `M'.diagonalEntryAt pivotIndex`
-divides EVERY entry of the INPUT matrix's `[pivotIndex, ·) × [pivotIndex, ·)` minor.  Semantically: the
-min-abs Euclid cascade lands a COMMON DIVISOR of the whole minor (the minor gcd, since the unimodular
-cascade keeps the landed pivot in the minor's gcd-ideal).  Refutation-checked replacement for the r21
-`smithCascadeLandsPivotDividesFoldedPair` (which is false — `diag(15,10,6,4)` lands `4 ∤ 15`); TRUE, with
-a concrete gcd > 1 witness in `smithClearingSweepLandsMinorGcdOnConcreteWindow`. -/
+/-- The keystone residual: the landed pivot divides the input minor. After pivot `pivotIndex`'s clearing
+position sweep, the landed pivot diagonal `M'.diagonalEntryAt pivotIndex` divides every entry of the input
+matrix's `[pivotIndex, ·) × [pivotIndex, ·)` minor — the min-abs Euclid cascade lands a common divisor of
+the whole minor (the minor gcd, since the unimodular cascade keeps the landed pivot in the minor's
+gcd-ideal). Replaces the false "divides the folded pair" candidate (`diag(15,10,6,4)` lands `4 ∤ 15`); a
+concrete gcd > 1 witness is `smithClearingSweepLandsMinorGcdOnConcreteWindow`. -/
 def SmithCascadeLandedPivotDividesMinor : Prop :=
   ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
     matrix.IsRectangular height width → pivotIndex < height → pivotIndex < width →
@@ -1145,13 +933,11 @@ def SmithCascadeLandedPivotDividesMinor : Prop :=
       pivotIndex
       matrix
 
-/-- **NODE 4 — the seed from the corrected keystone.**  GIVEN `SmithCascadeLandedPivotDividesMinor`, the
-per-pivot ESTABLISH seed `SmithCascadeLandsDivisibleSubBlock` holds: carry the landed-pivot divisibility
-of the INPUT `[p, ·)` minor across the pivot-`p` sweep (confined below `p` by
-`smithRepairPositionSweepClearingBoundedBelow`, forward tower
+/-- NODE 4: the seed from the keystone. Given `SmithCascadeLandedPivotDividesMinor`, the per-pivot
+ESTABLISH seed `SmithCascadeLandsDivisibleSubBlock` holds — carry the landed-pivot divisibility of the
+input `[p, ·)` minor across the pivot-`p` sweep (confined below `p`, forward tower
 `applyOperationsPreservesEntriesDivisibleWithin`), then restrict the floor `p → p+1`
-(`matrixEntriesDivisibleByWithinLoMono`).  A pure structural assembly — no inverse machinery, no kernel
-evaluation. -/
+(`matrixEntriesDivisibleByWithinLoMono`). A pure structural assembly. -/
 theorem seedOfLandedPivotDividesMinor (landedDivides : SmithCascadeLandedPivotDividesMinor) :
     SmithCascadeLandsDivisibleSubBlock := by
   intro matrix pivotIndex height width isRect pRowLt pColLt
@@ -1165,74 +951,22 @@ theorem seedOfLandedPivotDividesMinor (landedDivides : SmithCascadeLandedPivotDi
         pRowLt pColLt (Nat.le_refl pivotIndex))
       (landedDivides matrix pivotIndex height width isRect pRowLt pColLt))
 
-/-- **NODE 4 — the corrected-driver totality on the corrected keystone ALONE.**  Compose the seed
-reduction with the SHIPPED seed-conditional driver totality `smithReduceCompleteDriverOfSubBlockSeed`.
-`SmithReduceCompleteDriverStatement` is now inhabited GIVEN the SINGLE residual
-`SmithCascadeLandedPivotDividesMinor` — the corrected-driver totality residual count is honestly ONE, and
-this residual is strictly sharper (more atomic) than r21's `SmithCascadeLandsDivisibleSubBlock`. -/
+/-- NODE 4: the driver totality on the keystone alone. Composes the seed reduction with the
+seed-conditional driver totality `smithReduceCompleteDriverOfSubBlockSeed`.
+`SmithReduceCompleteDriverStatement` is inhabited given the single residual
+`SmithCascadeLandedPivotDividesMinor`. -/
 theorem smithReduceCompleteDriverOfLandedPivotDividesMinor
     (landedDivides : SmithCascadeLandedPivotDividesMinor) :
     SmithReduceCompleteDriverStatement :=
   smithReduceCompleteDriverOfSubBlockSeed (seedOfLandedPivotDividesMinor landedDivides)
 
-/-! ## The r22 arc ledger (H2-SMITH r22, B5, #2261) — the mandate assembly; the honest residual finalized
+/-! ## Summary: the single open residual
 
-**What r22 shipped (all zero-axiom, additive; the r18–r21 world byte-intact).**
-
-  * B1 — THE FIT CHECK.  `foldDescends` (the r21 NODE D diagonal-half descent) is a GENUINE three-part
-    delta, NOT a composition of the shipped pure-`Int` `smithRepairDecreasesPivotSize`.  Two deltas are
-    machine-refuted as theorems: `smithMinorAbsSumRaisesOnFoldWitness` (the minor-abs-sum measure RISES
-    `24 → 40` on a fold, so the cheapest budget-fitting measure fails) and
-    `smithZeroPivotFoldSaturatesBudgetWitness` (the zero-pivot fold lands `|pivot| = 4 =` the budget, so
-    no fixed-`K` lex-into-`Nat` measure both fits the budget AND descends — recon Δ1/Δ2 pinned).
-
-  * B2 — NODE 1, the gcd-ideal invariance forward-tower route.  `matrixEntriesDivisibleByWithinLoMono`
-    is the last plumbing piece; the backward tower (op inverses) is NOT needed — the pivot-`p` sweep is
-    confined below `p`, so the SHIPPED forward tower carries any minor-divisor across it.
-    `smithClearingSweepLandsMinorGcdOnConcreteWindow` exhibits the cascade landing `2 = gcd(6, 10, 8)` on
-    a gcd > 1 window (probe-first, as a theorem).
-
-  * B3 — NODE 2, the exit read-off.  `subBlockDiagonalDivisibleOfWithin` /
-    `subBlockOffDiagonalDivisibleOfWithin` extract BOTH r21 seed halves from ONE
-    `MatrixEntriesDivisibleByWithin` fact — the r21 two-keystone-sharing halves dissolved into a single
-    within-slice (the forward-tower output).
-
-  * B4 — THE KEYSTONE ASSEMBLED.  r21's `smithCascadeLandsPivotDividesFoldedPair` is REFUTED as stated
-    (`diag(15, 10, 6, 4)` lands `4 ∤ 15`).  The corrected, TRUE residual is
-    `SmithCascadeLandedPivotDividesMinor` (the landed pivot divides the INPUT minor — a common divisor of
-    the whole minor).  `seedOfLandedPivotDividesMinor` derives the WHOLE seed
-    `SmithCascadeLandsDivisibleSubBlock` from it (forward tower + lo-mono), and
-    `smithReduceCompleteDriverOfLandedPivotDividesMinor : SmithCascadeLandedPivotDividesMinor →
-    SmithReduceCompleteDriverStatement` collapses the entire corrected-driver totality onto that ONE
-    residual — strictly SHARPER than r21 (the whole-sub-block seed is now derived, not assumed).
-
-**THE MACHINE-CHECKED RESIDUAL, named EXACTLY (NOT prose).**  `SmithReduceCompleteDriverStatement` is
-inhabited GIVEN `SmithCascadeLandedPivotDividesMinor` — the SINGLE surviving obligation:
-
-    the pivot-`p` clearing position sweep lands, at the pivot, a divisor of every entry of the input's
-    `[p, ·)` minor (equivalently, its magnitude equals the minor gcd).
-
-This is the "min-abs Euclid cascade computes the gcd" correctness over the threaded work matrix — the
-r11+ wall, a STANDALONE MAJOR ARC (decisively not r22-sized).  It is TRUE (probe-verified on every
-fixture; `smithClearingSweepLandsMinorGcdOnConcreteWindow` is a machine-checked positive instance), just
-not yet proven in general.  No flip is fabricated.
-
-**The user close criterion, quoted verbatim.**  "every rectangular integer matrix, any size, zero kernel
-evaluation; the honest pair finalized" — i.e. `SmithReduceCompleteDriverStatement` inhabited
-HYPOTHESIS-FREE.  This is **NOT reached** in r22.  What r22 DELIVERS toward it: the seed residual is
-factored from r21's whole-sub-block `SmithCascadeLandsDivisibleSubBlock` down to the strictly-more-atomic
-`SmithCascadeLandedPivotDividesMinor` (landed-pivot-divides-input-minor), the r21 keystone NAME
-(`…FoldedPair`) is machine-refuted and corrected, and the diagonal/off-diagonal halves are unified onto
-one within-predicate.  The residual is a single, precise, TRUE Prop — the honest pair is
-`(SmithReduceCompleteDriverStatement inhabited ⟸ SmithCascadeLandedPivotDividesMinor,
-SmithCascadeLandedPivotDividesMinor open)`.
-
-**Honest verdict.**  r22 does not close the driver — the cascade-computes-gcd keystone stays open (a
-multi-round arc).  It DOES: (a) machine-refute the two false measure candidates naming why `foldDescends`
-is genuinely deep (B1); (b) route the off-diagonal ideal invariance through the shipped forward tower,
-retiring the backward-tower/inverse plan (B2); (c) unify the two seed halves into one within-slice (B3);
-(d) refute-and-correct the r21 keystone name and collapse the whole corrected-driver totality onto the
-ONE sharper residual `SmithCascadeLandedPivotDividesMinor` (B4).  `smithReduceFull`, its refutation, the
-certificate API, and the r18/r19/r20/r21 world stay byte-intact (additive only). -/
+`SmithReduceCompleteDriverStatement` is inhabited given `SmithCascadeLandedPivotDividesMinor`, the one
+surviving obligation: the pivot-`p` clearing position sweep lands, at the pivot, a divisor of every entry
+of the input's `[p, ·)` minor (equivalently, its magnitude equals the minor gcd). This is the "min-abs
+Euclid cascade computes the gcd" correctness over the threaded work matrix — a standalone major arc, true
+on every probed fixture (`smithClearingSweepLandsMinorGcdOnConcreteWindow` is a machine-checked instance)
+but not proven in general. Hypothesis-free driver totality is not reached here. -/
 
 end FX1Poly.ComputerAlgebra

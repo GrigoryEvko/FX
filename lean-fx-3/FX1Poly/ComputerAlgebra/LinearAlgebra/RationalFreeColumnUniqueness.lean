@@ -841,24 +841,17 @@ leaves `[[2,4]]` un-normalized — the concrete witness behind the refutation. -
 theorem rfcFireIhqRrefNotCanonical :
     ihqRref [[qnfOfInt 2, qnfOfInt 4]] = [[qnfOfInt 2, qnfOfInt 4]] := rfl
 
-/-! ## Stage 7 — content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED: the reduced-basis support characterization — a row-space vector is
-pinned by its pivot-column coordinates (`rfcReducedSupportUnique`), so its
-free-column coordinates are span-determined. -/
-def rfcHasReducedSupportUniqueness : Bool := true
-
-/-- DECIDED (the walled step CLOSED): back-reduction of an echelon form has the
-reduced-support property — every row zero at every other pivot
-(`rfcBackReduceEchelonReduced`).  This is the free-column coordinate determination
-the earlier `rre`/`rmr` bricks walled; it is proven here. -/
-def rfcHasBackReduceReducedSupport : Bool := true
-
-/-- DECIDED: FULL RREF uniqueness over `QnfRat` — span-equal inputs have literally
-equal reduced row echelon forms `rreRref` (`rfcRreRrefUnique` /
-`rfcRreRrefUniqueOfSpanEqB`).  The committed `ihqRrefUniquenessStatement` targets
-the UN-normalized `ihqRref` and is FALSE (`rfcIhqRrefUniquenessRefuted`); the
-canonical target is the normalized `rreRref`, and IT is unique. -/
+/-- Full RREF uniqueness over `QnfRat` is decided: span-equal inputs have literally equal reduced row echelon
+forms `rreRref` (`rfcRreRrefUnique` / `rfcRreRrefUniqueOfSpanEqB`). The reduced-basis support characterization
+(`rfcReducedSupportUnique`: a row-space vector is pinned by its pivot-column coordinates) and the back-reduce
+structural theorem (`rfcBackReduceEchelonReduced`: back-reduction of an echelon form makes every row zero at
+every other pivot — the free-column coordinate determination the earlier `rre`/`rmr` bricks walled) are the
+new content, assembled through the abstract `rfcReducedEchelonUnique`. The committed `ihqRrefUniquenessStatement`
+targets the un-normalized `ihqRref` and is refuted (`rfcIhqRrefUniquenessRefuted`, since `[[1,2]]` and `[[2,4]]`
+span the same line with distinct `ihqRref`); the canonical target is the normalized `rreRref`, which is
+unique. -/
 def rfcHasRreRrefUniqueness : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -2,40 +2,29 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialNilCascade
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialPseudoStepDegreeGen
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialLeadingCoeff
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialConstDivisorNil — constant-divisor remainder → nil
-(the eighteenth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialConstDivisorNil — constant-divisor remainder → nil
 
-The Euclidean GCD's constant-divisor tail: pseudo-dividing **any** dividend by a nonzero **constant**
-divisor yields a zero remainder once the fuel is adequate.  This is what makes the GCD reach its
-nil-terminating branch after it bottoms out at a coprime (constant-remainder) step.
+The Euclidean GCD's constant-divisor tail: pseudo-dividing any dividend by a nonzero constant divisor yields
+a zero remainder once the fuel is adequate, so the GCD reaches its nil-terminating branch after it bottoms
+out at a coprime (constant-remainder) step.
 
-## What is PROVEN
+`polyPseudoRemConstantTrimsNil`: for a nonzero constant `divisor` (`polyTrim divisor ≠ []`, `polyDegree
+divisor = 0`) and `polyDegree dividend < fuel`, `polyTrim (polyPseudoRem fuel divisor dividend) = []`.
+Induction on fuel; the guard is always `isFalse` (nothing has degree `< 0`).  A non-constant dividend has
+its degree dropped by the constant-divisor step decrease (`polyPseudoConstantStepDegreeLt`); a constant one
+has its step coefficients all cancel, so the reduced polynomial is zero and `polyPseudoRemZeroDividendTrimsNil`
+finishes.
 
-`polyPseudoRemConstantTrimsNil`: for a nonzero constant `divisor` (`polyTrim divisor ≠ []`,
-`polyDegree divisor = 0`) and `polyDegree dividend < fuel`, `polyTrim (polyPseudoRem fuel divisor dividend)
-= []`.  Induction on fuel; the guard is always `isFalse` (nothing has degree `< 0`); the recursion descends
-to the step `reduced`:
-
-  * if the dividend is **non-constant** (`1 ≤ polyDegree dividend`), r28's constant-divisor step decrease
-    (`polyPseudoConstantStepDegreeLt`) drops the degree, keeping the fuel bound and feeding the IH;
-  * if the dividend is **constant** (`polyDegree dividend = 0`), the step's coefficients all vanish
-    (`leadDivisor·c − leadDividend·c` cancels at position 0, and everything is zero above), so `reduced` is
-    the zero polynomial and r29's `polyPseudoRemZeroDividendTrimsNil` finishes.
-
-## Zero-axiom design
-
-Structural fuel recursion + a `polyDegree`-value case split; r28/r29, the coefficient homomorphisms, r16's
-leading-coefficient characterization, and core Nat/Int lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialConstDivisorNil.lean`.
--/
+Structural fuel recursion + a `polyDegree`-value case split; the coefficient homomorphisms, the
+leading-coefficient characterization, and core Nat/Int lemmas.  Free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-- **A nonzero constant divisor yields a zero pseudo-remainder (fuel adequate).**  For `polyTrim divisor ≠
 []`, `polyDegree divisor = 0`, and `polyDegree dividend < fuel`, `polyTrim (polyPseudoRem fuel divisor
-dividend) = []`.  The recursion drops a non-constant dividend's degree (r28) or zeroes a constant one, then
-r29 keeps the zero polynomial zero. -/
+dividend) = []`.  The recursion drops a non-constant dividend's degree or zeroes a constant one, then the
+zero-dividend cascade keeps the zero polynomial zero. -/
 theorem polyPseudoRemConstantTrimsNil (divisor : List Int)
     (isDivisorNonempty : polyTrim divisor ≠ [])
     (isDivisorConstant : polyDegree divisor = 0) :
@@ -103,10 +92,5 @@ theorem polyPseudoRemConstantTrimsNil (divisor : List Int)
 `polyTrim (polyPseudoRem 5 [2] [3, 2, 1]) = []` (a constant divides everything after leading-coefficient
 scaling). -/
 theorem polyPseudoRemConstantTrimsNilGrounding : polyTrim (polyPseudoRem 5 [2] [3, 2, 1]) = [] := by decide
-
-/-- Marker: pseudo-dividing any dividend by a nonzero **constant** divisor yields a zero remainder with
-adequate fuel (`polyPseudoRemConstantTrimsNil`) — the Euclidean GCD's coprime (constant-remainder) tail
-reaches nil.  Assembles r28's constant-divisor step decrease with r29's zero-polynomial persistence. -/
-def fxIntPoly_hasConstantDivisorRemainderNil : Bool := true
 
 end FX1Poly.ComputerAlgebra

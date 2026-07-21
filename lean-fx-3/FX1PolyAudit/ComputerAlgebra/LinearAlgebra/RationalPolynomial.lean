@@ -95,10 +95,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpxFireTrailingZeroNotCanonical
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpxFireTrimmedIsCanonical
 
--- Content markers (T6)
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpxHasEuclideanDivision
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpxHasGcd
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpxHasRemainderDegreeBound
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpxHasGcdDividesBoth
 
 end FX1PolyAudit

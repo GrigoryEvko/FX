@@ -1,111 +1,39 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithMinorGcdReduction
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/SmithLandedMagnitudeEquivalence — the open wall in its
-    crispest arithmetic form, and its kernel-checked truth on the decision-round hostile seeds
-    (H2-SMITH r32, #2261 — THE DECISION ROUND)
+/-! # Smith landed-magnitude equivalence
 
-## r33 CORRECTION (supersedes the "TRUE where hardest" framing below)
+The general keystone `SmithCascadeLandedPivotDividesMinor`, equivalently
+`MinAbsEuclidLandsMinorGcdMagnitude` (`|landed| = gcd(minor)`), is refuted as stated. The non-diagonal
+seed `[[0, 6, 0], [0, 0, 10], [0, 0, 0]]` at pivot 0 lands `6` (min-abs at column 1, cross clean, cascade
+stops) while the minor `{6, 10}` has `gcd = 2` and `6` does not divide `10`: the `10` sits off the pivot
+cross, in the interior the cross-clear terminator never inspects (machine-checked in
+`SmithLandedMagnitudeRefuted`). The restricted diagonal / in-driver-image form does hold, and every
+fixture pinned true here is diagonal, so those fixtures are evidence for the restricted form only.
 
-The general keystone stated here — `SmithCascadeLandedPivotDividesMinor`, equivalently
-`MinAbsEuclidLandsMinorGcdMagnitude` (`|landed| = gcd(minor)`) — is **REFUTED AS STATED**, not merely
-OPEN.  The non-diagonal seed `[[0, 6, 0], [0, 0, 10], [0, 0, 0]]` at pivot `0` lands `6` (min-abs at
-column 1, cross clean, cascade stops) while the minor `{6, 10}` has `gcd = 2` and `6 ∤ 10` — the `10`
-sits off the pivot cross, in the interior the cross-clear terminator never inspects.  Machine-checked in
-`SmithLandedMagnitudeRefuted` (`minAbsEuclidLandsMinorGcdMagnitudeIsRefuted`,
-`smithCascadeLandedPivotDividesMinorIsRefuted`, and the load-bearing
-`smithCascadeLandsDivisibleSubBlockIsRefuted` — the driver's sole hypothesis).
+The mandate `SmithReduceCompleteDriverStatement` stays uninhabited hypothesis-free; it is inhabited given
+the keystone (`smithReduceCompleteDriverOfLandedPivotDividesMinor`) or, equivalently, given
+`MinAbsEuclidLandsMinorGcdMagnitude` via `keystoneIffLandedMagnitudeEqMinorGcd.mpr`. This module supplies
+the reverse magnitude bridge, closes the keystone into the full magnitude equivalence, and checks that
+equation on the hardest seeds; it inhabits nothing hypothesis-free. The final-state re-threading route is
+closed (each earlier pivot needs the pivot to divide the whole later sub-block, off-diagonal fill-in
+included, whereas the exit-scan read-off supplies only divisibility of the later diagonals), and no
+per-fold `Nat` measure closes the descent: `smithMinorAbsSum` rises on folds, `minNonzeroAbsWithin`
+stalls, `pivotMagnitudeWithin` rises.
 
-EVERY hostile seed pinned TRUE below is DIAGONAL: the fixtures are evidence for the RESTRICTED
-(diagonal / in-driver-image) form, which DOES hold, NOT for the general `∀`-keystone, which does not.
-Read all phrasings below — "the open wall is TRUE where hardest", "single surviving wall", "SURVIVING
-WALL", "UNINHABITED hypothesis-free GIVEN the keystone" — as the RESTRICTED form; the general form is
-refuted.  The shipped theorems (`keystoneIffLandedMagnitudeEqMinorGcd`, the diagonal fixtures) stay
-byte-intact and correct; only this framing is corrected.
-
-## The decision
-
-The user-ordered mandate (#2261) is `SmithReduceCompleteDriverStatement` inhabited with ZERO
-hypotheses — "every rectangular integer matrix, any size, zero kernel evaluation; the honest pair
-finalized".  r32 DECIDES the shape of the remaining work:
-
-  * **The final-state re-threading route is closed.**  The `∀`-correctness theorem is already stated
-    over FINAL-state facts (`repairChainHolds` is `SmithChainPrefix` on the whole repair output, not a
-    per-phase object — `smithReduceCompleteDriverOfChain`, `SmithCascadeTermination`).  But discharging
-    it from final-state facts ALONE is not possible: at each earlier pivot the forward tower needs the
-    pivot to divide the WHOLE later sub-block (off-diagonal fill-in included), whereas the r18 exit-scan
-    read-off (`smithFindNonDividingLaterDiagonalNoneDividesAll`) supplies only "pivot divides the later
-    DIAGONALS".  The gap is exactly the whole-minor content the keystone carries, so there is no
-    keystone-free re-threading.
-
-  * **The single surviving wall is the per-phase keystone** `SmithCascadeLandedPivotDividesMinor`
-    (`SmithWindowedChainReduction`), sharpened at r29 to the 1-D scalar `landed | gcd(minor)`
-    (`LandedPivotDividesMinorGcd`, `SmithMinorGcdReduction`).  With the shipped converse `gcd | landed`
-    (`minorGcdDividesLanded`) it is the symmetric magnitude identity: *the min-abs Euclid clearing
-    cascade lands, at every pivot, a value whose magnitude equals the minor gcd* — the classic
-    "min-abs Euclid computes the gcd".  This is NOT closed by any gcd-invariance argument (which bounds
-    the ideal from one side only) and admits no per-fold `Nat` descent measure (`smithMinorAbsSum` RISES
-    on folds — r22, and again on the killer seed below; `minNonzeroAbsWithin` STALLS — r26;
-    `pivotMagnitudeWithin` RISES — r31).  It is a standalone multi-round descent arc, NOT r32-sized.
-
-## What r32 ships (all zero-axiom, additive; the r18–r31 world byte-intact)
-
-  1. **The general sharpening — the wall's crispest form.**  r29 shipped only the FORWARD half
-     `landedMagnitudeEqMinorGcdOfKeystone : keystone → (|landed| = gcd(minor))`.  This module supplies
-     the reverse bridge `dividesExactlyOfNatAbsEq` (magnitude equality ⇒ exact divisibility) and closes
-     the loop into the FULL equivalence
-
-         `keystoneIffLandedMagnitudeEqMinorGcd :
-             SmithCascadeLandedPivotDividesMinor ↔ MinAbsEuclidLandsMinorGcdMagnitude`
-
-     where `MinAbsEuclidLandsMinorGcdMagnitude` is the crisp `∀`-arithmetic statement "for every
-     rectangular input and pivot, `|landed| = gcd(minor)`".  So the ENTIRE corrected-driver totality is
-     now inhabited hypothesis-free IFF this single magnitude identity holds for all inputs — the open
-     wall stated with no divisibility `∃`, no 2-D block quantifier, just an equation between two
-     magnitudes.
-
-  2. **The decisive hostile-seed fixtures — the RHS kernel-checked TRUE where it is hardest.**  The
-     `∀`-body `|landed| = gcd(minor)` is pinned by `decide` on the round's decisive seeds (all at or
-     below the 4x4 defeq ceiling):
-       - `landedMagnitudeEqMinorGcdOnKillerSeedPivotZero` / `...PivotTwo` — on `diag(4, 6, 9, 7)`, the
-         seed on which BOTH candidate per-fold measures die (`smithMinorAbsSum` rises 26 → 30,
-         `smithMinorAbsSumRisesOnKillerSeedFold`; the obstruction count against the pivot RISES 2 → 3
-         across a fold).  `|landed| = gcd = 1`.
-       - `landedMagnitudeEqMinorGcdOnFillInSeedPivotOne` — on `diag(1, -12, -18, 10)`, the r26
-         confinement seed with genuine interior fill-in and negative entries.  `|landed| = gcd = 2`.
-       - `landedMagnitudeEqMinorGcdOnHostileNonDiagonalSeed` — on the fully non-diagonal all-even
-         `[[6, 2, 4], [8, 10, 2], [2, 6, 8]]`, strengthening r25's converse-only pin to the SYMMETRIC
-         `|landed| = gcd = 2`.
-       - `landedMagnitudeEqMinorGcdOnCoprimeSeed` — on `diag(15, 10, 6, 4)` (coprime), `|landed| = gcd
-         = 1` — the cascade collapses a coprime window to the unit, off the r18-refuted head.
-
-## Honest sizing
-
-This module inhabits NOTHING hypothesis-free.  It sharpens the residual to its crispest equivalent
-form (a magnitude equation) and machine-checks that equation on the decision-round's hardest seeds —
-CONFIRMING the wall is TRUE where it is hardest to see, and DECIDING that no mechanical `Nat`-measure
-closes it and no final-state route bypasses it.  `SmithReduceCompleteDriverStatement` stays UNINHABITED
-hypothesis-free after r32; it is inhabited GIVEN the keystone
-(`smithReduceCompleteDriverOfLandedPivotDividesMinor`, r22) or, equivalently, GIVEN
-`MinAbsEuclidLandsMinorGcdMagnitude` via `keystoneIffLandedMagnitudeEqMinorGcd.mpr`.  The shipped
-`smithReduceComplete`, its refutation, and the r18–r31 world stay byte-intact (additive only).
-
-Raw Lean 4 + `Init`, STRUCTURAL only; no `axiom`/`sorry`/`propext`/`Quot.sound`/`Classical`/`omega`/
-`native_decide`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithLandedMagnitudeEquivalence.lean`. -/
+Raw Lean 4 on `Init`, structural only, no `axiom`/`sorry`/`propext`/`Quot.sound`/`Classical`/`omega`/
+`native_decide`. Per-declaration zero-axiom gate in the FX1PolyAudit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 open IntMatrix
 
-/-! ## The reverse magnitude bridge — `natAbs`-equality forces exact divisibility -/
+/-! ## The reverse magnitude bridge: natAbs-equality forces exact divisibility -/
 
-/-- **Equal magnitudes divide each other exactly.**  If `|leftValue| = |rightValue|` then `leftValue`
-divides `rightValue` over the integers (cofactor `±1`).  Compose the shipped bridges: promote the
-magnitude equality to `NatDivides leftValue.natAbs rightValue.natAbs` (`natDividesOfEq` off
-`natDividesRefl`), rise to `Int` divisibility by `Int.ofNat leftValue.natAbs`
-(`intDividesOfNatDividesNatAbs`), then sign-normalise the divisor (`intDividesOfNatAbsDivides`).  This
-is the reverse of `natDividesNatAbsOfIntDivides` specialised to equal magnitudes — the missing piece
-that turns the r29 forward-only magnitude implication into a full equivalence. -/
+/-- If `|leftValue| = |rightValue|` then `leftValue` divides `rightValue` over the integers (cofactor
+`1` or `-1`). Composes the bridges: `natDividesOfEq` off `natDividesRefl` gives `NatDivides` on the
+magnitudes, `intDividesOfNatDividesNatAbs` raises to `Int`, and `intDividesOfNatAbsDivides`
+sign-normalises the divisor. The reverse of `natDividesNatAbsOfIntDivides` at equal magnitudes, turning
+the forward-only magnitude implication into a full equivalence. -/
 theorem dividesExactlyOfNatAbsEq {leftValue rightValue : Int}
     (magnitudesEqual : leftValue.natAbs = rightValue.natAbs) :
     dividesExactly leftValue rightValue :=

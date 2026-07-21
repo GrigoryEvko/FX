@@ -1,18 +1,19 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfSchema
 
 /-! # LinearAlgebra/InteractingHopfCompiler — the matrix -> diagram fan kit
-(WP-PROP-3 brick 5)
 
-Executing the brick-4 route note residual on `ihzNormalFormStatement`: the
-copy/add fan kit that reifies generator rows into IH_Q diagrams.
+The copy/add/mult fan kit that reifies generator rows into IH_Q diagrams.
 
-* THE COPY FAN (`ihcCopyFan`, `1 -> copies`, a `blackComult` cascade): denotes
+* The copy fan (`ihcCopyFan`, `1 -> copies`, a `blackComult` cascade): denotes
   the diagonal relation `[c] |-> replicate copies c`, proven at arbitrary width
   by structural recursion on the copy count (snoc one wire-padded `blackComult`
   per step).
-* THE ADD FAN (`ihcAddFan`, `inputs -> 1`, a `whiteMult` cascade): denotes the
+* The add fan (`ihcAddFan`, `inputs -> 1`, a `whiteMult` cascade): denotes the
   sum relation `xs |-> [sum xs]`, proven at arbitrary width by structural
   recursion on the input count.
+* The mult fan (`ihcMultFan`, `inputs -> 1`, a `blackMult` cascade): denotes the
+  all-equal collapse `replicate inputs c |-> [c]`, the relational converse of
+  the copy fan.
 
 Each fan ships arity/WF lemmas, the arbitrary-width pair-membership denotation
 theorem, and kernel `rfl` span fires at small widths.
@@ -218,7 +219,6 @@ theorem ihcReplicateSnocTwo (value : QnfRat) : (count : Nat) ->
   | count + 1 =>
       congrArg (fun tailPart => value :: tailPart) (ihcReplicateSnocTwo value count)
 
--- copied from growprobe (already verified)
 theorem ihcCopyGrowRel (keptWires : Nat) (domVec codVec : List QnfRat) :
     IhqPairMem (keptWires + 1) (keptWires + 2)
       (ihsLayerDenote (ihcCopyGrowLayer keptWires)) domVec codVec
@@ -825,48 +825,12 @@ set_option maxHeartbeats 4000000 in
 theorem ihcFireMultFanTwo :
     ihqSpanEqB (ihsDiagramDenote (ihcMultFanDiagram 2)) [[qnfOne, qnfOne, qnfOne]] = true := rfl
 
-/-! ## Stage 7 — the fan-kit marker and the brick-6 route to the NF compiler
+/-! ## Stage 7 — the fan-kit marker -/
 
-`ihcHasFanKit := true` records the landed T1 deliverable: three fans (copy /
-diagonal, add / sum, mult / cocopy) with arbitrary-width denotation theorems
-and kernel fires, all zero-axiom.
-
-THE HONEST WALL on `ihzNormalFormStatement` (owner-false in
-`InteractingHopfSchema`, byte-intact): the full matrix -> diagram compiler is
-NOT shipped this brick.  Precise residual for brick 6:
-
-* THE ROW GADGET (single generator, `R = 1`).  A row `(a | b)` at boundary
-  `(m, n)` spans the line `{(c * a, c * b)}`, reified as the pipeline
-  `Collapse ; Expand` with a SINGLE shared middle strand and NO interleaving:
-  `Collapse : m -> 1` = per-input `scalarBoxMirror a_j` layer then the mult fan
-  (`ihcMultFanDiagram m`, forcing all `o_j` equal to `c`, so `x_j = c * a_j`);
-  `Expand : 1 -> n` = the copy fan (`ihcCopyFanDiagram n`) then per-output
-  `scalarBox b_k` layer (so `y_k = c * b_k`).  The two missing pieces are the
-  scalar LAYER constructor (a horizontal tensor of `scalarBox`/`scalarBoxMirror`
-  cells with its per-strand scaling denotation by induction, via
-  `ihwLayerDenoteCatSplit` + `ihzScalarGraphSpec`/`ihzScalarMirrorSpec`) and the
-  four-stage assembly denotation `= span [row]` (a `Collapse ; Expand`
-  `ihqComposeSpec` chain).  All fan pieces this needs are shipped here.
-
-* THE MULTI-ROW ASSEMBLY (`R >= 2`).  `span (row :: rest) = span [row] + rest`
-  is the spatial sum of relations, which reifies as
-  `coadd-split ; (rowGadget (X) restDiagram) ; add-merge` — the tensor of two
-  sub-diagrams plus a GENERATOR-TRANSPOSE (riffle) permutation layer routing the
-  copy-fan grid into the per-column add fans.  The riffle layer (built from
-  `crossing` cells) and its denotation is the genuine remaining obstruction
-  (the ZX-arc's matrix-reification analogue); it is a BUILD, not a wall of
-  principle.  Census -> row gadget -> spatial sum is the brick-6 order. -/
-
-/-- DECIDED (T1): the copy/add/mult fan kit ships with arbitrary-width
-denotation theorems (`ihcCopyFanDenote`, `ihcAddFanDenote`, `ihcMultFanDenote`)
-and kernel span fires, all zero-axiom. -/
+/-- Records that the matrix-to-diagram fan kit ships: the copy, add, and mult
+(cocopy) fan cascades, each with an arbitrary-width denotation theorem
+(`ihcCopyFanDenote`, `ihcAddFanDenote`, `ihcMultFanDenote`) and kernel span
+fires, all zero-axiom. -/
 def ihcHasFanKit : Bool := true
-
-/-- OWNER FALSE — the full BSZ span-of-matrices matrix -> diagram compiler
-(`ihzNormalFormStatement`) is NOT shipped this brick; only the fan kit is (see
-the Stage-7 residual: single-row `Collapse ; Expand` scalar-layer assembly, then
-the multi-row spatial sum with the generator-transpose riffle layer).  The
-committed `ihzHasNormalFormCarrier := false` stays byte-intact. -/
-def ihcHasNormalFormCompiler : Bool := false
 
 end FX1Poly.ComputerAlgebra

@@ -4,11 +4,11 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalPolynomialSmithInvariantFac
 /-! # FX1PolyAudit/.../RationalPolynomialSmithInvariantFactors — zero-axiom gate
 
 Per-declaration zero-axiom gate for the ℚ[x] Smith submatrix descent and the invariant-factor chain assembly.
-Covers T1 (the descent driver `rsiDiagonalize` and its step equations), T2 (the per-stage all-zero-cross
-correctness `rsiStageAllZeroCross`/`rsiDiagonalizeHeadAllZeroCross`), T3 (the chain assembly
-`rsiHeadDividesAllOfConsecutive` via `rbzDividesTrans`), T5 (the `xI − A` characteristic-matrix constructor
-`rsiCharMatrix`), plus the fires and content markers (including the two walls `rsiHasSmithNormalForm`,
-`rsiHasRationalCanonicalForm`).
+Covers the descent driver `rsiDiagonalize` and its step equations, the per-stage all-zero-cross correctness
+(`rsiStageAllZeroCross`/`rsiDiagonalizeHeadAllZeroCross`), the chain assembly
+(`rsiHeadDividesAllOfConsecutive` via `rbzDividesTrans`), the `xI − A` characteristic-matrix constructor
+(`rsiCharMatrix`), the fires, and the content markers (the decided `rsiHasDescentDriver` and the wall
+`rsiHasSmithNormalForm`).
 
 Every definition is structural on the `Nat` fuel or the list; every specification routes through the committed
 driver/pivot-search/divisibility lemmas and calibrated-clean `Nat` order lemmas.  Must be free of `propext`,
@@ -51,9 +51,6 @@ namespace FX1PolyAudit
 
 -- Content markers and walls
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsiHasDescentDriver
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsiHasAllZeroCrossPerStage
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsiHasChainAssembly
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsiHasSmithNormalForm
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsiHasRationalCanonicalForm
 
 end FX1PolyAudit

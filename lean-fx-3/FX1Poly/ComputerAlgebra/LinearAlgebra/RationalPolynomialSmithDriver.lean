@@ -3,66 +3,28 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalPolynomialSmithDescent
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/RationalPolynomialSmithDriver — the ℚ[x] Smith re-pivot driver
-and the all-zero cross
+/-! # RationalPolynomialSmithDriver — the ℚ[x] Smith re-pivot driver and the all-zero cross
 
-The committed descent lever (`RationalPolynomialSmithDescent`) shipped `rpxMul` degree additivity
-(`rsdDegreeMul`), the fact a nonzero pivot-multiple has degree `≥` the pivot (`rsdMultipleDegreeGePivot`),
-and the fact a nonzero residue is strictly below the pivot (`rsdResidueBelowPivotWhenNonzero`) — the
-termination CONTENT of the textbook Smith RE-PIVOT.  It WALLED the full re-pivot DRIVER owner-false
-(`rsdHasRepivotDriver := false`), naming the missing piece: the moving-position ARITY bookkeeping — after
-swapping the achieving off-pivot residue into the pivot slot, track which `(row, col)` the pivot now occupies
-and re-clear about that moving position.  This module supplies exactly that bookkeeping, in the
-MOVING-POSITION model (no row/column swap: the residue's ORIGINAL position becomes the new pivot position,
-and the re-clear happens about it), and closes the wall.
+`RationalPolynomialSmithDescent` shipped the re-pivot termination content (degree additivity, a nonzero
+pivot-multiple has degree `≥` the pivot, a nonzero residue is strictly below it) but left the driver's
+moving-position bookkeeping open. This module supplies it in the swap-free moving-position model: after
+clearing the cross about `(pivotRow, pivotCol)`, a nonzero off-pivot residue at `(newRow, newCol)` becomes the
+new pivot and the cross is re-cleared about it; the position is carried through the recursion, with no swap.
 
-## The moving-position model (no swap)
+`rseRepivotStep` clears the cross then re-clears about the moving position; it is an elementary-op composite
+(both passes reconstruction-certified) and strictly drops the pivot-degree measure `rsePivotDegree` when the
+moving position is a nonzero cross residue (`rseStepColumnStrictDrop`/`rseStepRowStrictDrop`, from
+`rsmCrossClearColMeasure`/`rsmCrossClearRowMeasure`), the moved pivot reconstructing the old cross entry as a
+`pivot`-multiple residue (`rseStepColumnReconstructs`). `rseRepivotDriver` iterates clear + `rseCrossSearch`
+(first nonzero off-pivot residue) + re-pivot, with structural `Nat` fuel = the pivot degree, which strictly
+drops each round; the base `fuel = 0` is a constant pivot dividing every entry, so one clear annihilates the
+cross (`rseConstantPivotClearsCross`). The driver reaches the all-zero cross
+(`rseRepivotDriverReachesAllZeroCross`, structural fuel induction under the invariant `pivot degree ≤ fuel`).
+The full Smith normal form remains walled (`rsiHasSmithNormalForm`).
 
-The textbook algorithm swaps a smaller residue into a FIXED pivot slot.  The equivalent, plumbing-lighter
-model tracks the pivot POSITION as data: after clearing the cross about `(pivotRow, pivotCol)`, a nonzero
-off-pivot cross residue sits at some cross position `(newRow, newCol)` (either `newRow = pivotRow` on the
-pivot row, or `newCol = pivotCol` on the pivot column).  The re-pivot re-clears the cross about
-`(newRow, newCol)` — that position becomes the new pivot.  No swap is defined; the moving position is just
-the pair `(newRow, newCol)` carried through the recursion.
-
-## T1 — the re-pivot step (`rseRepivotStep`)
-
-`rseRepivotStep matrix pivotRow pivotCol newRow newCol` clears the cross about `(pivotRow, pivotCol)` and then
-re-clears about `(newRow, newCol)`.  The step is an ELEMENTARY-OP COMPOSITE (both passes are
-reconstruction-certified cross clears, `rsmCrossClear*Reconstructs`), and it STRICTLY DROPS the pivot-degree
-measure `rsePivotDegree` when `(newRow, newCol)` is a nonzero cross residue:
-
-  * **column arm** (`rseStepColumnStrictDrop`): `newCol = pivotCol`, `newRow ≠ pivotRow` — the re-cleared
-    matrix's new pivot at `(newRow, pivotCol)` has degree strictly below the old pivot's, from
-    `rsmCrossClearColMeasure` (annihilate OR drop) resolved by nonzero;
-  * **row arm** (`rseStepRowStrictDrop`): `newRow = pivotRow`, `newCol ≠ pivotCol` — symmetric, from
-    `rsmCrossClearRowMeasure`.
-
-The moved pivot RECONSTRUCTS the old cross entry as a `pivot`-multiple residue
-(`rseStepColumnReconstructs`), the elementary-op legitimacy of the swap.
-
-## T2 — the re-pivot driver (`rseRepivotDriver`) and the all-zero cross
-
-`rseRepivotDriver fuel matrix pivotRow pivotCol` iterates: clear the cross, search it for a nonzero residue
-(`rseCrossSearch`, first off-pivot cross entry), and — if one is found — re-pivot to it and recurse with one
-less fuel.  The fuel is the pivot degree, which strictly drops each round (the residue is below the pivot).
-The base case `fuel = 0` is a CONSTANT pivot, which over the field ℚ divides every entry, so one clear
-annihilates the whole cross (`rseConstantPivotClearsCross`, the measure's `degree < 0` disjunct being
-absurd).  The driver reaches the ALL-ZERO cross (`rseRepivotDriverReachesAllZeroCross`, structural fuel
-induction: the search's soundness gives the terminal on `none` and a below-pivot-degree residue on `some`,
-so the invariant `pivot degree ≤ fuel` is preserved).  Mints `rseHasAllZeroCrossViaRepivot := true`; the
-committed `rsfHasAllZeroCrossFixedPoint := false`, `rsmHasCrossFixedPoint := false`, and
-`rsdHasAllZeroCrossViaRepivot := false` stay byte-intact.
-
-## Zero-axiom design
-
-Every definition is structural on the list (row/column), the positional index, or the `Nat` fuel; every
-specification routes through the committed cross-clear measure/reconstruction lemmas and the calibrated-clean
-`Nat` order lemmas (`Nat.not_lt_zero`, `Nat.lt_of_lt_of_le`, `Nat.le_of_lt_succ`, `Nat.lt_succ_of_le`,
-`Or.resolve_left`, `Nat.le_refl`).  The only non-list case analyses are `Option`/`Prod` projection and the
-`rpxTrim` nil/cons split (full enumeration, no wildcard arms over enumerable scrutinees).  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/RationalPolynomialSmithDriver.lean`. -/
+Every definition is structural on the list, the positional index, or the `Nat` fuel; case analyses are full
+Option/Prod/List splits. No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`,
+`funext`, or `WellFounded.fix`. Per-declaration audit twin in the matching `FX1PolyAudit` path. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -817,52 +779,17 @@ theorem rseFireDriverReachesAllZeroCross :
       exact List.cons_ne_nil (qnfOfInt 0) [qnfOfInt 0, qnfOfInt 1])
     (Nat.le_refl 2)
 
-/-! ## Content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED: the ℚ[x] Smith RE-PIVOT STEP — `rseRepivotStep` clears the cross about the pivot then re-clears
-about the moving position `(newRow, newCol)`, and STRICTLY DROPS the pivot-degree measure `rsePivotDegree`
-when that position is a nonzero cross residue (`rseStepColumnStrictDrop` on the pivot column,
-`rseStepRowStrictDrop` on the pivot row), from the committed cross-clear measure lemmas
-(`rsmCrossClearRowMeasure`/`rsmCrossClearColMeasure`) resolved by nonzero.  The step is an ELEMENTARY-OP
-COMPOSITE: the moved pivot reconstructs the old cross entry as a `pivot`-multiple residue
-(`rseStepColumnReconstructs`, from `rsmCrossClearColReconstructs`) — the legitimacy of the swap. -/
-def rseHasRepivotStepStrictDrop : Bool := true
-
-/-- DECIDED: the ℚ[x] Smith CROSS SEARCH — `rseCrossSearch` returns the first nonzero off-pivot cross residue
-(the pivot row skipping the pivot column, then the pivot column skipping the pivot row), with the full
-soundness: `none` certifies the all-zero cross (`rseCrossSearchNoneAllZero`) and `some` a nonzero cross
-position on a definite arm (`rseCrossSearchSomeCross`), built on the four structural search-soundness lemmas
-(`rseRowSearchAllSoundHolds`/`rseRowSearchExceptSoundHolds`/`rseColumnSearchAllSoundHolds`/
-`rseColumnSearchExceptSoundHolds`). -/
-def rseHasCrossSearch : Bool := true
-
-/-- DECIDED (supersedes the committed owner-false `rsfHasAllZeroCrossFixedPoint`, `rsmHasCrossFixedPoint`, and
-`rsdHasAllZeroCrossViaRepivot`, all byte-intact false): the ALL-ZERO cleared cross over ℚ[x] via the re-pivot
-DRIVER.  `rseRepivotDriver` iterates clear + `rseCrossSearch` + re-pivot with structural `Nat` fuel = the
-pivot degree, which strictly drops each round (the residue is below the pivot); the base `fuel = 0` is a
-CONSTANT pivot, which over the field ℚ divides every entry, so one clear annihilates the whole cross
-(`rseConstantPivotClearsCross`, the measure's `degree < 0` disjunct being absurd).  The driver reaches the
-all-zero cross under the invariant `pivot degree ≤ fuel` (`rseRepivotDriverReachesAllZeroCross`, structural
-fuel induction).  This closes the wall the committed descent kit named: the moving-position ARITY bookkeeping,
-handled in the swap-free moving-position model.  The termination lever `rpxMul` degree additivity (rung 7,
-`rsdDegreeMul`) makes the iteration terminate; the driver's index bookkeeping is now decided. -/
+/-- The all-zero cleared cross over ℚ[x] via the re-pivot driver is decided. `rseRepivotStep` clears the cross
+then re-clears about the moving position, an elementary-op composite that strictly drops the pivot-degree
+measure on a nonzero residue (`rseStepColumnStrictDrop`/`rseStepRowStrictDrop`, `rseStepColumnReconstructs`);
+`rseCrossSearch` returns the first nonzero off-pivot residue with full soundness
+(`rseCrossSearchNoneAllZero`/`rseCrossSearchSomeCross`). `rseRepivotDriver` iterates clear + search + re-pivot
+with fuel = the pivot degree (strictly dropping each round), the base a constant pivot dividing every entry
+(`rseConstantPivotClearsCross`), and reaches the all-zero cross (`rseRepivotDriverReachesAllZeroCross`). This
+is the moving-position bookkeeping the descent kit left open; the termination lever is `rsdDegreeMul`. The full
+Smith normal form remains walled (`rsiHasSmithNormalForm`). -/
 def rseHasAllZeroCrossViaRepivot : Bool := true
-
-/-- WALLED (owner-false; the committed `rsfHasSubmatrixDescent := false`, `rsmHasSmithNormalForm := false`,
-`rbzHasSmithNormalForm := false`, and `rsdHasInvariantFactorChain := false` stay byte-intact): the FULL Smith
-normal form over ℚ[x] — the diagonal `diag(d₁, …, dᵣ, 0, …)` with the invariant-factor divisibility chain
-`d₁ | d₂ | ⋯ | dᵣ`.  With the all-zero cross now DECIDED (`rseHasAllZeroCrossViaRepivot`) the matrix is
-block-diagonal `[[pivot, 0…], [0…, submatrix]]`, and the `(r-1)×(c-1)` extractor `rsfSubmatrix` (committed)
-is the recursion target.  Two pieces remain, neither attempted here:
-  (1) the DIAGONALIZATION DRIVER — a fresh `Nat` measure = matrix size (`rsfSubmatrix` strictly shrinks the
-      matrix), recursing pivot-search → re-pivot driver → `rsfSubmatrix`, accumulating the diagonal;
-  (2) the INVARIANT-FACTOR CHAIN `dₖ | dₖ₊₁` — this needs the pivot to divide EVERY entry of the trailing
-      submatrix (not merely its all-zero cross); when it does not, the textbook remedy adds the offending
-      row into the pivot row and re-clears, producing a still-smaller residue (a SECOND descent on top of the
-      cross clear), after which `rpeGcdDividesBoth` (each `dᵢ` is a gcd of the surviving minors) composed
-      with `rbzDividesTrans` (transitivity of `rpeDivides`) delivers the chain.  Both divisibility
-      ingredients ship; the pivot-divides-all-submatrix descent and the size-measure diagonalizer are the
-      open bookkeeping. -/
-def rseHasSubmatrixDescent : Bool := false
 
 end FX1Poly.ComputerAlgebra

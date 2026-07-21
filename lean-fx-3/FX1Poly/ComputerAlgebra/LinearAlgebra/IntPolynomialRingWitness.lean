@@ -1,39 +1,25 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegree
 import FX1Poly.ComputerAlgebra.LinearAlgebra.SetoidDeterminant
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialRingWitness — ℤ[x] as a setoid commutative ring
-(the first brick of the char-matrix → invariant-factors layer, WP-ENDO #2255)
+/-! # IntPolynomialRingWitness — ℤ[x] as a setoid commutative ring
 
-The `EndomorphismCharPolyThree` r2 docstring named "a POLYNOMIAL-valued matrix `x·I − M` and a determinant
-over `ℤ[x]` — a fresh polynomial-ring build" as the route it *avoided* (it computed the char poly via
-principal minors instead).  With the full ℤ[x] ring now shipped (`polyAdd`/`polyMul`/`polyNeg` + the
-evaluation homomorphisms), that build is now cheap: ℤ[x] is a `CommutativeRingWitness (List Int)`, which
-instantiates the ENTIRE generic `SetoidMatrix` / `cofactorDet` tower at polynomials for free.
+ℤ[x] is a `CommutativeRingWitness (List Int)`, which instantiates the entire generic `SetoidMatrix` /
+`cofactorDet` tower at polynomials.  This is the parent of the ℤ[x] ring/coefficient sub-arc, whose markers
+are consolidated here (see `fxIntPoly_hasPolynomialRingWitness`).
 
-## The eval-based setoid
+Two coefficient lists denote the same polynomial when they agree at every point (`polyDenotesSame p q :=
+∀ point, polyEval point p = polyEval point q`), so every ring law reduces to the corresponding ℤ law under
+`polyEval point` via the evaluation homomorphisms — no coefficient-list congruence bookkeeping.
 
-Two coefficient lists denote the same polynomial when they agree at **every point** (`polyDenotesSame p q :=
-∀ point, polyEval point p = polyEval point q`).  This makes every ring law a one-liner: the evaluation
-homomorphisms (`polyEvalAdd`/`polyEvalMul`/`polyEvalNeg`) collapse each polynomial law to the corresponding
-ℤ law under `polyEval point`.  No coefficient-list congruence bookkeeping is needed.
-
-## What is PROVEN
-
-  * `intPolynomialRingWitness : CommutativeRingWitness (List Int)` — ℤ[x] is a setoid commutative ring
+  * `intPolynomialRingWitness : CommutativeRingWitness (List Int)` — ℤ[x] as a setoid commutative ring
     (`zero = []`, `one = [1]`, `add = polyAdd`, `mul = polyMul`, `neg = polyNeg`; nontrivial since they
     disagree at a point).
-  * `charMatrix` / `charPolyDeterminant` — the characteristic matrix `x·I − M` (entries are the polynomials
-    `x − Mᵢᵢ` on the diagonal, `−Mᵢⱼ` off it) and its determinant `det(x·I − M)` over ℤ[x] via the generic
-    `cofactorDet` at the polynomial witness — the characteristic polynomial as an honest ℤ[x] determinant,
-    the k×k minors of which are the determinantal divisors whose successive GCDs (the shipped ℤ[x] GCD)
-    give the invariant factors.
+  * `charMatrix` / `charPolyDeterminant` — the characteristic matrix `x·I − M` and its determinant
+    `det(x·I − M)` over ℤ[x] via the generic `cofactorDet` at the polynomial witness, the k×k minors of
+    which are the determinantal divisors whose successive GCDs give the invariant factors.
 
-## Zero-axiom design
-
-Each ring law is `polyEval`-homomorphism `rw` + a ℤ law; the setoid is an equivalence by `Eq` transport at
-each point.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialRingWitness.lean`.
--/
+Each ring law is a `polyEval`-homomorphism `rw` + a ℤ law.  Free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -116,10 +102,12 @@ theorem charPolyDeterminantDiagGrounding :
             else if rowIndex = 1 ∧ colIndex = 1 then 3 else 0 })
       = [6, -5, 1] := by decide
 
-/-- Marker: ℤ[x] is a setoid commutative ring (`intPolynomialRingWitness`), instantiating the generic
-`SetoidMatrix`/`cofactorDet` tower at polynomials, so the characteristic matrix `x·I − M` and its
-determinant `det(x·I − M)` (`charPolyDeterminant`) are honest ℤ[x] objects — the substrate for the
-determinantal-divisor / invariant-factor computation over the shipped ℤ[x] GCD. -/
+/-- Consolidated marker for the ℤ[x] ring and coefficient sub-arc.  Covers: ℤ[x] as a setoid commutative
+ring (`intPolynomialRingWitness`) and the characteristic matrix `x·I − M` with its determinant
+`det(x·I − M)` (`charPolyDeterminant`) as honest ℤ[x] objects (this file); the evaluation ring homomorphism,
+linear factor, composition, powers, and monomials (`IntUnivariatePolynomial`); each positional coefficient
+as a ring homomorphism plus the monomial coefficient shift (`IntPolynomialCoeff`); and the coefficient
+vanishing bounds past the degree (`IntPolynomialCoeffBounds`). -/
 def fxIntPoly_hasPolynomialRingWitness : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -1,43 +1,26 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialPseudoDegreeDecrease
 import FX1Poly.ComputerAlgebra.Number.IntNoZeroDivisors
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialDegreeMul — the fundamental degree law
-(the WP-ENDO #2255 degree law, the tenth brick of `invariantFactorSeparator`'s ℚ[x] arc)
+/-! # IntPolynomialDegreeMul — the fundamental degree law
 
-The pieces built so far — the `polyCoeff` convolution substrate (`polyCoeffAdd`/`polyCoeffScale`), the
-degree↔coefficient bridge (`polyLeadingCoeffEqCoeffDegree`), the vanishing bounds
-(`polyCoeffZeroFromTrimLength`), the nonzero leading coefficient (`polyLeadingCoeffNonzeroWhenNonempty`),
-the strict-degree-from-vanishing lever (`polyDegreeLtOfCoeffVanishingAbove`), and the arbitrary-sign ℤ
-no-zero-divisor (`intMulNeZero`) — combine here into the *fundamental degree law of an integral-domain
-polynomial ring*:
+The coefficient substrate, the degree↔coefficient bridge, the vanishing bounds, the nonzero leading
+coefficient, the strict-degree-from-vanishing lever, and the arbitrary-sign ℤ no-zero-divisor combine into
+the fundamental degree law of an integral-domain polynomial ring:
 
   `polyDegree (polyMul p q) = polyDegree p + polyDegree q`   (for `polyTrim p ≠ []`, `polyTrim q ≠ []`).
 
-## Why it is true
+Over ℤ the top coefficient of a product is the product of the top coefficients, with all higher coefficients
+vanishing: `polyCoeffMulTop` gives `polyCoeff (polyMul p q) (deg p + deg q) = polyLeadingCoeff p *
+polyLeadingCoeff q`; `polyCoeffMulVanish` kills everything strictly above; the top coefficient is nonzero
+(`intMulNeZero`), pinning the degree from below while the vanishing pins it from above; antisymmetry gives
+equality.  `polyDegreeDvdMono` is the divisibility corollary: a nonzero multiple of `p` has degree at least
+`deg p`.
 
-Over ℤ (an integral domain) the top coefficient of a product is the product of the top coefficients, with
-all higher coefficients vanishing:
-
-  * `polyCoeffMulTop`: `polyCoeff (polyMul p q) (deg p + deg q) = polyLeadingCoeff p * polyLeadingCoeff q`
-    — the two leading terms multiply, the lower terms of `p` contribute only below `deg p + deg q`;
-  * `polyCoeffMulVanish`: every coefficient strictly above `deg p + deg q` is `0`;
-  * `intMulNeZero`: the top coefficient is nonzero (both leading coefficients nonzero, ℤ has no zero
-    divisors), pinning the degree from *below* (`polyDegreeGeOfCoeffNonzero`), while the vanishing pins it
-    from *above* (`polyDegreeLtOfCoeffVanishingAbove`).
-
-Antisymmetry of the two bounds gives equality.  `polyDegreeDvdMono` is the immediate divisibility
-corollary: a nonzero multiple of `p` has degree at least `deg p`.
-
-## Zero-axiom design
-
-Structural induction on the left factor's coefficient list; every coefficient step routes through the
-imported homomorphisms and the corpus `Int` ring lemmas, every Nat step through the constructive core
-order lemmas (`Nat.le_of_succ_le_succ`, `Nat.lt_succ_of_le`, `Nat.le_add_right`, `Nat.le_antisymm`, …).
-The product-position arithmetic is arranged so the peeled index sits *second* under `+`, making the
-successor/predecessor reductions definitional (no subtraction-order lemma, which would leak `propext`).
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
-gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialDegreeMul.lean`.
--/
+Structural induction on the left factor; coefficient steps route through the imported homomorphisms and the
+corpus `Int` ring lemmas, Nat steps through the constructive core order lemmas.  The product-position
+arithmetic keeps the peeled index second under `+`, so the successor/predecessor reductions are definitional
+(no subtraction-order lemma, which would leak `propext`).  Free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -272,12 +255,5 @@ theorem polyDegreeMulBinomialExample : polyDegree (polyMul [1, 1] [1, 1]) = 2 :=
 the degree law exhibited on the linear-factor product `[10, -7, 1]`. -/
 theorem polyDegreeMulLinearFactorsExample :
     polyDegree (polyMul (polyLinearFactor 2) (polyLinearFactor 5)) = 2 := by decide
-
-/-- Marker: the ℤ[x] fundamental degree law ships — `polyDegree (polyMul p q) = polyDegree p +
-polyDegree q` for nonzero `p`, `q` (the top coefficient is the product of the leading coefficients, hence
-nonzero by ℤ's no-zero-divisor property, while higher coefficients vanish), together with the
-divisibility corollary `polyDegreeDvdMono`.  The degree-decrease/termination content for the Euclidean
-pseudo-division GCD. -/
-def fxIntPoly_hasPolynomialDegreeMul : Bool := true
 
 end FX1Poly.ComputerAlgebra

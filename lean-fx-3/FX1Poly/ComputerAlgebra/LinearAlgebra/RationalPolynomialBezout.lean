@@ -1,47 +1,33 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalPolynomialRing
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/RationalPolynomialBezout — trim-level `rpxMul` commutativity,
-the Bezout identity over ℚ[x], and the Smith pivot-clear seed
+/-! # RationalPolynomialBezout — trim-level `rpxMul` commutativity, the Bezout identity over ℚ[x], and the
+Smith pivot-clear seed
 
-The committed ℚ[x] ring layer (`RationalPolynomialRing`) shipped `rpxMul` two-sided distributivity at plain
-`Eq`, associativity at the trim level (`rpeMulAssocTrim`), the aggregate division reconstruction
-(`rpeDivModReconstructsTrim`), and "gcd divides both" (`rpeGcdDividesBoth`) — but it WALLED the full Bezout
-identity owner-false (`rpeHasBezoutIdentity := false`).  The named prerequisite was `rpxMul` COMMUTATIVITY up
-to trim (convolution symmetry) and the left-trim-congruence it yields, to swap `f` and `g` across the
-Euclidean step.  This module supplies exactly that and closes the wall.
+The ℚ[x] ring layer (`RationalPolynomialRing`) shipped `rpxMul` two-sided distributivity, trim-level
+associativity, the aggregate division reconstruction, and "gcd divides both", but left the Bezout identity
+open, naming the missing prerequisite: `rpxMul` commutativity up to trim. This module supplies it and closes
+the wall.
 
-## What lands, and at which equality level
+`rbzMulCommTrim` proves `rpxTrim (p × q) = rpxTrim (q × p)` as convolution symmetry through the coefficient
+bridge — a right-cons coefficient decomposition (`rbzMulRightConsCoeff`, the mirror of `rpxMul`'s definitional
+left-cons recursion) turns commutativity into a clean structural induction (`rbzMulCommCoeff`). This yields the
+left-trim-congruence (`rbzMulRespectsTrimLeft`) and divisibility transitivity (`rbzDividesTrans`).
 
-  * **T1 — `rpxMul` commutativity up to trim** (`rbzMulCommTrim`).  The coefficient of a product IS the
-    convolution `rpxCoeff (rpxMul p q) n`; commutativity is proved as convolution symmetry through the
-    coefficient bridge.  The route: a RIGHT-cons coefficient decomposition (`rbzMulRightConsCoeff`, the mirror
-    of `rpxMul`'s definitional LEFT-cons recursion) turns commutativity into a clean structural induction
-    (`rbzMulCommCoeff`), closed at the trim level by the committed `rpdTrimEqOfCoeffEq`.  Yields the
-    left-trim-congruence (`rbzMulRespectsTrimLeft`) and divisibility transitivity (`rbzDividesTrans`).
-  * **T2 — the Bezout identity** (`rbzBezoutIdentity`).  `∃ u v, rpxTrim (u·primary + v·secondary) =
-    rpxTrim (rpxGcd fuel primary secondary)` at EVERY fuel — the extended Euclidean recursion, structural on
-    `fuel` (no fuel-adequacy measure needed: the aggregate reconstruction holds at every fuel).  The step
-    rewrites the current cofactor pair `(u', v')` for `(secondary, remainder)` into `(v', u' − v'·quotient)`
-    for `(primary, secondary)` through the reconstruction `primary ≡ quotient·secondary + remainder`; the
-    algebra (`rbzComboRewrite`) uses LEFT/RIGHT distributivity, `rpxMul` associativity/left-trim-congruence,
-    and an additive-cancellation of the `v'·quotient·secondary` term (`rbzCombineCancelTrim`).  Mints
-    `rbzHasBezoutIdentity := true`; the committed `rpeHasBezoutIdentity` stays byte-intact false.
-  * **T3 — the Smith pivot-clear seed.**  The ℚ[x]-matrix carrier `rbzPolyMatrix := List (List (List QnfRat))`
-    with row/entry accessors, the single-entry clear against a pivot (`rbzClearEntry`), the FIRST PIVOT
-    LEMMA — clearing reduces the entry's degree below the pivot or annihilates it
-    (`rbzClearEntryReducesDegree`, from `rpdDivModRemainderDegree`) — and the reconstruction certifying the
-    clear is a legitimate elementary operation `entry ≡ quotient·pivot + cleared`
-    (`rbzClearEntryReconstructs`, from `rpeDivModReconstructsTrim`), plus the column-clear map
-    (`rbzColumnClear`).  The full Smith recursion (pivot search, row+column clearing, submatrix descent, the
-    invariant-factor divisibility chain) is WALLED precisely (`rbzHasSmithNormalForm := false`).
+`rbzBezoutIdentity` gives `∃ u v, rpxTrim (u·p + v·q) = rpxTrim (rpxGcd fuel p q)` at every fuel via the
+extended-Euclidean recursion (`rbzBezoutInvariant`, structural on fuel, no fuel-adequacy measure needed), whose
+step swap `(u', v') ↦ (v', u' − v'·quotient)` is carried by `rbzComboRewrite` over the aggregate reconstruction
+`primary ≡ quotient·secondary + remainder`.
 
-## Zero-axiom design
+The Smith pivot-clear seed lands the ℚ[x]-matrix carrier `rbzPolyMatrix` with accessors, the single-entry
+clear (`rbzClearEntry`) and column clear (`rbzColumnClear`), the first pivot lemma (`rbzClearEntryReducesDegree`,
+from `rpdDivModRemainderDegree`), and the reconstruction certifying the clear as an elementary operation
+`entry ≡ quotient·pivot + cleared` (`rbzClearEntryReconstructs`). The full Smith normal form remains walled
+(`rsiHasSmithNormalForm`).
 
 Every convolution/negation law is structural on the coefficient list; every trim-level law routes through the
-coefficient bridge (`rpeCoeffEqOfTrimEq` / `rpdTrimEqOfCoeffEq`) and the shipped `qnf*` field laws.  The
-Bezout recursion is structural on `fuel`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`, `funext`, or `WellFounded.fix`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/RationalPolynomialBezout.lean`. -/
+coefficient bridge and the shipped `qnf*` field laws; the Bezout recursion is structural on fuel. No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.
+Per-declaration audit twin in the matching `FX1PolyAudit` path. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -437,40 +423,16 @@ theorem rbzFireClearReconstructs :
       = rpxTrim [qnfOfInt (-1), qnfOfInt 0, qnfOfInt 1] :=
   rbzClearEntryReconstructs 3 [qnfOfInt (-1), qnfOfInt 1] [qnfOfInt (-1), qnfOfInt 0, qnfOfInt 1]
 
-/-! ## Content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED: `rpxMul` is COMMUTATIVE up to trim (`rbzMulCommTrim`, convolution symmetry via the RIGHT-cons
-coefficient decomposition `rbzMulRightConsCoeff` and the coefficient bridge), with the LEFT-trim-congruence
-(`rbzMulRespectsTrimLeft`) and divisibility transitivity (`rbzDividesTrans`) it yields — the named
-prerequisite the committed Bezout wall called out. -/
-def rbzHasMulCommutativity : Bool := true
-
-/-- DECIDED (supersedes the committed owner-false `rpeHasBezoutIdentity`, which stays byte-intact false): the
-FULL Bezout identity `∃ u v, rpxTrim (u·primary + v·secondary) = rpxTrim (rpxGcd fuel primary secondary)` at
-every fuel (`rbzBezoutIdentity`), via the extended-Euclidean cofactor recursion (`rbzBezoutInvariant`,
-structural on fuel) whose step swap `(u', v') ↦ (v', u' − v'·quotient)` is carried by `rbzComboRewrite`
-(RIGHT/LEFT distributivity, `rpxMul` associativity/left-trim-congruence, and the additive cancellation
-`rbzCombineCancelTrim`) over the aggregate reconstruction `rpeDivModReconstructsTrim`. -/
+/-- The Bezout identity over ℚ[x] is decided. `rbzMulCommTrim` proves trim-level `rpxMul` commutativity
+(convolution symmetry via the right-cons coefficient decomposition `rbzMulRightConsCoeff` and the coefficient
+bridge), yielding left-trim-congruence (`rbzMulRespectsTrimLeft`) and divisibility transitivity
+(`rbzDividesTrans`). `rbzBezoutIdentity` then gives `∃ u v, rpxTrim (u·p + v·q) = rpxTrim (rpxGcd fuel p q)` at
+every fuel via the extended-Euclidean recursion `rbzBezoutInvariant` with the step rewrite `rbzComboRewrite`.
+The Smith pivot-clear seed also ships: the ℚ[x]-matrix carrier `rbzPolyMatrix` with accessors,
+`rbzClearEntry`/`rbzColumnClear`, the first pivot lemma `rbzClearEntryReducesDegree`, and the elementary-op
+reconstruction `rbzClearEntryReconstructs`. The full Smith normal form remains walled (`rsiHasSmithNormalForm`). -/
 def rbzHasBezoutIdentity : Bool := true
-
-/-- DECIDED: the Smith-reduction pivot-clear seed — the ℚ[x]-matrix carrier (`rbzPolyMatrix`) with accessors,
-the single-entry clear (`rbzClearEntry`) and column clear (`rbzColumnClear`), the FIRST PIVOT LEMMA
-(`rbzClearEntryReducesDegree`: clearing drops the entry's degree below the pivot or annihilates it, from
-`rpdDivModRemainderDegree`), and the elementary-operation reconstruction (`rbzClearEntryReconstructs`: `entry ≡
-quotient·pivot + cleared`, from `rpeDivModReconstructsTrim`). -/
-def rbzHasPivotClear : Bool := true
-
-/-- WALLED (owner-false): the FULL Smith normal form over ℚ[x] — the diagonal `diag(d₁, …, dᵣ, 0, …)` with the
-invariant-factor divisibility chain `d₁ | d₂ | ⋯ | dᵣ`.  The pivot-clear seed (T3) ships; the remaining route,
-none of it attempted this round:  (1) a full-matrix pivot search returning a minimum-degree nonzero entry's
-position;  (2) row+column clearing (the `rbzColumnClear` column analogue plus a row analogue) that drives
-every off-pivot entry in the pivot's row and column to a `pivot`-multiple residue, iterated until the residues
-vanish (the Euclidean degree drop `rbzClearEntryReducesDegree` supplies the per-step measure, but the
-fixed-point over the whole cross needs a total-degree / matrix-size termination bound);  (3) structural
-descent on the trailing submatrix dimension (a fresh `Nat` measure);  (4) the invariant-factor chain `dₖ |
-dₖ₊₁`, which combines `rpeGcdDividesBoth` with the divisibility transitivity `rbzDividesTrans` shipped here.
-The committed ℤ[x] `SmithNormalForm`/`SmithBezout*` kit likewise stops short of the full field-case NF with a
-kernel-checked invariant-factor chain. -/
-def rbzHasSmithNormalForm : Bool := false
 
 end FX1Poly.ComputerAlgebra

@@ -1,37 +1,19 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialLeadingCoeff
 import FX1Poly.ComputerAlgebra.Number.NatModularReduction
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialLeadingTermCancel — the pseudo-division step
-kills the top coefficient
-(the seventh brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialLeadingTermCancel — the pseudo-division step kills the top coefficient
 
-The pseudo-division step (`IntPolynomialDivision.polyPseudoDivMod`, taken when `polyDegree divisor ≤
-polyDegree dividend`) replaces the dividend by
-
-  `polySub (polyScale (polyLeadingCoeff divisor) dividend)
-           (polyMul (polyMonomial (polyLeadingCoeff dividend) (polyDegree dividend − polyDegree divisor))
-                    divisor)`.
-
-## What is PROVEN
-
-`polyPseudoStepTopCoeffCancels`: that replacement's coefficient at position `polyDegree dividend` is `0`
-whenever `polyDegree divisor ≤ polyDegree dividend`.  This is the leading-term cancellation — the *reason*
-the pseudo-remainder's degree strictly drops, hence the reason the Euclidean recursion terminates.  The
-computation:
-
-  * `polyCoeffScale`: the scaled dividend contributes `leadDivisor · polyCoeff dividend (deg dividend)`;
-  * `polyCoeffMonomialMul` + `natAddSubOfLe` (`e + (d − e) = d`): the quotient-term product contributes
-    `leadDividend · polyCoeff divisor (deg divisor)`;
-  * `polyLeadingCoeffEqCoeffDegree`: both positional coefficients are the leading coefficients;
-  * commutativity: `leadDivisor · leadDividend − leadDividend · leadDivisor = 0`.
-
-## Zero-axiom design
+The pseudo-division step (taken when `polyDegree divisor ≤ polyDegree dividend`) replaces the dividend by
+`leadDivisor · dividend − (leadDividend · x^(d−e)) · divisor`.  `polyPseudoStepTopCoeffCancels` proves that
+replacement's coefficient at position `polyDegree dividend` is `0`: the scaled dividend contributes
+`leadDivisor · polyCoeff dividend (deg dividend)`, the quotient-term product contributes `leadDividend ·
+polyCoeff divisor (deg divisor)` (via `polyCoeffMonomialMul` and `natAddSubOfLe`), both positional
+coefficients are the leading coefficients (`polyLeadingCoeffEqCoeffDegree`), and commutativity cancels them.
+This is why the pseudo-remainder's degree strictly drops, hence why the Euclidean recursion terminates.
 
 A `rw` chain over the coefficient homomorphisms, the degree↔coefficient bridge, the propext-clean
-`natAddSubOfLe`, and the corpus `Int` ring lemmas — all `Eq` of data.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialLeadingTermCancel.lean`.
--/
+`natAddSubOfLe`, and the corpus `Int` ring lemmas.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -81,10 +63,5 @@ theorem polyPseudoStepTopCoeffCancelsGrounding :
             [3, 2]))
         (polyDegree [-1, 0, 1])
       = 0 := by decide
-
-/-- Marker: the ℤ[x] pseudo-division step's leading-term cancellation is proven — the replacement
-dividend's coefficient at the old top degree vanishes.  This is the coefficient-level content behind the
-Euclidean GCD's termination (the degree strictly decreases each step). -/
-def fxIntPoly_hasPseudoStepLeadingTermCancellation : Bool := true
 
 end FX1Poly.ComputerAlgebra

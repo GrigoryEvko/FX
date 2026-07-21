@@ -5,36 +5,21 @@ import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntPower
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntUnivariatePolynomial — the ℤ[x] substrate
-(the first brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntUnivariatePolynomial — the ℤ[x] substrate
 
-`EndomorphismMinimalPolynomial` closed the TOP invariant factor (the minimal polynomial) as a proven
-∀-refutation, and named the honest remaining gap: the FULL invariant-factor LIST needs univariate
-polynomial GCD (Euclidean over ℚ[x] / pseudo-division over ℤ[x]), NOT eigenvalue factoring.  This file
-opens that arc with the polynomial ring itself.
-
-## The representation
-
-A univariate integer polynomial is its ASCENDING coefficient list: `[c₀, c₁, …, cₙ]` denotes
+A univariate integer polynomial is its ascending coefficient list: `[c₀, c₁, …, cₙ]` denotes
 `c₀ + c₁·x + ⋯ + cₙ·xⁿ`.  Trailing zeros are permitted (no normalization is forced), so the type is plain
-`List Int` and every operation is structural — the exact `decide`-friendly, propext-free discipline the lane
-uses.  This is the SAME coefficient convention as `matrixPolyEval`, so the two evaluation engines agree.
+`List Int` and every operation is structural.  This is the same coefficient convention as `matrixPolyEval`,
+so the two evaluation engines agree.
 
-## What is PROVEN (the ring homomorphism under evaluation)
+Evaluation `polyEval x` is a ring homomorphism `ℤ[x] → ℤ`: it commutes with `+`, scalar `·`, and `×`
+(`polyEvalAdd`, `polyEvalScale`, `polyEvalMul`, the last being the discrete-convolution correctness of
+`polyMul`), with negation and subtraction, composition as substitution, powers, the semantic ring laws, and
+monomials.  Also here: the linear factor `x − root` and the factor-theorem bridge (factor ⟹ root).  This is
+the foundation for the invariant-factor GCD.
 
-Evaluation `polyEval x` is a ring homomorphism `ℤ[x] → ℤ`: it commutes with `+`, with scalar `·`, and with
-`×`, machine-proved by structural induction — `polyEvalAdd`, `polyEvalScale`, `polyEvalMul`.  The
-multiplication case is the discrete-convolution correctness of `polyMul`, the substantive lemma the later
-GCD/Bézout steps rest on (a correct product is what makes the Euclidean remainder meaningful).
-
-## Zero-axiom design
-
-All arithmetic routes through the corpus `Int` lemmas (`intLeftDistrib`, `intRightDistrib`, `intMulAssoc`,
-`intAddAssoc`, `intAddComm`, `intMulComm`, `intZeroMul`, `intMulZero`, …).  Every definition is structural on
-the coefficient list; groundings close by `decide`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntUnivariatePolynomial.lean`.
--/
+All arithmetic routes through the corpus `Int` lemmas; every definition is structural on the coefficient
+list.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -156,11 +141,10 @@ theorem polyEvalSub (point : Int) (leftPoly rightPoly : List Int) :
     ((congrArg (polyEval point leftPoly + ·) (polyEvalNeg point rightPoly)).trans
       (intSubEqAddNeg (polyEval point leftPoly) (polyEval point rightPoly)).symm)
 
-/-! ## The linear factor and the root theorem (factor ⟹ root, the constructive direction)
+/-! ## The linear factor and the root theorem (factor ⟹ root)
 
-An eigenvalue `λ` of a matrix `M` is exactly a root of any annihilating polynomial — equivalently, the
-linear factor `x − λ` divides it.  These lemmas are that bridge in the polynomial ring: they say
-`polyEval root ((x − root) · cofactor) = 0`, riding `polyEvalMul` with no degree machinery. -/
+The polynomial-ring bridge for eigenvalues: any multiple of `x − root` vanishes at `root`
+(`polyEval root ((x − root) · cofactor) = 0`), riding `polyEvalMul` with no degree machinery. -/
 
 /-- The linear factor `x − root`, i.e. the ascending list `[-root, 1]`. -/
 def polyLinearFactor (root : Int) : List Int := [-root, 1]
@@ -219,10 +203,9 @@ theorem polyEvalCompose (point : Int) :
 
 /-! ## Powers and the semantic ring laws
 
-A minimal/annihilating polynomial `Σ cₖ·xᵏ` is a combination of powers, and evaluating it at a matrix `M`
-sends `xᵏ` to `Mᵏ` — so polynomial powers are the exact shape `matrixPolyEval` consumes.  Multiplication
-is commutative and associative UNDER evaluation even though the coefficient-list representation is not
-canonical (trailing zeros), because ℤ is. -/
+Polynomial powers are the `xᵏ ↦ Mᵏ` shape `matrixPolyEval` consumes.  Multiplication is commutative and
+associative under evaluation even though the coefficient-list representation is non-canonical (trailing
+zeros), because ℤ is. -/
 
 /-- Polynomial power `base^exponent` (the constant `1` at exponent `0`, one more factor per successor). -/
 def polyPow (base : List Int) : Nat → List Int
@@ -336,16 +319,5 @@ theorem polyMonomialExample : polyMonomial 3 2 = [0, 0, 3] := by decide
 of `polyEvalMonomial`. -/
 theorem polyEvalMonomialGrounding :
     polyEval 2 (polyMonomial 3 2) = 3 * intPower 2 2 := by decide
-
-/-- Marker: the ℤ[x] substrate ships with evaluation proved to be a ring homomorphism — additive,
-homogeneous, multiplicative, AND subtractive (`polyEvalNeg`/`polyEvalSub`), the full ring's worth of
-structure, plus the linear factor `x − root` and the factor-theorem bridge (factor ⟹ root,
-`polyLinearFactorRootAnnihilatesMultiple`), composition as the substitution homomorphism
-(`polyEvalCompose`), powers (`polyEvalPow`, the `xᵏ ↦ Mᵏ` shape) with the semantic ring laws
-(`polyEvalMulComm`/`polyEvalMulAssoc`), and monomials (`polyEvalMonomial`, the `coeff · xⁿ` division
-quotient term).  The foundation for the invariant-factor GCD; the Euclidean/pseudo-division layer (whose
-remainder is exactly the `polySub` difference shipped here) and its Bézout certificates are the next
-brick. -/
-def fxIntPoly_hasEvaluationRingHomomorphism : Bool := true
 
 end FX1Poly.ComputerAlgebra

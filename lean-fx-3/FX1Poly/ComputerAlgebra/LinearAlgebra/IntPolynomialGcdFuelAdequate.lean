@@ -2,32 +2,25 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialConstDivisorNil
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialPseudoRemBound
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialGcdRootSet
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialGcdFuelAdequate — the fuel-adequacy capstone
-(the nineteenth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialGcdFuelAdequate — the fuel-adequacy capstone of the ℤ[x] GCD
 
-The fuel-adequacy → true-fixed-point wiring the Stop-hook named: with a **computed** adequate fuel the
-Euclidean GCD terminates honestly (`polyGcdReachesNil = true`), so the r24/r25 converse root-containment
-holds **unconditionally** — no flag hypothesis to discharge.
-
-## What is PROVEN
+With a computed adequate fuel the Euclidean GCD terminates honestly (`polyGcdReachesNil = true`), so the
+converse root-containment holds unconditionally — no flag hypothesis to discharge.  This is the parent of
+the ℤ[x] GCD sub-arc, whose markers are consolidated here (see `fxIntPoly_hasGcdFuelAdequacy`).
 
   * `polyGcdStepMeasureDecreases`: the Euclidean step strictly shrinks the divisor's trim-length —
     `(polyTrim (polyPseudoRem fuel secondary primary)).length < (polyTrim secondary).length` for a nonempty
-    `secondary` and adequate inner fuel (`polyDegree primary < fuel`), by r21 (nonconstant divisor: the
-    pseudo-remainder degree drops) or r30 (constant divisor: the pseudo-remainder is zero).
+    `secondary` and adequate inner fuel, whether the divisor is nonconstant (pseudo-remainder degree drops)
+    or constant (pseudo-remainder is zero).
   * `polyGcdReachesNilOfBudget` / `polyGcdReachesNilAdequateFuel`: for
     `fuel = (polyTrim secondary).length + (polyDegree primary + polyDegree secondary) + 1`,
     `polyGcdReachesNil fuel primary secondary = true` — the strictly-decreasing measure exhausts within the
     computed fuel.
-  * `polyGcdAdequateFuelRootIffCommonRoot`: the **unconditional** headline — at that computed fuel, a point
-    is a root of `polyGcd` iff it is a common root of both inputs (r25's iff with the flag discharged).
+  * `polyGcdAdequateFuelRootIffCommonRoot`: at that computed fuel, a point is a root of `polyGcd` iff it is
+    a common root of both inputs.
 
-## Zero-axiom design
-
-Structural budget recursion threading a uniform degree bound; r21/r30 for the measure drop; core Nat order
-arithmetic.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialGcdFuelAdequate.lean`.
--/
+Structural budget recursion threading a uniform degree bound; core Nat order arithmetic.  Free of `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -167,10 +160,14 @@ theorem polyGcdReachesNilAdequateFuelGrounding :
     polyGcdReachesNil (([1, 2, 1] : List Int).length.pred.succ.succ) [-1, 0, 1] [1, 2, 1] = true := by
   decide
 
-/-- Marker: the ℤ[x] Euclidean GCD's fuel-adequacy capstone — the Euclidean step strictly shrinks the
-divisor's trim-length (`polyGcdStepMeasureDecreases`), a computed fuel reaches the honest-termination branch
-(`polyGcdReachesNilAdequateFuel`), and the converse root-containment holds unconditionally at that fuel
-(`polyGcdAdequateFuelRootIffCommonRoot`).  The "polyGcd with adequate fuel = the actual gcd" wiring. -/
+/-- Consolidated marker for the ℤ[x] Euclidean GCD sub-arc.  Covers: the fuel-adequacy capstone of this
+file — the Euclidean step strictly shrinks the divisor's trim-length (`polyGcdStepMeasureDecreases`), a
+computed fuel reaches the honest-termination branch (`polyGcdReachesNilAdequateFuel`), and the converse
+root-containment holds unconditionally at that fuel (`polyGcdAdequateFuelRootIffCommonRoot`); the Euclidean
+GCD over pseudo-division and its capture of every common root (`IntPolynomialGcd`); the root-set
+biconditional and eigenvalue-sharing shadow (`IntPolynomialGcdRootSet`); and the converse root-containment
+under the honest-termination flag (`IntPolynomialGcdConverse`).  Referenced by `RationalPolynomial` and
+`IntPolynomialDivision`. -/
 def fxIntPoly_hasGcdFuelAdequacy : Bool := true
 
 end FX1Poly.ComputerAlgebra

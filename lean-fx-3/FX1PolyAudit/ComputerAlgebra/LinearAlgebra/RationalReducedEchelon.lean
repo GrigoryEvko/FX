@@ -55,6 +55,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rreFireFalseControlSecond
 #assert_no_axioms FX1Poly.ComputerAlgebra.rreFireDistinctRrefNonSpanEqual
 #assert_no_axioms FX1Poly.ComputerAlgebra.rreHasUnitLeadCanonicalizer
-#assert_no_axioms FX1Poly.ComputerAlgebra.rreHasSpanInvariance
 
 end FX1PolyAudit

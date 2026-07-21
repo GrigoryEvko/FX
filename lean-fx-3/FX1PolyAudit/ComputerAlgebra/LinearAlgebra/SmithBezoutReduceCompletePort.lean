@@ -1,23 +1,14 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithBezoutReduceCompletePort
 
-/-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithBezoutReduceCompletePort — zero-axiom gate
-    (H2-SMITH r48, #2261 — the Bezout-drop mandate scaffolding; the mandate stays honestly UNINHABITED)
+/-! # Smith-Bezout reduce-complete port -- zero-axiom gate
 
-Per-declaration zero-axiom gate for the r48 Bezout-drop reduce-complete port: the fuel domination
-(`pivotMagnitudeWithinLeMinorAbsSum`), the cross-clean maintenance
-(`smithBezoutRepairRoundAtFoundReEstablishesCrossClean`), the boundedness + content invariance
-(`smithBezoutRepairRoundWordAtFoundBoundedBelow`, `smithBezoutRepairPositionSweepBoundedBelow`,
-`smithBezoutRepairPositionSweepPreservesMinorGcd`), the single-position K2
-(`smithBezoutLandedFindNoneAbsEqInputMinorGcd`), the reduction port (`smithReduceCompleteBezoutApplied`,
-`smithReduceCompleteBezoutDiagonalNonneg`, `smithReduceCompleteBezoutDriverOfRepairInvariants`), the r49
-gate reducer (`smithReduceCompleteBezoutMandateReducesToInvariants` over the uninhabited
-`SmithBezoutRepairInvariantsStatement`), and the fuel-adequacy residual Prop
-(`SmithBezoutRepairPositionSweepReachesFindNoneStatement`).
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`,
-`omega`.  Both the fuel-based `#assert_no_axioms` AND the independent (non-fuel) `#print axioms` are run
-on every declaration (the project macro is fuel-based — not trusted alone). -/
+Per-declaration zero-axiom gate for the Bezout-drop reduce-complete port: fuel domination, cross-clean
+maintenance, boundedness and content invariance, the single-position landed characterization, the
+reduction port, the invariants-gate reducer over the uninhabited `SmithBezoutRepairInvariantsStatement`,
+and the fuel-adequacy residual Prop. Every declaration must be free of `propext`, `Quot.sound`,
+`Classical.choice`, `sorry`, `native_decide`, `omega`. Both the fuel-based `#assert_no_axioms` and the
+independent `#print axioms` run on every declaration. -/
 
 namespace FX1PolyAudit
 

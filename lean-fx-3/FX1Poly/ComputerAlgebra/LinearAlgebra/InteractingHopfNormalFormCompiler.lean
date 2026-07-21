@@ -1,43 +1,40 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfTwoRowSum
 
 /-! # LinearAlgebra/InteractingHopfNormalFormCompiler — the general row-list normal
-form compiler and the IH_Q word-problem decision (WP-PROP-3 brick 11)
+form compiler and the IH_Q word-problem decision
 
-Discharging the committed owner-false `ihzNormalFormStatement` (the full
-span-of-matrices carrier) and closing the IH_Q word problem.  The brick-10 wall
-`ihtHasNormalFormCompiler` named the precise residual: the general spatial sum of
-a single-row gadget with an ARBITRARY well-formed sub-diagram, then the
-`split ; unshuffle ; (gadget TENSOR subDiagram) ; shuffle ; merge` assembly and
-the row-at-a-time accumulation.  This brick builds exactly that.
+Inhabits `ihzNormalFormStatement` (the full span-of-matrices carrier) and closes
+the IH_Q word problem.  The residual is the general spatial sum of a single-row
+gadget with an arbitrary well-formed sub-diagram, then the
+`split ; unshuffle ; (gadget tensor subDiagram) ; shuffle ; merge` assembly and
+the row-at-a-time accumulation.
 
-* THE GADGET-SUB-DIAGRAM TENSOR (T1, `ihxGadgetSubTensorDenote`): the brick-10
-  `ihtGadgetTensorDenote` with the SECOND factor abstracted from a gadget line to
+* The gadget-sub-diagram tensor (T1, `ihxGadgetSubTensorDenote`):
+  `ihtGadgetTensorDenote` with the second factor abstracted from a gadget line to
   an arbitrary well-formed window `subLayers`.  The block tensor
-  `(gadget[inputs,outputs] TENSOR subLayers)` relates a domain `cat (a*inputs) subDom`
+  `(gadget[inputs,outputs] tensor subLayers)` relates a domain `cat (a*inputs) subDom`
   to a codomain `cat (a*outputs) subCod` where `(subDom, subCod)` runs the
   sub-window's own relation.  Assembled through `ihtWhiskerRightSpec` +
   `ihgGadgetDenote` (first factor) and `ihuWhiskerLeftSpec` (second factor,
   abstract), tied by `ihqComposeSpec`.
 
-* THE GENERAL ASSEMBLY (T2, `ihxGeneralAssemblyDenote`): mirror of `ihtAssemblyDenote`
-  with the abstract second factor — `split ; unshuffle ; (gadget TENSOR subLayers) ;
-  shuffle ; merge` denotes the MINKOWSKI SUM of the single row's line-span and the
-  sub-window's relation: `dom = (a*inputs) + subDom`, `cod = (a*outputs) + subCod`.
-  Threaded through the committed generic `ihtSplitLayerDenote`, `ihuUnshuffleDenote`,
-  and `ihtShuffleMergeDenote` around the T1 middle.
+* The general assembly (T2, `ihxGeneralAssemblyDenote`): mirror of
+  `ihtAssemblyDenote` with the abstract second factor — `split ; unshuffle ;
+  (gadget tensor subLayers) ; shuffle ; merge` denotes the Minkowski sum of the
+  single row's line-span and the sub-window's relation: `dom = (a*inputs) + subDom`,
+  `cod = (a*outputs) + subCod`.  Threaded through the generic `ihtSplitLayerDenote`,
+  `ihuUnshuffleDenote`, and `ihtShuffleMergeDenote` around the T1 middle.
 
-* THE ROW-LIST RECURSION (T3, `ihxNormalFormCompiler`): structural recursion over
+* The row-list recursion (T3, `ihxNormalFormCompiler`): structural recursion over
   the row list — base `ihzZeroRelationDiagram` (rows = []) / step T2 (row prepended
   to the recursively-built rest-diagram), routed by the cons Minkowski decomposition
-  `ihxConsPairMem` (`span (row :: rest) = line[row] + span rest`).  INHABITS the
-  committed owner-false `ihzNormalFormStatement`, superseding the
-  `ihg`/`ihr`/`ihu`/`iht`/`ihz` owner-false markers (all left byte-intact).
+  `ihxConsPairMem` (`span (row :: rest) = line[row] + span rest`).  Inhabits
+  `ihzNormalFormStatement`.
 
-* THE IH_Q DECISION (T4, `ihxDiagramWordProblem` / `ihxNormalFormWordProblem`):
-  compose the NF compiler with the committed `ihqSpanEqB` span decision — two IH_Q
-  diagrams present the same relation iff the executable span decision fires; and
-  every relation reaches a normal-form diagram, so the diagram word problem is
-  decidable.
+* The IH_Q decision (T4, `ihxDiagramWordProblem` / `ihxNormalFormWordProblem`):
+  compose the NF compiler with the `ihqSpanEqB` span decision — two IH_Q diagrams
+  present the same relation iff the executable span decision fires; and every
+  relation reaches a normal-form diagram, so the diagram word problem is decidable.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -52,8 +49,8 @@ namespace FX1Poly.ComputerAlgebra
 
 /-! ## Stage 0 — the gadget-sub-diagram tensor layer list, its WF and cod arity -/
 
-/-- THE GADGET-SUB-DIAGRAM TENSOR: the parallel composite of a single-row gadget
-`(inputs -> outputs)` with an ARBITRARY window `subLayers`, whiskered into the
+/-- The gadget-sub-diagram tensor: the parallel composite of a single-row gadget
+`(inputs -> outputs)` with an arbitrary window `subLayers`, whiskered into the
 shared `(inputs.length + subDomWidth)` boundary.  The generalization of
 `ihrGadgetTensorLayers` whose second factor is any well-formed sub-diagram. -/
 def ihxGadgetSubLayers (inputs outputs : List QnfRat) (subDomWidth : Nat)
@@ -109,7 +106,7 @@ theorem ihxGadgetSubTensorWF (inputs outputs : List QnfRat) (subDomWidth : Nat)
 
 /-! ## Stage 1 — the gadget-sub-diagram tensor denotation (T1) -/
 
-/-- THE GADGET-SUB-DIAGRAM TENSOR DENOTATION (T1): the block tensor of the single-row
+/-- The gadget-sub-diagram tensor denotation (T1): the block tensor of the single-row
 gadget with the arbitrary window `subLayers` spans, per block, the gadget's line on
 the front and the sub-window's relation on the back — the domain splits as
 `(scale*inputs) ++ subDom` and the codomain as `(scale*outputs) ++ subCod`. -/
@@ -287,10 +284,6 @@ theorem ihxGadgetSubTensorDenote (inputs outputs : List QnfRat) (subDomWidth : N
                     (Exists.intro (ihqRowScale scale outputs) (Exists.intro subDom
                       (Exists.intro subCod (And.intro rfl (And.intro hFacts.right.left
                         (And.intro (ihqRowScaleLength scale outputs) hFacts.right.right))))))
-
-/-- DECIDED (T1): the gadget-sub-diagram tensor ships its blockwise line-and-relation
-denotation, generalizing `ihtGadgetTensorDenote` in the second factor. -/
-def ihxHasGadgetSubTensor : Bool := true
 
 /-! ## Stage 2 — the general assembly denotation (T2)
 
@@ -653,8 +646,8 @@ theorem ihxUnshuffleGadgetSubDenote (inputs outputs : List QnfRat)
                     (Exists.intro scale (Exists.intro subDom (Exists.intro subCod
                       (And.intro rfl (And.intro hFacts.right.left hFacts.right.right)))))
 
-/-- THE GENERAL ASSEMBLY DENOTATION (T2): `split ; unshuffle ;
-(gadget TENSOR subLayers) ; shuffle ; merge` denotes the MINKOWSKI SUM of the
+/-- The general assembly denotation (T2): `split ; unshuffle ;
+(gadget tensor subLayers) ; shuffle ; merge` denotes the Minkowski sum of the
 single row's line and the sub-window's relation — `dom = (a*inputs) + subDom`,
 `cod = (a*outputs) + subCod`, with `(subDom, subCod)` running `subLayers`. -/
 theorem ihxGeneralAssemblyDenote (inputs outputs : List QnfRat)
@@ -800,13 +793,9 @@ theorem ihxGeneralAssemblyDenote (inputs outputs : List QnfRat)
                     (Exists.intro scale (Exists.intro subDom (Exists.intro subCod
                       (And.intro rfl (And.intro hFacts.right.left hFacts.right.right)))))
 
-/-- DECIDED (T2): the general assembly ships the Minkowski sum of a single row's
-line with an arbitrary sub-window relation. -/
-def ihxHasGeneralAssembly : Bool := true
-
 /-! ## Stage 3 — the row-list recursion and the NF compiler (T3) -/
 
-/-- THE ROW-CONS DIAGRAM: `split ; unshuffle ; (gadget TENSOR subLayers) ;
+/-- The row-cons diagram: `split ; unshuffle ; (gadget tensor subLayers) ;
 shuffle ; merge` at boundary `(inputs.length, outputs.length)`, prepending the
 head row's line onto the sub-diagram's relation. -/
 def ihxRowConsDiagram (inputs outputs : List QnfRat)
@@ -852,7 +841,7 @@ theorem ihxRowConsDiagramCodArity (inputs outputs : List QnfRat)
       = inputs.length + inputs.length from ihtSplitLayerCodArity inputs.length)]
   exact ihxUnshuffleGadgetSubCodArity inputs outputs subLayers hSubCod
 
-/-- THE CONS MINKOWSKI DECOMPOSITION: membership in `span (row :: rest)` splits as
+/-- The cons Minkowski decomposition: membership in `span (row :: rest)` splits as
 one scalar multiple of the head row's line plus a point of `span rest`. -/
 theorem ihxConsPairMem (domWidth codWidth : Nat) (inputs outputs row : List QnfRat)
     (rest : List (List QnfRat))
@@ -944,8 +933,8 @@ theorem ihxConsPairMem (domWidth codWidth : Nat) (inputs outputs row : List QnfR
                     (IhqRowMem.head (ihqCat inputs outputs) rest)
                     (ihqMemSpanWeaken (ihqCat inputs outputs) hPartnerMem)
 
-/-- THE NORMAL-FORM CARRIER (the recursion): every generator matrix at every
-boundary is denoted by SOME well-formed diagram — base `ihzZeroRelationDiagram`,
+/-- The normal-form carrier (the recursion): every generator matrix at every
+boundary is denoted by some well-formed diagram — base `ihzZeroRelationDiagram`,
 step the row-cons diagram over the recursively-built sub-diagram. -/
 theorem ihxNormalFormCarrier (domWidth codWidth : Nat) :
     (rows : List (List QnfRat)) -> IhqAllWidth (domWidth + codWidth) rows ->
@@ -1031,19 +1020,21 @@ theorem ihxNormalFormCarrier (domWidth codWidth : Nat) :
                                   (And.intro hFacts.right.left
                                     ((hSubBridge subDom subCod).mpr hFacts.right.right)))))
 
-/-- DECIDED (T3): the committed owner-false `ihzNormalFormStatement` is INHABITED —
-every generator matrix at every boundary is denoted by SOME well-formed diagram,
-by structural recursion over the row list.  Supersedes the owner-false markers
-`ihtHasNormalFormCompiler`, `ihgHasMultiRowRiffle`, `ihzHasNormalFormCarrier`
-(all left byte-intact). -/
+/-- The `ihzNormalFormStatement` carrier is inhabited (T3): every generator matrix
+at every boundary is denoted by some well-formed diagram, by structural recursion
+over the row list. -/
 theorem ihxNormalFormCompiler : ihzNormalFormStatement := ihxNormalFormCarrier
 
-/-- DECIDED (T3): the general `R`-row normal-form compiler ships. -/
+/-- The general `R`-row normal-form compiler ships: every generator matrix at every
+boundary is denoted by some well-formed diagram, via structural recursion over the
+row list, built on the gadget sub-tensor (its blockwise line-and-relation denotation)
+and the general assembly (the Minkowski sum of a single row's line with an arbitrary
+sub-window relation). -/
 def ihxHasNormalFormCompiler : Bool := true
 
 /-! ## Stage 4 — the IH_Q word-problem decision (T4) -/
 
-/-- THE SPAN DECISION (matrix side): two relations at the same boundary present
+/-- The span decision (matrix side): two relations at the same boundary present
 the same relation iff the executable `ihqSpanEqB` decision fires. -/
 theorem ihxSpanDecision (domWidth codWidth : Nat) (rowsA rowsB : List (List QnfRat))
     (hRowsA : IhqAllWidth (domWidth + codWidth) rowsA)
@@ -1053,7 +1044,7 @@ theorem ihxSpanDecision (domWidth codWidth : Nat) (rowsA rowsB : List (List QnfR
     (fun hEquiv => ihsSpanEqBOfRelEquiv hRowsA hRowsB hEquiv)
     (fun hDecide => ihsRelEquivOfSpanEqB hRowsA hRowsB hDecide)
 
-/-- THE DIAGRAM WORD PROBLEM: two well-formed diagrams at matching boundary present
+/-- The diagram word problem: two well-formed diagrams at matching boundary present
 the same relation iff `ihqSpanEqB` on their denotation matrices fires. -/
 theorem ihxDiagramWordProblem (firstDiagram secondDiagram : IhsDiagram)
     (hFirstWF : IhsDiagramWF firstDiagram) (hSecondWF : IhsDiagramWF secondDiagram)
@@ -1073,10 +1064,9 @@ theorem ihxDiagramWordProblem (firstDiagram secondDiagram : IhsDiagram)
     (fun hEquiv => ihsSpanEqBOfRelEquiv hFirstAll hSecondAll hEquiv)
     (fun hDecide => ihsRelEquivOfSpanEqB hFirstAll hSecondAll hDecide)
 
-/-- THE IH_Q WORD-PROBLEM DECISION (headline, composing the NF compiler with
-`ihqSpanEqB`): every pair of relations compiles to normal-form diagrams, and the
-two NF diagrams present the same relation iff the span decision fires on the
-original matrices. -/
+/-- The IH_Q word-problem decision (composing the NF compiler with `ihqSpanEqB`):
+every pair of relations compiles to normal-form diagrams, and the two NF diagrams
+present the same relation iff the span decision fires on the original matrices. -/
 theorem ihxNormalFormWordProblem (domWidth codWidth : Nat)
     (rowsA rowsB : List (List QnfRat))
     (hRowsA : IhqAllWidth (domWidth + codWidth) rowsA)
@@ -1109,16 +1099,16 @@ theorem ihxNormalFormWordProblem (domWidth codWidth : Nat)
             exact ihsRelEquivTrans hFirst.right.right.right
               (ihsRelEquivTrans hRowsEquiv (ihsRelEquivSymm hSecond.right.right.right))
 
-/-- DECIDED (T4): the IH_Q word problem is decided — the NF compiler composed with
-`ihqSpanEqB` closes span-equality of diagrams. -/
+/-- The IH_Q word problem is decided (T4) by composing the NF compiler with the
+executable span decision `ihqSpanEqB`, closing span-equality of diagrams. -/
 def ihxHasWordProblemDecision : Bool := true
 
-/-! ## Stage 5 — the committed statement inhabited VERBATIM and kernel fires -/
+/-! ## Stage 5 — the statement inhabited and kernel fires -/
 
-/-- VERBATIM: the committed owner-false `ihzNormalFormStatement` is inhabited. -/
+/-- The `ihzNormalFormStatement` is inhabited. -/
 theorem ihxNormalFormStatementVerbatim : ihzNormalFormStatement := ihxNormalFormCompiler
 
-/-- T3 fire (existence): the NF compiler RUNS on a fresh 3-row matrix
+/-- T3 fire (existence): the NF compiler runs on a 3-row matrix
 `[[1,2],[1,1],[3,1]]` (boundary `(1,1)`), producing a WF diagram span-equal to it. -/
 theorem ihxFireNFCompilerRunsThreeRow :
     Exists fun nfDiagram =>
@@ -1145,25 +1135,25 @@ theorem ihxFireNFTwoRowSpan :
       [[qnfOne, ihsScalarTwo], [ihsScalarThree, qnfOne]] = true := rfl
 
 set_option maxHeartbeats 8000000 in
-/-- T3 FALSE control: the two-row NF diagram (full rank, all of `Q^2`) is NOT the
+/-- T3 false control: the two-row NF diagram (full rank, all of `Q^2`) is not the
 rank-deficient single line `[[1,0]]` (span decision refutes). -/
 theorem ihxFireNFTwoRowSpanWrong :
     ihqSpanEqB (ihsDiagramDenote ihxFireNFTwoRowDiagram)
       [[qnfOne, qnfZero]] = false := rfl
 
-/-- T4 fire (fresh EQUAL pair, boundary `(1,1)`): `[[1,1],[1,2]]` and the identity
+/-- T4 fire (equal pair, boundary `(1,1)`): `[[1,1],[1,2]]` and the identity
 `[[1,0],[0,1]]` span the same relation (both are all of `Q^2`). -/
 theorem ihxFireDecisionEqual :
     ihqSpanEqB [[qnfOne, qnfOne], [qnfOne, ihsScalarTwo]]
       [[qnfOne, qnfZero], [qnfZero, qnfOne]] = true := rfl
 
-/-- T4 fire (fresh UNEQUAL pair, FALSE control): the line `[[1,1]]` is NOT the line
+/-- T4 fire (unequal pair, false control): the line `[[1,1]]` is not the line
 `[[1,0]]` (span decision refutes). -/
 theorem ihxFireDecisionUnequal :
     ihqSpanEqB [[qnfOne, qnfOne]] [[qnfOne, qnfZero]] = false := rfl
 
-/-- T4 CONTENT fire (routes through `ihxSpanDecision.mpr`, not a span `rfl`): the
-fresh equal pair yields an honest `IhsRelEquiv` at boundary `(1,1)`. -/
+/-- T4 content fire (routes through `ihxSpanDecision.mpr`, not a span `rfl`): the
+equal pair yields an `IhsRelEquiv` at boundary `(1,1)`. -/
 theorem ihxFireDecisionContent :
     IhsRelEquiv 1 1 [[qnfOne, qnfOne], [qnfOne, ihsScalarTwo]]
       [[qnfOne, qnfZero], [qnfZero, qnfOne]] :=

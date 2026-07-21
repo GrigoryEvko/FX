@@ -2,19 +2,19 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfSchema
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfSchema — zero-axiom
-    gate (WP-PROP-3 brick 4: the IH_Q scalar schemas + NF census seed)
+    gate (the IH_Q scalar schemas + NF census seed)
 
 Per-declaration zero-axiom gate for the scalar-schema layer: the span
 inversion/introduction helpers, the right-cancellation workhorse, the
 pair-membership specs of every generator matrix and the two-cell scalar
 layers, the two/three-stage pipeline characterizations, the layer-denotation
 kernel pins, the named width witnesses, the singleton/pair extraction
-helpers, the fourteen THEOREM-level scalar-schema soundness bundles
+helpers, the fourteen theorem-level scalar-schema soundness bundles
 (quantified over the scalars), the schema row moves (`IhzRowMove` incl. every
 constructor), the generic pad-bundle engine, the padded step (`IhzStep`), the
 schema whisker congruence (`IhzConv`) with soundness and the refutation
 bridge, the `IhwConv`/`IhsConv` embeddings, the fresh-scalar fires (product
-at 4 and 1/2, cancel at 4, the 4-vs-7 FALSE control) with kernel span pins,
+at 4 and 1/2, cancel at 4, the 4-vs-7 false control) with kernel span pins,
 the instance sanity pins against the committed seed rows, the canonical NF
 chooser (`ihzCanonicalRows`: leading-one RREF with span preservation and the
 unit-pivot invariant), the zero-relation NF diagram with its base-case
@@ -165,8 +165,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihzNormalFormStatement
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihzReachabilityStatement
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihzHasScalarSchemas
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihzHasCanonicalChooser
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihzHasNormalFormCarrier
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihzReachabilityIsProven
 
 end FX1PolyAudit

@@ -100,10 +100,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsmFireCrossClearDegreeDrops
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsmFireCrossClearReconstructs
 
--- Content markers
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsmHasPivotSearch
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsmHasCrossClear
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsmHasCrossFixedPoint
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsmHasSmithNormalForm
 
 end FX1PolyAudit

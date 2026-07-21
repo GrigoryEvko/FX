@@ -85,10 +85,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rseFireDriverCrossZeroCol
 #assert_no_axioms FX1Poly.ComputerAlgebra.rseFireDriverReachesAllZeroCross
 
--- Content markers
-#assert_no_axioms FX1Poly.ComputerAlgebra.rseHasRepivotStepStrictDrop
-#assert_no_axioms FX1Poly.ComputerAlgebra.rseHasCrossSearch
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rseHasAllZeroCrossViaRepivot
-#assert_no_axioms FX1Poly.ComputerAlgebra.rseHasSubmatrixDescent
 
 end FX1PolyAudit

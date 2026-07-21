@@ -43,11 +43,11 @@ over width `dom + cod` (`IhqPairMem`), relational composition by middle-block
 elimination (`ihqComposeRows`) with the full pullback characterization
 `ihqComposeSpec` (iff, both directions — BSZ Lemma 5.10/6.6 specialized to ℚ),
 converse, identity generators; (5) RREF via back-substitution with row-space
-preservation, and the honest owner-false wall `ihqRrefUniquenessStatement`
-(syntactic RREF uniqueness — the F2 precedent, still unproven over ℚ);
+preservation, and `ihqRrefUniquenessStatement` (syntactic un-normalized RREF
+uniqueness), which is false and refuted downstream (`rfcIhqRrefUniquenessRefuted`);
+the canonical normalized `rreRref` uniqueness is proven (`rfcRreRrefUnique`);
 (6) kernel-`rfl` fires with the ℚ-content pins (scalar-2 span collapse,
-char-0 basis exchange, rational compose arithmetic) and a FALSE control;
-(7) DECIDED markers + the route note for the IH_Q presentation brick.
+char-0 basis exchange, rational compose arithmetic) and a false control.
 
 Raw Lean 4 + Init + the two ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no `List.append`, no `Nat.sub/div/mod/min/max` order lemmas, no
@@ -3469,21 +3469,11 @@ theorem ihqRrefWidth {width : Nat} (rows : List (List QnfRat))
     (hAll : IhqAllWidth width rows) : IhqAllWidth width (ihqRref rows) :=
   ihqBackReduceWidth (ihqEchelonize rows) (ihqEchelonizeWidth rows hAll)
 
-/-- CANONICITY STATEMENT (b), owner FALSE: syntactic uniqueness of the reduced
-row echelon form over ℚ — span-equal inputs give LITERALLY equal `ihqRref`
-outputs.  NOT PROVEN HERE, exactly as in the F2 precedent
-(`zxpRrefUniquenessStatement`), despite `qnfInv` making leading-1 pivot
-normalization available on this carrier.  Attacks tried and their walls:
-(1) pivot-column determination — the standard argument (pivot positions are a
-function of the row space; Hoffman–Kunze 2.5 / the column-prefix rank
-induction) needs a rank/dimension apparatus (independence, exchange) not
-present in this kit; (2) byte-canonicalization via `QnfRat` leading-1s — even
-with normalized pivots and back-substituted columns, equality of outputs still
-reduces to (1) on the pivot SET.  The field's own practice matches the
-fallback: MathComp's `mxalgebra` never proves RREF uniqueness either — its
-`(A == B)%MS` is double `submx` inclusion, i.e. exactly `ihqSpanEqB`'s mutual
-reduction.  Every DECISION use of uniqueness is served by
-`ihqSpanEqBSound`/`ihqSpanEqBComplete`. -/
+/-- Syntactic uniqueness of the UN-normalized reduced row echelon form over ℚ — span-equal inputs give
+literally equal `ihqRref` outputs. This statement is false and is refuted downstream in
+`RationalFreeColumnUniqueness` (`rfcIhqRrefUniquenessRefuted`): `[[1,2]]` and `[[2,4]]` span the same line yet
+have distinct `ihqRref`. The canonical target is the normalized `rreRref`, which IS unique (`rfcRreRrefUnique`).
+Every decision use of uniqueness is served by `ihqSpanEqBSound`/`ihqSpanEqBComplete`. -/
 def ihqRrefUniquenessStatement : Prop :=
   (width : Nat) -> (firstRows secondRows : List (List QnfRat)) ->
   IhqAllWidth width firstRows -> IhqAllWidth width secondRows ->
@@ -3491,7 +3481,8 @@ def ihqRrefUniquenessStatement : Prop :=
     (IhqMemSpan width firstRows vector <-> IhqMemSpan width secondRows vector)) ->
   ihqRref firstRows = ihqRref secondRows
 
-/-- Owner flag for the unproven RREF-uniqueness statement. -/
+/-- Owner flag: the un-normalized `ihqRrefUniquenessStatement` is not proven (it is refuted downstream,
+`rfcIhqRrefUniquenessRefuted`); the canonical normalized `rreRref` uniqueness is proven (`rfcRreRrefUnique`). -/
 def ihqRrefUniquenessIsProven : Bool := false
 
 /-! ## Stage 6 — kernel-`rfl` fires (T5)
@@ -3581,50 +3572,13 @@ divide-by-2 graph `[(2, 1)]`. -/
 theorem ihqFireConverseScaleTwo :
     ihqConverseRows 1 [[qnfOfInt 1, qnfOfInt 2]] = [[qnfOfInt 2, qnfOfInt 1]] := rfl
 
-/-! ## Stage 7 — content markers and the route note (T6) -/
+/-! ## Content marker -/
 
-/-- DECIDED: the ℚ span-equality decision is SHIPPED with both directions —
-`ihqSpanEqB` (mutual reduction over exact-pivot echelon forms) with
-`ihqSpanEqBSound` and `ihqSpanEqBComplete` against the linear-combination
-inductive `IhqMemSpan`. -/
+/-- The ℚ span/relations kit is decided. The span-equality decision `ihqSpanEqB` (mutual reduction over
+exact-pivot echelon forms) is sound and complete (`ihqSpanEqBSound`/`ihqSpanEqBComplete`) against the
+linear-combination inductive `IhqMemSpan`. Relational composition of ℚ generator-matrix relations
+(`ihqComposeRows`) is characterized by the full pullback spec `ihqComposeSpec` (iff, both directions), with the
+converse spec (`ihqConverseSpec`) and identity generators (`ihqIdRows`). -/
 def ihqHasSpanDecision : Bool := true
-
-/-- DECIDED: relational composition of ℚ generator-matrix relations is SHIPPED
-with the full pullback characterization — `ihqComposeRows` (middle-block
-leftmost, second factor negated, echelonize, filter, project) with
-`ihqComposeSpec` (iff, both directions), plus the converse spec
-(`ihqConverseSpec`) and identity generators (`ihqIdRows`).
-
-ROUTE NOTE for the IH_Q presentation brick (WP-PROP-3 brick 2), per the
-literature leg (BSZ arXiv:1403.7048):
-
-  * GENERATORS (Def 6.1): white mult `2 -> 1`, white unit `0 -> 1`, black
-    comult `1 -> 2`, black counit `1 -> 0`, scalar `k : 1 -> 1` per `k`, PLUS
-    the five mirrors.  Each denotes an `IhqPairMem`-style relation given by a
-    generator matrix over width `dom + cod`:
-      - white mult    `[(1,0,1), (0,1,1)]`   (the graph of addition, as a span:
-        `{((a,b), a+b)}` = row space of `x1 = z, x2 = z - x2`-free generators —
-        concretely the rows `(1,0 | 1)` and `(0,1 | 1)`);
-      - white unit    `[(1)]`? NO — the unit is `{((), 0)}`: width `0 + 1`,
-        generator list EMPTY (the zero subspace of Q^1); the LITERATURE-LEG
-        pitfall: empty list = zero relation, which IS the white unit's image;
-      - black comult  `[(1 | 1, 1)]` (the copy graph `{(a, (a,a))}`);
-      - black counit  `[(1 | )]` width `1 + 0`: the full line — generator `(1)`;
-      - scalar `k`    `[(1, k)]` (this kit's scale-by-`k` fire shape);
-      - mirrors: `ihqConverseRows` (SHIPPED, with `ihqConverseSpec`).
-  * COMPOSITION of denotations = `ihqComposeRows` with `ihqComposeSpec` (the
-    span/kernel route — safe over ℚ AND over ℤ; the constraint/pushout form is
-    field-only, Remark 6.9).
-  * THE GATE DISCIPLINE: every candidate IH_Q axiom row `L = R` gets the
-    relation-diff gate `ihqSpanEqB (denote L) (denote R) = true` BY `rfl` —
-    matrix-sound rows fire, unsound rows are REFUTED by a `= false` pin (the
-    WP-PROP r29/r30 lesson: label rows by what the semantics validates).
-  * Over a FIELD the binding scalar row is `k° = k⁻¹` for `k ≠ 0` (Remark 6.3)
-    — `qnfInv` + `qnfMulInvCancels` make it checkable here; over ℤ use the
-    finite presentation of §7 (scalars `{-1, 0, 1}` + antipode primitive).
-  * TENSOR (interleaved direct sum) and the interchange law are NOT yet ported
-    from the F2 kit — the natural next increment before the presentation brick
-    consumes products of generators on parallel wires. -/
-def ihqHasComposeSpec : Bool := true
 
 end FX1Poly.ComputerAlgebra

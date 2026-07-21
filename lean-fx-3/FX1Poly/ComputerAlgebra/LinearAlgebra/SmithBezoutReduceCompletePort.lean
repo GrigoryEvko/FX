@@ -1,50 +1,19 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithBezoutRoundReachable
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/SmithBezoutReduceCompletePort — the Bezout-drop driver's
-    mandate scaffolding: fuel domination, cross-clean maintenance, single-position content invariance
-    + K2, and the mechanical reduction port (H2-SMITH r48, #2261)
+/-! # Smith-Bezout reduce-complete port
 
-## ★★ MANDATE STATUS: NOT FIRED — HONEST CUT (residuals named for r49) ★★
+Scaffolding for the Bezout-drop divisibility driver: fuel domination, cross-clean maintenance,
+single-position content invariance, and the mechanical reduction port.
+`SmithReduceCompleteBezoutDriverStatement` and the earlier in-block variant remain uninhabited here.
+The module reduces that mandate to one named residual, `SmithBezoutRepairInvariantsStatement`, the two
+Phase-B invariants (window-diagonality and prefix chain) over the Bezout repair output; the reduction
+port discharges Phase C internally. The genuinely open arcs -- fuel-adequacy find-`none` reachability
+and the multi-position chain assembly -- are recorded as uninhabited Props rather than inhabited by a
+weakened variant.
 
-`SmithReduceCompleteBezoutDriverStatement` (`SmithBezoutRoundReachable`) stays UNINHABITED in r48, and so
-does the original `SmithReduceCompleteInBlockDriverStatement` — both byte-intact.  The #2261 mandate needs
-FOUR pieces glued: (A) K1 lifted to fuel adequacy (the fueled Bezout sweep REACHES find-`none`), (B) the
-single-position landed characterization K2, (C) the multi-position chain assembly, (D) the mechanical
-reduction port.  This round ships the MECHANICAL scaffolding and the single-position K2 hypothesis-bound
-on the landed find-`none`, and reduces the whole mandate to ONE named residual Prop
-`SmithBezoutRepairInvariantsStatement` (the two Phase-B invariants over the Bezout repair output).  The
-genuinely-open arcs — fuel-adequacy positivity-maintenance (α) + trailing-cascade-preserves-`none` (β),
-and the word-tied multi-position chain port — are NAMED LOUDLY below and stay UNINHABITED.  NOTHING here
-inhabits a weakened variant and calls it the mandate.
-
-## What r48 ships (all additive; consumes shipped r44/r45/r47 levers; zero fabrication)
-
-  * **Fuel domination** `pivotMagnitudeWithinLeMinorAbsSum` — the K1 measure `pivotMagnitudeWithin` is
-    dominated by the per-position seed `smithMinorAbsSum` (from `smithMinorEntryLeAbsSum` at the pivot).
-    So the seed the driver actually feeds the position sweep provably bounds the descent measure.
-  * **Cross-clean maintenance** `smithBezoutRepairRoundAtFoundReEstablishesCrossClean` — one Bezout-drop
-    round RE-ESTABLISHES the clean cross (the K1 guard is a LOOP INVARIANT, not a per-round assumption).
-    Rides the shipped `smithCascadeSweepSeedReachesCrossClear` on the round's trailing cascade.
-  * **Content invariance** `smithBezoutRepairRoundWordAtFoundBoundedBelow` +
-    `smithBezoutRepairPositionSweepBoundedBelow` + `smithBezoutRepairPositionSweepPreservesMinorGcd` —
-    every Bezout-round letter is bounded below the pivot, so `minorGcdStableUnderBoundedWord` (r43) makes
-    the position sweep INVARIANT on the sub-block gcd.
-  * **K2 single-position** `smithBezoutLandedFindNoneAbsEqInputMinorGcd` — IF the Bezout sweep's landed
-    pivot has whole-block find-`none` THEN `|landed pivot| = |gcd(INPUT minor)|`.  The r45 iff bridge +
-    r44 keystone + content invariance, hypothesis-bound on the operational landing test.
-  * **Reduction port** `smithReduceCompleteBezoutApplied` + `smithReduceCompleteBezoutDiagonalNonneg` +
-    `smithReduceCompleteBezoutDriverOfRepairInvariants` — the mandate follows from the TWO Phase-B
-    invariants on the Bezout repair output (window-diagonal + chain); Phase C is discharged internally.
-  * **The r49 gate** `SmithBezoutRepairInvariantsStatement` (recorded, UNINHABITED) + the reducer
-    `smithReduceCompleteBezoutMandateReducesToInvariants`: the mandate is now
-    `SmithBezoutRepairInvariantsStatement → SmithReduceCompleteBezoutDriverStatement`.
-  * **The fuel-adequacy residual** `SmithBezoutRepairPositionSweepReachesFindNoneStatement` (recorded,
-    UNINHABITED) — the (α)+(β) arc feeding the invariants via the per-position K2.
-
-Raw Lean 4 + `Init`, STRUCTURAL only; no `axiom`/`sorry`/`propext`/`Quot.sound`/`Classical`/`omega`/
-`native_decide`/`WellFounded.fix`.  ASCII identifiers.  ADDITIVE only — the r18-r47 world is byte-intact.
-Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithBezoutReduceCompletePort.lean`. -/
+Raw Lean 4 on `Init`, structural only, ASCII identifiers, no `axiom`/`sorry`/`propext`/`Quot.sound`/
+`Classical`/`omega`/`native_decide`/`WellFounded.fix`. Per-declaration zero-axiom gate in the
+FX1PolyAudit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -52,14 +21,12 @@ open IntMatrix
 
 set_option maxRecDepth 100000
 
-/-! ## Brick 1 — fuel domination: the K1 measure sits below the per-position seed -/
+/-! ## Fuel domination: the descent measure sits below the per-position seed -/
 
-/-- **The pivot magnitude is dominated by the minor abs-sum seed** — `pivotMagnitudeWithin matrix
-pivotIndex` (`= |diagonalEntryAt pivotIndex|`, the K1 descent measure) is `≤ smithMinorAbsSum matrix
-pivotIndex height width`, the STATIC fuel the Bezout position sweep is actually seeded with (at
-`smithBezoutDivisibilityRepairSweep`).  Instantiates the shipped `smithMinorEntryLeAbsSum` at the pivot
-witness `(pivotIndex, pivotIndex)`, in range by `natLtAddSubOfLt`.  So the seed provably dominates the
-measure — the fuel-adequacy base is met at every position. -/
+/-- `pivotMagnitudeWithin matrix pivotIndex` (the descent measure `|diagonalEntryAt pivotIndex|`) is
+bounded by `smithMinorAbsSum matrix pivotIndex height width`, the seed the Bezout position sweep is fed.
+Instantiates `smithMinorEntryLeAbsSum` at the pivot witness `(pivotIndex, pivotIndex)`, so the seed
+dominates the measure at every position. -/
 theorem pivotMagnitudeWithinLeMinorAbsSum (matrix : IntMatrix) (pivotIndex height width : Nat)
     (pRowLt : pivotIndex < height) (pColLt : pivotIndex < width) :
     pivotMagnitudeWithin matrix pivotIndex ≤ smithMinorAbsSum matrix pivotIndex height width :=
@@ -69,14 +36,13 @@ theorem pivotMagnitudeWithinLeMinorAbsSum (matrix : IntMatrix) (pivotIndex heigh
     (Nat.le_refl pivotIndex)
     (natLtAddSubOfLt pivotIndex pivotIndex width (Nat.le_refl pivotIndex) pColLt)
 
-/-! ## Brick 2 — cross-clean maintenance: the K1 guard is a loop invariant -/
+/-! ## Cross-clean maintenance: the clean-cross guard is a loop invariant -/
 
-/-- **One Bezout-drop round re-establishes the clean cross** — the round's trailing letter is the shipped
-`smithCascadeSweep` at its ACTUAL seed fuel `smithMinorAbsSum afterClear`, so its output cross is clear by
-`smithCascadeSweepSeedReachesCrossClear`.  The staged matrices `afterFold`/`afterSign`/`afterClear` are the
-round's own `let`s; each stays rectangular by `applyOperationsPreservesRectangular` (mirrors the K1 proof).
-This is the MAINTENANCE half of fuel adequacy: the K1 clean-cross guard is re-established every round, hence
-a LOOP INVARIANT — not a fresh per-round assumption. -/
+/-- One Bezout-drop round re-establishes the clean cross: its trailing letter is `smithCascadeSweep` at
+the seed `smithMinorAbsSum afterClear`, whose output cross is clear by
+`smithCascadeSweepSeedReachesCrossClear`. The staged matrices `afterFold`/`afterSign`/`afterClear` stay
+rectangular under `applyOperationsPreservesRectangular`. Hence the clean-cross guard holds every round,
+a loop invariant rather than a per-round assumption. -/
 theorem smithBezoutRepairRoundAtFoundReEstablishesCrossClean
     (work : IntMatrix) (pivotIndex height width foundRow foundCol : Nat)
     (isRect : work.IsRectangular height width)
@@ -105,14 +71,13 @@ theorem smithBezoutRepairRoundAtFoundReEstablishesCrossClean
       pivotIndex height width = true
   exact smithCascadeSweepSeedReachesCrossClear afterClear pivotIndex height width afterClearRect pRowLt pColLt
 
-/-! ## Brick 3 — content invariance: the Bezout position sweep preserves the sub-block gcd -/
+/-! ## Content invariance: the Bezout position sweep preserves the sub-block gcd -/
 
-/-- **The Bezout-drop round WORD is bounded below the pivot** — every letter (the found-row fold, the
-sign-normalise, the single Bezout column op, and the trailing cascade) is at indices `≥ pivotIndex ≥ lo`.
-The fold source `foundRow` and the column target `foundCol` are `≥ pivotIndex` (the caller threads the
-`smithFindNonDividingInBlockSomeProperties` witnesses); the sign word by
-`smithSignNormalizeOpsBoundedBelow`, the cascade by `smithCascadeSweepBoundedBelow`.  So
-`minorGcdStableUnderBoundedWord` (r43) applies UNCHANGED to the Bezout word. -/
+/-- Every letter of the Bezout-drop round word (found-row fold, sign normalisation, the single Bezout
+column op, the trailing cascade) sits at indices `>= pivotIndex >= lo`. The fold source `foundRow` and
+column target `foundCol` are `>= pivotIndex` from `smithFindNonDividingInBlockSomeProperties`; the sign
+word via `smithSignNormalizeOpsBoundedBelow` and the cascade via `smithCascadeSweepBoundedBelow`. This
+lets `minorGcdStableUnderBoundedWord` apply to the Bezout word. -/
 theorem smithBezoutRepairRoundWordAtFoundBoundedBelow (lo : Nat) (work : IntMatrix)
     (pivotIndex height width foundRow foundCol : Nat)
     (pivotRowInRange : pivotIndex < height) (pivotColInRange : pivotIndex < width)
@@ -128,10 +93,10 @@ theorem smithBezoutRepairRoundWordAtFoundBoundedBelow (lo : Nat) (work : IntMatr
   · exact smithCascadeSweepBoundedBelow lo _ _ pivotIndex height width
       pivotRowInRange pivotColInRange pivotGe
 
-/-- **The Bezout position-sweep WORD is bounded below the pivot** — the `none`-branch standalone cascade,
-and the `some`-branch round word `++` the recursion, are all at indices `≥ pivotIndex ≥ lo`.  Structural on
-`fuel`.  The `some`-branch found position sits at `≥ pivotIndex` by
-`smithFindNonDividingInBlockSomeProperties` (both coordinates), feeding the round-word boundedness. -/
+/-- The whole Bezout position-sweep word is bounded below the pivot: the `none`-branch cascade and the
+`some`-branch round word followed by the recursion all sit at indices `>= pivotIndex >= lo`. Structural
+on `fuel`; the found position is `>= pivotIndex` (both coordinates) by
+`smithFindNonDividingInBlockSomeProperties`. -/
 theorem smithBezoutRepairPositionSweepBoundedBelow (lo : Nat) :
     ∀ (fuel : Nat) (matrix : IntMatrix) (pivotIndex height width : Nat),
       pivotIndex < height → pivotIndex < width → lo ≤ pivotIndex →
@@ -164,10 +129,9 @@ theorem smithBezoutRepairPositionSweepBoundedBelow (lo : Nat) :
             (smithBezoutRepairPositionSweepBoundedBelow lo fuel _ pivotIndex height width
               pivotRowInRange pivotColInRange pivotGe)
 
-/-- **The Bezout position sweep preserves the sub-block content** (r43 applied to the Bezout word) —
-`minorGcdWithin` of the `[pivotIndex, ·)²` block is INVARIANT across the Bezout position repair.  The
-boundedness (`smithBezoutRepairPositionSweepBoundedBelow` at `lo := pivotIndex`) feeds
-`minorGcdStableUnderBoundedWord`.  So the gcd of the LANDED minor equals the gcd of the INPUT minor. -/
+/-- `minorGcdWithin` of the `[pivotIndex, .)^2` block is invariant across the Bezout position repair.
+Boundedness (`smithBezoutRepairPositionSweepBoundedBelow` at `lo := pivotIndex`) feeds
+`minorGcdStableUnderBoundedWord`, so the landed minor gcd equals the input minor gcd. -/
 theorem smithBezoutRepairPositionSweepPreservesMinorGcd (matrix : IntMatrix) (pivotIndex height width : Nat)
     (isRect : matrix.IsRectangular height width) (pRowLt : pivotIndex < height) (pColLt : pivotIndex < width) :
     minorGcdWithin
@@ -181,16 +145,14 @@ theorem smithBezoutRepairPositionSweepPreservesMinorGcd (matrix : IntMatrix) (pi
       (smithMinorAbsSum matrix pivotIndex height width) matrix pivotIndex height width
       pRowLt pColLt (Nat.le_refl pivotIndex))
 
-/-! ## Brick 4 — K2: the single-position landed characterization (hypothesis-bound on find-`none`) -/
+/-! ## Single-position landed characterization (bound on find-`none`) -/
 
-/-- **The Bezout-driver localized keystone** — IF the Bezout position sweep's landed pivot has whole-block
-find-`none` (the loop's OWN `none`-branch termination condition, on the LANDED state), THEN `|landed pivot|
-= |gcd(INPUT minor)|`.  Route: the r45 bridge `smithFindNonDividingInBlockNoneIffDivisibleWithin` turns
-find-`none` into the whole-block divisibility the r44 keystone `blockDivisibilityImpliesAbsEqMinorGcd`
-consumes, giving `|landed| = |gcd(LANDED minor)|`; the r43-style content invariance
-`smithBezoutRepairPositionSweepPreservesMinorGcd` rewrites the LANDED minor gcd to the INPUT minor gcd.
-Hypothesis-bound on the OPERATIONAL find-`none` — EXACTLY the Bezout loop's landing test.  The Bezout-word
-twin of the r45 `smithRepairInBlockLandedFindNoneAbsEqInputMinorGcd`. -/
+/-- If the Bezout position sweep's landed pivot has whole-block find-`none`, then `|landed pivot| =
+|gcd(input minor)|`. The bridge `smithFindNonDividingInBlockNoneIffDivisibleWithin` turns find-`none`
+into whole-block divisibility, which `blockDivisibilityImpliesAbsEqMinorGcd` sends to `|landed| =
+|gcd(landed minor)|`; `smithBezoutRepairPositionSweepPreservesMinorGcd` rewrites that to the input minor
+gcd. Bound on the operational find-`none`, the Bezout-word twin of
+`smithRepairInBlockLandedFindNoneAbsEqInputMinorGcd`. -/
 theorem smithBezoutLandedFindNoneAbsEqInputMinorGcd (matrix : IntMatrix) (pivotIndex height width : Nat)
     (isRect : matrix.IsRectangular height width) (pRowLt : pivotIndex < height) (pColLt : pivotIndex < width)
     (landedFindNone :
@@ -218,12 +180,11 @@ theorem smithBezoutLandedFindNoneAbsEqInputMinorGcd (matrix : IntMatrix) (pivotI
   rw [keystoneAtLanded,
     smithBezoutRepairPositionSweepPreservesMinorGcd matrix pivotIndex height width isRect pRowLt pColLt]
 
-/-! ## Brick 5 — the reduction port: the mandate from the two Phase-B invariants -/
+/-! ## Reduction port: the mandate from the two Phase-B invariants -/
 
-/-- **The Bezout driver's applied output splits off the sign phase** — the Bezout-word twin of
-`smithReduceCompleteApplied`.  `smithReduceCompleteBezout`'s certificate is `diagOps ++ repairOps ++
-signOps`; applying it splits into the sign sweep over the Bezout repair output (`applyOperationsAppend`
-twice). -/
+/-- Applying `smithReduceCompleteBezout`'s certificate (`diagOps ++ repairOps ++ signOps`) splits into
+the sign sweep over the Bezout repair output, by `applyOperationsAppend` twice. The Bezout-word twin of
+`smithReduceCompleteApplied`. -/
 theorem smithReduceCompleteBezoutApplied (matrix : IntMatrix) (height width : Nat) :
     matrix.applyOperations (smithReduceCompleteBezout matrix height width).operations
       = (((matrix.applyOperations (smithReduceTotal matrix height width).operations).applyOperations
@@ -248,11 +209,10 @@ theorem smithReduceCompleteBezoutApplied (matrix : IntMatrix) (height width : Na
               0 height width) = _
   rw [applyOperationsAppend, applyOperationsAppend]
 
-/-- **`nonnegHolds` for the Bezout driver (Phase C)** — the diagonal of the full Bezout-driver output is
-nonnegative at every window position.  The Bezout-word twin of `smithReduceCompleteDiagonalNonneg`: the
-applied output splits off the sign phase (`smithReduceCompleteBezoutApplied`), whose input `afterRepair`
-stays rectangular (`applyOperationsPreservesRectangular`); `signSweepDiagonalNonnegReached` delivers
-nonnegativity.  Word-agnostic in the sign phase — no Bezout-specific invariant is needed. -/
+/-- The full Bezout-driver output has nonnegative diagonal at every window position. The applied output
+splits off the sign phase (`smithReduceCompleteBezoutApplied`) over a rectangular `afterRepair`, and
+`signSweepDiagonalNonnegReached` gives nonnegativity; no Bezout-specific invariant is needed. The
+Bezout-word twin of `smithReduceCompleteDiagonalNonneg`. -/
 theorem smithReduceCompleteBezoutDiagonalNonneg :
     ∀ (matrix : IntMatrix) (height width : Nat),
       matrix.IsRectangular height width →
@@ -279,14 +239,12 @@ theorem smithReduceCompleteBezoutDiagonalNonneg :
   exact signSweepDiagonalNonnegReached (Nat.min height width) _ 0 height width position
     afterRepairRect (natZeroLe position) positionBelowShifted positionBelowHeight positionBelow
 
-/-- **The Bezout-driver mandate reduced to the two Phase-B invariants** — `SmithReduceCompleteBezout
-DriverStatement` follows from just TWO invariant obligations on the Bezout repair output `afterRepair`:
-window-diagonality at 0 and the full prefix chain.  Phase C (`nonnegHolds`) is discharged internally
-(`smithReduceCompleteBezoutDiagonalNonneg`); the sign phase carries window-diagonality and the chain from
-`afterRepair` to the full output (`smithSignSweepPreservesWindowDiagonal` / `smithSignSweepPreservesChain`
-composed with `smithReduceCompleteBezoutApplied`).  The Bezout-word twin of
-`smithReduceCompleteDriverOfRepairInvariants`.  The two survivors are the r49 arc (ARC-C, fed by the
-per-position K2 `smithBezoutLandedFindNoneAbsEqInputMinorGcd` and the fuel-adequacy find-`none`). -/
+/-- `SmithReduceCompleteBezoutDriverStatement` follows from two invariant obligations on the Bezout
+repair output: window-diagonality at 0 and the full prefix chain. Phase C is discharged internally by
+`smithReduceCompleteBezoutDiagonalNonneg`, and the sign phase carries window-diagonality and the chain
+from `afterRepair` to the full output via `smithSignSweepPreservesWindowDiagonal` /
+`smithSignSweepPreservesChain` composed with `smithReduceCompleteBezoutApplied`. The Bezout-word twin of
+`smithReduceCompleteDriverOfRepairInvariants`. -/
 theorem smithReduceCompleteBezoutDriverOfRepairInvariants
     (repairWindowDiagHolds : ∀ (matrix : IntMatrix) (height width : Nat),
       matrix.IsRectangular height width →
@@ -336,14 +294,14 @@ theorem smithReduceCompleteBezoutDriverOfRepairInvariants
         exact smithSignSweepPreservesChain _ height width
           afterRepairRect (repairChainHolds matrix height width isRect))
 
-/-! ## Brick 6 — the r49 gate + the fuel-adequacy residual (recorded, honestly UNINHABITED) -/
+/-! ## The invariants gate and the fuel-adequacy residual (recorded, uninhabited) -/
 
-/-- **The r49 gate — the two Phase-B invariants over the Bezout repair output** (recorded, UNINHABITED).
-The conjunction of `smithReduceCompleteBezoutDriverOfRepairInvariants`'s two hypotheses.  Once this is
-inhabited the #2261 mandate fires by `smithReduceCompleteBezoutMandateReducesToInvariants`.  It decomposes
-into the fuel-adequacy find-`none` (`SmithBezoutRepairPositionSweepReachesFindNoneStatement`), the
-per-position K2 (`smithBezoutLandedFindNoneAbsEqInputMinorGcd`, r48-shipped), and the word-tied
-multi-position chain assembly (ARC-C).  It is NEVER inhabited by a weakened variant. -/
+/-- The two Phase-B invariants over the Bezout repair output: window-diagonality at 0 and the full
+prefix chain (the conjunction of `smithReduceCompleteBezoutDriverOfRepairInvariants`'s two hypotheses).
+Uninhabited here; once inhabited the mandate fires by
+`smithReduceCompleteBezoutMandateReducesToInvariants`. It decomposes into the fuel-adequacy find-`none`
+(`SmithBezoutRepairPositionSweepReachesFindNoneStatement`), the per-position characterization
+(`smithBezoutLandedFindNoneAbsEqInputMinorGcd`), and the multi-position chain assembly. -/
 def SmithBezoutRepairInvariantsStatement : Prop :=
   (∀ (matrix : IntMatrix) (height width : Nat),
       matrix.IsRectangular height width →
@@ -361,24 +319,21 @@ def SmithBezoutRepairInvariantsStatement : Prop :=
             (matrix.applyOperations (smithReduceTotal matrix height width).operations) 0 height width))
         (Nat.min height width) height width)
 
-/-- **The mandate reduces to the r49 gate** — the #2261 mandate `SmithReduceCompleteBezoutDriverStatement`
-is inhabited AS SOON AS `SmithBezoutRepairInvariantsStatement` is.  This is the CRISP honest cut: r48
-discharges the reduction port; the residual is exactly the two named invariants.  Consumes the two
-conjuncts through `smithReduceCompleteBezoutDriverOfRepairInvariants`. -/
+/-- `SmithReduceCompleteBezoutDriverStatement` is inhabited as soon as
+`SmithBezoutRepairInvariantsStatement` is, by feeding its two conjuncts through
+`smithReduceCompleteBezoutDriverOfRepairInvariants`. -/
 theorem smithReduceCompleteBezoutMandateReducesToInvariants
     (invariants : SmithBezoutRepairInvariantsStatement) :
     SmithReduceCompleteBezoutDriverStatement :=
   smithReduceCompleteBezoutDriverOfRepairInvariants invariants.1 invariants.2
 
-/-- **The fuel-adequacy residual (recorded, UNINHABITED)** — the fueled Bezout position sweep at its
-ACTUAL seed `smithMinorAbsSum` REACHES find-`none` on a rectangular, clean-cross state.  This is the (A)
-arc: structural on the fuel with the K1 measure `pivotMagnitudeWithin` as the decreasing witness (bounded
-by the seed via `pivotMagnitudeWithinLeMinorAbsSum`), threading the maintenance
-(`smithBezoutRepairRoundAtFoundReEstablishesCrossClean`) so the clean-cross guard is a loop invariant.  It
-stays UNINHABITED in r48 — the two genuinely-open sub-obligations are the positivity-maintenance (find-
-`some` ⟹ positive pivot on the reachable class, α) and the trailing-cascade-preserves-`none` (β).  Once
-inhabited, it feeds the per-position K2 `smithBezoutLandedFindNoneAbsEqInputMinorGcd` toward the r49 gate.
-It is NEVER inhabited by a weakened variant. -/
+/-- The fueled Bezout position sweep at its seed `smithMinorAbsSum` reaches find-`none` on a
+rectangular, clean-cross state. The intended route is structural on fuel with `pivotMagnitudeWithin` as
+the decreasing witness (bounded by the seed via `pivotMagnitudeWithinLeMinorAbsSum`), threading the
+maintenance `smithBezoutRepairRoundAtFoundReEstablishesCrossClean` so the clean-cross guard is a loop
+invariant. Uninhabited here; the open sub-obligations are positivity maintenance (find-`some` implies a
+positive pivot on the reachable class) and trailing-cascade-preserves-`none`. Once inhabited it feeds
+the per-position characterization `smithBezoutLandedFindNoneAbsEqInputMinorGcd` toward the invariants. -/
 def SmithBezoutRepairPositionSweepReachesFindNoneStatement : Prop :=
   ∀ (matrix : IntMatrix) (pivotIndex height width : Nat),
     matrix.IsRectangular height width → pivotIndex < height → pivotIndex < width →

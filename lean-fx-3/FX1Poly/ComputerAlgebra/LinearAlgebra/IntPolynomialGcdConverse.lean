@@ -3,51 +3,25 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegree
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegreeBound
 import FX1Poly.ComputerAlgebra.Number.IntNoZeroDivisors
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialGcdConverse — every GCD root is a common root
-(the twelfth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialGcdConverse — every GCD root is a common root
 
-`IntPolynomialGcd` proved the *forward* direction — the GCD vanishes at every common root of its inputs
-(`polyGcdVanishesAtCommonRoot`).  This file proves the *converse*: every root of the GCD is a common root
-of the inputs, so the GCD's root set is *exactly* the common-root set.
+Proves the converse of `polyGcdVanishesAtCommonRoot`, so the GCD's root set is exactly the common-root set.
+`polyPseudoRemBackwardRoot` is the single Euclidean-step converse (for a nonzero divisor, `eval(divisor) = 0
+∧ eval(pseudoRem) = 0 → eval(dividend) = 0`, cancelling `leadDivisor^scalePower` off the reconstruction via
+the ℤ no-zero-divisor).  `polyGcdRootIsCommonRoot` carries it through the recursion under the `Bool`-valued
+honest-termination flag `polyGcdReachesNil`, which rules out the fuel-exhaustion fallback that would
+otherwise break the converse.
 
-## What is PROVEN
-
-  * `polyPseudoRemBackwardRoot` (the single Euclidean-step converse): for a nonzero `divisor`,
-    `eval(divisor) = 0 ∧ eval(pseudoRem) = 0 → eval(dividend) = 0` — read backward off the r10
-    reconstruction `leadDivisor^scalePower · eval(dividend) = eval(quotient)·eval(divisor) +
-    eval(remainder)`: both right-hand terms vanish, so `leadDivisor^scalePower · eval(dividend) = 0`, and
-    (r22, `leadDivisor ≠ 0` since the divisor is nonempty) `eval(dividend) = 0`.
-  * `polyGcdRootIsCommonRoot` (the full converse): every root of `polyGcd fuel primary secondary` is a root
-    of *both* `primary` and `secondary` — **provided the recursion terminated honestly** (the adequacy flag
-    `polyGcdReachesNil`, i.e. it reached the `polyTrim secondary = []` branch rather than exhausting fuel).
-    The `fuel = 0` fallback returns `primary` and says nothing about `secondary`, so the adequacy guard is
-    exactly the honest boundary; the flag is discharged by fuel-adequacy (r21) at any real call site.
-
-Together with `polyGcdVanishesAtCommonRoot`, the polynomial GCD's roots ARE the common roots.
-
-## Why the adequacy flag
-
-`polyGcd 0 primary _ = primary` unconditionally, and `polyGcd (fuel+1) primary secondary = primary` when
-`polyTrim secondary = []` (secondary is the zero polynomial there, so it vanishes at *every* point — the
-converse holds).  Only the fuel-exhaustion fallback breaks the converse, so `polyGcdReachesNil` rules
-exactly that out: `true` at `fuel+1`/nil, recursion otherwise, and at `fuel = 0` it demands
-`polyTrim secondary = []`.
-
-## Zero-axiom design
-
-Reconstruction identity + the arbitrary-sign ℤ no-zero-divisor (r22) + structural fuel recursion; the
-adequacy flag is `Bool`-valued (no Prop-match), and the only case analysis is `polyTrim`'s `nil`/`cons`
-enumeration closed by `Bool.noConfusion` / `List.cons_ne_nil`.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialGcdConverse.lean`.
--/
+Reconstruction identity + ℤ no-zero-divisor + structural fuel recursion; `Bool.noConfusion` /
+`List.cons_ne_nil` close the `polyTrim` split.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-! ## The single Euclidean-step converse -/
 
 /-- **A root of the divisor and the pseudo-remainder is a root of the dividend.**  For a nonzero `divisor`,
-`eval(divisor) = 0 ∧ eval(pseudoRem) = 0 → eval(dividend) = 0`.  The r10 reconstruction gives
+`eval(divisor) = 0 ∧ eval(pseudoRem) = 0 → eval(dividend) = 0`.  The reconstruction gives
 `leadDivisor^scalePower · eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder) = 0`, and the
 leading power is nonzero, so the dividend vanishes. -/
 theorem polyPseudoRemBackwardRoot (point : Int) (fuel : Nat) (divisor dividend : List Int)
@@ -93,11 +67,9 @@ def polyGcdReachesNil : Nat → List Int → List Int → Bool
 /-! ## The full converse (carried through the Euclidean recursion) -/
 
 /-- **Every root of an honestly-terminated GCD is a common root.**  If `polyGcdReachesNil fuel primary
-secondary` and `polyEval point (polyGcd fuel primary secondary) = 0`, then `point` is a root of *both*
-`primary` and `secondary`.  Induction on fuel: the `polyTrim secondary = []` cases identify the GCD with
-`primary` and force `secondary` to vanish (it trims away); the Euclidean step recovers `primary`'s root
-from the recursive result (`secondary`'s and the pseudo-remainder's roots) via the single-step converse
-(`polyPseudoRemBackwardRoot`, divisor nonempty in the `cons` branch). -/
+secondary` and `polyEval point (polyGcd fuel primary secondary) = 0`, then `point` is a root of both inputs.
+Induction on fuel: the `polyTrim secondary = []` cases identify the GCD with `primary` and force `secondary`
+to vanish; the Euclidean step recovers `primary`'s root via `polyPseudoRemBackwardRoot`. -/
 theorem polyGcdRootIsCommonRoot (point : Int) :
     ∀ (fuel : Nat) (primary secondary : List Int),
       polyGcdReachesNil fuel primary secondary = true →
@@ -127,18 +99,11 @@ theorem polyGcdRootIsCommonRoot (point : Int) :
 `polyEval (-1) [-1, 0, 1] = 0`. -/
 theorem polyPseudoRemBackwardRootGrounding : polyEval (-1) [-1, 0, 1] = 0 := by decide
 
-/-- The full converse exhibited on the shared factor of `x² − 1 = (x−1)(x+1)` and `(x+1)² = x² + 2x + 1`:
-the honestly-terminated GCD (fuel 5) has root `−1`, and `−1` is a root of *both* inputs — here shown for
-the second input `polyEval (-1) [1, 2, 1] = 0`. -/
+/-- The full converse on the shared factor of `x² − 1 = (x−1)(x+1)` and `(x+1)² = x² + 2x + 1`: the
+honestly-terminated GCD (fuel 5) has root `−1`, and `−1` is a root of the second input `[1, 2, 1]`. -/
 theorem polyGcdRootIsCommonRootGrounding : polyEval (-1) [1, 2, 1] = 0 := by decide
 
 /-- The adequacy flag fires on the worked instance (fuel 5 suffices for the two quadratics). -/
 theorem polyGcdReachesNilGrounding : polyGcdReachesNil 5 [-1, 0, 1] [1, 2, 1] = true := by decide
-
-/-- Marker: the ℤ[x] GCD converse root-containment — a root of both the divisor and the pseudo-remainder is
-a root of the dividend (`polyPseudoRemBackwardRoot`), carried through the Euclidean recursion under the
-honest-termination flag (`polyGcdRootIsCommonRoot`).  With `polyGcdVanishesAtCommonRoot`, the GCD's roots
-are exactly the common roots. -/
-def fxIntPoly_hasGcdConverseRootContainment : Bool := true
 
 end FX1Poly.ComputerAlgebra

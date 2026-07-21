@@ -1,19 +1,14 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.SmithLandedMagnitudeRefuted
 
-/-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/SmithLandedMagnitudeRefuted — zero-axiom gate
-    (H2-SMITH r33, #2261 — the general per-phase keystone and the corrected-driver seed are FALSE)
+/-! # SmithLandedMagnitudeRefuted — zero-axiom gate
 
-Per-declaration zero-axiom gate for the r33 refutation of the general keystone
-`SmithCascadeLandedPivotDividesMinor`, the magnitude identity `MinAbsEuclidLandsMinorGcdMagnitude`, and
-the corrected-driver's sole hypothesis `SmithCascadeLandsDivisibleSubBlock`
-(`smithCascadeLandsDivisibleSubBlockIsRefuted`, the load-bearing negative theorem), together with the
-seed rectangularity, the seed magnitude mismatch, the hostile robustness battery, and the diagonal
-restricted-form contrast.
-
-Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`.  Both the fuel-based `#assert_no_axioms` AND the independent (non-fuel)
-`#print axioms` are run on every declaration (the project macro is fuel-based — not trusted alone). -/
+Per-declaration axiom audit for the refutation of the general keystone
+`SmithCascadeLandedPivotDividesMinor`, the magnitude identity `MinAbsEuclidLandsMinorGcdMagnitude`, and the
+driver's sole hypothesis `SmithCascadeLandsDivisibleSubBlock`, together with the seed facts, the
+robustness battery, and the diagonal restricted-form contrast.  Each declaration must be free of
+`propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`; both the fuel-based
+`#assert_no_axioms` and the independent `#print axioms` are run on every one. -/
 
 namespace FX1PolyAudit
 
@@ -28,7 +23,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.landedMagnitudeNeMinorGcdOnAntiDiagonalSeed
 #assert_no_axioms FX1Poly.ComputerAlgebra.landedMagnitudeEqMinorGcdOnDiagonalWindowContrast
 
--- Independent (non-fuel) axiom prints on every declaration.
 #print axioms FX1Poly.ComputerAlgebra.landedExceedsMinorGcdSeedIsRectangular
 #print axioms FX1Poly.ComputerAlgebra.landedMagnitudeNeMinorGcdOnSeed
 #print axioms FX1Poly.ComputerAlgebra.minAbsEuclidLandsMinorGcdMagnitudeIsRefuted

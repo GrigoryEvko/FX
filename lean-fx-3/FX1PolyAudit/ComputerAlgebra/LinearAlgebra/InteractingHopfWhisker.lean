@@ -2,13 +2,13 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfWhisker
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfWhisker — zero-axiom
-    gate (WP-PROP-3 brick 3: the IH_Q whisker congruence)
+    gate
 
 Per-declaration zero-axiom gate for the IH_Q whisker congruence: the row-list
 plumbing (cat nil/assoc, span/pair-membership casts, the id-rows pins), the
 tensor embed linearity kit (length/zero/add/scale both factors + the
-block-recombination lemma), THE TENSOR SPEC (`ihwTensorSpec`), the tensor laws
-(cong, id-sum, units, assoc, THE INTERCHANGE), the cell/wire/layer-list
+block-recombination lemma), the tensor spec (`ihwTensorSpec`), the tensor laws
+(cong, id-sum, units, assoc, the interchange), the cell/wire/layer-list
 concatenation plumbing with the layer split and sequential decomposition, the
 whisker stack (layer/layers whiskering with arities, WF, zero-collapse, and
 the denotation theorems), the pad combinator (WF/cod-arity/denote-decomp/
@@ -16,11 +16,11 @@ identity), the window moves (`IhwWindowMove` incl. the layer-split exchange
 with its bundle), the padded step (`IhwStep` + `ihwStepBundle`), the whisker
 congruence `IhwConv` with soundness (`ihwConvSound`), the refutation bridge
 (`ihwConvSpanEqB`), the row fire through the identity pad, the context
-closures and THE EMBEDDING of the committed sequential congruence
+closures and the embedding of the committed sequential congruence
 (`ihwConvOfSeedConv`), the T4/T5 fires (four committed rows re-fired inside
 parallel contexts with kernel span pins, the two-redex parallel derivation,
-the layer-split fire, the carried-over FALSE controls), and the supersession
-markers.
+the layer-split fire, the carried-over false controls), and the honesty
+marker.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
@@ -111,9 +111,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihwFireSplitScalarPairLayerSpanPin
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihwFireUnitsNotConv
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihwFireScalarTwoThreeNotConv
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihwHasTensorSpec
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihwHasInterchange
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihwHasWhiskerCongruence
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihwHasSeedEmbedding
 
 end FX1PolyAudit

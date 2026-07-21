@@ -1,58 +1,30 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalPolynomialBezout
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/RationalPolynomialSmith — the Smith pivot search and cross clear
-over ℚ[x] matrices
+/-! # RationalPolynomialSmith — the Smith pivot search and cross clear over ℚ[x] matrices
 
-The committed Bezout module (`RationalPolynomialBezout`) shipped the Smith pivot-clear SEED: the ℚ[x]-matrix
-carrier `rbzPolyMatrix := List (List (List QnfRat))` with accessors (`rbzRowGet`/`rbzEntryGet`/
-`rbzMatrixEntry`), the single-entry clear `rbzClearEntry` (the Euclidean residue `entry mod pivot`), the FIRST
-PIVOT LEMMA `rbzClearEntryReducesDegree` (clearing annihilates or drops the entry's degree below the pivot),
-and the elementary-operation reconstruction `rbzClearEntryReconstructs` (`entry ≡ quotient·pivot + cleared`).
-It WALLED the full Smith recursion (`rbzHasSmithNormalForm := false`), recording the four-step route: (1)
-min-degree pivot search; (2) cross clearing; (3) submatrix descent; (4) the invariant-factor chain.  This
-module lands steps (1) and (2) with their full specifications, and walls (3)/(4) precisely.
+Building on the pivot-clear seed of `RationalPolynomialBezout` (the ℚ[x]-matrix carrier with accessors, the
+single-entry clear `rbzClearEntry`, the first pivot lemma `rbzClearEntryReducesDegree`, and the reconstruction
+`rbzClearEntryReconstructs`), this module ships the minimum-degree pivot search and the one-pass cross clear.
 
-## What lands, and at which level
+`rsmPivotSearch` is a total function returning the position of a minimum-degree nonzero entry, or `none` for an
+all-zero matrix, built from a single-row minimum (`rsmRowMin`) and a matrix minimum (`rsmMatrixMin`) comparing
+degrees through `Nat.decLt`. Its bundled soundness gives: the found entry is nonzero (`rsmPivotSearchNonzero`),
+has degree `≤` every nonzero entry (`rsmPivotSearchMinimal`), and `none` certifies an all-zero matrix
+(`rsmPivotSearchNoneAllZero`).
 
-  * **T1 — the pivot search** (`rsmPivotSearch`).  A total function returning the position `(rowIndex,
-    colIndex)` of a minimum-degree nonzero entry, or `none` for an all-zero matrix.  Built from a single-row
-    minimum (`rsmRowMin`, returning the local column index and the entry) and a matrix minimum
-    (`rsmMatrixMin`), each comparing degrees through `Nat.decLt`.  The full specification is proved as a
-    bundled soundness predicate (`rsmRowMinSound`/`rsmMatrixMinSound`): on `some (r, c, entry)` the entry
-    reads back at `(r, c)`, is nonzero, and has degree `≤` every nonzero entry; on `none` every entry is
-    zero.  The top-level corollaries are `rsmPivotSearchNonzero`, `rsmPivotSearchMinimal`, and
-    `rsmPivotSearchNoneAllZero`.
+`rsmCrossClear` clears the pivot's row and column against the pivot via the per-entry clear
+`rsmClearAgainst pivot entry := rbzClearEntry entry.length pivot entry` (`rsmRowClearExcept` on the pivot row,
+`rsmColumnClearBelow` on the pivot column). It preserves the pivot (`rsmCrossClearPivotPreserved`); every
+off-pivot entry of the pivot row (`rsmCrossClearRowMeasure`) and column (`rsmCrossClearColMeasure`) trims to
+zero or drops below the pivot degree; and each cleared entry differs from the original by a `pivot`-multiple
+(`rsmCrossClearRowReconstructs`/`rsmCrossClearColReconstructs`), the elementary-op legitimacy. The reduced
+cross fixed point, the all-zero cross, and the full Smith normal form are supplied or walled downstream
+(`rsfHasReducedCrossFixedPoint`, `rseHasAllZeroCrossViaRepivot`, `rsiHasSmithNormalForm`).
 
-  * **T2 — the cross clear** (`rsmCrossClear`).  One pass clearing the pivot's row and column against the
-    pivot via the per-entry-fuel clear `rsmClearAgainst pivot entry := rbzClearEntry entry.length pivot
-    entry`.  The pivot's own row is cleared everywhere except the pivot column (`rsmRowClearExcept`); every
-    other row has only its pivot-column entry cleared (`rsmClearRowAtCol`, mapped by `rsmColumnClearBelow`).
-    The accessor lemmas (`rsmCrossClearRowGetPivot`/`rsmCrossClearRowGetOther`, …) pin how `rbzMatrixEntry`
-    reads back after the pass, yielding: the pivot is preserved (`rsmCrossClearPivotPreserved`); every
-    off-pivot entry of the pivot row (`rsmCrossClearRowMeasure`) and of the pivot column
-    (`rsmCrossClearColMeasure`) either trims to the zero polynomial or has degree strictly below the pivot
-    (the Euclidean degree drop `rbzClearEntryReducesDegree`); and each cleared entry differs from the
-    original by a `pivot`-multiple (`rsmCrossClearRowReconstructs`/`rsmCrossClearColReconstructs`, the
-    elementary-op legitimacy).
-
-## The honest walls (T3, T4)
-
-The cross fixed-point (iterate T2 with `Nat` fuel until the pivot divides every cross entry — the strict
-per-round degree drop supplies the measure, but the fixed point over the whole cross needs a total-degree /
-matrix-size termination bound) is recorded owner-false (`rsmHasCrossFixedPoint := false`).  The full Smith
-normal form (submatrix descent on the trailing dimension + the invariant-factor divisibility chain
-`d₁ | d₂ | ⋯` via `rbzDividesTrans`) is recorded owner-false (`rsmHasSmithNormalForm := false`).  The
-committed `rbzHasSmithNormalForm := false` stays byte-intact.
-
-## Zero-axiom design
-
-Every definition is structural on the list (row/column) and the positional index; every specification is a
-structural induction closed by the shipped `qnf*` field laws, the committed pivot-clear lemmas, and the
-calibrated-clean `Nat` order lemmas (`Nat.le_refl`, `Nat.le_trans`, `Nat.le_of_lt`, `Nat.lt_of_lt_of_le`,
-`Nat.lt_or_ge`, `Or.resolve_left`).  The only non-list case analyses are `Nat.decLt` and `Option`/`Prod`
-projection (full enumeration, no wildcard arms over enumerable scrutinees).  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.  Per-declaration gated
-in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/RationalPolynomialSmith.lean`. -/
+Every definition is structural on the list and the positional index; case analyses are `Nat.decLt` and
+Option/Prod projection (full enumeration). No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`, `funext`, or `WellFounded.fix`. Per-declaration audit twin in the matching
+`FX1PolyAudit` path. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -793,38 +765,16 @@ theorem rsmFireCrossClearReconstructs :
       = rpxTrim (rbzMatrixEntry rsmFireMatrix 0 1) :=
   rsmCrossClearColReconstructs [qnfOfInt 1] 1 1 rsmFireMatrix 0 (fun h => Nat.noConfusion h)
 
-/-! ## Content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED: the ℚ[x] Smith pivot search — a total function `rsmPivotSearch` returning the position of a
-minimum-degree nonzero entry (or `none` for an all-zero matrix), with the full specification: the found
-entry is nonzero (`rsmPivotSearchNonzero`), has degree `≤` every nonzero entry (`rsmPivotSearchMinimal`,
-from the bundled soundness `rsmMatrixMinSoundHolds` built on the single-row `rsmRowMinSoundHolds`), and a
-`none` result certifies an all-zero matrix (`rsmPivotSearchNoneAllZero`). -/
+/-- The ℚ[x] Smith pivot search and cross clear are decided. `rsmPivotSearch` is a total minimum-degree
+nonzero-entry search with full soundness (`rsmPivotSearchNonzero`/`rsmPivotSearchMinimal`/
+`rsmPivotSearchNoneAllZero`). `rsmCrossClear` clears the pivot's row and column against the pivot, preserving
+the pivot (`rsmCrossClearPivotPreserved`), with the elementary-op reconstruction on both arms
+(`rsmCrossClearRowReconstructs`/`rsmCrossClearColReconstructs`) and the degree-drop measure on both arms
+(`rsmCrossClearRowMeasure`/`rsmCrossClearColMeasure`, from `rbzClearEntryReducesDegree`). The reduced cross
+fixed point, the all-zero cross, and the full Smith normal form are supplied or walled downstream
+(`rsfHasReducedCrossFixedPoint`, `rseHasAllZeroCrossViaRepivot`, `rsiHasSmithNormalForm`). -/
 def rsmHasPivotSearch : Bool := true
-
-/-- DECIDED: the ℚ[x] Smith cross clear — one pass (`rsmCrossClear`) clearing the pivot's row and column
-against the pivot at per-entry fuel, with the pivot preserved (`rsmCrossClearPivotPreserved`), the
-elementary-operation reconstruction on both arms (`rsmCrossClearRowReconstructs`/
-`rsmCrossClearColReconstructs`: `quotient·pivot + cleared ≡ original`), and the measure lemma on both arms
-(`rsmCrossClearRowMeasure`/`rsmCrossClearColMeasure`: every off-pivot cross entry trims to the zero
-polynomial or drops below the pivot degree, from the committed `rbzClearEntryReducesDegree`). -/
-def rsmHasCrossClear : Bool := true
-
-/-- WALLED (owner-false): the cross FIXED-POINT.  Iterating `rsmCrossClear` with `Nat` fuel until the pivot
-divides every entry of its row and column.  The per-round strict degree drop
-(`rsmCrossClearRowMeasure`/`rsmCrossClearColMeasure`) supplies the measure for one entry, but the fixed
-point over the WHOLE cross — each clear can reintroduce a nonzero residue elsewhere in the pivot's row/column
-that must be re-cleared — needs a total-degree (sum of off-pivot cross degrees) or matrix-size termination
-bound tying the per-entry drops into a single decreasing measure, plus the invariant that the pivot's own
-degree is monotone across rounds.  Not attempted this round. -/
-def rsmHasCrossFixedPoint : Bool := false
-
-/-- WALLED (owner-false; the committed `rbzHasSmithNormalForm := false` stays byte-intact): the FULL Smith
-normal form over ℚ[x].  The pivot search (T1) and cross clear (T2) ship; the remaining route: (3) structural
-descent on the trailing submatrix dimension after the pivot's row and column are annihilated (a fresh `Nat`
-measure on matrix size), producing the diagonal `diag(d₁, …, dᵣ, 0, …)`; (4) the invariant-factor
-divisibility chain `d₁ | d₂ | ⋯ | dᵣ`, combining `rpeGcdDividesBoth` with the divisibility transitivity
-`rbzDividesTrans`.  Step (3) rests on the cross fixed-point (`rsmHasCrossFixedPoint`, walled above). -/
-def rsmHasSmithNormalForm : Bool := false
 
 end FX1Poly.ComputerAlgebra

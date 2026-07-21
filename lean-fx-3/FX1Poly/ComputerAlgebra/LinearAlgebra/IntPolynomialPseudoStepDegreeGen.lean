@@ -1,45 +1,28 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialPseudoDegreeDecrease
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialPseudoStepDegreeGen — the step decrease, generalized
-(the sixteenth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialPseudoStepDegreeGen — the step decrease, generalized
 
-r20's `polyPseudoStepDegreeLt` required a **non-constant divisor** (`1 ≤ polyDegree divisor`), which it used
-only to derive `1 ≤ polyDegree dividend` and `polyTrim divisor ≠ []`.  Taking those two as hypotheses
-directly **generalizes** the step decrease to cover a **constant** (degree-0) nonzero divisor as well — the
-case that arises at the tail of the Euclidean GCD (a coprime pair reaches a nonzero-constant remainder).
+`polyPseudoStepDegreeLt` required a non-constant divisor, using it only to derive `1 ≤ polyDegree dividend`
+and `polyTrim divisor ≠ []`.  Taking those two as hypotheses directly generalizes the step decrease to a
+constant (degree-0) nonzero divisor as well — the case at the tail of the Euclidean GCD, where a coprime
+pair reaches a nonzero-constant remainder.
 
-## What is PROVEN
+`polyPseudoStepDegreeLtGen`: for a nonempty `divisor`, a non-constant `dividend`, and `polyDegree divisor ≤
+polyDegree dividend`, the step's replacement dividend has degree strictly below `polyDegree dividend`.
+`polyPseudoConstantStepDegreeLt` specializes this to a constant divisor.  Both feed the Euclidean
+termination measure, which must also shrink in the tail case where the secondary is a nonzero constant.
 
-`polyPseudoStepDegreeLtGen`: for a nonempty `divisor` (`polyTrim divisor ≠ []`), a **non-constant** dividend
-(`1 ≤ polyDegree dividend`), and `polyDegree divisor ≤ polyDegree dividend`, the pseudo-division step's
-replacement dividend has degree strictly below `polyDegree dividend`.  Identical to r20's argument
-(r17 top-cancellation at `d`, r18 vanishing above `d`, r19 degree characterization) with the two derived
-facts supplied as hypotheses instead.
-
-`polyPseudoConstantStepDegreeLt`: the specialization to a **constant** divisor (`polyDegree divisor = 0`)
-made explicit — a nonzero constant divisor drops the degree of any non-constant dividend.
-
-## Why this matters for fuel-adequacy
-
-The Euclidean GCD's termination measure `(polyTrim secondary).length` strictly decreases each step: for a
-non-constant secondary this is r21 (pseudo-rem degree < divisor degree); this brick supplies the tail case
-where the secondary is a nonzero **constant** and the dividend is non-constant, so the step still shrinks
-the degree toward the nil-terminating branch.
-
-## Zero-axiom design
-
-r20's proof body verbatim minus the two hypothesis derivations; reuses the r20 helpers
-(`natLeOfSubOneLt`, `natSubAddCancel`, `polyTrimLengthEqDegreeSucc`, `polyMonomialMulCoeffVanishesFarAbove`).
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
-gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialPseudoStepDegreeGen.lean`.
--/
+Reuses the helpers of the non-generalized step (`natLeOfSubOneLt`, `natSubAddCancel`,
+`polyTrimLengthEqDegreeSucc`, `polyMonomialMulCoeffVanishesFarAbove`).  Free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-- **The pseudo-division step strictly decreases the degree (generalized).**  For a nonempty `divisor`, a
 non-constant `dividend`, and `polyDegree divisor ≤ polyDegree dividend`, the step's replacement dividend has
-degree strictly below `polyDegree dividend` — r20 with the divisor-nonconstant hypothesis relaxed to
-divisor-nonempty plus dividend-nonconstant, so it also covers a constant nonzero divisor. -/
+degree strictly below `polyDegree dividend` — the non-generalized step with the divisor-nonconstant
+hypothesis relaxed to divisor-nonempty plus dividend-nonconstant, so it also covers a constant nonzero
+divisor. -/
 theorem polyPseudoStepDegreeLtGen (dividend divisor : List Int)
     (isDivisorNonempty : polyTrim divisor ≠ [])
     (isDividendNonconstant : 1 ≤ polyDegree dividend)
@@ -114,10 +97,5 @@ theorem polyPseudoStepDegreeLtGenGrounding :
             (polyMonomial (polyLeadingCoeff [-1, 0, 1]) (polyDegree [-1, 0, 1] - polyDegree [3]))
             [3]))
       < polyDegree [-1, 0, 1] := by decide
-
-/-- Marker: the ℤ[x] pseudo-division step degree decrease generalized to a nonempty (possibly **constant**)
-divisor over a non-constant dividend (`polyPseudoStepDegreeLtGen` / `polyPseudoConstantStepDegreeLt`) — the
-Euclidean tail-case degree lever for fuel adequacy. -/
-def fxIntPoly_hasGeneralPseudoStepDegreeDecrease : Bool := true
 
 end FX1Poly.ComputerAlgebra

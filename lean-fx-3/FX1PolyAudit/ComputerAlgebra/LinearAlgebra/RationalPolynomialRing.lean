@@ -81,10 +81,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpeFireGcdDividesLeftDifferenceOfSquares
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpeFireGcdDividesRightDifferenceOfSquares
 
--- Content markers
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpeHasListRingLayer
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpeHasAggregateReconstruction
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpeHasGcdDividesBoth
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpeHasBezoutIdentity
 
 end FX1PolyAudit

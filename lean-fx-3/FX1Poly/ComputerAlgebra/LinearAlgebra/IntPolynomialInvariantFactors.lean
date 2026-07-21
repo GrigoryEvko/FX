@@ -1,40 +1,17 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDeterminantalDivisor
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDivision
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialInvariantFactors — the invariant factors and the
-rational-canonical-form block count at dimension 2 (the fourth brick of the char-matrix →
-invariant-factors layer, WP-ENDO #2255)
+/-! # IntPolynomialInvariantFactors — invariant factors and the block count at dimension 2
 
-The invariant factors of a matrix `M` are `s_k = d_k / d_{k−1}` where `d_k` is the `k`-th determinantal
-divisor (`d_0 = 1`).  With `d_1` shipped (`charMatrixDivisorOne`), `d_2 = det(x·I − M)` shipped
-(`charPolyDeterminant`), and monic division shipped (`polyDivModMonic`, exact reconstruction), the
-dimension-2 invariant factors are computable:
+The invariant factors are `s_k = d_k / d_{k−1}` (`d_0 = 1`).  At dimension 2, `s_1 = d_1`, `s_2 = d_2 / d_1`
+computed by monic division: the derogatory `2·I` has `[x−2, x−2]` (two rational-canonical-form blocks), the
+cyclic Jordan block and `diag(2,3)` have a single nontrivial factor `s_2 = d_2` (one block).  The block
+count `1 + deg d_1` is a decidable similarity invariant separating `2·I` (count `2`) from the Jordan block
+`[[2,1],[0,2]]` (count `1`), which share char poly `(x−2)²`.
 
-  * `s_1 = d_1`;  `s_2 = d_2 / d_1`.
-
-For the **derogatory** scalar `2·I`, `d_1 = x − 2` is monic and `s_2 = (x−2)² / (x−2) = x − 2` **exactly**
-(remainder `0`), so its invariant factors are `[x−2, x−2]` — TWO nontrivial factors, i.e. two blocks in
-the rational canonical form (it is diagonalizable with a repeated eigenvalue).  For the **cyclic** Jordan
-block and `diag(2,3)`, `d_1` is a unit, so `s_1` is trivial and there is a SINGLE nontrivial invariant
-factor `s_2 = d_2` (the whole characteristic polynomial) — one block.
-
-## The block count is the complete dimension-2 classifier
-
-At dimension 2 the number of nontrivial invariant factors — equivalently the number of blocks in the
-rational canonical form — is `1 + deg d_1` (since `deg s_1 + deg s_2 = deg d_2 = 2` and `deg s_1 = deg
-d_1`).  This count is a decidable similarity invariant that, together with the characteristic polynomial,
-**determines** the similarity class of a `2×2` matrix over a field: it separates the derogatory `2·I`
-(count `2`) from the cyclic Jordan block `[[2,1],[0,2]]` (count `1`), which share char poly `(x−2)²`.
-(Completeness — that equal `(char poly, block count)` implies similarity — is the rational-canonical-form
-existence-and-uniqueness theorem; the separating direction is what is machine-checked here.)
-
-## Zero-axiom design
-
-Invariant factors via `polyDivModMonic` (exact for the monic derogatory `d_1`) and the block count via
-`polyDegree`.  Groundings are `decide` over concrete `polyTrim`/`polyDegree`/`polyMul` and a `Nat`
-inequality.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration gated in the audit twin.
--/
+Invariant factors via `polyDivModMonic` (exact for a monic `d_1`) and the block count via `polyDegree`;
+groundings are `decide`.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -61,7 +38,7 @@ def rationalFormBlockCountTwo (matrix : SetoidMatrix Int) : Nat :=
 
 /-! ## Groundings — the invariant factors of the derogatory scalar, computed exactly -/
 
-/-- ★ `2·I` has invariant factors `[x−2, x−2]`: both `s_1 = d_1 = x−2` and `s_2 = d_2/d_1 = x−2`
+/-- `2·I` has invariant factors `[x−2, x−2]`: both `s_1 = d_1 = x−2` and `s_2 = d_2/d_1 = x−2`
 (`[[-2,1], [-2,1]]`).  The division `(x−2)²/(x−2) = x−2` is exact. -/
 theorem invariantFactorsScalarAreRepeatedLinear :
     invariantFactorsTwo (twoByTwoMatrix 2 0 0 2) = [[-2, 1], [-2, 1]] := by decide
@@ -94,22 +71,9 @@ decidable similarity invariant).  Reducible so a concrete separation closes by `
 @[reducible] def DissimilarByBlockCount (source target : SetoidMatrix Int) : Prop :=
   rationalFormBlockCountTwo source ≠ rationalFormBlockCountTwo target
 
-/-- ★ **`2·I` is provably NOT similar to the Jordan block `[[2,1],[0,2]]`, by block count.**  They share
-characteristic polynomial `(x−2)²`, but `2·I` has `2` rational-canonical-form blocks (invariant factors
-`[x−2, x−2]`) while the Jordan block has `1` (invariant factor `(x−2)²`).  The count is the number of
-Jordan/cyclic blocks — the structural datum the characteristic polynomial cannot express.  `2 ≠ 1` by
-`decide`. -/
+/-- **`2·I` is provably not similar to the Jordan block `[[2,1],[0,2]]`, by block count.**  They share char
+poly `(x−2)²`, but `2·I` has `2` rational-canonical-form blocks while the Jordan block has `1`. -/
 theorem scalarNotSimilarToJordanByBlockCount :
     DissimilarByBlockCount (twoByTwoMatrix 2 0 0 2) (twoByTwoMatrix 2 1 0 2) := by decide
-
-/-! ## The marker -/
-
-/-- ★ **The invariant factors and the rational-canonical-form block count are shipped at dimension 2.**
-`= true` records that `s_k = d_k / d_{k−1}` is computed via monic division (exact for the derogatory
-scalar, whose invariant factors `[x−2, x−2]` reconstruct `(x−2)²`), and the block count `1 + deg d_1` is
-a decidable similarity invariant separating `2·I` (`2` blocks) from the Jordan block `[[2,1],[0,2]]` (`1`
-block) — the complete `2×2` classifier's separating direction.  The general-`n` assembly (all `d_k` over
-the `k`-subset enumeration, then every quotient) is the remaining scale-up. -/
-def fxIntPoly_hasInvariantFactorsTwo : Bool := true
 
 end FX1Poly.ComputerAlgebra

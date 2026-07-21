@@ -7,11 +7,10 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfReachability
 Per-declaration zero-axiom gate for the reachability leg: the fourteen scalar
 `IhzRowMove` schemas and the A8/I3/I4/I7/I8 absorption rows re-exposed as named
 `IhzConv` per-layer steps (T1+T2), the common-reduct principle and the
-reachability FACTORIZATION reducing `ihzReachabilityStatement` to a reduction
+reachability factorization reducing `ihzReachabilityStatement` to a reduction
 leg plus a canonicity leg (T3), the conditional word-problem payoff (T4), the
-DECIDED markers and the owner-false walls (`ihkHasReductionLeg`,
-`ihkHasCanonicityLeg`, `ihkHasFullReachabilityInduction`), and the ground fires
-plus the discriminating scalar-2-vs-3 FALSE control (T5).
+decision markers and the owner-false wall (`ihkHasFullReachabilityInduction`),
+and the ground fires plus the discriminating scalar-2-vs-3 false control (T5).
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
@@ -45,11 +44,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihkReachabilityOfChooserReductionAndCanonicity
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihkWordProblemGivenReachability
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihkWordProblemOfChooserReductionAndCanonicity
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihkHasRewriteSteps
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihkHasReachabilityFactorization
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihkHasConditionalWordProblem
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihkHasReductionLeg
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihkHasCanonicityLeg
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihkHasFullReachabilityInduction
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihkScalarTwoLineDiagram
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihkScalarThreeLineDiagram

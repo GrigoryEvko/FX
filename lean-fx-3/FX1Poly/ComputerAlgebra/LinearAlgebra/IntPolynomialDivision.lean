@@ -1,41 +1,22 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegree
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialDivision — monic division with remainder
-(the third brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialDivision — monic and pseudo division with remainder
 
-`IntUnivariatePolynomial` shipped the ℤ[x] ring and `IntPolynomialDegree` the degree / leading coefficient
-/ normal form.  This file is the division-with-remainder algorithm for a MONIC divisor — the ℤ analog of
-monic division over ℚ (over ℚ every nonzero polynomial normalizes to monic, and the characteristic and
-minimal polynomials that drive the similarity classifier are already monic).
+The division-with-remainder algorithm.  `polyDivModMonic fuel divisor dividend` returns `(quotient,
+remainder)` for a monic divisor, peeling off the leading term each step (`leadingCoeff(dividend) · x^(deg
+dividend − deg divisor)`); `fuel` bounds the recursion structurally.  `polyDivModMonicReconstructs` proves
+`eval_point(dividend) = eval_point(quotient) · eval_point(divisor) + eval_point(remainder)` at every point,
+for every fuel — the identity rests only on the ring homomorphism, decoupling correctness from termination.
 
-## The algorithm
-
-`polyDivModMonic fuel divisor dividend` returns `(quotient, remainder)`.  Each step peels off the leading
-term: the quotient term is `leadingCoeff(dividend) · x^(deg dividend − deg divisor)`, and the remainder so
-far is `dividend − quotientTerm · divisor` (which the leading-term cancellation shrinks).  `fuel` bounds
-the recursion structurally.
-
-## What is PROVEN
-
-`polyDivModMonicReconstructs`: for every fuel, `eval_point(dividend) = eval_point(quotient) · eval_point(divisor)
-+ eval_point(remainder)` at every point.  Crucially this identity holds REGARDLESS of whether the fuel was
-adequate — it rests only on the ring homomorphism (`polyEvalSub`/`polyEvalMul`/`polyEvalAdd`), decoupling
-correctness from termination.  The step arithmetic (`D − qt·G = sq·G + Rem ⟹ D = (qt+sq)·G + Rem`) is the
-corpus `Int` distributivity/cancellation.
-
-For an ARBITRARY (non-monic) divisor, `polyPseudoDivModReconstructs` gives the subresultant identity
-`leadDivisor^scalePower · dividend = quotient · divisor + remainder` — pseudo-division scales the running
+For an arbitrary divisor, `polyPseudoDivModReconstructs` gives the subresultant identity
+`leadDivisor^scalePower · dividend = quotient · divisor + remainder`: pseudo-division scales the running
 dividend by the divisor's leading coefficient each step to stay integral, so the Euclidean GCD runs over ℤ
-with no rationals.  The degree bound `deg remainder < deg divisor` (needed for uniqueness and for the
-Euclidean GCD's termination) is the honest remaining step, tracked as the next brick.
+with no rationals.  This is the parent of the ℤ[x] Euclidean/pseudo-division sub-arc, whose markers are
+consolidated here (see `fxIntPoly_hasMonicDivisionReconstruction`).
 
-## Zero-axiom design
-
-The recursion is structural on `fuel`; the only non-list case analysis is `Nat.decLt` (its full
-`isTrue`/`isFalse` enumeration).  Every arithmetic step routes through the corpus `Int` lemmas.  No
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
-gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialDivision.lean`.
--/
+Structural recursion on `fuel`; the only non-list case analysis is `Nat.decLt`; arithmetic routes through
+the corpus `Int` lemmas.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -426,12 +407,15 @@ theorem polyPseudoDivModReconstructsGroundingAtFive :
       = polyEval 5 (polyPseudoDivMod 3 [1, 2] [1, 3, 2]).2.1 * polyEval 5 [1, 2]
         + polyEval 5 (polyPseudoDivMod 3 [1, 2] [1, 3, 2]).2.2 := by decide
 
-/-- Marker: the ℤ[x] division layer ships with monic division (`dividend = quotient · divisor + remainder`)
-and its exact-division corollary, AND ℤ-native pseudo-division for an ARBITRARY divisor
-(`leadDivisor^scalePower · dividend = quotient · divisor + remainder`, `polyPseudoDivModReconstructs`) —
-the subresultant identity the Euclidean GCD runs on, with no rationals.  Both reconstructions are proved at
-the evaluation level fuel-independently.  The degree bound `deg remainder < deg divisor` (the GCD's
-termination lever) is the next brick. -/
+/-- Consolidated marker for the ℤ[x] Euclidean/pseudo-division sub-arc.  Covers: monic division with its
+exact-division corollary and ℤ-native pseudo-division for an arbitrary divisor
+(`polyPseudoDivModReconstructs`, this file); the pseudo-division step's leading-term cancellation
+(`IntPolynomialLeadingTermCancel`); the strict single-step degree decrease and its generalization to a
+constant divisor (`IntPolynomialPseudoDegreeDecrease`, `IntPolynomialPseudoStepDegreeGen`); the fuel-adequate
+pseudo-remainder degree bound (`IntPolynomialPseudoRemBound`); the terminal-shape and adequate-fuel
+remainder stability (`IntPolynomialPseudoRemStable`, `IntPolynomialPseudoRemFuelStable`); the zero-polynomial
+nil cascade (`IntPolynomialNilCascade`); and the constant-divisor remainder reaching nil
+(`IntPolynomialConstDivisorNil`). -/
 def fxIntPoly_hasMonicDivisionReconstruction : Bool := true
 
 end FX1Poly.ComputerAlgebra

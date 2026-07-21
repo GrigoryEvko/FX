@@ -45,7 +45,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrHasLeadDropHead
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrLeadDominationLe
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrRankSpanInvariant
-#assert_no_axioms FX1Poly.ComputerAlgebra.rmrHasRrefRowUniqueness
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrFireRankDependentIsOne
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrFireRankIdentityIsTwo
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrFireRankSingleRow
@@ -57,6 +56,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrFireRankPivotControlPresent
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrFireRankPivotControlAbsent
 #assert_no_axioms FX1Poly.ComputerAlgebra.rmrHasRankApparatus
-#assert_no_axioms FX1Poly.ComputerAlgebra.rmrHasPivotSetInvariance
 
 end FX1PolyAudit

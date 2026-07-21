@@ -1,32 +1,32 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfShuffleDenote
 
 /-! # LinearAlgebra/InteractingHopfTwoRowSum — the split/merge fan denotations, the
-gadget tensor, and the two-row spatial sum (WP-PROP-3 brick 10)
+gadget tensor, and the two-row spatial sum
 
-Discharging the committed owner-false `ihgTwoRowSpatialSumStatement` by assembling
-the five-stage Minkowski sum `split ; unshuffle ; (gadget TENSOR gadget) ; shuffle
-; merge`.  The brick-9 residual named exactly what remained: (1) the two per-strand
-fan denotations, (2) the gadget-tensor denotation, (3) the five-stage compose.
+Inhabits `ihgTwoRowSpatialSumStatement` by assembling the five-stage Minkowski sum
+`split ; unshuffle ; (gadget tensor gadget) ; shuffle ; merge`.  Three pieces make
+it up: the two per-strand fan denotations, the gadget-tensor denotation, and the
+five-stage compose.
 
-* THE SPLIT FAN (T1, `ihtSplitLayerDenote`): the per-strand `whiteComult` coadd
+* The split fan (T1, `ihtSplitLayerDenote`): the per-strand `whiteComult` coadd
   layer `m -> 2m` relates a domain vector `pList + qList` (pointwise) to the
   interleaved codomain layout `ihnInterleave pList qList`, by structural recursion
   on the strand count in the shape of `ihgScalarLayerDenote` via `ihwTensorSpec` +
   `ihzCoaddSpec`.
 
-* THE MERGE FAN (T1, `ihtMergeLayerDenote`): the per-strand `whiteMult` add layer
+* The merge fan (T1, `ihtMergeLayerDenote`): the per-strand `whiteMult` add layer
   `2n -> n` relates the interleaved domain layout `ihnInterleave` to the pointwise
   sum, mirror of the split via `ihzAddSpec`.
 
-* THE GADGET TENSOR (T2, `ihtGadgetTensorDenote`): the blockwise parallel composite
-  `(gadget1 TENSOR gadget2)` spans, per block, each single-row gadget's line —
+* The gadget tensor (T2, `ihtGadgetTensorDenote`): the blockwise parallel composite
+  `(gadget1 tensor gadget2)` spans, per block, each single-row gadget's line —
   `(dom, cod) <-> exists a b, dom = a*in1 ++ b*in2 / cod = a*out1 ++ b*out2`,
   assembled through `ihwWhiskerLayersDenote` + `ihgGadgetDenote` + `ihqComposeSpec`.
 
-* THE FIVE-STAGE COMPOSE (T3, `ihtTwoRowSpatialSum`): the committed
-  `ihgTwoRowSpatialSumStatement`, inhabited VERBATIM.  The Minkowski
-  characterization `(dom, cod) <-> exists a b, dom = a*in1 + b*in2 /
-  cod = a*out1 + b*out2` routed to `IhqPairMem` of the two-row matrix.
+* The five-stage compose (T3, `ihtTwoRowSpatialSum`): inhabits
+  `ihgTwoRowSpatialSumStatement`, routing the Minkowski characterization
+  `(dom, cod) <-> exists a b, dom = a*in1 + b*in2 / cod = a*out1 + b*out2` to
+  `IhqPairMem` of the two-row matrix.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -75,7 +75,7 @@ theorem ihtMergeLayerCodArity : (strandCount : Nat) ->
 
 /-! ## Stage 1 — the per-strand split / merge fan denotations (T1) -/
 
-/-- THE SPLIT FAN DENOTATION: `ihrSplitLayer m` (per-strand `whiteComult`, `m -> 2m`)
+/-- The split fan denotation: `ihrSplitLayer m` (per-strand `whiteComult`, `m -> 2m`)
 relates the pointwise sum `pList + qList` to the interleaved layout
 `ihnInterleave pList qList`. -/
 theorem ihtSplitLayerDenote : (strandCount : Nat) -> (domVec codVec : List QnfRat) ->
@@ -198,7 +198,7 @@ theorem ihtSplitLayerDenote : (strandCount : Nat) -> (domVec codVec : List QnfRa
                               (And.intro rfl (And.intro rfl
                                 (And.intro hPRestLen hQRestLen)))))
 
-/-- THE MERGE FAN DENOTATION: `ihrMergeLayer n` (per-strand `whiteMult`, `2n -> n`)
+/-- The merge fan denotation: `ihrMergeLayer n` (per-strand `whiteMult`, `2n -> n`)
 relates the interleaved layout `ihnInterleave firstList secondList` to the
 pointwise sum `firstList + secondList`. -/
 theorem ihtMergeLayerDenote : (strandCount : Nat) -> (domVec codVec : List QnfRat) ->
@@ -324,10 +324,6 @@ theorem ihtMergeLayerDenote : (strandCount : Nat) -> (domVec codVec : List QnfRa
                               (And.intro rfl (And.intro rfl
                                 (And.intro hFRestLen hSRestLen)))))
 
-/-- DECIDED (T1): the split and merge per-strand fan layers ship their faithful
-coadd / add denotations. -/
-def ihtHasFanDenotations : Bool := true
-
 /-! ## Stage 2 — interleave injectivity (the shared-middle reconciliation) -/
 
 /-- The interleave layout is injective at equal block widths: two `(p, q)` pairs
@@ -438,7 +434,7 @@ theorem ihtWhiskerRightSpec (rightWires currentArity : Nat) (window : List (List
                 exact (ihsIdSpec rightWires rightPart rightPart).mpr
                   (And.intro rfl hFacts.right.right.left)
 
-/-- THE GADGET TENSOR DENOTATION (T2): the blockwise parallel composite of the two
+/-- The gadget tensor denotation (T2): the blockwise parallel composite of the two
 single-row gadgets spans, per block, each gadget's line — the domain splits as
 `firstScale * firstInputs ++ secondScale * secondInputs` and the codomain as
 `firstScale * firstOutputs ++ secondScale * secondOutputs`. -/
@@ -714,9 +710,6 @@ theorem ihtGadgetTensorCodArity (firstInputs firstOutputs secondInputs secondOut
     (ihgGadgetDiagram secondInputs secondOutputs).layers secondInputs.length
   rw [hGadget2Cod] at hRaw
   exact hRaw
-
-/-- DECIDED (T2): the gadget tensor ships its blockwise line-span denotation. -/
-def ihtHasGadgetTensor : Bool := true
 
 /-! ## Stage 4 — the Minkowski / two-row-matrix membership routing -/
 
@@ -1307,7 +1300,7 @@ theorem ihtUnshuffleRestCodArity (firstInputs firstOutputs secondInputs secondOu
       = firstInputs.length + secondInputs.length by rw [hInLen])]
   exact ihtGadgetShuffleMergeCodArity firstInputs firstOutputs secondInputs secondOutputs hOutLen
 
-/-- THE FULL ASSEMBLY DENOTATION: `split ; unshuffle ; (gadget TENSOR gadget) ;
+/-- The full assembly denotation: `split ; unshuffle ; (gadget tensor gadget) ;
 shuffle ; merge` denotes the Minkowski sum of the two lines — the domain is
 `a*in1 + b*in2`, the codomain is `a*out1 + b*out2`. -/
 theorem ihtAssemblyDenote (firstInputs firstOutputs secondInputs secondOutputs :
@@ -1471,8 +1464,8 @@ theorem ihtAssemblyDenote (firstInputs firstOutputs secondInputs secondOutputs :
                 (Exists.intro firstScale (Exists.intro secondScale
                   (And.intro rfl hFacts.right)))
 
-/-! ## Stage 6 — the two-row spatial sum: WF, cod arity, and the committed
-statement inhabited VERBATIM (T3) -/
+/-! ## Stage 6 — the two-row spatial sum: WF, cod arity, and the inhabited
+statement (T3) -/
 
 /-- The two-row-sum diagram is well-formed at the shared boundary. -/
 theorem ihtTwoRowSumWF (firstInputs firstOutputs secondInputs secondOutputs : List QnfRat)
@@ -1510,10 +1503,10 @@ theorem ihtTwoRowSumCodArity (firstInputs firstOutputs secondInputs secondOutput
       = firstInputs.length + firstInputs.length from ihtSplitLayerCodArity firstInputs.length)]
   exact ihtUnshuffleRestCodArity firstInputs firstOutputs secondInputs secondOutputs hInLen hOutLen
 
-/-- DECIDED (T3): the committed owner-false `ihgTwoRowSpatialSumStatement` is
-inhabited VERBATIM — the two-row-sum diagram `split ; unshuffle ;
-(gadget TENSOR gadget) ; shuffle ; merge` is a WF `m -> n` diagram whose
-denotation is relation-equal to the two-row matrix `[in1 ++ out1, in2 ++ out2]`. -/
+/-- Inhabits `ihgTwoRowSpatialSumStatement` (T3): the two-row-sum diagram
+`split ; unshuffle ; (gadget tensor gadget) ; shuffle ; merge` is a WF `m -> n`
+diagram whose denotation is relation-equal to the two-row matrix
+`[in1 ++ out1, in2 ++ out2]`. -/
 theorem ihtTwoRowSpatialSum : ihgTwoRowSpatialSumStatement := by
   intro firstInputs firstOutputs secondInputs secondOutputs hInLen hOutLen
   refine Exists.intro
@@ -1529,17 +1522,16 @@ theorem ihtTwoRowSpatialSum : ihgTwoRowSpatialSumStatement := by
     (ihtMinkowskiPairMem firstInputs firstOutputs secondInputs secondOutputs
       domVec codVec hInLen hOutLen)
 
-/-- DECIDED (T3): the general two-row Minkowski spatial sum ships, superseding the
-committed owner-false markers `ihgHasMultiRowRiffle` / `ihrHasTwoRowSpatialSum` /
-`ihuHasTwoRowSpatialSum`. -/
+/-- The general two-row spatial-sum constructor ships: the split and merge
+per-strand fan denotations and the gadget-tensor blockwise line span assemble into
+the five-stage Minkowski sum inhabiting `ihgTwoRowSpatialSumStatement` (T3). -/
 def ihtHasTwoRowSpatialSum : Bool := true
 
 /-! ## Stage 7 — kernel-decided fires -/
 
 set_option maxHeartbeats 4000000 in
-/-- T3 fire (fresh config the `ihr` instances never used, `m = 2`, `n = 1`): the
-two-row sum of `[3,1|2]` and `[1,2|3]` span-equals the two-row matrix
-`[[3,1,2],[1,2,3]]`. -/
+/-- T3 fire (`m = 2`, `n = 1`): the two-row sum of `[3,1|2]` and `[1,2|3]`
+span-equals the two-row matrix `[[3,1,2],[1,2,3]]`. -/
 theorem ihtFireTwoRowSumFresh :
     ihqSpanEqB (ihsDiagramDenote
         (ihrTwoRowSumDiagram [ihsScalarThree, qnfOne] [ihsScalarTwo]
@@ -1548,8 +1540,8 @@ theorem ihtFireTwoRowSumFresh :
         [qnfOne, ihsScalarTwo, ihsScalarThree]] = true := rfl
 
 set_option maxHeartbeats 4000000 in
-/-- T3 FALSE control: the same fresh two-row sum is NOT the matrix with a
-perturbed second row (span decision refutes). -/
+/-- T3 false control: the same two-row sum is not the matrix with a perturbed
+second row (span decision refutes). -/
 theorem ihtFireTwoRowSumFreshWrong :
     ihqSpanEqB (ihsDiagramDenote
         (ihrTwoRowSumDiagram [ihsScalarThree, qnfOne] [ihsScalarTwo]
@@ -1557,9 +1549,9 @@ theorem ihtFireTwoRowSumFreshWrong :
       [[ihsScalarThree, qnfOne, ihsScalarTwo],
         [qnfOne, ihsScalarTwo, qnfOne]] = false := rfl
 
-/-- T3 CONTENT fire (routes through `ihtAssemblyDenote.mpr`, not a span `rfl`):
-the fresh diagram relates the Minkowski point `1*[3,1] + 2*[1,2]` to
-`1*[2] + 2*[3]` — the combination `(a, b) = (1, 2)` of the two lines. -/
+/-- T3 content fire (routes through `ihtAssemblyDenote.mpr`, not a span `rfl`):
+the diagram relates the Minkowski point `1*[3,1] + 2*[1,2]` to `1*[2] + 2*[3]` —
+the combination `(a, b) = (1, 2)` of the two lines. -/
 theorem ihtFireTwoRowSumContent :
     IhqPairMem 2 1 (ihsDiagramDenote
         (ihrTwoRowSumDiagram [ihsScalarThree, qnfOne] [ihsScalarTwo]
@@ -1576,7 +1568,7 @@ theorem ihtFireTwoRowSumContent :
         (ihqRowScale ihsScalarTwo [ihsScalarThree]))).mpr
     (Exists.intro qnfOne (Exists.intro ihsScalarTwo (And.intro rfl rfl)))
 
-/-- T3 CONTENT fire (routes through `ihtMinkowskiPairMem.mpr`): the same
+/-- T3 content fire (routes through `ihtMinkowskiPairMem.mpr`): the same
 Minkowski point lies in the span of the two-row matrix `[[3,1,2],[1,2,3]]`. -/
 theorem ihtFireMinkowskiRouting :
     IhqPairMem 2 1
@@ -1596,10 +1588,10 @@ theorem ihtFireMinkowskiRouting :
 
 /-! ## Stage 8 — toward `ihzNormalFormStatement`: the two-row NF carrier (T4) -/
 
-/-- T4 (started): the `R = 2` instance of the committed `ihzNormalFormStatement`.
-Any two-row matrix `[firstRow, secondRow]` (rows of width `domWidth + codWidth`)
-is denoted by SOME WF `domWidth -> codWidth` diagram — split each row into its
-input / output halves and Minkowski-sum the two lines via `ihtTwoRowSpatialSum`. -/
+/-- The `R = 2` instance of `ihzNormalFormStatement` (T4): any two-row matrix
+`[firstRow, secondRow]` (rows of width `domWidth + codWidth`) is denoted by some WF
+`domWidth -> codWidth` diagram — split each row into its input / output halves and
+Minkowski-sum the two lines via `ihtTwoRowSpatialSum`. -/
 theorem ihtTwoRowNormalFormCarrier (domWidth codWidth : Nat)
     (firstRow secondRow : List QnfRat)
     (hAll : IhqAllWidth (domWidth + codWidth) [firstRow, secondRow]) :
@@ -1638,19 +1630,5 @@ theorem ihtTwoRowNormalFormCarrier (domWidth codWidth : Nat)
       refine Exists.intro nfDiagram (And.intro (hProps.left.trans hIn1Len)
         (And.intro (hProps.right.left.trans hOut1Len)
           (And.intro hProps.right.right.left hRelEquiv)))
-
-/-- OWNER FALSE — the general `R`-row NF compiler (`ihzNormalFormStatement`) is
-NOT proven this brick.  What IS shipped toward it: the single-row base
-(`ihgSingleRowNormalForm`, committed) and the two-row carrier
-(`ihtTwoRowNormalFormCarrier`).  THE RESIDUAL (the honest wall): the row-list
-recursion `span (row :: rest) = span [row] + span rest` needs the GENERAL
-spatial sum of a single-row gadget with an ARBITRARY sub-diagram — i.e. the
-diagram tensor `(gadget TENSOR subDiagram)` denotation with the second factor
-abstracted from a line span (`ihgGadgetDenote`) to an arbitrary WF relation, then
-the `split ; unshuffle ; (gadget TENSOR subDiagram) ; shuffle ; merge` assembly
-at the shared boundary and the row-at-a-time accumulation.  This is a distinct
-BUILD (generalizing `ihtGadgetTensorDenote` / `ihtAssemblyDenote` in the second
-factor), not a wall of principle. -/
-def ihtHasNormalFormCompiler : Bool := false
 
 end FX1Poly.ComputerAlgebra

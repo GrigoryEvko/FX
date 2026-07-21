@@ -1,34 +1,17 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialCoeff
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegree
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialLeadingCoeff — the degree↔coefficient bridge
-(the sixth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialLeadingCoeff — the degree↔coefficient bridge
 
-`IntPolynomialDegree` measures the leading coefficient as `lastOrZero (polyTrim coeffs)` — the last
-surviving entry after trailing-zero trimming.  `IntPolynomialCoeff` reads a coefficient positionally.  The
-pseudo-division degree-decrease needs these two views to agree: the leading coefficient *is* the
-coefficient at the degree position.
+`IntPolynomialDegree` measures the leading coefficient as `lastOrZero (polyTrim coeffs)`;
+`IntPolynomialCoeff` reads a coefficient positionally.  The pseudo-division degree-decrease needs these two
+views to agree: `polyLeadingCoeffEqCoeffDegree` proves `polyLeadingCoeff p = polyCoeff p (polyDegree p)`,
+because `polyTrim` keeps a prefix and only drops trailing zeros, so reading position `(polyTrim p).length −
+1` lands on the last surviving coefficient.  Together with `polyCoeffMonomialMul`, this identifies the
+pseudo-division step's top coefficient as `leadDivisor · leadDividend − leadDividend · leadDivisor = 0`.
 
-## What is PROVEN
-
-`polyLeadingCoeffEqCoeffDegree`: `polyLeadingCoeff p = polyCoeff p (polyDegree p)`.  Because `polyTrim`
-keeps a prefix of the list and only drops trailing zeros, reading position `(polyTrim p).length − 1` in the
-original list lands on the last surviving coefficient — exactly `lastOrZero (polyTrim p)`.  The proof is
-one induction over the list, casing on the trimmed tail (and, when empty, on whether the head is zero),
-the same shape as `polyTrimPreservesEval`.
-
-This is the leading-term-cancellation lever's second half: with `polyCoeffMonomialMul` computing the
-quotient-term product's top coefficient, and this bridge identifying leading coefficients with positional
-ones, the pseudo-division step's top coefficient is `leadDivisor · leadDividend − leadDividend ·
-leadDivisor = 0`.
-
-## Zero-axiom design
-
-Structural induction on the coefficient list; the only non-list case analysis is `Int.decEq coeff 0` (full
-`isTrue`/`isFalse` enumeration).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialLeadingCoeff.lean`.
--/
+Structural induction on the coefficient list; the only non-list case analysis is `Int.decEq coeff 0`.  Free
+of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -88,10 +71,5 @@ theorem polyLeadingCoeffBridgeGrounding :
 /-- The zero polynomial: leading coefficient `0` equals the coefficient at its (conventional) degree `0`. -/
 theorem polyLeadingCoeffBridgeZeroGrounding :
     polyLeadingCoeff [0, 0, 0] = polyCoeff [0, 0, 0] (polyDegree [0, 0, 0]) := by decide
-
-/-- Marker: the ℤ[x] leading coefficient (measured on the trailing-zero-free normal form) equals the
-positional coefficient at the degree index — the second half of the pseudo-division leading-term
-cancellation, joining `polyCoeffMonomialMul`. -/
-def fxIntPoly_hasLeadingCoeffAtDegree : Bool := true
 
 end FX1Poly.ComputerAlgebra

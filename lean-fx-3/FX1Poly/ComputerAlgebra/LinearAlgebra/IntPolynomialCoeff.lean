@@ -1,28 +1,17 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntUnivariatePolynomial
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialCoeff — the coefficient accessor
-(the fifth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialCoeff — the positional coefficient accessor
 
-The Euclidean GCD's termination rests on the degree strictly dropping at each pseudo-division step, which
-is a *leading-term cancellation* fact: the step subtracts two polynomials with the same top coefficient, so
-that coefficient vanishes.  Reasoning about individual coefficients is far cleaner through a positional
-accessor than through the trailing-zero `polyTrim` length.
+`polyCoeff p n` reads the coefficient of `xⁿ` in the ascending list `p` (0 past the end).  Under it every
+ring operation is pointwise: `polyCoeff` is a family of ring homomorphisms `ℤ[x] → ℤ`, one per position
+(`polyCoeffScale`/`polyCoeffAdd`/`polyCoeffNeg`/`polyCoeffSub`), together with `polyCoeffMonomialAt` (a
+monomial's coefficient at its own degree is the scalar) and `polyCoeffMonomialMul` (multiplying by a
+monomial shifts and scales coefficients — the leading-term-cancellation lever the pseudo-division
+degree-decrease rests on).
 
-## The accessor
-
-`polyCoeff p n` reads the coefficient of `xⁿ` in `p` (0 past the end).  Under it every ring operation is a
-pointwise operation on coefficients — `polyCoeff` is a family of ring homomorphisms
-`ℤ[x] → ℤ`, one per position — proved by structural induction:
-`polyCoeffScale`/`polyCoeffAdd`/`polyCoeffNeg`/`polyCoeffSub`, plus `polyCoeffMonomialAt` (a monomial's
-coefficient at its own degree is the scalar).
-
-## Zero-axiom design
-
-Every definition is structural on the coefficient list and the position; every arithmetic step routes
-through the corpus `Int` lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialCoeff.lean`.
--/
+Every definition is structural on the coefficient list and the position; arithmetic routes through the
+corpus `Int` lemmas.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -86,11 +75,10 @@ theorem polyCoeffSingletonZero : ∀ position : Nat, polyCoeff [(0 : Int)] posit
   | _ + 1 => rfl
 
 /-- **Multiplying by a monomial shifts and scales coefficients.**  `polyCoeff (coeff · x^degree · poly)
-(position + degree) = coeff · polyCoeff poly position`: the degree-`degree` monomial slides `poly` up by
-`degree` places and scales it by `coeff`.  By induction on `degree` — the base case is the `polyMul`
-convolution `polyAdd (polyScale coeff poly) [0]`, and each successive degree prepends a `0` (a
-`polyScale 0 poly` summand that annihilates) and consumes one position.  This is the exact statement the
-pseudo-division step needs: the quotient-term product's coefficient at the top position of the dividend. -/
+(position + degree) = coeff · polyCoeff poly position`.  By induction on `degree`: the base case is the
+`polyMul` convolution `polyAdd (polyScale coeff poly) [0]`, and each successive degree prepends a `0` and
+consumes one position.  This is the coefficient at the top position of the dividend that the pseudo-division
+step needs. -/
 theorem polyCoeffMonomialMul (coeff : Int) (poly : List Int) (position : Nat) :
     ∀ degree : Nat,
       polyCoeff (polyMul (polyMonomial coeff degree) poly) (position + degree)
@@ -123,10 +111,5 @@ theorem polyCoeffScaleGrounding :
 5 * polyCoeff [7, 2] 1`. -/
 theorem polyCoeffMonomialMulGrounding :
     polyCoeff (polyMul (polyMonomial 5 2) [7, 2]) 3 = 5 * polyCoeff [7, 2] 1 := by decide
-
-/-- Marker: the ℤ[x] positional coefficient accessor ships with each coefficient proved a ring
-homomorphism (scale/add/neg/sub) plus the monomial-at-its-degree fact — the leading-term-cancellation
-substrate for the pseudo-division degree-decrease (the Euclidean GCD's termination lever). -/
-def fxIntPoly_hasCoefficientHomomorphisms : Bool := true
 
 end FX1Poly.ComputerAlgebra

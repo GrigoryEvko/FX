@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfSeed
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfSeed — zero-axiom
-    gate (WP-PROP-3 brick 2: the IH_Q presentation seed)
+    gate for the IH_Q presentation seed
 
 Per-declaration zero-axiom gate for the IH_Q presentation seed: the executable
 helper kit (Nat equality, Bool conjunction, casts), the IH_Q cell syntax over
@@ -12,14 +12,13 @@ width), strict layers / the diagram carrier with the executable
 well-formedness gate, relation equivalence with both span bridges, the QnfRat
 identity spec (`ihsIdSpec`) with its padded-pair transform lemmas, the
 categorical laws (compose cong/assoc/unit), the snoc plumbing with the
-sequential decomposition (`ihsLayersDenoteSnoc`), THE RELATION SET — all 46
-IH_Q rows (`IhsRowTag` + lhs/rhs) with THE GATE (`ihsRowGateFires` /
+sequential decomposition (`ihsLayersDenoteSnoc`), the relation set — all 46
+IH_Q rows (`IhsRowTag` + lhs/rhs) with the gate (`ihsRowGateFires` /
 `ihsRowSpanGate`) and the two general-scalar absorb theorems, the
 convertibility bundle + the sequential congruence `IhsConv` with soundness
 (`ihsConvSound`) and the refutation bridge (`ihsConvSpanEqB`), the fires
-(TRUE conv in context, FALSE controls with `Not IhsConv`, the scalar
-composition), and the honesty markers incl. the owner-false whisker wall and
-completeness statement.
+(true conv in context, false controls with `Not IhsConv`, the scalar
+composition), and the soundness and completeness status markers.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
@@ -190,10 +189,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihsFireScalarCompositionSpan
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihsFireScalarCompositionConv
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihsFireIllFormedDetected
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihsHasDiagramSemantics
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihsHasRowGate
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihsHasSoundness
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihsHasWhiskerCongruence
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihsCompletenessStatement
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihsCompletenessIsProven
 

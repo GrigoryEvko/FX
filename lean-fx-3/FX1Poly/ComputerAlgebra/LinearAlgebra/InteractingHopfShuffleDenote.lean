@@ -1,11 +1,12 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfNormalForm
 
 /-! # LinearAlgebra/InteractingHopfShuffleDenote — the perfect (un)shuffle
-denotation and the two-row spatial sum (WP-PROP-3 brick 9)
+denotation
 
-Discharging the brick-8 residuals `ihnUnshuffleDenoteStatement` /
-`ihnShuffleDenoteStatement` (the faithful block-transpose denotations) and the
-committed `ihgTwoRowSpatialSumStatement`.
+The faithful bidirectional block-transpose denotations: `ihuUnshuffleDenote`
+relates the interleaved layout to the block layout at every width, and its
+converse `ihuShuffleDenote` runs over the reversibility calculus. They inhabit
+`ihnUnshuffleDenoteStatement` / `ihnShuffleDenoteStatement`.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -190,9 +191,9 @@ theorem ihuWhiskeredUnshuffleSpec (blockWidth : Nat) (domVec midVec : List QnfRa
       from (ihuWidthCanon blockWidth).symm] at hSpec
   exact hSpec
 
-/-! ## Stage 2 — THE UNSHUFFLE DENOTATION (T1) -/
+/-! ## Stage 2 — the unshuffle denotation (T1) -/
 
-/-- THE FAITHFUL UNSHUFFLE DENOTATION: the perfect unshuffle `ihrUnshuffle m`
+/-- The faithful unshuffle denotation: the perfect unshuffle `ihrUnshuffle m`
 relates the interleaved layout `ihnInterleave pList qList` to the block layout
 `ihqCat pList qList`, at every width, by structural recursion on `m`.  The step
 splits the diagram into the whiskered smaller unshuffle (head pair fixed) followed
@@ -436,17 +437,13 @@ theorem ihuUnshuffleDenote : (blockWidth : Nat) -> (domVec codVec : List QnfRat)
                           rw [hSFacts.right.left]
                           rfl
 
-/-- DECIDED (T1): the committed owner-false `ihnUnshuffleDenoteStatement` is
-inhabited by the faithful unshuffle denotation. -/
+/-- The residual `ihnUnshuffleDenoteStatement` is inhabited by the faithful
+unshuffle denotation (T1). -/
 theorem ihuUnshuffleDenoteHolds : ihnUnshuffleDenoteStatement :=
   ihuUnshuffleDenote
 
-/-- DECIDED (T1): the perfect unshuffle ships its faithful block-transpose
-denotation, superseding the committed owner-false `ihnHasUnshuffleDenote`. -/
-def ihuHasUnshuffleDenote : Bool := true
-
 set_option maxHeartbeats 4000000 in
-/-- T1 CONTENT fire (routes through `ihuUnshuffleDenote`, not a span `rfl`): the
+/-- T1 content fire (routes through `ihuUnshuffleDenote`, not a span `rfl`): the
 unshuffle `ihrUnshuffle 2` relates the interleaved input `[2, 3, 1, 1]` to the
 block output `[2, 1, 3, 1]` — the pair `p = [2, 1]`, `q = [3, 1]` woven then
 un-woven. -/
@@ -493,7 +490,7 @@ theorem ihuReverseConsCat (headLayer : List IhsCell) (restLayers : List (List Ih
     = ihwCatLayers (List.reverseAux restLayers []) [headLayer]
   exact ihuReverseAuxCat restLayers [headLayer]
 
-/-- THE CROSSING IS SELF-INVERSE: the atomic swap layer relates a pair in one
+/-- The crossing is self-inverse: the atomic swap layer relates a pair in one
 order iff it relates it in the other — an adjacent transposition is its own
 converse.  The base fact the layer-reverse-is-converse bridge rests on. -/
 theorem ihuSwapSelfConverse (leftContext rightContext : Nat) (domVec codVec : List QnfRat) :
@@ -767,7 +764,7 @@ theorem ihuSingletonSquareDenote (layer : List IhsCell) (width : Nat)
   refine Iff.trans (ihuSingletonDenote layer width hDom domVec codVec) ?_
   exact ihwPairMemCast rfl hCod
 
-/-- THE LAYER-REVERSE IS THE CONVERSE: for a reversible layer list, the reversed
+/-- The layer-reverse is the converse: for a reversible layer list, the reversed
 diagram relates `dom` to `cod` iff the original relates `cod` to `dom`. -/
 theorem ihuReverseConverse {width : Nat} {layers : List (List IhsCell)}
     (hRev : IhuReversible width layers) (domVec codVec : List QnfRat) :
@@ -884,7 +881,7 @@ theorem ihuReverseConverse {width : Nat} {layers : List (List IhsCell)}
             exact Exists.intro midVec (And.intro ((hF1 midVec).mpr hParts.right)
               ((hF2 midVec).mpr hParts.left))
 
-/-- THE FAITHFUL SHUFFLE DENOTATION: the inverse block-transpose `ihrShuffle m`
+/-- The faithful shuffle denotation: the inverse block-transpose `ihrShuffle m`
 relates the block layout `ihqCat pList qList` to the interleaved layout
 `ihnInterleave pList qList` (dom/cod swapped from the unshuffle) — the layer
 reverse of the unshuffle carries its denotation to the converse. -/
@@ -916,17 +913,18 @@ theorem ihuShuffleDenote (blockWidth : Nat) (domVec codVec : List QnfRat) :
               (And.intro hFacts.left (And.intro hFacts.right.right.left
                 hFacts.right.right.right))))
 
-/-- DECIDED (T1): the committed owner-false `ihnShuffleDenoteStatement` is
-inhabited by the faithful shuffle denotation. -/
+/-- The residual `ihnShuffleDenoteStatement` is inhabited by the faithful shuffle
+denotation (T1). -/
 theorem ihuShuffleDenoteHolds : ihnShuffleDenoteStatement :=
   ihuShuffleDenote
 
-/-- DECIDED (T1): the perfect shuffle ships its faithful block-transpose
-denotation. -/
+/-- This brick ships the perfect unshuffle and shuffle denotations (T1): the
+faithful bidirectional block-transpose denotations over the reversibility
+calculus. -/
 def ihuHasShuffleDenote : Bool := true
 
 set_option maxHeartbeats 4000000 in
-/-- T1 CONTENT fire (routes through `ihuShuffleDenote`): the shuffle `ihrShuffle 2`
+/-- T1 content fire (routes through `ihuShuffleDenote`): the shuffle `ihrShuffle 2`
 relates the block input `[2, 1, 3, 1]` to the interleaved output `[2, 3, 1, 1]` —
 the exact inverse of `ihuFireUnshuffleContent`. -/
 theorem ihuFireShuffleContent :
@@ -937,43 +935,5 @@ theorem ihuFireShuffleContent :
       [ihsScalarTwo, ihsScalarThree, qnfOne, qnfOne]).mpr
     (Exists.intro [ihsScalarTwo, qnfOne] (Exists.intro [ihsScalarThree, qnfOne]
       (And.intro rfl (And.intro rfl (And.intro rfl rfl)))))
-
-/-! ## Stage 6 — the T2 / T3 walls (two-row spatial sum, multi-row NF compiler) -/
-
-/-- WALL (T2) — OWNER FALSE, NOT PROVEN THIS BRICK.  The committed
-`ihgTwoRowSpatialSumStatement`.
-
-STATUS UPDATE: the blocker named by the r7/r8 walls (`ihrHasTwoRowSpatialSum`,
-`ihnHasTwoRowSpatialSum`) was the faithful perfect (un)shuffle denotation
-(`ihrUnshuffleDenoteResidual`).  That blocker is now DISCHARGED —
-`ihuUnshuffleDenote` and `ihuShuffleDenote` (above) are the faithful bidirectional
-block-transpose denotations, zero-axiom.  So T2 is no longer gated on an unbuilt
-(un)shuffle denotation.
-
-PRECISE REMAINING RESIDUAL: the assembly `ihrTwoRowSumDiagram`
-(`split ; unshuffle ; (gadget (x) gadget) ; shuffle ; merge`) needs (1) the two
-per-strand fan denotations — `ihrSplitLayer` (per-strand `whiteComult` coadd,
-`m -> 2m`, relating `s_i` to an interleaved `(p_i, q_i)` with `p_i + q_i = s_i`)
-and `ihrMergeLayer` (per-strand `whiteMult` add, `2n -> n`), each a fresh
-per-strand tensor recursion in the shape of `ihgScalarLayerDenote`; (2) the
-gadget-tensor denotation `(gadget1 (x) gadget2)` via `ihwTensorSpec` +
-`ihgGadgetDenote`; (3) the five-stage `ihqComposeSpec` chain reconciling the
-interleave/block layouts through `ihuUnshuffleDenote` / `ihuShuffleDenote`, landing
-the Minkowski-sum characterization `(dom, cod) <-> exists a b,
-dom = a*in1 + b*in2 /\ cod = a*out1 + b*out2` — i.e. `ihqCat dom cod` in the span
-of `[in1 ++ out1, in2 ++ out2]`.  The construction is already kernel-validated at
-concrete dimensions (`ihrTwoRowSumInstanceOneOut`, `ihrTwoRowSumInstanceTwoOut`);
-only the arbitrary-width denotation induction remains — a distinct large build, not
-shipped this round. -/
-def ihuHasTwoRowSpatialSum : Bool := false
-
-/-- WALL (T3) — OWNER FALSE, NOT PROVEN THIS BRICK.  The committed
-`ihzNormalFormStatement`.  Gated on the general two-row spatial sum
-(`ihuHasTwoRowSpatialSum`): the multi-row NF compiler is the row-list recursion
-`span (row :: rest) = span [row] + span rest`, joining the single-row gadget
-(`ihgSingleRowNormalForm`) for the head row with the recursively-built sub-diagram
-via the general Minkowski spatial sum (of which the two-single-row case is
-`ihgTwoRowSpatialSumStatement`).  Not shipped this round. -/
-def ihuHasNormalFormCompiler : Bool := false
 
 end FX1Poly.ComputerAlgebra

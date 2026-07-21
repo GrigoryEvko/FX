@@ -2,21 +2,20 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfNormalForm
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfNormalForm —
-    zero-axiom gate (WP-PROP-3 brick 8: the move-past-block cascade denotation)
+    zero-axiom gate (the move-past-block cascade denotation)
 
-Per-declaration zero-axiom gate for the discharge of the brick-7 primary residual
+Per-declaration zero-axiom gate for the discharge of the residual
 `ihrMoveRightDenoteResidual`: the nil-cat rewrite helper (`ihnCatNilLeft`); the
-move-pair structural predicate (`ihnMovePairSpec`); THE CASCADE DENOTATION
+move-pair structural predicate (`ihnMovePairSpec`); the cascade denotation
 (`ihnMoveRightDenote`) and the residual inhabitant
-(`ihnMoveRightDenoteResidualHolds`); the DECIDED marker (`ihnHasCascadeDenote`);
-the kernel span fires with FALSE control and the content fire routing through the
+(`ihnMoveRightDenoteResidualHolds`); the cascade marker (`ihnHasCascadeDenote`);
+the kernel span fires with false control and the content fire routing through the
 theorem (`ihnFireMoveRightZeroTwoZero`, `ihnFireMoveRightZeroTwoZeroFalse`,
 `ihnFireCascadeContent`); the perfect interleave (`ihnInterleave`); the faithful
 (un)shuffle denotation statements (`ihnUnshuffleDenoteStatement`,
-`ihnShuffleDenoteStatement`, owner false — they correct the under-specified
-committed `ihrUnshuffleDenoteResidual`); the (un)shuffle span fires
-(`ihnFireUnshuffleTwo`, `ihnFireUnshuffleTwoFalse`); the three owner-false markers
-(`ihnHasUnshuffleDenote`, `ihnHasTwoRowSpatialSum`, `ihnHasNormalFormCompiler`).
+`ihnShuffleDenoteStatement`, which correct the under-specified
+`ihrUnshuffleDenoteResidual`); the (un)shuffle span fires
+(`ihnFireUnshuffleTwo`, `ihnFireUnshuffleTwoFalse`).
 
 No new inductives/structures are introduced, so there are no constructors,
 `mk`, or projections to gate — every declaration is a `def` or `theorem`.
@@ -39,8 +38,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihnShuffleDenoteStatement
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihnFireUnshuffleTwo
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihnFireUnshuffleTwoFalse
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihnHasUnshuffleDenote
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihnHasTwoRowSpatialSum
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihnHasNormalFormCompiler
 
 end FX1PolyAudit

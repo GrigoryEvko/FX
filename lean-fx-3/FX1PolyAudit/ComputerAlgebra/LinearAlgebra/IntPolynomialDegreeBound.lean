@@ -3,14 +3,11 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegreeBound
 
 /-! # FX1PolyAudit/.../IntPolynomialDegreeBound — zero-axiom gate
 
-Per-declaration zero-axiom gate for the degree-from-coefficient-vanishing lever (the ninth brick of
-`invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255): the trim invariant (nonzero last coefficient), the
-nonzero leading coefficient, and the strict degree bound when coefficients vanish at/above a positive
-bound.
-
-Structural induction with `Int.decEq` casing and constructive Nat decidability (`Nat.lt_of_not_le`);
-`List.cons_ne_nil`, `Or.resolve_left`.  Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`,
-`native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the degree-from-coefficient-vanishing lever: the trim invariant
+(nonzero last coefficient), the nonzero leading coefficient, and the strict degree bound when coefficients
+vanish at or above a positive bound.  Structural induction with `Int.decEq` casing and constructive Nat
+decidability (`Nat.lt_of_not_le`).  Free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`,
+`omega`. -/
 
 namespace FX1PolyAudit
 
@@ -20,6 +17,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyDegreeLtOfCoeffVanishingAbove
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyLeadingCoeffNonzeroGrounding
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffAtDegreeNonzeroGrounding
-#assert_no_axioms FX1Poly.ComputerAlgebra.fxIntPoly_hasDegreeFromCoefficientVanishing
 
 end FX1PolyAudit

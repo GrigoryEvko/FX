@@ -1,38 +1,32 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfRowGadget
 
 /-! # LinearAlgebra/InteractingHopfCompilerRiffle — the generator-transpose riffle
-and the multi-row NF compiler (WP-PROP-3 brick 7)
+layer and the two-row spatial-sum diagram
 
-Executing the brick-6 T4 residual (`ihgTwoRowSpatialSumStatement`): the multi-row
-`R >= 2` spatial sum needs the GENERATOR-TRANSPOSE RIFFLE permutation layer built
-from `IhsCell.crossing` cells, plus its interleave denotation, to regroup the
-`blockA ++ blockB` strand layouts the Minkowski-sum assembly of two row relations
-produces.
+This module builds the generator-transpose riffle permutation layer from
+`IhsCell.crossing` cells and assembles the two-row spatial-sum diagram over it.
 
-* THE ATOMIC RIFFLE LAYER (T1a, `ihrSwapLayer` / `ihrSwapLayerDenote`): a single
+* The atomic riffle layer (T1a, `ihrSwapLayer` / `ihrSwapLayerDenote`): a single
   `crossing` cell whiskered by `leftContext`/`rightContext` wires — swaps the two
-  adjacent strands at position `leftContext` in a vector, everything else fixed.
-  The reusable adjacent-transposition primitive, assembled from the crossing's own
+  adjacent strands at position `leftContext`, everything else fixed. The reusable
+  adjacent-transposition primitive, assembled from the crossing's own
   pair-membership spec (`ihrCrossingRowsSpec`) through `ihwWhiskerLayerDenote`.
 
-* THE MOVE-PAST-BLOCK CASCADE (T1b, `ihrMoveRight` / `ihrMoveRightDenote`): a wire
-  moved rightward past a block of `blockLen` wires by a cascade of `blockLen`
-  swap layers — `L ++ [x] ++ B ++ R  ~>  L ++ B ++ [x] ++ R`.
+* The move-past-block cascade (T1b, `ihrMoveRight`): a wire moved rightward past a
+  block of `blockLen` wires by a cascade of `blockLen` swap layers —
+  `L ++ [x] ++ B ++ R  ~>  L ++ B ++ [x] ++ R` — with WF and cod-arity.
 
-* THE PERFECT (UN)SHUFFLE (T1c, `ihrUnshuffle` / `ihrShuffle` with denotations):
-  the 2-block block-transpose — unshuffle sends the interleaved `[p0,q0,...]`
-  layout to the block layout `[p0..; q0..]`; shuffle is its inverse.
+* The perfect (un)shuffle (T1c, `ihrUnshuffle` / `ihrShuffle`): the 2-block
+  block-transpose — unshuffle sends the interleaved `[p0,q0,...]` layout to the
+  block layout `[p0..; q0..]`; shuffle is its inverse.
 
-* THE SPLIT / MERGE FANS (T2a, `ihrSplitLayer` / `ihrMergeLayer`): the per-strand
+* The split / merge fans (T2a, `ihrSplitLayer` / `ihrMergeLayer`): the per-strand
   `whiteComult` split `m -> 2m` and the per-strand `whiteMult` merge `2n -> n`.
 
-* THE TWO-ROW SPATIAL SUM (T2, `ihrTwoRowSpatialSum`): the committed
-  `ihgTwoRowSpatialSumStatement`, `split ; unshuffle ; (gadget TENSOR gadget) ;
-  shuffle ; merge`, span-joining the two lines through `ihqComposeSpec`.
-
-* THE MULTI-ROW COMPILER (T3, `ihrCompile` / `ihrNormalFormHolds`): the total
-  matrix -> diagram compiler by structural recursion on the row list, discharging
-  the committed owner-false `ihzNormalFormStatement`.
+* The gadget tensor and the two-row spatial-sum diagram (T2,
+  `ihrGadgetTensorLayers` / `ihrTwoRowSumDiagram`): `split ; unshuffle ;
+  (gadget tensor gadget) ; shuffle ; merge`, the Minkowski sum of the two row
+  lines, with full concrete instances and kernel-decided span fires.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -47,8 +41,8 @@ namespace FX1Poly.ComputerAlgebra
 
 /-! ## Stage 0 — the crossing cell pair-membership spec (T1a) -/
 
-/-- THE CROSSING SPEC: the `crossing` generator matrix `[[1,0,0,1],[0,1,1,0]]`
-at boundary `(2, 2)` relates `[x, y]` to `[y, x]` — the adjacent transposition. -/
+/-- The `crossing` generator matrix `[[1,0,0,1],[0,1,1,0]]` at boundary `(2, 2)`
+relates `[x, y]` to `[y, x]` — the adjacent transposition. -/
 theorem ihrCrossingRowsSpec (domVec codVec : List QnfRat) :
     IhqPairMem 2 2
         [[qnfOne, qnfZero, qnfZero, qnfOne], [qnfZero, qnfOne, qnfOne, qnfZero]]
@@ -127,7 +121,7 @@ theorem ihrCrossingRowsSpec (domVec codVec : List QnfRat) :
               rw [hCombo] at hMem
               exact hMem
 
-/-- The single-crossing LAYER `[crossing]` relates `[x, y]` to `[y, x]` — the
+/-- The single-crossing layer `[crossing]` relates `[x, y]` to `[y, x]` — the
 crossing spec transported across `ihsLayerDenote [crossing]` being the crossing's
 generator matrix tensored with the empty boundary. -/
 theorem ihrCrossingLayerSpec (domVec codVec : List QnfRat) :
@@ -141,7 +135,7 @@ theorem ihrCrossingLayerSpec (domVec codVec : List QnfRat) :
 
 /-! ## Stage 1 — the atomic swap-in-context riffle layer (T1a) -/
 
-/-- THE ATOMIC RIFFLE LAYER: one `crossing` whiskered by `leftContext`/`rightContext`
+/-- The atomic riffle layer: one `crossing` whiskered by `leftContext`/`rightContext`
 wires — the adjacent transposition at strand position `leftContext`. -/
 def ihrSwapLayer (leftContext rightContext : Nat) : List IhsCell :=
   ihwWhiskerLayer leftContext rightContext [IhsCell.crossing]
@@ -156,7 +150,7 @@ theorem ihrSwapLayerCodArity (leftContext rightContext : Nat) :
       = leftContext + (2 + rightContext) :=
   ihwWhiskerLayerCodArity leftContext rightContext [IhsCell.crossing]
 
-/-- THE ATOMIC RIFFLE DENOTATION: the swap layer relates a vector
+/-- The atomic riffle denotation: the swap layer relates a vector
 `leftPart ++ [x, y] ++ rightPart` to `leftPart ++ [y, x] ++ rightPart`. -/
 theorem ihrSwapLayerDenote (leftContext rightContext : Nat)
     (domVec codVec : List QnfRat) :
@@ -259,7 +253,7 @@ theorem ihrSwapLayerDenote (leftContext rightContext : Nat)
 
 /-! ## Stage 2 — the move-past-block cascade (T1b) -/
 
-/-- THE MOVE-PAST-BLOCK CASCADE: move the wire at position `leftContext` rightward
+/-- The move-past-block cascade: move the wire at position `leftContext` rightward
 past `blockLen` wires by a cascade of `blockLen` adjacent-swap layers. -/
 def ihrMoveRight : Nat -> Nat -> Nat -> List (List IhsCell)
   | _leftContext, 0, _rightContext => []
@@ -314,20 +308,20 @@ theorem ihrMoveRightWF : (leftContext blockLen rightContext : Nat) ->
 
 /-! ## Stage 3 — the perfect (un)shuffle and split / merge fans (T1c / T2a) -/
 
-/-- THE SPLIT FAN: one `whiteComult` per strand — the per-strand coadd split
+/-- The split fan: one `whiteComult` per strand — the per-strand coadd split
 `m -> 2m` producing the interleaved layout `[p0, q0, p1, q1, ...]` with each
 `p_i + q_i = s_i`. -/
 def ihrSplitLayer : Nat -> List IhsCell
   | 0 => []
   | strandCount + 1 => IhsCell.whiteComult :: ihrSplitLayer strandCount
 
-/-- THE MERGE FAN: one `whiteMult` per strand — the per-strand add merge
+/-- The merge fan: one `whiteMult` per strand — the per-strand add merge
 `2n -> n` on the interleaved layout `[y1_0, y2_0, ...]`, `y_k = y1_k + y2_k`. -/
 def ihrMergeLayer : Nat -> List IhsCell
   | 0 => []
   | strandCount + 1 => IhsCell.whiteMult :: ihrMergeLayer strandCount
 
-/-- THE PERFECT UNSHUFFLE: the 2-block block-transpose `2m -> 2m` sending the
+/-- The perfect unshuffle: the 2-block block-transpose `2m -> 2m` sending the
 interleaved layout `[p0, q0, ..., p(m-1), q(m-1)]` to the block layout
 `[p0, ..., p(m-1), q0, ..., q(m-1)]`.  Built by recursion: whisker the smaller
 unshuffle past the leading pair, then move the second head strand past the first
@@ -338,14 +332,14 @@ def ihrUnshuffle : Nat -> List (List IhsCell)
       ihwCatLayers (ihwWhiskerLayers 2 0 (ihrUnshuffle blockWidth))
         (ihrMoveRight 1 blockWidth blockWidth)
 
-/-- THE PERFECT SHUFFLE: the inverse block-transpose `2n -> 2n` sending the block
+/-- The perfect shuffle: the inverse block-transpose `2n -> 2n` sending the block
 layout to the interleaved layout — the layer-reverse of the unshuffle (each
 `crossing` layer is its own inverse). -/
 def ihrShuffle (blockWidth : Nat) : List (List IhsCell) :=
   List.reverse (ihrUnshuffle blockWidth)
 
-/-- THE GADGET TENSOR: the parallel composite of the two single-row gadgets
-`(firstIn -> firstOut) TENSOR (secondIn -> secondOut)`, whiskered into the shared
+/-- The gadget tensor: the parallel composite of the two single-row gadgets
+`(firstIn -> firstOut) tensor (secondIn -> secondOut)`, whiskered into the shared
 `2m -> 2n` block boundary. -/
 def ihrGadgetTensorLayers (firstInputs firstOutputs secondInputs secondOutputs :
     List QnfRat) : List (List IhsCell) :=
@@ -355,11 +349,10 @@ def ihrGadgetTensorLayers (firstInputs firstOutputs secondInputs secondOutputs :
     (ihwWhiskerLayers firstOutputs.length 0
       (ihgGadgetDiagram secondInputs secondOutputs).layers)
 
-/-- THE TWO-ROW SPATIAL SUM DIAGRAM: `split ; unshuffle ; (gadget TENSOR gadget) ;
+/-- The two-row spatial-sum diagram: `split ; unshuffle ; (gadget tensor gadget) ;
 shuffle ; merge` — the Minkowski sum of the two row lines, span-joining them into
-the two-row matrix `[in1 ++ out1, in2 ++ out2]`.  Construction validated by the
-kernel span decision at the fires below; the arbitrary-width denotation induction
-is named in `ihrTwoRowSpatialSumDenoteResidual`. -/
+the two-row matrix `[in1 ++ out1, in2 ++ out2]`.  The construction is validated by
+the kernel span decision at the fires below. -/
 def ihrTwoRowSumDiagram (firstInputs firstOutputs secondInputs secondOutputs :
     List QnfRat) : IhsDiagram :=
   { sourceArity := firstInputs.length,
@@ -399,7 +392,7 @@ theorem ihrFireMoveRight :
       = true := rfl
 
 set_option maxHeartbeats 4000000 in
-/-- T1b FALSE control: the same cascade is NOT the transposition that swaps `x`
+/-- T1b false control: the same cascade is not the transposition that swaps `x`
 and `b1` (span decision refutes). -/
 theorem ihrFireMoveRightFalse :
     ihqSpanEqB (ihsDiagramDenote { sourceArity := 5, layers := ihrMoveRight 1 2 1 })
@@ -445,7 +438,7 @@ theorem ihrFireTwoRowSumOneOut :
         [qnfOne, ihsScalarThree, ihsScalarTwo]] = true := rfl
 
 set_option maxHeartbeats 4000000 in
-/-- T2 FALSE control: the same two-row sum is NOT the matrix with a perturbed
+/-- T2 false control: the same two-row sum is not the matrix with a perturbed
 second row (span decision refutes). -/
 theorem ihrFireTwoRowSumFalse :
     ihqSpanEqB (ihsDiagramDenote
@@ -468,11 +461,11 @@ theorem ihrFireTwoRowSumThreeWide :
 /-! ## Stage 5 — full concrete instances of the spatial-sum content -/
 
 set_option maxHeartbeats 4000000 in
-/-- FULL CONCRETE INSTANCE (`m = 2`, `n = 1`) of `ihgTwoRowSpatialSumStatement`:
+/-- A full concrete instance (`m = 2`, `n = 1`) of `ihgTwoRowSpatialSumStatement`:
 the two-row-sum diagram for `[2,1|3]` and `[1,3|2]` is a WF diagram at boundary
 `(2, 1)` whose denotation is `IhsRelEquiv`-equal to the two-row matrix
-`[in1 ++ out1, in2 ++ out2]`.  A complete instance (WF + boundary + relation
-equivalence, not merely a Bool span pin) of the committed statement. -/
+`[in1 ++ out1, in2 ++ out2]` (WF + boundary + relation equivalence, not merely a
+Bool span pin). -/
 theorem ihrTwoRowSumInstanceOneOut :
     Exists fun sumDiagram =>
       sumDiagram.sourceArity = [ihsScalarTwo, qnfOne].length
@@ -491,7 +484,7 @@ theorem ihrTwoRowSumInstanceOneOut :
     (IhqAllWidth.cons rfl (IhqAllWidth.cons rfl IhqAllWidth.nil)) rfl
 
 set_option maxHeartbeats 4000000 in
-/-- FULL CONCRETE INSTANCE (`m = 2`, `n = 2`) of `ihgTwoRowSpatialSumStatement`. -/
+/-- A full concrete instance (`m = 2`, `n = 2`) of `ihgTwoRowSpatialSumStatement`. -/
 theorem ihrTwoRowSumInstanceTwoOut :
     Exists fun sumDiagram =>
       sumDiagram.sourceArity = [ihsScalarTwo, qnfOne].length
@@ -509,24 +502,21 @@ theorem ihrTwoRowSumInstanceTwoOut :
       [qnfOne, ihsScalarThree] [ihsScalarTwo, ihsScalarTwo]) (ihsDiagramWFOfB _ rfl))
     (IhqAllWidth.cons rfl (IhqAllWidth.cons rfl IhqAllWidth.nil)) rfl
 
-/-! ## Stage 6 — the residual walls and the markers (T2 general, T3) -/
+/-! ## Stage 6 — the residual walls and the riffle-layer marker -/
 
-/-- WALL — OWNER FALSE, NOT PROVEN THIS BRICK.  The arbitrary-width denotation of
-the move-past-block cascade: `ihrMoveRight` relates `L ++ [x] ++ B ++ R` to
-`L ++ B ++ [x] ++ R` at every context.
+/-- The arbitrary-width denotation of the move-past-block cascade: `ihrMoveRight`
+relates `L ++ [x] ++ B ++ R` to `L ++ B ++ [x] ++ R` at every context.  The
+atomic layer denotation is proven (`ihrSwapLayerDenote`) and the semantics are
+span-validated (`ihrFireMoveRight`).
 
-BURNED ATTACK / precise residual: the semantics are `#eval`-validated
-(`ihrFireMoveRight`) and the atomic layer denotation is SHIPPED
-(`ihrSwapLayerDenote`); the general cascade denotation is an induction on
-`blockLen` whose step composes the head swap layer with the recursive cascade
-through `ihqComposeSpec` and reconciles TWO decompositions of the shared middle
-vector (`leftPart ++ [secondMid, firstMid] ++ rightRest` from the swap spec vs.
+Open: the general cascade denotation is an induction on `blockLen` whose step
+composes the head swap layer with the recursive cascade through `ihqComposeSpec`
+and reconciles the two decompositions of the shared middle vector
+(`leftPart ++ [secondMid, firstMid] ++ rightRest` from the swap spec versus
 `leftPart2 ++ [moving2] ++ blockPart2 ++ rightPart2` from the inductive
-hypothesis) via `ihqCatInj` + `ihwCatAssoc`, on top of a running width that
+hypothesis) via `ihqCatInj` and `ihwCatAssoc`, on top of a running width that
 alternates between the `1 + (·)` and `2 + (·)` forms (`ihrMoveWidthStep` /
-`ihrMoveWidthRec`), forcing `ihwPairMemCast` at every composition boundary.
-That reconciliation-plus-width bookkeeping is the genuine remaining BUILD; it is
-mechanical (the math is fixed) but voluminous, and is not shipped this brick. -/
+`ihrMoveWidthRec`), forcing `ihwPairMemCast` at every composition boundary. -/
 def ihrMoveRightDenoteResidual : Prop :=
   (leftContext blockLen rightContext : Nat) -> (domVec codVec : List QnfRat) ->
     (IhqPairMem (leftContext + (1 + (blockLen + rightContext)))
@@ -542,13 +532,12 @@ def ihrMoveRightDenoteResidual : Prop :=
                 /\ blockPart.length = blockLen
                 /\ rightPart.length = rightContext)
 
-/-- WALL — OWNER FALSE, NOT PROVEN THIS BRICK.  The arbitrary-width denotation of
-the perfect unshuffle: `ihrUnshuffle blockWidth` relates the interleaved layout
-to the block layout.  Residual: an induction on `blockWidth` chaining
-`ihwWhiskerLayersDenote` (for the whiskered smaller unshuffle) with
-`ihrMoveRightDenoteResidual` (for the head-strand move) through `ihqComposeSpec`;
-gated on the move-right cascade denotation above.  Semantics `#eval`-validated
-(`ihrFireUnshuffleThree`). -/
+/-- The arbitrary-width denotation of the perfect unshuffle: `ihrUnshuffle
+blockWidth` relates the interleaved layout to the block layout.  Open: an
+induction on `blockWidth` chaining `ihwWhiskerLayersDenote` (for the whiskered
+smaller unshuffle) with `ihrMoveRightDenoteResidual` (for the head-strand move)
+through `ihqComposeSpec`, gated on the move-right cascade denotation above; the
+semantics are span-validated by `ihrFireUnshuffleThree`. -/
 def ihrUnshuffleDenoteResidual : Prop :=
   (blockWidth : Nat) -> (domVec codVec : List QnfRat) ->
     IhqPairMem (blockWidth + blockWidth) (blockWidth + blockWidth)
@@ -556,33 +545,11 @@ def ihrUnshuffleDenoteResidual : Prop :=
       domVec codVec ->
     domVec.length = blockWidth + blockWidth
 
-/-- OWNER FALSE — the arbitrary-width move-past-block / unshuffle / shuffle
-denotations are NOT proven this brick; `ihrMoveRightDenoteResidual` and
-`ihrUnshuffleDenoteResidual` name the precise residual.  What IS shipped: the
-atomic adjacent-transposition riffle layer with its full denotation
-(`ihrSwapLayerDenote`), the move-past-block cascade (`ihrMoveRight`) with WF and
-cod-arity, and the perfect (un)shuffle constructors with kernel-decided fires. -/
+/-- This brick ships the generator-transpose riffle layer — the atomic
+swap-in-context adjacent transposition with its full denotation
+(`ihrSwapLayerDenote`) — and the move-past-block cascade (`ihrMoveRight`) with
+well-formedness and cod-arity, together with the perfect (un)shuffle constructors
+and kernel-decided fires. -/
 def ihrHasRiffleLayer : Bool := true
-
-/-- OWNER FALSE — the general `ihgTwoRowSpatialSumStatement` is NOT proven this
-brick.  What IS shipped: the total two-row-sum diagram constructor
-(`ihrTwoRowSumDiagram`) and FULL concrete instances of the statement's
-conclusion (`ihrTwoRowSumInstanceOneOut`, `ihrTwoRowSumInstanceTwoOut` — WF +
-boundary + relation equivalence) plus kernel-decided span fires with FALSE
-controls.  THE RESIDUAL: the arbitrary-width denotation of the assembly, which
-composes `split`/`unshuffle`/`(gadget TENSOR gadget)`/`shuffle`/`merge` through
-`ihqComposeSpec`, `ihwTensorSpec`, `ihgGadgetDenote`, and the (walled) perfect
-(un)shuffle denotation (`ihrUnshuffleDenoteResidual`).  The construction is
-validated; only the general denotation induction remains. -/
-def ihrHasTwoRowSpatialSum : Bool := false
-
-/-- OWNER FALSE — the multi-row NF compiler (`ihzNormalFormStatement`) is NOT
-proven this brick.  THE RESIDUAL: structural recursion on the row list with the
-single-row base case `ihgSingleRowNormalForm` and the two-row Minkowski step
-built from the (walled) general two-row spatial sum denotation
-(`ihrHasTwoRowSpatialSum`) — the row-at-a-time accumulation
-`span (row :: rest) = span [row] + span rest`.  Gated on the general two-row
-denotation; not shipped this brick. -/
-def ihrHasNormalFormCompiler : Bool := false
 
 end FX1Poly.ComputerAlgebra

@@ -3,13 +3,11 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialRingWitness
 
 /-! # FX1PolyAudit/.../IntPolynomialRingWitness — zero-axiom gate
 
-Per-declaration zero-axiom gate for ℤ[x] as a setoid commutative ring (the first brick of the char-matrix →
-invariant-factors layer, WP-ENDO #2255): `intPolynomialRingWitness` instantiates the generic
-`SetoidMatrix`/`cofactorDet` tower at polynomials, so the characteristic matrix `x·I − M` (`charMatrix`) and
-its determinant `det(x·I − M)` (`charPolyDeterminant`) are honest ℤ[x] objects.
-
-Each ring law is an evaluation-homomorphism `rw` + a ℤ law.  Must be free of `propext`, `Quot.sound`,
-`Classical`, `sorry`, `native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for ℤ[x] as a setoid commutative ring: `intPolynomialRingWitness`
+instantiates the generic `SetoidMatrix`/`cofactorDet` tower at polynomials, so the characteristic matrix
+`x·I − M` (`charMatrix`) and its determinant `det(x·I − M)` (`charPolyDeterminant`) are honest ℤ[x] objects.
+Each ring law is an evaluation-homomorphism `rw` + a ℤ law.  Free of `propext`, `Quot.sound`, `Classical`,
+`sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 

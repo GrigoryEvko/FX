@@ -1,32 +1,17 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDivision
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialGcd — the Euclidean GCD over ℤ[x]
-(the fourth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialGcd — the Euclidean GCD over ℤ[x]
 
-`IntPolynomialDivision` shipped pseudo-division: `leadDivisor^scalePower · dividend = quotient · divisor +
-remainder` for an arbitrary divisor, integrally.  This file runs the Euclidean algorithm on the
-pseudo-remainder — `gcd(f, g) = gcd(g, pseudoRem(f, g))` until the second argument is the zero polynomial —
-so the polynomial GCD is computed over ℤ with no rationals.
+Runs the Euclidean algorithm on the pseudo-remainder shipped by `IntPolynomialDivision`
+(`gcd(f, g) = gcd(g, pseudoRem(f, g))` until the second argument trims to the zero polynomial), so the
+polynomial GCD is computed over ℤ with no rationals.  The GCD captures every common root:
+`polyGcdVanishesAtCommonRoot` shows that if `f` and `g` both vanish at a point, so does `polyGcd fuel f g`,
+driven by `polyPseudoRemVanishesAtCommonRoot` (the pseudo-remainder `b^k·f − q·g` vanishes wherever `f` and
+`g` both do) carried through the fuel recursion.
 
-## What is PROVEN
-
-The GCD captures every common root: `polyGcdVanishesAtCommonRoot` shows that if `f` and `g` both vanish at
-a point, so does `polyGcd fuel f g`, for every fuel.  The engine is `polyPseudoRemVanishesAtCommonRoot` —
-the pseudo-remainder `b^k·f − q·g` vanishes wherever `f` and `g` both vanish (read straight off the r10
-reconstruction) — carried through the Euclidean recursion by induction on fuel.  This is the semantic heart
-of why the Euclidean GCD computes the greatest common divisor: the common-root set is exactly what the
-recursion preserves.
-
-The converse (every root of the GCD is a common root) and the degree-based termination bound are the honest
-remaining steps of the invariant-factor classifier.
-
-## Zero-axiom design
-
-The recursion is structural on `fuel`; the only case analysis is `polyTrim`'s full `nil`/`cons`
-enumeration.  The vanishing arithmetic routes through the corpus `Int` lemmas.  No `axiom`, `sorry`,
-`propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialGcd.lean`.
--/
+Structural recursion on `fuel`; the only case analysis is `polyTrim`'s `nil`/`cons` enumeration; vanishing
+arithmetic routes through the corpus `Int` lemmas.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -46,10 +31,10 @@ def polyGcd : Nat → List Int → List Int → List Int
       | [] => primary
       | _ :: _ => polyGcd fuel secondary (polyPseudoRem fuel secondary primary)
 
-/-! ## The GCD captures every common root (PROVEN) -/
+/-! ## The GCD captures every common root -/
 
 /-- **The pseudo-remainder vanishes at every common root.**  If `dividend` and `divisor` both evaluate to
-`0` at a point, so does their pseudo-remainder — read off the r10 reconstruction
+`0` at a point, so does their pseudo-remainder — read off the reconstruction
 `b^scalePower · eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder)`: both products collapse to
 `0`, leaving `eval(remainder) = 0`. -/
 theorem polyPseudoRemVanishesAtCommonRoot (point : Int) (fuel : Nat) (divisor dividend : List Int)
@@ -95,7 +80,7 @@ theorem polyGcdVanishesAtCommonRoot (point : Int) :
 
 /-! ## The right-zero identity -/
 
-/-- **`gcd(f, 0) = f`.**  When the second argument is the zero polynomial, the GCD is the first argument —
+/-- **`gcd(f, 0) = f`.**  When the second argument is the zero polynomial the GCD is the first argument —
 the Euclidean terminating case (`polyTrim [] = []`), definitional. -/
 theorem polyGcdRightZero (fuel : Nat) (primary : List Int) :
     polyGcd (fuel + 1) primary [] = primary := rfl
@@ -121,13 +106,12 @@ theorem polyGcdSeesSharedLinearFactor (root : Int) (fuel : Nat)
 /-! ## Groundings -/
 
 /-- The Euclidean GCD of `x² − 1 = (x−1)(x+1)` and `x² + 2x + 1 = (x+1)²` shares the root `−1` (their common
-factor `x + 1`): `polyEval (-1) (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 0`, an instance of
-`polyGcdVanishesAtCommonRoot` since both vanish at `−1`. -/
+factor `x + 1`): `polyEval (-1) (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 0`. -/
 theorem polyGcdSharesCommonRootAtMinusOne :
     polyEval (-1) (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 0 := by decide
 
 /-- The GCD extracts the degree-1 common factor `x + 1` (up to content scaling): the computed GCD has
-degree `1`, matching `deg(x + 1)` — `polyDegree (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 1`. -/
+degree `1` — `polyDegree (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 1`. -/
 theorem polyGcdExtractsCommonFactorDegree :
     polyDegree (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 1 := by decide
 
@@ -142,10 +126,5 @@ theorem polyGcdSeesSharedEigenvalueAtTwo :
     polyEval 2
         (polyGcd 5 (polyMul (polyLinearFactor 2) [1, 1]) (polyMul (polyLinearFactor 2) [3, 1]))
       = 0 := by decide
-
-/-- Marker: the ℤ[x] Euclidean GCD ships over pseudo-division (no rationals), with the proof that it
-captures every common root of its inputs (`polyGcdVanishesAtCommonRoot`).  The converse root-containment
-and the degree-based termination bound are the next bricks of the invariant-factor classifier. -/
-def fxIntPoly_hasEuclideanGcdCommonRoots : Bool := true
 
 end FX1Poly.ComputerAlgebra

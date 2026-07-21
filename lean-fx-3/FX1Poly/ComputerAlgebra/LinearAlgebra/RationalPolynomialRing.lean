@@ -1,50 +1,31 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalPolynomialDegree
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/RationalPolynomialRing — the ℚ[x] list-level ring layer,
-aggregate division reconstruction, and "gcd divides both"
+/-! # RationalPolynomialRing — the ℚ[x] list-level ring layer, aggregate division reconstruction, and "gcd
+divides both"
 
-The committed ℚ[x] kit (`RationalPolynomial`) shipped Euclidean division with the EVALUATION-level
-reconstruction invariant, and `RationalPolynomialDegree` supplied the remainder degree bound and the EXACT
-single-step trim-level reconstruction (`rpdStepReconstructsTrim`).  Both walled "`rpxGcd` divides both
-inputs" owner-false (`rpxHasGcdDividesBoth`, `rpdHasGcdDividesBoth`): the aggregate reconstruction
-`dividend = quotient·divisor + remainder` as POLYNOMIALS (not just at each evaluation point) needs `rpxMul`
-RIGHT-distributivity over `rpxAdd`, which itself rests on a list-level commutative-ring layer that the
-committed kit did not have.  This module supplies exactly that layer and closes the wall.
+`RationalPolynomial` shipped Euclidean division with the evaluation-level reconstruction invariant, and
+`RationalPolynomialDegree` supplied the remainder degree bound and the exact single-step trim-level
+reconstruction. Both left "gcd divides both" open: the aggregate reconstruction `dividend = quotient·divisor +
+remainder` as polynomials (not just at each evaluation point) needs `rpxMul` right-distributivity over `rpxAdd`,
+which rests on a list-level commutative-ring layer. This module supplies that layer and closes the wall.
 
-## What lands, and at which equality level
+Over ascending coefficient lists, `rpxAdd` is commutative/associative/interchanging, `rpxScale` distributes
+over polynomial and scalar sums and composes, and `rpxMul` distributes on both sides — all at plain list `Eq`;
+`rpxMul` is associative at the trim level (`rpeMulAssocTrim`), the zero-padding of `rpxScale qnfZero` forcing
+the trim statement. The aggregate reconstruction `rpeDivModReconstructsTrim`
+(`rpxTrim (quotient·divisor + remainder) = rpxTrim dividend` at every fuel) follows by fuel induction using
+right-distributivity and the coefficient bridge.
 
-  * **T1 — the list-level ring layer.**  Over ascending coefficient lists: `rpxAdd` is commutative
-    (`rpeAddComm`), associative (`rpeAddAssoc`), interchanging (`rpeAddInterchange`) — all at PLAIN list
-    `Eq` (the tail-padding shape makes these genuine list identities).  `rpxScale` distributes over a
-    polynomial sum (`rpeScaleDistributesOverAdd`) and over a scalar sum (`rpeScaleAddScalar`), and scale
-    composes (`rpeScaleScaleAssoc`) and commutes past `rpxMul` on the left (`rpeScaleMulCommLeft`) — PLAIN
-    `Eq`.  `rpxMul` distributes on the RIGHT (`rpeMulRightDistrib`, the aggregate-reconstruction lever) and
-    on the LEFT (`rpeMulLeftDistrib`) — PLAIN `Eq`.  `rpxMul` is ASSOCIATIVE only at the TRIM level
-    (`rpeMulAssocTrim`): the zero-padding of `rpxScale qnfZero` and `rpxMul _ []` mismatches at plain `Eq`,
-    so associativity is stated `rpxTrim`-equal, proved through the coefficient bridge.  (`rpxMul`
-    commutativity is trim-level too and needs the convolution symmetry; it is NOT required downstream and
-    is not proved here.)
-  * **T2 — aggregate reconstruction** (`rpeDivModReconstructsTrim`): `rpxTrim (quotient·divisor +
-    remainder) = rpxTrim dividend` at every fuel, by fuel induction on `rpxDivMod` using RIGHT-distributivity
-    to split the step's accumulated quotient and the coefficient bridge to fold the reduced dividend back.
-  * **T3 — divisibility and "gcd divides both".**  `rpeDivides divisor dividend := ∃ cofactor, rpxTrim
-    (cofactor·divisor) = rpxTrim dividend`.  Zero remainder gives divisibility (`rpeExactDivisionGivesDivides`,
-    from T2); a divisor of two polynomials divides any left-cofactor combination
-    (`rpeLinearCombinationDivides`, from `rpeMulAssocTrim` + `rpeMulRespectsTrimRight` + RIGHT-distributivity);
-    and the Euclidean invariant closes by fuel induction with the honest fuel-adequacy bound
-    (`rpeGcdDividesBothInvariant`), giving `rpeGcdDividesBoth` at the adequate fuel
-    `|primary| + |secondary| + (|primary| + |secondary|) + 1`.  Mints `rpeHasGcdDividesBoth := true`; the
-    committed `rpxHasGcdDividesBoth`/`rpdHasGcdDividesBoth` stay byte-intact false.
-
-## Zero-axiom design
+Divisibility is `rpeDivides divisor dividend := ∃ cofactor, rpxTrim (cofactor·divisor) = rpxTrim dividend`.
+Zero remainder gives divisibility (`rpeExactDivisionGivesDivides`); a common divisor divides any left-cofactor
+combination (`rpeLinearCombinationDivides`); and the Euclidean invariant closes by fuel induction with an
+honest fuel-adequacy bound (`rpeGcdDividesBothInvariant`), giving `rpeGcdDividesBoth` at the adequate fuel. The
+full Bezout identity is supplied downstream in `RationalPolynomialBezout` (`rbzHasBezoutIdentity`).
 
 Every list/scale/mul law is structural on the coefficient list; every trim-level law routes through the
-coefficient bridge (`rpeCoeffEqOfTrimEq` / the committed `rpdTrimEqOfCoeffEq`) and the shipped `qnf*` field
-laws.  The gcd fuel bookkeeping uses only the calibrated-clean Nat order lemmas (`Nat.le_trans`,
-`Nat.le_of_lt_succ`, `Nat.add_le_add_right`, `Nat.add_lt_add_right`, `Nat.lt_succ_self`, `Nat.le_succ`,
-`Nat.zero_le`, `Nat.le_add_left`/`Nat.le_add_right`, `Nat.add_comm`, `Nat.zero_add`, …).  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/RationalPolynomialRing.lean`. -/
+coefficient bridge and the shipped `qnf*` field laws; the gcd fuel bookkeeping uses only calibrated-clean Nat
+order lemmas. No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`,
+or `WellFounded.fix`. Per-declaration audit twin in the matching `FX1PolyAudit` path. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -583,41 +564,16 @@ theorem rpeFireGcdDividesRightDifferenceOfSquares :
       [qnfOfInt (-1), qnfOfInt 1] :=
   rpeGcdDividesRight [qnfOfInt (-1), qnfOfInt 0, qnfOfInt 1] [qnfOfInt (-1), qnfOfInt 1]
 
-/-! ## Content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED: the ℚ[x] coefficient lists carry a commutative-ring layer — `rpxAdd` comm/assoc/interchange
-(`rpeAddComm`/`rpeAddAssoc`/`rpeAddInterchange`), `rpxScale` distributivity over polynomial and scalar sums
-(`rpeScaleDistributesOverAdd`/`rpeScaleAddScalar`) with scale composition (`rpeScaleScaleAssoc`) and
-scale/mul commutation (`rpeScaleMulCommLeft`), and `rpxMul` two-sided distributivity
-(`rpeMulRightDistrib`/`rpeMulLeftDistrib`) at plain list `Eq`, plus `rpxMul` associativity at the trim level
-(`rpeMulAssocTrim`).  `rpxMul` commutativity is trim-level and needs the convolution symmetry; it is not on
-the critical path and is not proved here. -/
-def rpeHasListRingLayer : Bool := true
-
-/-- DECIDED: the ℚ[x] Euclidean division reconstructs the dividend as a polynomial (not just at each
-evaluation point) — `rpxTrim (quotient·divisor + remainder) = rpxTrim dividend` at every fuel
-(`rpeDivModReconstructsTrim`), by fuel induction using RIGHT-distributivity and the coefficient bridge. -/
-def rpeHasAggregateReconstruction : Bool := true
-
-/-- DECIDED (supersedes the committed owner-false `rpxHasGcdDividesBoth` / `rpdHasGcdDividesBoth`, which stay
-byte-intact false): `rpxGcd` divides both of its inputs — `rpeGcdDividesBoth` at the adequate fuel
-`|primary| + |secondary| + (|primary| + |secondary|) + 1`, via the trim-level divisibility relation
-(`rpeDivides`), zero-remainder divisibility (`rpeExactDivisionGivesDivides`, from the aggregate
-reconstruction), the linear-combination lemma (`rpeLinearCombinationDivides`, from `rpeMulAssocTrim` +
-`rpeMulRespectsTrimRight` + RIGHT-distributivity), and the fuel-adequate Euclidean invariant
-(`rpeGcdDividesBothInvariant`). -/
+/-- "gcd divides both" over ℚ[x] is decided. The coefficient lists carry a commutative-ring layer
+(`rpxAdd` comm/assoc/interchange, `rpxScale` distributivity/composition, `rpxMul` two-sided distributivity at
+plain `Eq`, and trim-level `rpxMul` associativity `rpeMulAssocTrim`). The aggregate division reconstruction
+`rpeDivModReconstructsTrim` reconstructs the dividend as a polynomial at every fuel. From these,
+`rpeGcdDividesBoth` shows `rpxGcd` divides both inputs at the adequate fuel, via trim-level divisibility
+(`rpeDivides`), zero-remainder divisibility (`rpeExactDivisionGivesDivides`), the linear-combination lemma
+(`rpeLinearCombinationDivides`), and the fuel-adequate Euclidean invariant (`rpeGcdDividesBothInvariant`). The
+full Bezout identity is decided downstream (`rbzHasBezoutIdentity`). -/
 def rpeHasGcdDividesBoth : Bool := true
-
-/-- WALLED (owner-false): the FULL Bézout identity `∃ u v, rpxTrim (u·f + v·g) = rpxTrim (rpxGcd … f g)`.
-The extended-Euclidean cofactor accumulation needs, at each recursion step, to rewrite the current gcd as a
-`u·f + v·g` combination and carry the pair `(u, v)` back through the same fuel-adequate recursion as
-`rpeGcdDividesBothInvariant` — with the added obligation that the accumulated cofactors satisfy the
-combination identity under `rpxMul` associativity/distributivity in BOTH arguments (the present layer proves
-right-distributivity and left-distributivity plainly and associativity only up to trim, but the cofactor
-bookkeeping also needs `rpxMul` commutativity/left-trim-congruence to swap `f` and `g` across the Euclidean
-swap, which are trim-level convolution-symmetry facts not established here).  Route: prove `rpxMul`
-commutativity up to trim (convolution symmetry via the coefficient bridge) → left-trim-congruence → carry
-the Bézout pair through `rpeGcdDividesBothInvariant`'s fuel induction. -/
-def rpeHasBezoutIdentity : Bool := false
 
 end FX1Poly.ComputerAlgebra

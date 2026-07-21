@@ -1,49 +1,30 @@
 import FX1Poly.ComputerAlgebra.Number.NormalizedRational
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/RationalPolynomial — the ℚ[x] substrate with Euclidean division
+/-! # RationalPolynomial — the ℚ[x] substrate with Euclidean division
 
-The committed ℤ[x] kit (`IntUnivariatePolynomial` … `IntPolynomialGcd`) reaches the invariant-factor GCD
-only through PSEUDO-division: over ℤ one cannot divide by a leading coefficient other than `±1`, so the
-Euclidean run scales the running dividend by `leadDivisor` each step (`leadDivisor^k · dividend =
-quotient · divisor + remainder`).  Over the FIELD ℚ that scaling is unnecessary — every nonzero leading
-coefficient is invertible via `qnfInv`, so the quotient term is `leadDividend · leadDivisor⁻¹ · x^Δ` and
-division produces a TRUE remainder.  This is the named prerequisite for invariant factors over ℚ[x] /
-rational canonical form.
+The committed ℤ[x] kit reaches the invariant-factor GCD only through pseudo-division (over ℤ one cannot divide
+by a leading coefficient other than `±1`). Over the field ℚ every nonzero leading coefficient is invertible via
+`qnfInv`, so the quotient term is `leadDividend · leadDivisor⁻¹ · x^Δ` and division produces a true remainder —
+the named prerequisite for invariant factors over ℚ[x] / rational canonical form.
 
-## The representation (matched to the ℤ[x] kit)
+A univariate rational polynomial is its ascending coefficient list over `QnfRat` (`[c₀, …, cₙ]` denotes
+`c₀ + c₁·x + ⋯ + cₙ·xⁿ`); trailing zeros are permitted, `rpxTrim` is the canonical trailing-zero-free form, and
+`rpxIsCanonical` records "the last surviving coefficient is nonzero". Evaluation `rpxEval point` is a ring
+homomorphism `ℚ[x] → ℚ` (`rpxEvalAdd`/`rpxEvalScale`/`rpxEvalMul`/`rpxEvalNeg`/`rpxEvalSub`), and `rpxTrim`
+preserves evaluation. `rpxDivModReconstructs` is the division invariant
+`eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder)` at every fuel, resting only on the ring
+homomorphism, hence independent of whether the fuel sufficed. `rpxDividesEvalMultiple` drops the remainder once
+it trims to zero. The Euclidean GCD `rpxGcd` captures every common root of its inputs
+(`rpxGcdVanishesAtCommonRoot`), with the shared-linear-factor bridge.
 
-A univariate rational polynomial is its ASCENDING coefficient list over `QnfRat`: `[c₀, c₁, …, cₙ]` denotes
-`c₀ + c₁·x + ⋯ + cₙ·xⁿ`.  Trailing zeros are permitted (the carrier is plain `List QnfRat`); the canonical
-trailing-zero-free form is `rpxTrim`, and `rpxIsCanonical` records "the last surviving coefficient is
-nonzero".  `QnfRat`'s structural `qnfBeq` / `qnfDecEq` drive every zero test with no setoid plumbing.
+The remainder degree bound and "gcd divides both" both require fuel adequacy, supplied downstream — the degree
+bound in `RationalPolynomialDegree` (`rpdHasRemainderDegreeBound`), "gcd divides both" and Bezout in
+`RationalPolynomialRing`/`RationalPolynomialBezout` (`rpeHasGcdDividesBoth`, `rbzHasBezoutIdentity`).
 
-## What is PROVEN
-
-Evaluation `rpxEval point` is a ring homomorphism `ℚ[x] → ℚ`: `rpxEvalAdd`, `rpxEvalScale`, `rpxEvalMul`,
-`rpxEvalNeg`, `rpxEvalSub`.  `rpxTrim` preserves evaluation (`rpxTrimPreservesEval`), so degree/leading
-coefficient describe the genuine polynomial.  `rpxDivModReconstructs` is THE division invariant
-`eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder)` at every fuel — the "remainder +
-divisor·accumulatedQuotient = dividend" reduce-invariant, resting only on the ring homomorphism, hence
-independent of whether the fuel sufficed.  `rpxDividesEvalMultiple` drops the remainder term once it trims
-to zero.  `rpxGcdVanishesAtCommonRoot` shows the Euclidean GCD captures every common root of its inputs.
-
-## The honest walls
-
-The remainder degree bound `deg remainder < deg divisor` and the full "gcd divides both inputs" statement
-both require FUEL ADEQUACY — that the recursion reached the zero-remainder leaf — which is the degree-based
-termination bound left OPEN in the committed ℤ[x] kit as well.  These are recorded owner-false
-(`rpxHasRemainderDegreeBound`, `rpxHasGcdDividesBoth`), not stated as theorems.  Bézout is likewise
-deferred.
-
-## Zero-axiom design
-
-All coefficient arithmetic routes through the shipped `qnf*` field laws (transported to plain `Eq`); the
-zero/negation helper lemmas are derived abstractly from those laws.  Every definition is structural on the
-list or on `fuel`; the only non-list case analysis is `qnfDecEq _ qnfZero` and `Nat.decLt` (full
-`isTrue`/`isFalse` enumeration).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`, or `WellFounded.fix`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/RationalPolynomial.lean`.
--/
+All coefficient arithmetic routes through the shipped `qnf*` field laws; every definition is structural on the
+list or on `fuel`; the only non-list case analyses are `qnfDecEq _ qnfZero` and `Nat.decLt` (full enumeration).
+No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, or `WellFounded.fix`.
+Per-declaration audit twin in the matching `FX1PolyAudit` path. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -680,30 +661,16 @@ theorem rpxFireTrimmedIsCanonical :
     rpxIsCanonical (rpxTrim [qnfOfInt 3, qnfOfInt 0]) = true :=
   rfl
 
-/-! ## Content markers (T6) -/
+/-! ## Content marker -/
 
-/-- DECIDED: ℚ[x] ships with EUCLIDEAN division (`rpxDivMod`) whose reconstruction invariant
-`eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder)` is proved at every fuel
-(`rpxDivModReconstructs`), the exact-division corollary (`rpxDividesEvalMultiple`), and evaluation as a
-ring homomorphism (`rpxEvalAdd`/`rpxEvalScale`/`rpxEvalMul`/`rpxEvalNeg`/`rpxEvalSub`).  The field divider
-names rational quotient coefficients via `qnfInv` — the capability the committed ℤ[x] pseudo-divider
-lacks. -/
+/-- ℚ[x] Euclidean division is decided: `rpxDivMod` with the reconstruction invariant
+`eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder)` proved at every fuel
+(`rpxDivModReconstructs`), the exact-division corollary (`rpxDividesEvalMultiple`), evaluation as a ring
+homomorphism (`rpxEvalAdd`/`rpxEvalScale`/`rpxEvalMul`/`rpxEvalNeg`/`rpxEvalSub`), and the Euclidean GCD
+(`rpxGcd`) capturing every common root (`rpxGcdVanishesAtCommonRoot`) with the shared-linear-factor bridge and
+`gcd(f, 0) = f`. The field divider names rational quotient coefficients via `qnfInv`, unlike the ℤ[x]
+pseudo-divider. The remainder degree bound, "gcd divides both", and Bezout are decided downstream
+(`rpdHasRemainderDegreeBound`, `rpeHasGcdDividesBoth`, `rbzHasBezoutIdentity`). -/
 def rpxHasEuclideanDivision : Bool := true
-
-/-- DECIDED: the Euclidean GCD (`rpxGcd`) captures every common root of its inputs
-(`rpxGcdVanishesAtCommonRoot`), with the shared-linear-factor bridge (`rpxGcdSeesSharedLinearFactor`) and
-`gcd(f, 0) = f`. -/
-def rpxHasGcd : Bool := true
-
-/-- WALLED (owner-false): the remainder degree bound `deg remainder < deg divisor` requires FUEL ADEQUACY —
-that the recursion reached the zero-remainder leaf — i.e. the per-step degree-decrease lemma plus a proof
-that `fuel = length dividend` suffices.  This is the degree-based termination bound left OPEN in the
-committed ℤ[x] kit as well; not stated as a theorem here. -/
-def rpxHasRemainderDegreeBound : Bool := false
-
-/-- WALLED (owner-false): "`rpxGcd` divides both inputs" (and hence Bézout) requires the same fuel-adequacy
-termination bound — the "divides both" invariant only holds at the zero-remainder leaf, not the
-fuel-exhausted fallthrough.  The proven semantic substitute is `rpxGcdVanishesAtCommonRoot`. -/
-def rpxHasGcdDividesBoth : Bool := false
 
 end FX1Poly.ComputerAlgebra

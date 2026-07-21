@@ -39,5 +39,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.WalkingEndomorphismCensusEntry
 #assert_no_axioms FX1Poly.ComputerAlgebra.walkingEndomorphismCensusEntry
 #assert_no_axioms FX1Poly.ComputerAlgebra.walkingEndomorphismCensusGrounded
+#assert_no_axioms FX1Poly.ComputerAlgebra.fxEndo_hasSeparatorSuite
 
 end FX1PolyAudit

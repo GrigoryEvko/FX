@@ -3,13 +3,11 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegree
 
 /-! # FX1PolyAudit/.../IntPolynomialDegree — zero-axiom gate
 
-Per-declaration zero-axiom gate for the ℤ[x] degree/normal-form layer (the second brick of
-`invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255): the trailing-zero trim, degree, leading
-coefficient, and the theorem that trimming preserves evaluation.
-
-`polyTrim`'s only non-list case analysis is `Int.decEq coeff 0` on its full `isTrue`/`isFalse`
-enumeration; `polyTrimPreservesEval`'s `rw`s are over data (`List Int`/`Int`) equalities.  Must be free
-of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the ℤ[x] degree/normal-form layer: the trailing-zero trim, degree,
+leading coefficient, and the theorem that trimming preserves evaluation.  `polyTrim`'s only non-list case
+analysis is `Int.decEq coeff 0` on its full `isTrue`/`isFalse` enumeration; `polyTrimPreservesEval`'s `rw`s
+are over data equalities.  Free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`,
+`omega`. -/
 
 namespace FX1PolyAudit
 

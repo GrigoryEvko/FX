@@ -31,15 +31,11 @@ Certified content (T1/T2):
                           nucleus: two single generators of the same line
                           normalize identically).
 
-The WALL (T3): full RREF uniqueness (span-equal ⇒ literally equal reduced form,
-i.e. `ihqRrefUniquenessStatement`) is NOT discharged — see
-`rreHasRrefUniqueness := false`.  Two genuinely-different attacks failed for the
-same classical reason as the upstream F2 precedent: uniqueness of RREF is a
-pivot-column-invariance theorem needing a rank/independence/exchange apparatus
-absent from this Init-only kit.  Every DECISION use is already served by
-`ihqSpanEqBSound`/`ihqSpanEqBComplete`; this brick reduces the wall to
-pivot-SET invariance and lands the leading-1 canonicalizer + span invariance +
-the scale-invariance nucleus. -/
+The un-normalized `ihqRrefUniquenessStatement` (span-equal ⇒ literally equal `ihqRref`) is false and is
+refuted downstream (`rfcIhqRrefUniquenessRefuted`); the canonical normalized target `rreRref` IS unique, proven
+in `RationalFreeColumnUniqueness` (`rfcRreRrefUnique`). The syntactic un-normalized uniqueness flag stays
+`rreHasRrefUniqueness := false`. This brick lands the leading-1 canonicalizer, span invariance, and the rank-1
+scale-invariance nucleus. -/
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -378,34 +374,13 @@ theorem rreRrefSpanEqB {width : Nat} (rows : List (List QnfRat))
   ihqSpanEqBComplete hAll (rreRrefWidth rows hAll)
     (fun vector => (rreRrefSpanIff rows hAll vector).symm)
 
-/-! ## Stage 5 — the uniqueness wall (T3) and the reduction (T4)
+/-! ## Stage 5 — the syntactic-uniqueness flag -/
 
-`ihqRrefUniquenessStatement` (span-equal inputs give LITERALLY equal reduced
-forms) remains OWNER-FALSE upstream and is NOT discharged here.
-
-Attacks tried:
-  (1) pivot-column determination — the standard Hoffman–Kunze argument (pivot
-      positions are a function of the row space; the column-prefix rank
-      induction) requires a rank/dimension apparatus (linear independence, the
-      exchange lemma) that this Init-only kit has no theory for;
-  (2) byte-canonicalization via the leading-1s landed here — even with unit
-      pivots and back-substituted columns, equality of outputs still reduces to
-      (1) on the pivot SET (which columns are pivots).
-
-What this brick DOES land, reducing the wall:
-  * the leading-1 canonicalizer (`rreRref`) with certified unit pivots;
-  * row-space invariance (`rreRrefSpanIff` / `rreRrefSpanEqB`);
-  * the rank-1 nucleus (`rreNormalizeRowScaleInvariant`): a single generator's
-    normalized form depends only on its LINE, so uniqueness holds for the
-    dimension-≤1 fragment (single-generator matrices).
-
-The residual is exactly pivot-SET invariance for dimension ≥ 2, i.e. the
-classical rank apparatus.  Every DECISION consumer is served by
-`ihqSpanEqBSound`/`ihqSpanEqBComplete`, so this is a canonical-byte-form gap
-only. -/
-
-/-- Owner FALSE: full RREF-uniqueness (`ihqRrefUniquenessStatement`) is not
-discharged; the residual is pivot-SET invariance for dimension ≥ 2. -/
+/-- The un-normalized `ihqRrefUniquenessStatement` (span-equal inputs give literally equal `ihqRref`) is false —
+`[[1,2]]` and `[[2,4]]` span the same line yet have distinct `ihqRref` — and is refuted downstream
+(`rfcIhqRrefUniquenessRefuted`). The canonical normalized target `rreRref` IS unique, proven in
+`RationalFreeColumnUniqueness` (`rfcRreRrefUnique`). This flag records the syntactic (un-normalized) form,
+which stays false. -/
 def rreHasRrefUniqueness : Bool := false
 
 /-! ## Stage 6 — kernel-`rfl` fires (T5) -/
@@ -442,15 +417,12 @@ distinct reduced forms is the correct behaviour. -/
 theorem rreFireDistinctRrefNonSpanEqual :
     ihqSpanEqB [[qnfOfInt 1, qnfOfInt 0]] [[qnfOfInt 0, qnfOfInt 1]] = false := rfl
 
-/-! ## Stage 7 — content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED: the leading-1 canonicalizer is SHIPPED — `rreRref` normalizes every
-pivot to `qnfOne`, certified by `rreRrefAllUnitLead` and (for the row-echelon
-variant `rreRef`) the full `RreIsUnitEchelon` predicate. -/
+/-- The leading-1 canonicalizer over `QnfRat` is decided: `rreRref` normalizes every pivot to `qnfOne`
+(certified by `rreRrefAllUnitLead`, and for the row-echelon variant `rreRef` the full `RreIsUnitEchelon`
+predicate), and the normalized form is row-space invariant (`rreRrefSpanIff`, the `IhqMemSpan` iff, and
+`rreRrefSpanEqB`, the Bool `ihqSpanEqB` pin). -/
 def rreHasUnitLeadCanonicalizer : Bool := true
-
-/-- DECIDED: the normalized form is row-space invariant — `rreRrefSpanIff` (the
-`IhqMemSpan` iff) and `rreRrefSpanEqB` (the Bool `ihqSpanEqB` pin). -/
-def rreHasSpanInvariance : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -1,71 +1,58 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.EndomorphismPowerZeroSeparator
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/EndomorphismMinimalPolynomial — the annihilator
-separator (the top invariant factor of `invariantFactorSeparator`, r3 partial)
+/-! # EndomorphismMinimalPolynomial — the annihilator separator (top invariant factor)
 
-`EndomorphismSimilarity` named `invariantFactorSeparator` as the ONE remaining wall: the COMPLETE
-similarity separator is the list of invariant factors of `x·I − M`.  That note framed the obstruction
-as "irrational eigenvalues (factoring the char poly over ℚ)".  **That framing is a misdiagnosis** — the
-same shape as the three walls this arc already closed (`charMatrixCarrier`, `rankSequenceNilpotent`,
-`minorRankGeneral`), each of which fell to a sharper route than the predicted obstruction.  The invariant
-factors of `x·I − M` are the ℚ[x]-Smith diagonal, computed by the **Euclidean GCD of the char-matrix
-minors** — a purely gcd-based computation that NEVER factors the characteristic polynomial into
-irreducibles.  No eigenvalue, rational or irrational, ever appears.  The genuine obstruction to the FULL
-list is univariate ℚ[x] polynomial GCD, not eigenvalue factoring.
+`EndomorphismSimilarity` named `invariantFactorSeparator` as the remaining wall: the complete similarity
+separator is the list of invariant factors of `x·I − M`.  That note framed the obstruction as
+"irrational eigenvalues (factoring the char poly over ℚ)", which is a misdiagnosis: the invariant factors
+of `x·I − M` are the ℚ[x]-Smith diagonal, computed by the Euclidean GCD of the char-matrix minors, a
+gcd-based computation that never factors the characteristic polynomial into irreducibles.  No eigenvalue
+ever appears; the genuine obstruction to the full list is univariate ℚ[x] polynomial GCD.
 
-This file ships the **top** invariant factor's separating power without any polynomial-matrix carrier at
-all: the **minimal polynomial as a produced-and-checked annihilator**.
+This file ships the top invariant factor's separating power with no polynomial-matrix carrier: the
+minimal polynomial as a produced-and-checked annihilator.
 
 ## The annihilator separator (sound, decidable, eigenvalue-free)
 
-For an integer coefficient list `p = [c₀, …, c_d]` (ascending) and an integer matrix `M`, the polynomial
-value `p(M) = Σ cₖ·Mᵏ` is machine-computable over the shipped matrix ring (Horner-free sum of shipped
-`endomorphismMatrixPower` scaled and added).  `EndomorphismAnnihilates` is the decidable window predicate
-`p(M) = 0`.
+For an ascending integer coefficient list `p = [c₀, …, c_d]` and an integer matrix `M`, the value
+`p(M) = Σ cₖ·Mᵏ` is machine-computable over the shipped matrix ring (a sum of scaled shipped
+`endomorphismMatrixPower`).  `EndomorphismAnnihilates` is the decidable window predicate `p(M) = 0`, and
+the separator is `EndomorphismDissimilarByAnnihilator p M N := p(M) = 0 ∧ p(N) ≠ 0`.
 
-The separator is `EndomorphismDissimilarByAnnihilator p M N := p(M) = 0 ∧ p(N) ≠ 0`.
-
-**Soundness** (certificate level, exactly the r1 char-poly / rank discipline): if `M ~ N` over any field
-(`N = S⁻¹ M S`), then `p(N) = S⁻¹ p(M) S` for EVERY polynomial `p`, so `p(M) = 0 ⟹ p(N) = 0`.  The
-contrapositive is the certificate: an annihilator of `M` that fails on `N` refutes similarity.  Because the
-minimal polynomial is the monic generator of the annihilator ideal, this separator sees the FULL minimal
-polynomial — strictly sharper than the shipped char-poly and `2×2`-rank separators, which are BOTH blind to
-`diag(1,1)` vs `[[1,1],[0,1]]` (shared char-poly `(x−1)²`, shared rank `2`) yet `p = x − 1` annihilates the
-diagonal and not the Jordan block.
+Soundness (certificate level): if `M ~ N` over any field, then `p(N) = S⁻¹ p(M) S` for every polynomial
+`p`, so `p(M) = 0 ⟹ p(N) = 0`; the contrapositive is the certificate.  Because the minimal polynomial is
+the monic generator of the annihilator ideal, the separator sees the full minimal polynomial — sharper
+than the char-poly and `2×2`-rank separators, both blind to `diag(1,1)` vs `[[1,1],[0,1]]` (shared char
+poly `(x−1)²`, shared rank `2`) while `p = x − 1` annihilates the diagonal and not the Jordan block.
 
 ## Cayley–Hamilton grounding
 
-`p(M) = 0` is machine-checked for `p =` the characteristic polynomial (`endomorphismCharPolyCoefficients`)
-at `n = 2, 3`: the char poly annihilates its matrix, so the min poly always DIVIDES it — the annihilator
-separator is always at least as strong as the char-poly separator, and the two-example groundings exhibit
-the evaluation engine computing `Σ cₖ Mᵏ` correctly.
+`p(M) = 0` is machine-checked for `p` the characteristic polynomial at `n = 2, 3`: the char poly
+annihilates its matrix, so the minimal polynomial always divides it, and the two groundings exhibit the
+evaluation engine computing `Σ cₖ Mᵏ`.
 
-## Honest scope (what this delivers vs the remaining gap)
+## Honest scope
 
-Delivered: the top invariant factor (minimal polynomial) as a decidable, kernel-checked, eigenvalue-free
-dissimilarity separator, strictly stronger than every prior r1/r2 separator in this arc; AND its full PROVEN
-∀-refutation `endomorphismWitnessTransportsAnnihilation` — over any coherent-dimension scaled-pair witness of
-nonzero-magnitude scale satisfying the co-inverse window `Q·P = d·I`, a polynomial annihilating `source` also
-annihilates `target`.  The proof supplies both pieces the certificate-level soundness was missing: the
-sign-agnostic power cancellation `intMulPowerLeftCancelOfMagnitude`, the proven per-power conjugation core
-`endomorphismWitnessUniformConjugation`, and the whole-polynomial sandwich `endomorphismSandwichPolyEqScaled-
-Target` (the window linearity of `matrixPolyEval`).  Fired end-to-end on the `d = 2` rational-conjugacy
-witness (`endomorphismRationalConjugacyTransportsMinimalPolynomial`).  So the separator's soundness is no
-longer prose: no witness of this shape can relate two matrices separated by an annihilator.
+Delivered: the top invariant factor as a decidable, eigenvalue-free dissimilarity separator, together
+with its proven ∀-refutation `endomorphismWitnessTransportsAnnihilation` — over any coherent-dimension
+scaled-pair witness of nonzero-magnitude scale satisfying the co-inverse window `Q·P = d·I`, a polynomial
+annihilating `source` also annihilates `target`.  The proof supplies the sign-agnostic power cancellation
+`intMulPowerLeftCancelOfMagnitude`, the per-power conjugation core `endomorphismWitnessUniformConjugation`,
+and the whole-polynomial sandwich `endomorphismSandwichPolyEqScaledTarget` (window linearity of
+`matrixPolyEval`), and fires end-to-end on the `d = 2` witness
+(`endomorphismRationalConjugacyTransportsMinimalPolynomial`).
 
-Remaining (`invariantFactorSeparator` proper): the FULL invariant-factor LIST — equivalently the rational
-canonical form — which is a COMPLETE similarity invariant (min poly alone is not: `min ∧ char` is incomplete
-from `n = 7`).  That needs univariate ℚ[x] Euclidean GCD on the char-matrix minors; it is a real
-multi-file polynomial-arithmetic arc, but the obstruction is GCD, not eigenvalue factoring.
+Remaining: the full invariant-factor list — equivalently the rational canonical form, a complete
+similarity invariant (the minimal polynomial alone is not: `min ∧ char` is incomplete from `n = 7`).
+That needs univariate ℚ[x] Euclidean GCD on the char-matrix minors; the obstruction is GCD, not
+eigenvalue factoring.
 
 ## Zero-axiom design
 
 `matrixPolyEval` is structural on the coefficient list over the shipped `endomorphismMatrixPower`,
-`scalarMul`, `addMatrix`.  `EndomorphismAnnihilates` is the reducible `agreeOnWindow` predicate decided by
-`Nat.decidableBallLT` + `Int.decEq` — the exact `decide` pattern of `endomorphismScaledInverseWindowProbe`.
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
-gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/EndomorphismMinimalPolynomial.lean`.
--/
+`scalarMul`, `addMatrix`.  `EndomorphismAnnihilates` is the reducible `agreeOnWindow` predicate decided
+by `Nat.decidableBallLT` + `Int.decEq`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, or `omega`; gated per declaration in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -99,22 +86,20 @@ window.  Reducible so `Decidable` synthesis unfolds it to the bounded `agreeOnWi
   agreeOnWindow (matrixPolyEval dimension coefficients matrix)
     (intMatrixZeroSquare dimension) dimension dimension
 
-/-! ## The proven conjugation core (removing the named ∀-refutation blocker)
+/-! ## The proven conjugation core
 
-The r1/r2 separators' soundness ("similar ⟹ same invariant") is stated at certificate level.  Here is the
-PROVEN core for the annihilator route, mirroring `EndomorphismPowerZeroSeparator`'s "proven, not prose"
-discipline: over any coherent-dimension scaled-pair witness the conjugation is EXACT up to the single scale
-`d`, uniformly in the power —
+The separators' soundness ("similar ⟹ same invariant") is stated at certificate level.  Here is the
+proven core for the annihilator route: over any coherent-dimension scaled-pair witness the conjugation is
+exact up to the single scale `d`, uniformly in the power —
 
   `Q · Aᵏ⁺¹ · P  =  d · Bᵏ⁺¹`   (on the window, every `k`).
 
-This is the ladder `dᵏ · (Q·Aᵏ⁺¹·P) = dᵏ⁺¹ · Bᵏ⁺¹` with the common `dᵏ` cancelled.  Cancelling an EQUALITY
-(not a vanishing) needs a SIGN-AGNOSTIC power cancellation, which the shipped `intMulPowerRightCancel`
-(positive scale only) does not give — the exact lemma named as the blocker.  It is supplied first, from the
-corpus zero-cancellation. -/
+This is the ladder `dᵏ · (Q·Aᵏ⁺¹·P) = dᵏ⁺¹ · Bᵏ⁺¹` with the common `dᵏ` cancelled.  Cancelling an equality
+(not a vanishing) needs a sign-agnostic power cancellation, which the shipped `intMulPowerRightCancel`
+(positive scale only) does not give; it is supplied first, from the corpus zero-cancellation. -/
 
-/-- **Magnitude power cancellation** — cancel a common `baseᵏ` from an EQUALITY for any nonzero-magnitude
-base (the sign-agnostic sibling of `intMulPowerRightCancel`, which needs `0 < base`).  Routes the difference
+/-- Magnitude power cancellation: cancel a common `baseᵏ` from an equality for any nonzero-magnitude base
+(the sign-agnostic sibling of `intMulPowerRightCancel`, which needs `0 < base`).  Routes the difference
 `l − r` through the corpus `intFactorIsZeroOfPowerScaledZero`, so a negative determinant is fine. -/
 theorem intMulPowerLeftCancelOfMagnitude {base : Int} (baseHasMagnitude : 1 ≤ base.natAbs)
     (exponentValue : Nat) {leftValue rightValue : Int}
@@ -143,11 +128,10 @@ theorem intMulPowerLeftCancelOfMagnitude {base : Int} (baseHasMagnitude : 1 ≤ 
         ((congrArg (· + rightValue) differenceIsZero).trans
           (intZeroAdd rightValue))))
 
-/-- **The uniform conjugation identity (PROVEN, not prose).**  Over any coherent-dimension scaled-pair
-witness of nonzero-magnitude scale, `Q · Aᵏ⁺¹ · P = d · Bᵏ⁺¹` on the window for every `k` — the witnessed
-conjugation is exact up to the single scale `d`, uniformly in the power.  This is the power ladder with the
-common `dᵏ` cancelled entrywise via `intMulPowerLeftCancelOfMagnitude`; a genuine ∀-witness result, not a
-certificate whose soundness lives in a docstring. -/
+/-- The uniform conjugation identity.  Over any coherent-dimension scaled-pair witness of
+nonzero-magnitude scale, `Q · Aᵏ⁺¹ · P = d · Bᵏ⁺¹` on the window for every `k`: the witnessed conjugation
+is exact up to the single scale `d`, uniformly in the power.  This is the power ladder with the common
+`dᵏ` cancelled entrywise via `intMulPowerLeftCancelOfMagnitude`, a genuine ∀-witness result. -/
 theorem endomorphismWitnessUniformConjugation
     (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
     (scale : Int)
@@ -181,13 +165,12 @@ theorem endomorphismWitnessUniformConjugation
           ((endomorphismMatrixPower dimension target (powerPredecessor + 1)).entry
             rowIndex colIndex))))
 
-/-! ## The full annihilator transport (matrixPolyEval linearity + the co-inverse: the proven separator)
+/-! ## The full annihilator transport (matrixPolyEval linearity + the co-inverse)
 
-The proven conjugation core above transports each POWER.  To transport an arbitrary annihilator `p(A) = 0`
-to `p(B) = 0` we push the sandwich `Q · (·) · P` through `matrixPolyEval`'s sum-of-scaled-powers — its window
-linearity — and additionally handle the CONSTANT term `Q·A⁰·P = Q·P`, which the co-inverse window
-`Q·P = d·I` (satisfied by every adjugate witness) sends to `d·I = d·B⁰`.  The scale then factors out and
-cancels.  These are the two pieces named as remaining; they are supplied here. -/
+The conjugation core transports each power.  To transport an arbitrary annihilator `p(A) = 0` to
+`p(B) = 0` we push the sandwich `Q · (·) · P` through `matrixPolyEval`'s sum-of-scaled-powers (its window
+linearity) and handle the constant term `Q·A⁰·P = Q·P`, which the co-inverse window `Q·P = d·I` (satisfied
+by every adjugate witness) sends to `d·I = d·B⁰`; the scale then factors out and cancels. -/
 
 /-- `addMatrix` is a window congruence in both operands (entrywise, via `ring.add` congruence). -/
 theorem addMatrixCongrOnWindow {leftMatrix newLeftMatrix rightMatrix newRightMatrix : SetoidMatrix Int}
@@ -259,9 +242,9 @@ theorem matrixPolyEvalFromColCount (dimension : Nat) (matrix : SetoidMatrix Int)
 
 /-! ## The sandwich correspondence (per power, then over the whole polynomial) -/
 
-/-- **Per-power sandwich.**  `Q · Aᵉˣᵖ · P ≈ d · Bᵉˣᵖ` on the window for EVERY exponent: the `exp = k+1`
-case is the proven uniform conjugation; the `exp = 0` case is `Q·(I·P) ≈ Q·P ≈ d·I = d·B⁰`, using the
-co-inverse window `Q·P = d·I`. -/
+/-- Per-power sandwich: `Q · Aᵉˣᵖ · P ≈ d · Bᵉˣᵖ` on the window for every exponent.  The `exp = k+1` case
+is the uniform conjugation; the `exp = 0` case is `Q·(I·P) ≈ Q·P ≈ d·I = d·B⁰`, using the co-inverse
+window `Q·P = d·I`. -/
 theorem endomorphismSandwichPowerEqScaledTarget
     (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
     (scale : Int)
@@ -295,9 +278,9 @@ theorem endomorphismSandwichPowerEqScaledTarget
         scale scaleHasMagnitude sourceRowFits sourceColFits targetRowFits targetColFits basisColFits
         inverseColFits inverseWindowHolds conjugacyWindowHolds exponentValue
 
-/-- **Whole-polynomial sandwich.**  `Q · p(A) · P ≈ d · p(B)` on the window, by structural induction over
-the coefficient list, pushing the sandwich through `matrixPolyEval`'s sum-of-scaled-powers (window
-linearity) and applying the per-power sandwich at each exponent. -/
+/-- Whole-polynomial sandwich: `Q · p(A) · P ≈ d · p(B)` on the window, by structural induction over the
+coefficient list, pushing the sandwich through `matrixPolyEval`'s sum-of-scaled-powers (window linearity)
+and applying the per-power sandwich at each exponent. -/
 theorem endomorphismSandwichPolyEqScaledTarget
     (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
     (scale : Int)
@@ -421,12 +404,11 @@ theorem endomorphismSandwichPolyEqScaledTarget
         (agreeOnWindowTrans (addMatrixCongrOnWindow headTerm tailTerm)
           (agreeOnWindowSymm rightReassembled))
 
-/-- **The proven annihilator transport (∀-refutation).**  Over any coherent-dimension scaled-pair witness
-of nonzero-magnitude scale that additionally satisfies the co-inverse window `Q·P = d·I`, a polynomial
-annihilating `source` also annihilates `target`.  `p(A) = 0 ⟹ Q·p(A)·P = 0`, and the whole-polynomial
-sandwich equates that to `d·p(B)`, whose scale cancels by magnitude — so `p(B) = 0`.  This upgrades
-`EndomorphismDissimilarByAnnihilator` from certificate-level soundness to a genuine ∀-witness refutation:
-no witness (of this shape) can relate two matrices separated by an annihilator. -/
+/-- The proven annihilator transport (∀-refutation).  Over any coherent-dimension scaled-pair witness of
+nonzero-magnitude scale that also satisfies the co-inverse window `Q·P = d·I`, a polynomial annihilating
+`source` also annihilates `target`: `p(A) = 0 ⟹ Q·p(A)·P = 0`, and the whole-polynomial sandwich equates
+that to `d·p(B)`, whose scale cancels by magnitude, so `p(B) = 0`.  This upgrades
+`EndomorphismDissimilarByAnnihilator` from certificate-level soundness to a genuine ∀-witness refutation. -/
 theorem endomorphismWitnessTransportsAnnihilation
     (dimension : Nat) (coefficients : List Int)
     (source target changeOfBasis scaledInverse : SetoidMatrix Int)
@@ -473,11 +455,10 @@ theorem endomorphismWitnessTransportsAnnihilation
     ((matrixPolyEval dimension coefficients target).entry rowIndex colIndex) scaleHasMagnitude
     (scaledTargetVanishes rowIndex rowBelow colIndex colBelow)
 
-/-- **The transport fires end-to-end (grounding).**  The `d = 2` rational-conjugacy witness
-(`A = [[1,1],[0,3]]`, `B = [[1,0],[0,3]]`, `P = [[1,1],[0,2]]`, `Q = adj(P) = [[2,-1],[0,1]]`) satisfies the
-co-inverse `Q·P = 2·I` (adjugate identity), so the proven transport carries `A`'s minimal polynomial
-`(x−1)(x−3) = x² − 4x + 3` to an annihilator of `B` — with every hypothesis (the two conjugacy windows, the
-co-inverse, and `p(A) = 0`) discharged by `decide`.  This exhibits the ∀-refutation as non-vacuous. -/
+/-- The transport fires end-to-end (grounding).  The `d = 2` rational-conjugacy witness
+(`A = [[1,1],[0,3]]`, `B = [[1,0],[0,3]]`, `P = [[1,1],[0,2]]`, `Q = adj(P) = [[2,-1],[0,1]]`) satisfies
+the co-inverse `Q·P = 2·I`, so the transport carries `A`'s minimal polynomial `x² − 4x + 3` to an
+annihilator of `B`, with every hypothesis discharged by `decide` — the ∀-refutation is non-vacuous. -/
 theorem endomorphismRationalConjugacyTransportsMinimalPolynomial :
     EndomorphismAnnihilates 2 [3, -4, 1] (setoidMatrixOfRows [[1, 0], [0, 3]]) :=
   endomorphismWitnessTransportsAnnihilation 2 [3, -4, 1]
@@ -514,9 +495,9 @@ so a concrete separation closes by `decide` (the `And` of a window equality and 
   EndomorphismAnnihilates dimension coefficients source
     ∧ ¬ EndomorphismAnnihilates dimension coefficients target
 
-/-- **The min-poly separation char-poly and rank cannot see.**  `diag(1,1)` vs the Jordan block
-`[[1,1],[0,1]]`: the linear `x − 1` annihilates the scalar diagonal but sends the Jordan block to
-`[[0,1],[0,0]] ≠ 0`.  Their minimal polynomials (`x − 1` vs `(x − 1)²`) differ, so they are dissimilar. -/
+/-- The min-poly separation char poly and rank cannot see: `diag(1,1)` vs the Jordan block
+`[[1,1],[0,1]]`.  The linear `x − 1` annihilates the scalar diagonal but sends the Jordan block to
+`[[0,1],[0,0]] ≠ 0`; their minimal polynomials (`x − 1` vs `(x − 1)²`) differ, so they are dissimilar. -/
 theorem endomorphismScalarVersusJordanDissimilar :
     EndomorphismDissimilarByAnnihilator 2 [-1, 1] (setoidMatrixOfRows [[1, 0], [0, 1]])
       (setoidMatrixOfRows [[1, 1], [0, 1]]) := by decide
@@ -536,13 +517,11 @@ theorem endomorphismScalarVersusJordanShareRank :
 
 /-! ## The canonical rank-blind 4×4 nilpotent separation (cross-check vs the rank sequence) -/
 
-/-- **The `4×4` pair that even `rank(M)` cannot see.**  `J₂⊕J₂` (`[[0,1,0,0],[0,0,0,0],[0,0,0,1],
-[0,0,0,0]]`, minimal polynomial `x²`) vs `J₃⊕J₁` (`[[0,1,0,0],[0,0,1,0],[0,0,0,0],[0,0,0,0]]`, minimal
-polynomial `x³`): both are nilpotent with characteristic polynomial `x⁴` AND first rank `rank(M) = 2`, so
-the char-poly separator and any single-power rank are blind.  The annihilator `p = x²` (`[0,0,1]`) sends
-`J₂⊕J₂` to `M² = 0` but `J₃⊕J₁` to `M² ≠ 0` (entry `(0,2) = 1`), separating them by the minimal
-polynomial.  This is exactly the pair `EndomorphismPowerZeroSeparator` handles by `rank(M²) = 0` vs `> 0`;
-the annihilator route decides it INDEPENDENTLY, through a different engine. -/
+/-- The `4×4` pair that even `rank(M)` cannot see: `J₂⊕J₂` (minimal polynomial `x²`) vs `J₃⊕J₁` (minimal
+polynomial `x³`).  Both are nilpotent with characteristic polynomial `x⁴` and first rank `rank(M) = 2`, so
+the char-poly separator and any single-power rank are blind.  The annihilator `p = x²` sends `J₂⊕J₂` to
+`M² = 0` but `J₃⊕J₁` to `M² ≠ 0`, separating them.  `EndomorphismPowerZeroSeparator` handles the same pair
+by `rank(M²) = 0` vs `> 0`; the annihilator route decides it independently. -/
 theorem endomorphismJordanNilpotentDissimilarByMinPoly :
     EndomorphismDissimilarByAnnihilator 4 [0, 0, 1]
       (setoidMatrixOfRows [[0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
@@ -566,12 +545,5 @@ theorem walkingEndomorphismMinimalPolynomialGrounded :
           (setoidMatrixOfRows [[1, 1], [0, 1]]) :=
   ⟨endomorphismCharPolyAnnihilatesTwoByTwo, endomorphismCharPolyAnnihilatesThreeByThree,
     endomorphismScalarVersusJordanDissimilar⟩
-
-/-- Marker: the walking-endomorphism arc ships the minimal-polynomial (top invariant factor) separator —
-a decidable, eigenvalue-free dissimilarity certificate strictly stronger than the char-poly and rank
-separators.  `= true` records that the annihilator engine, the Cayley–Hamilton groundings, and the
-char-poly-and-rank-blind separation are all machine-checked.  The FULL invariant-factor list (the complete
-similarity invariant, needing ℚ[x] Euclidean GCD — NOT eigenvalue factoring) stays the honest open gap. -/
-def fxEndo_hasMinimalPolynomialAnnihilatorSeparator : Bool := true
 
 end FX1Poly.ComputerAlgebra

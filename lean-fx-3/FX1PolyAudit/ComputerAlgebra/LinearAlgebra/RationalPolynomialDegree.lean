@@ -79,9 +79,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpdFireStepTrimLengthDecreases
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpdFireStepReconstructs
 
--- Content markers
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rpdHasRemainderDegreeBound
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpdHasExactStepReconstruction
-#assert_no_axioms FX1Poly.ComputerAlgebra.rpdHasGcdDividesBoth
 
 end FX1PolyAudit

@@ -1,33 +1,31 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalLinearRelations
 
-/-! # LinearAlgebra/InteractingHopfSeed — the IH_Q presentation seed (WP-PROP-3 brick 2)
+/-! # LinearAlgebra/InteractingHopfSeed — the IH_Q presentation seed
 
-The interacting-Hopf-over-Q presentation seed on top of the brick-1 substrate
-(`RationalLinearRelations`, prefix `ihq`): strict-layer string diagrams over the
-BSZ self-dual signature (Bonchi-Sobocinski-Zanasi, "Interacting Hopf algebras",
-arXiv:1403.7048v4 = JPAA 221(1):144-184, 2017, Definition 6.1; cross-checked
-against Zanasi's thesis arXiv:1805.03032), an executable well-formedness gate,
-the denotation functor into QnfRat generator matrices (composition =
-`ihqComposeRows`, parallel layers = the minimal interleaved tensor built here),
-THE RELATION SET — every Definition 6.1 axiom family as an (lhs, rhs) diagram
-pair with a kernel-decided relation-diff gate pin — a SEQUENTIAL congruence
-`IhsConv` (refl/symm/trans + rows + prepend/append layer congruence) with full
-soundness `ihsConvSound` and the refutation bridge, fires including FALSE
-controls, and the owner-false completeness statement carrying the binding
+The interacting-Hopf-over-Q presentation seed on top of the
+`RationalLinearRelations` substrate (prefix `ihq`): strict-layer string diagrams
+over the BSZ self-dual signature (Bonchi-Sobocinski-Zanasi, "Interacting Hopf
+algebras", arXiv:1403.7048v4 = JPAA 221(1):144-184, 2017, Definition 6.1;
+cross-checked against Zanasi's thesis arXiv:1805.03032), an executable
+well-formedness gate, the denotation functor into QnfRat generator matrices
+(composition = `ihqComposeRows`, parallel layers = the minimal interleaved
+tensor built here), the relation set — every Definition 6.1 axiom family as an
+(lhs, rhs) diagram pair with a kernel-decided relation-diff gate pin — a
+sequential congruence `IhsConv` (refl/symm/trans + rows + prepend/append layer
+congruence) with full soundness `ihsConvSound` and the refutation bridge, fires
+including false controls, and the unproven completeness statement carrying the
 relation census.
 
-Shape cloned from the F2 template
+Shape follows the F2 template
 (`Polygraph/Omega/ZXPhaseFree/SpiderRelationSeed`, prefix `zxp`); carrier and
 scalars are QnfRat, so every xor telescope becomes an add/neg/scale telescope
 and the scalar boxes `k` / `k-mirror` are genuine cells (over F2 they were
 invisible).
 
-SCOPE HONESTY (see `ihsHasWhiskerCongruence`): the WHISKER (parallel-context)
-congruence of the F2 template is NOT ported in this brick — it needs the tensor
-SPEC + interchange stack (~450 template lines) which brick 1 deliberately left
-unported; the sequential congruence shipped here is sound and genuinely
-contextual in the categorical (composition) direction only.  The gate pins
-(T3) are complete: all 46 relation rows fire the span decision by `rfl`.
+`IhsConv` is the sequential-scope congruence: a row/refl/symm/trans core plus
+prepend and append layer congruence, contextual in the composition direction.
+The gate pins (T3) are complete: all 46 relation rows fire the span decision by
+`rfl`.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -89,8 +87,8 @@ theorem ihsAllWidthCast {firstWidth secondWidth : Nat} {rows : List (List QnfRat
 
 The BSZ self-dual signature, Definition 6.1 / the pushout (Top) of Section 6:
 the four HA_Q generators, their four HA_Q^op mirrors, the scalar box for every
-`k : QnfRat` in BOTH orientations, plus the PROP plumbing cells (wire,
-adjacent crossing).  Mirrors are EXPLICIT cells (not derived converses at the
+`k : QnfRat` in both orientations, plus the PROP plumbing cells (wire,
+adjacent crossing).  Mirrors are explicit cells (not derived converses at the
 syntax level); the sanity pins `ihsMirror*IsConverse` verify that each mirror's
 generator matrix is literally `ihqConverseRows` of its partner's.
 
@@ -100,7 +98,7 @@ Generator table (census section 1):
   G3 copy      = `blackComult`      1 -> 2   G7 cocopy    = `blackMult`    2 -> 1
   G4 discard   = `blackCounit`      1 -> 0   G8 blackunit = `blackUnit`    0 -> 1
   G9 scalar k  = `scalarBox k`      1 -> 1   G10 mirror k = `scalarBoxMirror k`
-NOT cells: antipode (:= `scalarBox (-1)`, Remark 3.4), cups/caps (defined
+Not cells: antipode (:= `scalarBox (-1)`, Remark 3.4), cups/caps (defined
 circuits, Section 5.1). -/
 
 /-- IH_Q diagram cells over the self-dual signature (see the stage docstring). -/
@@ -148,9 +146,9 @@ def ihsCellCodArity : IhsCell -> Nat
 
 /-- Generator matrix of each cell over width `dom + cod` (domain block first).
 LinRel_Q semantics per the census: add `{((a,b), a+b)}`, zero `{((), 0)}` (the
-EMPTY generator list — the zero subspace; the brick-1 route-note pitfall), copy
-`{(a,(a,a))}`, discard `{(a,())}` (the full line), scalar `k` `{(x, kx)}`;
-mirrors are the relational converses (block-swapped matrices). -/
+empty generator list, i.e. the zero subspace), copy `{(a,(a,a))}`, discard
+`{(a,())}` (the full line), scalar `k` `{(x, kx)}`; mirrors are the relational
+converses (block-swapped matrices). -/
 def ihsCellRows : IhsCell -> List (List QnfRat)
   | IhsCell.whiteMult => [[qnfOne, qnfZero, qnfOne], [qnfZero, qnfOne, qnfOne]]
   | IhsCell.whiteUnit => []
@@ -188,7 +186,7 @@ def ihsScalarThree : QnfRat := qnfOfInt 3
 def ihsScalarFive : QnfRat := qnfOfInt 5
 def ihsScalarSix : QnfRat := qnfOfInt 6
 
-/-- The antipode IS the scalar `-1` box (BSZ Remark 3.4) — never a primitive cell. -/
+/-- The antipode is the scalar `-1` box (BSZ Remark 3.4), never a primitive cell. -/
 def ihsAntipodeScalar : QnfRat := qnfOfInt (-1)
 
 /-! ### Mirror sanity pins: each mirror's matrix is the literal block-swap
@@ -217,10 +215,8 @@ theorem ihsMirrorScalarTwoIsConverse :
 /-! ## Stage 2 — the minimal layer tensor (T2 support)
 
 Interleaved direct sum of generator matrices (domain blocks together, then
-codomain blocks), built fresh on `ihqCat`/`ihqZeroRow` per the brick-2 mandate.
-Only the DEFINITION and the width lemma are shipped — the tensor SPEC and the
-categorical laws (cong/unit/assoc/interchange) are the brick-3 whisker stack
-(see `ihsHasWhiskerCongruence`). -/
+codomain blocks), built on `ihqCat`/`ihqZeroRow`.  The definition and its width
+lemma are shipped here. -/
 
 /-- Embed a first-factor row `(x1 | y1)` as `(x1, 0, y1, 0)`. -/
 def ihsTensorEmbedFirst (firstDomWidth secondDomWidth secondCodWidth : Nat)
@@ -629,9 +625,9 @@ theorem ihsIdHeadCombine (widthPred : Nat) (headScalar : QnfRat)
   rw [qnfAddZeroRight headScalar, ihqRowAddZeroLeft frontPart widthPred hFrontLen,
     ihqRowAddZeroLeft backPart widthPred hBackLen]
 
-/-- **THE IDENTITY SPEC** — `ihqIdRows` denotes exactly the diagonal relation
-(the QnfRat port of the F2 template's `zxpIdSpec`; the F2 head-bit case split
-becomes a single scalar-head telescope over the field). -/
+/-- The identity spec: `ihqIdRows` denotes exactly the diagonal relation (the
+QnfRat port of the F2 template's `zxpIdSpec`; the F2 head-bit case split becomes
+a single scalar-head telescope over the field). -/
 theorem ihsIdSpec : (identityWidth : Nat) -> (domVec codVec : List QnfRat) ->
     (IhqPairMem identityWidth identityWidth (ihqIdRows identityWidth) domVec codVec
       <-> (domVec = codVec /\ domVec.length = identityWidth))
@@ -1008,7 +1004,7 @@ theorem ihsLayersDenoteSnoc : (layers : List (List IhsCell)) ->
               (ihsLayerDenote lastLayer) hHeadAll hRestDenAll hLastAll)
           exact ihsRelEquivTrans hStepCong hStepAssoc
 
-/-! ## Stage 8 — THE RELATION SET (T3)
+/-! ## Stage 8 — the relation set (T3)
 
 Every axiom family of BSZ Definition 6.1 as an (lhs, rhs) diagram pair, one
 constructor per row.  Scalar-indexed families are instantiated at small
@@ -1101,10 +1097,10 @@ inductive IhsRowTag : Type where
   /-- A18op sum-mirror: `coadd;(k1-mirror (x) k2-mirror);cocopy = (sum)-mirror`
   (1->1), instance 2 + 3 = 5. -/
   | scalarSumOp : IhsRowTag
-  /-- I1 fwd-cancel [= (W1)]: `l;l-mirror = id` (1->1), l NONZERO only,
+  /-- I1 fwd-cancel [= (W1)]: `l;l-mirror = id` (1->1), l nonzero only,
   instance l = 2. -/
   | forwardCancel : IhsRowTag
-  /-- I2 bwd-cancel [= (B1)]: `l-mirror;l = id` (1->1), l NONZERO only,
+  /-- I2 bwd-cancel [= (B1)]: `l-mirror;l = id` (1->1), l nonzero only,
   instance l = 2. -/
   | backwardCancel : IhsRowTag
   /-- I3 white Frobenius [= W3 = B4], left equation of the chain:
@@ -1120,12 +1116,12 @@ inductive IhsRowTag : Type where
   `(id (x) copy);(cocopy (x) id) = cocopy;copy` (2->2). -/
   | blackFrobeniusRight : IhsRowTag
   /-- I5 white/black cup [= W5]: `zero;coadd = blackunit;copy;(id (x) antipode)`
-  (0->2); antipode = `scalarBox (-1)` on the LOWER (second) leg per the figure
+  (0->2); antipode = `scalarBox (-1)` on the lower (second) leg per the figure
   (leg choice interderivable via A5). -/
   | whiteBlackCup : IhsRowTag
   /-- I6 white/black cap [= W6]: `add;cozero = (antipode-mirror (x) id);cocopy;discard`
-  (2->0); the figure draws the MIRRORED antipode `(-1)-mirror` on the UPPER
-  (first) leg — transcribed verbatim (equal to `-1` only via derived law D3). -/
+  (2->0); the figure draws the mirrored antipode `(-1)-mirror` on the upper
+  (first) leg, transcribed faithfully (equal to `-1` only via derived law D3). -/
   | whiteBlackCap : IhsRowTag
   /-- I7 white special: `coadd;add = id` (1->1) (new in Def 6.1). -/
   | whiteSpecial : IhsRowTag
@@ -1366,8 +1362,8 @@ def ihsRowRhs : IhsRowTag -> IhsDiagram
   | IhsRowTag.whiteSpecial => { sourceArity := 1, layers := [[IhsCell.wire]] }
   | IhsRowTag.blackSpecial => { sourceArity := 1, layers := [[IhsCell.wire]] }
 
-/-! ### THE GATE (mandatory, per the arc law): every row passes the executable
-well-formedness + boundary + relation-diff span decision, kernel-`rfl` -/
+/-! ### The gate: every row passes the executable well-formedness + boundary +
+relation-diff span decision, kernel-`rfl` -/
 
 /-- One Bool bundling every executable check for one row: both sides pass the
 well-formedness gate, boundaries agree, and the span decision fires. -/
@@ -1381,17 +1377,17 @@ def ihsRowGateB (tag : IhsRowTag) : Bool :=
             (ihsDiagramDenote (ihsRowRhs tag))))))
 
 set_option maxHeartbeats 4000000 in
-/-- **THE GATE FIRES** — for EVERY shipped row, the whole executable check
-bundle (well-formedness x2, boundary agreement x2, and the
+/-- The gate fires: for every shipped row, the whole executable check bundle
+(well-formedness x2, boundary agreement x2, and the
 `ihqSpanEqB (ihsDiagramDenote lhs) (ihsDiagramDenote rhs) = true` relation-diff
-decision) is kernel-`rfl`.  HONESTY on scalars: the scalar-indexed families
-(A11-A18, their mirrors, I1/I2) are pinned at the SMALL-SCALAR INSTANCES named
-in the row docstrings (k = 2, k1 = 2/k2 = 3, antipode -1); the general-scalar
-rows are NOT provable by `rfl` at the diagram level because `ihsLayersDenote`
-post-composes with the identity relation and the echelonization then
-scrutinizes the symbolic scalar.  The two families whose raw-compose forms ARE
-symbolic-scalar-`rfl` are shipped in full generality as
-`ihsScalarZeroAbsorbGeneral` / `ihsScalarCozeroAbsorbGeneral`. -/
+decision) is kernel-`rfl`.  On scalars: the scalar-indexed families (A11-A18,
+their mirrors, I1/I2) are pinned at the small-scalar instances named in the row
+docstrings (k = 2, k1 = 2/k2 = 3, antipode -1); the general-scalar rows are not
+provable by `rfl` at the diagram level because `ihsLayersDenote` post-composes
+with the identity relation and the echelonization then scrutinizes the symbolic
+scalar.  The two families whose raw-compose forms are symbolic-scalar-`rfl` are
+shipped in full generality as `ihsScalarZeroAbsorbGeneral` /
+`ihsScalarCozeroAbsorbGeneral`. -/
 theorem ihsRowGateFires : (tag : IhsRowTag) -> ihsRowGateB tag = true
   | IhsRowTag.addUnit => rfl
   | IhsRowTag.addComm => rfl
@@ -1449,14 +1445,14 @@ theorem ihsRowSpanGate (tag : IhsRowTag) :
 
 /-! ### General-scalar theorems (the two symbolically-provable families) -/
 
-/-- A14 (`zero ; k = zero`) for EVERY scalar, at the raw relational-composition
-level: the composite of the zero relation with the graph of ANY scalar is the
+/-- A14 (`zero ; k = zero`) for every scalar, at the raw relational-composition
+level: the composite of the zero relation with the graph of any scalar is the
 zero relation, literally (`rfl` with the scalar symbolic — the embedded row's
 head is the closed `-1`, so echelonization never scrutinizes the scalar). -/
 theorem ihsScalarZeroAbsorbGeneral (scalarValue : QnfRat) :
     ihqComposeRows 0 1 1 [] [[qnfOne, scalarValue]] = [] := rfl
 
-/-- A14op (`k-mirror ; cozero = cozero`) for EVERY scalar, at the raw
+/-- A14op (`k-mirror ; cozero = cozero`) for every scalar, at the raw
 relational-composition level (`rfl` with the scalar symbolic — the embedded
 row's head is the closed `1`). -/
 theorem ihsScalarCozeroAbsorbGeneral (scalarValue : QnfRat) :
@@ -1521,7 +1517,7 @@ theorem ihsConvBundleOfChecks (firstDiagram secondDiagram : IhsDiagram)
                 (ihsDiagramWFOfB secondDiagram hSecondWFB)))
             hSpan))))
 
-/-- SOUNDNESS OF EVERY SHIPPED ROW (bundle form), from the gate. -/
+/-- Soundness of every shipped row (bundle form), from the gate. -/
 theorem ihsRowBundle (tag : IhsRowTag) :
     IhsConvBundle (ihsRowLhs tag) (ihsRowRhs tag) :=
   ihsConvBundleOfChecks (ihsRowLhs tag) (ihsRowRhs tag)
@@ -1533,11 +1529,10 @@ theorem ihsRowBundle (tag : IhsRowTag) :
       (ihsAndBTrueRight _ _ (ihsAndBTrueRight _ _ (ihsRowGateFires tag))))))
     (ihsRowSpanGate tag)
 
-/-- **THE CONGRUENCE** (sequential scope — see `ihsHasWhiskerCongruence` for the
-honest wall on the parallel/whisker constructor): the equivalence generated by
-the 46 rows under reflexivity on well-formed diagrams, symmetry, transitivity,
-and layer congruence on BOTH sequential sides (prepend a fitting layer /
-append a fitting layer). -/
+/-- The sequential-scope congruence: the equivalence generated by the 46 rows
+under reflexivity on well-formed diagrams, symmetry, transitivity, and layer
+congruence on both sequential sides (prepend a fitting layer / append a fitting
+layer). -/
 inductive IhsConv : IhsDiagram -> IhsDiagram -> Prop where
   | row (tag : IhsRowTag) : IhsConv (ihsRowLhs tag) (ihsRowRhs tag)
   | reflWF (diagram : IhsDiagram) (hWF : IhsDiagramWF diagram) :
@@ -1566,7 +1561,7 @@ inductive IhsConv : IhsDiagram -> IhsDiagram -> Prop where
         { sourceArity := secondDiagram.sourceArity
           layers := ihsSnocLayers secondDiagram.layers newLayer }
 
-/-- **SOUNDNESS of the congruence**: convertible diagrams share boundaries, are
+/-- Soundness of the congruence: convertible diagrams share boundaries, are
 well-formed, and denote the same Q-linear relation. -/
 theorem ihsConvSound {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhsConv firstDiagram secondDiagram) :
@@ -1747,8 +1742,8 @@ theorem ihsConvSound {firstDiagram secondDiagram : IhsDiagram}
       rw [<- hMidArgsEq]
       exact hMidCong
 
-/-- THE REFUTATION BRIDGE: convertibility forces the executable span decision to
-fire `true` — a kernel-computed `false` refutes convertibility outright. -/
+/-- The refutation bridge: convertibility forces the executable span decision to
+fire `true`; a kernel-computed `false` refutes convertibility outright. -/
 theorem ihsConvSpanEqB {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhsConv firstDiagram secondDiagram) :
     ihqSpanEqB (ihsDiagramDenote firstDiagram) (ihsDiagramDenote secondDiagram)
@@ -1767,8 +1762,8 @@ theorem ihsConvSpanEqB {firstDiagram secondDiagram : IhsDiagram}
 
 /-! ## Stage 10 — fires (T5) -/
 
-/-- Fire (a TRUE conv in SEQUENTIAL CONTEXT): the black counit row (A4) fired
-under a prepended scalar-2 layer — one row applied in context. -/
+/-- Fire (a true conv in sequential context): the black counit row (A4) fired
+under a prepended scalar-2 layer, one row applied in context. -/
 theorem ihsFireCounitRowInScalarContext :
     IhsConv
       { sourceArity := 1
@@ -1779,7 +1774,7 @@ theorem ihsFireCounitRowInScalarContext :
   IhsConv.prependLayer [IhsCell.scalarBox ihsScalarTwo] rfl
     (IhsConv.row IhsRowTag.copyCounit)
 
-/-- Fire (a TRUE conv with an APPENDED layer): the scalar-one row (A11) fired
+/-- Fire (a true conv with an appended layer): the scalar-one row (A11) fired
 under an appended scalar-3 layer. -/
 theorem ihsFireScalarOneRowThenAppendedScalar :
     IhsConv
@@ -1798,13 +1793,13 @@ def ihsWhiteUnitDiagram : IhsDiagram :=
 def ihsBlackUnitDiagram : IhsDiagram :=
   { sourceArity := 0, layers := [[IhsCell.blackUnit]] }
 
-/-- FALSE CONTROL: the white and black units denote DIFFERENT subspaces of Q^1
-(the zero subspace vs the full line) — the kernel decision fires `false`. -/
+/-- False control: the white and black units denote different subspaces of Q^1
+(the zero subspace vs the full line); the kernel decision fires `false`. -/
 theorem ihsFireUnitsSpanDistinct :
     ihqSpanEqB (ihsDiagramDenote ihsWhiteUnitDiagram)
       (ihsDiagramDenote ihsBlackUnitDiagram) = false := rfl
 
-/-- NEGATIVE DIRECTION: the white unit is NOT convertible to the black unit. -/
+/-- Negative direction: the white unit is not convertible to the black unit. -/
 theorem ihsFireUnitsNotConv :
     Not (IhsConv ihsWhiteUnitDiagram ihsBlackUnitDiagram) :=
   fun hConv =>
@@ -1818,22 +1813,22 @@ def ihsScalarTwoDiagram : IhsDiagram :=
 def ihsScalarThreeDiagram : IhsDiagram :=
   { sourceArity := 1, layers := [[IhsCell.scalarBox ihsScalarThree]] }
 
-/-- FALSE CONTROL: scalar 2 and scalar 3 denote DIFFERENT lines in Q^2 —
-GENUINE Q-content (over F2 there is one nonzero scalar; here the scalar family
+/-- False control: scalar 2 and scalar 3 denote different lines in Q^2, genuine
+Q-content (over F2 there is one nonzero scalar; here the scalar family
 separates). -/
 theorem ihsFireScalarTwoThreeSpanDistinct :
     ihqSpanEqB (ihsDiagramDenote ihsScalarTwoDiagram)
       (ihsDiagramDenote ihsScalarThreeDiagram) = false := rfl
 
-/-- NEGATIVE DIRECTION: scalar 2 is NOT convertible to scalar 3. -/
+/-- Negative direction: scalar 2 is not convertible to scalar 3. -/
 theorem ihsFireScalarTwoThreeNotConv :
     Not (IhsConv ihsScalarTwoDiagram ihsScalarThreeDiagram) :=
   fun hConv =>
     Bool.noConfusion
       ((ihsConvSpanEqB hConv).symm.trans ihsFireScalarTwoThreeSpanDistinct)
 
-/-- THE SCALAR-COMPOSITION FIRE: `scalar 2 ; scalar 3` span-equals `scalar 6` —
-kernel-decided on the diagram denotations (this IS the A12 gate pin). -/
+/-- The scalar-composition fire: `scalar 2 ; scalar 3` span-equals `scalar 6`,
+kernel-decided on the diagram denotations (this is the A12 gate pin). -/
 theorem ihsFireScalarCompositionSpan :
     ihqSpanEqB (ihsDiagramDenote (ihsRowLhs IhsRowTag.scalarProduct))
       (ihsDiagramDenote (ihsRowRhs IhsRowTag.scalarProduct)) = true :=
@@ -1852,78 +1847,50 @@ theorem ihsFireIllFormedDetected :
 
 /-! ## Stage 11 — honesty markers and the owner-false completeness statement -/
 
-/-- DECIDED: the IH_Q diagram syntax (self-dual signature incl. both scalar
-orientations), the executable well-formedness gate, and the denotation functor
-into QnfRat generator matrices (sequential composition = `ihqComposeRows`,
-parallel layers = the minimal `ihsTensorRows`) are SHIPPED zero-axiom. -/
-def ihsHasDiagramSemantics : Bool := true
-
-/-- DECIDED: THE GATE — all 46 rows of the binding census pass the executable
-well-formedness + boundary + `ihqSpanEqB` relation-diff decision by kernel
-`rfl` (`ihsRowGateFires`), with the per-row span pins extracted
-(`ihsRowSpanGate`) and two general-scalar families proved symbolically
-(`ihsScalarZeroAbsorbGeneral` / `ihsScalarCozeroAbsorbGeneral`). -/
-def ihsHasRowGate : Bool := true
-
-/-- DECIDED: the sequential congruence `IhsConv` (rows + refl/symm/trans +
-prepend/append layer congruence) is SOUND (`ihsConvSound`) with the refutation
+/-- This seed ships the IH_Q diagram semantics and executable well-formedness
+gate together with the 46-row relation gate decided by kernel `rfl`
+(`ihsRowGateFires`) and the general-scalar absorb families, and proves the
+sequential congruence `IhsConv` sound (`ihsConvSound`) with the refutation
 bridge (`ihsConvSpanEqB` -> `Not IhsConv` on `false` pins). -/
 def ihsHasSoundness : Bool := true
 
-/-- OWNER FALSE — the WHISKER (parallel-context) congruence is NOT SHIPPED in
-this brick.  `IhsConv` has NO constructor placing a row beside identity wires,
-so the congruence is sequential-only.  This is a SCOPE cut, not a mathematical
-wall: the F2 template (`SpiderRelationSeed`) proves the exact stack needed —
-tensor SPEC (pair membership splits blockwise), tensor cong/unit/assoc, the
-identity-tensor collapse, tensor-compose INTERCHANGE, whisker decomposition,
-and the padded-window step — all of which port to QnfRat along the same
-add/neg/scale telescopes used here (the `ihqMapRowsSpanFwd/Bwd` hypotheses are
-already in the shape the embeds need).  BRICK-3 ROUTE: (1) port
-`zxpTensorSpec` on `ihsTensorRows` (embed zero/add/scale lemmas + the
-blockwise pair-membership iff); (2) port cong/unit/assoc/interchange; (3) add
-the `whisker`/`pad` constructor to `IhsConv` + its bundle case; (4) THEN the
-gate-refutation pass + normal-form census against BSZ Theorem 6.4 before any
-completeness induction (the arc law). -/
-def ihsHasWhiskerCongruence : Bool := false
-
-/-- COMPLETENESS statement (BSZ Theorem 6.4 direction: IH_Q = LinRel_Q, so
+/-- Completeness statement (BSZ Theorem 6.4 direction: IH_Q = LinRel_Q, so
 span-equal well-formed diagrams on matching boundaries should be convertible).
 
-OWNER FALSE — NOT PROVEN, NOT COMMISSIONED.  Two independent blockers, in
-order: (1) `IhsConv` is sequential-only (`ihsHasWhiskerCongruence = false`), so
-the statement AS MINTED here is almost certainly FALSE for the shipped
-congruence (a row cannot fire beside a parallel wire); the whisker constructor
-must land first.  (2) The workstream arc law: a completeness push REQUIRES the
+Not proven.  Two independent blockers, in order: (1) `IhsConv` is
+sequential-only, so the statement as stated here is almost certainly false for
+this congruence (a row cannot fire beside a parallel wire); the whisker
+congruence must land first.  (2) A completeness push requires the
 invariant-first gate (a normal-form census against the BSZ Section 6 pushout
-normal form / Theorem 6.4 factorization) BEFORE any completeness induction.
+normal form / Theorem 6.4 factorization) before any completeness induction.
 
-THE BINDING RELATION-DIFF TABLE (transcribed from the literature leg; every
-shipped row is tagged to it in its constructor docstring):
+Relation-diff table (transcribed from the literature; every shipped row is
+tagged to it in its constructor docstring):
 
-IH_Q RELATION CENSUS — verbatim against BSZ "Interacting Hopf algebras"
+IH_Q relation census against BSZ "Interacting Hopf algebras"
 (arXiv:1403.7048v4 = JPAA 2017; page/tag refs to v4) and Zanasi thesis
 (arXiv:1805.03032; same tags, Def ~3.44/Thm 3.49/Rem 3.45).  IH_Q := IH_R at
 R = Q (field => PID; frac(Q) = Q); Theorem 6.4: IH_Q iso SV_Q = LinRel_Q.
 Definition 6.1 (p.32): IH_R = quotient of HA_R + HA_R^op by (I1)-(I8).
-NOTATION: add = white mult, zero = white unit, copy = black comult,
+Notation: add = white mult, zero = white unit, copy = black comult,
 discard = black counit (HA_Q side, Sect. 2-3); mirrors (HA_Q^op side, Sect. 3
 p.10): coadd = white comult, cozero = white counit, cocopy = black mult,
 blackunit = black unit; ";" = left-to-right composition.  LinRel_Q semantics:
 add {((x,y),x+y)}, zero {((),0)}, copy {(x,(x,x))}, discard {(x,())},
 k {(x,kx)}; mirror = relational converse.
 
-1. GENERATOR TABLE (self-dual signature; Sect. 5 p.13 / Sect. 6 p.31 pushout):
+1. Generator table (self-dual signature; Sect. 5 p.13 / Sect. 6 p.31 pushout):
    G1 add 2->1 | G2 zero 0->1 | G3 copy 1->2 | G4 discard 1->0
    G5 coadd 1->2 | G6 cozero 1->0 | G7 cocopy 2->1 | G8 blackunit 0->1
-   G9 scalar k : 1->1 for EVERY k in Q (including 0 and 1; A11/A17 make those
-   definable but they ARE in the signature, Sect. 3 p.8)
+   G9 scalar k : 1->1 for every k in Q (including 0 and 1; A11/A17 make those
+   definable but they are in the signature, Sect. 3 p.8)
    G10 mirror scalar k : 1->1 for every k (k-mirror = converse {(kx,x)})
-   NOT generators: antipode (:= scalar -1 box, Remark 3.4 p.9); cups/caps
+   Not generators: antipode (:= scalar -1 box, Remark 3.4 p.9); cups/caps
    (defined circuits, Sect. 5.1 p.13-14); swap/id (PROP structure).
 
-2. RELATION TABLE — 44 numbered families = 18 (A) + 18 (A-op) + 8 (I);
+2. Relation table — 44 numbered families = 18 (A) + 18 (A-op) + 8 (I);
    counting each Frobenius chain as 2 equations: 46.
-   A-block (HA_Q, Figs pp.5,7,8,9; k, k1, k2 range over ALL of Q):
+   A-block (HA_Q, Figs pp.5,7,8,9; k, k1, k2 range over all of Q):
    A1 unit: add(zero (x) id) = id (1->1) | A2 comm: swap;add = add (2->1)
    A3 assoc: (add (x) id);add = (id (x) add);add (3->1)
    A4 counit: copy;(discard (x) id) = id (1->1)
@@ -1943,7 +1910,7 @@ k {(x,kx)}; mirror = relational converse.
    A1op-A18op: the same 18 "in the mirror" (Sect. 3 p.10) on G5-G8/G10, e.g.
    A13op: k-mirror;coadd = coadd;(k-mirror (x) k-mirror); A17op: 0-mirror =
    cozero;blackunit.
-   I-block (Definition 6.1, p.32; l ranges over NONZERO Q only, in I1-I2 ONLY):
+   I-block (Definition 6.1, p.32; l ranges over nonzero Q only, in I1-I2 only):
    I1 fwd-cancel: l;l-mirror = id (1->1), l /= 0 [= (W1), Def 5.1 p.13]
    I2 bwd-cancel: l-mirror;l = id (1->1), l /= 0 [= (B1), Def 5.19 p.30]
    I3 white Frobenius: (coadd (x) id);(id (x) add) = add;coadd
@@ -1951,29 +1918,29 @@ k {(x,kx)}; mirror = relational converse.
    I4 black Frobenius: (copy (x) id);(id (x) cocopy) = cocopy;copy
       = (id (x) copy);(cocopy (x) id) (2->2) [= W4 = B3]
    I5 white/black cup: zero;coadd = blackunit;copy;(id (x) antipode) (0->2)
-      [= W5; antipode = scalar -1; figure puts the antipode on the LOWER leg —
+      [= W5; antipode = scalar -1; figure puts the antipode on the lower leg,
       leg choice interderivable via A5]
    I6 white/black cap: add;cozero = (antipode (x) id);cocopy;discard (2->0)
-      [= W6; figure draws the MIRRORED antipode (-1)-mirror, which equals -1
+      [= W6; figure draws the mirrored antipode (-1)-mirror, which equals -1
       only by derived law D3 p.13 / I1-I2 at l = -1; upper-leg placement per
       the figure]
    I7 white special: coadd;add = id (1->1) [new in Def 6.1; provable in IH^Cp]
    I8 black special: copy;cocopy = id (1->1) [new in Def 6.1; provable in
       IH^Sp; = derived (D11) there]
-   FIELD VARIANT (Remark 6.3 p.32 = thesis Remark 3.45): over a field one MAY
+   Field variant (Remark 6.3 p.32 = thesis Remark 3.45): over a field one may
    replace I1+I2 by the single family INV_k: k-mirror = scalar k^{-1} (1->1)
-   for k /= 0.  Either {I1, I2} or {INV_k} — pick ONE, don't ship both as
-   primitive rows.  THIS SEED SHIPS {I1, I2}; INV is NOT a row here.
+   for k /= 0.  Either {I1, I2} or {INV_k} — pick one, don't ship both as
+   primitive rows.  This seed ships {I1, I2}; INV is not a row here.
 
-3. OMISSION LEDGER (present in the papers, correctly ABSENT from the seed):
+3. Omission ledger (present in the papers, correctly absent from the seed):
    (Hopf) copy;(id (x) antipode);add = discard;zero = copy;(antipode (x) id);add
-     — DERIVED (Remark 3.4 p.9): A18@(1,-1) + A17 + A11.  Ditto op.
+     — derived (Remark 3.4 p.9): A18@(1,-1) + A17 + A11.  Ditto op.
    (W2) zero;cozero = id_0 and (B2) blackunit;discard = id_0 (the two bones)
      — derivable from I1-I8 (p.32, Appendix D).
    (W7) (k (x) id);cocopy = (id (x) k-mirror);cocopy;k and
    (W8) copy;(k-mirror (x) id) = k-mirror;copy;(id (x) k) (all k) — derivable
      (p.32, App D); B7/B8 = mirrors.  [W7 LHS/RHS verified in LinRel_Q incl.
-     k = 0; W8 leg placement UNCERTAIN at the branch level, fixed only up to
+     k = 0; W8 leg placement uncertain at the branch level, fixed only up to
      A5.]
    (B5) blackunit;copy = zero;coadd;(id (x) antipode-mirror) and
    (B6) cocopy;discard = (antipode-mirror (x) id);add;cozero — subsumed: from
@@ -1981,56 +1948,56 @@ k {(x,kx)}; mirror = relational converse.
      the paper's "missing equations" sentence; still theorems.
    (D1)-(D11) p.13-14 are derived laws (Appendix B), incl. D3 (both antipodes
      coincide) and D11 (= I8 inside IH^Sp).
-   PID-vs-field: NO relation is dropped for Q; the ONLY field-specific change
+   PID-vs-field: no relation is dropped for Q; the only field-specific change
      is the optional Remark-6.3 swap of I1/I2 for INV_k.  Divisibility rows
-     exist NOWHERE — over a PID the same I1/I2 do the job; there is no extra
+     exist nowhere — over a PID the same I1/I2 do the job; there is no extra
      "k divides" row family.
    Thesis-only alternative: IH^Sp may swap (W2) for (D11) (thesis App A.2.4)
-     — NOT imported; irrelevant to the merged Def 6.1.
-   Compact-closed cups/caps and their yanking: DEFINED from generators
+     — not imported; irrelevant to the merged Def 6.1.
+   Compact-closed cups/caps and their yanking: defined from generators
      (Sect. 5.1), never rows.
 
-4. PITFALLS (transcribed):
+4. Pitfalls (transcribed):
    (a) Antipode: the scalar -1 box — primitive only qua member of the scalar
-     family G9 (mirror in G10); the "two Hopf laws" are NOT rows anywhere
+     family G9 (mirror in G10); the "two Hopf laws" are not rows anywhere
      (derived, Rem 3.4).  Forward and mirrored antipodes coincide only as
-     derived law D3; a seed identifying them definitionally would be WRONG at
+     derived law D3; a seed identifying them definitionally would be wrong at
      the raw-term level — here they are distinct cells
      (`scalarBox (-1)` vs `scalarBoxMirror (-1)`).
-   (b) Nonzero-only rows: EXACTLY I1 and I2 (or their INV_k replacement).  At
-     l = 0 they are UNSOUND in LinRel_Q: 0;0-mirror = total relation /= id.
+   (b) Nonzero-only rows: exactly I1 and I2 (or their INV_k replacement).  At
+     l = 0 they are unsound in LinRel_Q: 0;0-mirror = total relation /= id.
      Every other scalar-indexed family (A11-A18 + ops, W7/W8/B7/B8) ranges
-     over ALL of Q.  (The shipped I1/I2 instances use l = 2 /= 0.)
-   (c) Scalar 0 corner: 0 IS a primitive generator (both orientations); A17
+     over all of Q.  (The shipped I1/I2 instances use l = 2 /= 0.)
+   (c) Scalar 0 corner: 0 is a primitive generator (both orientations); A17
      pins it to discard;zero (disconnect), A17op pins 0-mirror to
      cozero;blackunit.  The empty diagram is id_0 (monoidal unit), reached by
-     A10/A10op as axioms and W2/B2 as theorems.  Do NOT "exclude 0 from the
+     A10/A10op as axioms and W2/B2 as theorems.  Do not "exclude 0 from the
      scalar family" — exclude it only from I1/I2/INV.
-   (d) Errata: NO published erratum/corrigendum found (search 2026-07; JPAA
+   (d) Errata: no published erratum/corrigendum found (search 2026-07; JPAA
      DOI 10.1016/j.jpaa.2016.06.002 lists none).  On-record subtleties:
      (i) Remark 3.4 says HA_Z is presented "by equations (A3)-(A10) and
      (A11)-(A18) with k in {-1,0,1}" — the (A3) lower bound looks like a typo
-     for (A1) (A1/A2 not obviously derivable); UNCERTAIN, and immaterial to
+     for (A1) (A1/A2 not obviously derivable); uncertain, and immaterial to
      the Q-seed which uses full (A1)-(A18).  (ii) Thesis notes W2 <-> D11
      interchangeability (presentation non-canonicity, Sp-side only).
      (iii) Duncan-Dunne "Interacting Frobenius Algebras are Hopf" (LICS'16) is
-     a generalization, NOT a correction.  (iv) Over the FINITE signature IH_Z
+     a generalization, not a correction.  (iv) Over the finite signature IH_Z
      is not finitely axiomatizable (I1/I2 need all primes) — Z-specific; for Q
      the scalar families are infinite schemas regardless.
-   ARITY DISCIPLINE (machine-checked here by `ihsRowGateFires`): every I-row
-   is homogeneous (both sides same m->n as listed); A-rows likewise; the ONLY
+   Arity discipline (machine-checked here by `ihsRowGateFires`): every I-row
+   is homogeneous (both sides same m->n as listed); A-rows likewise; the only
    0->0 rows are A10/A10op (and derived bones).
 
-SEED DEVIATIONS from the census (the honest delta, also recorded on the row
-docstrings): (i) scalar-indexed families are shipped at INSTANCES (k = 2,
-k1 = 2/k2 = 3, l = 2, antipode -1) — the census families are infinite schemas
-and the diagram-level general row is not `rfl`-decidable (see
-`ihsRowGateFires`); the raw-compose general forms shipped are A14/A14op.
-(ii) The Frobenius chains I3/I4 are shipped as TWO rows each (left/right
-equation against the shared right-hand side), matching the census count 46.
-(iii) A12op is instantiated as 2-mirror;3-mirror = 6-mirror — the census
-mirror family is k1-mirror;k2-mirror = (k1*k2)-mirror with both orders
-instances of the schema.  No other deviation. -/
+Seed deviations from the census (also recorded on the row docstrings):
+(i) scalar-indexed families are shipped at instances (k = 2, k1 = 2/k2 = 3,
+l = 2, antipode -1) — the census families are infinite schemas and the
+diagram-level general row is not `rfl`-decidable (see `ihsRowGateFires`); the
+raw-compose general forms shipped are A14/A14op.  (ii) The Frobenius chains
+I3/I4 are shipped as two rows each (left/right equation against the shared
+right-hand side), matching the census count 46.  (iii) A12op is instantiated as
+2-mirror;3-mirror = 6-mirror — the census mirror family is
+k1-mirror;k2-mirror = (k1*k2)-mirror with both orders instances of the schema.
+No other deviation. -/
 def ihsCompletenessStatement : Prop :=
   (firstDiagram secondDiagram : IhsDiagram) ->
     IhsDiagramWF firstDiagram -> IhsDiagramWF secondDiagram ->
@@ -2040,7 +2007,10 @@ def ihsCompletenessStatement : Prop :=
       (ihsDiagramDenote firstDiagram) (ihsDiagramDenote secondDiagram) ->
     IhsConv firstDiagram secondDiagram
 
-/-- OWNER FALSE (see `ihsCompletenessStatement` for the census + blockers). -/
+/-- Open: completeness (BSZ Theorem 6.4, IH_Q = LinRel_Q) would require that
+every span-equal well-formed diagram pair on matching boundaries is derivable in
+`IhsConv`; it is unproven pending the reachability / normal-form argument.  See
+`ihsCompletenessStatement` for the relation census and blockers. -/
 def ihsCompletenessIsProven : Bool := false
 
 end FX1Poly.ComputerAlgebra

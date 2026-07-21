@@ -27,11 +27,9 @@ pivot-SET invariance for dimension >= 2.  This file BUILDS that apparatus.
     into the dominating echelon form, symmetrized through `ihqNatLe`
     antisymmetry).
 
-The residual (T3): full byte-level RREF uniqueness (`ihqRrefUniquenessStatement`)
-additionally needs that the reduced ROW at each shared pivot is identical — the
-back-substituted unit-lead vector is the unique reduced representative of its
-coset.  That last row-value step is walled here (`rmrHasRrefRowUniqueness`),
-naming the exact unjoined obstruction; T1 (rank) and T2 (pivot set) LAND.
+The rank (T1) and pivot-set invariance (T2) land here; the final row-value step — that the reduced row at each
+shared pivot is identical — is closed downstream in `RationalFreeColumnUniqueness`
+(`rfcRreRrefUnique`, `rfcHasRreRrefUniqueness`).
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no `List.append`, no `Nat.sub/div/mod/min/max` order lemmas, no
@@ -612,36 +610,7 @@ theorem rmrRankSpanInvariant {width : Nat} (rowsA rowsB : List (List QnfRat))
     rmrLeadDominationLe (ihqEchelonize rowsA) (ihqEchelonize rowsB) 0 0 hEchEchB hEchEchA hDomBA
   exact rmrNatLeAntisymm (ihqEchelonize rowsA).length (ihqEchelonize rowsB).length hLeAB hLeBA
 
-/-! ## Stage 5 — the RREF row-value wall (T3)
-
-Rank (T1) and pivot-SET invariance (T2) LAND above.  Full byte-level RREF
-uniqueness (`ihqRrefUniquenessStatement`: span-equal inputs give a literally
-equal reduced echelon form) needs one further step this brick does NOT close: at
-each shared pivot column the reduced ROW must be identical.  Two forms with the
-same pivot columns can still differ in the FREE (non-pivot) columns unless one
-proves that back-substitution against a shared reduced basis forces the same
-entries — i.e. that the leading-1, all-other-pivots-zero row of a given pivot is
-the UNIQUE reduced representative of its coset in the row space.  That coset-
-representative uniqueness is the residual; the pivot machinery here supplies the
-pivot columns and the leading-1 normalization (`rre`), but not the free-column
-determination.
-
-Attacks burned:
-  (1) direct row-equality induction on the two echelon forms — the pivot columns
-      align (T2) but the entries in the non-pivot columns are governed by the
-      back-reduced coefficients, which this kit exposes only through the reduction
-      engine, not as a canonical coordinate; no lemma pins them equal;
-  (2) reduce-difference-to-zero — the difference of the two candidate RREF rows at
-      a shared pivot lies in the span and reduces to zero, but concluding the rows
-      are LITERALLY equal from "difference reduces to zero" is again RREF
-      uniqueness (circular) without an independent coordinate for the free
-      columns. -/
-
-/-- Owner FALSE: the free-column (coset-representative) uniqueness needed to turn
-pivot-set equality into byte-level RREF equality is not discharged here. -/
-def rmrHasRrefRowUniqueness : Bool := false
-
-/-! ## Stage 6 — kernel-`rfl` fires (early smoke, before the heavy proofs) -/
+/-! ## Kernel-`rfl` fires -/
 
 set_option maxRecDepth 8192
 set_option maxHeartbeats 4000000
@@ -694,14 +663,13 @@ the distinct spans. -/
 theorem rmrFireRankPivotControlAbsent :
     rmrHasLead (ihqEchelonize [[qnfOfInt 0, qnfOfInt 1]]) 0 = false := rfl
 
-/-! ## Stage 7 — content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED: the rank function (`rmrRank`) with the width bound (`rmrRankLeWidth`)
-and the full span-invariance dimension theorem (`rmrRankSpanInvariant`). -/
+/-- The ℚ rank / pivot-column apparatus is decided: the rank function `rmrRank` with the width bound
+(`rmrRankLeWidth`) and the span-invariance dimension theorem (`rmrRankSpanInvariant`), pivot-column
+determination (`rmrAchievableLeadIsPivot`), and pivot-set span invariance (`rmrPivotSetSpanInvariant`). The
+final byte-level RREF row uniqueness is closed downstream in `RationalFreeColumnUniqueness`
+(`rfcHasRreRrefUniqueness`). -/
 def rmrHasRankApparatus : Bool := true
-
-/-- DECIDED: pivot-column determination (`rmrAchievableLeadIsPivot`) and pivot-SET
-span invariance (`rmrPivotSetSpanInvariant`). -/
-def rmrHasPivotSetInvariance : Bool := true
 
 end FX1Poly.ComputerAlgebra

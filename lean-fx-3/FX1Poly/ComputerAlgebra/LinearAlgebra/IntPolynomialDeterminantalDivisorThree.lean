@@ -1,32 +1,20 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDeterminantalDivisor
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialDeterminantalDivisorThree — the determinantal
-divisors at dimension 3 separate the three classes of char poly `(x−2)³` (the fifth brick of the
-char-matrix → invariant-factors layer, WP-ENDO #2255)
+/-! # IntPolynomialDeterminantalDivisorThree — the determinantal divisors separate three classes at dim 3
 
 At dimension 3 there are three similarity classes sharing the characteristic polynomial `(x−2)³` — the
-sharpest possible test that the invariant factors see what the characteristic polynomial cannot:
+sharpest test that the invariant factors see what the characteristic polynomial cannot: the single Jordan
+block `J₃(2)` (invariant factors `[(x−2)³]`, so `d₁ = 1`, `d₂ = 1`), `J₂(2) ⊕ J₁(2)` (`[(x−2), (x−2)²]`, so
+`d₁ = 1`, `d₂ = x−2`), and the scalar `2·I₃` (`[(x−2), (x−2), (x−2)]`, so `d₁ = x−2`, `d₂ = (x−2)²`).
 
-  * the single Jordan block `J₃(2) = [[2,1,0],[0,2,1],[0,0,2]]` — one block, invariant factors
-    `[(x−2)³]`, so `d₁ = 1`, `d₂ = 1`;
-  * `J₂(2) ⊕ J₁(2) = [[2,1,0],[0,2,0],[0,0,2]]` — two blocks, invariant factors `[(x−2), (x−2)²]`, so
-    `d₁ = 1`, `d₂ = x−2`;
-  * the scalar `2·I₃` — three blocks, invariant factors `[(x−2), (x−2), (x−2)]`, so `d₁ = x−2`,
-    `d₂ = (x−2)²`.
+`d₁` is the ℤ[x] GCD of the nine `1×1` minors (the entries of `x·I − M`), `d₂` the GCD of the nine `2×2`
+minors (rows/cols from the three `2`-subsets of `{0,1,2}`).  The pair `(deg d₁, deg d₂)` is `(0,0)` /
+`(0,1)` / `(1,2)` for the three classes — a decidable similarity invariant separating all three where the
+characteristic polynomial is completely blind.
 
-The determinantal divisors are computed with the shipped machinery: `d₁` = ℤ[x] GCD of the nine `1×1`
-minors (the entries of `x·I − M`), `d₂` = ℤ[x] GCD of the nine `2×2` minors (rows/cols from the three
-`2`-subsets of `{0,1,2}`).  The pair `(deg d₁, deg d₂)` is `(0,0)` / `(0,1)` / `(1,2)` for the three
-classes — a decidable similarity invariant that separates ALL THREE, where the characteristic polynomial
-(equal `(x−2)³` for all) is completely blind.
-
-## Zero-axiom design
-
-Reuses `charMatrixMinor` (r33), the GCD fold `polyGcdList` (r34), and `polyDegree`.  The three `2`-subset
-selectors are function-valued (propext-free).  Groundings are `decide` over concrete `polyDegree` /
-`polyTrim` and `Nat`/pair inequalities.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration gated in the audit twin.
--/
+Reuses `charMatrixMinor`, `polyGcdList`, and `polyDegree`; the `2`-subset selectors are function-valued
+(propext-free); groundings are `decide`.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -133,7 +121,7 @@ Reducible so a concrete separation closes by `decide`. -/
 @[reducible] def DissimilarByDivisorSignatureThree (source target : SetoidMatrix Int) : Prop :=
   divisorDegreeSignatureThree source ≠ divisorDegreeSignatureThree target
 
-/-- ★ **The three classes of char poly `(x−2)³` are pairwise non-similar, decided by the determinantal
+/-- **The three classes of char poly `(x−2)³` are pairwise non-similar, decided by the determinantal
 divisors.**  `J₃(2)`, `J₂⊕J₁`, and `2·I₃` all have characteristic polynomial `(x−2)³`, yet their
 `(deg d₁, deg d₂)` signatures `(0,0)`, `(0,1)`, `(1,2)` are pairwise distinct — the number-of-Jordan-blocks
 structure the characteristic polynomial cannot express, machine-checked at dimension 3. -/
@@ -141,15 +129,5 @@ theorem allThreeCubicClassesPairwiseDissimilar :
     DissimilarByDivisorSignatureThree jordanBlockThree jordanTwoPlusOne
     ∧ DissimilarByDivisorSignatureThree jordanBlockThree scalarThree
     ∧ DissimilarByDivisorSignatureThree jordanTwoPlusOne scalarThree := by decide
-
-/-! ## The marker -/
-
-/-- ★ **The determinantal divisors classify at dimension 3.**  `= true` records that `d₁` (GCD of the nine
-`1×1` minors) and `d₂` (GCD of the nine `2×2` minors) of `x·I − M` are computable with the shipped
-machinery, and their degree signature `(deg d₁, deg d₂)` separates all three similarity classes of
-characteristic polynomial `(x−2)³` — `J₃(2)` `(0,0)`, `J₂⊕J₁` `(0,1)`, `2·I₃` `(1,2)` — the finest
-distinction the invariant factors make and the characteristic polynomial cannot.  A uniform general-`n`
-divisor engine (subset enumeration folding every `k×k` minor) is the remaining scale-up. -/
-def fxIntPoly_hasDeterminantalDivisorsThree : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -3,14 +3,10 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialCoeff
 
 /-! # FX1PolyAudit/.../IntPolynomialCoeff — zero-axiom gate
 
-Per-declaration zero-axiom gate for the ℤ[x] positional coefficient accessor (the fifth brick of
-`invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255): the accessor and the four coefficient ring
-homomorphisms (scale/add/neg/sub) plus the monomial-at-its-degree fact — the leading-term-cancellation
-substrate for the pseudo-division degree-decrease.
-
-The accessor recurses structurally on the coefficient list and the position; every arithmetic step routes
-through the corpus `Int` lemmas.  Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`,
-`native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the ℤ[x] positional coefficient accessor: the accessor, the four
+coefficient ring homomorphisms (scale/add/neg/sub), the monomial-at-its-degree fact, and the monomial
+coefficient shift.  Structural recursion on the list and position; corpus `Int` lemmas.  Free of `propext`,
+`Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -26,6 +22,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffPastEnd
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffScaleGrounding
 #assert_no_axioms FX1Poly.ComputerAlgebra.polyCoeffMonomialMulGrounding
-#assert_no_axioms FX1Poly.ComputerAlgebra.fxIntPoly_hasCoefficientHomomorphisms
 
 end FX1PolyAudit

@@ -46,11 +46,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsdFireResidueBelowPivotTheorem
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsdFireMinDegreeOverCross
 
--- Content markers
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsdHasDegreeMultiplicativity
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsdHasRepivotDescentCore
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsdHasRepivotDriver
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsdHasAllZeroCrossViaRepivot
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsdHasInvariantFactorChain
 
 end FX1PolyAudit

@@ -2,18 +2,16 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfCompleteness
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfCompleteness —
-    zero-axiom gate (WP-PROP-3 brick 12: IH_Q syntactic completeness)
+    zero-axiom gate (IH_Q syntactic completeness)
 
 Per-declaration zero-axiom gate for:
 
-* LEG A — denotational NF canonicity (`cvzNfCanonicalUpToSpan`,
-  `cvzHasDenotationalNormalFormCanonicity`);
+* denotational NF canonicity (`cvzNfCanonicalUpToSpan`);
 * the conditional syntactic-completeness capstone
   (`cvzSyntacticCompletenessGivenReachability`,
   `cvzWordProblemBiconditionalGivenReachability`,
   `cvzHasConditionalWordProblem`);
-* the walls (`cvzHasReductionToNormalForm`,
-  `cvzHasSpanEqualNormalFormsConvertible`, `cvzHasSyntacticCompleteness`);
+* the wall (`cvzHasSyntacticCompleteness`);
 * the concrete NF diagrams and the ground fires (`cvzNormalFormLineOneTwo`,
   `cvzNormalFormLineTwoFour`, `cvzNormalFormLineOneThree`,
   `cvzFireNfLineCorrect`, `cvzFireNfDenotationsSpanEqual`,
@@ -25,12 +23,9 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.ComputerAlgebra.cvzNfCanonicalUpToSpan
-#assert_no_axioms FX1Poly.ComputerAlgebra.cvzHasDenotationalNormalFormCanonicity
 #assert_no_axioms FX1Poly.ComputerAlgebra.cvzSyntacticCompletenessGivenReachability
 #assert_no_axioms FX1Poly.ComputerAlgebra.cvzWordProblemBiconditionalGivenReachability
 #assert_no_axioms FX1Poly.ComputerAlgebra.cvzHasConditionalWordProblem
-#assert_no_axioms FX1Poly.ComputerAlgebra.cvzHasReductionToNormalForm
-#assert_no_axioms FX1Poly.ComputerAlgebra.cvzHasSpanEqualNormalFormsConvertible
 #assert_no_axioms FX1Poly.ComputerAlgebra.cvzHasSyntacticCompleteness
 #assert_no_axioms FX1Poly.ComputerAlgebra.cvzNormalFormLineOneTwo
 #assert_no_axioms FX1Poly.ComputerAlgebra.cvzNormalFormLineTwoFour

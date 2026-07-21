@@ -1,21 +1,23 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfCompilerRiffle
 
 /-! # LinearAlgebra/InteractingHopfNormalForm — the move-past-block cascade
-denotation and its dependents (WP-PROP-3 brick 8)
+denotation and its dependents
 
-Discharging the brick-7 residual `ihrMoveRightDenoteResidual` (the faithful
-bidirectional denotation of the move-past-block cascade) and its downstream
+Discharges the residual `ihrMoveRightDenoteResidual`, the faithful bidirectional
+denotation of the move-past-block cascade, together with its downstream
 consequences.
 
-* THE CASCADE DENOTATION (T1, `ihnMoveRightDenote`): the faithful bidirectional
-  `IhqPairMem` characterization of `ihrMoveRight` — the cascade relates
-  `L ++ [x] ++ B ++ R` to `L ++ B ++ [x] ++ R` at every context.  Structural
-  recursion on `blockLen`: the base is the identity spec, the step composes the
-  head swap layer (`ihrSwapLayerDenote`) with the recursive cascade through
-  `ihqComposeSpec`, reconciling the two decompositions of the shared middle
-  vector via `ihqCatInj` + `ihwCatAssoc`, over the alternating `1 + (.)` /
-  `2 + (.)` running widths (`ihrMoveWidthStep` / `ihrMoveWidthRec`).  Inhabits
-  the committed owner-false `ihrMoveRightDenoteResidual`.
+The cascade denotation (T1, `ihnMoveRightDenote`): the faithful bidirectional
+`IhqPairMem` characterization of `ihrMoveRight` — the cascade relates
+`L ++ [x] ++ B ++ R` to `L ++ B ++ [x] ++ R` at every context.  Structural
+recursion on `blockLen`: the base is the identity spec, the step composes the
+head swap layer (`ihrSwapLayerDenote`) with the recursive cascade through
+`ihqComposeSpec`, reconciling the two decompositions of the shared middle vector
+via `ihqCatInj` + `ihwCatAssoc`, over the alternating `1 + (.)` / `2 + (.)`
+running widths (`ihrMoveWidthStep` / `ihrMoveWidthRec`).  It inhabits
+`ihrMoveRightDenoteResidual`.  The module also states the faithful interleave and
+(un)shuffle denotation statements (`ihnInterleave`, `ihnUnshuffleDenoteStatement`,
+`ihnShuffleDenoteStatement`).
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -34,10 +36,9 @@ theorem ihnCatNilLeft (row : List QnfRat) : ihqCat [] row = row := rfl
 
 /-! ## Stage 0 — the move-pair structural predicate (the residual RHS) -/
 
-/-- THE MOVE-PAIR SPEC: the structural relation the cascade denotes — a wire
+/-- The move-pair spec: the structural relation the cascade denotes — a wire
 `movingWire` moved rightward from position `leftContext` past a `blockLen`-wide
-block, everything else fixed.  Matches the RHS of the committed
-`ihrMoveRightDenoteResidual` verbatim. -/
+block, everything else fixed.  Matches the RHS of `ihrMoveRightDenoteResidual`. -/
 def ihnMovePairSpec (leftContext blockLen rightContext : Nat)
     (domVec codVec : List QnfRat) : Prop :=
   Exists fun leftPart => Exists fun movingWire => Exists fun blockPart =>
@@ -50,7 +51,7 @@ def ihnMovePairSpec (leftContext blockLen rightContext : Nat)
 
 /-! ## Stage 1 — the cascade denotation (T1) -/
 
-/-- THE CASCADE DENOTATION: the move-past-block cascade `ihrMoveRight` relates a
+/-- The cascade denotation: the move-past-block cascade `ihrMoveRight` relates a
 vector `L ++ [x] ++ B ++ R` to `L ++ B ++ [x] ++ R`, at every context, by
 structural recursion on `blockLen`. -/
 theorem ihnMoveRightDenote : (leftContext blockLen rightContext : Nat) ->
@@ -329,13 +330,13 @@ theorem ihnMoveRightDenote : (leftContext blockLen rightContext : Nat) ->
                                 exact (ihwCatAssoc leftPart [blockHead]
                                   (ihqCat blockRest (ihqCat [movingWire] rightPart))).symm
 
-/-- DECIDED (T1): the committed owner-false residual `ihrMoveRightDenoteResidual`
-is inhabited by the cascade denotation `ihnMoveRightDenote`. -/
+/-- The residual `ihrMoveRightDenoteResidual` is inhabited by the cascade
+denotation `ihnMoveRightDenote`. -/
 theorem ihnMoveRightDenoteResidualHolds : ihrMoveRightDenoteResidual :=
   ihnMoveRightDenote
 
-/-- DECIDED (T1): the move-past-block cascade ships its faithful bidirectional
-denotation, discharging the brick-7 primary residual. -/
+/-- The move-past-block cascade ships its faithful bidirectional denotation,
+discharging the riffle brick's move-right residual. -/
 def ihnHasCascadeDenote : Bool := true
 
 /-! ## Stage 2 — kernel-decided fires for the cascade denotation (T1) -/
@@ -351,7 +352,7 @@ theorem ihnFireMoveRightZeroTwoZero :
       = true := rfl
 
 set_option maxHeartbeats 4000000 in
-/-- T1 FALSE control: the same cascade is NOT the identity permutation. -/
+/-- T1 false control: the same cascade is not the identity permutation. -/
 theorem ihnFireMoveRightZeroTwoZeroFalse :
     ihqSpanEqB (ihsDiagramDenote { sourceArity := 3, layers := ihrMoveRight 0 2 0 })
       [[qnfOne, qnfZero, qnfZero, qnfOne, qnfZero, qnfZero],
@@ -360,7 +361,7 @@ theorem ihnFireMoveRightZeroTwoZeroFalse :
       = false := rfl
 
 set_option maxHeartbeats 4000000 in
-/-- T1 CONTENT fire (routes through `ihnMoveRightDenote`, not merely a span
+/-- T1 content fire (routes through `ihnMoveRightDenote`, not merely a span
 `rfl`): the cascade `ihrMoveRight 0 2 0` relates the concrete input
 `[2, 1, 3]` to `[1, 3, 2]` — the whole wire moved past the whole block. -/
 theorem ihnFireCascadeContent :
@@ -372,9 +373,9 @@ theorem ihnFireCascadeContent :
       (Exists.intro [] (And.intro rfl (And.intro rfl (And.intro rfl
         (And.intro rfl rfl))))))))
 
-/-! ## Stage 3 — the faithful (un)shuffle denotation statements (T2, owner false) -/
+/-! ## Stage 3 — the faithful (un)shuffle denotation statements (T2) -/
 
-/-- THE PERFECT INTERLEAVE: `[p0, p1, ...]` and `[q0, q1, ...]` woven into
+/-- The perfect interleave: `[p0, p1, ...]` and `[q0, q1, ...]` woven into
 `[p0, q0, p1, q1, ...]` — the domain layout of the unshuffle. -/
 def ihnInterleave : List QnfRat -> List QnfRat -> List QnfRat
   | [], _qList => []
@@ -382,20 +383,19 @@ def ihnInterleave : List QnfRat -> List QnfRat -> List QnfRat
   | pHead :: pRest, qHead :: qRest =>
       pHead :: qHead :: ihnInterleave pRest qRest
 
-/-- THE FAITHFUL UNSHUFFLE DENOTATION (the honest statement the committed
-`ihrUnshuffleDenoteResidual` under-specifies — it demands only a width
-consequence).  The block-transpose `ihrUnshuffle blockWidth` relates the
-interleaved layout `ihnInterleave pList qList` to the block layout
-`ihqCat pList qList`.
+/-- The faithful unshuffle denotation (the statement `ihrUnshuffleDenoteResidual`
+under-specifies — that residual demands only a width consequence).  The
+block-transpose `ihrUnshuffle blockWidth` relates the interleaved layout
+`ihnInterleave pList qList` to the block layout `ihqCat pList qList`.
 
-OWNER FALSE — NOT PROVEN THIS BRICK.  Precise residual: an induction on
-`blockWidth` chaining `ihwWhiskerLayersDenote` (for the whiskered smaller
-unshuffle `id_2 (x) (unshuffle m (x) id_0)`) with the T1 cascade denotation
+Not yet proven.  The residual is an induction on `blockWidth` chaining
+`ihwWhiskerLayersDenote` (for the whiskered smaller unshuffle
+`id_2 (x) (unshuffle m (x) id_0)`) with the T1 cascade denotation
 `ihnMoveRightDenote` (for the head-strand move `ihrMoveRight 1 m m`) through
 `ihwLayersDenoteCat` + `ihqComposeSpec`, reconciling the interleave/block
 decompositions at each level (the same `ihqCatInj` + `ihwCatAssoc` bookkeeping
-as T1, one dimension up).  Semantics `#eval`-validated
-(`ihnFireUnshuffleTwo`, `ihrFireUnshuffleThree`). -/
+as T1, one dimension up).  Semantics `#eval`-validated (`ihnFireUnshuffleTwo`,
+`ihrFireUnshuffleThree`). -/
 def ihnUnshuffleDenoteStatement : Prop :=
   (blockWidth : Nat) -> (domVec codVec : List QnfRat) ->
     (IhqPairMem (blockWidth + blockWidth) (blockWidth + blockWidth)
@@ -407,14 +407,13 @@ def ihnUnshuffleDenoteStatement : Prop :=
               /\ pList.length = blockWidth
               /\ qList.length = blockWidth)
 
-/-- THE FAITHFUL SHUFFLE DENOTATION: the inverse block-transpose relates the
+/-- The faithful shuffle denotation: the inverse block-transpose relates the
 block layout `ihqCat pList qList` to the interleaved layout
 `ihnInterleave pList qList` (dom/cod swapped from the unshuffle).
 
-OWNER FALSE — NOT PROVEN THIS BRICK.  Residual: `ihrShuffle` is the layer-reverse
-of `ihrUnshuffle`; the denotation follows from `ihnUnshuffleDenoteStatement` by
-the reverse-composite / each-crossing-self-inverse argument, gated on the
-unshuffle denotation above. -/
+Not yet proven.  `ihrShuffle` is the layer-reverse of `ihrUnshuffle`; the
+denotation follows from `ihnUnshuffleDenoteStatement` by the reverse-composite /
+each-crossing-self-inverse argument, gated on the unshuffle denotation above. -/
 def ihnShuffleDenoteStatement : Prop :=
   (blockWidth : Nat) -> (domVec codVec : List QnfRat) ->
     (IhqPairMem (blockWidth + blockWidth) (blockWidth + blockWidth)
@@ -438,7 +437,7 @@ theorem ihnFireUnshuffleTwo :
       = true := rfl
 
 set_option maxHeartbeats 4000000 in
-/-- T2 FALSE control: `ihrUnshuffle 2` is NOT the identity on `4` strands. -/
+/-- T2 false control: `ihrUnshuffle 2` is not the identity on `4` strands. -/
 theorem ihnFireUnshuffleTwoFalse :
     ihqSpanEqB (ihsDiagramDenote { sourceArity := 4, layers := ihrUnshuffle 2 })
       [[qnfOne, qnfZero, qnfZero, qnfZero, qnfOne, qnfZero, qnfZero, qnfZero],
@@ -446,34 +445,5 @@ theorem ihnFireUnshuffleTwoFalse :
         [qnfZero, qnfZero, qnfOne, qnfZero, qnfZero, qnfZero, qnfOne, qnfZero],
         [qnfZero, qnfZero, qnfZero, qnfOne, qnfZero, qnfZero, qnfZero, qnfOne]]
       = false := rfl
-
-/-! ## Stage 4 — the residual walls and markers (T2 / T3 / T4) -/
-
-/-- OWNER FALSE — the arbitrary-width (un)shuffle block-transpose denotations are
-NOT proven this brick; `ihnUnshuffleDenoteStatement` / `ihnShuffleDenoteStatement`
-name the precise faithful residuals (the committed `ihrUnshuffleDenoteResidual`
-states only a width consequence and is NOT the faithful denotation).  What IS
-shipped: the T1 cascade denotation (`ihnMoveRightDenote`, the primary gate) and
-kernel-decided (un)shuffle span fires with FALSE controls. -/
-def ihnHasUnshuffleDenote : Bool := false
-
-/-- OWNER FALSE — the general two-row spatial sum `ihgTwoRowSpatialSumStatement`
-is NOT proven this brick.  THE RESIDUAL: the assembly denotation
-`split ; unshuffle ; (gadget TENSOR gadget) ; shuffle ; merge` needs the
-per-strand split/merge fan denotations, the (walled) (un)shuffle denotations
-(`ihnUnshuffleDenoteStatement`), and `ihwTensorSpec` / `ihgGadgetDenote` composed
-through `ihqComposeSpec` — the Minkowski-sum characterization
-`(x, y) in R1 + R2 <-> exists x1 x2 y1 y2, x = x1 + x2, y = y1 + y2, ...`.
-Gated on T2. -/
-def ihnHasTwoRowSpatialSum : Bool := false
-
-/-- OWNER FALSE — the multi-row NF compiler `ihzNormalFormStatement` is NOT proven
-this brick.  THE RESIDUAL: structural recursion on the row list with base
-`ihgSingleRowNormalForm` (or the zero-relation diagram) and the step joining the
-single-row gadget for the head row with the recursively-built sub-diagram via a
-GENERAL spatial sum (the Minkowski join of two diagrams at a shared boundary, of
-which `ihgTwoRowSpatialSumStatement` is the two-single-row special case).  Gated
-on the general two-row spatial sum (`ihnHasTwoRowSpatialSum`). -/
-def ihnHasNormalFormCompiler : Bool := false
 
 end FX1Poly.ComputerAlgebra

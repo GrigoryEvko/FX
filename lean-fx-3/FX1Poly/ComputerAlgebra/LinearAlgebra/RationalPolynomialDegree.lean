@@ -1,52 +1,28 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalPolynomial
 import FX1Poly.ComputerAlgebra.Number.NatModularReduction
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/RationalPolynomialDegree — the ℚ[x] degree-based termination bound
+/-! # RationalPolynomialDegree — the ℚ[x] degree-based termination bound
 
-The committed ℚ[x] kit (`RationalPolynomial`) shipped Euclidean division (`rpxDivMod`) with the
-reconstruction invariant `eval(dividend) = eval(quotient)·eval(divisor) + eval(remainder)` proved at
-every fuel, but WALLED the *degree* half owner-false (`rpxHasRemainderDegreeBound`,
-`rpxHasGcdDividesBoth`): the remainder degree bound and the "gcd divides both" statement rest on FUEL
-ADEQUACY — that the recursion reached the zero-remainder leaf.  This module supplies exactly that
-termination bound over the FIELD ℚ, following the committed ℤ[x] pseudo-division degree-decrease template
-but with the field-specific leading-term cancellation (no integral scaling — the quotient term is
-`leadDividend · leadDivisor⁻¹ · x^Δ`, so the leading coefficients cancel *exactly* via `qnfInvMulCancels`).
+`RationalPolynomial` shipped Euclidean division (`rpxDivMod`) with the reconstruction invariant proved at every
+fuel, but left the degree half open: the remainder degree bound and "gcd divides both" rest on fuel adequacy —
+that the recursion reached the zero-remainder leaf. This module supplies that termination bound over the field
+ℚ, with the field-specific leading-term cancellation (the quotient term is `leadDividend · leadDivisor⁻¹ · x^Δ`,
+so the leading coefficients cancel exactly via `qnfInvMulCancels`).
 
-## The route (T1 → T2 → T3)
+The step lemma `rpdStepTrimLengthDecreases` shows one Euclidean division step strictly drops the trimmed length
+(the top coefficient cancels, `rpdStepTopCoeffCancels`, and everything above vanishes). Fuel adequacy
+`rpdRemainderAdequate` then shows: with `(rpxTrim dividend).length ≤ fuel` and a nonzero divisor, the remainder
+either trims to zero or has degree strictly below the divisor's. At `fuel = dividend.length` (adequate since
+`(rpxTrim dividend).length ≤ dividend.length`) this gives `rpdDivModRemainderDegree`. The exact single-step
+trim-level reconstruction (`rpdStepReconstructsTrim`, on `rpdTrimEqOfCoeffEq`) is the coefficient-level content
+the committed eval-only reconstruction does not provide — the foundation for "gcd divides both", decided
+downstream (`rpeHasGcdDividesBoth`).
 
-  * **T1 — the step lemma** (`rpdStepTrimLengthDecreases`): the single Euclidean division step subtracts
-    `rpxQuotientTerm divisor dividend · divisor`, whose leading coefficient equals the dividend's, so the
-    difference's coefficient at `deg dividend` vanishes (`rpdStepTopCoeffCancels`) and every coefficient
-    above it vanishes too; hence `(rpxTrim step-result).length < (rpxTrim dividend).length` — the
-    *trimmed-length* strictly drops (the honest measure: the degree convention `length − 1` cannot drop
-    below `0`, but the length can, covering a nonzero-constant dividend).
-  * **T2 — fuel adequacy** (`rpdRemainderAdequate`): with `(rpxTrim dividend).length ≤ fuel` and a nonzero
-    divisor, the remainder either trims to the zero polynomial or has degree strictly below the divisor's;
-    structural on `fuel`, the step measure (T1) carried as the length hypothesis, the zero-dividend leaf
-    handled by `rpdStepPreservesTrimNil`.
-  * **T3 — the spec completion** (`rpdDivModRemainderDegree`): at `fuel = length dividend` (adequate since
-    `(rpxTrim dividend).length ≤ dividend.length`), the remainder of `rpxDivMod` is either zero-trim or
-    degree-below-divisor.  Mints `rpdHasRemainderDegreeBound := true` — the committed owner-false stays
-    byte-intact; this NEW marker supersedes it.
-
-## The coefficient calculus (ported ℤ[x] template)
-
-`rpxCoeff` reads the coefficient of `xⁿ`; every ring operation acts coefficientwise
-(`rpxCoeffScale`/`rpxCoeffAdd`/`rpxCoeffNeg`/`rpxCoeffSub`), the monomial product shifts and scales
-(`rpxCoeffMonomialMul`), coefficients vanish past the trimmed length (`rpxCoeffZeroFromTrimLength`), the
-leading coefficient is the coefficient at the degree position (`rpxLeadingCoeffEqCoeffDegree`), and a
-nonzero polynomial's degree-position coefficient is nonzero (`rpxCoeffAtDegreeNonzeroWhenNonempty`) — the
-lever that turns coefficient-vanishing into a trimmed-length bound (`rpdTrimLengthLeOfVanishFrom`).
-
-## Zero-axiom design
-
-Every definition is structural on the coefficient list and the position; arithmetic routes through the
-shipped `qnf*` field laws (transported to plain `Eq`); the only non-list case analyses are
-`qnfDecEq _ qnfZero` and `Nat.decLt` (full `isTrue`/`isFalse` enumeration).  The Nat plumbing reuses the
-corpus `natAddSubOfLe` and core order lemmas (`Nat.eq_or_lt_of_le`, `Nat.le_of_lt_succ`, `Nat.lt_or_ge`,
-`Nat.le.dest`, `Nat.add_assoc`/`Nat.add_comm`, …).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/RationalPolynomialDegree.lean`. -/
+The coefficient calculus (`rpxCoeff` with its ring-homomorphism lemmas, the monomial-product shift, and the
+past-length / trim-length bounds) supports these proofs. Every definition is structural on the coefficient list
+and position; arithmetic routes through the shipped `qnf*` field laws and core `Nat` order lemmas. No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.
+Per-declaration audit twin in the matching `FX1PolyAudit` path. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -698,36 +674,15 @@ theorem rpdFireStepReconstructs :
       = rpxTrim [qnfOfInt (-1), qnfOfInt 0, qnfOfInt 1] :=
   rpdStepReconstructsTrim [qnfOfInt (-1), qnfOfInt 1] [qnfOfInt (-1), qnfOfInt 0, qnfOfInt 1]
 
-/-! ## Content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED (supersedes the committed owner-false `rpxHasRemainderDegreeBound`): the ℚ[x] Euclidean
-division's remainder degree bound holds — at the adequate fuel `length dividend`, the remainder of a
-nonzero-divisor division either trims to the zero polynomial or has degree strictly below the divisor
-(`rpdDivModRemainderDegree`).  The termination lever is the per-step leading-term cancellation
-(`rpdStepTopCoeffCancels`) driving a strict trimmed-length decrease (`rpdStepTrimLengthDecreases`), and the
-fuel adequacy (`rpdRemainderAdequate`).  The committed `rpxHasRemainderDegreeBound := false` stays
-byte-intact; this content marker records the resolved status. -/
+/-- The ℚ[x] Euclidean division remainder degree bound is decided: at the adequate fuel `dividend.length`, the
+remainder of a nonzero-divisor division either trims to the zero polynomial or has degree strictly below the
+divisor (`rpdDivModRemainderDegree`). The termination lever is the per-step leading-term cancellation
+(`rpdStepTopCoeffCancels`) driving a strict trimmed-length decrease (`rpdStepTrimLengthDecreases`) with fuel
+adequacy (`rpdRemainderAdequate`). The exact single-step trim-level reconstruction (`rpdStepReconstructsTrim`,
+on `rpdTrimEqOfCoeffEq`) is the coefficient-level foundation for "gcd divides both", decided downstream
+(`rpeHasGcdDividesBoth`). -/
 def rpdHasRemainderDegreeBound : Bool := true
-
-/-- DECIDED: trimming is determined by the coefficient sequence (`rpdTrimEqOfCoeffEq`), and the ℚ[x]
-division step reconstructs the dividend EXACTLY at the trimmed-polynomial (coefficient) level
-(`rpdStepReconstructsTrim`) — the coefficient-level content the committed eval-only `rpxDivModReconstructs`
-does not provide, proved with no distributivity (the subtracted quotient-term product cancels abstractly).
-This is the foundation stone for the full "gcd divides both". -/
-def rpdHasExactStepReconstruction : Bool := true
-
-/-- WALLED (owner-false, distinct from the committed `rpxHasGcdDividesBoth := false` which stays
-byte-intact): the FULL "`rpxGcd` divides both inputs" statement.  The exact single-step reconstruction
-(`rpdStepReconstructsTrim`) ships, but accumulating it across the whole `rpxDivMod` recursion — turning the
-step identity `dividend = quotientTerm·divisor + reduced` into the aggregate `dividend = quotient·divisor +
-remainder` — needs `rpxMul` RIGHT-DISTRIBUTIVITY over `rpxAdd` (`(quotientTerm + subQuot)·divisor =
-quotientTerm·divisor + subQuot·divisor`), which the committed kit does not have and which itself rests on a
-list-level commutative-ring layer (`rpxAdd` comm/assoc, `rpxScale` scalar-distributivity, `rpxMul`
-left-distributivity or commutativity).  With that aggregate reconstruction the Euclidean invariant
-`gcd(divisor, remainder) | both ⟹ gcd(dividend, divisor) | both` closes by induction on `rpxGcd`.  The
-committed ℤ[x] kit likewise stops at the eval/root-set identity, not exact polynomial divisibility.  Route:
-the list-ring layer → aggregate reconstruction (fuel induction) → divisibility (`∃ q, rpxTrim (rpxMul q g) =
-rpxTrim f`) → Euclidean invariant → Bézout. -/
-def rpdHasGcdDividesBoth : Bool := false
 
 end FX1Poly.ComputerAlgebra

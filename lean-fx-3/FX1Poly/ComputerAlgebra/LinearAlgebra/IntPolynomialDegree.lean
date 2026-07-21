@@ -1,35 +1,16 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntUnivariatePolynomial
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialDegree — degree, leading coefficient, normal form
-(the second brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialDegree — degree, leading coefficient, normal form
 
-`IntUnivariatePolynomial` shipped the ℤ[x] ring with evaluation proved to be a ring homomorphism.  The
-Euclidean/pseudo-division layer — the next step toward the invariant-factor GCD — needs a *degree* and a
-*leading coefficient*, and those need a canonical form because the ascending coefficient list carries
-trailing zeros (`[3]` and `[3, 0, 0]` denote the same polynomial `3`).
+A degree and leading coefficient need a canonical form because the ascending coefficient list carries
+trailing zeros (`[3]` and `[3, 0, 0]` both denote `3`).  `polyTrim` drops trailing zeros; `polyDegree` is
+`(trimmed length) − 1` (the zero polynomial gets `0`); `polyLeadingCoeff` is the last surviving coefficient
+(`0` for the zero polynomial).  `polyTrimPreservesEval` makes the normal form sound: trimming does not
+change the value at any point.  This is the parent of the ℤ[x] degree sub-arc, whose markers are
+consolidated here (`fxIntPoly_hasDegreeAndLeadingCoefficient`).
 
-## The normal form
-
-`polyTrim` drops trailing zeros, structural on the list (case on the *recursively* trimmed tail: an empty
-trimmed tail defers to whether this coefficient is zero, a non-empty one keeps the whole prefix).
-`polyDegree` is `(length of the trimmed list) − 1` (the zero polynomial gets `0` by convention);
-`polyLeadingCoeff` is the last surviving coefficient (`0` for the zero polynomial).
-
-## What is PROVEN
-
-`polyTrimPreservesEval`: trimming does not change the value at any point — `polyEval point (polyTrim p) =
-polyEval point p`.  This is what makes the normal form *sound*: the trimmed polynomial is the same
-function, so degree/leading-coefficient computed on it describe the genuine polynomial.  The proof is the
-zero coefficient's arithmetic (`0 + point·0 = 0`), the delicate case being an all-zero tail under a zero
-head.
-
-## Zero-axiom design
-
-`polyTrim`'s only non-list case analysis is `Int.decEq coeff 0` (matched on the `isTrue`/`isFalse`
-constructors — a full enumeration, no wildcard).  Every arithmetic step routes through the corpus `Int`
-lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialDegree.lean`.
--/
+`polyTrim`'s only non-list case analysis is `Int.decEq coeff 0`; arithmetic routes through the corpus `Int`
+lemmas.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -65,9 +46,8 @@ def polyLeadingCoeff (coeffs : List Int) : Int :=
 /-! ## Trimming preserves evaluation (the soundness of the normal form) -/
 
 /-- **Trimming preserves evaluation.**  `polyEval point (polyTrim p) = polyEval point p`: the dropped
-trailing zeros contribute `0` at every point, so the canonical representative is the same function.  Proof
-by induction on the coefficient list, casing on the trimmed tail and (when empty) on whether the head is
-zero. -/
+trailing zeros contribute `0` at every point.  Induction on the coefficient list, casing on the trimmed
+tail and (when empty) on whether the head is zero. -/
 theorem polyTrimPreservesEval (point : Int) :
     ∀ coeffs : List Int, polyEval point (polyTrim coeffs) = polyEval point coeffs
   | [] => rfl
@@ -85,24 +65,18 @@ theorem polyTrimPreservesEval (point : Int) :
       cases hTrim : polyTrim restCoeffs with
       | nil =>
           rw [hTrim] at ihTail
-          -- ihTail : polyEval point [] = polyEval point restCoeffs, i.e. (0 : Int) = polyEval point restCoeffs
           cases Int.decEq coeff 0 with
           | isTrue hHeadZero =>
-              -- goal: polyEval point [] = coeff + point * polyEval point restCoeffs
               show (0 : Int) = coeff + point * polyEval point restCoeffs
               rw [hHeadZero, ← ihTail]
-              -- goal: (0 : Int) = 0 + point * polyEval point []
               exact ((intZeroAdd (point * polyEval point ([] : List Int))).trans
                 (intMulZero point)).symm
           | isFalse _ =>
-              -- goal: polyEval point [coeff] = coeff + point * polyEval point restCoeffs
               show coeff + point * polyEval point ([] : List Int)
                   = coeff + point * polyEval point restCoeffs
               exact congrArg (coeff + point * ·) ihTail
       | cons trimHead trimTail =>
-          -- goal: polyEval point (coeff :: trimHead :: trimTail) = coeff + point * polyEval point restCoeffs
           rw [hTrim] at ihTail
-          -- ihTail : polyEval point (trimHead :: trimTail) = polyEval point restCoeffs
           show coeff + point * polyEval point (trimHead :: trimTail)
               = coeff + point * polyEval point restCoeffs
           exact congrArg (coeff + point * ·) ihTail
@@ -132,9 +106,12 @@ theorem polyDegreeLinearFactor : polyDegree (polyLinearFactor 5) = 1 := by decid
 
 theorem polyLeadingCoeffLinearFactor : polyLeadingCoeff (polyLinearFactor 5) = 1 := by decide
 
-/-- Marker: the ℤ[x] degree/normal-form layer ships with a canonical (trailing-zero-free) representative,
-degree, and leading coefficient, and the proof that trimming preserves evaluation.  The
-Euclidean/pseudo-division algorithm (recursion on the degree difference) is the next brick. -/
+/-- Consolidated marker for the ℤ[x] degree and leading-coefficient sub-arc.  Covers: the trailing-zero
+normal form, degree, leading coefficient, and evaluation-preservation of trimming (this file); the
+leading-coefficient↔positional-coefficient bridge (`IntPolynomialLeadingCoeff`); the nonzero leading
+coefficient and the strict degree bound from coefficient vanishing (`IntPolynomialDegreeBound`); and the
+fundamental degree law `polyDegree (polyMul p q) = polyDegree p + polyDegree q` with the divisibility
+corollary (`IntPolynomialDegreeMul`). -/
 def fxIntPoly_hasDegreeAndLeadingCoefficient : Bool := true
 
 end FX1Poly.ComputerAlgebra

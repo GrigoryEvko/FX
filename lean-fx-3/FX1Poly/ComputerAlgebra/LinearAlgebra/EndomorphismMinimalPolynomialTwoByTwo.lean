@@ -1,27 +1,21 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.EndomorphismSimilarity
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/EndomorphismMinimalPolynomialTwoByTwo — the min-poly degree separator
+/-! # EndomorphismMinimalPolynomialTwoByTwo — the min-poly degree separator
 
-WP-ENDO r2, the annihilation (minimal-polynomial) separator.  The shipped r2 separators — the char poly
-([[EndomorphismCharPolyThree]]), the rank sequence `rank(Mᵏ)` ([[EndomorphismPowerZeroSeparator]]), and
-the general minor rank ([[EndomorphismMinorSelector]]) — leave ONE small equal-char-poly gap uncovered
-at dimension `2`: a scalar matrix versus a Jordan block with the same eigenvalue.
+The shipped separators — the char poly (`EndomorphismCharPolyThree`), the rank sequence `rank(Mᵏ)`
+(`EndomorphismPowerZeroSeparator`), and the general minor rank (`EndomorphismMinorSelector`) — leave one
+small equal-char-poly gap at dimension `2`: a scalar matrix versus a Jordan block with the same
+eigenvalue.  `diag(2, 2)` and `[[2,1],[0,2]]` share the characteristic polynomial `(x−2)²` and are both
+invertible (rank `2` at every power), so char poly, rank sequence, and minor rank are all blind.  They
+are dissimilar: the scalar matrix is annihilated by the linear polynomial `x − 2`, the Jordan block is
+not (its minimal polynomial is `(x−2)²`).  The minimal-polynomial degree is a similarity invariant
+(`Q⁻¹(c·I)Q = c·I`), so it separates them.
 
-`diag(2, 2)` and `[[2,1],[0,2]]` share the characteristic polynomial `(x−2)²`, and BOTH are invertible
-(rank `2` at every power), so the char poly, the rank sequence `rank(Mᵏ)` (which shifts only by `0`),
-and the minor rank are ALL blind.  They ARE dissimilar: the scalar matrix is annihilated by the LINEAR
-polynomial `x − 2` (`M = 2·I`), the Jordan block is not (its minimal polynomial is `(x−2)²`).  The
-minimal-polynomial DEGREE is a similarity invariant (scalarness is conjugation-stable: `Q⁻¹(c·I)Q = c·I`),
-so it separates them.
+At dimension `2` the minimal polynomial has degree `1` exactly when the matrix is scalar, else degree
+`2`, so the separator is the "is this matrix scalar" invariant.  The complete invariant-factor
+separator over ℚ[x] remains the open wall.
 
-At dimension `2` the minimal polynomial has degree `1` exactly when the matrix is scalar (`c·I`), else
-degree `2` (it equals the characteristic polynomial).  So the min-poly-degree separator IS the "is this
-matrix a scalar" invariant, and it reaches the one equal-char-poly-equal-rank case the power-based
-separators (which can only shift by `0`) cannot.  The general annihilation test — testing `(x − λ)ᵏ`
-for an arbitrary eigenvalue `λ` — is the honest content of the largest invariant factor; the COMPLETE
-invariant-factor separator over `ℚ[x]` (irrational eigenvalues) remains the open wall.
-
-Raw Lean 4 + Init; every declaration axiom-free (the r1 `if (Prop)` idiom, no `List`/`decide` in defs). -/
+Raw Lean 4 + Init; every declaration axiom-free (the `if (Prop)` idiom, no `List`/`decide` in defs). -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -34,9 +28,8 @@ agree.  A conjugation-stable (similarity-invariant) property.  Reducible so the 
   matrix.entry 0 1 = 0 ∧ matrix.entry 1 0 = 0 ∧ matrix.entry 0 0 = matrix.entry 1 1
 
 /-- The degree of the minimal polynomial of a `2×2` integer matrix: `1` when the matrix is scalar
-(annihilated by a linear polynomial `x − c`), else `2` (its minimal polynomial equals the characteristic
-polynomial).  A similarity invariant, computed by the decidable scalarness test — the r1 `if (Prop)`
-idiom keeps it propext-free. -/
+(annihilated by a linear `x − c`), else `2` (its minimal polynomial equals the characteristic
+polynomial).  A similarity invariant, computed by the decidable scalarness test. -/
 def endomorphismMinimalPolynomialDegreeTwoByTwo (matrix : SetoidMatrix Int) : Nat :=
   if endomorphismIsScalarTwoByTwo matrix then 1 else 2
 
@@ -67,24 +60,13 @@ theorem endomorphismJordanVersusScalarShareRank :
     endomorphismRank2 (setoidMatrixOfRows [[2, 0], [0, 2]])
       = endomorphismRank2 (setoidMatrixOfRows [[2, 1], [0, 2]]) := by decide
 
-/-- ★ The min-poly-degree separator sees what NO other shipped separator can.  `diag(2,2)` and
-`[[2,1],[0,2]]` share the characteristic polynomial `(x−2)²` AND the rank `2` (both invertible, so every
-power stays rank `2` — the char poly, minor rank, and `rank(Mᵏ)` sequence are all blind), yet the scalar
-matrix has minimal polynomial `x−2` (degree `1`) and the Jordan block `(x−2)²` (degree `2`), so they are
-dissimilar (`1 ≠ 2`, decided by the propext-free `Nat` inequality). -/
+/-- The min-poly-degree separator sees what no other shipped separator can: `diag(2,2)` and
+`[[2,1],[0,2]]` share the characteristic polynomial `(x−2)²` and the rank `2` (both invertible), yet
+the scalar matrix has minimal polynomial `x−2` (degree `1`) and the Jordan block `(x−2)²` (degree `2`),
+so they are dissimilar. -/
 theorem endomorphismSeparatesScalarFromJordanSameCharPolySameRank :
     EndomorphismDissimilarByMinimalPolynomialDegree
       (setoidMatrixOfRows [[2, 0], [0, 2]])
       (setoidMatrixOfRows [[2, 1], [0, 2]]) := by decide
-
-/-! ## The marker -/
-
-/-- ★ **The annihilation (minimal-polynomial) separator is shipped.**  `= true` records that
-`endomorphismMinimalPolynomialDegreeTwoByTwo` reaches the one equal-char-poly-equal-rank gap the
-power-based separators leave — a scalar matrix versus a Jordan block with the same eigenvalue — via the
-minimal-polynomial degree, a conjugation-stable invariant computed over `ℤ` with no `ℚ[x]` machinery.
-The COMPLETE invariant-factor separator (Smith-over-`ℚ[x]`, irrational eigenvalues) remains the honest
-open wall. -/
-def fxEndo_hasMinimalPolynomialDegreeSeparator : Bool := true
 
 end FX1Poly.ComputerAlgebra

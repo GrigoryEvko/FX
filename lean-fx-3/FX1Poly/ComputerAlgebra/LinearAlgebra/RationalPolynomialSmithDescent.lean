@@ -3,67 +3,27 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.RationalPolynomialSmithFixedPoint
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/RationalPolynomialSmithDescent — the ℚ[x] degree-multiplicativity
-lever and the Smith re-pivot descent core
+/-! # RationalPolynomialSmithDescent — the ℚ[x] degree-multiplicativity lever and re-pivot descent core
 
-The committed ℚ[x] Smith cross fixed point (`RationalPolynomialSmithFixedPoint`) shipped the REDUCED cross
-(every off-pivot cross entry below the pivot) but WALLED the ALL-ZERO cross owner-false
-(`rsfHasAllZeroCrossFixedPoint := false`).  Its docstring pinned the exact missing lever: `rpxMul` DEGREE
-ADDITIVITY (`rpxDegree (p × q) = rpxDegree p + rpxDegree q` for nonzero `p`, `q`), which turns "a nonzero
-pivot-multiple has degree `≥ deg pivot`" into "a nonzero non-divisible residue strictly drops the min pivot
-degree", the termination measure of the textbook Smith RE-PIVOT.  This module supplies exactly that lever
-and the re-pivot descent core.
+`RationalPolynomialSmithFixedPoint` shipped the reduced cross but left the all-zero cross open, pinning the
+missing lever: `rpxMul` degree additivity. This module supplies it. `rsdDegreeMul` proves `rpxDegree (p × q) =
+rpxDegree p + rpxDegree q` for trim-nonzero factors, from the leading-coefficient product law over the field
+ℚ: the product's top coefficient is the product of the two leading coefficients (`rsdMulCoeffTop`), nonzero
+over ℚ by the integral-domain law `rsdQnfMulNeZero` (no zero divisors in a field, from `qnfInvMulCancels`),
+while everything past the top vanishes (`rsdMulCoeffVanishAbove`), so the trimmed length is exactly
+`deg + deg + 1`.
 
-## T1 — THE LEVER (`rsdDegreeMul`)
+The re-pivot descent core follows: a nonzero pivot-multiple has degree `≥` the pivot
+(`rsdMultipleDegreeGePivot`) and a nonzero residue is strictly below the pivot (`rsdResidueBelowPivotWhenNonzero`,
+from `rbzClearEntryReducesDegree`), so a re-pivot strictly decreases the minimum pivot degree (`rsdMinDegreeOver`)
+— the descent's termination measure. The full re-pivot driver and the all-zero cross it reaches are supplied
+downstream in `RationalPolynomialSmithDriver` (`rseHasAllZeroCrossViaRepivot`); the full Smith normal form is
+walled (`rsiHasSmithNormalForm`).
 
-`rpxDegree (rpxMul leftPoly rightPoly) = rpxDegree leftPoly + rpxDegree rightPoly` for trim-nonzero factors,
-proved from the leading-coefficient product law over the FIELD ℚ.  Two coefficient lemmas, both by structural
-induction on the LEFT factor, feed the degree equation:
-
-  * **Top coefficient** (`rsdMulCoeffTop`): `rpxCoeff (leftPoly × rightPoly) (degLeft + degRight) =
-    (leadLeft)·(leadRight)`.  The `rpxMul` convolution's top term is the product of the two leading
-    coefficients — every other contribution to that position reads a factor coefficient above its degree,
-    which vanishes.
-  * **Vanishing above** (`rsdMulCoeffVanishAbove`): `degLeft + degRight < position ⟹ rpxCoeff (leftPoly ×
-    rightPoly) position = qnfZero` — no convolution term survives past the top.
-
-Over ℚ the product of two nonzero leading coefficients is nonzero (the integral-domain law `rsdQnfMulNeZero`,
-derived from `qnfInvMulCancels` — no zero divisors in a field), so the top coefficient is nonzero and the
-trimmed length is EXACTLY `degLeft + degRight + 1`, i.e. the degree is the sum.  This is the capability the
-committed kit's degree module explicitly lacked.
-
-## T2 — the re-pivot descent core
-
-  * `rsdMultipleDegreeGePivot` (T1-powered): a nonzero `pivot`-multiple `cofactor × pivot` has degree
-    `≥ deg pivot` — the fact that a pivot cannot be replaced by a smaller-degree MULTIPLE of itself.
-  * `rsdResidueBelowPivotWhenNonzero` (committed `rbzClearEntryReducesDegree`): a nonzero residue
-    `rsmClearAgainst pivot entry` (the entry the pivot does NOT divide) has degree strictly below the pivot's
-    — so swapping it into the pivot slot strictly drops the pivot degree.
-  * `rsdMinDegreeOver` — the min-degree measure over a list of cross entries (zero entries skipped).
-
-Together these are the descent's termination content: a re-pivot strictly decreases the minimum pivot degree.
-
-## The honest walls
-
-The FULL re-pivot DRIVER — swap the smaller-degree residue into the pivot slot, re-clear about the MOVING
-position, and iterate with structural `Nat` fuel = the min-degree measure until the cross is all-zero — needs
-the moving-position ARITY bookkeeping (tracking which row/column index the pivot now occupies across the swap
-and re-index) which is matrix plumbing orthogonal to the degree lever.  Recorded owner-false
-(`rsdHasRepivotDriver := false`); the all-zero cross fixed point that rests on it is likewise owner-false
-(`rsdHasAllZeroCrossViaRepivot := false`).  The committed `rsfHasAllZeroCrossFixedPoint := false` and
-`rsmHasCrossFixedPoint := false` stay byte-intact.  The submatrix descent toward the diagonal
-invariant-factor chain `d₁ | d₂ | ⋯ | dᵣ` (combining `rpeGcdDividesBoth` with `rbzDividesTrans`) is recorded
-owner-false (`rsdHasInvariantFactorChain := false`); the extractor `rsfSubmatrix` already ships.
-
-## Zero-axiom design
-
-Every coefficient lemma is structural on the coefficient list and casing the degree/position with full
-`Nat.succ`/`zero` enumeration; arithmetic routes through the shipped `qnf*` field laws (transported to plain
-`Eq`) and the calibrated-clean core `Nat` lemmas (`Nat.succ_add`, `Nat.zero_add`, `Nat.lt_succ_of_le`,
-`Nat.le_add_left`, `Nat.succ_lt_succ`, `Nat.lt_of_succ_lt_succ`, `Nat.lt_of_le_of_lt`, `Nat.lt_or_ge`,
-`Nat.le_antisymm`, `Nat.succ_pos`, `Nat.not_lt_zero`).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/RationalPolynomialSmithDescent.lean`. -/
+Every coefficient lemma is structural on the coefficient list with full `Nat` case enumeration; arithmetic
+routes through the shipped `qnf*` field laws and the calibrated-clean core `Nat` order lemmas. No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, `funext`, or `WellFounded.fix`.
+Per-declaration audit twin in the matching `FX1PolyAudit` path. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -386,50 +346,15 @@ pivot `(1, 1)` both have degree `1`, so the min-degree measure is `1`. -/
 theorem rsdFireMinDegreeOverCross :
     rsdMinDegreeOver 99 [[qnfOfInt 1, qnfOfInt 1], [qnfOfInt (-1), qnfOfInt 1]] = 1 := rfl
 
-/-! ## Content markers -/
+/-! ## Content marker -/
 
-/-- DECIDED (the LEVER the committed `rsfHasAllZeroCrossFixedPoint := false` docstring named as missing):
-`rpxMul` DEGREE ADDITIVITY over ℚ — `rpxDegree (leftPoly × rightPoly) = rpxDegree leftPoly + rpxDegree
-rightPoly` for trim-nonzero factors (`rsdDegreeMul`).  Proved from the leading-coefficient product law:
-the product's top coefficient is the product of the two leading coefficients (`rsdMulCoeffTop`), nonzero over
-the field ℚ (`rsdQnfMulNeZero`, the integral-domain law from `qnfInvMulCancels`), while everything past the
-top vanishes (`rsdMulCoeffVanishAbove`), so the trimmed length is exactly `deg + deg + 1`. -/
+/-- ℚ[x] `rpxMul` degree additivity is decided: `rpxDegree (p × q) = rpxDegree p + rpxDegree q` for trim-nonzero
+factors (`rsdDegreeMul`), from the leading-coefficient product law (`rsdMulCoeffTop`), the integral-domain law
+(`rsdQnfMulNeZero`), and vanishing above the top (`rsdMulCoeffVanishAbove`). The re-pivot descent core follows:
+a nonzero pivot-multiple has degree `≥` the pivot (`rsdMultipleDegreeGePivot`) and a nonzero residue is strictly
+below it (`rsdResidueBelowPivotWhenNonzero`), so a re-pivot strictly decreases the min pivot degree
+(`rsdMinDegreeOver`). The full re-pivot driver and its all-zero cross are decided downstream
+(`rseHasAllZeroCrossViaRepivot`); the full Smith normal form is walled (`rsiHasSmithNormalForm`). -/
 def rsdHasDegreeMultiplicativity : Bool := true
-
-/-- DECIDED: the re-pivot descent CORE — a nonzero pivot-multiple has degree `≥` the pivot
-(`rsdMultipleDegreeGePivot`, T1-powered) and a nonzero residue is strictly below the pivot
-(`rsdResidueBelowPivotWhenNonzero`, from the committed `rbzClearEntryReducesDegree`).  Together: a re-pivot
-(swap the smaller-degree residue into the pivot slot) strictly decreases the minimum pivot degree, the
-termination measure `rsdMinDegreeOver`.  This is the descent's termination content, which the committed kit
-lacked (no degree multiplicativity). -/
-def rsdHasRepivotDescentCore : Bool := true
-
-/-- WALLED (owner-false): the FULL re-pivot DRIVER over ℚ[x]-matrices.  The termination CONTENT is decided
-(`rsdHasRepivotDescentCore`): a re-pivot strictly drops the min pivot degree.  What remains is the
-moving-position ARITY bookkeeping — after swapping the achieving off-pivot residue into the pivot slot, the
-pivot occupies a NEW `(row, col)` and the re-clear must re-index about that moving position, tracking which
-entries are now on the cross across the swap.  This is matrix plumbing orthogonal to the degree lever
-(structural `Nat` fuel = `rsdMinDegreeOver`, decreasing by `rsdResidueBelowPivotWhenNonzero` each round).
-Route: the swap+re-index driver → the per-round strict drop of `rsdMinDegreeOver` → the fuel-adequate
-iterate. -/
-def rsdHasRepivotDriver : Bool := false
-
-/-- WALLED (owner-false; the committed `rsfHasAllZeroCrossFixedPoint := false` and `rsmHasCrossFixedPoint :=
-false` stay byte-intact): the ALL-ZERO cleared cross via the re-pivot driver — every off-pivot cross entry
-trims to `[]`, i.e. `rsfCrossDegreeSum` hits `0`.  This rests on the full re-pivot driver
-(`rsdHasRepivotDriver`, walled above): iterate the swap+re-clear until no nonzero non-divisible residue
-remains, at which point the surviving pivot DIVIDES every cross entry and the residues all annihilate.  The
-degree lever (T1) that makes the iteration terminate is DECIDED; only the driver's matrix bookkeeping is
-open. -/
-def rsdHasAllZeroCrossViaRepivot : Bool := false
-
-/-- WALLED (owner-false; the committed `rsfHasSubmatrixDescent := false` stays byte-intact): the submatrix
-descent toward the diagonal invariant-factor chain.  With the all-zero cross (`rsdHasAllZeroCrossViaRepivot`,
-walled), the `(r-1)×(c-1)` submatrix extractor `rsfSubmatrix` (already shipped) is the recursion target: (1)
-descend on `rsfSubmatrix` with a fresh `Nat` measure = matrix size, producing `diag(d₁, …, dᵣ, 0, …)`; (2)
-the divisibility chain `d₁ | d₂ | ⋯ | dᵣ` combining the committed `rpeGcdDividesBoth` (each `dᵢ` is a gcd of
-the surviving minors) with `rbzDividesTrans` (transitivity of `rpeDivides`).  Both ingredients ship; the open
-part is the diagonalization driver that produces the chain, gated on the all-zero cross. -/
-def rsdHasInvariantFactorChain : Bool := false
 
 end FX1Poly.ComputerAlgebra

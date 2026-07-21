@@ -18,11 +18,11 @@ soundness/membership/completeness, THE SPAN DECISION `ihqSpanEqB` with BOTH
 (`IhqPairMem`) with relational composition by negated-middle-block elimination
 and THE PULLBACK SPEC `ihqComposeSpec` (iff), the converse spec, identity
 generators, RREF via back-substitution with row-space preservation and the
-owner-false uniqueness wall (`ihqRrefUniquenessStatement`,
-`ihqRrefUniquenessIsProven := false`), the kernel-`rfl` fires (scalar-2 span
-collapse, fractional cofactors, char-0 basis exchange, FALSE control, compose
-arithmetic, identity composes, the spec fire, converse), and the DECIDED
-markers `ihqHasSpanDecision` / `ihqHasComposeSpec`.
+syntactic un-normalized uniqueness statement (`ihqRrefUniquenessStatement`,
+`ihqRrefUniquenessIsProven := false`, refuted downstream), the kernel-`rfl` fires
+(scalar-2 span collapse, fractional cofactors, char-0 basis exchange, false
+control, compose arithmetic, identity composes, the spec fire, converse), and the
+decided marker `ihqHasSpanDecision`.
 
 Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
@@ -261,6 +261,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihqFireComposeSpecScaleSix
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihqFireConverseScaleTwo
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihqHasSpanDecision
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihqHasComposeSpec
 
 end FX1PolyAudit

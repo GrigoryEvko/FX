@@ -1,41 +1,21 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialRingWitness
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialCharMinors — the k×k minors of `x·I − M` over ℤ[x]
-(the second brick of the char-matrix → invariant-factors layer, WP-ENDO #2255)
+/-! # IntPolynomialCharMinors — the k×k minors of `x·I − M` over ℤ[x]
 
-The `EndomorphismMinorSelector` r2 minor selector (`selectSubmatrix`/`intMinorDet`) reads through
-row/column index FUNCTIONS but is hard-wired to `Int`.  The generic `SetoidMatrix.cofactorDet` is
-already carrier-generic, so the selector lifts to any `CommutativeRingWitness carrier` in one line:
-`SetoidMatrix.submatrixByIndex` reindexes, `SetoidMatrix.minorDet` takes the generic determinant of
-the selected square sub-block.
+The generic `SetoidMatrix.cofactorDet` is carrier-generic, so the minor selector lifts to any
+`CommutativeRingWitness`: `submatrixByIndex` reindexes through row/column index functions, `minorDet` takes
+the generic determinant of the selected square sub-block.  Instantiated at the ℤ[x] ring witness on the
+characteristic matrix `charMatrix M = x·I − M`, `charMatrixMinor` yields a polynomial k×k minor — the raw
+ingredient of the determinantal divisor `d_k = gcd of all k×k minors of x·I − M`, whose successive quotients
+are the invariant factors classifying similarity.
 
-Instantiated at the ℤ[x] ring witness (`intPolynomialRingWitness`) on the characteristic matrix
-`charMatrix M = x·I − M`, `charMatrixMinor` yields a **polynomial** k×k minor — the raw ingredient of
-the determinantal divisor `d_k = gcd of all k×k minors of x·I − M`, whose successive quotients
-`s_k = d_k / d_{k-1}` (via the shipped ℤ[x] GCD) are the invariant factors classifying similarity.
+At dimension 2 the distinguishing 1×1 minors already separate similarity classes the characteristic
+polynomial cannot: `2·I` and the Jordan block `[[2,1],[0,2]]` share char poly `(x−2)²`, yet the `(0,1)`
+minor is `0` for the scalar (so `d₁ = x−2`) and the unit `−1` for the Jordan block (so `d₁ = 1`).
 
-## Why the minors classify
-
-The determinantal divisors already separate the three archetypes at dimension 2:
-
-  * `diag(2,3)` — the two diagonal 1×1 minors are `x−2` and `x−3` (coprime), so `d₁ = 1`, `d₂ =
-    (x−2)(x−3)`: one invariant factor, the char poly (non-derogatory, distinct eigenvalues).
-  * `2·I` — the off-diagonal 1×1 minors are `0`, so `d₁ = gcd(x−2, x−2) = x−2`, `d₂ = (x−2)²`: two
-    invariant factors `(x−2), (x−2)`.
-  * the Jordan block `[[2,1],[0,2]]` — the `(0,1)` 1×1 minor is the **unit** `−1`, so `d₁ = 1`, `d₂ =
-    (x−2)²`: one invariant factor `(x−2)²`.
-
-`2·I` and the Jordan block share char poly `(x−2)²` yet differ in `d₁` (`x−2` vs the unit `1`) — the
-minors of `x·I − M` see the similarity difference the char poly cannot.  The distinguishing 1×1 minors
-are grounded here by `decide`; the GCD fold that turns them into `d_k` is the next brick.
-
-## Zero-axiom design
-
-`submatrixByIndex` is a structure literal, `minorDet` is a `cofactorDet` application, `charMatrixMinor`
-specializes them at the polynomial witness — all plain defs.  Groundings are `decide` over concrete
-`polyTrim`med `List Int`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-or `omega`.  Per-declaration gated in the audit twin.
--/
+`submatrixByIndex`/`minorDet`/`charMatrixMinor` are plain defs; groundings are `decide` over concrete
+`polyTrim`med `List Int`.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -43,7 +23,7 @@ namespace SetoidMatrix
 
 /-! ## The carrier-generic minor selector -/
 
-/-- The submatrix reading through row/column index FUNCTIONS over ANY carrier: entry `(i, j)` is the
+/-- The submatrix reading through row/column index functions over any carrier: entry `(i, j)` is the
 original entry at `(rowSelect i, colSelect j)`, with the caller's declared
 `selectedRowCount × selectedColCount` shape.  Function-valued (not list-valued) so the substrate stays
 propext-free — the carrier-generic lift of `selectSubmatrix`. -/
@@ -110,27 +90,17 @@ theorem charMatrixMinorDiagFullIsCharPoly :
     polyTrim (charMatrixMinor 2 (twoByTwoMatrix 2 0 0 3) selectIdentity selectIdentity) = [6, -5, 1] := by
   decide
 
-/-- ★ The distinguishing minor for the Jordan block `[[2,1],[0,2]]`: its `(0,1)` 1×1 minor is the
-**unit** `−1` (`[−1]`), so the determinantal divisor `d₁` of `x·I − J` is a unit (`1`). -/
+/-- The distinguishing minor for the Jordan block `[[2,1],[0,2]]`: its `(0,1)` 1×1 minor is the unit `−1`
+(`[−1]`), so the determinantal divisor `d₁` of `x·I − J` is a unit (`1`). -/
 theorem charMatrixMinorJordanOffDiagIsUnit :
     polyTrim (charMatrixMinor 1 (twoByTwoMatrix 2 1 0 2) selectOnlyZero selectOnlyOne) = [-1] := by
   decide
 
-/-- ★ The corresponding minor for the scalar `2·I`: its `(0,1)` 1×1 minor is `0` (`[]`), so the
-determinantal divisor `d₁` of `x·I − 2·I` is `gcd(x−2, x−2) = x−2`, NOT a unit — the minor-level
-witness that `2·I` and the Jordan block, which share char poly `(x−2)²`, are NOT similar. -/
+/-- The corresponding minor for the scalar `2·I`: its `(0,1)` 1×1 minor is `0` (`[]`), so the
+determinantal divisor `d₁` of `x·I − 2·I` is `gcd(x−2, x−2) = x−2`, not a unit — the minor-level witness
+that `2·I` and the Jordan block, which share char poly `(x−2)²`, are not similar. -/
 theorem charMatrixMinorScalarOffDiagIsZero :
     polyTrim (charMatrixMinor 1 (twoByTwoMatrix 2 0 0 2) selectOnlyZero selectOnlyOne) = [] := by
   decide
-
-/-! ## The marker -/
-
-/-- ★ **The characteristic-matrix minors over ℤ[x] are shipped.**  `= true` records that the generic
-minor selector (`SetoidMatrix.submatrixByIndex`/`minorDet`) instantiated at the polynomial ring witness
-computes any `k×k` minor of `x·I − M` as a genuine ℤ[x] polynomial — the raw ingredient of the
-determinantal divisors `d_k = gcd of the k×k minors`, whose quotients are the invariant factors.  The
-off-diagonal 1×1 minor already separates the scalar `2·I` (`d₁ = x−2`) from the Jordan block `[[2,1],
-[0,2]]` (`d₁ = unit`), which share a characteristic polynomial. -/
-def fxIntPoly_hasCharMatrixMinors : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -62,10 +62,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rbzFireMatrixEntry
 #assert_no_axioms FX1Poly.ComputerAlgebra.rbzFireClearReconstructs
 
--- Content markers
-#assert_no_axioms FX1Poly.ComputerAlgebra.rbzHasMulCommutativity
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rbzHasBezoutIdentity
-#assert_no_axioms FX1Poly.ComputerAlgebra.rbzHasPivotClear
-#assert_no_axioms FX1Poly.ComputerAlgebra.rbzHasSmithNormalForm
 
 end FX1PolyAudit

@@ -5,51 +5,50 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfCompleteness
 The committed toolbox (`InteractingHopfSchema`) ships the presentation
 congruence `IhzConv` (padded schema steps + reflexivity + symmetry +
 transitivity) with the fourteen scalar `IhzRowMove` schemas and the whisker
-embedding of every seed row, ALL sound (`ihzConvSpanEqB`).  What was owner-false
-was `ihzReachabilityStatement` — span-equal well-formed diagrams on matching
-boundaries are `IhzConv`-related — with the residual named as an
-absorption-style layer induction (LEG B, confluence) plus RREF uniqueness
-(LEG A canonicity).
+embedding of every seed row, all sound (`ihzConvSpanEqB`).  The owner-false
+statement was `ihzReachabilityStatement` — span-equal well-formed diagrams on
+matching boundaries are `IhzConv`-related — with the residual named as an
+absorption-style layer induction (reduction leg, confluence) plus RREF
+uniqueness (canonicity leg).
 
 This file supplies:
 
 * T1 — the fourteen scalar `IhzRowMove` schemas re-exposed as named `IhzConv`
-  per-layer rewrite STEPS (the toolbox atoms the induction chains).  Each is a
+  per-layer rewrite steps (the toolbox atoms the induction chains).  Each is a
   one-line instance of the committed `ihzMoveConv`; nothing is re-derived.
 
 * T2 — the A8 bimonoid, I3/I4 white/black Frobenius (both chain equations), and
-  I7/I8 special collapses re-exposed as named `IhzConv` absorption STEPS (the
+  I7/I8 special collapses re-exposed as named `IhzConv` absorption steps (the
   confluence-critical rewrites), each an instance of `ihzMoveConv` on the
   committed `whiskerMove` row arm.
 
-* T3 — the reachability FACTORIZATION.  `ihkConvOfCommonReduct` is the
+* T3 — the reachability factorization.  `ihkConvOfCommonReduct` is the
   reduce-both-to-a-common-form principle (transitivity + symmetry).
-  `ihkReachabilityOfChooserReductionAndCanonicity` PROVES that
+  `ihkReachabilityOfChooserReductionAndCanonicity` proves that
   `ihzReachabilityStatement` follows from any normal-form chooser satisfying
   (i) a reduction leg (`IhzConv diagram (chooseNf diagram)`) and (ii) a
-  canonicity leg (span-equal WF diagrams pick the SAME chooser output).  This
+  canonicity leg (span-equal WF diagrams pick the same chooser output).  This
   machine-checks the honest content: reachability = reduction ∧ canonicity.
   The reflexive fragment `ihkReachabilityDiagonal` is proven outright.
 
-* T4 — the PAYOFF, honestly conditional.  `ihkWordProblemGivenReachability`
-  routes the committed capstone: given reachability, `IhzConv` is EQUIVALENT to
+* T4 — the payoff, honestly conditional.  `ihkWordProblemGivenReachability`
+  routes the committed capstone: given reachability, `IhzConv` is equivalent to
   the executable span decision.  `ihkWordProblemOfChooserReductionAndCanonicity`
-  combines T3 + the capstone: modulo the two owner-false legs, the FULL IH_Q
+  combines T3 and the capstone: modulo the two owner-false legs, the full IH_Q
   syntactic word problem is unconditional.
 
 * T5 — ground fires: a scalar product step, a bimonoid absorption, a sum
-  diagram reduced to its scalar normal form, a cancel-to-wire, a two-different
-  -diagram common-reduct fire, and a discriminating FALSE control (scalar 2 and
-  scalar 3 lines are NOT `IhzConv`).
+  diagram reduced to its scalar normal form, a cancel-to-wire, a
+  two-different-diagram common-reduct fire, and a discriminating false control
+  (scalar 2 and scalar 3 lines are not `IhzConv`).
 
-WALLS.  The full layer-induction reachability is NOT proven; the two legs of
-the factorization are owner-false.  `ihkHasReductionLeg := false` (LEG B: the
-absorption rewrite system's confluence — the unjoined critical peak is the A8
-bimonoid / A18 sum overlap on an interior `blackComult ; whiteMult` interface,
-whose two normal forms are only span-equal, not committed-`IhzConv`).
-`ihkHasCanonicityLeg := false` (LEG A: span-equal ⇒ equal canonical matrix is
-`ihqRrefUniquenessStatement`, owner-false).  `ihkHasFullReachabilityInduction
-:= false`.
+Walls.  The full layer-induction reachability is not proven; the two legs of
+the factorization are owner-false.  The reduction leg is open because the
+absorption rewrite system's confluence is unestablished — the unjoined critical
+peak is the A8 bimonoid / A18 sum overlap on an interior `blackComult ;
+whiteMult` interface, whose two normal forms are only span-equal, not
+committed-`IhzConv`.  The canonicity leg is open because span-equal ⇒ equal
+canonical matrix is `ihqRrefUniquenessStatement`, itself owner-false.
 
 Raw Lean 4 + Init + the committed ComputerAlgebra bricks only; zero-axiom;
 structural only; no wildcard match arms over inductive scrutinees.
@@ -156,7 +155,7 @@ theorem ihkUnitAbsorbStep (scalarValue : QnfRat) :
       { sourceArity := 0, layers := [[IhsCell.blackUnit]] } :=
   ihzMoveConv (IhzRowMove.unitAbsorbSchema scalarValue)
 
-/-- A18: a copy fan, a scalar pair, and an add fan fuse to the SUM box. -/
+/-- A18: a copy fan, a scalar pair, and an add fan fuse to the sum box. -/
 theorem ihkSumStep (firstScalar secondScalar : QnfRat) :
     IhzConv
       { sourceArity := 1
@@ -254,7 +253,7 @@ theorem ihkBlackSpecialStep :
 
 /-! ## T3 — the reachability factorization -/
 
-/-- THE COMMON-REDUCT PRINCIPLE: if two diagrams both convert to a shared form,
+/-- The common-reduct principle: if two diagrams both convert to a shared form,
 they convert to each other.  Pure transitivity + symmetry of `IhzConv` — the
 shape every reachability argument takes. -/
 theorem ihkConvOfCommonReduct {firstDiagram secondDiagram normalForm : IhsDiagram}
@@ -263,25 +262,24 @@ theorem ihkConvOfCommonReduct {firstDiagram secondDiagram normalForm : IhsDiagra
     IhzConv firstDiagram secondDiagram :=
   IhzConv.trans hFirst (IhzConv.symm hSecond)
 
-/-- THE REFLEXIVE FRAGMENT of reachability: a well-formed diagram is `IhzConv`
+/-- The reflexive fragment of reachability: a well-formed diagram is `IhzConv`
 to itself (the diagonal case, unconditional). -/
 theorem ihkReachabilityDiagonal (diagram : IhsDiagram)
     (hWF : IhsDiagramWF diagram) : IhzConv diagram diagram :=
   IhzConv.refl diagram hWF
 
-/-- **THE REACHABILITY FACTORIZATION**: `ihzReachabilityStatement` follows from
+/-- The reachability factorization: `ihzReachabilityStatement` follows from
 any normal-form chooser equipped with two legs —
 
   (reduction leg) every well-formed diagram converts to its chooser output;
   (canonicity leg) span-equal well-formed diagrams on matching boundaries pick
-    the SAME chooser output —
+    the same chooser output —
 
 joined by the common-reduct principle.  This machine-checks the honest content
-of the reachability problem: it is EXACTLY the conjunction of a reduction leg
-(LEG B, the absorption confluence) and a canonicity leg (LEG A, RREF
-uniqueness).  Both legs are owner-false in the committed kit (see the walls);
-this theorem is the reduction of the whole problem to those two, with nothing
-else missing. -/
+of the reachability problem: it is exactly the conjunction of a reduction leg
+(the absorption confluence) and a canonicity leg (RREF uniqueness).  Both legs
+are owner-false in the committed kit (see the walls); this theorem is the
+reduction of the whole problem to those two, with nothing else missing. -/
 theorem ihkReachabilityOfChooserReductionAndCanonicity
     (chooseNormalForm : IhsDiagram -> IhsDiagram)
     (hReduce : (diagram : IhsDiagram) -> IhsDiagramWF diagram ->
@@ -306,7 +304,7 @@ theorem ihkReachabilityOfChooserReductionAndCanonicity
 
 /-! ## T4 — the payoff (conditional on the reachability legs) -/
 
-/-- Given reachability, `IhzConv` is EQUIVALENT to the executable span decision:
+/-- Given reachability, `IhzConv` is equivalent to the executable span decision:
 the committed conditional capstone, re-exposed at the reachability leg. -/
 theorem ihkWordProblemGivenReachability (hReach : ihzReachabilityStatement)
     (firstDiagram secondDiagram : IhsDiagram)
@@ -319,9 +317,9 @@ theorem ihkWordProblemGivenReachability (hReach : ihzReachabilityStatement)
   cvzWordProblemBiconditionalGivenReachability hReach firstDiagram secondDiagram
     hFirstWF hSecondWF hSource hCod
 
-/-- **THE FULL WORD PROBLEM MODULO THE TWO LEGS**: supplying a chooser with the
+/-- The full word problem modulo the two legs: supplying a chooser with the
 reduction and canonicity legs discharges reachability (T3) and hence makes the
-IH_Q syntactic word problem UNCONDITIONAL — `IhzConv` is equivalent to the
+IH_Q syntactic word problem unconditional — `IhzConv` is equivalent to the
 executable span decision on every well-formed pair with matching boundaries.
 The only remaining obligations are the two owner-false legs. -/
 theorem ihkWordProblemOfChooserReductionAndCanonicity
@@ -348,48 +346,15 @@ theorem ihkWordProblemOfChooserReductionAndCanonicity
 
 /-! ## Decision markers and walls -/
 
-/-- DECIDED (T1+T2): the fourteen scalar schemas and the A8/I3/I4/I7/I8
-absorption rows all ship as named `IhzConv` per-layer steps. -/
-def ihkHasRewriteSteps : Bool := true
-
-/-- DECIDED (T3): the common-reduct principle and the reachability
-factorization (`ihkReachabilityOfChooserReductionAndCanonicity`) ship, reducing
-reachability to a reduction leg plus a canonicity leg. -/
-def ihkHasReachabilityFactorization : Bool := true
-
-/-- DECIDED (T4): the word problem is unconditional modulo the two legs
-(`ihkWordProblemOfChooserReductionAndCanonicity`). -/
+/-- This brick ships the conditional word problem (T4), resting on the named
+rewrite steps (fourteen scalar schemas plus the A8/I3/I4/I7/I8 absorption rows)
+and the reachability factorization into a reduction leg plus a canonicity leg. -/
 def ihkHasConditionalWordProblem : Bool := true
 
-/-- OWNER FALSE (LEG B, the reduction leg): no committed chooser satisfies the
-reduction leg `IhzConv diagram (chooseNormalForm diagram)` for every well-formed
-diagram.  The residual is the absorption-style layer induction whose confluence
-is unestablished.  Burned attack (1): structural induction over
-`firstDiagram.layers` stalls at the inductive step — absorbing the leading
-generator into the accumulated span form is a whisker-context rewrite `IhzConv`
-witnesses, but the repeated absorption has no committed termination/confluence
-argument.  Burned attack (2): reduce-via-the-compiler stalls because the NF
-compiler recurses on the DENOTATION matrix, not the layers, so no structural
-handle relates the two syntactically.  THE UNJOINED CRITICAL PEAK: the A8
-`bimonoid` rewrite (`whiteMult ; blackComult ⟿ (copy⊗copy);(id⊗swap⊗id);
-(add⊗add)`) overlaps the A18 `sumSchema` (`blackComult ; [box,box] ; whiteMult
-⟿ box(a+b)`) on an interior `blackComult ; whiteMult` interface when sum
-gadgets are stacked; the two resulting forms are span-equal but no committed
-`IhzConv` derivation joins them without RREF uniqueness. -/
-def ihkHasReductionLeg : Bool := false
-
-/-- OWNER FALSE (LEG A, the canonicity leg): no committed chooser satisfies the
-canonicity leg — span-equal well-formed diagrams need not pick the same chooser
-output, because that is precisely span-equal ⇒ equal canonical matrix, i.e.
-`ihqRrefUniquenessStatement` (`ihqRrefUniquenessIsProven := false`), which needs
-a rank/independence/exchange apparatus absent from the `QnfRat` kit (MathComp
-`mxalgebra` never proves RREF uniqueness either). -/
-def ihkHasCanonicityLeg : Bool := false
-
-/-- OWNER FALSE: the full layer-induction reachability is NOT proven.  It is
-`ihkReachabilityOfChooserReductionAndCanonicity` applied to a chooser meeting
-both `ihkHasReductionLeg` and `ihkHasCanonicityLeg`, both owner-false; coincides
-with the committed `ihzReachabilityIsProven := false`. -/
+/-- The full layer-induction reachability is open because neither the reduction
+leg (an absorption-style layer induction whose confluence is unestablished) nor
+the canonicity leg (span-equal implies equal canonical matrix, i.e. RREF
+uniqueness, absent from the QnfRat kit) is available. -/
 def ihkHasFullReachabilityInduction : Bool := false
 
 /-! ## T5 — ground fires and a discriminating control -/
@@ -406,7 +371,7 @@ def ihkScalarThreeLineDiagram : IhsDiagram :=
 theorem ihkScalarTwoIsNonzero : ihsScalarTwo ≠ qnfZero :=
   ihqQnfNeZeroOfBeqZeroFalse rfl
 
-/-- FIRE 1 (scalar row-move): `scalarBox 2 ; scalarBox 3` converts to the
+/-- Fire 1 (scalar row-move): `scalarBox 2 ; scalarBox 3` converts to the
 product box, on the concrete two-layer diagram. -/
 theorem ihkFireProductConcrete :
     IhzConv
@@ -417,7 +382,7 @@ theorem ihkFireProductConcrete :
         layers := [[IhsCell.scalarBox (qnfMul ihsScalarTwo ihsScalarThree)]] } :=
   ihkProductStep ihsScalarTwo ihsScalarThree
 
-/-- FIRE 2 (absorption step): the concrete white-multiply-above-black-comultiply
+/-- Fire 2 (absorption step): the concrete white-multiply-above-black-comultiply
 diagram absorbs into the bimonoid tangle. -/
 theorem ihkFireBimonoidConcrete :
     IhzConv
@@ -425,7 +390,7 @@ theorem ihkFireBimonoidConcrete :
       (ihsRowRhs IhsRowTag.bimonoid) :=
   ihkBimonoidStep
 
-/-- FIRE 3 (small diagram reduced to its normal form): the copy/scalar-pair/add
+/-- Fire 3 (small diagram reduced to its normal form): the copy/scalar-pair/add
 sum gadget for scalars 2 and 3 reduces to the single scalar box `2 + 3`. -/
 theorem ihkFireSumToNormalForm :
     IhzConv
@@ -437,7 +402,7 @@ theorem ihkFireSumToNormalForm :
         layers := [[IhsCell.scalarBox (qnfAdd ihsScalarTwo ihsScalarThree)]] } :=
   ihkSumStep ihsScalarTwo ihsScalarThree
 
-/-- FIRE 4 (cancel to wire): `scalarBox 2 ; scalarBoxMirror 2` reduces to the
+/-- Fire 4 (cancel to wire): `scalarBox 2 ; scalarBoxMirror 2` reduces to the
 wire (2 is nonzero). -/
 theorem ihkFireForwardCancelToWire :
     IhzConv
@@ -447,7 +412,7 @@ theorem ihkFireForwardCancelToWire :
       { sourceArity := 1, layers := [[IhsCell.wire]] } :=
   ihkForwardCancelStep ihsScalarTwo ihkScalarTwoIsNonzero
 
-/-- FIRE 5 (common reduct between two DIFFERENT diagrams): both the forward
+/-- Fire 5 (common reduct between two different diagrams): both the forward
 `box 2 ; mirror 2` and the backward `mirror 2 ; box 2` cancel to the wire, so
 they convert to each other through the common-reduct principle. -/
 theorem ihkFireCommonReductCancel :
@@ -463,13 +428,13 @@ theorem ihkFireCommonReductCancel :
     (ihkBackwardCancelStep ihsScalarTwo ihkScalarTwoIsNonzero)
 
 set_option maxHeartbeats 4000000 in
-/-- FALSE CONTROL (kernel span): the scalar 2 and scalar 3 lines denote DIFFERENT
+/-- False control (kernel span): the scalar 2 and scalar 3 lines denote different
 subspaces of Q² — the executable span decision refutes. -/
 theorem ihkFireControlSpanDistinct :
     ihqSpanEqB (ihsDiagramDenote ihkScalarTwoLineDiagram)
       (ihsDiagramDenote ihkScalarThreeLineDiagram) = false := rfl
 
-/-- FALSE CONTROL (discriminating): the scalar 2 and scalar 3 lines are NOT
+/-- False control (discriminating): the scalar 2 and scalar 3 lines are not
 `IhzConv` — soundness (`ihzConvSpanEqB`) would force the span decision to fire
 `true`, contradicting the kernel `false` pin. -/
 theorem ihkFireControlNotConv :

@@ -55,10 +55,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsfFireIterateReachesReduced
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsfFireSubmatrix
 
--- Content markers
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsfHasCrossMeasure
+-- Content marker
 #assert_no_axioms FX1Poly.ComputerAlgebra.rsfHasReducedCrossFixedPoint
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsfHasAllZeroCrossFixedPoint
-#assert_no_axioms FX1Poly.ComputerAlgebra.rsfHasSubmatrixDescent
 
 end FX1PolyAudit

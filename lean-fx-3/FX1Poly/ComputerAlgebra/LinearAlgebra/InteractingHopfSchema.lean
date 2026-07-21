@@ -1,37 +1,36 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfWhisker
 
-/-! # LinearAlgebra/InteractingHopfSchema — the IH_Q scalar schemas + NF census seed (WP-PROP-3 brick 4)
+/-! # LinearAlgebra/InteractingHopfSchema — the IH_Q scalar schemas + NF census seed
 
-THE SCALAR-SCHEMA ADJUDICATION (HALF A, executing the brick-3 route note on
-`ihwHasWhiskerCongruence` item (2) by SUPERSESSION): the committed presentation
-(`InteractingHopfSeed`) ships its scalar-indexed axiom families only at
-INSTANTIATED scalars (k in {2, 3, 5, 6, -1, 0, 1}); the faithful BSZ reading
-(arXiv:1403.7048v4 Definition 6.1) is that those families are SCHEMAS indexed
-by k in Q.  This brick mints `IhzRowMove`: PARAMETERIZED scalar row
-constructors — product/sum/antipode-cancel/unit-absorption and the
-through-(co)add/(co)copy commutation families, each in BOTH orientations —
-alongside an embedding arm for EVERY committed `IhsRowTag` row.  Each schema's
-soundness is a THEOREM-level span equality quantified over the scalar
-arguments (via the qnf ring/field laws and per-cell pair-membership specs),
-NOT an `rfl` pin — the brick-2 report showed general diagram-level rows are
-not `rfl`-decidable (echelonization scrutinizes the symbolic scalar), which
-blocks GATE pins but NOT quantified soundness lemmas.  On top: the whisker
-congruence `IhzConv` over the schema rows (the `IhwStep.pad` shape, reusing
-the committed pad machinery), soundness `ihzConvSound`, the refutation bridge
-`ihzConvSpanEqB`, the embedding `IhwConv -> IhzConv`, and FRESH-SCALAR fires —
-`scalarBox 4 ; scalarBox (1/2)` converts to `scalarBox 2` (scalars NOT in the
-committed row set: THE pin that the schema gap is closed), an antipode-family
-fire at the fresh scalar 4, and a FALSE control at fresh scalars.
+The scalar-schema layer.  The committed presentation (`InteractingHopfSeed`)
+ships its scalar-indexed axiom families only at instantiated scalars
+(k in {2, 3, 5, 6, -1, 0, 1}); the faithful BSZ reading (arXiv:1403.7048v4
+Definition 6.1) is that those families are schemas indexed by k in Q.  This
+file mints `IhzRowMove`: parameterized scalar row constructors —
+product/sum/antipode-cancel/unit-absorption and the through-(co)add/(co)copy
+commutation families, each in both orientations — alongside an embedding arm
+for every committed `IhsRowTag` row.  Each schema's soundness is a
+theorem-level span equality quantified over the scalar arguments (via the qnf
+ring/field laws and per-cell pair-membership specs), not an `rfl` pin: general
+diagram-level rows are not `rfl`-decidable because echelonization scrutinizes
+the symbolic scalar, which blocks kernel gate pins but not quantified
+soundness lemmas.  On top: the whisker congruence `IhzConv` over the schema
+rows (the `IhwStep.pad` shape, reusing the whisker-context padding machinery),
+soundness `ihzConvSound`, the refutation bridge `ihzConvSpanEqB`, the
+embedding `IhwConv -> IhzConv`, and fresh-scalar fires — `scalarBox 4 ;
+scalarBox (1/2)` converts to `scalarBox 2` (scalars outside the committed row
+set, pinning that the schema gap is closed), an antipode-family fire at the
+fresh scalar 4, and a false control at fresh scalars.
 
-THE NF CARRIER + CENSUS SEED (HALF B, partial per the stall policy): the
-CANONICAL NF chooser `ihzCanonicalRows` (leading-one reduced row echelon form:
-`ihqRref` from brick 1 plus pivot normalization through `qnfInv`) with span
-preservation, width invariants, and kernel-`rfl` fires; the BSZ Theorem 6.4
-factorized-shape BASE CASES as diagrams (the zero-relation diagram — the
-`rows = []` normal form — fully proven at THEOREM level for arbitrary
-boundaries); the OWNER-FALSE statements `ihzNormalFormStatement` (the full
-span-of-matrices carrier) and `ihzReachabilityStatement` (completeness of
-`IhzConv`), each carrying the precise residual for brick 5.
+The normal-form carrier and census seed.  The canonical NF chooser
+`ihzCanonicalRows` (leading-one reduced row echelon form: `ihqRref` plus pivot
+normalization through `qnfInv`) with span preservation, width invariants, and
+kernel-`rfl` fires; the BSZ Theorem 6.4 factorized-shape base cases as
+diagrams (the zero-relation diagram — the `rows = []` normal form — proven at
+theorem level for arbitrary boundaries); the owner-false statements
+`ihzNormalFormStatement` (the full span-of-matrices carrier) and
+`ihzReachabilityStatement` (completeness of `IhzConv`), each carrying its
+precise residual.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -135,7 +134,7 @@ theorem ihzMemSpanPairIntro {width : Nat} (firstRow secondRow : List QnfRat)
   exact IhqMemSpan.pick firstCoeff firstRow
     (IhqRowMem.head firstRow [secondRow]) hSecondPicked
 
-/-- Right cancellation in the qnf field: equal products with a common NONZERO
+/-- Right cancellation in the qnf field: equal products with a common nonzero
 right factor have equal left factors (the I1 forward-cancel workhorse). -/
 theorem ihzMulRightCancel {firstFactor secondFactor scaleFactor : QnfRat}
     (hNonzero : scaleFactor ≠ qnfZero)
@@ -843,11 +842,11 @@ theorem ihzPairThreeStageIff (domWidth midWidth secondMidWidth codWidth : Nat)
 
 /-! ## Stage 3 — layer-denotation kernel pins (the defeq the schema proofs ride)
 
-Every pin is `rfl` WITH THE SCALARS SYMBOLIC: the layer denotation pipeline
+Every pin is `rfl` with the scalars symbolic: the layer denotation pipeline
 (`ihsLayerDenote` -> `ihsTensorRows` -> embeds -> `ihqCat`) is purely
 structural, so it reduces without ever scrutinizing a scalar payload.  This is
-exactly why the brick-2 `rfl` wall (echelonization scrutinizes the scalar) does
-NOT apply at the layer level. -/
+why the `rfl` wall (echelonization scrutinizes the scalar) does not apply at
+the layer level. -/
 
 theorem ihzScalarLayerDenote (scalarValue : QnfRat) :
     ihsLayerDenote [IhsCell.scalarBox scalarValue] = [[qnfOne, scalarValue]] := rfl
@@ -950,7 +949,7 @@ theorem ihzPairTailEq {firstValue secondValue thirdValue fourthValue : QnfRat}
   congrArg (fun row => ihqGetCoeff row 1) hEq
 
 /-- Bundle assembly from its five parts (the schema-side introduction: the
-span component is a THEOREM here, never an `ihqSpanEqB` pin — the brick-2 wall
+span component is a theorem here, never an `ihqSpanEqB` pin — the `rfl` wall
 blocks kernel decision at symbolic scalars, not quantified soundness). -/
 theorem ihzBundleOfParts (firstDiagram secondDiagram : IhsDiagram)
     (hSourceEq : firstDiagram.sourceArity = secondDiagram.sourceArity)
@@ -962,14 +961,14 @@ theorem ihzBundleOfParts (firstDiagram secondDiagram : IhsDiagram)
   And.intro hSourceEq (And.intro hCodEq
     (And.intro hFirstWF (And.intro hSecondWF hEquiv)))
 
-/-! ## Stage 5 — THE SCHEMA SOUNDNESS THEOREMS (HALF A, T1)
+/-! ## Stage 5 — the schema soundness theorems (T1)
 
 One `IhsConvBundle` theorem per scalar-indexed census family, quantified over
 the scalar argument(s).  Diagram shapes are the committed seed row shapes with
 the instance scalars replaced by variables (verified against the seed by the
 Stage-8 instance pins). -/
 
-/-- A12 product schema, sound at EVERY scalar pair:
+/-- A12 product schema, sound at every scalar pair:
 `scalarBox k1 ; scalarBox k2  =  scalarBox (k1 * k2)` (1->1). -/
 theorem ihzProductSchemaBundle (firstScalar secondScalar : QnfRat) :
     IhsConvBundle
@@ -1011,7 +1010,7 @@ theorem ihzProductSchemaBundle (firstScalar secondScalar : QnfRat) :
           refine Exists.intro (qnfMul inputCoeff firstScalar) (And.intro rfl ?_)
           rw [hBoth.right, qnfMulAssoc inputCoeff firstScalar secondScalar]
 
-/-- A12op product-mirror schema, sound at EVERY scalar pair:
+/-- A12op product-mirror schema, sound at every scalar pair:
 `k1-mirror ; k2-mirror  =  (k1 * k2)-mirror` (1->1). -/
 theorem ihzProductMirrorSchemaBundle (firstScalar secondScalar : QnfRat) :
     IhsConvBundle
@@ -1057,7 +1056,7 @@ theorem ihzProductMirrorSchemaBundle (firstScalar secondScalar : QnfRat) :
             [qnfMul outputCoeff secondScalar] codVec).mpr
             (Exists.intro outputCoeff (And.intro rfl hBoth.right))
 
-/-- A13 scalar-through-add schema, sound at EVERY scalar:
+/-- A13 scalar-through-add schema, sound at every scalar:
 `add ; k  =  (k (x) k) ; add` (2->1). -/
 theorem ihzThroughAddSchemaBundle (scalarValue : QnfRat) :
     IhsConvBundle
@@ -1134,7 +1133,7 @@ theorem ihzThroughAddSchemaBundle (scalarValue : QnfRat) :
                           rw [hAdd.right, hFirstScaled, hSecondScaled,
                             qnfMulRightDistrib firstIn secondIn scalarValue]
 
-/-- A13op scalar-through-coadd schema, sound at EVERY scalar:
+/-- A13op scalar-through-coadd schema, sound at every scalar:
 `k-mirror ; coadd  =  coadd ; (k-mirror (x) k-mirror)` (1->2). -/
 theorem ihzThroughCoaddSchemaBundle (scalarValue : QnfRat) :
     IhsConvBundle
@@ -1210,7 +1209,7 @@ theorem ihzThroughCoaddSchemaBundle (scalarValue : QnfRat) :
                             (Exists.intro firstOut (Exists.intro secondOut
                               (And.intro rfl hMirrorPair.right)))
 
-/-- A14 zero-absorption schema, sound at EVERY scalar:
+/-- A14 zero-absorption schema, sound at every scalar:
 `zero ; k  =  zero` (0->1); diagram-level companion of the committed
 raw-compose `ihsScalarZeroAbsorbGeneral`. -/
 theorem ihzZeroAbsorbSchemaBundle (scalarValue : QnfRat) :
@@ -1243,7 +1242,7 @@ theorem ihzZeroAbsorbSchemaBundle (scalarValue : QnfRat) :
       refine Exists.intro qnfZero (And.intro rfl ?_)
       rw [hBoth.right, grqQnfMulZeroLeft scalarValue]
 
-/-- A14op cozero-absorption schema, sound at EVERY scalar:
+/-- A14op cozero-absorption schema, sound at every scalar:
 `k-mirror ; cozero  =  cozero` (1->0); diagram-level companion of the committed
 raw-compose `ihsScalarCozeroAbsorbGeneral`. -/
 theorem ihzCozeroAbsorbSchemaBundle (scalarValue : QnfRat) :
@@ -1276,7 +1275,7 @@ theorem ihzCozeroAbsorbSchemaBundle (scalarValue : QnfRat) :
       rw [hBoth.left, grqQnfMulZeroLeft scalarValue]
     · exact (ihzCozeroStateSpec [qnfZero] codVec).mpr (And.intro rfl hBoth.right)
 
-/-- A15 scalar-through-copy schema, sound at EVERY scalar:
+/-- A15 scalar-through-copy schema, sound at every scalar:
 `k ; copy  =  copy ; (k (x) k)` (1->2). -/
 theorem ihzThroughCopySchemaBundle (scalarValue : QnfRat) :
     IhsConvBundle
@@ -1336,7 +1335,7 @@ theorem ihzThroughCopySchemaBundle (scalarValue : QnfRat) :
                         (And.intro rfl ?_)
                       rw [hPair.right, hFirstIs, hSecondIs]
 
-/-- A15op scalar-through-cocopy schema, sound at EVERY scalar:
+/-- A15op scalar-through-cocopy schema, sound at every scalar:
 `cocopy ; k-mirror  =  (k-mirror (x) k-mirror) ; cocopy` (2->1). -/
 theorem ihzThroughCocopySchemaBundle (scalarValue : QnfRat) :
     IhsConvBundle
@@ -1399,7 +1398,7 @@ theorem ihzThroughCocopySchemaBundle (scalarValue : QnfRat) :
                       refine Exists.intro throughCoeff (And.intro rfl ?_)
                       rw [hCocopy.right]
 
-/-- A16 discard-absorption schema, sound at EVERY scalar:
+/-- A16 discard-absorption schema, sound at every scalar:
 `k ; discard  =  discard` (1->0). -/
 theorem ihzDiscardAbsorbSchemaBundle (scalarValue : QnfRat) :
     IhsConvBundle
@@ -1435,8 +1434,8 @@ theorem ihzDiscardAbsorbSchemaBundle (scalarValue : QnfRat) :
             (Exists.intro (qnfMul inputCoeff scalarValue)
               (And.intro rfl hBoth.right))
 
-/-- A16op unit-absorption schema, sound at EVERY scalar:
-`blackunit ; k-mirror  =  blackunit` (0->1); holds for ALL k including 0
+/-- A16op unit-absorption schema, sound at every scalar:
+`blackunit ; k-mirror  =  blackunit` (0->1); holds for all k including 0
 (the composite is the full line either way). -/
 theorem ihzUnitAbsorbSchemaBundle (scalarValue : QnfRat) :
     IhsConvBundle
@@ -1474,7 +1473,7 @@ theorem ihzUnitAbsorbSchemaBundle (scalarValue : QnfRat) :
             [qnfMul outputCoeff scalarValue] codVec).mpr
             (Exists.intro outputCoeff (And.intro rfl hBoth.right))
 
-/-- A18 sum schema, sound at EVERY scalar pair:
+/-- A18 sum schema, sound at every scalar pair:
 `copy ; (k1 (x) k2) ; add  =  scalarBox (k1 + k2)` (1->1). -/
 theorem ihzSumSchemaBundle (firstScalar secondScalar : QnfRat) :
     IhsConvBundle
@@ -1551,7 +1550,7 @@ theorem ihzSumSchemaBundle (firstScalar secondScalar : QnfRat) :
             (Exists.intro (qnfMul inputCoeff secondScalar) (And.intro rfl ?_))
           rw [hBoth.right, qnfMulLeftDistrib inputCoeff firstScalar secondScalar]
 
-/-- A18op sum-mirror schema, sound at EVERY scalar pair:
+/-- A18op sum-mirror schema, sound at every scalar pair:
 `coadd ; (k1-mirror (x) k2-mirror) ; cocopy  =  (k1 + k2)-mirror` (1->1). -/
 theorem ihzSumMirrorSchemaBundle (firstScalar secondScalar : QnfRat) :
     IhsConvBundle
@@ -1629,9 +1628,9 @@ theorem ihzSumMirrorSchemaBundle (firstScalar secondScalar : QnfRat) :
         · exact (ihzCocopySpec [outputCoeff, outputCoeff] codVec).mpr
             (Exists.intro outputCoeff (And.intro rfl hBoth.right))
 
-/-- I1 forward-cancel schema, sound at EVERY NONZERO scalar:
+/-- I1 forward-cancel schema, sound at every nonzero scalar:
 `k ; k-mirror  =  id` (1->1).  The nonzero side condition is exactly the
-census pitfall (b): at `k = 0` the composite is the total relation, NOT the
+census pitfall (b): at `k = 0` the composite is the total relation, not the
 identity, so the hypothesis is load-bearing. -/
 theorem ihzForwardCancelSchemaBundle (scalarValue : QnfRat)
     (hNonzero : scalarValue ≠ qnfZero) :
@@ -1676,8 +1675,8 @@ theorem ihzForwardCancelSchemaBundle (scalarValue : QnfRat)
             [qnfMul throughCoeff scalarValue] codVec).mpr
             (Exists.intro throughCoeff (And.intro rfl hBoth.right))
 
-/-- I2 backward-cancel schema, sound at EVERY NONZERO scalar:
-`k-mirror ; k  =  id` (1->1).  The backward direction is where the FIELD
+/-- I2 backward-cancel schema, sound at every nonzero scalar:
+`k-mirror ; k  =  id` (1->1).  The backward direction is where the field
 structure fires: recovering the witness needs `qnfInv` (over a mere PID this
 instance family shrinks to the units). -/
 theorem ihzBackwardCancelSchemaBundle (scalarValue : QnfRat)
@@ -1732,11 +1731,11 @@ theorem ihzBackwardCancelSchemaBundle (scalarValue : QnfRat)
             (And.intro rfl ?_)
           rw [hBoth.right, hRecover throughCoeff]
 
-/-! ## Stage 6 — THE SCHEMA ROW MOVES (T1)
+/-! ## Stage 6 — the schema row moves (T1)
 
-SCHEMA CENSUS (verbatim against the seed census on
-`ihsCompletenessStatement`, section 2; every scalar-indexed family of BSZ
-Definition 6.1 whose committed row is an INSTANCE):
+Schema census (against the seed census in `ihsCompletenessStatement`; every
+scalar-indexed family of BSZ Definition 6.1 whose committed row is an
+instance):
 
   constructor              census family  subsumed committed row(s)
   ------------------------------------------------------------------
@@ -1755,14 +1754,14 @@ Definition 6.1 whose committed row is an INSTANCE):
   forwardCancelSchema      I1 (l /= 0)    IhsRowTag.forwardCancel   (l=2)
   backwardCancelSchema     I2 (l /= 0)    IhsRowTag.backwardCancel  (l=2)
 
-NOT schemas (single-point members of the scalar family, committed rows cover
+Not schemas (single-point members of the scalar family, committed rows cover
 them exactly): A11/A11op (`scalar 1 = id`, k pinned to 1), A17/A17op
 (`scalar 0 = discard;zero`, k pinned to 0).  Everything else of the census
 (the scalar-free A1-A10 + ops + I3-I8 and the exchange move) rides in through
 the `whiskerMove` embedding arm. -/
 
 /-- A window move for the schema congruence: any committed whisker window move
-(all 46 seed rows + the layer split), or one of the fourteen scalar SCHEMAS at
+(all 46 seed rows + the layer split), or one of the fourteen scalar schemas at
 arbitrary `QnfRat` scalars (census table in the stage docstring). -/
 inductive IhzRowMove : IhsDiagram -> IhsDiagram -> Prop where
   | whiskerMove {firstWindow secondWindow : IhsDiagram}
@@ -1867,7 +1866,7 @@ theorem ihzRowMoveOfSeedRow (tag : IhsRowTag) :
     IhzRowMove (ihsRowLhs tag) (ihsRowRhs tag) :=
   IhzRowMove.whiskerMove (IhwWindowMove.row tag)
 
-/-- SOUNDNESS OF EVERY SCHEMA ROW MOVE (bundle form): the committed arms by
+/-- Soundness of every schema row move (bundle form): the committed arms by
 the committed bundles, the fourteen schemas by their quantified theorems. -/
 theorem ihzRowMoveBundle {firstWindow secondWindow : IhsDiagram}
     (hMove : IhzRowMove firstWindow secondWindow) :
@@ -1901,7 +1900,7 @@ theorem ihzRowMoveBundle {firstWindow secondWindow : IhsDiagram}
 
 The committed `IhwStep.pad` shape, re-run over `IhzRowMove` windows.  The pad
 soundness engine is factored out as `ihzPadBundle` — the committed
-`ihwStepBundle` body abstracted over the window bundle (so ANY sound window
+`ihwStepBundle` body abstracted over the window bundle (so any sound window
 relation pads soundly; `IhwStep`'s own soundness is the `ihwWindowMoveBundle`
 instance of the same argument). -/
 
@@ -2070,7 +2069,7 @@ theorem ihzStepBundle {firstDiagram secondDiagram : IhsDiagram}
       exact ihzPadBundle contextSource leftWires rightWires beforeLayers
         afterLayers (ihzRowMoveBundle hMove) hBeforeWF hBeforeCod hAfterWF
 
-/-- **THE SCHEMA WHISKER CONGRUENCE**: padded `IhzRowMove` steps, reflexivity
+/-- The schema whisker congruence: padded `IhzRowMove` steps, reflexivity
 on well-formed diagrams, symmetry, transitivity — `IhwConv` widened by the
 fourteen scalar schemas. -/
 inductive IhzConv : IhsDiagram -> IhsDiagram -> Prop where
@@ -2086,7 +2085,7 @@ inductive IhzConv : IhsDiagram -> IhsDiagram -> Prop where
       (hSecond : IhzConv secondDiagram thirdDiagram) :
       IhzConv firstDiagram thirdDiagram
 
-/-- **SOUNDNESS of the schema congruence** (the full seed bundle). -/
+/-- Soundness of the schema congruence (the full seed bundle). -/
 theorem ihzConvSound {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhzConv firstDiagram secondDiagram) :
     IhsConvBundle firstDiagram secondDiagram := by
@@ -2100,7 +2099,7 @@ theorem ihzConvSound {firstDiagram secondDiagram : IhsDiagram}
   | trans _hFirst _hSecond firstBundle secondBundle =>
       exact ihsConvBundleTrans firstBundle secondBundle
 
-/-- THE REFUTATION BRIDGE at the schema level: convertibility forces the
+/-- The refutation bridge at the schema level: convertibility forces the
 executable span decision to fire `true` — a kernel `false` pin refutes. -/
 theorem ihzConvSpanEqB {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhzConv firstDiagram secondDiagram) :
@@ -2132,7 +2131,7 @@ theorem ihzMoveConv {firstWindow secondWindow : IhsDiagram}
       (ihzRowMoveBundle hMove).left.symm] at hStep
   exact IhzConv.step hStep
 
-/-- **THE EMBEDDING** `IhwConv -> IhzConv`: every committed whisker derivation
+/-- The embedding `IhwConv -> IhzConv`: every committed whisker derivation
 is a schema derivation (pad steps map arm-for-arm through `whiskerMove`). -/
 theorem ihzConvOfWhiskerConv {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhwConv firstDiagram secondDiagram) :
@@ -2150,7 +2149,7 @@ theorem ihzConvOfWhiskerConv {firstDiagram secondDiagram : IhsDiagram}
   | trans _hFirst _hSecond firstCarried secondCarried =>
       exact IhzConv.trans firstCarried secondCarried
 
-/-- The committed SEQUENTIAL congruence embeds end-to-end
+/-- The committed sequential congruence embeds end-to-end
 (`IhsConv -> IhwConv -> IhzConv`). -/
 theorem ihzConvOfSeedConv {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhsConv firstDiagram secondDiagram) :
@@ -2159,8 +2158,8 @@ theorem ihzConvOfSeedConv {firstDiagram secondDiagram : IhsDiagram}
 
 /-! ## Stage 8 — fresh-scalar fires (T3)
 
-The pins that prove the scalar-schema GAP IS CLOSED: `IhzConv` fires scalar
-rows at scalars NO committed row mentions (4, 1/2, 7 — the committed
+The pins that prove the scalar-schema gap is closed: `IhzConv` fires scalar
+rows at scalars no committed row mentions (4, 1/2, 7 — the committed
 instantiated set is {2, 3, 5, 6, -1, 0, 1}). -/
 
 /-- The fresh scalar 4 (not in the committed instantiated row set). -/
@@ -2169,7 +2168,7 @@ def ihzScalarFour : QnfRat := qnfOfInt 4
 /-- The fresh scalar 7 (not in the committed instantiated row set). -/
 def ihzScalarSeven : QnfRat := qnfOfInt 7
 
-/-- The fresh NON-INTEGER scalar 1/2, built through `qnfNormalize` — no
+/-- The fresh non-integer scalar 1/2, built through `qnfNormalize` — no
 committed cell carries a non-integer scalar anywhere in the seed. -/
 def ihzScalarHalf : QnfRat :=
   qnfNormalize { numerator := 1, denominatorPredecessor := 1 }
@@ -2182,10 +2181,10 @@ theorem ihzFreshProductComputes :
 theorem ihzScalarFourIsNonzero : ihzScalarFour ≠ qnfZero :=
   ihqQnfNeZeroOfBeqZeroFalse rfl
 
-/-- **THE GAP-CLOSED FIRE** (A12 at fresh scalars): `scalarBox 4 ; scalarBox
-(1/2)` converts to `scalarBox 2`.  NO committed row mentions 4 or 1/2 — under
-`IhwConv` the committed instantiated rows can never fire at these scalars
-(the brick-4 route-note item (2) gap); the product SCHEMA fires directly. -/
+/-- The gap-closed fire (A12 at fresh scalars): `scalarBox 4 ; scalarBox
+(1/2)` converts to `scalarBox 2`.  No committed row mentions 4 or 1/2 — under
+`IhwConv` the committed instantiated rows can never fire at these scalars, so
+the product schema fires directly. -/
 theorem ihzFireFreshScalarProduct :
     IhzConv
       { sourceArity := 1
@@ -2197,8 +2196,8 @@ theorem ihzFireFreshScalarProduct :
   exact hMove
 
 set_option maxHeartbeats 4000000 in
-/-- Kernel span cross-check for the fresh product fire: at CLOSED scalars the
-brick-1 decision procedure independently confirms the schema instance. -/
+/-- Kernel span cross-check for the fresh product fire: at closed scalars the
+decision procedure independently confirms the schema instance. -/
 theorem ihzFireFreshScalarProductSpanPin :
     ihqSpanEqB
       (ihsDiagramDenote
@@ -2209,7 +2208,7 @@ theorem ihzFireFreshScalarProductSpanPin :
         { sourceArity := 1, layers := [[IhsCell.scalarBox ihsScalarTwo]] })
       = true := rfl
 
-/-- THE ANTIPODE-FAMILY FIRE at a fresh scalar (I1 at l = 4):
+/-- The antipode-family fire at a fresh scalar (I1 at l = 4):
 `scalarBox 4 ; scalarBoxMirror 4` converts to the wire. -/
 theorem ihzFireFreshForwardCancel :
     IhzConv
@@ -2230,29 +2229,29 @@ theorem ihzFireFreshForwardCancelSpanPin :
       (ihsDiagramDenote { sourceArity := 1, layers := [[IhsCell.wire]] })
       = true := rfl
 
-/-- The scalar-4 box as a diagram (fresh-scalar FALSE-control carrier). -/
+/-- The scalar-4 box as a diagram (fresh-scalar false-control carrier). -/
 def ihzScalarFourDiagram : IhsDiagram :=
   { sourceArity := 1, layers := [[IhsCell.scalarBox ihzScalarFour]] }
 
-/-- The scalar-7 box as a diagram (fresh-scalar FALSE-control carrier). -/
+/-- The scalar-7 box as a diagram (fresh-scalar false-control carrier). -/
 def ihzScalarSevenDiagram : IhsDiagram :=
   { sourceArity := 1, layers := [[IhsCell.scalarBox ihzScalarSeven]] }
 
-/-- FALSE CONTROL at fresh scalars: 4 and 7 denote different lines in Q^2. -/
+/-- False control at fresh scalars: 4 and 7 denote different lines in Q^2. -/
 theorem ihzFireFreshScalarsSpanDistinct :
     ihqSpanEqB (ihsDiagramDenote ihzScalarFourDiagram)
       (ihsDiagramDenote ihzScalarSevenDiagram) = false := rfl
 
-/-- NEGATIVE DIRECTION at fresh scalars: even under the full schema
-congruence, scalar 4 is NOT convertible to scalar 7. -/
+/-- Negative direction at fresh scalars: even under the full schema
+congruence, scalar 4 is not convertible to scalar 7. -/
 theorem ihzFireFreshScalarsNotConv :
     Not (IhzConv ihzScalarFourDiagram ihzScalarSevenDiagram) :=
   fun hConv =>
     Bool.noConfusion ((ihzConvSpanEqB hConv).symm.trans ihzFireFreshScalarsSpanDistinct)
 
-/-! ### Instance sanity pins: the schemas subsume the committed rows byte-for-byte -/
+/-! ### Instance sanity pins: the schemas subsume the committed rows -/
 
-/-- At the committed instance (2, 3) the product schema's boundary diagrams ARE
+/-- At the committed instance (2, 3) the product schema's boundary diagrams are
 the committed A12 row's diagrams (`qnfMul 2 3` computes to the committed 6). -/
 theorem ihzProductSchemaInstanceIsSeedRow :
     ({ sourceArity := 1
@@ -2260,7 +2259,7 @@ theorem ihzProductSchemaInstanceIsSeedRow :
         : IhsDiagram)
       = ihsRowRhs IhsRowTag.scalarProduct := rfl
 
-/-- At the committed instance (2, 3) the sum schema's right diagram IS the
+/-- At the committed instance (2, 3) the sum schema's right diagram is the
 committed A18 row's right diagram (`qnfAdd 2 3` computes to the committed 5). -/
 theorem ihzSumSchemaInstanceIsSeedRow :
     ({ sourceArity := 1
@@ -2268,7 +2267,7 @@ theorem ihzSumSchemaInstanceIsSeedRow :
         : IhsDiagram)
       = ihsRowRhs IhsRowTag.scalarSum := rfl
 
-/-- At the committed instance the mirror-product schema's right diagram IS the
+/-- At the committed instance the mirror-product schema's right diagram is the
 committed A12op row's right diagram. -/
 theorem ihzProductMirrorSchemaInstanceIsSeedRow :
     ({ sourceArity := 1
@@ -2276,13 +2275,13 @@ theorem ihzProductMirrorSchemaInstanceIsSeedRow :
         : IhsDiagram)
       = ihsRowRhs IhsRowTag.scalarProductOp := rfl
 
-/-! ## Stage 9 — the canonical NF chooser (HALF B, T4 matrix side)
+/-! ## Stage 9 — the canonical NF chooser (T4 matrix side)
 
-The BSZ Theorem 6.4 normal form factors every relation through a SPAN of
-matrices; the matrix-side representative must be CANONICAL.  The chooser:
-`ihqRref` (brick 1) followed by pivot normalization through `qnfInv` —
-leading-ONE reduced row echelon form, with span preservation both ways and
-the kernel decision cross-check. -/
+The BSZ Theorem 6.4 normal form factors every relation through a span of
+matrices; the matrix-side representative must be canonical.  The chooser:
+`ihqRref` followed by pivot normalization through `qnfInv` — leading-one
+reduced row echelon form, with span preservation both ways and the kernel
+decision cross-check. -/
 
 /-- Normalize one row to leading coefficient one (identity on the zero row). -/
 def ihzLeadingOneRow (row : List QnfRat) : List QnfRat :=
@@ -2319,7 +2318,7 @@ theorem ihzLeadingOneRowLength (row : List QnfRat) :
       rw [ihzLeadingOneRowSome row leadPosition hLead]
       exact ihqRowScaleLength (qnfInv (ihqGetCoeff row leadPosition)) row
 
-/-- THE UNIT-PIVOT INVARIANT: after normalization the lead coefficient IS the
+/-- The unit-pivot invariant: after normalization the lead coefficient is the
 canonical one (the leading-one shape `zxpRrefUniquenessStatement`'s F2
 precedent could not even express — over F2 every pivot is already 1). -/
 theorem ihzLeadingOneRowUnitPivot (row : List QnfRat) (leadPosition : Nat)
@@ -2331,7 +2330,7 @@ theorem ihzLeadingOneRowUnitPivot (row : List QnfRat) (leadPosition : Nat)
     ihqGetCoeffScale (qnfInv (ihqGetCoeff row leadPosition)) row leadPosition]
   exact qnfInvMulCancels hNonzero
 
-/-- **THE CANONICAL CHOOSER**: leading-one reduced row echelon form. -/
+/-- The canonical chooser: leading-one reduced row echelon form. -/
 def ihzCanonicalRows (rows : List (List QnfRat)) : List (List QnfRat) :=
   ihqMapRows ihzLeadingOneRow (ihqRref rows)
 
@@ -2355,7 +2354,7 @@ theorem ihzLeadingOneRowInSpan {width : Nat} {rows : List (List QnfRat)}
       exact ihqMemSpanScaleClosed (qnfInv (ihqGetCoeff row leadPosition))
         (ihqMemSpanElem hAll hRow)
 
-/-- A source row is recovered from its normalization by the lead scale — THE
+/-- A source row is recovered from its normalization by the lead scale — the
 field step (needs `qnfInv`; the zero row recovers itself). -/
 theorem ihzRowInLeadingOneSpan {width : Nat} {rows : List (List QnfRat)}
     (hMappedAll : IhqAllWidth width (ihqMapRows ihzLeadingOneRow rows))
@@ -2380,7 +2379,7 @@ theorem ihzRowInLeadingOneSpan {width : Nat} {rows : List (List QnfRat)}
         (ihqMemSpanElem hMappedAll
           (ihqMapRowsMemIntro ihzLeadingOneRow rows hRow))
 
-/-- **SPAN PRESERVATION of the canonical chooser**, both directions. -/
+/-- Span preservation of the canonical chooser, both directions. -/
 theorem ihzCanonicalRowsSpanIff {width : Nat} (rows : List (List QnfRat))
     (hAll : IhqAllWidth width rows) (vector : List QnfRat) :
     IhqMemSpan width (ihzCanonicalRows rows) vector
@@ -2402,7 +2401,7 @@ theorem ihzCanonicalRowsSpanIff {width : Nat} (rows : List (List QnfRat))
     exact ihzRowInLeadingOneSpan hCanonAll hSource
 
 /-- The kernel decision cross-check: the chooser's output span-equals its
-input, as an `ihqSpanEqB` fire (via completeness — NOT `rfl`; the chooser is
+input, as an `ihqSpanEqB` fire (via completeness — not `rfl`; the chooser is
 symbolic here). -/
 theorem ihzCanonicalRowsSpanEqB {width : Nat} (rows : List (List QnfRat))
     (hAll : IhqAllWidth width rows) :
@@ -2416,12 +2415,12 @@ representative `[[1, 3]]`. -/
 theorem ihzFireCanonicalRowsExample :
     ihzCanonicalRows [[ihsScalarTwo, ihsScalarSix]] = [[qnfOne, ihsScalarThree]] := rfl
 
-/-! ## Stage 10 — the zero-relation normal form (HALF B, the diagram base case)
+/-! ## Stage 10 — the zero-relation normal form (the diagram base case)
 
 The `rows = []` (zero-subspace) corner of the BSZ factorized shape as an
 actual diagram: a cozero fan pinning every input at 0 followed by a zero fan
-pinning every output at 0 — proven to denote the EMPTY generator matrix at
-THEOREM level for ARBITRARY boundaries. -/
+pinning every output at 0 — proven to denote the empty generator matrix at
+theorem level for arbitrary boundaries. -/
 
 /-- One `whiteCounit` per input strand. -/
 def ihzCozeroFanCells : Nat -> List IhsCell
@@ -2463,7 +2462,7 @@ theorem ihzZeroFanCodArity : (strandCount : Nat) ->
       rw [ihzZeroFanCodArity strandPred]
       exact Nat.add_comm 1 strandPred
 
-/-- The cozero fan's generator matrix is EMPTY (each cell contributes no rows). -/
+/-- The cozero fan's generator matrix is empty (each cell contributes no rows). -/
 theorem ihzCozeroFanDenoteNil : (strandCount : Nat) ->
     ihsLayerDenote (ihzCozeroFanCells strandCount) = []
   | 0 => rfl
@@ -2474,7 +2473,7 @@ theorem ihzCozeroFanDenoteNil : (strandCount : Nat) ->
       rw [ihzCozeroFanDenoteNil strandPred]
       exact rfl
 
-/-- The zero fan's generator matrix is EMPTY. -/
+/-- The zero fan's generator matrix is empty. -/
 theorem ihzZeroFanDenoteNil : (strandCount : Nat) ->
     ihsLayerDenote (ihzZeroFanCells strandCount) = []
   | 0 => rfl
@@ -2531,7 +2530,7 @@ theorem ihzZeroRelationDiagramDenoteShape (domWidth codWidth : Nat) :
       = ihsLayerCodArity (ihzZeroFanCells codWidth) from rfl,
     ihzZeroFanCodArity codWidth]
 
-/-- **THE BASE-CASE DENOTATION THEOREM** (arbitrary boundaries): the zero NF
+/-- The base-case denotation theorem (arbitrary boundaries): the zero NF
 diagram denotes exactly the empty generator matrix's relation. -/
 theorem ihzZeroRelationDiagramDenotesNil (domWidth codWidth : Nat) :
     IhsRelEquiv domWidth codWidth
@@ -2563,22 +2562,21 @@ theorem ihzFireZeroRelationDiagramSpanPin :
 
 /-! ## Stage 11 — statements, walls, markers (T5) -/
 
-/-- THE NORMAL-FORM CARRIER STATEMENT (BSZ Theorem 6.4 span-of-matrices
+/-- The normal-form carrier statement (BSZ Theorem 6.4 span-of-matrices
 factorization, diagram side): every generator matrix at every boundary is
-denoted by SOME well-formed diagram.
+denoted by some well-formed diagram.
 
-OWNER FALSE — NOT PROVEN, NOT COMMISSIONED THIS BRICK.  What IS shipped:
-(i) the zero-relation base case `ihzZeroRelationDiagram` +
-`ihzZeroRelationDiagramDenotesNil` (rows = [], arbitrary boundaries);
-(ii) the canonical matrix-side chooser `ihzCanonicalRows` with span
-preservation and the unit-pivot invariant.  THE RESIDUAL (the honest wall):
-the TOTAL matrix -> diagram compiler in the factorized shape — a copy fan
-(`blackComult` tree) per input, a `scalarBox`-entry grid wired by A18-style
-sums, an add fan (`whiteMult` tree) per output — plus its denotation
-induction through `ihwTensorSpec`/`ihqComposeSpec` over rows and columns;
-this is the ZX-arc's matrix-reification analogue and is a BUILD, not a wall
-of principle.  Brick 5 should synthesize the compiler by recursion on the
-row list, reusing the Stage-1 specs as the per-entry atoms. -/
+Stated, not proven.  What is shipped: (i) the zero-relation base case
+`ihzZeroRelationDiagram` + `ihzZeroRelationDiagramDenotesNil` (rows = [],
+arbitrary boundaries); (ii) the canonical matrix-side chooser
+`ihzCanonicalRows` with span preservation and the unit-pivot invariant.  The
+residual: the total matrix -> diagram compiler in the factorized shape — a
+copy fan (`blackComult` tree) per input, a `scalarBox`-entry grid wired by
+A18-style sums, an add fan (`whiteMult` tree) per output — plus its denotation
+induction through `ihwTensorSpec`/`ihqComposeSpec` over rows and columns; this
+is the ZX-arc's matrix-reification analogue and is a build, not a wall of
+principle, closed by recursion on the row list reusing the Stage-1 specs as
+the per-entry atoms. -/
 def ihzNormalFormStatement : Prop :=
   (domWidth codWidth : Nat) -> (rows : List (List QnfRat)) ->
   IhqAllWidth (domWidth + codWidth) rows ->
@@ -2588,25 +2586,22 @@ def ihzNormalFormStatement : Prop :=
       /\ IhsDiagramWF nfDiagram
       /\ IhsRelEquiv domWidth codWidth (ihsDiagramDenote nfDiagram) rows
 
-/-- THE REACHABILITY / COMPLETENESS STATEMENT at the schema congruence:
+/-- The reachability / completeness statement at the schema congruence:
 span-equal well-formed diagrams on matching boundaries are `IhzConv`-related
 (equivalently: every WF diagram reaches the NF of its denotation).
 
-OWNER FALSE — NOT PROVEN, NOT COMMISSIONED THIS BRICK.  What changed since
-the seed's `ihsCompletenessStatement`: blockers (1) [no whisker congruence]
-and (2) [instantiated-scalar-only rows] are now BOTH discharged —
-`ihwHasWhiskerCongruence` (brick 3) and `ihzHasScalarSchemas` (this brick)
-— so this statement is the FIRST version whose congruence is plausibly
-complete.  THE RESIDUAL for brick 5: (a) the NF carrier
-(`ihzNormalFormStatement` above); (b) the REACHABILITY INDUCTION — every WF
+Stated, not proven.  What changed since the seed's `ihsCompletenessStatement`:
+the two blockers — no whisker congruence, and instantiated-scalar-only rows —
+are now both discharged, since the presentation carries the whisker-context
+congruence and the fourteen scalar schemas, so this is the first version whose
+congruence is plausibly complete.  The residual: (a) the NF carrier
+(`ihzNormalFormStatement` above); (b) the reachability induction — every WF
 diagram `IhzConv`-reduces to the factorized shape: an absorption-style
-induction over layers (the ZX-arc analogue) that pushes each generator
-through the accumulated span form via the A8/I3/I4 Frobenius-bimonoid moves
-and the fourteen schemas, exactly the census order the seed docstring
-prescribes: census -> gate-refutation -> induction.  The committed
-owner-false seed markers (`ihsCompletenessIsProven`,
-`ihsCompletenessStatement`) stay byte-intact; this statement SUPERSEDES them
-by extension. -/
+induction over layers (the ZX-arc analogue) that pushes each generator through
+the accumulated span form via the A8/I3/I4 Frobenius-bimonoid moves and the
+fourteen schemas, in the census order the seed prescribes
+(census -> gate-refutation -> induction).  This statement extends the seed's
+`ihsCompletenessStatement`. -/
 def ihzReachabilityStatement : Prop :=
   (firstDiagram secondDiagram : IhsDiagram) ->
     IhsDiagramWF firstDiagram -> IhsDiagramWF secondDiagram ->
@@ -2616,31 +2611,22 @@ def ihzReachabilityStatement : Prop :=
       (ihsDiagramDenote firstDiagram) (ihsDiagramDenote secondDiagram) ->
     IhzConv firstDiagram secondDiagram
 
-/-- DECIDED — THE SCALAR-SCHEMA ADJUDICATION EXECUTED (supersedes the
-brick-4 route-note item (2) on the committed `ihwHasWhiskerCongruence`,
-which stays byte-intact): all fourteen scalar-indexed census families ship
-as PARAMETERIZED row moves (`IhzRowMove`) with THEOREM-level span soundness
-quantified over the scalars, the pad congruence `IhzConv` fires them in
+/-- This brick ships the fourteen scalar-indexed census families as
+parameterized row moves (`IhzRowMove`) with theorem-level span soundness
+quantified over the scalars: the pad congruence `IhzConv` fires them in
 whisker context, `IhwConv` embeds (`ihzConvOfWhiskerConv`), and the
 fresh-scalar fires (`ihzFireFreshScalarProduct` at 4 and 1/2,
-`ihzFireFreshForwardCancel` at 4, the 4-vs-7 FALSE control) pin that the
-committed instantiated-scalar gap is CLOSED. -/
+`ihzFireFreshForwardCancel` at 4, the 4-vs-7 false control) pin that the
+committed instantiated-scalar gap is closed.  It also ships the canonical
+matrix-side NF chooser `ihzCanonicalRows` (leading-one RREF via `ihqRref` and
+`qnfInv` pivots) with width preservation, span preservation both ways, the
+unit-pivot invariant, the `ihqSpanEqB` cross-check, and a kernel `rfl` fire. -/
 def ihzHasScalarSchemas : Bool := true
 
-/-- DECIDED: the canonical matrix-side NF chooser (`ihzCanonicalRows` —
-leading-one RREF via `ihqRref` + `qnfInv` pivots) ships with width
-preservation, span preservation both ways, the unit-pivot invariant, the
-`ihqSpanEqB` cross-check, and a kernel `rfl` fire. -/
-def ihzHasCanonicalChooser : Bool := true
-
-/-- OWNER FALSE — the full BSZ span-of-matrices DIAGRAM carrier is NOT
-shipped; only the zero-relation base case is (see `ihzNormalFormStatement`
-for the precise residual: the total matrix -> diagram compiler). -/
-def ihzHasNormalFormCarrier : Bool := false
-
-/-- OWNER FALSE — reachability/completeness of `IhzConv` is NOT proven (see
-`ihzReachabilityStatement` for the residual: NF carrier + absorption-style
-reachability induction). -/
+/-- Reachability/completeness of `IhzConv` is not proven: span-equal
+well-formed diagrams on matching boundaries are not yet shown
+`IhzConv`-related (see `ihzReachabilityStatement` for the residual — the NF
+carrier plus the absorption-style reachability induction). -/
 def ihzReachabilityIsProven : Bool := false
 
 end FX1Poly.ComputerAlgebra

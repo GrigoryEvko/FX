@@ -1,33 +1,19 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialGcd
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialCoeffBounds
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialNilCascade — the zero-polynomial nil cascade
-(the seventeenth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialNilCascade — the zero-polynomial nil cascade
 
-The nil-preservation primitives the fuel-adequacy → true-fixed-point wiring needs at its zero-polynomial
-edge: the coefficient ↔ trims-to-nil bridge in both directions, the vanishing of a zero-coefficient
-monomial's products, and the fact that pseudo-dividing the **zero polynomial** yields a zero remainder for
-every fuel.
+The nil-preservation primitives the fuel-adequacy wiring needs at its zero-polynomial edge:
 
-## What is PROVEN
-
-  * `polyTrimNilOfAllCoeffZero`: `(∀ pos, polyCoeff coeffs pos = 0) → polyTrim coeffs = []` — all-zero
-    coefficients trim away.
-  * `polyCoeffZeroOfTrimNil`: `polyTrim coeffs = [] → polyCoeff coeffs pos = 0` — the converse (a
-    trimmed-away polynomial has no coefficients), off r18's `polyCoeffZeroFromTrimLength`.
-  * `polyMulZeroMonomialCoeff`: `polyCoeff (polyMul (polyMonomial 0 degree) divisor) pos = 0` — a
-    zero-coefficient monomial annihilates any product.
+  * `polyTrimNilOfAllCoeffZero`: `(∀ pos, polyCoeff coeffs pos = 0) → polyTrim coeffs = []`.
+  * `polyCoeffZeroOfTrimNil`: the converse, off `polyCoeffZeroFromTrimLength`.
+  * `polyMulZeroMonomialCoeff`: a zero-coefficient monomial annihilates any product.
   * `polyPseudoRemZeroDividendTrimsNil`: `polyTrim dividend = [] → polyTrim (polyPseudoRem fuel divisor
-    dividend) = []` — pseudo-dividing the zero polynomial leaves a zero remainder (the recursion's step keeps
-    the dividend a zero polynomial, so it never escapes nil).
+    dividend) = []` — pseudo-dividing the zero polynomial leaves a zero remainder for every fuel.
 
-## Zero-axiom design
-
-Structural recursions on the coefficient list / degree / fuel; the coefficient homomorphisms
-(`polyCoeffAdd`/`Scale`/`Sub`), `polyCoeffZeroFromTrimLength` (r18), and `Int.decEq`-clean trimming.  No
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated
-in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialNilCascade.lean`.
--/
+Structural recursions on the coefficient list, degree, and fuel; the coefficient homomorphisms,
+`polyCoeffZeroFromTrimLength`, and `Int.decEq`-clean trimming.  Free of `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -56,7 +42,7 @@ theorem polyTrimNilOfAllCoeffZero : ∀ (coeffs : List Int),
       exact polyTrimConsZeroNil rest trimRestNil
 
 /-- **A trimmed-away polynomial has no coefficients.**  `polyTrim coeffs = [] → polyCoeff coeffs pos = 0`,
-off r18's `polyCoeffZeroFromTrimLength` with `(polyTrim coeffs).length = 0 ≤ pos`. -/
+off `polyCoeffZeroFromTrimLength` with `(polyTrim coeffs).length = 0 ≤ pos`. -/
 theorem polyCoeffZeroOfTrimNil (coeffs : List Int) (pos : Nat) (trimNil : polyTrim coeffs = []) :
     polyCoeff coeffs pos = 0 :=
   polyCoeffZeroFromTrimLength coeffs pos (by rw [trimNil]; exact Nat.zero_le pos)
@@ -140,11 +126,5 @@ theorem polyPseudoRemZeroDividendTrimsNil (divisor : List Int) :
 /-- Pseudo-dividing the zero polynomial `[0, 0]` by `x + 1` leaves a zero remainder at fuel 5 —
 `polyTrim (polyPseudoRem 5 [1, 1] [0, 0]) = []`. -/
 theorem polyPseudoRemZeroDividendGrounding : polyTrim (polyPseudoRem 5 [1, 1] [0, 0]) = [] := by decide
-
-/-- Marker: the ℤ[x] zero-polynomial nil cascade — the coefficient ↔ trims-to-nil bridge
-(`polyTrimNilOfAllCoeffZero` / `polyCoeffZeroOfTrimNil`), zero-monomial annihilation
-(`polyMulZeroMonomialCoeff`), and pseudo-dividing the zero polynomial leaves a zero remainder
-(`polyPseudoRemZeroDividendTrimsNil`) — the zero-polynomial edge primitives of the fuel-adequacy wiring. -/
-def fxIntPoly_hasZeroPolynomialNilCascade : Bool := true
 
 end FX1Poly.ComputerAlgebra

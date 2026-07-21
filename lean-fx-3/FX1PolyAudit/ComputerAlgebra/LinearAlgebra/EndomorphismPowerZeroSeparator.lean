@@ -1,19 +1,16 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.EndomorphismPowerZeroSeparator
 
-/-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/EndomorphismPowerZeroSeparator — zero-axiom gate
+/-! # EndomorphismPowerZeroSeparator — zero-axiom gate
 
-Per-declaration zero-axiom gate for the WP-ENDO r2 rank-sequence (power-vanishing) separator: the
+Per-declaration zero-axiom gate for the rank-sequence (power-vanishing) separator: the
 integer-cancellation lemmas, the matrix-power ladder, the witness transport/reflection of
-power-vanishing, the `EndomorphismDissimilarByRankSequence` predicate + its witness-refutation, the
-Jordan-block-size grounding instances, and the marker.
+power-vanishing, the `EndomorphismDissimilarByRankSequence` predicate and its witness-refutation, and
+the Jordan-block-size grounding instances.
 
 The design avoids abstract rank invariance: it transports power-vanishing across the concrete
-similarity WITNESS (`P · Q = d · I`, `Q · A · P = d · B`), so the separation is a per-input
-certificate matching the r1 contract.
-
-Confirms every gated declaration is free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
-`native_decide`, `omega`. -/
+similarity witness (`P · Q = d · I`, `Q · A · P = d · B`), so the separation is a per-input certificate.
+Confirms freedom from `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -51,8 +48,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismJordanTwoTwoVersusThreeOneSeparatedAtSquare
 #assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismJordanTwoTwoVersusThreeOneNoWitness
 #assert_no_axioms FX1Poly.ComputerAlgebra.endomorphismJordanThreeOneVersusTwoTwoNoWitness
-
--- The marker.
-#assert_no_axioms FX1Poly.ComputerAlgebra.fxEndo_hasRankSequenceSeparator
 
 end FX1PolyAudit

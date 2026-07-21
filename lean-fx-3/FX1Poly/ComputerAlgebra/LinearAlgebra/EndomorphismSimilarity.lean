@@ -1,48 +1,24 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.SetoidMatrixRing
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntFractionFree
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/EndomorphismSimilarity — the walking-endomorphism linear model
+/-! # EndomorphismSimilarity — the walking-endomorphism linear model
 
 The walking endomorphism is one object with one generating self-loop and no relations; its linear
-model over a field is a pair `(V, f : V -> V)`, i.e. on a chosen basis a square matrix `M`.  Two
-representations are isomorphic exactly when the matrices are **similar** (`M ~ N` iff `N = S⁻¹ M S`
-for some invertible `S`).  This file is the ComputerAlgebra-lane certificate producer for that
-classification, over the shipped multiplicative carrier `SetoidMatrix Int` (whose setoid at ℤ is
-plain `Eq`, so every check is an honest `Int` literal a reader can machine-check).
+model over a field is a square matrix `M` on a chosen basis, and two representations are isomorphic
+exactly when the matrices are similar (`N = S⁻¹ M S` for invertible `S`).  This file is the
+certificate producer for that classification over `SetoidMatrix Int`, whose setoid at ℤ is plain
+`Eq`, so every check is an integer literal.
 
-## The scaled-pair witness (the decidable route to ℚ-similarity)
+Similar integer matrices need not be integer-unimodular-conjugate (the conjugator lives over ℚ), and
+a ℚ matrix carrier is undecidable.  Clearing denominators once, a witness carries `(P, Q, d)` with
+`d ≠ 0` and the integer identities `P · Q = d · I` and `Q · (A · P) = d · B` (so `P⁻¹ A P = B` over
+ℚ).  The adjugate construction `Q = adj(P)`, `d = det(P)` shows this covers every ℚ-similar integer
+pair.  The lane contract is per-input: no general decision procedure is claimed.
 
-Similar INTEGER matrices need not be conjugate by an integer-unimodular matrix — the conjugator
-lives over ℚ.  Routing the checker through a ℚ matrix carrier is a trap: `RationalPair`'s setoid is a
-cross-multiplication relation, so windowed equality there is undecidable.  Instead we clear
-denominators once: a witness carries `(P, Q, d)` with `d : Int`, `d ≠ 0`, and the KERNEL-CHECKED
-integer identities
-
-  * `P · Q = d · I`  (so over ℚ, `P` is invertible with `P⁻¹ = Q / d`),
-  * `Q · (A · P) = d · B`  (so `P⁻¹ A P = (1/d)(Q A P) = B`).
-
-Soundness (checker holds ⇒ `A` and `B` are ℚ-similar) is the two lines above.  Completeness (every
-ℚ-similar integer pair admits such a witness) is the adjugate construction: take `P = d₀ · S`
-(`d₀` = common denominator of `S`), `Q = adj(P)`, `d = det(P) ≠ 0`; the adjugate identity gives
-`P · Q = det(P) · I` over ℤ.  So the scaled pair covers ALL ℚ-similar integer pairs — a strict
-generalization of the unimodular (`d = 1`) case.
-
-## Lane contract (inherited from #2137)
-
-The general Smith-driver totality was REFUTED (not walled) upstream; this lane successor inherits the
-**per-input** contract only: `WitnessesSimilarity` is an untrusted producer's obligation whose sole
-guarantee is the kernel-checked literal reductions on each shipped instance.  No general similarity
-DECISION procedure is claimed — only that each concrete witness/separator is machine-verified.
-
-## Zero-axiom design
-
-`agreeOnWindow` is a bounded double-`∀` over `Nat` with `<` guards plus `DecidableEq Int`, decided by
-`Nat.decidableBallLT` + `Int.decEq` — the exact `by decide` pattern the Smith `offDiagonalVanishes`
-field uses.  No `Nat.min` / `Nat.sub` appears inside any decided expression (those taint `decide`
-with `propext`).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or
-`omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/EndomorphismSimilarity.lean`.
--/
+Zero-axiom design: `agreeOnWindow` is a bounded double-`∀` over `Nat` decided by
+`Nat.decidableBallLT` and `Int.decEq`, with no `Nat.min`/`Nat.sub` inside any decided expression.  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`; gated per
+declaration in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -51,8 +27,8 @@ open SetoidMatrix
 /-! ## The windowed-equality substrate (the `DenoteSame`-avoidance pin) -/
 
 /-- Two `SetoidMatrix Int` grids agree on the `height × width` window: entries match at every in-range
-index.  Reducible and stated as a bounded double-`∀` so `Decidable` synthesis unfolds it to
-`Nat.decidableBallLT` — NEVER the undecidable `DenoteSame` (which quantifies over all `Nat`). -/
+index.  A bounded double-`∀` so `Decidable` synthesis unfolds it to `Nat.decidableBallLT`, not the
+undecidable `DenoteSame` (which quantifies over all `Nat`). -/
 @[reducible] def agreeOnWindow (leftMatrix rightMatrix : SetoidMatrix Int) (height width : Nat) :
     Prop :=
   ∀ rowIndex : Nat, rowIndex < height → ∀ colIndex : Nat, colIndex < width →
@@ -60,9 +36,8 @@ index.  Reducible and stated as a bounded double-`∀` so `Decidable` synthesis 
 
 /-! ## The scaled-pair witness -/
 
-/-- A produced certificate that `source` and `target` are ℚ-similar, presented over ℤ by clearing
-denominators.  `changeOfBasis` is `P`, `scaledInverse` is `Q = d · P⁻¹`, and `scale` is `d`; the
-checker `WitnessesSimilarity` verifies `P · Q = d · I` and `Q · (A · P) = d · B` on the window. -/
+/-- A certificate that `source` and `target` are ℚ-similar, presented over ℤ: `changeOfBasis` is `P`,
+`scaledInverse` is `Q = d · P⁻¹`, `scale` is `d`, checked by `WitnessesSimilarity`. -/
 structure EndomorphismSimilarityWitness where
   dimension : Nat
   source : SetoidMatrix Int
@@ -73,9 +48,8 @@ structure EndomorphismSimilarityWitness where
 
 /-! ## Substrate truth-probe
 
-The concrete `d = 2` rational-conjugacy inverse window `P · Q = 2 · I`, evaluated by hand
-(`P = [[1,1],[0,2]]`, `Q = adj(P) = [[2,-1],[0,1]]`, `P · Q = [[2,0],[0,2]]`) and here decided against
-`scalarMul 2 I`.  This anchors the substrate: the windowed check sees the real integer product. -/
+The `d = 2` inverse window `P · Q = 2 · I` for `P = [[1,1],[0,2]]`, `Q = adj(P) = [[2,-1],[0,1]]`,
+decided against `scalarMul 2 I`: the windowed check sees the real integer product. -/
 theorem endomorphismScaledInverseWindowProbe :
     agreeOnWindow
       (mulMatrix intCommutativeRingWitness (setoidMatrixOfRows [[1, 1], [0, 2]])
@@ -83,12 +57,8 @@ theorem endomorphismScaledInverseWindowProbe :
       (scalarMul intCommutativeRingWitness 2 (identityMatrix intCommutativeRingWitness 2)) 2 2 := by
   decide
 
-/-! ## The certificate checker
-
-`WitnessesSimilarity` is the produced-then-checked obligation: the load-bearing `d ≠ 0` guard
-(stated `1 ≤ Int.natAbs d`, decided by `Nat.decLe`) plus the two kernel-checked window identities
-`P · Q = d · I` and `Q · (A · P) = d · B`.  Reducible so `Decidable` synthesis unfolds it to the
-`And` of decidable pieces — each concrete instance closes by `decide`. -/
+/-- The checker: the `d ≠ 0` guard (`1 ≤ Int.natAbs d`) plus the two window identities `P · Q = d · I`
+and `Q · (A · P) = d · B`.  Reducible, so each concrete instance closes by `decide`. -/
 @[reducible] def EndomorphismSimilarityWitness.WitnessesSimilarity
     (witness : EndomorphismSimilarityWitness) : Prop :=
   1 ≤ Int.natAbs witness.scale
@@ -105,8 +75,8 @@ theorem endomorphismScaledInverseWindowProbe :
 
 /-! ## Self-attack: singular-`P` and degenerate-`d` rejection
 
-Two ways an attacker could forge a "universal" similarity are structurally rejected by the checker.
-Both target the genuinely DISSIMILAR pair `[[1,0],[0,0]]` (trace 1) vs `[[2,0],[0,0]]` (trace 2). -/
+Two forgeries of a "universal" similarity are rejected by the checker, both targeting the dissimilar
+pair `[[1,0],[0,0]]` (trace 1) vs `[[2,0],[0,0]]` (trace 2). -/
 
 /-- A singular change of basis (`P = 0`) with a nonzero scale (`d = 1`).  The guard passes, but
 `P · Q = 0 ≠ 1 · I` at entry `(0,0)` (`0 ≠ 1`), so the inverse window rejects it. -/
@@ -122,9 +92,8 @@ def endomorphismSingularBasisWitness : EndomorphismSimilarityWitness :=
 theorem endomorphismSingularBasisRejected :
     ¬ endomorphismSingularBasisWitness.WitnessesSimilarity := by decide
 
-/-- The degenerate `d = 0` forgery (`P = Q = 0`, `d = 0`): without the guard this fakes similarity of
-ANY pair (`P · Q = 0 · I` and `Q · A · P = 0 · B` both hold).  The `1 ≤ Int.natAbs 0` guard is false,
-so the checker rejects it — the guard is load-bearing. -/
+/-- The degenerate `d = 0` forgery (`P = Q = 0`): without the guard this fakes similarity of any pair,
+since `P · Q = 0 · I` and `Q · A · P = 0 · B` both hold.  The `d ≠ 0` guard rejects it. -/
 def endomorphismDegenerateScaleWitness : EndomorphismSimilarityWitness :=
   { dimension := 2
     source := setoidMatrixOfRows [[1, 0], [0, 0]]
@@ -137,19 +106,13 @@ def endomorphismDegenerateScaleWitness : EndomorphismSimilarityWitness :=
 theorem endomorphismDegenerateScaleRejected :
     ¬ endomorphismDegenerateScaleWitness.WitnessesSimilarity := by decide
 
-/-! ## Separator engine 1: the characteristic polynomial (equal char-poly is NECESSARY for similarity)
+/-! ## Separator engine 1: the characteristic polynomial
 
-Ascending-coefficient list of `det(x·I − M)`, in closed form for the adjudicated sizes (`n = 2, 3`),
-reusing the shipped exact cofactor determinant for the constant term.  A `≠` between two char-poly
-lists is a machine-checked DISsimilarity certificate (contrapositive of "similar ⇒ equal char-poly").
+`det(x·I − M)` as an ascending coefficient list, closed form at `n = 2, 3`; a `≠` certifies
+dissimilarity.  `EndomorphismCharPolyThree` extends it to the principal-minor coefficient reading. -/
 
-Honest wall: the GENERAL `det(x·I − M)` over `ℚ[x]` — the complete invariant-factor separator — needs
-a univariate polynomial matrix carrier that does NOT ship (no `IntPolynomial`, no `x·I − M`).  That,
-and Smith-over-`ℚ[x]` when eigenvalues are irrational, is the r2 boundary. -/
-
-/-- The characteristic-polynomial coefficients of `matrix`, ascending (`[c₀, c₁, …, cₙ = 1]`), in
-closed form at `n = 2` (`x² − tr·x + det`) and `n = 3` (`x³ − c₁x² + c₂x − c₃`).  Other sizes return
-`[]` (out of r1 scope). -/
+/-- The characteristic-polynomial coefficients of `matrix`, ascending (`[c₀, …, cₙ = 1]`), in closed
+form at `n = 2` (`x² − tr·x + det`) and `n = 3` (`x³ − c₁x² + c₂x − c₃`); other sizes return `[]`. -/
 def endomorphismCharPolyCoefficients (dimension : Nat) (matrix : SetoidMatrix Int) : List Int :=
   match dimension with
   | 2 =>
@@ -164,8 +127,7 @@ def endomorphismCharPolyCoefficients (dimension : Nat) (matrix : SetoidMatrix In
       [-(intCofactorDet 3 matrix), principalTwoMinorSum, -traceValue, 1]
   | _ => []
 
-/-- `source` and `target` are dissimilar because their characteristic polynomials differ.  Reducible
-so a concrete separation closes by `decide` (unfolds to `List Int` inequality). -/
+/-- `source` and `target` are dissimilar because their characteristic polynomials differ. -/
 @[reducible] def EndomorphismDissimilarByCharPoly (dimension : Nat)
     (source target : SetoidMatrix Int) : Prop :=
   endomorphismCharPolyCoefficients dimension source
@@ -182,15 +144,10 @@ theorem endomorphismCharPolyThreeByThreeExample :
 
 /-! ## Separator engine 2: the `2×2` rank (separates the equal-char-poly nilpotents)
 
-The rank at `2×2` in closed form via the shipped determinant: full rank `2` when `det ≠ 0`, else `0`
-for the zero matrix and `1` otherwise.  A `≠` between two ranks is a machine-checked dissimilarity
-certificate (rank is a similarity invariant), and it separates the subtle `0` vs Jordan-block pair
-that char-poly cannot see.
-
-Honest wall: `3×3` and higher rank needs a general `k×k` minor selector (the shipped determinant only
-deletes row 0); the complete NILPOTENT separator is the rank sequence `rank(Mᵏ)`, which needs a matrix
-power — both r1-stretch.  The smallest equal-char-poly, equal-`rank(M)`, still-dissimilar pair is
-`4×4` (`J(2)⊕J(2)` vs `J(3)⊕J(1)`), separated only at `rank(M²)`; r1's `rank(M)` cannot see it. -/
+Rank is a similarity invariant, so a `≠` between two ranks certifies dissimilarity, separating the
+`0` vs Jordan-block pair that char poly cannot see.  Higher rank and the full nilpotent separator
+(the rank sequence `rank(Mᵏ)`) are closed in `EndomorphismMinorSelector` and
+`EndomorphismPowerZeroSeparator`. -/
 
 /-- The rank of a `2×2` integer matrix (a similarity invariant): `2` if `det ≠ 0`, else `0`/`1`. -/
 def endomorphismRank2 (matrix : SetoidMatrix Int) : Nat :=
@@ -199,8 +156,7 @@ def endomorphismRank2 (matrix : SetoidMatrix Int) : Nat :=
       then 0 else 1)
   else 2
 
-/-- `source` and `target` are dissimilar because their `2×2` ranks differ.  Reducible so a concrete
-separation closes by `decide` (unfolds to `Nat` inequality). -/
+/-- `source` and `target` are dissimilar because their `2×2` ranks differ. -/
 @[reducible] def EndomorphismDissimilarByRank (source target : SetoidMatrix Int) : Prop :=
   endomorphismRank2 source ≠ endomorphismRank2 target
 
@@ -218,12 +174,11 @@ theorem endomorphismRankTwoExample :
 
 /-! ## The decided instances
 
-Two SIMILAR pairs with kernel-checked scaled-pair witnesses, and two DISSIMILAR pairs with
-kernel-checked separators — including the equal-char-poly pair that only rank tells apart. -/
+Two similar pairs with kernel-checked scaled-pair witnesses, and two dissimilar pairs with
+kernel-checked separators, including the equal-char-poly pair that only rank tells apart. -/
 
-/-- **Similar #1 — unimodular (`d = 1`).**  The nilpotent `[[0,1],[0,0]]` conjugated by the
-unimodular `P = [[1,0],[1,1]]` (`Q = P⁻¹ = [[1,0],[-1,1]]`) to `B = [[1,1],[-1,-1]]`.  Here `d = 1`,
-so the witness reduces to the classical integer-unimodular conjugation. -/
+/-- Similar #1, unimodular (`d = 1`): the nilpotent `[[0,1],[0,0]]` conjugated by `P = [[1,0],[1,1]]`
+(`Q = P⁻¹`) to `[[1,1],[-1,-1]]` — the classical integer-unimodular case. -/
 def endomorphismNilpotentConjugacyWitness : EndomorphismSimilarityWitness :=
   { dimension := 2
     source := setoidMatrixOfRows [[0, 1], [0, 0]]
@@ -236,10 +191,9 @@ def endomorphismNilpotentConjugacyWitness : EndomorphismSimilarityWitness :=
 theorem endomorphismNilpotentConjugacyIsWitnessed :
     endomorphismNilpotentConjugacyWitness.WitnessesSimilarity := by decide
 
-/-- **Similar #2 — the scaled trick (`d = 2`, `P` rational-not-integer).**  `A = [[1,1],[0,3]]` and
-`B = [[1,0],[0,3]]` are ℚ-similar but NOT integer-unimodular-conjugate; the conjugator `S = [[1,1],[0,2]]`
-has `det 2`.  Cleared to `P = S`, `Q = adj(S) = [[2,-1],[0,1]]`, `d = 2`: `P · Q = 2·I` and
-`Q · (A · P) = 2·B = [[2,0],[0,6]]`.  This is the instance that exercises the scaled pair. -/
+/-- Similar #2, the scaled trick (`d = 2`): `A = [[1,1],[0,3]]` and `B = [[1,0],[0,3]]` are ℚ-similar
+but not integer-unimodular-conjugate.  Cleared to `P = [[1,1],[0,2]]`, `Q = adj(P) = [[2,-1],[0,1]]`,
+`d = 2`, so `P · Q = 2·I` and `Q · (A · P) = 2·B`.  This exercises the scaled pair. -/
 def endomorphismRationalConjugacyWitness : EndomorphismSimilarityWitness :=
   { dimension := 2
     source := setoidMatrixOfRows [[1, 1], [0, 3]]
@@ -252,15 +206,14 @@ def endomorphismRationalConjugacyWitness : EndomorphismSimilarityWitness :=
 theorem endomorphismRationalConjugacyIsWitnessed :
     endomorphismRationalConjugacyWitness.WitnessesSimilarity := by decide
 
-/-- **Dissimilar #1 — char-poly (trace differs).**  `[[1,0],[0,0]]` (char-poly `x² − x`) vs
+/-- Dissimilar #1, char poly (trace differs): `[[1,0],[0,0]]` (char-poly `x² − x`) vs
 `[[2,0],[0,0]]` (char-poly `x² − 2x`).  Distinct trace ⇒ distinct char-poly ⇒ dissimilar. -/
 theorem endomorphismDistinctTraceDissimilar :
     EndomorphismDissimilarByCharPoly 2 (setoidMatrixOfRows [[1, 0], [0, 0]])
       (setoidMatrixOfRows [[2, 0], [0, 0]]) := by decide
 
-/-- **Dissimilar #2 — equal char-poly, rank-separated (the subtle case).**  The zero matrix vs the
-Jordan block `[[0,1],[0,0]]`: both have char-poly `x²`, so char-poly is blind; rank `0` vs `1`
-separates them. -/
+/-- Dissimilar #2, equal char poly, rank-separated: the zero matrix vs the Jordan block
+`[[0,1],[0,0]]`: both have char poly `x²`, so char poly is blind; rank `0` vs `1` separates them. -/
 theorem endomorphismZeroVersusJordanDissimilar :
     EndomorphismDissimilarByRank (setoidMatrixOfRows [[0, 0], [0, 0]])
       (setoidMatrixOfRows [[0, 1], [0, 0]]) := by decide
@@ -271,75 +224,36 @@ theorem endomorphismZeroVersusJordanShareCharPoly :
     endomorphismCharPolyCoefficients 2 (setoidMatrixOfRows [[0, 0], [0, 0]])
       = endomorphismCharPolyCoefficients 2 (setoidMatrixOfRows [[0, 1], [0, 0]]) := by decide
 
-/-! ## The walker tie-in and the census ledger
+/-! ## The walker tie-in
 
-**The walker.**  The walking endomorphism is the one-object, one-generating-1-cell, NO-relation
-polygraph — the delooping of the free monoid `ℕ`.  Its rewriting presentation is trivially convergent
-(empty critical pairs), so it carries no content for the coherent-presentation census
-(`SquierFamilyCensus`).  Its content is the LINEAR MODEL: the representation category `[walking-endo,
-Vect]` is the category of pairs `(V, f : V → V)`; on a chosen basis `f` is a matrix `M`, and
-iso-classification of representations = SIMILARITY of `M` = rational canonical form.  This is the
-matrix-semantics axis, mirroring `WalkingBunchedBimonoidMatrixSemantics` (a walker given a `Mat(N)`
-semantics), and it belongs in the ComputerAlgebra lane, NOT `Polygraph/Omega/`.
-
-**What r1 DECIDES (the exact scope).**  A pure per-input certificate producer, inheriting the #2137
-per-input contract (no general driver, nothing to discharge into):
-
-  * for a concrete integer pair, `WitnessesSimilarity` certifies ℚ-similarity by kernel-checking the
-    scaled-pair identities — grounded by the `d = 1` and `d = 2` instances;
-  * for a concrete integer pair, a char-poly OR `2×2`-rank inequality certifies dissimilarity —
-    grounded by the trace-separated and the equal-char-poly rank-separated instances.
-
-No general similarity DECISION procedure is claimed, and NO driver-totality is reopened (the #2137
-general-driver target was REFUTED upstream and stays closed).
-
-**The r2 walls — THREE CLOSED, one genuinely open.**
-
-  * `charMatrixCarrier` — CLOSED (r2, `EndomorphismCharPolyThree`).  The characteristic polynomial's
-    coefficients ARE sums of principal minors (`e_k = Σ k×k principal minors`), so `det(x·I − M)` needs
-    NO univariate polynomial-matrix carrier: `endomorphismCharPolyThree` reads the coefficient triple
-    `(trace, Σ principal 2×2 minors, det)` off the general minor selector.  The `IntPolynomial` route
-    this note originally predicted was not needed — the principal-minor route is sharper and stays over
-    ℤ.  The middle coefficient separates equal-trace/equal-det/equal-rank matrices.
-  * `rankSequenceNilpotent` — CLOSED (r2, `EndomorphismPowerZeroSeparator`).  The matrix-power ladder
-    `endomorphismMatrixPower` plus witness-transported power-vanishing separate equal-char-poly
-    nilpotents by the rank sequence `rank(Mᵏ)`.
-  * `minorRankGeneral` — CLOSED (r2, `EndomorphismMinorSelector`).  The function-valued `selectSubmatrix`
-    plus `intMinorDet` lift rank certification to any selected `k×k` sub-block (the shipped determinant
-    only deletes row 0), so `endomorphismRank3` computes rank at `n = 3` from the nine `2×2` minors.
-  * `invariantFactorSeparator` — TOP FACTOR DELIVERED (r3, `EndomorphismMinimalPolynomial`), full list
-    still open.  The COMPLETE similarity separator is the invariant factors of `x·I − M` (the ℚ[x]-Smith
-    diagonal).  The r1 note's "irrational eigenvalues, factoring the char poly over ℚ" framing was a
-    MISDIAGNOSIS: invariant factors are the Euclidean GCD of the char-matrix minors and NEVER factor the
-    characteristic polynomial into irreducibles — no eigenvalue appears.  The TOP invariant factor is the
-    minimal polynomial, and `EndomorphismMinimalPolynomial` ships it as a decidable, eigenvalue-free
-    annihilator separator (`p(M) = 0 ∧ p(N) ≠ 0 ⟹ M ≁ N`), strictly stronger than the char-poly and rank
-    separators (it splits `diag(1,1)` vs `[[1,1],[0,1]]`, blind to both).  The remaining gap is the FULL
-    invariant-factor LIST via univariate ℚ[x] Euclidean GCD — a real polynomial-arithmetic arc, but the
-    obstruction is GCD, not eigenvalue factoring. → r3+. -/
+The walking endomorphism is the one-object, one-generating-1-cell, no-relation polygraph — the
+delooping of the free monoid `ℕ`.  Its rewriting presentation is trivially convergent, so its content
+is the linear model: iso-classification of representations `(V, f : V → V)` is similarity of `M`,
+i.e. rational canonical form — the matrix-semantics axis, mirroring
+`WalkingBunchedBimonoidMatrixSemantics`.  The sharper separators and the open invariant-factor wall
+are summarized at `fxEndo_hasSeparatorSuite` below. -/
 
 /-- The classification axis of the walking-endomorphism linear model: representations up to iso ⇔
 matrices up to similarity ⇔ rational canonical form. -/
 inductive WalkingEndomorphismClassification
   | similarByRationalCanonicalForm
 
-/-- A census entry for the walking-endomorphism linear model: the classification marker plus the
-counts of kernel-checked similar witnesses and dissimilarity separators shipped as its grounding. -/
+/-- A census entry: the classification marker plus the counts of kernel-checked similar witnesses and
+dissimilarity separators shipped as its grounding. -/
 structure WalkingEndomorphismCensusEntry where
   classification : WalkingEndomorphismClassification
   decidedSimilarInstances : Nat
   decidedDissimilarInstances : Nat
 
-/-- The r1 census feed: two decided similar witnesses (`d = 1`, `d = 2`) and two decided separators
-(char-poly, rank). -/
+/-- The census feed: two decided similar witnesses (`d = 1`, `d = 2`) and two decided separators
+(char poly, rank). -/
 def walkingEndomorphismCensusEntry : WalkingEndomorphismCensusEntry :=
   { classification := WalkingEndomorphismClassification.similarByRationalCanonicalForm
     decidedSimilarInstances := 2
     decidedDissimilarInstances := 2 }
 
-/-- The census feed is grounded in the four kernel-checked instances: this bundles the two
-scaled-pair witnesses and the two dissimilarity separators into a single certificate, so the census
-counts are backed by machine-checked evidence, not assertion. -/
+/-- The census feed grounded: the two scaled-pair witnesses and the two dissimilarity separators
+bundled into one certificate, so the counts are backed by machine-checked evidence. -/
 theorem walkingEndomorphismCensusGrounded :
     endomorphismNilpotentConjugacyWitness.WitnessesSimilarity
       ∧ endomorphismRationalConjugacyWitness.WitnessesSimilarity
@@ -349,5 +263,17 @@ theorem walkingEndomorphismCensusGrounded :
           (setoidMatrixOfRows [[0, 1], [0, 0]]) :=
   ⟨endomorphismNilpotentConjugacyIsWitnessed, endomorphismRationalConjugacyIsWitnessed,
     endomorphismDistinctTraceDissimilar, endomorphismZeroVersusJordanDissimilar⟩
+
+/-! ## The separator-suite marker -/
+
+/-- The walking-endomorphism separator suite: a family of decidable, eigenvalue-free dissimilarity
+certificates over ℤ.  It ships the characteristic polynomial via principal minors
+(`EndomorphismCharPolyThree`), the rank sequence `rank(Mᵏ)` at its rank-zero boundary
+(`EndomorphismPowerZeroSeparator`), the general `k×k` minor rank (`EndomorphismMinorSelector`), the
+minimal-polynomial degree at dimension `2` (`EndomorphismMinimalPolynomialTwoByTwo`), and the minimal
+polynomial as a produced-and-checked annihilator (`EndomorphismMinimalPolynomial`), the top invariant
+factor and the sharpest of the five.  The complete separator — the full invariant-factor list via
+ℚ[x] Euclidean GCD — stays open. -/
+def fxEndo_hasSeparatorSuite : Bool := true
 
 end FX1Poly.ComputerAlgebra

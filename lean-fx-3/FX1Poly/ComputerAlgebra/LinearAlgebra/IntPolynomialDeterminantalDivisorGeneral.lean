@@ -1,48 +1,29 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDeterminantalDivisorThree
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialDeterminantalDivisorGeneral — the UNIFORM
-general-n determinantal-divisor engine (the sixth brick of the char-matrix → invariant-factors layer,
-WP-ENDO #2255)
+/-! # IntPolynomialDeterminantalDivisorGeneral — the uniform general-n determinantal-divisor engine
 
-The r34/r36 determinantal divisors hand-list the index selections (`selectPairLow/Outer/High`, the
-singletons) and so only reach `n = 2, 3`.  The engine underneath was already general — `polyGcdList` folds
-the ℤ[x] GCD over ANY list of minors and `charMatrixMinor k` yields the `k×k` polynomial minor for any
-selection functions — so the ONE missing primitive is a general `k`-subset index enumerator.  This file
-supplies it and closes the "remaining scale-up".
+The dimension-2 and 3 determinantal divisors hand-list the index selections; the engine underneath is
+already general (`polyGcdList` folds the ℤ[x] GCD over any list of minors, `charMatrixMinor k` yields the
+`k×k` polynomial minor for any selection functions), so the one missing primitive is a general `k`-subset
+index enumerator.  This file supplies it, closing the scale-up.  It is the parent of the determinantal /
+invariant-factor / char-matrix sub-arc, whose markers are consolidated here (see
+`fxIntPoly_hasGeneralDeterminantalDivisorEngine`).
 
-## The enumerator (propext-free)
-
-  * `indicesBelow n` = `[0, 1, …, n−1]` as data (cons/append, never `List.range` whose characterization
-    lemmas leak `propext`).
+  * `indicesBelow n = [0, 1, …, n−1]` as data (cons/append, not `List.range` whose lemmas leak `propext`).
   * `kSublists k available` = the order-preserving `k`-element sublists of `available`, by the take/skip
-    recursion `(map (first :: ·) (kSublists k rest)) ++ kSublists (k+1) rest`.  `++` and `List.map` are
-    audit-clean AS DATA CONSTRUCTORS (only their equation/decision lemmas leak `propext`).
-  * `kSubsets k n` = `kSublists k (indicesBelow n)` = all `k`-subsets of `{0, …, n−1}`.
+    recursion `(map (first :: ·) (kSublists k rest)) ++ kSublists (k+1) rest`.
+  * `kSubsets k n = kSublists k (indicesBelow n)` = all `k`-subsets of `{0, …, n−1}`.
   * `selectionOf chosen` = the `Nat → Nat` selector reading position `i` to the `i`-th chosen index — the
-    structural, `propext`-free replacement for `List.getD` (which leaks), feeding the shipped
-    `charMatrixMinor` unchanged.
+    structural, `propext`-free replacement for `List.getD`, feeding `charMatrixMinor` unchanged.
 
-## The general divisor
+`charDeterminantalDivisor k n M` is the ℤ[x] GCD of the `k×k` minors of `x·I − M` over all pairs of
+`k`-subsets — the `k`-th determinantal divisor `d_k` at arbitrary `n`; its degree list
+`determinantalDivisorSignature n M = [deg d₁, …, deg d_n]` is a decidable similarity invariant.  The engine
+is cross-validated by `decide`-agreement with the hand-rolled dimension-2 and 3 divisors, and reaches the
+full dim-3 signatures `[0,0,3]/[0,1,3]/[1,2,3]` that separate all three classes of char poly `(x−2)³`.
 
-`charDeterminantalDivisor k n M` = the ℤ[x] GCD (`polyGcdList`) of the `k×k` minors of `x·I − M` over ALL
-pairs of `k`-subsets of `{0, …, n−1}` — the `k`-th determinantal divisor `d_k` at arbitrary `n`.  Its
-degree list `determinantalDivisorSignature n M = [deg d₁, …, deg d_n]` is a decidable similarity
-invariant.
-
-## Cross-validated against the hand-rolled bricks
-
-The general engine is trustworthy by `decide`-agreement: `charDeterminantalDivisor` reproduces r34's
-`charMatrixDivisorOne` (n=2, k=1) and r36's `charMatrixDivisorOneAtThree` / `charMatrixDivisorTwoAtThree`
-(n=3, k=1,2) byte-for-byte on every archetype.  It then reaches the FULL dim-3 signatures the hand-rolled
-divisors never assembled — `J₃(2) ↦ [0,0,3]`, `J₂⊕J₁ ↦ [0,1,3]`, `2·I₃ ↦ [1,2,3]` — pairwise distinct,
-separating all three classes of char poly `(x−2)³` in ONE uniform engine.
-
-## Zero-axiom design
-
-Structural enumerator recursions + the shipped GCD/minor machinery + `decide` groundings.  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in the
-audit twin.
--/
+Structural enumerator recursions + the shipped GCD/minor machinery + `decide` groundings.  Free of `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -113,8 +94,8 @@ theorem kSubsetsTwoFourIsSixPairs :
 
 /-! ## Cross-validation: the general engine reproduces the hand-rolled divisors -/
 
-/-- ★ At `n=2, k=1` the general engine reproduces r34's `charMatrixDivisorOne` on every dim-2 archetype
-(scalar `2·I`, Jordan `[[2,1],[0,2]]`, `diag(2,3)`) — byte-for-byte after trimming. -/
+/-- At `n=2, k=1` the general engine reproduces `charMatrixDivisorOne` on every dim-2 archetype (scalar
+`2·I`, Jordan `[[2,1],[0,2]]`, `diag(2,3)`) — byte-for-byte after trimming. -/
 theorem generalDivisorAgreesWithHandRolledTwo :
     polyTrim (charDeterminantalDivisor 1 2 (twoByTwoMatrix 2 0 0 2))
         = polyTrim (charMatrixDivisorOne (twoByTwoMatrix 2 0 0 2))
@@ -123,7 +104,7 @@ theorem generalDivisorAgreesWithHandRolledTwo :
     ∧ polyTrim (charDeterminantalDivisor 1 2 (twoByTwoMatrix 2 0 0 3))
         = polyTrim (charMatrixDivisorOne (twoByTwoMatrix 2 0 0 3)) := by decide
 
-/-- ★ At `n=3` the general engine reproduces r36's `charMatrixDivisorOneAtThree` (k=1) and
+/-- At `n=3` the general engine reproduces `charMatrixDivisorOneAtThree` (k=1) and
 `charMatrixDivisorTwoAtThree` (k=2) on all three `(x−2)³` archetypes. -/
 theorem generalDivisorAgreesWithHandRolledThree :
     polyTrim (charDeterminantalDivisor 1 3 jordanBlockThree)
@@ -141,10 +122,9 @@ theorem generalDivisorAgreesWithHandRolledThree :
 
 /-! ## New reach: the full dim-3 signatures, separating all three (x−2)³ classes uniformly -/
 
-/-- ★ The FULL dim-3 determinantal-divisor degree signature the hand-rolled divisors never assembled:
-`J₃(2) ↦ [0,0,3]`, `J₂⊕J₁ ↦ [0,1,3]`, `2·I₃ ↦ [1,2,3]` — pairwise distinct, so the general engine
-separates all three similarity classes of characteristic polynomial `(x−2)³` in one uniform computation
-(`deg d₃ = 3 = deg(x−2)³` for all, as it must). -/
+/-- The full dim-3 determinantal-divisor degree signature: `J₃(2) ↦ [0,0,3]`, `J₂⊕J₁ ↦ [0,1,3]`, `2·I₃ ↦
+[1,2,3]` — pairwise distinct, so the general engine separates all three similarity classes of characteristic
+polynomial `(x−2)³` in one uniform computation (`deg d₃ = 3 = deg(x−2)³` for all, as it must). -/
 theorem fullSignatureSeparatesCubicClasses :
     determinantalDivisorSignature 3 jordanBlockThree = [0, 0, 3]
     ∧ determinantalDivisorSignature 3 jordanTwoPlusOne = [0, 1, 3]
@@ -155,8 +135,7 @@ Reducible so a concrete separation closes by `decide`. -/
 @[reducible] def DissimilarBySignature (source target : SetoidMatrix Int) (dimension : Nat) : Prop :=
   determinantalDivisorSignature dimension source ≠ determinantalDivisorSignature dimension target
 
-/-- ★ The three `(x−2)³` classes are pairwise non-similar, decided by the UNIFORM general-engine
-signature (not the hand-rolled per-dimension divisors). -/
+/-- The three `(x−2)³` classes are pairwise non-similar, decided by the uniform general-engine signature. -/
 theorem generalEngineSeparatesAllThreeCubicClasses :
     DissimilarBySignature jordanBlockThree jordanTwoPlusOne 3
     ∧ DissimilarBySignature jordanBlockThree scalarThree 3
@@ -164,13 +143,15 @@ theorem generalEngineSeparatesAllThreeCubicClasses :
 
 /-! ## The marker -/
 
-/-- ★ **The uniform general-n determinantal-divisor engine is shipped.**  `= true` records that the
-`k`-subset enumerator (`indicesBelow`/`kSublists`/`kSubsets`/`selectionOf`) instantiates the already-general
-`polyGcdList ∘ charMatrixMinor` fold at arbitrary dimension, so `charDeterminantalDivisor k n` computes any
-determinantal divisor `d_k` and `determinantalDivisorSignature n` the full degree list — cross-validated to
-reproduce the hand-rolled r34/r36 values and reaching the full dim-3 signatures `[0,0,3]/[0,1,3]/[1,2,3]`
-that separate all three `(x−2)³` classes.  The proved completeness of the enumerator (order-preserving
-subset ⟹ enumerated) and the general invariant-factor fold are the remaining follow-ons. -/
+/-- Consolidated marker for the ℤ[x] determinantal-divisor / invariant-factor / char-matrix sub-arc.
+Covers: the `k`-subset enumerator and the uniform general-`n` determinantal-divisor engine
+(`charDeterminantalDivisor k n`, `determinantalDivisorSignature n`) cross-validated against the hand-rolled
+divisors and reaching the full dim-3 signatures `[0,0,3]/[0,1,3]/[1,2,3]` (this file); the k×k characteristic
+minors over ℤ[x] (`IntPolynomialCharMinors`); the first determinantal divisor and its dimension-2 similarity
+separator (`IntPolynomialDeterminantalDivisor`); the dimension-3 three-way separation of char poly `(x−2)³`
+(`IntPolynomialDeterminantalDivisorThree`); the invariant factors and rational-canonical-form block count at
+dimension 2 (`IntPolynomialInvariantFactors`); and the completeness of the subset enumerator
+(`IntPolynomialSubsetEnumeratorComplete`). -/
 def fxIntPoly_hasGeneralDeterminantalDivisorEngine : Bool := true
 
 end FX1Poly.ComputerAlgebra

@@ -1,31 +1,18 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialLeadingTermCancel
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDegreeBound
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialPseudoDegreeDecrease — the degree strictly drops
-(the tenth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialPseudoDegreeDecrease — the degree strictly drops
 
-The capstone of the coefficient calculus: the pseudo-division step *strictly decreases* the degree.  This
-is the termination lever the Euclidean GCD's fuel adequacy rests on.
+The capstone of the coefficient calculus: `polyPseudoStepDegreeLt` shows the pseudo-division step strictly
+decreases the degree, the termination lever the Euclidean GCD's fuel adequacy rests on.  For a non-constant
+`divisor` (`1 ≤ polyDegree divisor`) with `polyDegree divisor ≤ polyDegree dividend`, the replacement
+dividend has degree strictly below `polyDegree dividend`: its coefficients vanish at the top position
+(leading-term cancellation) and above it (the scaled dividend and the quotient-term product each vanish
+there), so `polyDegreeLtOfCoeffVanishingAbove` applies.
 
-## What is PROVEN
-
-`polyPseudoStepDegreeLt`: for a non-constant `divisor` (`1 ≤ polyDegree divisor`) with `polyDegree divisor ≤
-polyDegree dividend`, the pseudo-division step's replacement dividend has degree strictly below `polyDegree
-dividend`.  The argument feeds `polyDegreeLtOfCoeffVanishingAbove` (r19) the fact that the step's
-coefficients vanish at and above `polyDegree dividend`:
-
-  * *at* the top position: r17's leading-term cancellation;
-  * *above* it: the scaled dividend vanishes (its own coefficients are gone past the degree — r18) and the
-    quotient-term product vanishes (a degree-`(d−e)` monomial times a degree-`e` divisor has all
-    coefficients gone past position `d`).
-
-## Zero-axiom design
-
-Assembles r17/r18/r19 through the corpus `natAddSubOfLe` and core Nat order lemmas (`Nat.le_sub_of_add_le`,
-`Nat.eq_or_lt_of_le`, `Nat.add_comm/assoc`, …) plus the corpus `Int` ring lemmas.  No `axiom`, `sorry`,
-`propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialPseudoDegreeDecrease.lean`.
--/
+Assembles the leading-term cancellation, the coefficient-vanishing bounds, and the degree characterization
+through the corpus `natAddSubOfLe`, core Nat order lemmas, and the corpus `Int` ring lemmas.  Free of
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -69,8 +56,8 @@ theorem polyMonomialMulCoeffVanishesFarAbove (coeff : Int) (divisor : List Int)
 /-- **The pseudo-division step strictly decreases the degree.**  For `1 ≤ polyDegree divisor` and
 `polyDegree divisor ≤ polyDegree dividend`, the replacement dividend `leadDivisor · dividend −
 (leadDividend · x^(d−e)) · divisor` has degree strictly below `polyDegree dividend`.  Its coefficients
-vanish at `d` (r17 cancellation) and above `d` (both summands individually vanish), so
-`polyDegreeLtOfCoeffVanishingAbove` (r19) applies. -/
+vanish at `d` (leading-term cancellation) and above `d` (both summands individually vanish), so
+`polyDegreeLtOfCoeffVanishingAbove` applies. -/
 theorem polyPseudoStepDegreeLt (dividend divisor : List Int)
     (isDivisorNonconstant : 1 ≤ polyDegree divisor)
     (isDivisorDegreeLe : polyDegree divisor ≤ polyDegree dividend) :
@@ -138,11 +125,5 @@ theorem polyPseudoStepDegreeLtGrounding :
             (polyMonomial (polyLeadingCoeff [-1, 0, 1]) (polyDegree [-1, 0, 1] - polyDegree [3, 2]))
             [3, 2]))
       < polyDegree [-1, 0, 1] := by decide
-
-/-- Marker: the ℤ[x] pseudo-division step strictly decreases the degree (`polyPseudoStepDegreeLt`) for a
-non-constant divisor — the coefficient-level termination lever for the Euclidean GCD, assembling the
-leading-term cancellation (r17) with the coefficient-vanishing bounds (r18) and the degree characterization
-(r19). -/
-def fxIntPoly_hasPseudoStepDegreeDecrease : Bool := true
 
 end FX1Poly.ComputerAlgebra

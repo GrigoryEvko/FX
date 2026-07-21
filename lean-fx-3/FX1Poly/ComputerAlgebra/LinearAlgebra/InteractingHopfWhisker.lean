@@ -1,34 +1,29 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfSeed
 
-/-! # LinearAlgebra/InteractingHopfWhisker — the IH_Q whisker congruence (WP-PROP-3 brick 3)
+/-! # LinearAlgebra/InteractingHopfWhisker — the IH_Q whisker congruence
 
-The PARALLEL (whisker) congruence for the IH_Q presentation seed, executing the
-brick-2 route note on `ihsHasWhiskerCongruence` verbatim: (1) the TENSOR SPEC
-`ihwTensorSpec` — blockwise pair-membership characterization of `ihsTensorRows`
-in both directions, via the embed zero/add/scale lemmas and
+The parallel (whisker) congruence for the IH_Q presentation seed: (1) the tensor
+spec `ihwTensorSpec` — a blockwise pair-membership characterization of
+`ihsTensorRows` in both directions, via the embed zero/add/scale lemmas and
 `ihqMapRowsSpanFwd/Bwd`; (2) the tensor laws — congruence, units, associativity
-up to span, and THE INTERCHANGE `ihwTensorComposeInterchange`; (3) the
-whisker/pad rewriting step: `IhwWindowMove` (a committed seed row OR a layer
-split — the exchange move), `IhwStep.pad` (a window move fired inside wire
+up to span, and the interchange `ihwTensorComposeInterchange`; (3) the
+whisker/pad rewriting step: `IhwWindowMove` (a committed seed row or a layer
+split, the exchange move), `IhwStep.pad` (a window move fired inside wire
 whiskering plus before/after context layers), the congruence `IhwConv` with
 soundness `ihwConvSound` (full `IhsConvBundle`, so the seed's refutation bridge
-carries over as `ihwConvSpanEqB`), and the EMBEDDING `ihwConvOfSeedConv` of the
+carries over as `ihwConvSpanEqB`), and the embedding `ihwConvOfSeedConv` of the
 committed sequential congruence `IhsConv` into `IhwConv`; (4) fires — four
-committed seed rows re-fired INSIDE nontrivial parallel contexts with kernel
-span pins, a two-redex parallel derivation, a layer-split exchange fire, and
-the carried-over FALSE controls.
+committed seed rows re-fired inside nontrivial parallel contexts with kernel
+span pins, a two-redex parallel derivation, a layer-split exchange fire, and the
+carried-over false controls.
 
-Shape cloned from the F2 template
-(`Polygraph/Omega/ZXPhaseFree/SpiderRelationSeed`, prefix `zxp`): every xor
-telescope becomes an add telescope PLUS the scale leg the QnfRat carrier
-demands (the `ihqMapRowsSpanFwd/Bwd` hypotheses were already in the embed
-shape, per the brick-2 report).
+The construction mirrors the F2 spider-relation seed template
+(`Polygraph/Omega/ZXPhaseFree/SpiderRelationSeed`, prefix `zxp`): each xor
+telescope becomes an add telescope plus the scale leg the QnfRat carrier
+demands.
 
-SCOPE HONESTY: completeness (BSZ Theorem 6.4) is NOT touched — the committed
-owner-false markers `ihsCompletenessIsProven` / `ihsCompletenessStatement`
-stay byte-intact in the seed; the brick-4 route (normal-form census + the
-gate-refutation pass against the BSZ Section 6 factorization BEFORE any
-completeness induction) is recorded on `ihwHasWhiskerCongruence`.
+Completeness (BSZ Theorem 6.4) is out of scope here; only the whisker congruence
+and its supporting tensor and interchange machinery are established.
 
 Raw Lean 4 + Init + the ComputerAlgebra bricks only; zero-axiom; structural
 recursion only; no wildcard match arms over inductive scrutinees.
@@ -337,9 +332,9 @@ theorem ihwTensorEmbedAddBlocks (firstDomWidth firstCodWidth secondDomWidth
     ihqRowAddZeroLeft (ihqDropN secondDomWidth secondPair) secondCodWidth
       (ihqDropNLength secondPair secondDomWidth secondCodWidth hSecondLen)]
 
-/-! ## Stage 2 — THE TENSOR SPEC (T1) -/
+/-! ## Stage 2 — the tensor spec (T1) -/
 
-/-- **THE TENSOR SPEC**: the interleaved direct sum relates exactly blockwise —
+/-- The tensor spec: the interleaved direct sum relates exactly blockwise —
 `IhqPairMem` of the tensor iff componentwise `IhqPairMem`, both directions. -/
 theorem ihwTensorSpec (firstDomWidth firstCodWidth secondDomWidth secondCodWidth : Nat)
     (firstRows secondRows : List (List QnfRat))
@@ -856,7 +851,7 @@ theorem ihwTensorRowsAssoc (firstDomWidth firstCodWidth secondDomWidth secondCod
                                                 hFacts.right.right.left
                                                 hInnerFacts.right.right.left))))))
 
-/-- **THE INTERCHANGE LAW**: composing tensors is tensoring composites (up to span),
+/-- The interchange law: composing tensors is tensoring composites (up to span),
 at matched boundaries. -/
 theorem ihwTensorComposeInterchange (firstDomWidth firstMidWidth firstCodWidth
     secondDomWidth secondMidWidth secondCodWidth : Nat)
@@ -1743,7 +1738,7 @@ inductive IhwWindowMove : IhsDiagram -> IhsDiagram -> Prop where
             ihwCatCells (ihwWireCells (ihsLayerCodArity leftCells)) rightCells] }
 
 /-- Soundness of the layer-split move: the merged layer and its two sequential
-halves denote the same relation (THE EXCHANGE DERIVATION, by interchange +
+halves denote the same relation (the exchange derivation, by interchange +
 unit collapses). -/
 theorem ihwSplitLayerBundle (leftCells rightCells : List IhsCell) :
     IhsConvBundle
@@ -2148,7 +2143,7 @@ theorem ihwStepBundle {firstDiagram secondDiagram : IhsDiagram}
       exact ihsRelEquivTrans hDecomp1
         (ihsRelEquivTrans hMidCong (ihsRelEquivSymm hDecomp2))
 
-/-- **THE WHISKER CONGRUENCE**: padded steps (a row or a layer split fired
+/-- The whisker congruence: padded steps (a row or a layer split fired
 inside wire whiskering plus context layers), reflexivity on well-formed
 diagrams, symmetry, transitivity. -/
 inductive IhwConv : IhsDiagram -> IhsDiagram -> Prop where
@@ -2164,7 +2159,7 @@ inductive IhwConv : IhsDiagram -> IhsDiagram -> Prop where
       (hSecond : IhwConv secondDiagram thirdDiagram) :
       IhwConv firstDiagram thirdDiagram
 
-/-- **SOUNDNESS of the whisker congruence** (the full seed bundle: boundary
+/-- Soundness of the whisker congruence (the full seed bundle: boundary
 agreement, well-formedness both sides, span equality of the denotations). -/
 theorem ihwConvSound {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhwConv firstDiagram secondDiagram) :
@@ -2179,7 +2174,7 @@ theorem ihwConvSound {firstDiagram secondDiagram : IhsDiagram}
   | trans _hFirst _hSecond firstBundle secondBundle =>
       exact ihsConvBundleTrans firstBundle secondBundle
 
-/-- THE REFUTATION BRIDGE at the whisker level: convertibility forces the
+/-- The refutation bridge at the whisker level: convertibility forces the
 executable span decision to fire `true`. -/
 theorem ihwConvSpanEqB {firstDiagram secondDiagram : IhsDiagram}
     (hConv : IhwConv firstDiagram secondDiagram) :
@@ -2328,7 +2323,7 @@ theorem ihwConvAppendLayer (newLayer : List IhsCell)
       exact IhwConv.trans (firstCarried hFit)
         (secondCarried (hFit.trans (ihwConvSound hFirst).right.left))
 
-/-- **THE EMBEDDING**: every derivation of the committed sequential congruence
+/-- The embedding: every derivation of the committed sequential congruence
 `IhsConv` is a derivation of the whisker congruence `IhwConv` — rows fire
 through the identity pad, the sequential layer congruences through the context
 closures. -/
@@ -2346,10 +2341,10 @@ theorem ihwConvOfSeedConv {firstDiagram secondDiagram : IhsDiagram}
   | appendLayer newLayer hFit _hInner innerCarried =>
       exact ihwConvAppendLayer newLayer innerCarried hFit
 
-/-! ## Stage 9 — fires (T4/T5): committed rows INSIDE parallel contexts -/
+/-! ## Stage 9 — fires (T4/T5): committed rows inside parallel contexts -/
 
-/-- T4 FIRE (A4 counit in a genuine parallel context): the copy-counit row
-fired whiskered by ONE WIRE on each side, under a before-layer that feeds the
+/-- T4 fire (A4 counit in a genuine parallel context): the copy-counit row
+fired whiskered by one wire on each side, under a before-layer that feeds the
 right parallel strand through a `scalarBox 2`. -/
 theorem ihwFireCounitRowInParallelContext :
     IhwConv
@@ -2379,7 +2374,7 @@ theorem ihwFireCounitRowInParallelContextSpanPin :
           layers := [[IhsCell.wire, IhsCell.wire, IhsCell.scalarBox ihsScalarTwo],
             [IhsCell.wire, IhsCell.wire, IhsCell.wire]] }) = true := rfl
 
-/-- T4 FIRE (A12 scalar product whiskered right, with an after-layer context):
+/-- T4 fire (A12 scalar product whiskered right, with an after-layer context):
 `2 ; 3 = 6` fired beside a parallel wire, then a discard/wire layer. -/
 theorem ihwFireScalarProductRowBesideWire :
     IhwConv
@@ -2408,7 +2403,7 @@ theorem ihwFireScalarProductRowBesideWireSpanPin :
           layers := [[IhsCell.scalarBox ihsScalarSix, IhsCell.wire],
             [IhsCell.blackCounit, IhsCell.wire]] }) = true := rfl
 
-/-- T4 FIRE (I7 white special whiskered by TWO wires on the left). -/
+/-- T4 fire (I7 white special whiskered by two wires on the left). -/
 theorem ihwFireWhiteSpecialRowUnderTwoWires :
     IhwConv
       { sourceArity := 3
@@ -2432,7 +2427,7 @@ theorem ihwFireWhiteSpecialRowUnderTwoWiresSpanPin :
         { sourceArity := 3
           layers := [[IhsCell.wire, IhsCell.wire, IhsCell.wire]] }) = true := rfl
 
-/-- T4 FIRE (A1 add-unit whiskered by one wire on each side). -/
+/-- T4 fire (A1 add-unit whiskered by one wire on each side). -/
 theorem ihwFireAddUnitRowBetweenWires :
     IhwConv
       { sourceArity := 3
@@ -2456,7 +2451,7 @@ theorem ihwFireAddUnitRowBetweenWiresSpanPin :
         { sourceArity := 3
           layers := [[IhsCell.wire, IhsCell.wire, IhsCell.wire]] }) = true := rfl
 
-/-- T5 FIRE (two redexes at PARALLEL positions, fired in sequence): the left
+/-- T5 fire (two redexes at parallel positions, fired in sequence): the left
 strand's `2;3` collapses to `6` beside the right strand's pending redex, then
 the right strand's `2;3` collapses beside the left strand's result. -/
 theorem ihwFireTwoScalarRedexesInParallel :
@@ -2496,7 +2491,7 @@ theorem ihwFireTwoScalarRedexesInParallelSpanPin :
           layers := [[IhsCell.scalarBox ihsScalarSix, IhsCell.wire],
             [IhsCell.wire, IhsCell.scalarBox ihsScalarSix]] }) = true := rfl
 
-/-- T5 FIRE (the exchange move): a merged two-cell layer splits into its two
+/-- T5 fire (the exchange move): a merged two-cell layer splits into its two
 sequential whisker-padded halves — the layer-split window move fired through
 the identity pad. -/
 theorem ihwFireSplitScalarPairLayer :
@@ -2524,15 +2519,15 @@ theorem ihwFireSplitScalarPairLayerSpanPin :
           layers := [[IhsCell.scalarBox ihsScalarTwo, IhsCell.wire],
             [IhsCell.wire, IhsCell.scalarBox ihsScalarThree]] }) = true := rfl
 
-/-- FALSE CONTROL carried over: the white and black units stay non-convertible
-under the WIDER whisker congruence (the seed's kernel `false` pin still
+/-- False control carried over: the white and black units stay non-convertible
+under the wider whisker congruence (the seed's kernel `false` pin still
 refutes through the new bridge). -/
 theorem ihwFireUnitsNotConv :
     Not (IhwConv ihsWhiteUnitDiagram ihsBlackUnitDiagram) :=
   fun hConv =>
     Bool.noConfusion ((ihwConvSpanEqB hConv).symm.trans ihsFireUnitsSpanDistinct)
 
-/-- FALSE CONTROL carried over: scalar 2 and scalar 3 stay non-convertible
+/-- False control carried over: scalar 2 and scalar 3 stay non-convertible
 under the whisker congruence. -/
 theorem ihwFireScalarTwoThreeNotConv :
     Not (IhwConv ihsScalarTwoDiagram ihsScalarThreeDiagram) :=
@@ -2540,43 +2535,23 @@ theorem ihwFireScalarTwoThreeNotConv :
     Bool.noConfusion
       ((ihwConvSpanEqB hConv).symm.trans ihsFireScalarTwoThreeSpanDistinct)
 
-/-! ## Stage 10 — honesty markers (the NEW-marker supersession pattern) -/
+/-! ## Stage 10 — honesty marker -/
 
-/-- DECIDED: the tensor SPEC (`ihwTensorSpec` — blockwise pair-membership of
-`ihsTensorRows`, both directions) is SHIPPED zero-axiom, discharging the tensor
-debt recorded by brick 1/2. -/
-def ihwHasTensorSpec : Bool := true
+/-- The whisker (parallel-context) congruence for the IH_Q seed is shipped
+zero-axiom: `IhwConv` fires any committed seed row (and the layer-split exchange
+move) inside a context of left/right identity wires plus arbitrary well-formed
+before/after layers (`IhwStep.pad`), is sound with the full seed bundle
+(`ihwConvSound`), keeps the refutation bridge (`ihwConvSpanEqB`), and contains
+the committed sequential congruence (`ihwConvOfSeedConv`).  Its supporting facts
+are the tensor spec (`ihwTensorSpec`), the tensor laws with the Godement
+interchange (`ihwTensorComposeInterchange`), and the seed embedding through the
+identity pad and context closures.
 
-/-- DECIDED: the tensor laws — congruence (`ihwTensorRowsCong`), units
-(`ihwTensorUnitLeft`/`Right`, `ihwTensorIdSum`), associativity up to span
-(`ihwTensorRowsAssoc`), and THE INTERCHANGE (`ihwTensorComposeInterchange`)
-at matched boundaries — are SHIPPED zero-axiom. -/
-def ihwHasInterchange : Bool := true
-
-/-- DECIDED — SUPERSEDES the committed owner-false `ihsHasWhiskerCongruence`
-(which stays byte-intact in the seed per the NEW-marker pattern): the WHISKER
-(parallel-context) congruence IS SHIPPED.  `IhwConv` fires any committed seed
-row (and the layer-split exchange move) inside a context of left/right
-identity wires plus arbitrary well-formed before/after layers (`IhwStep.pad`,
-the zxp pad shape), is SOUND with the full seed bundle (`ihwConvSound`), keeps
-the refutation bridge (`ihwConvSpanEqB`), and CONTAINS the committed
-sequential congruence (`ihwConvOfSeedConv`).
-
-BRICK-4 ROUTE (the arc law; completeness stays owner-false at the seed's
-`ihsCompletenessIsProven`): (1) the NORMAL-FORM CENSUS against the BSZ
-Section 6 pushout normal form / Theorem 6.4 span-of-matrices factorization —
-name the candidate NF carrier (a span pair in Smith-like form), the width
-invariants, and the reduction moves realizing it inside `IhwConv`; (2) the
-GATE-REFUTATION PASS — machine-refute (kernel `false` pins) every candidate
-completeness shortcut that skips the census (in particular: `IhwConv` on
-INSTANTIATED scalar rows cannot reach rows at OTHER scalars — the scalar
-schema gap of the committed gate is still open at the congruence level);
-(3) only THEN the completeness induction over the census. -/
+Completeness (BSZ Theorem 6.4) is out of scope: it would require a normal-form
+census against the BSZ Section 6 span-of-matrices factorization and a refutation
+pass against census-skipping shortcuts (notably, `IhwConv` on instantiated
+scalar rows cannot reach rows at other scalars) before any completeness
+induction. -/
 def ihwHasWhiskerCongruence : Bool := true
-
-/-- DECIDED: the committed sequential congruence embeds
-(`ihwConvOfSeedConv` — rows through the identity pad, prepend/append through
-the context closures `ihwConvPrependLayer`/`ihwConvAppendLayer`). -/
-def ihwHasSeedEmbedding : Bool := true
 
 end FX1Poly.ComputerAlgebra

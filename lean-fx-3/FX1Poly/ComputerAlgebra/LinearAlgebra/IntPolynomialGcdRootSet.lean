@@ -1,38 +1,19 @@
 import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialGcdConverse
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/IntPolynomialGcdRootSet — the GCD's roots ARE the common roots
-(the thirteenth brick of `invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255)
+/-! # IntPolynomialGcdRootSet — the GCD's roots are exactly the common roots
 
-The forward direction (`polyGcdVanishesAtCommonRoot`, in `IntPolynomialGcd`) and the converse
-(`polyGcdRootIsCommonRoot`, in `IntPolynomialGcdConverse`) together pin the GCD's root set exactly.  This
-file packages them into the single biconditional headline and derives the eigenvalue-sharing characterization
-the invariant-factor classifier consumes.
-
-## What is PROVEN
-
-  * `polyGcdRootIffCommonRoot`: for an honestly-terminated GCD (`polyGcdReachesNil`), `point` is a root of
-    `polyGcd fuel primary secondary` **iff** it is a root of *both* inputs — the exact root-set identity.
-  * `polyGcdNoRootOfNoCommonRoot`: contrapositive convenience — if the inputs share no root at `point`, the
-    honestly-terminated GCD does not vanish there.
-  * `polyGcdSharedRootIsEigenvalueShadow`: the eigenvalue-sharing shadow — a root of the honestly-terminated
-    GCD of two characteristic polynomials is a shared root (shared eigenvalue) of both, the polynomial face
-    of "two matrices share an eigenvalue".
-
-## Zero-axiom design
-
-Pure `Iff.intro` / `And` packaging over the two directional theorems — no case analysis, no new recursion.
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
-gated in `FX1PolyAudit/ComputerAlgebra/LinearAlgebra/IntPolynomialGcdRootSet.lean`.
--/
+Packages the forward direction (`polyGcdVanishesAtCommonRoot`) and the converse (`polyGcdRootIsCommonRoot`)
+into `polyGcdRootIffCommonRoot`, with the contrapositive `polyGcdNoRootOfNoCommonRoot` and the
+eigenvalue-sharing shadow `polyGcdSharedRootIsEigenvalueShadow`.  Pure `Iff.intro` / `And` packaging, no new
+recursion.  Free of `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.ComputerAlgebra
 
 /-! ## The root-set biconditional -/
 
-/-- **The GCD's roots are exactly the common roots.**  For an honestly-terminated GCD (`isAdequate :
-polyGcdReachesNil fuel primary secondary = true`), `polyEval point (polyGcd fuel primary secondary) = 0`
-iff `point` is a root of *both* `primary` and `secondary`.  Forward: `polyGcdRootIsCommonRoot`; backward:
-`polyGcdVanishesAtCommonRoot`. -/
+/-- **The GCD's roots are exactly the common roots.**  For an honestly-terminated GCD, `polyEval point
+(polyGcd fuel primary secondary) = 0` iff `point` is a root of both inputs (forward:
+`polyGcdRootIsCommonRoot`; backward: `polyGcdVanishesAtCommonRoot`). -/
 theorem polyGcdRootIffCommonRoot (point : Int) (fuel : Nat) (primary secondary : List Int)
     (isAdequate : polyGcdReachesNil fuel primary secondary = true) :
     polyEval point (polyGcd fuel primary secondary) = 0 ↔
@@ -45,7 +26,7 @@ theorem polyGcdRootIffCommonRoot (point : Int) (fuel : Nat) (primary secondary :
 /-! ## Contrapositive convenience -/
 
 /-- **No common root ⟹ no GCD root.**  If `primary` and `secondary` do not both vanish at `point`, then the
-honestly-terminated GCD does not vanish at `point` either — read off the converse direction. -/
+honestly-terminated GCD does not vanish at `point` either. -/
 theorem polyGcdNoRootOfNoCommonRoot (point : Int) (fuel : Nat) (primary secondary : List Int)
     (isAdequate : polyGcdReachesNil fuel primary secondary = true)
     (noCommonRoot : ¬ (polyEval point primary = 0 ∧ polyEval point secondary = 0)) :
@@ -55,10 +36,8 @@ theorem polyGcdNoRootOfNoCommonRoot (point : Int) (fuel : Nat) (primary secondar
 
 /-! ## The eigenvalue-sharing shadow -/
 
-/-- **A GCD root is a shared eigenvalue.**  For an honestly-terminated GCD of two characteristic polynomials
-`charPrimary`, `charSecondary`, a root of the GCD is a root of *both* — i.e. the two matrices share the
-eigenvalue `point`.  The polynomial shadow of eigenvalue-sharing; the converse of
-`polyGcdSeesSharedLinearFactor`. -/
+/-- **A GCD root is a shared eigenvalue.**  For an honestly-terminated GCD of two characteristic
+polynomials, a root of the GCD is a root of both — the two matrices share the eigenvalue `point`. -/
 theorem polyGcdSharedRootIsEigenvalueShadow (point : Int) (fuel : Nat)
     (charPrimary charSecondary : List Int)
     (isAdequate : polyGcdReachesNil fuel charPrimary charSecondary = true)
@@ -68,14 +47,9 @@ theorem polyGcdSharedRootIsEigenvalueShadow (point : Int) (fuel : Nat)
 
 /-! ## Grounding -/
 
-/-- The root-set identity exhibited on `x² − 1` and `(x+1)²`: the honestly-terminated GCD (fuel 5) vanishes
-at `−1` iff both inputs do; here the right-to-left instance — both vanish at `−1`, so the GCD does. -/
+/-- The root-set identity on `x² − 1` and `(x+1)²`: the honestly-terminated GCD (fuel 5) vanishes at `−1`
+because both inputs do. -/
 theorem polyGcdRootIffCommonRootGrounding :
     polyEval (-1) (polyGcd 5 [-1, 0, 1] [1, 2, 1]) = 0 := by decide
-
-/-- Marker: the ℤ[x] Euclidean GCD's root set is *exactly* the common-root set of its inputs
-(`polyGcdRootIffCommonRoot`, both directions), with the eigenvalue-sharing shadow
-(`polyGcdSharedRootIsEigenvalueShadow`) the invariant-factor classifier consumes. -/
-def fxIntPoly_hasGcdRootSetIdentity : Bool := true
 
 end FX1Poly.ComputerAlgebra

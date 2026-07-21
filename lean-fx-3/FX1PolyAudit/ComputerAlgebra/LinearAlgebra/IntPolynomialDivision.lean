@@ -3,14 +3,10 @@ import FX1Poly.ComputerAlgebra.LinearAlgebra.IntPolynomialDivision
 
 /-! # FX1PolyAudit/.../IntPolynomialDivision — zero-axiom gate
 
-Per-declaration zero-axiom gate for the ℤ[x] monic division-with-remainder layer (the third brick of
-`invariantFactorSeparator`'s ℚ[x] arc, WP-ENDO #2255): the `Int` cancellation helpers, the division
-algorithm, and the fuel-independent reconstruction identity
-`dividend = quotient · divisor + remainder`.
-
-The recursion is structural on `fuel`; the only non-list case analysis is `Nat.decLt` on its full
-`isTrue`/`isFalse` enumeration; the proof's `dsimp only`/`cases` are over data.  Must be free of `propext`,
-`Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for the ℤ[x] division layer: the `Int` cancellation helpers, the monic and
+pseudo division algorithms, and the fuel-independent reconstruction identities.  Structural recursion on
+`fuel`; the only non-list case analysis is `Nat.decLt`.  Free of `propext`, `Quot.sound`, `Classical`,
+`sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 

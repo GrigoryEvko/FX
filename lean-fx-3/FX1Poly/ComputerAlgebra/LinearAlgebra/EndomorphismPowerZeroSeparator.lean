@@ -3,65 +3,55 @@ import FX1Poly.ComputerAlgebra.Number.IntPower
 import FX1Poly.ComputerAlgebra.Number.IntCancellation
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 
-/-! # FX1Poly/ComputerAlgebra/LinearAlgebra/EndomorphismPowerZeroSeparator — the rank-sequence
-separator at its decidable rank-zero boundary (`rankSequenceNilpotent` r2 deliverable)
+/-! # EndomorphismPowerZeroSeparator — the rank-sequence separator at its rank-zero boundary
 
-r1 (`EndomorphismSimilarity`) named `rankSequenceNilpotent` as an r2 wall: the complete NILPOTENT
-similarity separator is the rank sequence `rank(M^k)`, which needs matrix powers.  This file ships
-the matrix power (structural iterate of the shipped `mulMatrix`) and the PROVEN fragment of the
-rank-sequence separator: the rank-`0` boundary `rank(M^k) = 0` vs `rank(M^k) > 0`, i.e. the
-`k`-th power vanishing on the window vs not.
+`EndomorphismSimilarity` named `rankSequenceNilpotent` as a wall: the complete nilpotent similarity
+separator is the rank sequence `rank(M^k)`, which needs matrix powers.  This file ships the matrix power
+(structural iterate of the shipped `mulMatrix`) and the proven fragment of the separator: the rank-`0`
+boundary `rank(M^k) = 0` vs `> 0`, i.e. the `k`-th power vanishing on the window vs not.
 
 ## The proven invariance direction
 
-Unlike the r1 separators (whose "similar ⟹ equal char-poly / equal rank" backing is prose), the
-zero-pattern direction is MACHINE-PROVED here, in three theorems over an arbitrary scaled-pair
-witness with coherent dimensions:
+Unlike separators whose "similar ⟹ equal invariant" backing is prose, the zero-pattern direction is
+machine-proved here, in three theorems over an arbitrary coherent-dimension scaled-pair witness:
 
-  * `endomorphismWitnessPowerLadder` — the power ladder: from `P·Q = d·I` and `Q·(A·P) = d·B` on
-    the window follows `d^k · (Q·(A^(k+1)·P)) = d^(k+1) · B^(k+1)` on the window, for every `k`,
-    by induction with NO division and NO cancellation (the scale is carried, never cancelled).
+  * `endomorphismWitnessPowerLadder` — from `P·Q = d·I` and `Q·(A·P) = d·B` on the window follows
+    `d^k · (Q·(A^(k+1)·P)) = d^(k+1) · B^(k+1)`, for every `k`, by induction with no division and no
+    cancellation (the scale is carried, never cancelled);
   * `endomorphismWitnessTransportsPowerVanishing` — if `A^(k+1)` vanishes on the window, so does
-    `B^(k+1)` (cancel the nonzero `d`-power entrywise via the corpus zero-product lemma).
+    `B^(k+1)` (cancel the nonzero `d`-power entrywise via the corpus zero-product lemma);
   * `endomorphismWitnessReflectsPowerVanishing` — conversely, if `B^(k+1)` vanishes then so does
     `A^(k+1)`, by the sandwich `(P·Q)·A^(k+1)·(P·Q) = d²·A^(k+1)`.
 
 Hence `EndomorphismDissimilarByRankSequence` (either power vanishes while the other survives) is a
-GENUINE ∀-witness refutation: no change of basis, no scaled inverse, no scale can witness the pair
-— not a certificate whose soundness lives in prose.
+genuine ∀-witness refutation: no change of basis, scaled inverse, or scale can witness the pair.
 
-## The dimension-junk forgery (a genuine r1 checker gap, repaired additively)
+## The dimension-junk forgery (a checker gap, repaired additively)
 
-The r1 `WitnessesSimilarity` does NOT constrain the `changeOfBasis`/`scaledInverse` dimension
-fields, and its window sums range over the operands' INTRINSIC `colCount` fields.  A forged
-witness with off-dimension `P`/`Q` really does pass the raw checker against r1's own
-machine-checked DISSIMILAR pair `[[1,0],[0,0]]` vs `[[2,0],[0,0]]`:
-`endomorphismDimensionForgeryPassesRawChecker` pins the forgery (`P` is `2×3`, `Q` is `3×2`, the
-phantom third column/row cancels inside `P·Q` but is invisible to `Q·(A·P)` because `A`'s
-off-window rows are zero).  The additive repair is
-`WitnessesSimilarityWithCoherentDimensions` — the raw checker plus the eight dimension-coherence
-equations — which rejects the forgery (`endomorphismDimensionForgeryRejectedWithCoherence`) and is
-the hypothesis of every refutation theorem here.  The r1 witnesses are unaffected: coherent
-dimensions hold by `rfl` on every shipped instance.
+`WitnessesSimilarity` does not constrain the `changeOfBasis`/`scaledInverse` dimension fields, and its
+window sums range over the operands' intrinsic `colCount` fields.  A forged witness with off-dimension
+`P`/`Q` passes the raw checker against the machine-checked dissimilar pair `[[1,0],[0,0]]` vs
+`[[2,0],[0,0]]` (`endomorphismDimensionForgeryPassesRawChecker`: `P` is `2×3`, `Q` is `3×2`, the phantom
+third column/row cancels inside `P·Q` but is invisible to `Q·(A·P)`).  The additive repair
+`WitnessesSimilarityWithCoherentDimensions` — the raw checker plus eight dimension-coherence equations —
+rejects the forgery (`endomorphismDimensionForgeryRejectedWithCoherence`) and is the hypothesis of every
+refutation theorem here; the shipped witnesses satisfy it by `rfl`.
 
 ## Honest scope
 
-The GRADED rank values (`rank(M^k) = r` for `r > 0`) need the general minor selector (the
-`minorRankGeneral` deliverable); the general "unequal rank sequences ⟹ dissimilar" for nonzero
-ranks would additionally need Cauchy–Binet over the window calculus and stays certificate-level.
-The rank-0 boundary shipped here already separates the canonical rank-blind pair: the `4×4`
-nilpotents `J2⊕J2` vs `J3⊕J1` share the characteristic polynomial `x^4` AND the first rank, and
-differ exactly at `rank(M²) = 0` vs `1` — i.e. at THIS boundary.
+The graded rank values (`rank(M^k) = r > 0`) need the general minor selector; the general "unequal rank
+sequences ⟹ dissimilar" for nonzero ranks would additionally need Cauchy–Binet and stays
+certificate-level.  The rank-0 boundary already separates the canonical rank-blind pair: the `4×4`
+nilpotents `J2⊕J2` vs `J3⊕J1` share the characteristic polynomial `x^4` and the first rank, differing
+exactly at `rank(M²) = 0` vs `1`.
 
 ## Zero-axiom design
 
-All matrix algebra is routed through the shipped `CommutativeRingWitness` law fields and the
-`sumUpTo` toolkit (the propext-clean Int kit); the only new Int lemmas are the zero-product
-cancellations, derived from the corpus `intEqZeroOfMulOfNatSuccEqZero` by constructor cases.  The
-matrix power is STRUCTURAL on the exponent.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/ComputerAlgebra/LinearAlgebra/EndomorphismPowerZeroSeparator.lean`.
--/
+All matrix algebra is routed through the shipped `CommutativeRingWitness` law fields and the `sumUpTo`
+toolkit; the only new Int lemmas are the zero-product cancellations, derived from the corpus
+`intEqZeroOfMulOfNatSuccEqZero` by constructor cases.  The matrix power is structural on the exponent.
+No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`; gated per
+declaration in the audit twin. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -160,9 +150,9 @@ theorem intFactorIsZeroOfPowerScaledZero {base : Int} (baseHasMagnitude : 1 ≤ 
 
 /-! ## The windowed-equality calculus over ℤ
 
-`agreeOnWindow` (r1) compares entries inside the `n × n` window; the multiplication sums range
-over the operands' intrinsic `colCount` fields, so every congruence below carries the column-count
-side conditions that keep all reads in-window. -/
+`agreeOnWindow` compares entries inside the `n × n` window; the multiplication sums range over the
+operands' intrinsic `colCount` fields, so every congruence below carries the column-count side
+conditions that keep all reads in-window. -/
 
 /-- Window agreement is reflexive. -/
 theorem agreeOnWindowRefl (matrix : SetoidMatrix Int) (height width : Nat) :
@@ -351,12 +341,12 @@ theorem intMatrixMulVanishingRightFactorOnWindow (windowSize : Nat)
 
 /-! ## The power ladder -/
 
-/-- **The power ladder.**  From the two witness window identities `P·Q = d·I` and `Q·(A·P) = d·B`
-follows, for every `k`, the scaled power identity
+/-- The power ladder.  From the two witness window identities `P·Q = d·I` and `Q·(A·P) = d·B` follows,
+for every `k`, the scaled power identity
 
   `d^k · (Q·(A^(k+1)·P))  =  d^(k+1) · B^(k+1)`   (on the `n × n` window).
 
-The scale is CARRIED through the induction (multiply both sides by `Q·(A·P)` and absorb one
+The scale is carried through the induction (multiply both sides by `Q·(A·P)` and absorb one
 `P·Q = d·I` insertion), so no division and no cancellation over ℤ is ever needed. -/
 theorem endomorphismWitnessPowerLadder
     (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
@@ -713,8 +703,8 @@ Decidable at concrete inputs (bounded window over `Int` entries). -/
   agreeOnWindow (endomorphismMatrixPower dimension matrix powerExponent)
     (intMatrixZeroSquare dimension) dimension dimension
 
-/-- **Vanishing transports source → target.**  If a coherent-dimension witness holds and the
-source's `(k+1)`-th power vanishes on the window, so does the target's: the ladder pins
+/-- Vanishing transports source → target.  If a coherent-dimension witness holds and the source's
+`(k+1)`-th power vanishes on the window, so does the target's: the ladder pins
 `d^(k+1) · B^(k+1) = d^k · (Q·(A^(k+1)·P)) = 0` entrywise, and the nonzero `d`-power cancels. -/
 theorem endomorphismWitnessTransportsPowerVanishing
     (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
@@ -762,10 +752,9 @@ theorem endomorphismWitnessTransportsPowerVanishing
   exact intFactorIsZeroOfPowerScaledZero scaleHasMagnitude (powerPredecessor + 1) _
     scaledTargetEntryIsZero
 
-/-- **Vanishing reflects target → source.**  If a coherent-dimension witness holds and the
-target's `(k+1)`-th power vanishes, the ladder first kills `Q·(A^(k+1)·P)` on the window (cancel
-`d^k`), and the sandwich `(P·Q)·A^(k+1)·(P·Q) = d²·A^(k+1)` then kills `A^(k+1)` itself (cancel
-`d` twice). -/
+/-- Vanishing reflects target → source.  If a coherent-dimension witness holds and the target's
+`(k+1)`-th power vanishes, the ladder first kills `Q·(A^(k+1)·P)` on the window (cancel `d^k`), and
+the sandwich `(P·Q)·A^(k+1)·(P·Q) = d²·A^(k+1)` then kills `A^(k+1)` itself (cancel `d` twice). -/
 theorem endomorphismWitnessReflectsPowerVanishing
     (dimension : Nat) (source target changeOfBasis scaledInverse : SetoidMatrix Int)
     (scale : Int)
@@ -955,12 +944,11 @@ theorem endomorphismWitnessReflectsPowerVanishing
   exact intFactorIsZeroOfScaledZero (sourcePower.entry rowIndex colIndex) scaleHasMagnitude
     singleScaledEntryIsZero
 
-/-! ## The dimension-junk forgery against the raw r1 checker, and the additive repair -/
+/-! ## The dimension-junk forgery against the raw checker, and the additive repair -/
 
-/-- A FORGED witness against r1's own machine-checked dissimilar pair `[[1,0],[0,0]]` vs
-`[[2,0],[0,0]]`: the change of basis is `2×3` and the scaled inverse `3×2`, and the phantom third
-column/row cancels inside `P·Q` (contributing `2·1 + 0 + 1·(-1) = 1`) while staying invisible to
-`Q·(A·P)` (the source's off-window rows are zero). -/
+/-- A forged witness against the machine-checked dissimilar pair `[[1,0],[0,0]]` vs `[[2,0],[0,0]]`: the
+change of basis is `2×3` and the scaled inverse `3×2`, and the phantom third column/row cancels inside
+`P·Q` (contributing `2·1 + 0 + 1·(-1) = 1`) while staying invisible to `Q·(A·P)`. -/
 def endomorphismDimensionForgeryWitness : EndomorphismSimilarityWitness :=
   { dimension := 2
     source := setoidMatrixOfRows [[1, 0], [0, 0]]
@@ -969,16 +957,15 @@ def endomorphismDimensionForgeryWitness : EndomorphismSimilarityWitness :=
     scaledInverse := setoidMatrixOfRows [[1, 0], [0, 1], [-1, 0]]
     scale := 1 }
 
-/-- **The r1 checker gap, machine-checked**: the forgery PASSES the raw `WitnessesSimilarity`
-even though its source/target pair is the r1 `endomorphismDistinctTraceDissimilar` pair.  The raw
-checker never constrains the conjugator dimension fields, and the window sums range over the
-operands' intrinsic `colCount`s. -/
+/-- The checker gap, machine-checked: the forgery passes the raw `WitnessesSimilarity` even though its
+source/target pair is the `endomorphismDistinctTraceDissimilar` pair.  The raw checker never constrains
+the conjugator dimension fields, and the window sums range over the operands' intrinsic `colCount`s. -/
 theorem endomorphismDimensionForgeryPassesRawChecker :
     endomorphismDimensionForgeryWitness.WitnessesSimilarity := by decide
 
-/-- The additively-repaired checker: the raw window checks PLUS the eight dimension-coherence
-equations tying every matrix field's shape to the declared `dimension`.  Every r1 shipped witness
-satisfies the extra conjuncts by `rfl`; the forgery does not. -/
+/-- The additively-repaired checker: the raw window checks plus the eight dimension-coherence equations
+tying every matrix field's shape to the declared `dimension`.  Every shipped witness satisfies the
+extra conjuncts by `rfl`; the forgery does not. -/
 @[reducible] def EndomorphismSimilarityWitness.WitnessesSimilarityWithCoherentDimensions
     (witness : EndomorphismSimilarityWitness) : Prop :=
   witness.source.rowCount = witness.dimension
@@ -995,8 +982,8 @@ satisfies the extra conjuncts by `rfl`; the forgery does not. -/
 theorem endomorphismDimensionForgeryRejectedWithCoherence :
     ¬ endomorphismDimensionForgeryWitness.WitnessesSimilarityWithCoherentDimensions := by decide
 
-/-- Both r1 shipped SIMILAR witnesses pass the strengthened checker — the dimension conjuncts
-cost nothing on honest instances. -/
+/-- Both shipped similar witnesses pass the strengthened checker — the dimension conjuncts cost nothing
+on honest instances. -/
 theorem endomorphismShippedWitnessesPassCoherentChecker :
     endomorphismNilpotentConjugacyWitness.WitnessesSimilarityWithCoherentDimensions
       ∧ endomorphismRationalConjugacyWitness.WitnessesSimilarityWithCoherentDimensions := by
@@ -1004,10 +991,10 @@ theorem endomorphismShippedWitnessesPassCoherentChecker :
 
 /-! ## The rank-sequence separator (rank-zero boundary) and its refutation theorems -/
 
-/-- **The rank-sequence separator at the rank-`0` boundary**: at the `powerExponent`-th power,
-exactly one of the two matrices vanishes on the window (`rank = 0` vs `rank > 0`).  Either
-orientation counts.  Decidable at concrete inputs; its dissimilarity force is the PROVEN
-`endomorphismRankSequenceSeparationRefutesWitness` below — not prose. -/
+/-- The rank-sequence separator at the rank-`0` boundary: at the `powerExponent`-th power, exactly one
+of the two matrices vanishes on the window (`rank = 0` vs `> 0`); either orientation counts.  Decidable
+at concrete inputs; its dissimilarity force is the proven
+`endomorphismRankSequenceSeparationRefutesWitness` below. -/
 @[reducible] def EndomorphismDissimilarByRankSequence
     (dimension powerExponent : Nat) (source target : SetoidMatrix Int) : Prop :=
   (endomorphismPowerVanishesOnWindow dimension powerExponent source
@@ -1024,9 +1011,9 @@ theorem endomorphismDissimilarByRankSequenceSymm
   | Or.inl sourceSide => Or.inr sourceSide
   | Or.inr targetSide => Or.inl targetSide
 
-/-- **The ∀-witness refutation.**  A rank-sequence separation at any positive power refutes EVERY
-coherent-dimension witness for the pair: no change of basis, no scaled inverse, no scale.  This is
-the machine-proved invariance direction the r1 separators lacked. -/
+/-- The ∀-witness refutation.  A rank-sequence separation at any positive power refutes every
+coherent-dimension witness for the pair: no change of basis, no scaled inverse, no scale.  This is the
+machine-proved invariance direction the certificate-level separators lacked. -/
 theorem endomorphismRankSequenceSeparationRefutesWitness
     (witness : EndomorphismSimilarityWitness) (powerPredecessor : Nat)
     (separated : EndomorphismDissimilarByRankSequence witness.dimension
@@ -1057,8 +1044,8 @@ theorem endomorphismRankSequenceSeparationRefutesWitness
 Three graduated instances, each with a kernel-`decide` separation pin and (for the new pairs) the
 ∀-quantified no-witness corollaries in BOTH orientations. -/
 
-/-- The r1 subtle pair (zero vs the `2×2` Jordan block), re-decided through the rank-sequence
-separator at the FIRST power — continuity with the r1 census. -/
+/-- The subtle pair (zero vs the `2×2` Jordan block), re-decided through the rank-sequence separator at
+the first power — continuity with the hub census. -/
 theorem endomorphismZeroVersusJordanSeparatedByRankSequence :
     EndomorphismDissimilarByRankSequence 2 1
       (setoidMatrixOfRows [[0, 0], [0, 0]]) (setoidMatrixOfRows [[0, 1], [0, 0]]) := by decide
@@ -1070,8 +1057,8 @@ theorem endomorphismSplitVersusFullJordanSeparatedAtSquare :
       (setoidMatrixOfRows [[0, 1, 0], [0, 0, 0], [0, 0, 0]])
       (setoidMatrixOfRows [[0, 1, 0], [0, 0, 1], [0, 0, 0]]) := by decide
 
-/-- The `3×3` pair SHARES its characteristic polynomial (`x³`, via the r1 closed-form engine) —
-char-poly is blind here; only the power pattern separates. -/
+/-- The `3×3` pair shares its characteristic polynomial (`x³`, via the closed-form engine): char poly
+is blind here, only the power pattern separates. -/
 theorem endomorphismSplitVersusFullJordanShareCharPoly :
     endomorphismCharPolyCoefficients 3
         (setoidMatrixOfRows [[0, 1, 0], [0, 0, 0], [0, 0, 0]])
@@ -1113,9 +1100,8 @@ theorem endomorphismFullVersusSplitJordanNoWitness :
       (endomorphismDissimilarByRankSequenceSymm
         endomorphismSplitVersusFullJordanSeparatedAtSquare)
 
-/-- **The rank-blind `4×4` pair** `J2⊕J2` vs `J3⊕J1` (the r1 prose's smallest equal-char-poly,
-equal-first-rank, still-dissimilar pair): separated at the second power (`(J2⊕J2)² = 0`,
-`(J3⊕J1)² ≠ 0`). -/
+/-- The rank-blind `4×4` pair `J2⊕J2` vs `J3⊕J1` (the smallest equal-char-poly, equal-first-rank,
+still-dissimilar pair): separated at the second power (`(J2⊕J2)² = 0`, `(J3⊕J1)² ≠ 0`). -/
 theorem endomorphismJordanTwoTwoVersusThreeOneSeparatedAtSquare :
     EndomorphismDissimilarByRankSequence 4 2
       (setoidMatrixOfRows [[0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 0]])
@@ -1154,18 +1140,5 @@ theorem endomorphismJordanThreeOneVersusTwoTwoNoWitness :
       1
       (endomorphismDissimilarByRankSequenceSymm
         endomorphismJordanTwoTwoVersusThreeOneSeparatedAtSquare)
-
-/-! ## The honest marker -/
-
-/-- **The `rankSequenceNilpotent` r2 deliverable landed** — verbatim scope: the matrix power
-(structural `mulMatrix` iterate), the rank-sequence separator at its decidable rank-`0` boundary
-(`EndomorphismDissimilarByRankSequence`), the PROVEN invariance direction in both orientations
-(power-vanishing transports and reflects across every coherent-dimension scaled-pair witness, via
-the cancellation-free power ladder), the dimension-junk forgery against the raw r1 checker plus
-the additive coherent-dimension repair, and the decided `2×2`/`3×3`/`4×4` instances with
-∀-witness refutations.  NOT claimed: graded rank values `rank(M^k) = r > 0` (those need the
-general minor selector) or the general unequal-rank invariance (Cauchy–Binet — certificate-level
-only). -/
-def fxEndo_hasRankSequenceSeparator : Bool := true
 
 end FX1Poly.ComputerAlgebra

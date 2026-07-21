@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.ComputerAlgebra.LinearAlgebra.InteractingHopfCompiler
 
 /-! # FX1PolyAudit/ComputerAlgebra/LinearAlgebra/InteractingHopfCompiler — zero-axiom
-    gate (WP-PROP-3 brick 5: the matrix -> diagram fan kit)
+    gate for the matrix -> diagram fan kit
 
 Per-declaration zero-axiom gate for the copy/add/mult fan kit: the diagonal and
 sum targets (`ihcReplicate`, `ihcSum`), the copy fan cascade with arities/WF, the
@@ -12,7 +12,7 @@ the kernel span fires, the grow/shrink layer characterizations
 bookkeeping (`ihcReplicateSnoc`, `ihcReplicateSnocTwo`, `ihcSumCat`,
 `ihcAddFanUncons`), the three arbitrary-width denotation theorems
 (`ihcCopyFanDenote`, `ihcAddFanDenote`, `ihcMultFanDenote`), and the T1
-fan-kit marker plus the owner-false NF-compiler marker.
+fan-kit marker.
 
 No new inductives/structures are introduced, so there are no constructors,
 `mk`, or projections to gate — every declaration is a `def` or `theorem`.
@@ -72,6 +72,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihcFireMultFanUnit
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihcFireMultFanTwo
 #assert_no_axioms FX1Poly.ComputerAlgebra.ihcHasFanKit
-#assert_no_axioms FX1Poly.ComputerAlgebra.ihcHasNormalFormCompiler
 
 end FX1PolyAudit
