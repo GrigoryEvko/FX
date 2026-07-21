@@ -1,0 +1,67 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.TwoCategory.WalkingCohesionQuadruple.QuadrupleMateBijectionKit
+
+/-! # FX1PolyAudit.…WalkingCohesionQuadruple.QuadrupleMateBijectionKit — zero-axiom gate
+
+Per-declaration zero-axiom gate for the mate-bijection kit and the derived-comparison joins: the generic
+exchange square with its quadruple lift, the loop-contraction and elaboration-robust step wrappers, the three
+head-peel transpose/untranspose pairs with both round-trips each, the tail-side transpose at the comparison
+boundary, the points-to-pieces / discrete-to-codiscrete / residual-cup / cross-matching joins, the residual
+1-cells with the slide pair and its non-degeneracy + parity-blindness witnesses, and the three honesty markers.
+Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.twoCellConv_exchangeSquare
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionExchangeSquare
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionLoopContractsOnRight
+#assert_no_axioms FX1Poly.Polygraph.quadCohesionLoopContractsOnLeft
+#assert_no_axioms FX1Poly.Polygraph.quadWhiskerRightIdCollapses
+#assert_no_axioms FX1Poly.Polygraph.quadVcompIdLeftDrops
+#assert_no_axioms FX1Poly.Polygraph.quadVcompIdRightDrops
+#assert_no_axioms FX1Poly.Polygraph.quadVcompAssocShifts
+#assert_no_axioms FX1Poly.Polygraph.quadMateTransposeAlongCodisc
+#assert_no_axioms FX1Poly.Polygraph.quadMateUntransposeAlongCodisc
+#assert_no_axioms FX1Poly.Polygraph.quadMateUntransposeAlongCodisc_congr
+#assert_no_axioms FX1Poly.Polygraph.quadMateAlongCodisc_retract
+#assert_no_axioms FX1Poly.Polygraph.quadMateAlongCodisc_section
+#assert_no_axioms FX1Poly.Polygraph.quadMateTransposeAlongGamma
+#assert_no_axioms FX1Poly.Polygraph.quadMateUntransposeAlongGamma
+#assert_no_axioms FX1Poly.Polygraph.quadMateUntransposeAlongGamma_congr
+#assert_no_axioms FX1Poly.Polygraph.quadMateAlongGamma_retract
+#assert_no_axioms FX1Poly.Polygraph.quadMateAlongGamma_section
+#assert_no_axioms FX1Poly.Polygraph.quadMateTransposeAlongDisc
+#assert_no_axioms FX1Poly.Polygraph.quadMateUntransposeAlongDisc
+#assert_no_axioms FX1Poly.Polygraph.quadMateAlongDisc_retract
+#assert_no_axioms FX1Poly.Polygraph.quadMateAlongDisc_section
+#assert_no_axioms FX1Poly.Polygraph.quadMateTailTransposeDiscToCodisc
+#assert_no_axioms FX1Poly.Polygraph.quadMateTailUntransposeDiscToCodisc
+#assert_no_axioms FX1Poly.Polygraph.quadMateTailUntransposeDiscToCodisc_congr
+#assert_no_axioms FX1Poly.Polygraph.quadMateTailDiscToCodisc_retract
+#assert_no_axioms FX1Poly.Polygraph.quadPointsToPiecesViaUnitCell
+#assert_no_axioms FX1Poly.Polygraph.quadPointsToPiecesViaCounitCell
+#assert_no_axioms FX1Poly.Polygraph.quadPointsToPiecesTransposeCollapses
+#assert_no_axioms FX1Poly.Polygraph.quadPointsToPiecesJoin
+#assert_no_axioms FX1Poly.Polygraph.quadDiscreteToCodiscreteViaUpperCell
+#assert_no_axioms FX1Poly.Polygraph.quadDiscreteToCodiscreteViaMiddleCell
+#assert_no_axioms FX1Poly.Polygraph.quadDiscreteToCodiscreteTransposeCollapses
+#assert_no_axioms FX1Poly.Polygraph.quadDiscreteToCodiscreteJoin
+#assert_no_axioms FX1Poly.Polygraph.quadCodiscPi0
+#assert_no_axioms FX1Poly.Polygraph.quadResidualCupViaUpperCell
+#assert_no_axioms FX1Poly.Polygraph.quadResidualCupViaLowerCell
+#assert_no_axioms FX1Poly.Polygraph.quadResidualCupJoin
+#assert_no_axioms FX1Poly.Polygraph.quadPi0Codisc
+#assert_no_axioms FX1Poly.Polygraph.quadCrossCupSideBySideCell
+#assert_no_axioms FX1Poly.Polygraph.quadCrossCupCell
+#assert_no_axioms FX1Poly.Polygraph.quadCrossCupNestedCell
+#assert_no_axioms FX1Poly.Polygraph.quadCrossMatchingJoin
+#assert_no_axioms FX1Poly.Polygraph.quadResidualCupCell
+#assert_no_axioms FX1Poly.Polygraph.quadResidualCupLeftInsertionCell
+#assert_no_axioms FX1Poly.Polygraph.quadResidualCupRightInsertionCell
+#assert_no_axioms FX1Poly.Polygraph.quadResidualInsertions_sidesAreDistinct
+#assert_no_axioms FX1Poly.Polygraph.quadResidualInsertions_parityAgrees
+#assert_no_axioms FX1Poly.Polygraph.fxQuadCohesion_hasMateBijectionKit
+#assert_no_axioms FX1Poly.Polygraph.fxQuadCohesion_hasDerivedComparisonJoins
+#assert_no_axioms FX1Poly.Polygraph.fxQuadCohesion_hasResidualCupWhiskerSlide
+
+end FX1PolyAudit
